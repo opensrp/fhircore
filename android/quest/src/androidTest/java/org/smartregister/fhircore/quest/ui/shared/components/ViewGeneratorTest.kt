@@ -31,6 +31,10 @@ import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnArrangement
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.PersonalDataItem
+import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
+import org.smartregister.fhircore.engine.configuration.view.RowArrangement
+import org.smartregister.fhircore.engine.configuration.view.RowProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -226,5 +230,92 @@ class ViewGeneratorTest {
       .assertExists()
       .assertIsDisplayed()
     composeRule.onNodeWithText("Billy Brown, M, 20", useUnmergedTree = true).assertDoesNotExist()
+  }
+
+  @Test
+  fun testRowIsRenderedWhenViewTypeIsRowAndPropertyWrapContentIsTrue() {
+    composeRule.setContent {
+      GenerateView(
+        properties =
+          RowProperties(
+            wrapContent = true,
+            children =
+              listOf(
+                ButtonProperties(status = "DUE", text = "Due Task"),
+                ButtonProperties(status = "COMPLETED", text = "Completed Task"),
+                ButtonProperties(status = "READY", text = "Ready Task"),
+              ),
+            viewType = ViewType.ROW
+          ),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule
+      .onNodeWithText("Due Task", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule.onNodeWithText("Completed Task", useUnmergedTree = true).assertExists()
+    composeRule
+      .onNodeWithText("Ready Task", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
+
+  @Test
+  fun testRowIsRenderedWhenViewTypeIsRowAndWrapContentIsFalse() {
+    composeRule.setContent {
+      GenerateView(
+        properties =
+          RowProperties(
+            wrapContent = false,
+            alignment = ViewAlignment.CENTER,
+            arrangement = RowArrangement.START,
+            children =
+              listOf(
+                ButtonProperties(status = "DUE", text = "Due Task", visible = "true"),
+                ButtonProperties(status = "COMPLETED", text = "Completed Task", visible = "false"),
+                ButtonProperties(status = "READY", text = "Ready Task", visible = "true"),
+              ),
+            viewType = ViewType.ROW
+          ),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule
+      .onNodeWithText("Due Task", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule.onNodeWithText("Completed Task", useUnmergedTree = true).assertDoesNotExist()
+    composeRule.onNodeWithText("Ready Task", useUnmergedTree = true).assertExists()
+  }
+
+  @Test
+  fun testGenerateViewRendersViewTypePersonalDataCorrectly() {
+    composeRule.setContent {
+      GenerateView(
+        properties =
+          PersonalDataProperties(
+            personalDataItems =
+              listOf(
+                PersonalDataItem(
+                  label =
+                    CompoundTextProperties(
+                      primaryText = "Sex",
+                    ),
+                  displayValue =
+                    CompoundTextProperties(
+                      primaryText = "Male",
+                    )
+                )
+              )
+          ),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule.onNodeWithText("Sex").assertIsDisplayed()
+    composeRule.onNodeWithText("Male").assertIsDisplayed()
   }
 }
