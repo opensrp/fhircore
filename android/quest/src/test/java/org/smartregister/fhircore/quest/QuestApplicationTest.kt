@@ -18,12 +18,8 @@ package org.smartregister.fhircore.quest
 
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.spyk
-import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
