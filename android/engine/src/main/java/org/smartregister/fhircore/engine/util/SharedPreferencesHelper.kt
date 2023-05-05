@@ -19,11 +19,14 @@ package org.smartregister.fhircore.engine.util
 import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.Gson
+import com.google.gson.JsonIOException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.serialization.SerializationException
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
+import timber.log.Timber
 
 @Singleton
 class SharedPreferencesHelper
@@ -70,11 +73,20 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
 
   /** Read any JSON object with type T */
   inline fun <reified T> read(key: String, decodeWithGson: Boolean = true): T? =
-    if (decodeWithGson) {
-      gson.fromJson(this.read(key, null), T::class.java)
-    } else {
-      this.read(key, null)?.decodeJson<T>()
-    }
+    if (decodeWithGson)
+      try {
+        gson.fromJson(this.read(key, null), T::class.java)
+      } catch (jsonIoException: JsonIOException) {
+        Timber.e(jsonIoException)
+        null
+      }
+    else
+      try {
+        this.read(key, null)?.decodeJson<T>()
+      } catch (serializationException: SerializationException) {
+        Timber.e(serializationException)
+        null
+      }
 
   /** Write any object by saving it as JSON */
   inline fun <reified T> write(key: String, value: T?, encodeWithGson: Boolean = true) {
