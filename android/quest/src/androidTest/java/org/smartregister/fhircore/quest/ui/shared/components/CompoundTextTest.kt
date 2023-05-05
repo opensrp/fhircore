@@ -37,7 +37,7 @@ class CompoundTextTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
-  fun primaryTextIsRenderedCorrectly() {
+  fun testThatPrimaryTextIsRenderedCorrectly() {
     composeTestRule.setContent {
       GenerateView(
         properties =
@@ -55,7 +55,7 @@ class CompoundTextTest {
   }
 
   @Test
-  fun secondaryTextRenderedCorrectly() {
+  fun testThatSecondaryTextRenderedCorrectly() {
     composeTestRule.setContent {
       GenerateView(
         properties =
