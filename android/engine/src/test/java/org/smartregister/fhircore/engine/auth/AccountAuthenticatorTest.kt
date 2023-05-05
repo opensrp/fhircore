@@ -17,14 +17,19 @@
 package org.smartregister.fhircore.engine.auth
 
 import android.accounts.Account
+import android.accounts.AccountAuthenticatorResponse
 import android.accounts.AccountManager
+import android.accounts.AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE
 import android.accounts.AccountManager.KEY_ACCOUNT_NAME
 import android.accounts.AccountManager.KEY_ACCOUNT_TYPE
 import android.accounts.AccountManager.KEY_AUTHTOKEN
 import android.accounts.AccountManager.KEY_INTENT
+import android.accounts.AccountManagerCallback
 import android.accounts.AccountManagerFuture
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
@@ -149,12 +154,26 @@ class AccountAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
-  fun testThatConfirmCredentialsIsNotNull() {
-    Assert.assertNotNull(
+  fun testThatConfirmCredentialsReturnsBundleWithKeyIntent() {
+    val account = spyk(Account("newAccName", "newAccType"))
+
+    val accountAuthenticatorResponse = mockk<AccountAuthenticatorResponse>(relaxed = true)
+    val bundle =
       accountAuthenticator.confirmCredentials(
-        response = mockk(relaxed = true),
-        account = mockk(relaxed = true),
+        response = accountAuthenticatorResponse,
+        account = account,
         options = bundleOf()
+      )
+    Assert.assertTrue(bundle.containsKey(KEY_INTENT))
+    val parcelable = bundle.getParcelable<Intent>(KEY_INTENT)
+    Assert.assertNotNull(parcelable)
+    parcelable!!
+    Assert.assertEquals(account.type, parcelable.getStringExtra(KEY_ACCOUNT_TYPE))
+    Assert.assertEquals(account.name, parcelable.getStringExtra(KEY_ACCOUNT_NAME))
+    Assert.assertEquals(
+      accountAuthenticatorResponse,
+      parcelable.getParcelableExtra<AccountAuthenticatorResponse>(
+        KEY_ACCOUNT_AUTHENTICATOR_RESPONSE
       )
     )
   }
@@ -472,6 +491,40 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     verify { accountManager.peekAuthToken(account, accountType) }
     verify { accountManager.invalidateAuthToken(accountType, token) }
+  }
+
+  @Test
+  fun testConfirmActiveAccountCallsOnResultCallback() {
+    every { tokenManagerService.getActiveAccount() } returns
+      Account("testAccountName", "testAccountType")
+    every {
+      accountManager.confirmCredentials(
+        any<Account>(),
+        any<Bundle>(),
+        any<Activity>(),
+        any<AccountManagerCallback<Bundle>>(),
+        any<Handler>()
+      )
+    } answers
+      {
+        val accountManagerBundleFuture =
+          object : AccountManagerFuture<Bundle> {
+            override fun cancel(mayInterruptIfRunning: Boolean): Boolean = false
+            override fun isCancelled(): Boolean = false
+            override fun isDone(): Boolean = true
+            override fun getResult(): Bundle = bundleOf(KEY_INTENT to Intent())
+            override fun getResult(timeout: Long, unit: TimeUnit?): Bundle =
+              bundleOf(KEY_INTENT to Intent())
+          }
+
+        val callback = arg<AccountManagerCallback<Bundle>>(3)
+        callback.run(accountManagerBundleFuture)
+        accountManagerBundleFuture
+      }
+
+    var onResultCalled = false
+    accountAuthenticator.confirmActiveAccount { onResultCalled = true }
+    Assert.assertTrue(onResultCalled)
   }
 
   @Test
