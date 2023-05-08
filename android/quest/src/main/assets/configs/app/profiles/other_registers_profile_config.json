@@ -4,26 +4,20 @@
   "id": "otherRegistersProfile",
   "fhirResource": {
     "baseResource": {
-      "resource": "Condition"
+      "resource": "Patient"
     },
     "relatedResources": [
       {
-        "resource": "Patient",
-        "fhirPathExpression": "Condition.subject",
-        "relatedResources": [
+        "resource": "CarePlan",
+        "searchParameter": "subject"
+      },
+      {
+        "resource": "Task",
+        "searchParameter": "subject",
+        "sortConfigs": [
           {
-            "resource": "CarePlan",
-            "searchParameter": "subject"
-          },
-          {
-            "resource": "Task",
-            "searchParameter": "subject",
-            "sortConfigs": [
-              {
-                "paramName": "period",
-                "dataType": "DATE"
-              }
-            ]
+            "paramName": "period",
+            "dataType": "DATE"
           }
         ]
       }
@@ -36,14 +30,16 @@
         "resource": "Group",
         "dataQueries": [
           {
-            "id": "commoditiesQueryByCode",
-            "filterType": "TOKEN",
-            "key": "code",
-            "valueType": "CODEABLECONCEPT",
-            "valueCoding": {
-              "system": "http://snomed.info/sct",
-              "code": "386452003"
-            }
+            "paramName": "code",
+            "filterCriteria": [
+              {
+                "dataType": "CODEABLECONCEPT",
+                "value": {
+                  "system": "http://snomed.info/sct",
+                  "code": "386452003"
+                }
+              }
+            ]
           }
         ]
       },
@@ -66,21 +62,21 @@
       "name": "patientFirstName",
       "condition": "true",
       "actions": [
-        "data.put('patientFirstName', fhirPath.extractValue(Patient.get(0), \"Patient.name[0].select(given[0])\"))"
+        "data.put('patientFirstName', fhirPath.extractValue(Patient, \"Patient.name[0].select(given[0])\"))"
       ]
     },
     {
       "name": "patientMiddleName",
       "condition": "true",
       "actions": [
-        "data.put('patientMiddleName', fhirPath.extractValue(Patient.get(0), \"Patient.name[0].select(text)\"))"
+        "data.put('patientMiddleName', fhirPath.extractValue(Patient, \"Patient.name[0].select(text)\"))"
       ]
     },
     {
       "name": "patientLastName",
       "condition": "true",
       "actions": [
-        "data.put('patientLastName', fhirPath.extractValue(Patient.get(0), \"Patient.name[0].select(family)\"))"
+        "data.put('patientLastName', fhirPath.extractValue(Patient, \"Patient.name[0].select(family)\"))"
       ]
     },
     {
@@ -94,7 +90,7 @@
       "name": "patientActive",
       "condition": "true",
       "actions": [
-        "data.put('patientActive', fhirPath.extractValue(Patient.get(0), 'Patient.active'))"
+        "data.put('patientActive', fhirPath.extractValue(Patient, 'Patient.active'))"
       ]
     },
     {
@@ -108,35 +104,35 @@
       "name": "patientIdentifier",
       "condition": "true",
       "actions": [
-        "data.put('patientIdentifier', fhirPath.extractValue(Patient.get(0), 'Patient.identifier[0].value'))"
+        "data.put('patientIdentifier', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
       ]
     },
     {
       "name": "patientId",
       "condition": "true",
       "actions": [
-        "data.put('patientId', fhirPath.extractValue(Patient.get(0), 'Patient.id'))"
+        "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))"
       ]
     },
     {
       "name": "patientAge",
       "condition": "true",
       "actions": [
-        "data.put('patientAge', service.extractAge(Patient.get(0)))"
+        "data.put('patientAge', service.extractAge(Patient))"
       ]
     },
     {
       "name": "patientGender",
       "condition": "true",
       "actions": [
-        "data.put('patientGender', service.extractGender(Patient.get(0)))"
+        "data.put('patientGender', service.extractGender(Patient))"
       ]
     },
     {
       "name": "patientDOB",
       "condition": "true",
       "actions": [
-        "data.put('patientDOB', service.extractDOB(Patient.get(0), 'dd MM'))"
+        "data.put('patientDOB', service.extractDOB(Patient, 'dd MM'))"
       ]
     },
     {
@@ -919,6 +915,7 @@
               "resources": [
                 {
                   "id": "tasks",
+                  "relatedResourceId": "Task",
                   "resourceType": "Task"
                 }
               ],
@@ -1732,7 +1729,8 @@
             "id": "7f1960ac-81b5-42a2-8813-97222de5745a",
             "resourceIdentifier": "@{patientId}",
             "title": "Remove family member",
-            "saveButtonText": "Update registration"
+            "saveButtonText": "Update registration",
+            "refreshContent": true
           }
         }
       ]

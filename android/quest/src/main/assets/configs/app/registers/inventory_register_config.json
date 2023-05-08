@@ -1,20 +1,23 @@
 {
-  "appId": "app",
+  "appId": "chss",
   "configType": "register",
   "id": "inventoryRegister",
+  "pageSize": 10,
   "fhirResource": {
     "baseResource": {
       "resource": "Group",
       "dataQueries": [
         {
-          "id": "commoditiesQueryByCode",
-          "filterType": "TOKEN",
-          "key": "code",
-          "valueType": "CODEABLECONCEPT",
-          "valueCoding": {
-            "system": "http://snomed.info/sct",
-            "code": "386452003"
-          }
+          "paramName": "code",
+          "filterCriteria": [
+            {
+              "dataType": "CODEABLECONCEPT",
+              "value": {
+                "system": "http://snomed.info/sct",
+                "code": "386452003"
+              }
+            }
+          ]
         }
       ],
       "sortConfigs": [
@@ -28,12 +31,31 @@
     "relatedResources": [
       {
         "resource": "Observation",
-        "searchParameter": "subject"
+        "searchParameter": "subject",
+        "sortConfigs": [
+          {
+            "paramName": "date",
+            "dataType": "DATE",
+            "order": "DESCENDING"
+          }
+        ]
       },
       {
         "id": "stockOutFlags",
         "resource": "Flag",
         "searchParameter": "subject"
+      },
+      {
+        "id": "measureReports",
+        "resource": "MeasureReport",
+        "searchParameter": "subject",
+        "sortConfigs": [
+          {
+            "paramName": "_lastUpdated",
+            "dataType": "DATE",
+            "order": "DESCENDING"
+          }
+        ]
       }
     ]
   },
@@ -61,28 +83,8 @@
         ]
       },
       {
-        "name": "quantity",
-        "condition": "true",
-        "actions": [
-          "var type = obs -> { fhirPath.extractValue(obs, 'Observation.category[1].coding.code') }; var qty = obs -> { fhirPath.extractValue(obs, 'Observation.value.value') } ; var balance = obsList -> {var x = 0.0; for(var obs: obsList) { var op = type(obs); var amt = new('java.lang.Double', qty(obs)); if( op == 'addition' ){ x += amt; } if( op == 'subtraction' ){ x -= amt; } } return Math:round(x); } ; data.put('quantity', balance(Observation))"
-        ]
-      },
-      {
-        "name": "lastUpdated",
-        "condition": "true",
-        "actions": [
-          "data.put('lastUpdated', fhirPath.extractValue(Observation.get(0), 'Observation.effective'))"
-        ]
-      },
-      {
-        "name": "lastUpdatedDate",
-        "condition": "true",
-        "actions": [
-          "data.put('lastUpdatedDate', data.get('lastUpdated') != '' ? 'Last count ' + service.prettifyDate(data.get('lastUpdated')) : '')"
-        ]
-      },
-      {
         "name": "latestObservation",
+        "priority": 1,
         "condition": "true",
         "actions": [
           "data.put('latestObservation', service.filterResources(Observation, 'Observation.status = \"preliminary\"').get(0))"
@@ -90,13 +92,31 @@
       },
       {
         "name": "runningBalance",
+        "priority": 2,
         "condition": "true",
         "actions": [
-          "data.put('runningBalance', fhirPath.extractValue(data.get('latestObservation'), 'Observation.component.value.value'))"
+          "data.put('runningBalance', data.get('latestObservation') != null ? fhirPath.extractValue(data.get('latestObservation'), 'Observation.component.value.value') : '0' )"
+        ]
+      },
+      {
+        "name": "lastUpdated",
+        "priority": 2,
+        "condition": "true",
+        "actions": [
+          "data.put('lastUpdated', fhirPath.extractValue(data.get('latestObservation'), 'Observation.effective'))"
+        ]
+      },
+      {
+        "name": "lastUpdatedDate",
+        "priority": 3,
+        "condition": "true",
+        "actions": [
+          "data.put('lastUpdatedDate', data.get('lastUpdated') != '' ? 'Last count ' + service.prettifyDate(data.get('lastUpdated')) : '')"
         ]
       },
       {
         "name": "latestObservationId",
+        "priority": 2,
         "condition": "true",
         "actions": [
           "data.put('latestObservationId', fhirPath.extractValue( data.get('latestObservation'), 'Observation.id.replace(\"Observation/\",\"\")').split(\"/\").get(0) )"
@@ -104,6 +124,7 @@
       },
       {
         "name": "activeStockOutFlag",
+        "priority": 1,
         "condition": "true",
         "actions": [
           "data.put('activeStockOutFlag', service.filterResources(stockOutFlags, 'Flag.status = \"active\"').get(0))"
@@ -111,6 +132,7 @@
       },
       {
         "name": "stockoutFlagId",
+        "priority": 2,
         "condition": "true",
         "actions": [
           "data.put('stockoutFlagId', fhirPath.extractValue(data.get('activeStockOutFlag'), 'Flag.id.replace(\"Flag/\",\"\")').split(\"/\").get(0))"
@@ -118,9 +140,50 @@
       },
       {
         "name": "stockoutStartDate",
+        "priority": 2,
         "condition": "true",
         "actions": [
           "data.put('stockoutStartDate', fhirPath.extractValue(data.get('activeStockOutFlag'), 'Flag.period.start'))"
+        ]
+      },
+      {
+        "name": "amcMeasureReport",
+        "priority": 1,
+        "condition": "true",
+        "actions": [
+          "data.put('amcMeasureReport', service.filterResources(measureReports, 'MeasureReport.measure = \"https://fhir.labs.smartregister.org/fhir/Measure/STOCKIND02\"').get(0))"
+        ]
+      },
+      {
+        "name": "amc",
+        "priority": 2,
+        "condition": "true",
+        "actions": [
+          "data.put('amc', fhirPath.extractValue(data.get('amcMeasureReport'), 'MeasureReport.contained[0].value.coding.code'))"
+        ]
+      },
+      {
+        "name": "amcNotNull",
+        "priority": 3,
+        "condition": "true",
+        "actions": [
+          "data.put('amcNotNull', data.get('amc') != '' ? data.get('amc') : '0')"
+        ]
+      },
+      {
+        "name": "stockStatus",
+        "priority": 4,
+        "condition": "true",
+        "actions": [
+          "var monthOnStock = (bal, amc) -> { var mos = bal; if(amc != null && amc != 0){ mos = bal/amc; } return mos; } ; var stockStatus = (bal, amc) -> { var mos = monthOnStock(bal, amc); var status = 'default'; if(mos >= 0 && mos <= 0.5){ status = 'Stockout'; } if(mos > 0.5 && mos < 1.0){ status = 'Understock'; } if(mos >= 1.0 && mos < 3.0){ status = 'Satisfactory'; } if(mos >= 3.0){ status = 'Overstock'; } return status; } ; data.put('stockStatus', stockStatus(new('java.lang.Double', data.get('runningBalance')), new('java.lang.Double', data.get('amcNotNull'))))"
+        ]
+      },
+      {
+        "name": "stockStatusColour",
+        "priority": 5,
+        "condition": "true",
+        "actions": [
+          "data.put('stockStatusColour', data.get('stockStatus') == 'Stockout' ? '#DD0000' : data.get('stockStatus') == 'Understock' ? '#FFA500' : data.get('stockStatus') == 'Satisfactory' ? '#38B500' : data.get('stockStatus') == 'Overstock' ? '#006EB8' : '#d3d3d3')"
         ]
       }
     ],
@@ -141,6 +204,16 @@
                 "primaryText": "@{lastUpdatedDate}",
                 "fontSize": 14.0,
                 "primaryTextColor": "#5A5A5A"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "Status:",
+                "primaryTextColor": "#5A5A5A",
+                "secondaryText": "@{stockStatus}",
+                "secondaryTextColor" : "#FFFFFF",
+                "secondaryTextBackgroundColor" : "@{stockStatusColour}",
+                "secondaryTextFontWeight" :  "SEMI_BOLD",
+                "fontSize": 14.0
               }
             ],
             "showVerticalDivider": false,

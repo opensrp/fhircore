@@ -18,11 +18,11 @@ package org.smartregister.fhircore.quest.data.report.measure
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import java.util.LinkedList
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 
@@ -51,12 +51,14 @@ class MeasureReportRepository(
         registerId = measureReportConfiguration.registerId
       )
       .map {
+        val queryResult = it as RepositoryResourceData.Search
         rulesExecutor.processResourceData(
-          baseResource = it.resource,
-          relatedRepositoryResourceData = LinkedList(it.relatedResources),
+          baseResourceRulesId = queryResult.baseResourceRulesId,
+          baseResource = queryResult.resource,
+          relatedResourcesMap = queryResult.relatedResources,
+          secondaryRepositoryResourceData = queryResult.secondaryRepositoryResourceData,
           ruleConfigs = registerConfiguration.registerCard.rules,
-          ruleConfigsKey = registerConfiguration.registerCard::class.java.canonicalName,
-          emptyMap()
+          params = emptyMap()
         )
       }
   }

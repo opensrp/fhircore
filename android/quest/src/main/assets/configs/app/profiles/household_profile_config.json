@@ -7,24 +7,28 @@
       "resource": "Group",
       "dataQueries": [
         {
-          "id": "householdQueryByType",
-          "filterType": "TOKEN",
-          "key": "type",
-          "valueType": "CODING",
-          "valueCoding": {
-            "system": "http://hl7.org/fhir/group-type",
-            "code": "person"
-          }
+          "paramName": "type",
+          "filterCriteria": [
+            {
+              "dataType": "CODING",
+              "value": {
+                "system": "http://hl7.org/fhir/group-type",
+                "code": "person"
+              }
+            }
+          ]
         },
         {
-          "id": "householdQueryByCode",
-          "filterType": "TOKEN",
-          "key": "code",
-          "valueType": "CODEABLECONCEPT",
-          "valueCoding": {
-            "system": "https://www.snomed.org",
-            "code": "35359004"
-          }
+          "paramName": "code",
+          "filterCriteria": [
+            {
+              "dataType": "CODEABLECONCEPT",
+              "value": {
+                "system": "https://www.snomed.org",
+                "code": "35359004"
+              }
+            }
+          ]
         }
       ]
     },
@@ -57,7 +61,7 @@
           },
           {
             "resource": "RelatedPerson",
-            "fhirPathExpression": "patient"
+            "searchParameter": "patient"
           }
         ],
         "sortConfigs": [
@@ -73,14 +77,16 @@
         "searchParameter": "subject",
         "dataQueries": [
           {
-            "id": "filterHouseholdCarePlans",
-            "filterType": "TOKEN",
-            "key": "_tag",
-            "valueType": "CODING",
-            "valueCoding": {
-              "system": "https://www.snomed.org",
-              "code": "35359004"
-            }
+            "paramName": "_tag",
+            "filterCriteria": [
+              {
+                "dataType": "CODING",
+                "value": {
+                  "system": "https://www.snomed.org",
+                  "code": "35359004"
+                }
+              }
+            ]
           }
         ]
       }
@@ -124,6 +130,13 @@
               "dataType": "INTEGER",
               "key": "opensrpId",
               "value": "@{humanReadableId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "toggle-is-family-head",
+              "dataType": "INTEGER",
+              "key": "isFamilyHeadExists",
+              "value": "@{isFamilyHeadExists}"
             }
           ]
         }
@@ -164,6 +177,20 @@
       "condition": "true",
       "actions": [
         "data.put('humanReadableId', service.generateRandomSixDigitInt())"
+      ]
+    },
+    {
+      "name": "familyHeadId",
+      "condition": "true",
+      "actions": [
+        "data.put('familyHeadId', service.filterResources(RelatedPerson, 'RelatedPerson.relationship.coding.code=\"99990006\"').get(0).patient.reference)"
+      ]
+    },
+    {
+      "name": "isFamilyHeadExists",
+      "condition": "true",
+      "actions": [
+        "data.put('isFamilyHeadExists', empty(data.get('familyHeadId'))? 0 : 1)"
       ]
     }
   ],
@@ -235,6 +262,10 @@
                 {
                   "resourceType": "Observation",
                   "fhirPathExpression": "Observation.subject.reference"
+                },
+                {
+                  "resourceType": "RelatedPerson",
+                  "fhirPathExpression": "RelatedPerson.patient.reference"
                 }
               ]
             }
@@ -342,6 +373,7 @@
               {
                 "name": "showMemberTasks",
                 "condition": "true",
+                "priority": 2,
                 "actions": [
                   "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(Task) > 0)"
                 ]
@@ -495,8 +527,14 @@
                     "id": "defaultProfile",
                     "params": [
                       {
+                        "paramType": "UPDATE_DATE_ON_EDIT",
                         "key": "familyLogicalId",
                         "value": "@{familyLogicalId}"
+                      },
+                      {
+                        "paramType": "PARAMDATA",
+                        "key": "isFamilyHeadExists",
+                        "value": "@{isFamilyHeadExists}"
                       }
                     ]
                   }
@@ -524,7 +562,14 @@
             "setPractitionerDetails": true,
             "setOrganizationDetails": true,
             "type": "EDIT",
-            "resourceIdentifier": "@{familyLogicalId}"
+            "resourceIdentifier": "@{familyLogicalId}",
+            "params": [
+              {
+                "key": "familyLogicalId",
+                "value": "@{familyLogicalId}",
+                "paramType": "UPDATE_DATE_ON_EDIT"
+              }
+            ]
           }
         }
       ]
@@ -545,8 +590,26 @@
             "dialogWarningMessage": "{{ assign.household.head.warning }}",
             "dialogContentMessage": "{{ select.new.household.head }}",
             "noMembersErrorMessage": "{{ no.members.error.message }}",
-            "managingEntityReassignedMessage": "Household head reassigned successfully"
+            "managingEntityReassignedMessage": "Household head reassigned successfully",
+            "relationshipCode": {
+              "system": "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype",
+              "code": "99990006",
+              "display": "Family Head"
+            }
           }
+        }
+      ]
+    },
+    {
+      "title": "View past encounters",
+      "titleColor": "@{patientTextColor}",
+      "visible": "true",
+      "enabled": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE",
+          "id": "householdpastencountersProfile"
         }
       ]
     },
@@ -562,7 +625,8 @@
           "params": [
             {
               "key": "familyId",
-              "value": "@{familyLogicalId}"
+              "value": "@{familyLogicalId}",
+              "paramType": "UPDATE_DATE_ON_EDIT"
             },
             {
               "key": "familyName",
@@ -581,7 +645,8 @@
               "title": "Remove household",
               "message": "Removing @{familyName} will remove their entire health record from your device. This action can’t be undone.",
               "actionButtonText": "Remove household"
-            }
+            },
+            "refreshContent": true
           }
         }
       ]

@@ -24,6 +24,7 @@ import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.FhirEngine
@@ -45,6 +46,8 @@ import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.event.AppEvent
+import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
@@ -60,10 +63,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   @Inject lateinit var syncListenerManager: SyncListenerManager
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
   @Inject lateinit var fhirEngine: FhirEngine
+  @Inject lateinit var eventBus: EventBus
 
   val appMainViewModel by viewModels<AppMainViewModel>()
 
-  val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
+  private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
 
   lateinit var navHostFragment: NavHostFragment
 
@@ -140,10 +144,17 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as
           QuestionnaireConfig?
 
-      if (questionnaireConfig != null && questionnaireResponse != null) {
-        appMainViewModel.questionnaireSubmissionLiveData.postValue(
-          QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
-        )
+      lifecycleScope.launch {
+        if (questionnaireConfig != null && questionnaireResponse != null) {
+          eventBus.triggerEvent(
+            AppEvent.OnSubmitQuestionnaire(
+              QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
+            )
+          )
+        }
+        if (questionnaireConfig != null && questionnaireConfig.refreshContent) {
+          eventBus.triggerEvent(AppEvent.RefreshCache(questionnaireConfig = questionnaireConfig))
+        }
       }
     }
   }

@@ -73,6 +73,7 @@ constructor(
   private lateinit var registerConfiguration: RegisterConfiguration
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
+  private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
 
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
@@ -102,21 +103,15 @@ constructor(
     return Pager(
       config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
       pagingSourceFactory = {
-        RegisterPagingSource(
-            registerRepository,
-            rulesExecutor,
-            ruleConfigs,
-            ruleConfigsKey = registerConfiguration.registerCard::class.java.canonicalName
-          )
-          .apply {
-            setPatientPagingSourceState(
-              RegisterPagingSourceState(
-                registerId = registerId,
-                loadAll = loadAll,
-                currentPage = if (loadAll) 0 else currentPage.value
-              )
+        RegisterPagingSource(registerRepository, rulesExecutor, ruleConfigs).apply {
+          setPatientPagingSourceState(
+            RegisterPagingSourceState(
+              registerId = registerId,
+              loadAll = loadAll,
+              currentPage = if (loadAll) 0 else currentPage.value
             )
-          }
+          )
+        }
       }
     )
   }
@@ -180,7 +175,8 @@ constructor(
   fun retrieveRegisterUiState(
     registerId: String,
     screenTitle: String,
-    params: Array<ActionParameter>? = emptyArray()
+    params: Array<ActionParameter>? = emptyArray(),
+    clearCache: Boolean
   ) {
     if (registerId.isNotEmpty()) {
       val paramsMap: Map<String, String> = params.toParamDataMap<String, String>()
@@ -188,7 +184,7 @@ constructor(
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
         // Count register data then paginate the data
         _totalRecordsCount.value = registerRepository.countRegisterData(registerId, paramsMap)
-        paginateRegisterData(registerId, loadAll = false)
+        paginateRegisterData(registerId, loadAll = false, clearCache = clearCache)
 
         registerUiState.value =
           RegisterUiState(
@@ -208,7 +204,8 @@ constructor(
                     .div(currentRegisterConfiguration.pageSize.toLong())
                 )
                 .toInt(),
-            progressPercentage = _percentageProgress
+            progressPercentage = _percentageProgress,
+            isSyncUpload = _isUploadSync
           )
       }
     }
@@ -217,7 +214,8 @@ constructor(
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
   }
-  suspend fun emitPercentageProgressState(progress: Int) {
+  suspend fun emitPercentageProgressState(progress: Int, isUploadSync: Boolean) {
     _percentageProgress.emit(progress)
+    _isUploadSync.emit(isUploadSync)
   }
 }

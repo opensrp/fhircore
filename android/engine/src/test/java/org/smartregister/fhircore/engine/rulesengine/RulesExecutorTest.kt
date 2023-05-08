@@ -24,7 +24,6 @@ import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -75,8 +74,7 @@ class RulesExecutorTest : RobolectricTest() {
   fun processResourceData() {
     val patientId = "patient id"
     val baseResource = Faker.buildPatient(id = patientId)
-    val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
-      LinkedList<RepositoryResourceData>()
+    val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<RepositoryResourceData>>()
     val ruleConfig =
       RuleConfig(
         name = "patientName",
@@ -88,11 +86,12 @@ class RulesExecutorTest : RobolectricTest() {
     runBlocking(Dispatchers.Default) {
       val resourceData =
         rulesExecutor.processResourceData(
-          baseResource,
-          relatedRepositoryResourceData,
-          ruleConfigs,
-          "",
-          emptyMap()
+          baseResourceRulesId = null,
+          baseResource = baseResource,
+          relatedResourcesMap = relatedRepositoryResourceData,
+          secondaryRepositoryResourceData = null,
+          ruleConfigs = ruleConfigs,
+          params = emptyMap()
         )
 
       Assert.assertEquals(patientId, resourceData.baseResourceId)
@@ -107,16 +106,15 @@ class RulesExecutorTest : RobolectricTest() {
     val registerCard = RegisterCardConfig()
     val viewType = ViewType.CARD
     val listProperties = ListProperties(registerCard = registerCard, viewType = viewType)
-    val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
-      LinkedList<RepositoryResourceData>()
+    val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<RepositoryResourceData>>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
 
     runBlocking(Dispatchers.Default) {
       val resourceData =
         rulesExecutor.processListResourceData(
-          listProperties,
-          relatedRepositoryResourceData,
-          computedValuesMap
+          listProperties = listProperties,
+          relatedResourcesMap = relatedRepositoryResourceData,
+          computedValuesMap = computedValuesMap
         )
 
       Assert.assertEquals(0, resourceData.size)
@@ -133,12 +131,12 @@ class RulesExecutorTest : RobolectricTest() {
     val resources = listOf(listResource)
     val listProperties =
       ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
-    val repositoryResourceData = RepositoryResourceData(resource = patient)
-    val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
-      LinkedList<RepositoryResourceData>()
+    val repositoryResourceData = RepositoryResourceData.Search(resource = patient)
+    val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<RepositoryResourceData>>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
 
-    relatedRepositoryResourceData.add(repositoryResourceData)
+    relatedRepositoryResourceData[ResourceType.Patient.name] =
+      LinkedList<RepositoryResourceData>().apply { add(repositoryResourceData) }
 
     runBlocking(Dispatchers.Default) {
       val resourceData =
@@ -169,12 +167,13 @@ class RulesExecutorTest : RobolectricTest() {
     val resources = listOf(listResource)
     val listProperties =
       ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
-    val repositoryResourceData = RepositoryResourceData(resource = patient)
-    val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
-      LinkedList<RepositoryResourceData>()
+    val repositoryResourceData = RepositoryResourceData.Search(resource = patient)
+
+    val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<RepositoryResourceData>>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
 
-    relatedRepositoryResourceData.add(repositoryResourceData)
+    relatedRepositoryResourceData[ResourceType.Patient.name] =
+      LinkedList<RepositoryResourceData>().apply { add(repositoryResourceData) }
 
     runBlocking(Dispatchers.Default) {
       val resourceData =

@@ -57,7 +57,6 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.flow.SharedFlow
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
-import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.TopBarConfig
@@ -102,7 +101,8 @@ fun ProfileScreen(
           elevation = 4,
           profileUiState = profileUiState,
           lazyListState = lazyListState,
-          onEvent = onEvent
+          onEvent = onEvent,
+          collapsible = false
         )
       } else {
         CustomProfileTopAppBar(
@@ -175,19 +175,54 @@ fun CustomProfileTopAppBar(
       elevation = 0,
       titleTextProperties = topBarConfig.title,
       profileUiState = profileUiState,
+      collapsible = topBarConfig.collapsible,
       onEvent = onEvent,
       lazyListState = lazyListState
     )
-    AnimatedVisibility(visible = lazyListState.isScrollingDown()) {
-      Column(modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
-        ViewRenderer(
-          viewProperties = topBarConfig.content,
-          resourceData = profileUiState.resourceData
-              ?: ResourceData("", ResourceType.Patient, emptyMap()),
-          navController = navController
+    if (topBarConfig.collapsible) {
+      AnimatedVisibility(visible = lazyListState.isScrollingDown()) {
+        RenderSimpleAppTopBar(
+          modifier = modifier,
+          topBarConfig = topBarConfig,
+          profileUiState = profileUiState,
+          navController = navController,
+          titleContentPadding = 16
         )
       }
+    } else {
+      RenderSimpleAppTopBar(
+        modifier = modifier,
+        topBarConfig = topBarConfig,
+        profileUiState = profileUiState,
+        navController = navController,
+        titleContentPadding = 0
+      )
     }
+  }
+}
+
+@Composable
+private fun RenderSimpleAppTopBar(
+  modifier: Modifier,
+  topBarConfig: TopBarConfig,
+  profileUiState: ProfileUiState,
+  navController: NavController,
+  titleContentPadding: Int
+) {
+  Column(
+    modifier =
+      modifier.padding(
+        start = titleContentPadding.dp,
+        end = titleContentPadding.dp,
+        bottom = titleContentPadding.dp
+      )
+  ) {
+    ViewRenderer(
+      viewProperties = topBarConfig.content,
+      resourceData = profileUiState.resourceData
+          ?: ResourceData("", ResourceType.Patient, emptyMap()),
+      navController = navController
+    )
   }
 }
 
@@ -199,16 +234,25 @@ private fun SimpleTopAppBar(
   titleTextProperties: CompoundTextProperties? = null,
   profileUiState: ProfileUiState,
   lazyListState: LazyListState,
+  collapsible: Boolean,
   onEvent: (ProfileEvent) -> Unit
 ) {
   TopAppBar(
     modifier = modifier.testTag(PROFILE_TOP_BAR_TEST_TAG),
     title = {
       if (titleTextProperties != null && profileUiState.resourceData != null) {
-        AnimatedVisibility(visible = !lazyListState.isScrollingDown()) {
+        if (collapsible) {
+          AnimatedVisibility(visible = !lazyListState.isScrollingDown()) {
+            CompoundText(
+              compoundTextProperties = titleTextProperties,
+              resourceData = profileUiState.resourceData,
+              navController = navController
+            )
+          }
+        } else {
           CompoundText(
             compoundTextProperties = titleTextProperties,
-            resourceData = profileUiState.resourceData!!,
+            resourceData = profileUiState.resourceData,
             navController = navController
           )
         }
@@ -249,17 +293,19 @@ private fun ProfileTopAppBarMenuAction(
   ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null, tint = Color.White) }
 
   DropdownMenu(expanded = showOverflowMenu, onDismissRequest = { showOverflowMenu = false }) {
-    profileUiState.profileConfiguration?.overFlowMenuItems?.forEach {
-      if (!it.visible
+    profileUiState.profileConfiguration?.overFlowMenuItems?.forEach { overflowMenuItemConfig ->
+      if (!overflowMenuItemConfig
+          .visible
           .interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
           .toBoolean()
       )
         return@forEach
       val enabled =
-        it.enabled
+        overflowMenuItemConfig
+          .enabled
           .interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
           .toBoolean()
-      if (it.showSeparator) Divider(color = DividerColor, thickness = 1.dp)
+      if (overflowMenuItemConfig.showSeparator) Divider(color = DividerColor, thickness = 1.dp)
       DropdownMenuItem(
         enabled = enabled,
         onClick = {
@@ -268,14 +314,7 @@ private fun ProfileTopAppBarMenuAction(
             ProfileEvent.OverflowMenuClick(
               navController = navController,
               resourceData = profileUiState.resourceData,
-              overflowMenuItemConfig = it,
-              managingEntity =
-                it.actions
-                  .find { actionConfig ->
-                    actionConfig.managingEntity != null &&
-                      actionConfig.workflow == ApplicationWorkflow.CHANGE_MANAGING_ENTITY
-                  }
-                  ?.managingEntity
+              overflowMenuItemConfig = overflowMenuItemConfig
             )
           )
         },
@@ -285,10 +324,16 @@ private fun ProfileTopAppBarMenuAction(
             .fillMaxWidth()
             .background(
               color =
-                if (it.confirmAction) it.backgroundColor.parseColor().copy(alpha = 0.1f)
+                if (overflowMenuItemConfig.confirmAction)
+                  overflowMenuItemConfig.backgroundColor.parseColor().copy(alpha = 0.1f)
                 else Color.Transparent
             )
-      ) { Text(text = it.title, color = if (enabled) it.titleColor.parseColor() else DefaultColor) }
+      ) {
+        Text(
+          text = overflowMenuItemConfig.title,
+          color = if (enabled) overflowMenuItemConfig.titleColor.parseColor() else DefaultColor
+        )
+      }
     }
   }
 }

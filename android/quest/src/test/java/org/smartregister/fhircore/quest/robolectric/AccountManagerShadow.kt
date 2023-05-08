@@ -26,9 +26,6 @@ import org.robolectric.annotation.Implements
 
 @Implements(AccountManager::class)
 class AccountManagerShadow : Shadows() {
-
-  @Implementation fun notifyAccountAuthenticated(account: Account) = true
-
   @Implementation
   fun getAccounts(): Array<Account> =
     arrayOf(Account("demo", ApplicationProvider.getApplicationContext<Application>().packageName))

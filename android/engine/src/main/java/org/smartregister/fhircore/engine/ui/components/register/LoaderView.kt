@@ -52,7 +52,8 @@ const val LOADER_DIALOG_PROGRESS_MSG_TAG = "loaderDialogProgressMsgTag"
 fun LoaderDialog(
   modifier: Modifier = Modifier,
   dialogMessage: String = stringResource(id = R.string.syncing),
-  percentageProgressFlow: Flow<Int> = flowOf(0)
+  percentageProgressFlow: Flow<Int> = flowOf(0),
+  isSyncUploadFlow: Flow<Boolean> = flowOf(false)
 ) {
   val openDialog = remember { mutableStateOf(true) }
   if (openDialog.value) {
@@ -87,7 +88,15 @@ fun LoaderDialog(
                 Text(
                   fontSize = 16.sp,
                   color = Color.White,
-                  text = dialogMessage,
+                  text =
+                    if (dialogMessage == stringResource(id = R.string.syncing))
+                      stringResource(
+                        id =
+                          if (isSyncUploadFlow.collectAsState(initial = false).value)
+                            R.string.syncing_up
+                          else R.string.syncing_down
+                      )
+                    else dialogMessage,
                   modifier =
                     modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(vertical = 16.dp),
                 )

@@ -17,12 +17,13 @@
 package org.smartregister.fhircore.geowidget.screens
 
 import android.os.Build
+import android.os.Bundle
 import android.os.Looper
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.MutableLiveData
+import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
-import com.mapbox.mapboxsdk.geometry.LatLngBounds
-import com.mapbox.mapboxsdk.maps.MapboxMap
+import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -44,6 +45,7 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.shadows.ShadowConnectivityReceiver
@@ -56,24 +58,19 @@ import org.smartregister.fhircore.geowidget.shadows.ShadowKujakuMapView
   application = HiltTestApplication::class
 )
 @HiltAndroidTest
-// TODO add relevant tests
 class GeoWidgetFragmentTest {
-
   lateinit var geowidgetFragment: GeoWidgetFragment
   var kujakuMapView = mockk<KujakuMapView>()
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
-
   lateinit var kujakuMapViewLifecycle: String
 
   @Before
   fun setup() {
     hiltRule.inject()
-    val activity =
-      Robolectric.buildActivity(GeoWidgetTestActivity::class.java).create().resume().get()
+    Robolectric.buildActivity(GeoWidgetTestActivity::class.java).create().resume().get()
 
-    geowidgetFragment = spyk()
+    geowidgetFragment = GeoWidgetFragment()
     geowidgetFragment.kujakuMapView = kujakuMapView
 
     every { kujakuMapView.onStart() } answers { kujakuMapViewLifecycle = "onStart" }
@@ -82,6 +79,10 @@ class GeoWidgetFragmentTest {
     every { kujakuMapView.onResume() } answers { kujakuMapViewLifecycle = "onResume" }
     every { kujakuMapView.onDestroy() } answers { kujakuMapViewLifecycle = "onDestroy" }
     every { kujakuMapView.onStop() } answers { kujakuMapViewLifecycle = "onStop" }
+    every { kujakuMapView.onSaveInstanceState(any()) } answers
+      {
+        kujakuMapViewLifecycle = "onSaveInstanceState"
+      }
   }
 
   @Test
@@ -115,27 +116,79 @@ class GeoWidgetFragmentTest {
   }
 
   @Test
+  fun onSaveInstanceStateSetsKujakuOnSaveInstanceState() {
+    geowidgetFragment.onSaveInstanceState(Bundle())
+    Assert.assertEquals("onSaveInstanceState", kujakuMapViewLifecycle)
+  }
+
+  @Test
+  fun onResumeSetsKujakuOnResume() {
+    val geoWidgetViewModel = mockk<GeoWidgetViewModel>(relaxed = true)
+    val familyFeaturesLiveData = spyk<MutableLiveData<FeatureCollection>>()
+
+    val mockedGeoWidgetFragment = spyk(geowidgetFragment)
+
+    every { geoWidgetViewModel.getFamiliesFeatureCollectionStream(any()) } returns
+      familyFeaturesLiveData
+    every { mockedGeoWidgetFragment.requireContext() } returns mockk()
+    every { mockedGeoWidgetFragment.viewLifecycleOwner } returns mockk()
+    every { familyFeaturesLiveData.observe(any(), any()) } just runs
+
+    // Set our mocked view model
+    ReflectionHelpers.setField(
+      mockedGeoWidgetFragment,
+      "geoWidgetViewModel\$delegate",
+      lazy { geoWidgetViewModel }
+    )
+
+    mockedGeoWidgetFragment.onResume()
+    Assert.assertEquals("onResume", kujakuMapViewLifecycle)
+  }
+
+  @Test
+  fun onResumeShouldObserveFamilyFeaturesCollectionStream() {
+    val geoWidgetViewModel = mockk<GeoWidgetViewModel>(relaxed = true)
+    val familyFeaturesLiveData = spyk<MutableLiveData<FeatureCollection>>()
+
+    val mockedGeoWidgetFragment = spyk(geowidgetFragment)
+
+    every { geoWidgetViewModel.getFamiliesFeatureCollectionStream(any()) } returns
+      familyFeaturesLiveData
+    every { mockedGeoWidgetFragment.requireContext() } returns mockk()
+    every { mockedGeoWidgetFragment.viewLifecycleOwner } returns mockk()
+    every { familyFeaturesLiveData.observe(any(), any()) } just runs
+
+    // Set our mocked view model
+    ReflectionHelpers.setField(
+      mockedGeoWidgetFragment,
+      "geoWidgetViewModel\$delegate",
+      lazy { geoWidgetViewModel }
+    )
+
+    mockedGeoWidgetFragment.onResume()
+
+    verify { geoWidgetViewModel.getFamiliesFeatureCollectionStream(any()) }
+    verify { familyFeaturesLiveData.observe(any(), mockedGeoWidgetFragment) }
+  }
+
+  @Test
   fun renderResourcesOnMapShouldSetGeoJsonAndCallZoomToPointsOnMap() {
-    val featureCollection = mockk<FeatureCollection>()
+    val featureCollection = FeatureCollection.fromFeatures(emptyList())
     val style = mockk<Style>()
     val source = mockk<GeoJsonSource>()
     every { style.getSourceAs<GeoJsonSource>("quest-data-set") } returns source
     geowidgetFragment.featureCollection = featureCollection
-    every { geowidgetFragment.zoomToPointsOnMap(any()) } just runs
     every { source.setGeoJson(any<FeatureCollection>()) } just runs
 
     geowidgetFragment.renderResourcesOnMap(style)
 
     verify { source.setGeoJson(featureCollection) }
-    verify { geowidgetFragment.zoomToPointsOnMap(featureCollection) }
   }
 
   @Test
   fun testOnChanged() {
     val featureCollection = mockk<FeatureCollection>()
     val source = mockk<GeoJsonSource>()
-    every { geowidgetFragment.onChanged(featureCollection) } just runs
-    every { geowidgetFragment.zoomToPointsOnMap(featureCollection) } just runs
     every { source.setGeoJson(any<FeatureCollection>()) } just runs
     geowidgetFragment.onChanged(featureCollection)
     source.setGeoJson(featureCollection)
@@ -171,15 +224,23 @@ class GeoWidgetFragmentTest {
   }
 
   @Test
-  fun testZoomPointsToMapBy50() {
-    val featureCollection = mockk<FeatureCollection>()
-    val mapBox = mockk<MapboxMap>(relaxed = true)
-    every { geowidgetFragment.zoomToPointsOnMap(featureCollection) } just runs
+  fun `zoomToPointsOnMap with empty feature collection returns`() {
+    val featureCollection = FeatureCollection.fromFeatures(arrayOf())
+
     geowidgetFragment.zoomToPointsOnMap(featureCollection)
-    verify { geowidgetFragment.zoomToPointsOnMap(featureCollection) }
-    mapBox.easeCamera(CameraUpdateFactory.newLatLngBounds(LatLngBounds.from(10, 10, 10), 50))
-    verify {
-      mapBox.easeCamera(CameraUpdateFactory.newLatLngBounds(LatLngBounds.from(10, 10, 10), 50))
-    }
+
+    verify(inverse = true) { kujakuMapView.getMapAsync(any()) }
+  }
+
+  @Test
+  fun `zoomToPointsOnMap zooms to feature`() {
+    val featureCollection =
+      FeatureCollection.fromFeatures(arrayOf(Feature.fromGeometry(Point.fromLngLat(0.0, 0.0))))
+
+    every { kujakuMapView.getMapAsync(any()) } just runs
+
+    geowidgetFragment.zoomToPointsOnMap(featureCollection)
+
+    verify { kujakuMapView.getMapAsync(any()) }
   }
 }

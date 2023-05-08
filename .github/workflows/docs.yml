@@ -27,6 +27,7 @@ jobs:
           cp -r CNAME ./build
 
       - name: Deploy to gh-pages
+        if: ${{ github.event_name == 'push' }}
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -58,6 +59,7 @@ jobs:
          FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
 
       - name: Deploy 🚀
+        if: ${{ github.event_name == 'push' }}
         uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
           branch: gh-pages # The branch the action should deploy to.

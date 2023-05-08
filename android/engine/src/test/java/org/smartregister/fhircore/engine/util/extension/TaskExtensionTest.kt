@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Test
@@ -27,6 +28,9 @@ class TaskExtensionTest {
 
   @Test
   fun testHasPastEnd() {
+    val taskNoEnd = Task().apply { executionPeriod.start = Date() }
+    Assert.assertFalse(taskNoEnd.hasPastEnd())
+
     val task = Task().apply { executionPeriod.end = Date() }
     Assert.assertFalse(task.hasPastEnd())
 
@@ -37,6 +41,12 @@ class TaskExtensionTest {
 
   @Test
   fun testHasStarted() {
+    val taskNoExecutionPeriod = Task()
+    Assert.assertFalse(taskNoExecutionPeriod.hasStarted())
+
+    val taskNoStart = Task().apply { executionPeriod.end = Date() }
+    Assert.assertFalse(taskNoStart.hasStarted())
+
     val task = Task().apply { executionPeriod.start = Date() }
     Assert.assertTrue(task.hasStarted())
 
@@ -54,11 +64,9 @@ class TaskExtensionTest {
       Task().apply {
         executionPeriod.start =
           Date.from(LocalDate.now().minusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
+        executionPeriod.end =
+          Date.from(LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
       }
-    task1.apply {
-      executionPeriod.end =
-        Date.from(LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
-    }
     Assert.assertTrue(task1.isReady())
 
     val task2 =
@@ -74,40 +82,55 @@ class TaskExtensionTest {
           Date.from(LocalDate.now().plusDays(3).atStartOfDay(ZoneId.systemDefault()).toInstant())
       }
     Assert.assertFalse(task3.isReady())
+
+    val task4 =
+      Task().apply {
+        executionPeriod.start =
+          Date.from(LocalDate.now().minusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
+        executionPeriod.end =
+          Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
+      }
+    Assert.assertFalse(task4.isReady())
   }
 
   @Test
   fun `executionStartIsBeforeOrToday returns true if date is before or today`() {
-    val task1 =
-      Task().apply {
-        executionPeriod.start =
-          Date.from(LocalDate.now().minusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
-      }
+    val task1 = Task()
+
+    Assert.assertFalse(task1.executionStartIsBeforeOrToday())
+
+    task1.executionPeriod.end = Date()
+
+    Assert.assertFalse(task1.executionStartIsBeforeOrToday())
+
+    task1.executionPeriod.start =
+      Date.from(LocalDate.now().minusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
 
     Assert.assertTrue(task1.executionStartIsBeforeOrToday())
 
-    task1.apply {
-      executionPeriod.start =
-        Date.from(LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
-    }
+    task1.executionPeriod.start =
+      Date.from(LocalDate.now().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
 
     Assert.assertFalse(task1.executionStartIsBeforeOrToday())
   }
 
   @Test
   fun `executionEndIsAfterOrToday returns true if date is after or today`() {
-    val task1 =
-      Task().apply {
-        executionPeriod.end =
-          Date.from(LocalDate.now().plusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
-      }
+    val task1 = Task()
+
+    Assert.assertFalse(task1.executionEndIsAfterOrToday())
+
+    task1.executionPeriod.start = Date()
+
+    Assert.assertFalse(task1.executionEndIsAfterOrToday())
+
+    task1.executionPeriod.end =
+      Date.from(LocalDate.now().plusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant())
 
     Assert.assertTrue(task1.executionEndIsAfterOrToday())
 
-    task1.apply {
-      executionPeriod.end =
-        Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
-    }
+    task1.executionPeriod.end =
+      Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
 
     Assert.assertFalse(task1.executionEndIsAfterOrToday())
   }
@@ -120,5 +143,88 @@ class TaskExtensionTest {
     Assert.assertEquals(task.status.system, coding.system)
     Assert.assertEquals(task.status.toCode(), coding.code)
     Assert.assertEquals(task.status.display, coding.display)
+  }
+
+  @Test
+  fun `isPastExpiry no restriction`() {
+    val task = Task()
+    Assert.assertFalse(task.isPastExpiry())
+  }
+
+  @Test
+  fun `isPastExpiry restriction, no period`() {
+    val task = Task().apply { restriction = Task.TaskRestrictionComponent() }
+    Assert.assertFalse(task.isPastExpiry())
+  }
+
+  @Test
+  fun `isPastExpiry restriction, period, no end`() {
+    val task =
+      Task().apply { restriction = Task.TaskRestrictionComponent().apply { period = Period() } }
+    Assert.assertFalse(task.isPastExpiry())
+  }
+
+  @Test
+  fun `isPastExpiry restriction, period, end before today`() {
+    val task =
+      Task().apply {
+        restriction =
+          Task.TaskRestrictionComponent().apply {
+            period = Period().apply { end = Date().plusDays(1) }
+          }
+      }
+    Assert.assertFalse(task.isPastExpiry())
+  }
+
+  @Test
+  fun `isPastExpiry restriction, period, end after today`() {
+    val task =
+      Task().apply {
+        restriction =
+          Task.TaskRestrictionComponent().apply {
+            period = Period().apply { end = Date().plusDays(-1) }
+          }
+      }
+    Assert.assertTrue(task.isPastExpiry())
+  }
+
+  @Test
+  fun testTaskIsUpcoming() {
+    val task =
+      Task().apply {
+        status = Task.TaskStatus.REQUESTED
+        executionPeriod.start = today().plusDays(1)
+      }
+    val expected = task.isUpcoming()
+    Assert.assertTrue(expected)
+  }
+
+  @Test
+  fun testTaskIsOverDueWithStatusTaskStatusInProgress() {
+    val task =
+      Task().apply {
+        status = Task.TaskStatus.INPROGRESS
+        executionPeriod.end = today().plusDays(-1)
+      }
+    val expected = task.isOverDue()
+    Assert.assertTrue(expected)
+  }
+
+  @Test
+  fun testTaskIsOverDueWithStatusTaskStatusReady() {
+    val task =
+      Task().apply {
+        status = Task.TaskStatus.READY
+        executionPeriod.end = today().plusDays(-10)
+      }
+    val expected = task.isOverDue()
+    Assert.assertTrue(expected)
+  }
+
+  @Test
+  fun testTaskIsDue() {
+    val task = Task().apply { status = Task.TaskStatus.READY }
+    val expected = task.isDue()
+    Assert.assertTrue(expected)
   }
 }

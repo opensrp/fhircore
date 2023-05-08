@@ -37,6 +37,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -63,12 +64,16 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
+import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
+import org.smartregister.fhircore.engine.util.extension.plusDays
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -329,8 +334,23 @@ class DefaultRepositoryTest : RobolectricTest() {
         }
         gender = Enumerations.AdministrativeGender.MALE
       }
+    val relatedPerson =
+      RelatedPerson().apply {
+        active = true
+        name = patient.name
+        birthDate = patient.birthDate
+        telecom = patient.telecom
+        address = patient.address
+        gender = patient.gender
+        this.patient = patient.asReference()
+        id = "testRelatedPersonId"
+      }
+
+    val defaultRepositorySpy = spyk(defaultRepository)
 
     coEvery { fhirEngine.get<Patient>("54321") } returns patient
+
+    coEvery { fhirEngine.get<RelatedPerson>("12983") } returns relatedPerson
 
     coEvery { fhirEngine.create(any()) } returns listOf()
 
@@ -338,22 +358,37 @@ class DefaultRepositoryTest : RobolectricTest() {
       Group().apply {
         id = "73847"
         managingEntity = Reference("RelatedPerson/12983")
+        managingEntity.id = "33292"
       }
     coEvery { fhirEngine.get<Group>("73847") } returns group
 
     coEvery { fhirEngine.update(any()) } just runs
 
+    coEvery { fhirEngine.get(relatedPerson.resourceType, relatedPerson.logicalId) } answers
+      {
+        relatedPerson
+      }
     runBlocking {
-      defaultRepository.changeManagingEntity(newManagingEntityId = "54321", groupId = "73847")
+      defaultRepositorySpy.changeManagingEntity(
+        newManagingEntityId = "54321",
+        groupId = "73847",
+        ManagingEntityConfig(
+          resourceType = ResourceType.Patient,
+          relationshipCode =
+            Code().apply {
+              system = "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
+              code = "99990006"
+              display = "Family Head"
+            }
+        )
+      )
     }
 
     coVerify { fhirEngine.get<Patient>("54321") }
 
-    coVerify { fhirEngine.create(any()) }
-
     coVerify { fhirEngine.get<Group>("73847") }
 
-    coVerify { fhirEngine.update(any()) }
+    coVerify { defaultRepositorySpy.addOrUpdate(resource = relatedPerson) }
   }
 
   @Test
@@ -524,5 +559,26 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     coVerify { defaultRepository.delete(relatedPerson) }
     coVerify { defaultRepository.addOrUpdate(resource = group) }
+  }
+  @Test
+  fun addOrUpdateShouldUpdateLastUpdatedToNow() {
+    val date = Date()
+    val patientId = "15672-9234"
+    val patient: Patient =
+      Patient().apply {
+        meta.lastUpdated = date.plusDays(-20)
+        id = "15672-9234"
+        active = true
+      }
+    val savedPatientSlot = slot<Patient>()
+    coEvery { fhirEngine.get(any(), any()) } answers { patient }
+    coEvery { fhirEngine.update(any()) } just runs
+    runBlocking { defaultRepository.addOrUpdate(resource = patient) }
+    coVerify { fhirEngine.get(ResourceType.Patient, patientId) }
+    coVerify { fhirEngine.update(capture(savedPatientSlot)) }
+    Assert.assertEquals(
+      date.formatDate("mm-dd-yyyy"),
+      patient.meta.lastUpdated.formatDate("mm-dd-yyyy")
+    )
   }
 }
