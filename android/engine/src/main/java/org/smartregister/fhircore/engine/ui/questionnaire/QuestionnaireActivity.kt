@@ -171,7 +171,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireFragmentBuilder.setQuestionnaireResponse(it.encodeResourceToString())
     }
     intent.getStringExtra(QUESTIONNAIRE_LAUNCH_CONTEXT)?.let {
-      questionnaireFragmentBuilder.setQuestionnaireResourceContext(it)
+      questionnaireFragmentBuilder.setQuestionnaireLaunchContext(it)
     }
 
     fragment = questionnaireFragmentBuilder.build()
