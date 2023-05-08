@@ -60,7 +60,6 @@ import org.smartregister.fhircore.engine.util.extension.extractFhirpathDuration
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathPeriod
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isIn
-import org.smartregister.fhircore.engine.util.extension.isValidResourceType
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.updateDependentTaskDueDate
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
@@ -340,7 +339,13 @@ constructor(
       if (carePlans.isEmpty()) return@forEach
 
       questionnaireConfig.carePlanConfigs.forEach { carePlanConfig ->
-        if (fhirPathEngine.evaluateToBoolean(bundle, null, subject, carePlanConfig.fhirPathExpression)) {
+        if (fhirPathEngine.evaluateToBoolean(
+            bundle,
+            null,
+            subject,
+            carePlanConfig.fhirPathExpression
+          )
+        ) {
           carePlans.forEach { carePlan ->
             carePlan.status = CarePlan.CarePlanStatus.COMPLETED
             fhirEngine.update(carePlan)
