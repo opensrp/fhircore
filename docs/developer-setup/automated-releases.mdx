@@ -36,7 +36,7 @@ Release notes can be viewed in the [changelog](https://github.com/opensrp/fhirco
 
 ## Code releases
 
-We conduct code releases with the following steps:
+To conduct code a release follow the below steps:
 
 1. Open and merge a PR to update the project version to the current release version
     * e.g. change the `versionName` in the Quest [build.gradle](https://github.com/opensrp/fhircore/blob/main/android/quest/build.gradle#L28) file to `v0.2.0`
@@ -45,7 +45,7 @@ We conduct code releases with the following steps:
 1. Candidate progression: This is followed by 1-2 weeks of QA and error fixing
     * Whenever we find an error in the candidate, open a pull request with a fix for the error against the code release branch (e.g.  `v0.2.0`)
     * Once the error is fixed and merged into the code release branch (multiple errors can be batched), create a new tag, e.g. `opensrp-0.2.0-rc2`, the update the pre-release to point to this tag and reflect the RC2 name.
-    > You must also either a) open a PR with the same fix against the `main` branch, b) open a PR from the release branch into the `main` branch after merging the fix.
+    > You must also either a) open a PR with the same fix against the `main` branch, b) open a PR from the release branch into the `main` branch after merging the fix into the release branch.
 1. Repeat step (2.) until QA passes, e.g. with more tags, e.g. `opensrp-0.2.0-rc3` ..., and updated pre-releases.
 1. Final code release: when the release passes QA, create a final release tag `v0.2.0` and update the release to point to this tag and reflect the `opensrp-0.2.0` name.
 
