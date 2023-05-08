@@ -5,7 +5,7 @@ uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
 
 group ImmunizationCarePlan(source src : QuestionnaireResponse, target tgt: Bundle) {
             src -> create('Encounter') as encounter
-            then ExtractEncounter(src, encounter, tgt),
+            then ExtractRecordEncounter(src, encounter, tgt),
                  ExtractImmunization(src, encounter, tgt) "r_careplan";
 }
 
@@ -26,16 +26,31 @@ group ExtractImmunization(source src : QuestionnaireResponse, source encounter: 
                      vaccineDate.value = evaluate(vaccine, src.item.descendants().where(linkId=vaccine.linkId+' date').answer.value.value) "r_vaccine_date_is_same";
               src -> immunization.id = uuid() ,
                      immunization.recorded = evaluate(src, now()),
-                     immunization.status = "completed",
                      immunization.occurrence = vaccineDate,
                      immunization.patient = evaluate(src, subject),
                      immunization.encounter = reference(encounter) "rule_ei_11";
               src -> immunization.vaccineCode = create('CodeableConcept') as concept then {
-                src -> concept.text = evaluate(vaccine,$this.linkId.upper()),
+              src -> concept.text = evaluate(vaccine,$this.linkId.upper()),
                                 concept.coding = evaluate(vaccine,$this.answer.value) "rule_ei_4_2";
               } "rule_ei_4";
+                //adding encounter as task.output
+                  src.item as vaccinesItemAnswer where(linkId='vaccines') then {
+                           src -> bundle.entry as entry,
+                           entry.resource = create('Task') as task then {
+                           src->task.identifier = create("Identifier")as taskIdentifier then {
+                                     src-> taskIdentifier.value = evaluate(vaccinesItemAnswer,$this.answer.first().valueReference.reference)"r_af";
+                               src -> immunization.status = evaluate(taskIdentifier,$this.value) "r_fdfdf";
+
+                           }"r_identifier";
+                           }"r_reference";
+
+                  }"r_taskouput";
             } "rule_ei_13";
+
+
     } "r2";
+
+
 }
 
 
@@ -43,36 +58,37 @@ group ExtractImmunization(source src : QuestionnaireResponse, source encounter: 
 group ExtractRecordEncounter(source src : QuestionnaireResponse, target encounter: Encounter, target bundle : Bundle) {
         src -> encounter.id = uuid(),
             encounter.status = "finished",
-            encounter.type = cc("http://snomed.info/sct", "41000179103", "Immunization record (record artifact)"),
+            encounter.type = cc("http://snomed.info/sct", "41000179103", "Immunization record (record artifact)") "r_type";
 
         src -> encounter.subject = create('Reference') as reference then {
                    src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ee_6_1";
                  } "rule_ee_6";
         src -> encounter.period = create("Period") as period then{
-                period.start = now()
-                period.end = now()
+                src -> period.start = evaluate(src, now()) "r_start";
+                src -> period.end = evaluate(src, now()) "r_end";
         }"r_period";
 
         src -> bundle.entry as entry, entry.resource = encounter "r_enc_cp";
+
 
 }
 //Immunization Administration Encounter
-group ExtractAdministrationEncounter(source src : QuestionnaireResponse, target encounter: Encounter, target bundle : Bundle) {
+group ExtractAdministrationEncounter(source src : QuestionnaireResponse,target encounter: Encounter, target bundle : Bundle) {
+
         src -> encounter.id = uuid(),
             encounter.status = "finished",
-            encounter.type = cc("http://snomed.info/sct", "33879002", "Administration of vaccine to produce active immunity (procedure)"),
+            encounter.type = cc("http://snomed.info/sct", "33879002", "Administration of vaccine to produce active immunity (procedure)") "r_type";
 
         src -> encounter.subject = create('Reference') as reference then {
                    src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ee_6_1";
                  } "rule_ee_6";
         src -> encounter.period = create("Period") as period then{
-                period.end = now()
+                src -> period.end = evaluate(src, now()) "r_end";
         }"r_period";
-
-        src-> encounter.partOf = create('Reference') as ref then {
-              ref.reference = target.id()
+        src -> encounter.partOf = create('Reference') as ref then {
+               src -> ref.reference = encounter.id "r_ref";
         }"r_partof";
-
         src -> bundle.entry as entry, entry.resource = encounter "r_enc_cp";
+
 
 }
