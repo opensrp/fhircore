@@ -50,8 +50,9 @@ group ExtractImmunization(source src : QuestionnaireResponse, source encounter: 
                        src -> task.output = create('Task_Output') as output then{
                               src -> output.type = cc("http://snomed.info/sct", "41000179103", "Immunization record (record artifact)") ,
                                      output.value = create("Reference") as ref then {
-                                                   ref.reference = encounter.id "r_output_ref";
-                       }"r_task"
+                                                   src -> ref.reference =  evaluate(encounter,'Encounter/'+$this.id) "r_output_ref";
+                                     }"r_reference";
+                       }"r_task";
                   }"r_taskId";
 
            }"r_reference";
