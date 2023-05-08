@@ -74,6 +74,7 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "Group_Characteristic" -> Group.GroupCharacteristicComponent()
       "Observation_Component" -> Observation.ObservationComponentComponent()
       "Task_Input" -> Task.ParameterComponent()
+      "Task_Output" -> Task.ParameterComponent()
       "Task_Restriction" -> Task.TaskRestrictionComponent()
       else -> ResourceFactory.createResourceOrType(name)
     }

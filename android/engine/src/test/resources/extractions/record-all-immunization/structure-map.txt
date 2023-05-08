@@ -26,6 +26,7 @@ group ExtractImmunization(source src : QuestionnaireResponse, source encounter: 
                      vaccineDate.value = evaluate(vaccine, src.item.descendants().where(linkId=vaccine.linkId+' date').answer.value.value) "r_vaccine_date_is_same";
               src -> immunization.id = uuid() ,
                      immunization.recorded = evaluate(src, now()),
+                     immunization.status = "completed",
                      immunization.occurrence = vaccineDate,
                      immunization.patient = evaluate(src, subject),
                      immunization.encounter = reference(encounter) "rule_ei_11";
@@ -33,24 +34,25 @@ group ExtractImmunization(source src : QuestionnaireResponse, source encounter: 
               src -> concept.text = evaluate(vaccine,$this.linkId.upper()),
                                 concept.coding = evaluate(vaccine,$this.answer.value) "rule_ei_4_2";
               } "rule_ei_4";
-                //adding encounter as task.output
-                  src.item as vaccinesItemAnswer where(linkId='vaccines') then {
-                           src -> bundle.entry as entry,
-                           entry.resource = create('Task') as task then {
-                           src->task.identifier = create("Identifier")as taskIdentifier then {
-                                     src-> taskIdentifier.value = evaluate(vaccinesItemAnswer,$this.answer.first().valueReference.reference)"r_af";
-                               src -> immunization.status = evaluate(taskIdentifier,$this.value) "r_fdfdf";
 
-                           }"r_identifier";
-                           }"r_reference";
-
-                  }"r_taskouput";
             } "rule_ei_13";
 
 
     } "r2";
 
+    //adding encounter as task.output
+     src.item as vaccinesItemAnswer where(linkId='vaccines') then {
+           src -> bundle.entry as entry,
+                  entry.resource = create('Task') as task then {
+                  src->create("id") as task_id then {
+                       src->task_id.value = evaluate(vaccinesItemAnswer,$this.answer.first().value.reference) "r_set_task_id_value";
+                       src->task.id = task_id "r_set_task_id";
 
+                  }"r_taskId";
+
+           }"r_reference";
+
+    }"r_taskouput";
 }
 
 
