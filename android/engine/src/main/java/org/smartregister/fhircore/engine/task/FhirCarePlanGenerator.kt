@@ -325,7 +325,8 @@ constructor(
    */
   suspend fun conditionallyUpdateCarePlanStatus(
     questionnaireConfig: QuestionnaireConfig,
-    subject: Resource
+    subject: Resource,
+    bundle: Bundle
   ) {
     questionnaireConfig.planDefinitions?.forEach { planDefinition ->
       val carePlans =
@@ -339,20 +340,7 @@ constructor(
       if (carePlans.isEmpty()) return@forEach
 
       questionnaireConfig.carePlanConfigs.forEach { carePlanConfig ->
-        val base: Base =
-          if ((carePlanConfig.fhirPathResource?.isNotEmpty() == true) &&
-              (carePlanConfig.fhirPathResourceId?.isNotEmpty() == true) &&
-              isValidResourceType(carePlanConfig.fhirPathResource)
-          ) {
-            fhirEngine.get(
-              ResourceType.fromCode(carePlanConfig.fhirPathResource),
-              carePlanConfig.fhirPathResourceId
-            )
-          } else {
-            subject
-          }
-
-        if (fhirPathEngine.evaluateToBoolean(null, null, base, carePlanConfig.fhirPathExpression)) {
+        if (fhirPathEngine.evaluateToBoolean(bundle, null, subject, carePlanConfig.fhirPathExpression)) {
           carePlans.forEach { carePlan ->
             carePlan.status = CarePlan.CarePlanStatus.COMPLETED
             fhirEngine.update(carePlan)

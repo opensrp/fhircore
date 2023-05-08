@@ -1456,12 +1456,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         id = "patient-1"
         active = true
       }
+    val bundle = Bundle().apply { addEntry().resource = patient }
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
     runBlocking {
       fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
         questionnaireConfig = questionnaireConfig,
-        subject = patient
+        subject = patient,
+        bundle = bundle
       )
     }
 
@@ -1489,13 +1491,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         id = "careplan-1"
         status = CarePlan.CarePlanStatus.ACTIVE
       }
+    val bundle = Bundle().apply { addEntry().resource = patient }
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
     coEvery { fhirEngine.update(any()) } just runs
 
     runBlocking {
       fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
         questionnaireConfig = questionnaireConfig,
-        subject = patient
+        subject = patient,
+        bundle = bundle
       )
     }
 
@@ -1529,6 +1533,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         id = "careplan-1"
         status = CarePlan.CarePlanStatus.ACTIVE
       }
+    val bundle = Bundle().apply { addEntry().resource = patient }
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
     coEvery { fhirEngine.get(any(), any()) } returns Group().apply { active = true }
     coEvery { fhirEngine.update(any()) } just runs
@@ -1536,7 +1541,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     runBlocking {
       fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
         questionnaireConfig = questionnaireConfig,
-        subject = patient
+        subject = patient,
+        bundle = bundle
       )
     }
 
@@ -1572,6 +1578,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         id = "careplan-1"
         status = CarePlan.CarePlanStatus.ACTIVE
       }
+    val bundle = Bundle().apply { addEntry().resource = patient }
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
     coEvery { fhirEngine.get(any(), any()) } returns Group().apply { active = false }
     coEvery { fhirEngine.update(any()) } just runs
@@ -1579,7 +1586,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     runBlocking {
       fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
         questionnaireConfig = questionnaireConfig,
-        subject = patient
+        subject = patient,
+        bundle = bundle
       )
     }
 
@@ -1618,6 +1626,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             }
           )
       }
+    val bundle = Bundle().apply { addEntry().resource = patient }
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
     coEvery { fhirEngine.get(any(), any()) } returns Group().apply { active = true }
     coEvery { fhirEngine.update(any()) } just runs
@@ -1632,7 +1641,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     runBlocking {
       fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
         questionnaireConfig = questionnaireConfig,
-        subject = patient
+        subject = patient,
+        bundle = bundle
       )
     }
 
@@ -1679,6 +1689,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             }
           )
       }
+    val bundle = Bundle().apply { addEntry().resource = patient }
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
     coEvery { fhirEngine.get(any(), any()) } returns Group().apply { active = true }
     coEvery { fhirEngine.update(any()) } just runs
@@ -1693,7 +1704,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     runBlocking {
       fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
         questionnaireConfig = questionnaireConfig,
-        subject = patient
+        subject = patient,
+        bundle = bundle
       )
     }
 
