@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.engine.data.local.register
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -29,13 +27,13 @@ import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.Specimen
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
@@ -61,7 +59,6 @@ class RegisterRepositoryTest : RobolectricTest() {
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   @Inject lateinit var rulesFactory: RulesFactory
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
-  private val context: Context = ApplicationProvider.getApplicationContext()
   private val fhirEngine: FhirEngine = mockk()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val patient = Faker.buildPatient("12345")
@@ -142,11 +139,12 @@ class RegisterRepositoryTest : RobolectricTest() {
         RegisterConfiguration(appId = "app", id = registerId, fhirResource = fhirResourceConfig())
 
       // Mock search for Groups; should return list of Group resources.
+      val retrievedGroup = retrieveGroup()
       coEvery {
         fhirEngine.search<Resource>(Search(type = ResourceType.Group, count = 10, from = 0))
       } returns
         listOf(
-          retrieveGroup(),
+          retrievedGroup,
           Group().apply {
             id = "inactiveGroup"
             active = false
@@ -154,12 +152,17 @@ class RegisterRepositoryTest : RobolectricTest() {
         )
 
       // Mock search for Group member (Patient) with forward include
-      val patientId = "12345"
-      coEvery { fhirEngine.get(type = ResourceType.Patient, id = patientId) } returns patient
+      coEvery {
+        fhirEngine.searchWithRevInclude<Resource>(false, Search(ResourceType.Group, null, null))
+      } returns
+        mutableMapOf(
+          retrievedGroup to
+            mapOf<ResourceType, List<Resource>>(ResourceType.Patient to listOf(patient))
+        )
 
       // Mock searchWithRevInclude for CarePlan and Task related resources for the Patient
       coEvery {
-        fhirEngine.searchWithRevInclude<Resource>(Search(ResourceType.Patient, null, null))
+        fhirEngine.searchWithRevInclude<Resource>(true, Search(ResourceType.Patient, null, null))
       } returns mutableMapOf(patient to retrieveRelatedResourcesMap())
 
       val registerData =
@@ -204,12 +207,13 @@ class RegisterRepositoryTest : RobolectricTest() {
           secondaryResources =
             listOf(
               FhirResourceConfig(
-                baseResource = ResourceConfig(resource = "Group"),
+                baseResource = ResourceConfig(resource = "CarePlan"),
                 relatedResources =
                   listOf(
                     ResourceConfig(
-                      resource = "Specimen",
-                      fhirPathExpression = "Group.member.entity"
+                      resource = "Encounter",
+                      searchParameter = "encounter",
+                      isRevInclude = false
                     )
                   )
               )
@@ -221,30 +225,39 @@ class RegisterRepositoryTest : RobolectricTest() {
       coEvery { fhirEngine.get(type = ResourceType.Group, id = group.id) } returns group
 
       // Mock search for Group member (Patient) with forward include
-      val patientId = "12345"
-      coEvery { fhirEngine.get(type = ResourceType.Patient, id = patientId) } returns patient
+      coEvery {
+        fhirEngine.searchWithRevInclude<Resource>(false, Search(ResourceType.Group, null, null))
+      } returns
+        mutableMapOf(
+          group to mapOf<ResourceType, List<Resource>>(ResourceType.Patient to listOf(patient))
+        )
 
       // Mock searchWithRevInclude for CarePlan and Task related resources for the Patient
       coEvery {
-        fhirEngine.searchWithRevInclude<Resource>(Search(ResourceType.Patient, null, null))
+        fhirEngine.searchWithRevInclude<Resource>(true, Search(ResourceType.Patient, null, null))
       } returns mutableMapOf(patient to retrieveRelatedResourcesMap())
 
       // Mock search for secondary resources
-      val specimenId = "specimen123"
+      val encounterId = "encounter123"
+      val carePlan =
+        CarePlan().apply {
+          id = "secondaryResourceCarePlan"
+          encounter = Reference("${ResourceType.Encounter.name}/$encounterId")
+        }
       coEvery {
-        fhirEngine.search<Resource>(Search(type = ResourceType.Group, count = null, from = null))
-      } returns
-        listOf(
-          Group().apply {
-            id = "secondaryResourceGroup"
-            active = true
-            addMember(Group.GroupMemberComponent(Reference(specimenId)))
-          }
-        )
+        fhirEngine.search<Resource>(Search(type = ResourceType.CarePlan, count = null, from = null))
+      } returns listOf(carePlan)
 
-      // Mock search for secondary resource member (Specimen) with forward include
-      coEvery { fhirEngine.get(type = ResourceType.Specimen, id = specimenId) } returns
-        Specimen().apply { id = specimenId }
+      // Mock search for secondary resource member (Encounter) with forward include
+      coEvery {
+        fhirEngine.searchWithRevInclude<Resource>(false, Search(ResourceType.CarePlan, null, null))
+      } returns
+        mutableMapOf(
+          carePlan to
+            mapOf<ResourceType, List<Resource>>(
+              ResourceType.Encounter to listOf(Encounter().apply { id = encounterId })
+            )
+        )
 
       val repositoryResourceData =
         registerRepository.loadProfileData(
@@ -281,11 +294,11 @@ class RegisterRepositoryTest : RobolectricTest() {
         secondaryRepositoryResourceDataList[0]
       Assert.assertTrue(secondaryRepositoryResourceData is RepositoryResourceData.Search)
       Assert.assertTrue(
-        (secondaryRepositoryResourceData as RepositoryResourceData.Search).resource is Group
+        (secondaryRepositoryResourceData as RepositoryResourceData.Search).resource is CarePlan
       )
-      Assert.assertEquals("secondaryResourceGroup", secondaryRepositoryResourceData.resource.id)
+      Assert.assertEquals("secondaryResourceCarePlan", secondaryRepositoryResourceData.resource.id)
       Assert.assertTrue(secondaryRepositoryResourceData.relatedResources.isNotEmpty())
-      Assert.assertTrue(secondaryRepositoryResourceData.relatedResources.containsKey("Specimen"))
+      Assert.assertTrue(secondaryRepositoryResourceData.relatedResources.containsKey("Encounter"))
     }
   }
 
@@ -297,7 +310,8 @@ class RegisterRepositoryTest : RobolectricTest() {
           ResourceConfig(
             resource = "Patient",
             id = "groupMembers",
-            fhirPathExpression = "Group.member.entity",
+            searchParameter = "member",
+            isRevInclude = false,
             relatedResources =
               listOf(
                 ResourceConfig(id = "memberTasks", resource = "Task", searchParameter = "subject"),

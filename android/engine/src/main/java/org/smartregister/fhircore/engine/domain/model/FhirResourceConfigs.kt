@@ -54,7 +54,7 @@ data class ResourceConfig(
   val id: String? = null,
   val resource: String,
   val searchParameter: String? = null,
-  val fhirPathExpression: String? = null,
+  val isRevInclude: Boolean = true,
   val dataQueries: List<DataQuery>? = null,
   val relatedResources: List<ResourceConfig> = emptyList(),
   val sortConfigs: List<SortConfig> = emptyList(),

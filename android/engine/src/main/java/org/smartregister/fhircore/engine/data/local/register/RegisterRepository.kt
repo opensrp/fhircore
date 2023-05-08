@@ -22,7 +22,6 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.has
@@ -30,7 +29,6 @@ import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Enumerations.DataType
-import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -50,14 +48,11 @@ import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import org.smartregister.fhircore.engine.util.pmap
-import timber.log.Timber
 
 class RegisterRepository
 @Inject
@@ -158,12 +153,11 @@ constructor(
     // Can be provided via ResourceConfig.id property otherwise defaults to the ResourceType
     val finalResultMap = mutableMapOf<String, LinkedList<RepositoryResourceData>>()
 
-    val nonRevIncludedRelatedResourcesConfigs =
-      relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(true)
+    // Search with forward include
+    searchWithRevInclude(false, relatedResourcesConfigs, baseResource, finalResultMap)
 
-    nonRevIncludedRelatedResourcesConfigs?.forEach { resourceConfig ->
-      searchWithForwardInclude(resourceConfig, baseResource, finalResultMap)
-
+    val countResourceConfigs = relatedResourcesConfigs?.filter { it.resultAsCount }
+    countResourceConfigs?.forEach { resourceConfig ->
       // Return counts for the related resources using the count API
       if (resourceConfig.resultAsCount && !resourceConfig.searchParameter.isNullOrEmpty()) {
         val relatedResourceClass = resourceConfig.resource.resourceClassType()
@@ -192,74 +186,42 @@ constructor(
       }
     }
 
-    searchWithRevInclude(relatedResourcesConfigs, baseResource, finalResultMap)
+    searchWithRevInclude(true, relatedResourcesConfigs, baseResource, finalResultMap)
     return finalResultMap
   }
 
-  private suspend fun searchWithForwardInclude(
-    resourceConfig: ResourceConfig,
-    baseResource: Resource,
-    finalResultMap: MutableMap<String, LinkedList<RepositoryResourceData>>
-  ) {
-    if (!resourceConfig.fhirPathExpression.isNullOrEmpty()) {
-      val queryResultLinkedList = LinkedList<RepositoryResourceData>()
-      fhirPathDataExtractor
-        .extractData(baseResource, resourceConfig.fhirPathExpression)
-        .takeWhile { it is Reference }
-        .pmap {
-          try {
-            fhirEngine.get(
-              type = resourceConfig.resource.resourceClassType().newInstance().resourceType,
-              id = (it as Reference).extractId()
-            )
-          } catch (exception: ResourceNotFoundException) {
-            Timber.e(exception)
-            null
-          }
-        }
-        .forEach { thisResource ->
-          thisResource?.let {
-            queryResultLinkedList.addLast(
-              RepositoryResourceData.Search(
-                resource = thisResource,
-                relatedResources =
-                  retrieveRelatedResources(
-                    baseResource = thisResource,
-                    relatedResourcesConfigs = resourceConfig.relatedResources
-                  )
-              )
-            )
-          }
-        }
-      finalResultMap[resourceConfig.id ?: resourceConfig.resource] = queryResultLinkedList
-    }
-  }
-
   private suspend fun searchWithRevInclude(
+    isRevInclude: Boolean,
     relatedResourcesConfigs: List<ResourceConfig>?,
     baseResource: Resource,
     finalResultMap: MutableMap<String, LinkedList<RepositoryResourceData>>
   ) {
-    // Get configurations of related resources to be reverse included
-    val revIncludeRelatedResourcesConfigsMap: Map<String, List<ResourceConfig>>? =
-      relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(false)?.groupBy { it.resource }
+    // Get configurations of related resources to be forward/reverse included
+    val currentRelatedResourcesConfigsMap: Map<String, List<ResourceConfig>>? =
+      relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(isRevInclude)?.groupBy {
+        it.resource
+      }
 
-    if (!revIncludeRelatedResourcesConfigsMap.isNullOrEmpty()) {
-      val revIncludeSearch =
+    if (!currentRelatedResourcesConfigsMap.isNullOrEmpty()) {
+      val search =
         Search(baseResource.resourceType).apply {
           filter(Resource.RES_ID, { value = of(baseResource.logicalId) })
         }
-      revIncludeRelatedResourcesConfigsMap.values.flatten().forEach { resourceConfig ->
+      currentRelatedResourcesConfigsMap.values.flatten().forEach { resourceConfig ->
         val resourceType = resourceConfig.resource.resourceClassType().newInstance().resourceType
-        revIncludeSearch.apply {
-          revInclude(resourceType, ReferenceClientParam(resourceConfig.searchParameter))
+        search.apply {
+          if (isRevInclude) {
+            revInclude(resourceType, ReferenceClientParam(resourceConfig.searchParameter))
+          } else {
+            include(ReferenceClientParam(resourceConfig.searchParameter), resourceType)
+          }
         }
       }
 
-      val revIncludeSearchResult: Map<Resource, Map<ResourceType, List<Resource>>> =
-        fhirEngine.searchWithRevInclude(revIncludeSearch)
+      val searchResult: Map<Resource, Map<ResourceType, List<Resource>>> =
+        fhirEngine.searchWithRevInclude(isRevInclude, search)
 
-      revIncludeSearchResult.values.forEach { revIncludedResource ->
+      searchResult.values.forEach { revIncludedResource ->
         val revIncludedResourcesMap =
           revIncludedResource
             .mapValues { entry ->
@@ -270,7 +232,7 @@ constructor(
                     retrieveRelatedResources(
                       baseResource = resource,
                       relatedResourcesConfigs =
-                        revIncludeRelatedResourcesConfigsMap[entry.key.name]
+                        currentRelatedResourcesConfigsMap[entry.key.name]
                           .nestedRelatedResourceConfigs()
                     )
                 )
@@ -278,8 +240,8 @@ constructor(
             }
             .mapKeys {
               // Use the unique resourceConfig.id otherwise default to resourceType
-              if (revIncludeRelatedResourcesConfigsMap.containsKey(it.key.name)) {
-                revIncludeRelatedResourcesConfigsMap[it.key.name]?.firstOrNull()?.id ?: it.key.name
+              if (currentRelatedResourcesConfigsMap.containsKey(it.key.name)) {
+                currentRelatedResourcesConfigsMap[it.key.name]?.firstOrNull()?.id ?: it.key.name
               } else it.key.name
             }
 
@@ -293,13 +255,9 @@ constructor(
       ?.filter { thisResourceConfig -> thisResourceConfig.relatedResources.isNotEmpty() }
       ?.flatMap { it.relatedResources }
 
-  private fun List<ResourceConfig>.revIncludeRelatedResourceConfigs(inverse: Boolean) =
-    if (inverse)
-      this.filter {
-        !it.fhirPathExpression.isNullOrEmpty() ||
-          (!it.searchParameter.isNullOrEmpty() && it.resultAsCount)
-      }
-    else this.filter { !it.searchParameter.isNullOrEmpty() && !it.resultAsCount }
+  private fun List<ResourceConfig>.revIncludeRelatedResourceConfigs(isRevInclude: Boolean) =
+    if (isRevInclude) this.filter { it.isRevInclude && !it.resultAsCount }
+    else this.filter { !it.isRevInclude && !it.resultAsCount }
 
   private fun Search.applyNestedSearchFilters(nestedSearchResources: List<NestedSearchConfig>?) {
     nestedSearchResources?.forEach {
