@@ -52,7 +52,6 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
-import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 class RegisterRepository
 @Inject
@@ -61,8 +60,7 @@ constructor(
   override val dispatcherProvider: DispatcherProvider,
   override val sharedPreferencesHelper: SharedPreferencesHelper,
   override val configurationRegistry: ConfigurationRegistry,
-  override val configService: ConfigService,
-  val fhirPathDataExtractor: FhirPathDataExtractor
+  override val configService: ConfigService
 ) :
   Repository,
   DefaultRepository(

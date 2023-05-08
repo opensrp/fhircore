@@ -95,8 +95,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           dispatcherProvider = DefaultDispatcherProvider(),
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
-          configService = mockk(),
-          fhirPathDataExtractor = fhirPathDataExtractor
+          configService = mockk()
         )
       )
 
