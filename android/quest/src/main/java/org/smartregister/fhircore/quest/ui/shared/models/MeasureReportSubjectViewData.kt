@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.models
 
-data class MeasureReportPatientViewData(
+data class MeasureReportSubjectViewData(
   val logicalId: String,
   val name: String,
   val gender: String,

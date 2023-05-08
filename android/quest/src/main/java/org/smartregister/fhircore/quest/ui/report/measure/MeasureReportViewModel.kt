@@ -46,6 +46,7 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
@@ -80,15 +81,15 @@ import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGeneratedMeasureReports
 import org.smartregister.fhircore.engine.util.extension.valueCode
-import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatientsPagingSource
+import org.smartregister.fhircore.quest.data.report.measure.MeasureReportSubjectsPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
-import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
+import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDataMapper
 import org.smartregister.fhircore.quest.util.nonNullGetOrDefault
 import timber.log.Timber
 
@@ -102,7 +103,7 @@ constructor(
   val dispatcherProvider: DefaultDispatcherProvider,
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
-  val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper,
+  val measureReportPatientViewDataMapper: MeasureReportSubjectViewDataMapper,
   val defaultRepository: DefaultRepository,
   val rulesExecutor: RulesExecutor
 ) : ViewModel() {
@@ -129,7 +130,7 @@ constructor(
 
   val searchTextState: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue())
 
-  val patientsData: MutableStateFlow<Flow<PagingData<MeasureReportPatientViewData>>> =
+  val subjectData: MutableStateFlow<Flow<PagingData<MeasureReportSubjectViewData>>> =
     MutableStateFlow(emptyFlow())
 
   fun defaultDateRangeState() =
@@ -220,9 +221,9 @@ constructor(
       is MeasureReportEvent.OnSearchTextChanged -> // Reset previously selected patient
         //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
       {
-        patientsData.value =
-          retrievePatients(event.reportId).map {
-            pagingData: PagingData<MeasureReportPatientViewData> ->
+        subjectData.value =
+          retrieveSubjects(event.reportId).map {
+            pagingData: PagingData<MeasureReportSubjectViewData> ->
             pagingData.filter { it.name.contains(event.searchText, ignoreCase = true) }
           }
       }
@@ -234,18 +235,18 @@ constructor(
     measureReportPopulationResults.value = _measureReportPopulationResultList
   }
 
-  fun retrievePatients(reportId: String): Flow<PagingData<MeasureReportPatientViewData>> {
+  fun retrieveSubjects(reportId: String): Flow<PagingData<MeasureReportSubjectViewData>> {
     val measureReportConfig = retrieveMeasureReportConfiguration(reportId)
     val registerConfiguration =
       configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
         ConfigType.Register,
         measureReportConfig.registerId
       )
-    patientsData.value =
+    subjectData.value =
       Pager(
           config = PagingConfig(DEFAULT_PAGE_SIZE),
           pagingSourceFactory = {
-            MeasureReportPatientsPagingSource(
+            MeasureReportSubjectsPagingSource(
               MeasureReportRepository(
                 measureReportConfiguration = measureReportConfig,
                 registerConfiguration = registerConfiguration,
@@ -258,7 +259,7 @@ constructor(
         )
         .flow
         .cachedIn(viewModelScope)
-    return patientsData.value
+    return subjectData.value
   }
 
   // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
@@ -434,6 +435,7 @@ constructor(
             when (resource) {
               is Patient -> resource.nameFirstRep.nameAsSingleString
               is Group -> resource.name
+              is Practitioner -> resource.nameFirstRep.nameAsSingleString
               else ->
                 throw UnsupportedOperationException(
                   "${resource.resourceType} as individual subject not allowed"

@@ -33,7 +33,7 @@ class MeasureReportPatientViewDataMapperTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
+  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportSubjectViewDataMapper
 
   @Before
   fun setup() {

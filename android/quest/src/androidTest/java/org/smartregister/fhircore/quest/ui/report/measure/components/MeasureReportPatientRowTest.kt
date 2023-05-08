@@ -26,16 +26,16 @@ import io.mockk.verify
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
 class MeasureReportPatientRowTest {
 
-  private val mockListener: (MeasureReportPatientViewData) -> Unit = spyk({})
+  private val mockListener: (MeasureReportSubjectViewData) -> Unit = spyk({})
 
   @get:Rule val composeTestRule = createComposeRule()
 
   private val measureReportPatientViewData =
-    MeasureReportPatientViewData(
+    MeasureReportSubjectViewData(
       logicalId = "10101",
       name = "John Test",
       gender = "M",

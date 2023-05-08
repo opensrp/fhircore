@@ -44,7 +44,7 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
 const val PERSONAL_DETAILS_TEST_TAG = "personalDetailsTestTag"
 const val RESULT_VIEW_CHECK_ICON = "resultViewCheckIcon"
@@ -54,11 +54,11 @@ const val RESULT_VIEW_INDICATOR_DESCRIPTION = "resultViewIndicatorDescription"
 
 @Composable
 fun MeasureReportIndividualResultView(
-  modifier: Modifier = Modifier,
-  patientViewData: MeasureReportPatientViewData,
-  isMatchedIndicator: Boolean = true,
-  indicatorStatus: String = "",
-  indicatorDescription: String = ""
+    modifier: Modifier = Modifier,
+    patientViewData: MeasureReportSubjectViewData,
+    isMatchedIndicator: Boolean = true,
+    indicatorStatus: String = "",
+    indicatorDescription: String = ""
 ) {
   Box(
     modifier =
@@ -132,7 +132,7 @@ fun MeasureReportIndividualResultView(
 private fun MeasureReportIndividualResultViewPreview() {
   MeasureReportIndividualResultView(
     patientViewData =
-      MeasureReportPatientViewData(
+      MeasureReportSubjectViewData(
         name = "Jacky Coughlin",
         gender = "F",
         age = "27",

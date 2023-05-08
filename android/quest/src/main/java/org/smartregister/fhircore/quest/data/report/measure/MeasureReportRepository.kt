@@ -18,6 +18,8 @@ package org.smartregister.fhircore.quest.data.report.measure
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.google.android.fhir.search.search
+import org.hl7.fhir.r4.model.ResourceType
 import java.util.LinkedList
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
@@ -46,16 +48,12 @@ class MeasureReportRepository(
     }
   }
 
-  suspend fun retrievePatients(currentPage: Int): List<ResourceData> {
-    return registerRepository.loadRegisterData(
-        currentPage = currentPage,
-        registerId = measureReportConfiguration.registerId
-      )
+  suspend fun retrieveSubjects(count: Int): List<ResourceData> {
+    return registerRepository.fhirEngine.search(measureReportConfiguration.subjectType.name+"?_count="+count)
       .map {
-        val queryResult = it.queryResult as RepositoryResourceData.QueryResult.Search
         rulesExecutor.processResourceData(
-          baseResource = queryResult.resource,
-          relatedRepositoryResourceData = LinkedList(queryResult.relatedResources),
+          baseResource = it,
+          relatedRepositoryResourceData = LinkedList(),
           ruleConfigs = registerConfiguration.registerCard.rules,
           emptyMap()
         )

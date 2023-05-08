@@ -31,21 +31,21 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
+import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDataMapper
 
 @HiltAndroidTest
 class MeasureReportPatientsPagingSourceTest : RobolectricTest() {
 
   @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
-  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
+  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportSubjectViewDataMapper
   private val reportRepository = mockk<MeasureReportRepository>()
-  private lateinit var reportPatientsPagingSource: MeasureReportPatientsPagingSource
+  private lateinit var reportPatientsPagingSource: MeasureReportSubjectsPagingSource
 
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
     reportPatientsPagingSource =
-      MeasureReportPatientsPagingSource(reportRepository, measureReportPatientViewDataMapper)
+      MeasureReportSubjectsPagingSource(reportRepository, measureReportPatientViewDataMapper)
   }
 
   @Test

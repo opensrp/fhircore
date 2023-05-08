@@ -28,7 +28,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
 class MeasureReportIndividualResultViewTest {
 
@@ -37,7 +37,7 @@ class MeasureReportIndividualResultViewTest {
   private lateinit var scenario: ActivityScenario<ComponentActivity>
 
   private val patientViewData =
-    MeasureReportPatientViewData(
+    MeasureReportSubjectViewData(
       name = "Jacky Coughlin",
       gender = "F",
       age = "27",

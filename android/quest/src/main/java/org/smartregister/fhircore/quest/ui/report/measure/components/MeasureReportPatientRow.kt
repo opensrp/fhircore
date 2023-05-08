@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
 const val PATIENT_DETAILS_TEST_TAG = "patientDetailsTestTag"
 const val FAMILY_NAME_TEST_TAG = "familyNameTestTag"
@@ -44,9 +44,9 @@ const val PATIENT_ROW_TEST_TAG = "patientRowTestTag"
 
 @Composable
 fun MeasureReportPatientRow(
-  measureReportPatientViewData: MeasureReportPatientViewData,
-  onRowClick: (MeasureReportPatientViewData) -> Unit,
-  modifier: Modifier = Modifier
+    measureReportPatientViewData: MeasureReportSubjectViewData,
+    onRowClick: (MeasureReportSubjectViewData) -> Unit,
+    modifier: Modifier = Modifier
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -95,7 +95,7 @@ fun MeasureReportPatientRow(
 private fun MeasureReportPatientRowPreview() {
   MeasureReportPatientRow(
     measureReportPatientViewData =
-      MeasureReportPatientViewData(
+      MeasureReportSubjectViewData(
         logicalId = "1291029",
         name = "John Jared",
         gender = "M",

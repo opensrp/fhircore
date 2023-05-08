@@ -56,10 +56,10 @@ fun MeasureReportPatientsScreen(
   measureReportViewModel: MeasureReportViewModel,
   modifier: Modifier = Modifier
 ) {
-  LaunchedEffect(Unit) { measureReportViewModel.retrievePatients(reportId) }
+  LaunchedEffect(Unit) { measureReportViewModel.retrieveSubjects(reportId) }
 
   val pagingItems =
-    measureReportViewModel.patientsData.collectAsState(emptyFlow()).value.collectAsLazyPagingItems()
+    measureReportViewModel.subjectData.collectAsState(emptyFlow()).value.collectAsLazyPagingItems()
 
   Scaffold(
     topBar = {

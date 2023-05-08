@@ -50,7 +50,7 @@ import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureRepo
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportPopulationResultView
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
 @Composable
 fun MeasureReportResultScreen(
@@ -75,14 +75,14 @@ fun MeasureReportResultScreen(
 
 @Composable
 fun MeasureReportResultPage(
-  screenTitle: String,
-  navController: NavController,
-  startDate: String,
-  endDate: String,
-  patientViewData: MeasureReportPatientViewData?,
-  measureReportIndividualResult: MeasureReportIndividualResult?,
-  measureReportPopulationResult: List<MeasureReportPopulationResult>?,
-  modifier: Modifier = Modifier
+    screenTitle: String,
+    navController: NavController,
+    startDate: String,
+    endDate: String,
+    patientViewData: MeasureReportSubjectViewData?,
+    measureReportIndividualResult: MeasureReportIndividualResult?,
+    measureReportPopulationResult: List<MeasureReportPopulationResult>?,
+    modifier: Modifier = Modifier
 ) {
   Scaffold(
     topBar = {
@@ -147,7 +147,7 @@ private fun MeasureReportResultScreenForIndividualPreview() {
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
     patientViewData =
-      MeasureReportPatientViewData(
+      MeasureReportSubjectViewData(
         name = "Jacky Coughlin",
         gender = "F",
         age = "27",
@@ -172,7 +172,7 @@ private fun MeasureReportResultScreenForPopulationPreview() {
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
     patientViewData =
-      MeasureReportPatientViewData(
+      MeasureReportSubjectViewData(
         name = "Jacky Coughlin",
         gender = "F",
         age = "27",

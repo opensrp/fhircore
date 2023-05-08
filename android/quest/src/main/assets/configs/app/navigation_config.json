@@ -263,6 +263,22 @@
       ]
     },
     {
+      "id": "practitionerReports",
+      "visible": true,
+      "display": "Practitioner Reports",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_reports"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REPORT",
+          "id": "practitionerMeasureReport"
+        }
+      ]
+    },
+    {
       "id": "supplyChainReports",
       "visible": true,
       "display": "Supply Chain Reports",

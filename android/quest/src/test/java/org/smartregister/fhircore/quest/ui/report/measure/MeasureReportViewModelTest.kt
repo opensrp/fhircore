@@ -72,8 +72,8 @@ import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
-import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
+import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDataMapper
 
 @HiltAndroidTest
 class MeasureReportViewModelTest : RobolectricTest() {
@@ -83,7 +83,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   @get:Rule(order = 1)
   val coroutinesTestRule = CoroutineTestRule()
   @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
-  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
+  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportSubjectViewDataMapper
   @Inject lateinit var registerRepository: RegisterRepository
   @Inject lateinit var defaultRepository: DefaultRepository
   @Inject lateinit var rulesExecutor: RulesExecutor
@@ -187,7 +187,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
         module = "Module1"
       )
     val samplePatientViewData =
-      MeasureReportPatientViewData(
+      MeasureReportSubjectViewData(
         logicalId = "member1",
         name = "Willy Mark",
         gender = "M",
@@ -250,7 +250,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   @Test
   fun testOnEventOnPatientSelected() {
     val samplePatientViewData =
-      MeasureReportPatientViewData(
+      MeasureReportSubjectViewData(
         logicalId = "member1",
         name = "Willy Mark",
         gender = "M",

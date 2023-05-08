@@ -20,7 +20,7 @@ import android.content.Context
 import androidx.navigation.NavController
 import org.hl7.fhir.r4.model.MeasureReport
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
 sealed class MeasureReportEvent {
   data class OnSelectMeasure(
@@ -35,7 +35,7 @@ sealed class MeasureReportEvent {
     val measureReportType: MeasureReport.MeasureReportType,
     val navController: NavController
   ) : MeasureReportEvent()
-  data class OnPatientSelected(val patientViewData: MeasureReportPatientViewData) :
+  data class OnPatientSelected(val patientViewData: MeasureReportSubjectViewData) :
     MeasureReportEvent()
   data class OnSearchTextChanged(val reportId: String, val searchText: String) :
     MeasureReportEvent()

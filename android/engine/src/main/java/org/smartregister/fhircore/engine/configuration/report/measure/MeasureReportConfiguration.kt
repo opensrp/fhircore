@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration.report.measure
 
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 
@@ -28,5 +29,6 @@ data class MeasureReportConfiguration(
   val registerId: String,
   val registerDate: String? = null,
   val showFixedRangeSelection: Boolean? = null,
-  val reports: List<MeasureReportConfig> = emptyList()
+  val reports: List<MeasureReportConfig> = emptyList(),
+  val subjectType: ResourceType = ResourceType.Patient,
 ) : Configuration()
