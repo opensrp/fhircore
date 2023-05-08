@@ -22,26 +22,28 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 
 /**
- * @property id A unique name retrieved from the configs used to identify the data represented by
- * this data class; more like a variable name used to access the object in rules engine facts map
- * @property queryResult The response returned from the database query. The response can either be a
- * [QueryResult.Search] or [QueryResult.Count]. [QueryResult.Search] includes a [Resource] and
- * optionally a list of related [RepositoryResourceData], typically this result is produced when a
- * SELECT query returns FHIR [Resource]'s. [QueryResult.Count] represents the count for the
- * configured resources
+ * This represent the outcome of a query performed via the Repository. The query performed can
+ * either return a count which is wrapped in the [RepositoryResourceData.Count] data class or return
+ * a list of [Resource]'s (with optional nested [Resource]'s) wrapped in
+ * [RepositoryResourceData.Search] data class. [RepositoryResourceData.Search] has an optional
+ * property [RepositoryResourceData.Search.baseResourceRulesId] that can be used as the key in the
+ * rules factory facts map (each fact is represented as a key-value pair). The key for the
+ * [RepositoryResourceData.Search.relatedResources] will either be the configured unique id for
+ * representing the resource(s) in Rules engine Facts map or the [ResourceType].
+ * [RepositoryResourceData.Search.secondaryRepositoryResourceData] returns a list of independent
+ * resources (which may include nested resource(s)) that have NO relationship with the base
+ * [RepositoryResourceData.Search.resource].
  */
 @Stable
-data class RepositoryResourceData(val id: String? = null, val queryResult: QueryResult) {
-  sealed class QueryResult {
-    data class Search(
-      val resource: Resource,
-      val relatedResources: LinkedList<RepositoryResourceData> = LinkedList()
-    ) : QueryResult()
-    data class Count(
-      val resourceType: ResourceType,
-      val relatedResourceCount: RelatedResourceCount
-    ) : QueryResult()
-  }
+sealed class RepositoryResourceData {
+  data class Search(
+    val baseResourceRulesId: String? = null,
+    val resource: Resource,
+    val relatedResources: Map<String, LinkedList<RepositoryResourceData>> = mutableMapOf(),
+    val secondaryRepositoryResourceData: List<RepositoryResourceData>? = null
+  ) : RepositoryResourceData()
+  data class Count(val resourceType: ResourceType, val relatedResourceCount: RelatedResourceCount) :
+    RepositoryResourceData()
 }
 
 /**

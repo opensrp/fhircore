@@ -20,9 +20,12 @@ import kotlin.test.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 
 class EventBusTest : RobolectricTest() {
 
@@ -36,27 +39,35 @@ class EventBusTest : RobolectricTest() {
 
   @Test
   @OptIn(ExperimentalCoroutinesApi::class)
-  fun testTriggerEventEmitsLoginEvent1() {
+  fun testTriggerEventEmitsRefreshCacheEvent() {
+    val refreshCacheEvent = AppEvent.RefreshCache(QuestionnaireConfig("test-config"))
 
     runBlockingTest {
       val collectJob = launch { eventBus.events.collect { emittedEvents.add(it) } }
-      eventBus.triggerEvent(AppEvent.Login)
+      eventBus.triggerEvent(refreshCacheEvent)
       collectJob.cancel()
     }
 
-    assertEquals(AppEvent.Login, emittedEvents[0])
+    assertEquals(refreshCacheEvent, emittedEvents[0])
   }
 
   @Test
   @OptIn(ExperimentalCoroutinesApi::class)
   fun testTriggerEventEmitsLogoutEvent1() {
+    val onSubmitQuestionnaireEvent =
+      AppEvent.OnSubmitQuestionnaire(
+        QuestionnaireSubmission(
+          questionnaireConfig = QuestionnaireConfig(id = "submit-questionnaire"),
+          QuestionnaireResponse()
+        )
+      )
 
     runBlockingTest {
       val collectJob = launch { eventBus.events.collect { emittedEvents.add(it) } }
-      eventBus.triggerEvent(AppEvent.Logout)
+      eventBus.triggerEvent(onSubmitQuestionnaireEvent)
       collectJob.cancel()
     }
 
-    assertEquals(AppEvent.Logout, emittedEvents[0])
+    assertEquals(onSubmitQuestionnaireEvent, emittedEvents[0])
   }
 }

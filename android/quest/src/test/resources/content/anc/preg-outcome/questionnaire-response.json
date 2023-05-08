@@ -1,0 +1,228 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "70db63b6-658d-427b-885e-9bb116fdda07",
+  "meta": {
+    "lastUpdated": "2023-04-19T16:18:55.428+03:00",
+    "tag": [
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655"
+      },
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655"
+      },
+      {
+        "system": "https://smartregister.org/",
+        "code": "146934",
+        "display": "Practitioner CareTeam"
+      },
+      {
+        "system": "https://smartregister.org/",
+        "code": "54842",
+        "display": "Practitioner Location"
+      },
+      {
+        "system": "https://smartregister.org/",
+        "code": "146872",
+        "display": "Practitioner Organization"
+      },
+      {
+        "system": "https://smartregister.org/",
+        "code": "146871",
+        "display": "Practitioner"
+      }
+    ]
+  },
+  "questionnaire": "Questionnaire/0cbf55ee-70b0-41d1-aa25-0a064a336a0e",
+  "status": "completed",
+  "subject": {
+    "reference": "Patient/39ea83d9-8386-4d73-a2ab-d2eba59d27ec"
+  },
+  "authored": "2023-04-19T16:18:55+03:00",
+  "item": [
+    {
+      "linkId": "dd90825d-c161-480a-8f9f-ab2921155be2",
+      "text": "Pregnancy outcome",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "a67a4c44-8505-4dfa-b026-41619e0f51a2",
+            "system": "urn:uuid:1329ec3a-f409-4a8b-cae0-8c0911dc3a0c",
+            "code": "live-birth",
+            "display": "Live birth"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "5c9a5b34-04ed-4f41-8614-9fb42333871a",
+      "text": "Date of outcome",
+      "answer": [
+        {
+          "valueDate": "2023-04-19"
+        }
+      ]
+    },
+    {
+      "linkId": "91df4f8b-69ff-44f9-bd45-1648f326fd22",
+      "text": "Place of delivery",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "4aec7197-855c-4591-8ab3-dff1ac6326d5",
+            "system": "urn:uuid:8c375172-d44b-42d4-e166-70c2157b3843",
+            "code": "health-facility",
+            "display": "Health Facility"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "e7a94d31-c3d5-407d-850b-2d38e652433c",
+      "text": "Mode of delivery",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "2570d931-b7fb-4975-85b5-abacd5d4f837",
+            "system": "urn:uuid:320c71ca-b5f7-4cdb-8af0-c2cb160c5710",
+            "code": "normal-(vaginal)-delivery",
+            "display": "Normal (Vaginal) Delivery"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "076cf10e-d72e-428e-8da4-dec40d16e2b3",
+      "text": "Who conducted the delivery?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "e18a94a4-07c3-434b-8d45-7a96a4fc486c",
+            "system": "urn:uuid:0b38184f-ea3c-4820-8259-74453bc55a30",
+            "code": "skilled-health-care-provider",
+            "display": "Skilled health care provider"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "a9e50fc1-8d74-42e2-8185-fae889afcb55",
+      "text": "Number of children born",
+      "answer": [
+        {
+          "valueInteger": 10
+        }
+      ]
+    },
+    {
+      "linkId": "6cf13e80-af2f-40fe-f70d-00fbdc331ba8",
+      "text": "Child's weight",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "f03a9990-3e6d-4498-8dca-c4135f30f1df",
+            "system": "urn:uuid:61d9d3d6-8832-494a-8f3a-5b97b88cfb79",
+            "code": "normal-(2.5kgs-and-above)",
+            "display": "Normal (2.5kgs and above)"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "3cc0f888-74fa-4655-8b84-27abc180de1c",
+      "text": "How the mother doing?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "10593a35-ffd2-4f69-9738-3003cad07d15",
+            "system": "urn:uuid:d5002226-0304-4ccd-b7ed-004a93c1b7fe",
+            "code": "alive-and-well",
+            "display": "Alive and well"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "b5de9ea9-b01b-4cde-8114-bea0759b84ee",
+      "text": "Mother has danger signs?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "7ec752f2-452d-4e08-c29e-c9b6d080a1a0",
+            "system": "urn:uuid:dbb08802-9aa9-4e41-b7b4-1c63eb713ef5",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "8d52a178-2dba-45f7-9973-a56c94329f77",
+      "text": "Baby has danger signs?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "7409195f-cdad-4126-bc3b-f5594bfbdf81",
+            "system": "urn:uuid:9e54da28-eefb-4f21-dce4-20123c2a4f3e",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "d26cf25a-5811-47dc-bfe9-84899c0e9825",
+      "text": "Condoms given",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "f4706eda-de70-4a8b-8f54-12b98e20af85",
+            "system": "urn:uuid:b2cab913-6d12-4252-8a0f-3ae684122571",
+            "code": "male-condoms",
+            "display": "Male condoms"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "489de7ae-51cc-4f43-c761-12c8fb65266b",
+      "text": "Number of condoms given",
+      "answer": [
+        {
+          "valueInteger": 10
+        }
+      ]
+    },
+    {
+      "linkId": "25cc8d26-ac42-475f-be79-6f1d62a44881",
+      "text": "Stock Balance - Male Condom (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "48245462-0198-48ab-f5c4-ca4ca3da5403",
+      "text": "Stock Balance - Female Condom (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "955c5b30-0f08-4720-8567-99ef58350615",
+      "text": "Latest Observation ID - Male Condom (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "3821961e-79db-4120-99db-079548307454",
+      "text": "Latest Observation ID - Female Condom (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "56577a66-15ae-4612-bee9-a2d4168082e8",
+      "text": "Stockout Flag ID - Male Condom (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "30be53b9-6a9c-49fd-8ae7-6e8ff1da8830",
+      "text": "Stockout Flag ID - Female Condom (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "700adca7-3a79-435f-947c-a2c7198bdaba",
+      "text": "Stockout Flag Start Date - Male Condom (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "f0c01eb8-1b59-41c9-82b1-b30b364f2f3a",
+      "text": "Stockout Flag Start Date - Female Condom (Pre-populated) (Hidden)"
+    }
+  ]
+}
