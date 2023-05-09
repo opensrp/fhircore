@@ -20,12 +20,12 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.activity.viewModels
-import androidx.annotation.VisibleForTesting
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
@@ -45,6 +45,7 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
@@ -58,8 +59,8 @@ import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.FieldType
-import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -78,11 +79,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   @Inject lateinit var parser: IParser
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
   private lateinit var questionnaire: Questionnaire
+  private var questionnaireResponse: QuestionnaireResponse = QuestionnaireResponse()
   private lateinit var fragment: QuestionnaireFragment
   private lateinit var saveProcessingAlertDialog: AlertDialog
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var actionParams: List<ActionParameter>
   private lateinit var prePopulationParams: List<ActionParameter>
+  private lateinit var baseResourceId: String
+  private lateinit var baseResourceType: ResourceType
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
@@ -108,6 +112,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           !it.value.contains(STRING_INTERPOLATION_PREFIX)
       }
 
+    baseResourceId = intent.getStringExtra(BASE_RESOURCE_ID) ?: ""
+    val strBaseResourceType = intent.getStringExtra(BASE_RESOURCE_TYPE) ?: ""
+    if (strBaseResourceType.isNotEmpty()) baseResourceType = ResourceType.fromCode(strBaseResourceType)
+
     val questionnaireActivity = this@QuestionnaireActivity
     questionnaireViewModel.removeOperation.observe(questionnaireActivity) {
       if (it) {
@@ -122,30 +130,48 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     val loadProgress = showProgressAlert(questionnaireActivity, R.string.loading)
 
     lifecycleScope.launch {
-      questionnaireViewModel.loadQuestionnaire(
-          questionnaireConfig.id,
-          questionnaireConfig.type,
-          prePopulationParams,
-          questionnaireConfig.readOnlyLinkIds
-        )
-        .let { thisQuestionnaire ->
-          if (thisQuestionnaire == null) {
-            questionnaireActivity.showToast(
-              questionnaireActivity.getString(R.string.questionnaire_missing)
-            )
-            finish()
-          } else {
-            questionnaire = thisQuestionnaire
-
-            // Only add the fragment once, when the activity is first created.
-            if (savedInstanceState == null) renderFragment()
-
-            withContext(dispatcherProvider.main()) {
-              updateViews()
-              fragment.whenStarted { loadProgress.dismiss() }
-            }
+      val questionnaire = questionnaireViewModel.loadQuestionnaire(
+        questionnaireConfig.id,
+        questionnaireConfig.type,
+        prePopulationParams
+      )
+      if (questionnaire == null) {
+        showToast(getString(R.string.questionnaire_not_found))
+        finish()
+      } else {
+        this@QuestionnaireActivity.questionnaire = questionnaire.apply {
+          if (questionnaireConfig.resourceIdentifier != null) {
+            setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
           }
         }
+
+        if (questionnaireConfig.type.isEditMode() || questionnaireConfig.type.isReadOnly()) {
+          questionnaireResponse =
+            questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
+              questionnaire = questionnaire,
+              subjectId = baseResourceId.extractLogicalIdUuid(),
+              subjectType = baseResourceType
+            ).apply { generateMissingItems(questionnaire) }
+
+          if (!questionnaireViewModel.isQuestionnaireResponseValid(
+              questionnaire,
+              questionnaireResponse,
+              this@QuestionnaireActivity
+            )
+          ) {
+            showToast(getString(R.string.questionnaire_response_broken))
+            finish()
+          }
+        }
+
+        // Only add the fragment once, when the activity is first created.
+        if (savedInstanceState == null) renderFragment()
+
+        withContext(dispatcherProvider.main()) {
+          updateViews()
+          fragment.whenStarted { loadProgress.dismiss() }
+        }
+      }
     }
   }
 
@@ -177,12 +203,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  private suspend fun renderFragment() {
+  private fun renderFragment() {
     // Pass questionnaire and questionnaire-response to fragment
     val questionnaireString = parser.encodeResourceToString(questionnaire)
-    val fragmentBuilder = QuestionnaireFragment.builder().setQuestionnaire(questionnaireString)
-    decodeQuestionnaireResponse(intent, questionnaireConfig)?.let {
-      fragmentBuilder.setQuestionnaireResponse(it)
+    val fragmentBuilder = QuestionnaireFragment.builder().apply {
+      setQuestionnaire(questionnaireString)
+      if (!questionnaireConfig.type.isDefault()) {
+        setQuestionnaireResponse(questionnaireResponse.encodeResourceToString())
+      }
     }
     fragment = fragmentBuilder.build()
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
@@ -198,26 +226,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         this.handleQuestionnaireSubmit()
       }
     }
-  }
-
-  @VisibleForTesting
-  internal fun decodeQuestionnaireResponse(
-    intent: Intent,
-    questionnaireConfig: QuestionnaireConfig
-  ): String? {
-    val questionnaireResponse =
-      intent
-        .getStringExtra(QUESTIONNAIRE_RESPONSE)
-        ?.decodeResourceFromString<QuestionnaireResponse>()
-        ?.apply { generateMissingItems(this@QuestionnaireActivity.questionnaire) }
-
-    if (questionnaireConfig.type.isReadOnly()) require(questionnaireResponse != null)
-
-    if (questionnaireConfig.resourceIdentifier != null) {
-      setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
-    }
-
-    return questionnaireResponse?.encodeResourceToString()
   }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String) {
@@ -474,6 +482,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
     const val QUESTIONNAIRE_CONFIG = "questionnaire-config"
+    const val BASE_RESOURCE_ID = "base-resource-id"
+    const val BASE_RESOURCE_TYPE = "base-resource-type"
     const val QUESTIONNAIRE_ACTION_PARAMETERS = "action-parameters"
     const val STRING_INTERPOLATION_PREFIX = "@{"
 
@@ -485,11 +495,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireResponse: QuestionnaireResponse? = null,
       populationResources: ArrayList<Resource> = ArrayList(),
       questionnaireConfig: QuestionnaireConfig? = null,
-      actionParams: List<ActionParameter> = emptyList()
+      actionParams: List<ActionParameter> = emptyList(),
+      baseResourceId: String? = null,
+      baseResourceType: String? = null
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_CONFIG, questionnaireConfig),
-        Pair(QUESTIONNAIRE_ACTION_PARAMETERS, actionParams)
+        Pair(QUESTIONNAIRE_ACTION_PARAMETERS, actionParams),
+        Pair(BASE_RESOURCE_ID, baseResourceId),
+        Pair(BASE_RESOURCE_TYPE, baseResourceType)
       )
         .apply {
           questionnaireResponse?.let {
