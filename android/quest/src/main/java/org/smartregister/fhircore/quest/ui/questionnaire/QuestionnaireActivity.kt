@@ -20,7 +20,6 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -117,9 +116,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     if (strBaseResourceType.isNotEmpty())
       baseResourceType = ResourceType.fromCode(strBaseResourceType)
 
-    Log.d("FIKRi base resource ID", "$baseResourceId")
-    Log.d("FIKRi base resource TYPE", "$strBaseResourceType")
-
     val questionnaireActivity = this@QuestionnaireActivity
     questionnaireViewModel.removeOperation.observe(questionnaireActivity) {
       if (it) {
@@ -211,7 +207,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   private fun renderFragment() {
-    Log.d("FIKRi Questionnaire ID", "${questionnaire.id}")
     // Pass questionnaire and questionnaire-response to fragment
     val questionnaireString = parser.encodeResourceToString(questionnaire)
     val fragmentBuilder =

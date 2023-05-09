@@ -651,7 +651,7 @@ constructor(
   ): QuestionnaireResponse {
     var questionnaireResponse =
       loadQuestionnaireResponse(subjectId, subjectType, questionnaire.logicalId)
-    questionnaireResponse = null
+
     if (questionnaireResponse == null) {
       val populationResources = loadPopulationResources(subjectId, subjectType)
       questionnaireResponse = populateQuestionnaireResponse(questionnaire, populationResources)
@@ -673,7 +673,7 @@ constructor(
     return ResourceMapper.populate(questionnaire, *populationResources.toTypedArray()).also {
       questionnaireResponse ->
       if (!questionnaireResponse.hasItem()) {
-        Timber.tag("FIKRI questionnaire population resource")
+        Timber.tag("QuestionnaireViewModel")
           .d("Questionnaire response has no populated answers")
       }
     }
