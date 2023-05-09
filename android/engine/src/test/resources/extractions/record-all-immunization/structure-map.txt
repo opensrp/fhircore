@@ -11,14 +11,6 @@ group ImmunizationCarePlan(source src : QuestionnaireResponse, target tgt: Bundl
                  ExtractImmunization(src, encounter, tgt) "r_careplan";
 }
 
-group ExtractEncounter(source src : QuestionnaireResponse, target encounter: Encounter, target bundle : Bundle) {
-        src -> encounter.id = uuid(),
-            encounter.status = "finished",
-            encounter.serviceType = cc("http://terminology.hl7.org/CodeSystem/service-type", "57", "Immunization") "rule_ee_4";
-
-        src -> bundle.entry as entry, entry.resource = encounter "r_enc_cp";
-}
-
 group ExtractImmunization(source src : QuestionnaireResponse, source encounter: Encounter, target bundle : Bundle) {
     src.item as vaccinesItem where(linkId='vaccines codes group') then {
         vaccinesItem.item as vaccine -> bundle.entry as entry, entry.resource = create('Immunization') as immunization,
@@ -67,10 +59,9 @@ group ExtractRecordEncounter(source src : QuestionnaireResponse, target encounte
         src -> encounter.id = uuid(),
             encounter.status = "finished",
             encounter.type = cc("http://snomed.info/sct", "41000179103", "Immunization record (record artifact)") "r_type";
-
         src -> encounter.subject = create('Reference') as reference then {
                    src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ee_6_1";
-                 } "rule_ee_6";
+                 } "rule_ee_6";//TODO add patient id it in questionnaireResponse
         src -> encounter.period = create("Period") as period then{
                 src -> period.start = evaluate(src, now()) "r_start";
                 src -> period.end = evaluate(src, now()) "r_end";
@@ -78,18 +69,16 @@ group ExtractRecordEncounter(source src : QuestionnaireResponse, target encounte
 
         src -> bundle.entry as entry, entry.resource = encounter "r_enc_cp";
 
-
 }
 //Immunization Administration Encounter
 group ExtractAdministrationEncounter(source src : QuestionnaireResponse,target adminEncounter: Encounter,target encounter: Encounter, target bundle : Bundle) {
-
-          src -> adminEncounter.id = uuid(),
-                   adminEncounter.status = "finished",
-            adminEncounter.type = cc("http://snomed.info/sct", "33879002", "Administration of vaccine to produce active immunity (procedure)") "r_type";
+        src -> adminEncounter.id = uuid(),
+               adminEncounter.status = "finished",
+               adminEncounter.type = cc("http://snomed.info/sct", "33879002", "Administration of vaccine to produce active immunity (procedure)") "r_type";
 
                src -> adminEncounter.subject = create('Reference') as reference then {
                           src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ee_6_1";
-                        } "rule_ee_6";
+               } "rule_ee_6";//TODO add patient id it in questionnaireResponse
                src -> adminEncounter.period = create("Period") as period then{
                        src -> period.end = evaluate(src, now()) "r_end";
                }"r_period";
