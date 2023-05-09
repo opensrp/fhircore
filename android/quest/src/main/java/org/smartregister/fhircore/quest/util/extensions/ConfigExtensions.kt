@@ -104,7 +104,7 @@ fun List<ActionConfig>.handleClickEvent(
         navController.navigate(
           resId = MainNavigationScreen.Home.route,
           args = args,
-          navOptions = navOptions(MainNavigationScreen.Home.route),
+          navOptions = navOptions(MainNavigationScreen.Home.route, inclusive = true),
         )
       }
       ApplicationWorkflow.LAUNCH_REPORT -> {
@@ -142,7 +142,7 @@ fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: Resou
  * Apply navigation options. Restrict destination to only use a single instance in the back stack.
  */
 fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = true) =
-  NavOptions.Builder().setPopUpTo(resId, true, inclusive).setLaunchSingleTop(singleOnTop).build()
+  NavOptions.Builder().setPopUpTo(resId, inclusive, true).setLaunchSingleTop(singleOnTop).build()
 
 fun ViewProperties.clickable(ResourceData: ResourceData) =
   this.clickable.interpolate(ResourceData.computedValuesMap).toBoolean()
