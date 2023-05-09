@@ -204,7 +204,7 @@ constructor(
         with(event.measureReportType) {
           reportTypeState.value = this
           if (this == MeasureReport.MeasureReportType.INDIVIDUAL) {
-            event.navController.navigate(MeasureReportNavigationScreen.PatientsList.route)
+            event.navController.navigate(MeasureReportNavigationScreen.SubjectsList.route)
           } else {
             // Reset previously selected patient
             reportTypeSelectorUiState.value =

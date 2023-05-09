@@ -33,7 +33,7 @@ import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSele
 import org.smartregister.fhircore.quest.ui.report.measure.screens.FixedMonthYearListing
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MONTH_TEST_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.PLEASE_WAIT_TEST_TAG
-import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportTypeSelectorPage
+import org.smartregister.fhircore.quest.ui.report.measure.screens.DateRangeSelector
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_DATE_PICKER_FORM_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_FIXED_RANGE_TEST_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_PROGRESS_INDICATOR_TAG
@@ -118,7 +118,7 @@ class ReportTypeSelectorScreenTest {
   @Test
   fun testShowDatePickerFormr() {
     composeTestRule.setContent {
-      ReportTypeSelectorPage(
+      DateRangeSelector(
         screenTitle = "Measure Report",
         onBackPress = mockBackListener,
         showProgressIndicator = false,

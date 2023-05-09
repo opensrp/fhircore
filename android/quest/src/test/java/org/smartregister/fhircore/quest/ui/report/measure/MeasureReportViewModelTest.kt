@@ -238,7 +238,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
     Assert.assertEquals(MeasureReportType.INDIVIDUAL, measureReportViewModel.reportTypeState.value)
     val routeSlot = slot<String>()
     verify { navController.navigate(capture(routeSlot)) }
-    Assert.assertEquals(MeasureReportNavigationScreen.PatientsList.route, routeSlot.captured)
+    Assert.assertEquals(MeasureReportNavigationScreen.SubjectsList.route, routeSlot.captured)
 
     // Test with report type other than INDIVIDUAL
     measureReportViewModel.onEvent(

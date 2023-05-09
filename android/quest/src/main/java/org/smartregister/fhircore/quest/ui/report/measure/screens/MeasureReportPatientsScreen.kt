@@ -50,7 +50,7 @@ import org.smartregister.fhircore.quest.ui.shared.components.SearchBar
 import timber.log.Timber
 
 @Composable
-fun MeasureReportPatientsScreen(
+fun MeasureReportSubjectsScreen(
   reportId: String,
   navController: NavController,
   measureReportViewModel: MeasureReportViewModel,
