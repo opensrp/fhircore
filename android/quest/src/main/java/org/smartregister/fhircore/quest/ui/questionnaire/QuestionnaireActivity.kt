@@ -114,7 +114,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     baseResourceId = intent.getStringExtra(BASE_RESOURCE_ID) ?: ""
     val strBaseResourceType = intent.getStringExtra(BASE_RESOURCE_TYPE) ?: ""
-    if (strBaseResourceType.isNotEmpty()) baseResourceType = ResourceType.fromCode(strBaseResourceType)
+    if (strBaseResourceType.isNotEmpty())
+      baseResourceType = ResourceType.fromCode(strBaseResourceType)
+
+    Log.d("FIKRi base resource ID", "$baseResourceId")
+    Log.d("FIKRi base resource TYPE", "$strBaseResourceType")
 
     val questionnaireActivity = this@QuestionnaireActivity
     questionnaireViewModel.removeOperation.observe(questionnaireActivity) {
@@ -130,28 +134,31 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     val loadProgress = showProgressAlert(questionnaireActivity, R.string.loading)
 
     lifecycleScope.launch {
-      val questionnaire = questionnaireViewModel.loadQuestionnaire(
-        questionnaireConfig.id,
-        questionnaireConfig.type,
-        prePopulationParams
-      )
+      val questionnaire =
+        questionnaireViewModel.loadQuestionnaire(
+          questionnaireConfig.id,
+          questionnaireConfig.type,
+          prePopulationParams
+        )
       if (questionnaire == null) {
         showToast(getString(R.string.questionnaire_not_found))
         finish()
       } else {
-        this@QuestionnaireActivity.questionnaire = questionnaire.apply {
-          if (questionnaireConfig.resourceIdentifier != null) {
-            setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
+        this@QuestionnaireActivity.questionnaire =
+          questionnaire.apply {
+            if (questionnaireConfig.resourceIdentifier != null) {
+              setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
+            }
           }
-        }
 
         if (questionnaireConfig.type.isEditMode() || questionnaireConfig.type.isReadOnly()) {
           questionnaireResponse =
             questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
-              questionnaire = questionnaire,
-              subjectId = baseResourceId.extractLogicalIdUuid(),
-              subjectType = baseResourceType
-            ).apply { generateMissingItems(questionnaire) }
+                questionnaire = questionnaire,
+                subjectId = baseResourceId.extractLogicalIdUuid(),
+                subjectType = baseResourceType
+              )
+              .apply { generateMissingItems(questionnaire) }
 
           if (!questionnaireViewModel.isQuestionnaireResponseValid(
               questionnaire,
@@ -204,14 +211,16 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   private fun renderFragment() {
+    Log.d("FIKRi Questionnaire ID", "${questionnaire.id}")
     // Pass questionnaire and questionnaire-response to fragment
     val questionnaireString = parser.encodeResourceToString(questionnaire)
-    val fragmentBuilder = QuestionnaireFragment.builder().apply {
-      setQuestionnaire(questionnaireString)
-      if (!questionnaireConfig.type.isDefault()) {
-        setQuestionnaireResponse(questionnaireResponse.encodeResourceToString())
+    val fragmentBuilder =
+      QuestionnaireFragment.builder().apply {
+        setQuestionnaire(questionnaireString)
+        if (!questionnaireConfig.type.isDefault()) {
+          setQuestionnaireResponse(questionnaireResponse.encodeResourceToString())
+        }
       }
-    }
     fragment = fragmentBuilder.build()
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
     supportFragmentManager.setFragmentResultListener(

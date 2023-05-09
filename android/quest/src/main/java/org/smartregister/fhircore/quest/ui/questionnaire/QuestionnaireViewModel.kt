@@ -21,7 +21,6 @@ import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
@@ -66,7 +65,6 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.extractType
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.findSubject
-import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
@@ -673,7 +671,7 @@ constructor(
     populationResources: ArrayList<Resource>
   ): QuestionnaireResponse {
     return ResourceMapper.populate(questionnaire, *populationResources.toTypedArray()).also {
-        questionnaireResponse ->
+      questionnaireResponse ->
       if (!questionnaireResponse.hasItem()) {
         Timber.tag("FIKRI questionnaire population resource")
           .d("Questionnaire response has no populated answers")
