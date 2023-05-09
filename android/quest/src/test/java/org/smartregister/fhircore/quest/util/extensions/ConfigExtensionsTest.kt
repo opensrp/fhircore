@@ -177,6 +177,31 @@ class ConfigExtensionsTest : RobolectricTest() {
     Assert.assertEquals(1, slotBundle.captured.size())
     Assert.assertEquals("geoWidgetId", slotBundle.captured.getString(NavigationArg.CONFIG_ID))
   }
+  @Test
+  fun testNavigateBackToHomeWhenCurrentAndPreviousDestinationIdsAreNull() {
+    val clickAction =
+      ActionConfig(
+        id = null,
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER,
+        display = null,
+        toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK
+      )
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val navOptions = slot<NavOptions>()
+    every { navController.currentDestination } returns null
+    every { navController.previousBackStackEntry } returns null
+    listOf(clickAction)
+      .handleClickEvent(
+        navController = navController,
+        resourceData = resourceData,
+        navMenu = navigationMenuConfig,
+      )
+    verify(exactly = 0) {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(navOptions))
+    }
+  }
 
   @Test
   fun testDeviceToDeviceSyncActionOnClick() {
