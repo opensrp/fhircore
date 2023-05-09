@@ -227,12 +227,14 @@ constructor(
                 RepositoryResourceData.Search(
                   resource = resource,
                   relatedResources =
-                    retrieveRelatedResources(
-                      baseResource = resource,
-                      relatedResourcesConfigs =
-                        currentRelatedResourcesConfigsMap[entry.key.name]
-                          .nestedRelatedResourceConfigs()
-                    )
+                    withContext(dispatcherProvider.io()) {
+                      retrieveRelatedResources(
+                        baseResource = resource,
+                        relatedResourcesConfigs =
+                          currentRelatedResourcesConfigsMap[entry.key.name]
+                            .nestedRelatedResourceConfigs()
+                      )
+                    }
                 )
               }
             }
