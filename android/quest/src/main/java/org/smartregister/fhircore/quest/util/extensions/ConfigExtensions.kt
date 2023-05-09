@@ -104,7 +104,7 @@ fun List<ActionConfig>.handleClickEvent(
         navController.navigate(
           resId = MainNavigationScreen.Home.route,
           args = args,
-          navOptions = navOptions(MainNavigationScreen.Home.route, inclusive = true),
+          navOptions = navOptions(route = MainNavigationScreen.Home.route, singleOnTop = true),
         )
       }
       ApplicationWorkflow.LAUNCH_REPORT -> {
