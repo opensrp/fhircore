@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.util.extensions
 import android.content.Context
 import android.os.Bundle
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
 import com.google.android.fhir.logicalId
 import io.mockk.every
@@ -106,8 +107,10 @@ class ConfigExtensionsTest : RobolectricTest() {
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_REGISTER,
         display = "menu",
-        toolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
+        toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK
       )
+    every { navController.currentDestination } returns NavDestination(navigatorName = "navigating")
+    every { navController.previousBackStackEntry } returns null
     listOf(clickAction)
       .handleClickEvent(
         navController = navController,
@@ -123,10 +126,10 @@ class ConfigExtensionsTest : RobolectricTest() {
     Assert.assertEquals("registerId", slotBundle.captured.getString(NavigationArg.REGISTER_ID))
     Assert.assertEquals("menu", slotBundle.captured.getString(NavigationArg.SCREEN_TITLE))
     Assert.assertEquals(
-      ToolBarHomeNavigation.OPEN_DRAWER,
+      ToolBarHomeNavigation.NAVIGATE_BACK,
       slotBundle.captured.getSerializable(NavigationArg.TOOL_BAR_HOME_NAVIGATION)
     )
-    Assert.assertTrue(navOptions.captured.isPopUpToInclusive())
+    Assert.assertFalse(navOptions.captured.isPopUpToInclusive())
     Assert.assertTrue(navOptions.captured.shouldLaunchSingleTop())
   }
 
