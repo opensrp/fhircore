@@ -134,6 +134,13 @@
                       ]
                     },
                     {
+                      "name": "Check6MonthsVL",
+                      "variable": [
+                        "src",
+                        "appointment"
+                      ]
+                    },
+                    {
                       "name": "CheckIfResultsAreMissingOrInvalid",
                       "variable": [
                         "src",
@@ -8208,6 +8215,267 @@
                     },
                     {
                       "valueString": "$this.item.where(linkId = 'practitioner-ref').answer.value"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Check6MonthsVL",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "appointment",
+          "type": "Appointment",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_has_answer",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "variable": "item",
+              "condition": "((linkId = 'last-known-vl-results-available') and (answer.count() > 0))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_date_cont",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "listMode": "first",
+                  "variable": "collection",
+                  "condition": "((linkId = 'vl-sample-collection-date') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_get_col_date",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "variable": "colDate",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "date"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "colDate",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "collection"
+                        },
+                        {
+                          "valueString": "$this.answer.value.toString() + 'T00:00:00.000Z'"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_calc_6_months",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "date_6_months_ago",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "(today() - ((6 * 30).toString() + ' days').toQuantity())"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_is_in_range",
+                          "source": [
+                            {
+                              "context": "src",
+                              "condition": "(colDate >= date_6_months_ago)"
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_get_bundle",
+                              "source": [
+                                {
+                                  "context": "src",
+                                  "element": "contained",
+                                  "listMode": "first",
+                                  "variable": "bundleItem",
+                                  "condition": "($this.ofType(Bundle).exists())"
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_get_condition",
+                                  "source": [
+                                    {
+                                      "context": "bundleItem",
+                                      "element": "entry",
+                                      "listMode": "first",
+                                      "variable": "conditionContainer",
+                                      "condition": "($this.resource.ofType(Condition).exists())"
+                                    }
+                                  ],
+                                  "rule": [
+                                    {
+                                      "name": "r_ev_check_cond",
+                                      "source": [
+                                        {
+                                          "context": "src"
+                                        }
+                                      ],
+                                      "target": [
+                                        {
+                                          "variable": "isPresent",
+                                          "transform": "evaluate",
+                                          "parameter": [
+                                            {
+                                              "valueId": "conditionContainer"
+                                            },
+                                            {
+                                              "valueString": "$this.resource.code.coding.where((code = '77386006') or (code = '413712001')).exists()"
+                                            }
+                                          ]
+                                        }
+                                      ],
+                                      "rule": [
+                                        {
+                                          "name": "r_check_cond",
+                                          "source": [
+                                            {
+                                              "context": "src",
+                                              "condition": "(isPresent = true)"
+                                            }
+                                          ],
+                                          "rule": [
+                                            {
+                                              "name": "r_6_months_vl",
+                                              "source": [
+                                                {
+                                                  "context": "src"
+                                                }
+                                              ],
+                                              "target": [
+                                                {
+                                                  "variable": "reasonText",
+                                                  "transform": "create",
+                                                  "parameter": [
+                                                    {
+                                                      "valueString": "string"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "variable": "reasonCode",
+                                                  "transform": "create",
+                                                  "parameter": [
+                                                    {
+                                                      "valueString": "string"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "variable": "reasonDescription",
+                                                  "transform": "create",
+                                                  "parameter": [
+                                                    {
+                                                      "valueString": "string"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "context": "reasonText",
+                                                  "contextType": "variable",
+                                                  "element": "value",
+                                                  "transform": "copy",
+                                                  "parameter": [
+                                                    {
+                                                      "valueString": "Viral Load Collection"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "context": "reasonCode",
+                                                  "contextType": "variable",
+                                                  "element": "value",
+                                                  "transform": "copy",
+                                                  "parameter": [
+                                                    {
+                                                      "valueString": "VL"
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "context": "reasonDescription",
+                                                  "contextType": "variable",
+                                                  "element": "value",
+                                                  "transform": "copy",
+                                                  "parameter": [
+                                                    {
+                                                      "valueString": "6 months old Viral Load Collection"
+                                                    }
+                                                  ]
+                                                }
+                                              ],
+                                              "dependent": [
+                                                {
+                                                  "name": "AddToAppointment",
+                                                  "variable": [
+                                                    "src",
+                                                    "reasonCode",
+                                                    "reasonDescription",
+                                                    "reasonText",
+                                                    "appointment"
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 }

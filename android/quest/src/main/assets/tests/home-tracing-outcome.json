@@ -326,7 +326,7 @@
             {
               "extension": [
                 {
-                  "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
                   "_valueDate": {
                     "extension": [
                       {

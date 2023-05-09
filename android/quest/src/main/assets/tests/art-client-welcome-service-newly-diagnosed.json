@@ -1,0 +1,1271 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "art-client-welcome-service-newly-diagnosed",
+  "meta": {
+    "versionId": "6",
+    "lastUpdated": "2022-09-16T13:17:25.089+03:00",
+    "source": "#85jxLdDtbqxmgCCD"
+  },
+  "language": "en",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCode": "https://fhir-dev.d-tree.org/StructureMap/art-client-welcome-service-newly-diagnosed"
+    }
+  ],
+  "title": "Welcome Service",
+  "status": "active",
+  "subjectType": ["Patient"],
+  "publisher": "mcore",
+  "contact": [
+    {
+      "name": "http://www.d-tree.org"
+    }
+  ],
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+        "code": "focus"
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://fhir.ona.io",
+            "code": "000002",
+            "display": "Malawi Core Patient"
+          }
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 1"
+              }
+            ],
+            "text": "Page 1"
+          }
+        }
+      ],
+      "linkId": "page-1",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "introduction",
+          "text": "<h4>You are now starting welcome service</h4>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "welcome-service-tasks",
+          "text": "<b>Welcome Service Tasks</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "activities-done",
+          "text": "<b>SELECT</b> all the activities done",
+          "type": "choice",
+          "required": false,
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "welcome-client-to-care",
+                "display": "Welcome the client to care PROVIDE welcome service counselling"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "welcome-card-opened",
+                "display": "Welcome card opened for newly diagnosed client"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "religious-reasons",
+                "display": "PRE-ART counselling"
+              }
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+                  "valueBoolean": true
+                }
+              ],
+              "valueCoding": {
+                "code": "none-of-the-above",
+                "display": "None of the above"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 2"
+              }
+            ],
+            "text": "Page 2"
+          }
+        }
+      ],
+      "linkId": "infomation-known-by-client-page",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "known-information",
+          "text": "<b>Information Known by Client</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "linkId": "knowledge-activities-done",
+          "text": "<b>Confirm</b> that the client knows the following",
+          "type": "choice",
+          "required": false,
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "when-to-take-art",
+                "display": "When to take ART"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "forget-dose",
+                "display": "If they forget to take their dose sometime they can take it anytime in the next 12 hours"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "name-of-art",
+                "display": "Name of ART"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "emergency-refill",
+                "display": "How to get emergency refill"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "clinic-phone",
+                "display": "Clinic phone number"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "client-questions-and-concerns",
+                "display": "To return to clinic or call with any questions or concerns anytime before their visit"
+              }
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+                  "valueBoolean": true
+                }
+              ],
+              "valueCoding": {
+                "code": "none-of-the-above",
+                "display": "None of the above"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 3"
+              }
+            ],
+            "text": "Page 3"
+          }
+        }
+      ],
+      "linkId": "difficulty-taking-arts-page",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "difficulty-taking-art",
+          "text": "<b>Difficulty in taking ARTs</b>",
+          "type": "display",
+          "required": false
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "check-box",
+                    "display": "Check-box"
+                  }
+                ],
+                "text": "Check-box"
+              }
+            }
+          ],
+          "linkId": "challenges",
+          "text": "* <b>ASK</b> As you think about taking ARTs, what do you think will be the hardest part?",
+          "type": "choice",
+          "required": true,
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "medication-forgetfullness",
+                "display": "Remembering to take ART"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "art-privacy",
+                "display": "Find privacy to not be seen taking ART(disclosure concern)"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "too-sick",
+                "display": "Feeling too sick to take ART"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "too-well",
+                "display": "Feeling too well to take ART"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "treatment-fatigue",
+                "display": "I don't feel ready to take medication every day for the rest of my life"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "unstable-home",
+                "display": "My husband or wife will not allow me to take ART"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "experience-discrimination",
+                "display": "Worried people will find out I have HIV and stigmatise me"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "religious-reasons",
+                "display": "Religious reasons (faith healing) make it difficult for me"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "traditional-medicine",
+                "display": "Using traditional medicine for healing"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "side-effects",
+                "display": "I am worried about side effects of ART"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "lack-of-support-system",
+                "display": "I have no one to talk to about this"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "forgetfullness",
+                "display": "I may forget some of the things you told me today"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other difficulty they are concerned about"
+              }
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+                  "valueBoolean": true
+                }
+              ],
+              "valueCoding": {
+                "code": "none-of-the-above-reasons",
+                "display": "None of the above"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "other",
+          "text": "* <b>ENTER</b> Other",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "other"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 4"
+              }
+            ],
+            "text": "Page 4"
+          }
+        }
+      ],
+      "linkId": "page-4",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "remembering-art-display",
+          "text": "<b>Remembering To Take ART</b>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "medication-forgetfullness"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "remembering-art-advice",
+          "text": "<b>SAY</b> the following and <b>SELECT</b> what you said",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "medication-forgetfullness"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false,
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "not-alone",
+                "display": "Most people taking ART have this same concern as you. You are not alone"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "good-time-for-art",
+                "display": "Is morning or evening a vetter time for you to take it? Do you have a phone that you can set an alarm on?"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "routine-activity",
+                "display": "Do you have an activity you do at the same time each day and you can take your medication with that activity?"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "do-not-skip-art",
+                "display": "If you forget your dose remember that you can take it up until 12 hours later so don't skip it. And remember the ART does not require food to be taken with it"
+              }
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+                  "valueBoolean": true
+                }
+              ],
+              "valueCoding": {
+                "code": "none-of-the-above",
+                "display": "None of the above"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "privacy-display",
+          "text": "<b>Finding Privacy to not be Seen Taking ART(disclosure concern)</b>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "art-privacy"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "privacy-advice",
+          "text": "<b>SAY</b> the following and <b>SELECT</b> what you said",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "art-privacy"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false,
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "privacy-not-alone",
+                "display": "Everyone on ART has some concern about disclosure. You are not alone"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "trusted-person",
+                "display": "Who is trustworthy person who can support you?"
+              }
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+                  "valueBoolean": true
+                }
+              ],
+              "valueCoding": {
+                "code": "none-of-the-above",
+                "display": "None of the above"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "privacy-actions",
+          "text": "<b>SAY</b> the following and <b>SELECT</b> what you said",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "art-privacy"
+              }
+            },
+            {
+              "question": "privacy-advice",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false,
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "share-disclose-tips",
+                "display": "Share tips on how to disclose and Ask if we can help them disclose"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "trusted-person",
+                "display": "Remind them to discuss this concern with PSC when they chat"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "share-experiences",
+                "display": "Ask if they'd like to meet someone at clinic who is on ART to share experience"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "support-group-info",
+                "display": "Ask if they would like information on a support group"
+              }
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+                  "valueBoolean": true
+                }
+              ],
+              "valueCoding": {
+                "code": "none-of-the-above",
+                "display": "None of the above"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "too-sick-display",
+          "text": "<b>Feeling Too Sick To Take ART</b>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "too-sick"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "too-sick-advice",
+          "text": "<b>ACTION:</b> Take client to clinician for review including AHD evaluation",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "too-sick"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "too-well-display",
+          "text": "<b>Feeling Too Well To Take ART</b>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "too-well"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "too-well-advice",
+          "text": "<b>SAY</b> the following and <b>SELECT</b> what you said",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "too-well"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false,
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "weaken-virus",
+                "display": "You are not alone. Many people with HIV do not feel sick and the goal is to keep you feeling that way. As you found out from testing that you had HIV before the virus made you too sick. The goal is to start ART to weaken the virus so you can continue to feel fit and strong"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "hard-to-remember",
+                "display": "It is hard to remember to take medication when you are feeling well. The problem is, if you do ot take it, you will start to feel ill and this is what we want to avoid so this is why we talk with you about remembering"
+              }
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+                  "valueBoolean": true
+                }
+              ],
+              "valueCoding": {
+                "code": "none-of-the-above",
+                "display": "None of the above"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "treatment-fatigue-display",
+          "text": "<b>I Don't Feel Ready To Take Medicine Everyday For The Rest Of My Life</b>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "treatment-fatigue"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "treatment-fatigue-advice",
+          "text": "<b>SAY</b> You are not alone. You have received a LOT of information today about your test result and then all of this information about ART",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "treatment-fatigue"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        },
+        {
+          "linkId": "treatment-fatigue-discussion",
+          "text": "<b>ASK</b> When do you think you will feel ready to start ART?",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "treatment-fatigue"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        },
+        {
+          "linkId": "treatment-fatigue-discussion-date",
+          "text": "<b>ENTER</b> Date client will be ready to start ART",
+          "type": "date",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "treatment-fatigue"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        },
+        {
+          "linkId": "treatment-fatigue-trace-confirmation-display",
+          "text": "<b>WRITE DOWN</b> the day the client says on their welcome card",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "treatment-fatigue"
+              }
+            },
+            {
+              "question": "treatment-fatigue-discussion-date",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        },
+        {
+          "linkId": "treatment-fatigue-trace-confirmation",
+          "text": "<b>ASK:</b> Can I call you or visit you at home on that day to see how it's going?",
+          "type": "boolean",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "treatment-fatigue"
+              }
+            },
+            {
+              "question": "treatment-fatigue-discussion-date",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        },
+        {
+          "linkId": "unstable-display",
+          "text": "<b>My Husband or Wife Will Not Allow Me To Take ART</b>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "unstable-home"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "unstable-advice",
+          "text": "<b>SCREEN for GBV</b> ",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "unstable-home"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "unstable-discussion",
+          "text": "<b>DISCUSS</b> disclosure: how to do it, how you can help",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "unstable-home"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "discrimination-display",
+          "text": "<b>Worried People Will Find Out I Have HIV and Stigmatise Me</b>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "experience-discrimination"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "discrimination-advice",
+          "text": "<b>DISCUSS</b> the following and <b>SELECT</b> what you said",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "experience-discrimination"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false,
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "art-discreet",
+                "display": "Discuss how to keep ART discreet(change to another bottle)"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "trip-on-clinic-day",
+                "display": "Align clinic days with other trips: Take ART at a time of day there is some privacy"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "find-trusted-person",
+                "display": "Find someone trustworthy for disclosure"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "client-fear",
+                "display": "What they fear will happen if found out - if GBV then give GBV care"
+              }
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+                  "valueBoolean": true
+                }
+              ],
+              "valueCoding": {
+                "code": "none-of-the-above",
+                "display": "None of the above"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "religious-display",
+          "text": "<b>Religious Reasons(Faith Healing) Make It Difficult For Me</b>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "religious-reasons"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "religious-advice",
+          "text": "<b>COUNSEL</b> <br> Faith is an important part of healing and health and it is so important that you have this support. God cares for us in many ways. Just as God provides us food on this earth, we don't depend on God to keep us nourished but know he has put food here for us to eat. God has also provided people on this earth who make ART that controls the virus. God is giving us what we need to stay healthy. Do you think God would want you to use these medications with your prayers and faith and community to stay healthy? ",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "religious-reasons"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "religious-action",
+          "text": "<b>ACTION:</b> Refer to clinical Provider",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "religious-reasons"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "traditional-medicine-display",
+          "text": "<b>Using Traditional Medicine For Healing Is My Practice</b>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "traditional-medicine"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "traditional-medicine-advice",
+          "text": "<b>SAY</b> the following and <b>SELECT</b> what you said",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "traditional-medicine"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false,
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "used-to-ease-pain",
+                "display": "Many people use traditional medicine to treat many ailments like diarrhoea and pain, or to try to boost immunity. However, nothing now can cure HIV "
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "interfere-with-art",
+                "display": "AART weakens HIV. Traditional medicines can interfere with ART and reduce the effect of ART in the body"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "find-trusted-person",
+                "display": "Find someone trustworthy for disclosure"
+              }
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+                  "valueBoolean": true
+                }
+              ],
+              "valueCoding": {
+                "code": "none-of-the-above",
+                "display": "None of the above"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "traditional-medicine-action",
+          "text": "<b>ACTION</b> Refer to a clinical Provider",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "traditional-medicine-advice",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "side-effects-display",
+          "text": "<b>I Am Worried About Side Effects Of ART</b>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "side-effects"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "side-effects-advice",
+          "text": "<b>EXPLAIN:</b> Side effects do occur sometimes but it is not very common. If you have any side effects please come back to clinic so we can help you attend to the side effects and find a different ART",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "side-effects"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "support-group-display",
+          "text": "<b>I Have No One To Talk To About All Of This</b>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "support-group-info"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "support-group-advice",
+          "text": "<b>SAY</b> the following and <b>SELECT</b> what you said",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "support-group-info"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false,
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "acknowledge-difficulty",
+                "display": "Acknowledge how hard this is. Discuss if there is anyone who they can disclose to"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "offer-support-group",
+                "display": "Offer community support groups"
+              }
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+                  "valueBoolean": true
+                }
+              ],
+              "valueCoding": {
+                "code": "none-of-the-above",
+                "display": "None of the above"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "forgetfullness-display",
+          "text": "<b>I May Forget Some Of The Things You Have Told Me Today</b>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "forgetfullness"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false
+        },
+        {
+          "linkId": "forgetfullness-advice",
+          "text": "<b>SAY</b> the following and <b>SELECT</b> what you said",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "challenges",
+              "operator": "=",
+              "answerCoding": {
+                "code": "forgetfullness"
+              }
+            }
+          ],
+          "enableBehavior": "all",
+          "required": false,
+          "repeats": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "information-overload",
+                "display": "Acknowledge that this is a LOT of information "
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "call-anytime",
+                "display": "Remind client they can come or call anytime with questions"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "reassurance",
+                "display": "Reassure that you can review any or all of it at any visit or with a call"
+              }
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+                  "valueBoolean": true
+                }
+              ],
+              "valueCoding": {
+                "code": "none-of-the-above",
+                "display": "None of the above"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page 5"
+              }
+            ],
+            "text": "Page 5"
+          }
+        }
+      ],
+      "linkId": "page-5",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "psc-display",
+          "text": "<b>Psychosocial Counsellor</b>",
+          "type": "display",
+          "required": true
+        },
+        {
+          "linkId": "speak-to-psc",
+          "text": "* <b>EXPLAIN:<b>We have PSC who supports all clients and would like you to have an opportunity to talk to them today. Is it ok with you if I call them now while you are waiting for the clinication",
+          "type": "display",
+          "required": true
+        },
+        {
+          "linkId": "psc-action-display",
+          "text": "<b>ACTION</b> Refer client to PSC",
+          "type": "display",
+          "required": true
+        },
+        {
+          "linkId": "referral-confirmation",
+          "text": "* Did you refer the client to a <b>psychosocial counselor</b>?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "follow-up-confirmation-speaks-to-psc",
+          "text": "* Is follow up needed?",
+          "type": "boolean",
+          "enableWhen": [
+            {
+              "question": "referral-confirmation",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ],
+          "enableBehavior": "all",
+          "required": true
+        },
+        {
+          "linkId": "action",
+          "text": "<b>Write in passbook</b> PSC today: name of PSC; <br> reason; <br> is followup needed yes/no",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "follow-up-confirmation-speaks-to-psc",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ],
+          "enableBehavior": "any",
+          "required": true
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+              "valueExpression": {
+                "name": "encounter",
+                "language": "application/x-fhir-query",
+                "expression": "Encounter"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ],
+          "linkId": "encounter-context",
+          "type": "group",
+          "item": [
+            {
+              "linkId": "encounter-status",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Encounter#Encounter.status",
+              "type": "string",
+              "required": true,
+              "initial": [
+                {
+                  "valueString": "finished"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

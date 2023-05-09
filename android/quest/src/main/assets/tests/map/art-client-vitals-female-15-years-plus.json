@@ -1,0 +1,4672 @@
+{
+  "resourceType": "StructureMap",
+  "id": "art-client-vitals-female-15-years-plus",
+  "url": "https://fhir-dev.d-tree.org/fhir/StructureMap/art-client-vitals-female-15-years-plus",
+  "name": "ART Client Vitals Female 15 Years Plus",
+  "structure": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+      "mode": "source"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+      "mode": "target"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Condition",
+      "mode": "target"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Encounter",
+      "mode": "target"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Observation",
+      "mode": "target"
+    }
+  ],
+  "group": [
+    {
+      "name": "Main",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_bundle_id",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "id",
+              "transform": "uuid"
+            }
+          ]
+        },
+        {
+          "name": "r_bundle_type",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "type",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "collection"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_bundle_entry_ext_enc",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractEncounter",
+              "variable": [
+                "src",
+                "bundle"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractEncounter",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_bundle_entry_enc",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "encounter",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Encounter"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_enc_id",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                }
+              ]
+            },
+            {
+              "name": "r_enc_status",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "finished"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_class",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "class",
+                  "transform": "c",
+                  "parameter": [
+                    {
+                      "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+                    },
+                    {
+                      "valueString": "AMB"
+                    },
+                    {
+                      "valueString": "ambulatory"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_ser_type",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "serviceType",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://terminology.hl7.org/CodeSystem/service-type"
+                    },
+                    {
+                      "valueString": "335"
+                    },
+                    {
+                      "valueString": "Facility"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_ext_cnd_call",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "ExtractObservations",
+                  "variable": [
+                    "src",
+                    "bundle",
+                    "encounter"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractObservations",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_ext_obs",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractPage1Observations",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractPage2Observations",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractPage3Observations",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPage1Observations",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireReponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_ext_cnd_n_obs",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractPregnancyStatus",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractBabyAge",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractNoMuacEquipment",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractMuacEquipment",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractWeight",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractHeight",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractMuacAssessment",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPregnancyStatus",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page",
+              "condition": "(linkId = 'page-1')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_item_preg_status",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "variable": "item",
+                  "condition": "((linkId = 'pregnancy-status') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_create_cnd_preg_status",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "cnd",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Condition"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_cnd_id",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_rec_date",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "recordedDate",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_clinical_status",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "clinicalStatus",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/condition-clinical"
+                            },
+                            {
+                              "valueString": "active"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_verif_status",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "verificationStatus",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/condition-ver-status"
+                            },
+                            {
+                              "valueString": "confirmed"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_cc",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "code",
+                          "variable": "ccPreg",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "CodeableConcept"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cnd_cc_coding",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "ccPreg",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "item"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_cnd_cc_text",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "ccPreg",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "item"
+                                },
+                                {
+                                  "valueString": "$this.answer.value.display"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_sum_page",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "summary_page",
+                          "condition": "(linkId = 'summary-page')"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_sub_ref",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "cnd",
+                              "contextType": "variable",
+                              "element": "subject",
+                              "variable": "ref",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Reference"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_cnd_ref_ref",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "ref",
+                                  "contextType": "variable",
+                                  "element": "reference",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "summary_page"
+                                    },
+                                    {
+                                      "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_ref_enc",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [
+                            {
+                              "valueId": "encounter"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractBabyAge",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_baby_age_range",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page",
+              "condition": "(linkId = 'page-1')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_item_baby_age_range",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "variable": "babyAge",
+                  "condition": "((linkId = 'age-range-of-baby') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_baby_age_range",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Observation"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_baby_age_range",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://d-tree.org"
+                            },
+                            {
+                              "valueString": "art-client-vitals-female-15-years-plus-age-range-of-baby"
+                            },
+                            {
+                              "valueString": "baby-age-range"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            {
+                              "valueString": "vital-signs"
+                            },
+                            {
+                              "valueString": "baby-age-range"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [
+                            {
+                              "valueId": "encounter"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_no_muac_weighing_options",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Reference"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_baby_age_range",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_baby_age_range_obs_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "CodeableConcept"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_baby_age_range_obs_value_display",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "babyAge"
+                                },
+                                {
+                                  "valueString": "$this.answer.value.display"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_baby_age_range_value_coding",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "babyAge"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_baby_age_range_value_coding",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "system",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "babyAge"
+                                },
+                                {
+                                  "valueString": "$this.answer.value.system"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractNoMuacEquipment",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_no_muac_weighing_options",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page",
+              "condition": "(linkId = 'page-1')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_item_no_muac_weighing_options",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "variable": "item",
+                  "condition": "((linkId = 'no-muac-weighing-options') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_no_muac_weighing_options_answer",
+                  "source": [
+                    {
+                      "context": "item",
+                      "element": "answer",
+                      "variable": "item_answer",
+                      "condition": "($this.count() > 0)"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_no_muac_weighing_options",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "bundle",
+                          "contextType": "variable",
+                          "element": "entry",
+                          "variable": "entry"
+                        },
+                        {
+                          "context": "entry",
+                          "contextType": "variable",
+                          "element": "resource",
+                          "variable": "obs",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Observation"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_no_muac_weighing_options",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "id",
+                              "transform": "uuid"
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://d-tree.org"
+                                },
+                                {
+                                  "valueString": "art-client-vitals-female-15-years-plus-no-muac-weighing-options"
+                                },
+                                {
+                                  "valueString": "weighing-options"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "category",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                },
+                                {
+                                  "valueString": "vital-signs"
+                                },
+                                {
+                                  "valueString": "weighing-options"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "encounter",
+                              "transform": "reference",
+                              "parameter": [
+                                {
+                                  "valueId": "encounter"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "effective",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "now()"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_sub_no_muac_weighing_options",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "subject",
+                              "variable": "ref",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Reference"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_sub_ref_no_muac_weighing_options",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "ref",
+                                  "contextType": "variable",
+                                  "element": "reference",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_no_muac_weighing_options_obs_value",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "value",
+                              "variable": "codeableConcept",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "CodeableConcept"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_no_muac_weighing_options_obs_value_display",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "codeableConcept",
+                                  "contextType": "variable",
+                                  "element": "text",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "item_answer"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value.display"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_no_muac_weighing_options_value_coding",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "codeableConcept",
+                                  "contextType": "variable",
+                                  "element": "coding",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "item_answer"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractMuacEquipment",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_muac_weighing_options",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page",
+              "condition": "(linkId = 'page-1')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_item_muac_weighing_options",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "variable": "item",
+                  "condition": "((linkId = 'muac-weighing-options') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_muac_weighing_options_answer",
+                  "source": [
+                    {
+                      "context": "item",
+                      "element": "answer",
+                      "variable": "item_answer",
+                      "condition": "($this.count() > 0)"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_muac_weighing_options",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "bundle",
+                          "contextType": "variable",
+                          "element": "entry",
+                          "variable": "entry"
+                        },
+                        {
+                          "context": "entry",
+                          "contextType": "variable",
+                          "element": "resource",
+                          "variable": "obs",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Observation"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_muac_weighing_options",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "id",
+                              "transform": "uuid"
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://d-tree.org"
+                                },
+                                {
+                                  "valueString": "art-client-vitals-female-15-years-plus-muac-weighing-options"
+                                },
+                                {
+                                  "valueString": "weighing-options"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "category",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                },
+                                {
+                                  "valueString": "vital-signs"
+                                },
+                                {
+                                  "valueString": "weighing-options"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "encounter",
+                              "transform": "reference",
+                              "parameter": [
+                                {
+                                  "valueId": "encounter"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "effective",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "now()"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_sub_muac_weighing_options",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "subject",
+                              "variable": "ref",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Reference"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_sub_ref_muac_weighing_options",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "ref",
+                                  "contextType": "variable",
+                                  "element": "reference",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_muac_weighing_options_obs_value",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "value",
+                              "variable": "codeableConcept",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "CodeableConcept"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_muac_weighing_options_obs_value_display",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "codeableConcept",
+                                  "contextType": "variable",
+                                  "element": "text",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "item_answer"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value.display"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_muac_weighing_options_value_coding",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "codeableConcept",
+                                  "contextType": "variable",
+                                  "element": "coding",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "item_answer"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractWeight",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_weight",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page",
+              "condition": "(linkId = 'page-1')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_item_weight",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "variable": "item",
+                  "condition": "((linkId = 'weight') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_weight",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Observation"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_weight",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            {
+                              "valueString": "vital-signs"
+                            },
+                            {
+                              "valueString": "weight"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [
+                            {
+                              "valueId": "encounter"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_code_weight",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "CodeableConcept"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_code_1_weight",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "c",
+                              "parameter": [
+                                {
+                                  "valueString": "http://loinc.org"
+                                },
+                                {
+                                  "valueString": "29463-7"
+                                },
+                                {
+                                  "valueString": "Body Weight"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_code_2_weight",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "c",
+                              "parameter": [
+                                {
+                                  "valueString": "http://loinc.org"
+                                },
+                                {
+                                  "valueString": "3141-9"
+                                },
+                                {
+                                  "valueString": "Body weight Measured"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_code_3_weight",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "c",
+                              "parameter": [
+                                {
+                                  "valueString": "http://snomed.info/sct"
+                                },
+                                {
+                                  "valueString": "27113001"
+                                },
+                                {
+                                  "valueString": "Body weight"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_code_4_weight",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "c",
+                              "parameter": [
+                                {
+                                  "valueString": "http://acme.org/devices/clinical-codes"
+                                },
+                                {
+                                  "valueString": "body-weight"
+                                },
+                                {
+                                  "valueString": "Body Weight"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_weight",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Reference"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_weight",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value_weight",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "variable": "qty",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Quantity"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_value_value_weight",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "qty",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "item"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_value_system_weight",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "qty",
+                              "contextType": "variable",
+                              "element": "system",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "http://unitsofmeasure.org"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_value_code_weight",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "qty",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "kg"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_value_unit_weight",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "qty",
+                              "contextType": "variable",
+                              "element": "unit",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "kg"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractHeight",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_height",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page",
+              "condition": "(linkId = 'page-1')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_item_height",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "variable": "item",
+                  "condition": "((linkId = 'height') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_height",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Observation"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_height",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            {
+                              "valueString": "vital-signs"
+                            },
+                            {
+                              "valueString": "height"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [
+                            {
+                              "valueId": "encounter"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_code_extract_height",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "CodeableConcept"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_code_1_height",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "c",
+                              "parameter": [
+                                {
+                                  "valueString": "http://loinc.org"
+                                },
+                                {
+                                  "valueString": "3137-7"
+                                },
+                                {
+                                  "valueString": "Body Height"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_code_2_height",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "transform": "c",
+                              "parameter": [
+                                {
+                                  "valueString": "http://loinc.org"
+                                },
+                                {
+                                  "valueString": "8302-2"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_height",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Reference"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_height",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value_extract_height",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "variable": "qty",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Quantity"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_value_value_length",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "qty",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "item"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_value_system_height",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "qty",
+                              "contextType": "variable",
+                              "element": "system",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "http://unitsofmeasure.org"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_value_code_height",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "qty",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "cm"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_value_unit_height",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "qty",
+                              "contextType": "variable",
+                              "element": "unit",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "cm"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractMuacAssessment",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_muac_assessment",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page",
+              "condition": "(linkId = 'page-1')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_item_muac_assessment",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "variable": "item",
+                  "condition": "((linkId = 'muac-assessment') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_muac_assessment",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Observation"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_muac_assessment",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://d-tree.org"
+                            },
+                            {
+                              "valueString": "art-client-vitals-female-15-years-plus-muac-assessment"
+                            },
+                            {
+                              "valueString": "muac-assessment"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            {
+                              "valueString": "vital-signs"
+                            },
+                            {
+                              "valueString": "muac-assessment"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [
+                            {
+                              "valueId": "encounter"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_muac_assessment",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Reference"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_muac_assessment",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value_extract_muac_assessment",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPage2Observations",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireReponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_ext_page_2_obs",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractBpPastCheck",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractBpMachine",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractBpSystolic",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractBpDiastolic",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractBpPastCheck",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_bp_check_past_year",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page",
+              "condition": "(linkId = 'page-2')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_item_bp_check_past_year",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "variable": "item",
+                  "condition": "((linkId = 'bp-check-past-year') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_bp_check_past_year",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Observation"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_bp_check_past_year",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://d-tree.org"
+                            },
+                            {
+                              "valueString": "art-client-vitals-female-15-years-plus-bp-check-past-year"
+                            },
+                            {
+                              "valueString": "bp-check-past-year"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            {
+                              "valueString": "vital-signs"
+                            },
+                            {
+                              "valueString": "bp-check-past-year"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [
+                            {
+                              "valueId": "encounter"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_bp_check_past_year",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Reference"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_bp_check_past_year",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value_extract_bp_check_past_year",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractBpMachine",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_bp_machine_available",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page",
+              "condition": "(linkId = 'page-2')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_bpgroup_bp_machine_available",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "variable": "bpGroup",
+                  "condition": "(linkId = 'bp-date-check')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_item_bp_machine_available",
+                  "source": [
+                    {
+                      "context": "bpGroup",
+                      "element": "item",
+                      "variable": "item",
+                      "condition": "((linkId = 'bp-machine-available') and (answer.count() > 0))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_bp_machine_available",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "bundle",
+                          "contextType": "variable",
+                          "element": "entry",
+                          "variable": "entry"
+                        },
+                        {
+                          "context": "entry",
+                          "contextType": "variable",
+                          "element": "resource",
+                          "variable": "obs",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Observation"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_bp_machine_available",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "id",
+                              "transform": "uuid"
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://d-tree.org"
+                                },
+                                {
+                                  "valueString": "art-client-vitals-female-15-years-plus-bp-machine-available"
+                                },
+                                {
+                                  "valueString": "bp-machine-available"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "category",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                },
+                                {
+                                  "valueString": "vital-signs"
+                                },
+                                {
+                                  "valueString": "bp-machine-available"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "encounter",
+                              "transform": "reference",
+                              "parameter": [
+                                {
+                                  "valueId": "encounter"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "effective",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "now()"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_sub_bp_machine_available",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "subject",
+                              "variable": "ref",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Reference"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_sub_ref_bp_machine_available",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "ref",
+                                  "contextType": "variable",
+                                  "element": "reference",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_value_extract_bp_machine_available",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "item"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractBpSystolic",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_bp_assessment_systolic",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page",
+              "condition": "(linkId = 'page-2')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_bpgroup_bp_assessment_systolic",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "variable": "bpGroup",
+                  "condition": "(linkId = 'bp-date-check')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_assessment_group_bp_assessment_systolic",
+                  "source": [
+                    {
+                      "context": "bpGroup",
+                      "element": "item",
+                      "variable": "assessmentGroup",
+                      "condition": "(linkId = 'conduct-bp-assessment')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_item_bp_assessment_systolic",
+                      "source": [
+                        {
+                          "context": "assessmentGroup",
+                          "element": "item",
+                          "variable": "item",
+                          "condition": "((linkId = 'bp-assessment-systolic') and (answer.count() > 0))"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_bp_assessment_systolic",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "bundle",
+                              "contextType": "variable",
+                              "element": "entry",
+                              "variable": "entry"
+                            },
+                            {
+                              "context": "entry",
+                              "contextType": "variable",
+                              "element": "resource",
+                              "variable": "obs",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Observation"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_bp_assessment_systolic",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "id",
+                                  "transform": "uuid"
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "code",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://d-tree.org"
+                                    },
+                                    {
+                                      "valueString": "art-client-vitals-female-15-years-plus-bp-assessment-systolic"
+                                    },
+                                    {
+                                      "valueString": "bp-assessment-systolic"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "category",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                    },
+                                    {
+                                      "valueString": "vital-signs"
+                                    },
+                                    {
+                                      "valueString": "bp-assessment-systolic"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "encounter",
+                                  "transform": "reference",
+                                  "parameter": [
+                                    {
+                                      "valueId": "encounter"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "effective",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "now()"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_obs_sub_bp_assessment_systolic",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "subject",
+                                  "variable": "ref",
+                                  "transform": "create",
+                                  "parameter": [
+                                    {
+                                      "valueString": "Reference"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_obs_sub_ref_bp_assessment_systolic",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "context": "ref",
+                                      "contextType": "variable",
+                                      "element": "reference",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "src"
+                                        },
+                                        {
+                                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_obs_value_extract_bp_assessment_systolic",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "item"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractBpDiastolic",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_bp_assessment_diastolic",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page",
+              "condition": "(linkId = 'page-2')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_bpgroup_bp_assessment_diastolic",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "variable": "bpGroup",
+                  "condition": "(linkId = 'bp-date-check')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_assessment_group_bp_assessment_diastolic",
+                  "source": [
+                    {
+                      "context": "bpGroup",
+                      "element": "item",
+                      "variable": "assessmentGroup",
+                      "condition": "(linkId = 'conduct-bp-assessment')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_item_bp_assessment_diastolic",
+                      "source": [
+                        {
+                          "context": "assessmentGroup",
+                          "element": "item",
+                          "variable": "item",
+                          "condition": "((linkId = 'bp-assessment-diastolic') and (answer.count() > 0))"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_bp_assessment_diastolic",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "bundle",
+                              "contextType": "variable",
+                              "element": "entry",
+                              "variable": "entry"
+                            },
+                            {
+                              "context": "entry",
+                              "contextType": "variable",
+                              "element": "resource",
+                              "variable": "obs",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Observation"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_bp_assessment_diastolic",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "id",
+                                  "transform": "uuid"
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "code",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://d-tree.org"
+                                    },
+                                    {
+                                      "valueString": "art-client-vitals-female-15-years-plus-bp-assessment-diastolic"
+                                    },
+                                    {
+                                      "valueString": "bp-assessment-diastolic"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "category",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                    },
+                                    {
+                                      "valueString": "vital-signs"
+                                    },
+                                    {
+                                      "valueString": "bp-assessment-diastolic"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "encounter",
+                                  "transform": "reference",
+                                  "parameter": [
+                                    {
+                                      "valueId": "encounter"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "effective",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "now()"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_obs_sub_bp_assessment_diastolic",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "subject",
+                                  "variable": "ref",
+                                  "transform": "create",
+                                  "parameter": [
+                                    {
+                                      "valueString": "Reference"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_obs_sub_ref_bp_assessment_diastolic",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "context": "ref",
+                                      "contextType": "variable",
+                                      "element": "reference",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "src"
+                                        },
+                                        {
+                                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_obs_value_extract_bp_assessment_diastolic",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "item"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPage3Observations",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireReponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_ext_page_3_obs",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractDiabetesPastCheck",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractBloodSugarTest",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractClientRefer",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            },
+            {
+              "name": "ExtractBloodSugarResults",
+              "variable": [
+                "src",
+                "bundle",
+                "encounter"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractDiabetesPastCheck",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_diabetes_check_past_year",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page",
+              "condition": "(linkId = 'page-3')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_item_diabetes_check_past_year",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "variable": "item",
+                  "condition": "((linkId = 'diabetes-check-past-year') and (answer.count() > 0))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_diabetes_check_past_year",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Observation"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_diabetes_check_past_year",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://d-tree.org"
+                            },
+                            {
+                              "valueString": "art-client-vitals-female-15-years-plus-diabetes-check-past-year"
+                            },
+                            {
+                              "valueString": "diabetes-check-past-year"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            {
+                              "valueString": "vital-signs"
+                            },
+                            {
+                              "valueString": "diabetes-check-past-year"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "encounter",
+                          "transform": "reference",
+                          "parameter": [
+                            {
+                              "valueId": "encounter"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub_diabetes_check_past_year",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "variable": "ref",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Reference"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_sub_ref_diabetes_check_past_year",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "ref",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value_extract_diabetes_check_past_year",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "item"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractBloodSugarTest",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_blood_sugar_test_available",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page",
+              "condition": "(linkId = 'page-3')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_diabetes_group_blood_sugar_test_available",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "variable": "diabetesGroup",
+                  "condition": "(linkId = 'diabetes-date-check')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_item_blood_sugar_test_available",
+                  "source": [
+                    {
+                      "context": "diabetesGroup",
+                      "element": "item",
+                      "variable": "item",
+                      "condition": "((linkId = 'blood-sugar-test-available') and (answer.count() > 0))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_blood_sugar_test_available",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "bundle",
+                          "contextType": "variable",
+                          "element": "entry",
+                          "variable": "entry"
+                        },
+                        {
+                          "context": "entry",
+                          "contextType": "variable",
+                          "element": "resource",
+                          "variable": "obs",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Observation"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_blood_sugar_test_available",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "id",
+                              "transform": "uuid"
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://d-tree.org"
+                                },
+                                {
+                                  "valueString": "art-client-vitals-female-15-years-plus-blood-sugar-test-available"
+                                },
+                                {
+                                  "valueString": "blood-sugar-test-available"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "category",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                },
+                                {
+                                  "valueString": "vital-signs"
+                                },
+                                {
+                                  "valueString": "blood-sugar-test-available"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "encounter",
+                              "transform": "reference",
+                              "parameter": [
+                                {
+                                  "valueId": "encounter"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "effective",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "now()"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_sub_blood_sugar_test_available",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "subject",
+                              "variable": "ref",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Reference"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_sub_ref_blood_sugar_test_available",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "ref",
+                                  "contextType": "variable",
+                                  "element": "reference",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_value_extract_blood_sugar_test_available",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "item"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractClientRefer",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_able_to_refer_client",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page",
+              "condition": "(linkId = 'page-3')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_diabetes_group_able_to_refer_client",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "variable": "diabetesGroup",
+                  "condition": "(linkId = 'diabetes-date-check')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_item_able_to_refer_client",
+                  "source": [
+                    {
+                      "context": "diabetesGroup",
+                      "element": "item",
+                      "variable": "item",
+                      "condition": "((linkId = 'able-to-refer-client') and (answer.count() > 0))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_able_to_refer_client",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "bundle",
+                          "contextType": "variable",
+                          "element": "entry",
+                          "variable": "entry"
+                        },
+                        {
+                          "context": "entry",
+                          "contextType": "variable",
+                          "element": "resource",
+                          "variable": "obs",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Observation"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_able_to_refer_client",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "id",
+                              "transform": "uuid"
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://d-tree.org"
+                                },
+                                {
+                                  "valueString": "art-client-vitals-female-15-years-plus-able-to-refer-client"
+                                },
+                                {
+                                  "valueString": "able-to-refer-client"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "category",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                },
+                                {
+                                  "valueString": "vital-signs"
+                                },
+                                {
+                                  "valueString": "able-to-refer-client"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "encounter",
+                              "transform": "reference",
+                              "parameter": [
+                                {
+                                  "valueId": "encounter"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "effective",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "now()"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_sub_able_to_refer_client",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "subject",
+                              "variable": "ref",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Reference"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_sub_ref_able_to_refer_client",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "ref",
+                                  "contextType": "variable",
+                                  "element": "reference",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_value_extract_able_to_refer_client",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "item"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractBloodSugarResults",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_blood_sugar_test_results",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page",
+              "condition": "(linkId = 'page-3')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_diabetes_group_blood_sugar_test_results",
+              "source": [
+                {
+                  "context": "page",
+                  "element": "item",
+                  "variable": "diabetesGroup",
+                  "condition": "(linkId = 'diabetes-date-check')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_assessment_group_blood_sugar_test_results",
+                  "source": [
+                    {
+                      "context": "diabetesGroup",
+                      "element": "item",
+                      "variable": "assessmentGroup",
+                      "condition": "(linkId = 'conduct-diabetes-assessment')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_item_blood_sugar_test_results",
+                      "source": [
+                        {
+                          "context": "assessmentGroup",
+                          "element": "item",
+                          "variable": "item",
+                          "condition": "((linkId = 'blood-sugar-test-results') and (answer.count() > 0))"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_blood_sugar_test_results",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "bundle",
+                              "contextType": "variable",
+                              "element": "entry",
+                              "variable": "entry"
+                            },
+                            {
+                              "context": "entry",
+                              "contextType": "variable",
+                              "element": "resource",
+                              "variable": "obs",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Observation"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_blood_sugar_test_results",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "id",
+                                  "transform": "uuid"
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "code",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://d-tree.org"
+                                    },
+                                    {
+                                      "valueString": "art-client-vitals-female-15-years-plus-blood-sugar-test-results"
+                                    },
+                                    {
+                                      "valueString": "blood-sugar-test-results"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "category",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                    },
+                                    {
+                                      "valueString": "vital-signs"
+                                    },
+                                    {
+                                      "valueString": "blood-sugar-test-results"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "encounter",
+                                  "transform": "reference",
+                                  "parameter": [
+                                    {
+                                      "valueId": "encounter"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "effective",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "now()"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_obs_sub_blood_sugar_test_results",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "subject",
+                                  "variable": "ref",
+                                  "transform": "create",
+                                  "parameter": [
+                                    {
+                                      "valueString": "Reference"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_obs_sub_ref_blood_sugar_test_results",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "context": "ref",
+                                      "contextType": "variable",
+                                      "element": "reference",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "src"
+                                        },
+                                        {
+                                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_obs_value_extract_blood_sugar_test_results",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "item"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

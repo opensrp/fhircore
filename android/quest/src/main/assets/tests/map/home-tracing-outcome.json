@@ -721,6 +721,72 @@
               ]
             },
             {
+              "name": "r_set_period",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "period",
+                  "variable": "period"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_enc_period_start",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "period",
+                      "contextType": "variable",
+                      "element": "start",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_enc_period_end",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "period",
+                      "contextType": "variable",
+                      "element": "end",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
               "name": "r_extract_observations",
               "source": [
                 {
@@ -810,7 +876,7 @@
                           "context": "tracingBundle",
                           "element": "entry",
                           "listMode": "first",
-                          "variable": "tracingTaskContainer",
+                          "variable": "tracingEncContainer",
                           "condition": "($this.resource.ofType(List).exists())"
                         }
                       ],
@@ -819,16 +885,16 @@
                           "name": "r_list_id_container",
                           "source": [
                             {
-                              "context": "tracingTaskContainer"
+                              "context": "tracingEncContainer"
                             }
                           ],
                           "target": [
                             {
-                              "variable": "tracingTask",
+                              "variable": "encOldList",
                               "transform": "evaluate",
                               "parameter": [
                                 {
-                                  "valueId": "tracingTaskContainer"
+                                  "valueId": "tracingEncContainer"
                                 },
                                 {
                                   "valueString": "$this.resource"
@@ -846,11 +912,11 @@
                               ],
                               "target": [
                                 {
-                                  "variable": "actualTaskId",
+                                  "variable": "actualListId",
                                   "transform": "evaluate",
                                   "parameter": [
                                     {
-                                      "valueId": "tracingTask"
+                                      "valueId": "encOldList"
                                     },
                                     {
                                       "valueString": "$this.id"
@@ -871,7 +937,7 @@
                                       "context": "encList",
                                       "contextType": "variable",
                                       "element": "id",
-                                      "variable": "encId",
+                                      "variable": "listId",
                                       "transform": "create",
                                       "parameter": [
                                         {
@@ -880,13 +946,13 @@
                                       ]
                                     },
                                     {
-                                      "context": "encId",
+                                      "context": "listId",
                                       "contextType": "variable",
                                       "element": "value",
                                       "transform": "copy",
                                       "parameter": [
                                         {
-                                          "valueId": "actualTaskId"
+                                          "valueId": "actualListId"
                                         }
                                       ]
                                     }
@@ -900,7 +966,7 @@
                           "name": "r_fetch_resources",
                           "source": [
                             {
-                              "context": "tracingTaskContainer",
+                              "context": "tracingEncContainer",
                               "element": "resource",
                               "variable": "resource1"
                             }
@@ -1005,7 +1071,7 @@
                                   "context": "tracingBundle",
                                   "element": "entry",
                                   "listMode": "first",
-                                  "variable": "tracingTaskContainer",
+                                  "variable": "tracingEncContainer",
                                   "condition": "($this.resource.ofType(List).empty())"
                                 }
                               ],
@@ -1266,6 +1332,270 @@
                                       ]
                                     }
                                   ]
+                                },
+                                {
+                                  "name": "r_enc_list_date",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "context": "encList",
+                                      "contextType": "variable",
+                                      "element": "date",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "src"
+                                        },
+                                        {
+                                          "valueString": "now()"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_all_items",
+                      "source": [
+                        {
+                          "context": "tracingBundle",
+                          "element": "entry",
+                          "variable": "tracingTaskContainer",
+                          "condition": "($this.resource.ofType(Task).exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_get_task",
+                          "source": [
+                            {
+                              "context": "tracingTaskContainer"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "tracingTask",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "tracingTaskContainer"
+                                },
+                                {
+                                  "valueString": "$this.resource"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_create_ref",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "variable": "ref",
+                                  "transform": "create",
+                                  "parameter": [
+                                    {
+                                      "valueString": "Reference"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "ref",
+                                  "contextType": "variable",
+                                  "element": "reference",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "tracingTask"
+                                    },
+                                    {
+                                      "valueString": "'Task/' + $this.id"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_does_task_exist_get",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "variable": "hasTask",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "encList"
+                                        },
+                                        {
+                                          "valueString": "$this.entry.where(flag.text = tracingTask.id).exists()"
+                                        }
+                                      ]
+                                    }
+                                  ],
+                                  "rule": [
+                                    {
+                                      "name": "r_does_task_exist",
+                                      "source": [
+                                        {
+                                          "context": "src",
+                                          "condition": "(hasTask = false)"
+                                        }
+                                      ],
+                                      "rule": [
+                                        {
+                                          "name": "r_add_reference_to_list",
+                                          "source": [
+                                            {
+                                              "context": "src"
+                                            }
+                                          ],
+                                          "target": [
+                                            {
+                                              "context": "encList",
+                                              "contextType": "variable",
+                                              "element": "entry",
+                                              "variable": "encListEntry"
+                                            },
+                                            {
+                                              "context": "encListEntry",
+                                              "contextType": "variable",
+                                              "element": "item",
+                                              "transform": "reference",
+                                              "parameter": [
+                                                {
+                                                  "valueId": "tracingTask"
+                                                }
+                                              ]
+                                            }
+                                          ],
+                                          "rule": [
+                                            {
+                                              "name": "r_list_code",
+                                              "source": [
+                                                {
+                                                  "context": "src"
+                                                }
+                                              ],
+                                              "target": [
+                                                {
+                                                  "context": "encListEntry",
+                                                  "contextType": "variable",
+                                                  "element": "flag",
+                                                  "variable": "listFlagCC",
+                                                  "transform": "create",
+                                                  "parameter": [
+                                                    {
+                                                      "valueString": "CodeableConcept"
+                                                    }
+                                                  ]
+                                                }
+                                              ],
+                                              "rule": [
+                                                {
+                                                  "name": "r_list_code_text",
+                                                  "source": [
+                                                    {
+                                                      "context": "src"
+                                                    }
+                                                  ],
+                                                  "target": [
+                                                    {
+                                                      "context": "listFlagCC",
+                                                      "contextType": "variable",
+                                                      "element": "text",
+                                                      "transform": "evaluate",
+                                                      "parameter": [
+                                                        {
+                                                          "valueId": "tracingTask"
+                                                        },
+                                                        {
+                                                          "valueString": "$this.id.toString()"
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "name": "r_list_code_coding",
+                                                  "source": [
+                                                    {
+                                                      "context": "src"
+                                                    }
+                                                  ],
+                                                  "target": [
+                                                    {
+                                                      "context": "listFlagCC",
+                                                      "contextType": "variable",
+                                                      "element": "coding",
+                                                      "variable": "coding",
+                                                      "transform": "create",
+                                                      "parameter": [
+                                                        {
+                                                          "valueString": "Coding"
+                                                        }
+                                                      ]
+                                                    }
+                                                  ],
+                                                  "rule": [
+                                                    {
+                                                      "name": "r_list_code_coding_value",
+                                                      "source": [
+                                                        {
+                                                          "context": "src"
+                                                        }
+                                                      ],
+                                                      "target": [
+                                                        {
+                                                          "context": "coding",
+                                                          "contextType": "variable",
+                                                          "element": "system",
+                                                          "transform": "copy",
+                                                          "parameter": [
+                                                            {
+                                                              "valueString": "https://d-tree.org"
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "context": "coding",
+                                                          "contextType": "variable",
+                                                          "element": "code",
+                                                          "transform": "copy",
+                                                          "parameter": [
+                                                            {
+                                                              "valueString": "tracing-task"
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -1301,6 +1631,243 @@
               "parameter": [
                 {
                   "valueId": "encounter"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_list_code",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encListEntry",
+                  "contextType": "variable",
+                  "element": "flag",
+                  "variable": "listFlagCC",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_list_code_coding",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "listFlagCC",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_list_code_coding_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "https://d-tree.org"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "tracing-enc"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_get_number_of_attempts",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "variable": "numberOfEncounters",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "encList"
+                },
+                {
+                  "valueString": "$this.entry.where(flag.coding.code = 'tracing-enc').count()"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_add_counter_to_src",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encList",
+                  "contextType": "variable",
+                  "element": "title",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "numberOfEncounters"
+                    },
+                    {
+                      "valueString": "'Tracing Encounter List_' + $this.toString()"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_create_cc",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encList",
+                  "contextType": "variable",
+                  "element": "orderedBy",
+                  "variable": "orderedByCC",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_order_by_text",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "orderedByCC",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "numberOfEncounters"
+                        },
+                        {
+                          "valueString": "$this.toString()"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_order_by_code_coding",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "orderedByCC",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_order_by_coding_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "https://d-tree.org"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "numberOfEncounters"
+                            },
+                            {
+                              "valueString": "$this.toString()"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }
@@ -1445,7 +2012,7 @@
                           "valueString": "https://d-tree.org"
                         },
                         {
-                          "valueString": "phone-tracing-outcome-able-to-speak"
+                          "valueString": "home-tracing-outcome-able-to-speak"
                         }
                       ]
                     },
@@ -2707,7 +3274,7 @@
           "source": [
             {
               "context": "src",
-              "condition": "(encList.entry.count() >= 2)"
+              "condition": "(encList.entry.where(flag.coding.code = 'tracing-enc').count() >= 2)"
             }
           ],
           "rule": [
@@ -2823,7 +3390,7 @@
                           "valueString": "https://d-tree.org"
                         },
                         {
-                          "valueString": "phone-tracing-outcome-tracing-outcome"
+                          "valueString": "tracing-outcome-conducted"
                         }
                       ]
                     },
@@ -3084,7 +3651,7 @@
                           "valueString": "https://d-tree.org"
                         },
                         {
-                          "valueString": "phone-tracing-outcome-reason-for-no-tracing"
+                          "valueString": "tracing-outcome-unconducted"
                         }
                       ]
                     },
@@ -3395,7 +3962,7 @@
                           "valueId": "linkPath"
                         },
                         {
-                          "valueString": "'phone-tracing-outcome-' + $this.value"
+                          "valueString": "'home-tracing-outcome-' + $this.value"
                         }
                       ]
                     }
@@ -3672,7 +4239,7 @@
                           "valueId": "linkPath"
                         },
                         {
-                          "valueString": "'phone-tracing-outcome-' + $this.value"
+                          "valueString": "'home-tracing-outcome-' + $this.value"
                         }
                       ]
                     }
@@ -3911,12 +4478,7 @@
                       "context": "obs",
                       "contextType": "variable",
                       "element": "encounter",
-                      "transform": "reference",
-                      "parameter": [
-                        {
-                          "valueId": "encounter"
-                        }
-                      ]
+                      "transform": "reference"
                     },
                     {
                       "context": "obs",
@@ -3949,7 +4511,7 @@
                           "valueId": "linkPath"
                         },
                         {
-                          "valueString": "'phone-tracing-outcome-' + $this.value"
+                          "valueString": "'home-tracing-outcome-' + $this.value"
                         }
                       ]
                     }
@@ -4857,7 +5419,7 @@
                           "valueId": "linkPath"
                         },
                         {
-                          "valueString": "'phone-tracing-outcome-' + $this.value"
+                          "valueString": "'home-tracing-outcome-' + $this.value"
                         }
                       ]
                     }
@@ -4973,7 +5535,16 @@
                   ],
                   "target": [
                     {
-                      "context": "obs",
+                      "variable": "startDate",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "dateTime"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "startDate",
                       "contextType": "variable",
                       "element": "value",
                       "transform": "evaluate",
@@ -4982,7 +5553,18 @@
                           "valueId": "itemAnswer"
                         },
                         {
-                          "valueString": "$this.answer.value.toString()"
+                          "valueString": "$this.answer.value.toString() + 'T00:00:00+00:00'"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueId": "startDate"
                         }
                       ]
                     }

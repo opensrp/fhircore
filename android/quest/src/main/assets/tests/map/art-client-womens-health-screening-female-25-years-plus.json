@@ -1,0 +1,4715 @@
+{
+  "resourceType": "StructureMap",
+  "id": "art-client-womens-health-screening-female-25-years-plus",
+  "url": "http://fhir-dev.d-tree.org/fhir/StructureMap/art-client-womens-health-screening-female-25-years-plus",
+  "name": "ART Client Womens Health Screening for Females 25 years plus",
+  "structure": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+      "mode": "source"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+      "mode": "target"
+    }
+  ],
+  "group": [
+    {
+      "name": "Main",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_bundle_entries",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "id",
+              "transform": "uuid"
+            },
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "type",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "collection"
+                }
+              ]
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractEncounter",
+              "variable": [
+                "src",
+                "bundle"
+              ]
+            },
+            {
+              "name": "EvaluateAppointment",
+              "variable": [
+                "src",
+                "bundle"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractEncounter",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_encounter_data",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "encounter",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Encounter"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_enc_id",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                }
+              ]
+            },
+            {
+              "name": "r_enc_status",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "finished"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_class",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "class",
+                  "transform": "c",
+                  "parameter": [
+                    {
+                      "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+                    },
+                    {
+                      "valueString": "AMB"
+                    },
+                    {
+                      "valueString": "ambulatory"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_ser_type",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "serviceType",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://terminology.hl7.org/CodeSystem/service-type"
+                    },
+                    {
+                      "valueString": "335"
+                    },
+                    {
+                      "valueString": "Facility"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_enc_sub",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "encounter",
+                  "contextType": "variable",
+                  "element": "subject",
+                  "variable": "reference",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_enc_sub_ref",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "reference",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_extract_page_1_observations",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "ExtractPage1Observations",
+                  "variable": [
+                    "src",
+                    "encounter",
+                    "bundle"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_extract_page_2_observations",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "ExtractPage2Observations",
+                  "variable": [
+                    "src",
+                    "encounter",
+                    "bundle"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPage1Observations",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_ext_obs",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractPregnancy",
+              "variable": [
+                "src",
+                "encounter",
+                "bundle"
+              ]
+            },
+            {
+              "name": "ExtractFamilyPlanning",
+              "variable": [
+                "src",
+                "encounter",
+                "bundle"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPregnancy",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_1_pregancy",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page1",
+              "condition": "(linkId = 'page-1')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_fp_group_pregancy",
+              "source": [
+                {
+                  "context": "page1",
+                  "element": "item",
+                  "variable": "familyPlanningGroup",
+                  "condition": "(linkId = 'fp-check-required')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_item_pregancy",
+                  "source": [
+                    {
+                      "context": "familyPlanningGroup",
+                      "element": "item",
+                      "variable": "pregnacy",
+                      "condition": "(linkId = 'fp-check')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_pregancy",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "bundle",
+                          "contextType": "variable",
+                          "element": "entry",
+                          "variable": "entry"
+                        },
+                        {
+                          "context": "entry",
+                          "contextType": "variable",
+                          "element": "resource",
+                          "variable": "obs",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Observation"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_data_pregancy",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "id",
+                              "transform": "uuid"
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://d-tree.org"
+                                },
+                                {
+                                  "valueString": "art-client-womens-health-screening-female-15-to-25-years-fp-check"
+                                },
+                                {
+                                  "valueString": "art-client-womens-health-screening-family-plan-check"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "category",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                },
+                                {
+                                  "valueString": "vital-signs"
+                                },
+                                {
+                                  "valueString": "pregnancy"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "encounter",
+                              "transform": "reference",
+                              "parameter": [
+                                {
+                                  "valueId": "encounter"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "effective",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "now()"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_sub_pregancy",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "subject",
+                              "variable": "ref",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Reference"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_sub_ref_pregnancy",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "ref",
+                                  "contextType": "variable",
+                                  "element": "reference",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_pregancy_obs_value",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "value",
+                              "variable": "codeableConcept",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "CodeableConcept"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_pregnacy_obs_value_display",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "codeableConcept",
+                                  "contextType": "variable",
+                                  "element": "text",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "pregnacy"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value.display"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_pregancy_obs_value_coding",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "codeableConcept",
+                                  "contextType": "variable",
+                                  "element": "coding",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "pregnacy"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractFamilyPlanning",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page-1_family_planning",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page1",
+              "condition": "(linkId = 'page-1')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_family_planning_group",
+              "source": [
+                {
+                  "context": "page1",
+                  "element": "item",
+                  "variable": "familyPlanningGroup",
+                  "condition": "(linkId = 'fp-check-required')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_non_pregnant_group",
+                  "source": [
+                    {
+                      "context": "familyPlanningGroup",
+                      "element": "item",
+                      "variable": "nonPregnantGroup",
+                      "condition": "(linkId = 'fp-is-not-pregnant-or-interested')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_item_family_planning",
+                      "source": [
+                        {
+                          "context": "nonPregnantGroup",
+                          "element": "item",
+                          "variable": "familyPlanning",
+                          "condition": "(linkId = 'fp-is-not-pregnant-or-interested-ask')"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_family_planning",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "bundle",
+                              "contextType": "variable",
+                              "element": "entry",
+                              "variable": "entry"
+                            },
+                            {
+                              "context": "entry",
+                              "contextType": "variable",
+                              "element": "resource",
+                              "variable": "obs",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Observation"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_data_family_planning",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "id",
+                                  "transform": "uuid"
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "code",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://d-tree.org"
+                                    },
+                                    {
+                                      "valueString": "art-client-womens-health-screening-female-15-to-25-years-fp-check-required"
+                                    },
+                                    {
+                                      "valueString": "art-client-womens-health-screening-family-plan-interest"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "category",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                    },
+                                    {
+                                      "valueString": "vital-signs"
+                                    },
+                                    {
+                                      "valueString": "family-planning"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "encounter",
+                                  "transform": "reference",
+                                  "parameter": [
+                                    {
+                                      "valueId": "encounter"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "effective",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "now()"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_obs_sub_family_planning",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "subject",
+                                  "variable": "ref",
+                                  "transform": "create",
+                                  "parameter": [
+                                    {
+                                      "valueString": "Reference"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_obs_sub_ref_family_planning",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "context": "ref",
+                                      "contextType": "variable",
+                                      "element": "reference",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "src"
+                                        },
+                                        {
+                                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_family_planning_obs_value",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "familyPlanning"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPage2Observations",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_ext_page_1_obs",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractCervicalScreening",
+              "variable": [
+                "src",
+                "encounter",
+                "bundle"
+              ]
+            },
+            {
+              "name": "ExtractScreeningType",
+              "variable": [
+                "src",
+                "encounter",
+                "bundle"
+              ]
+            },
+            {
+              "name": "ExtractScreeningReference",
+              "variable": [
+                "src",
+                "encounter",
+                "bundle"
+              ]
+            },
+            {
+              "name": "ExtractViaDate",
+              "variable": [
+                "src",
+                "encounter",
+                "bundle"
+              ]
+            },
+            {
+              "name": "ExtractHPVDate",
+              "variable": [
+                "src",
+                "encounter",
+                "bundle"
+              ]
+            },
+            {
+              "name": "ExtractviaScreeningReference",
+              "variable": [
+                "src",
+                "encounter",
+                "bundle"
+              ]
+            },
+            {
+              "name": "ExtractHPVScreeningReference",
+              "variable": [
+                "src",
+                "encounter",
+                "bundle"
+              ]
+            },
+            {
+              "name": "ExtractNoReferenceReason",
+              "variable": [
+                "src",
+                "encounter",
+                "bundle"
+              ]
+            },
+            {
+              "name": "ExtractReferralOtheReason",
+              "variable": [
+                "src",
+                "encounter",
+                "bundle"
+              ]
+            },
+            {
+              "name": "ExtractHPVResult",
+              "variable": [
+                "src",
+                "encounter",
+                "bundle"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractCervicalScreening",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_2",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page2",
+              "condition": "(linkId = 'page-2')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_screening_group_ever_screened",
+              "source": [
+                {
+                  "context": "page2",
+                  "element": "item",
+                  "variable": "screeningGroup",
+                  "condition": "(linkId = 'cervical-cancer-screening-required-25-plus')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_item_ever_screened",
+                  "source": [
+                    {
+                      "context": "screeningGroup",
+                      "element": "item",
+                      "variable": "everscreened",
+                      "condition": "(linkId = 'ccs-25-plus-ask')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_ever_screened",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "bundle",
+                          "contextType": "variable",
+                          "element": "entry",
+                          "variable": "entry"
+                        },
+                        {
+                          "context": "entry",
+                          "contextType": "variable",
+                          "element": "resource",
+                          "variable": "obs",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Observation"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_ever-screened_before",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "id",
+                              "transform": "uuid"
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://d-tree.org"
+                                },
+                                {
+                                  "valueString": "art-client-womens-health-screening-female-25-years-plus-ccs-25-plus-ask"
+                                },
+                                {
+                                  "valueString": "art-client-womens-health-screening-cervical-cancer-screening"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "category",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                },
+                                {
+                                  "valueString": "vital-signs"
+                                },
+                                {
+                                  "valueString": "cervical-cancer-screening"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "encounter",
+                              "transform": "reference",
+                              "parameter": [
+                                {
+                                  "valueId": "encounter"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "effective",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "now()"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_sub_ever_screened_before",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "subject",
+                              "variable": "ref",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Reference"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_sub_ref_ever-screened-before",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "ref",
+                                  "contextType": "variable",
+                                  "element": "reference",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_ever_screened_before_obs_value",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "everscreened"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractScreeningType",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_2_screening_type",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page2",
+              "condition": "(linkId = 'page-2')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_screening_group_screening_type",
+              "source": [
+                {
+                  "context": "page2",
+                  "element": "item",
+                  "variable": "screeningGroup",
+                  "condition": "(linkId = 'cervical-cancer-screening-required-25-plus')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_item_screening_type",
+                  "source": [
+                    {
+                      "context": "screeningGroup",
+                      "element": "item",
+                      "variable": "screeningType",
+                      "condition": "(linkId = 'ccs-25-plus-type')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_screening_type",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "bundle",
+                          "contextType": "variable",
+                          "element": "entry",
+                          "variable": "entry"
+                        },
+                        {
+                          "context": "entry",
+                          "contextType": "variable",
+                          "element": "resource",
+                          "variable": "obs",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Observation"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_screening_type",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "id",
+                              "transform": "uuid"
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://d-tree.org"
+                                },
+                                {
+                                  "valueString": "art-client-womens-health-screening-female-25-years-plus-ccs-25-plus-type"
+                                },
+                                {
+                                  "valueString": "art-client-womens-health-screening-screening_type"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "category",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                },
+                                {
+                                  "valueString": "vital-signs"
+                                },
+                                {
+                                  "valueString": "cervical-cancer-screening"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "encounter",
+                              "transform": "reference",
+                              "parameter": [
+                                {
+                                  "valueId": "encounter"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "effective",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "now()"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_sub_screening_type",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "subject",
+                              "variable": "ref",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Reference"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_sub_ref_screening_type",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "ref",
+                                  "contextType": "variable",
+                                  "element": "reference",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_screening_type_obs_value",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "value",
+                              "variable": "codeableConcept",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "CodeableConcept"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_pregnacy_obs_value_display",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "codeableConcept",
+                                  "contextType": "variable",
+                                  "element": "text",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "screeningType"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value.display"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_pregancy_obs_value_coding",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "codeableConcept",
+                                  "contextType": "variable",
+                                  "element": "coding",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "screeningType"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractScreeningReference",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_2_via_screening_refer",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page2",
+              "condition": "(linkId = 'page-2')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_screening_via_screening_refer",
+              "source": [
+                {
+                  "context": "page2",
+                  "element": "item",
+                  "variable": "screeningGroup",
+                  "condition": "(linkId = 'cervical-cancer-screening-required-25-plus')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_item_via_screening_refer",
+                  "source": [
+                    {
+                      "context": "screeningGroup",
+                      "element": "item",
+                      "variable": "screeningRefer",
+                      "condition": "(linkId = 'confirm-referral-ask-no')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_via_screening_refer",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "bundle",
+                          "contextType": "variable",
+                          "element": "entry",
+                          "variable": "entry"
+                        },
+                        {
+                          "context": "entry",
+                          "contextType": "variable",
+                          "element": "resource",
+                          "variable": "obs",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Observation"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_ever-via_screening_refer",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "id",
+                              "transform": "uuid"
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://d-tree.org"
+                                },
+                                {
+                                  "valueString": "art-client-womens-health-screening-female-25-years-plus-confirm-referral-ask-no"
+                                },
+                                {
+                                  "valueString": "art-client-womens-health-screening-screening_reference"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "category",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                },
+                                {
+                                  "valueString": "vital-signs"
+                                },
+                                {
+                                  "valueString": "cervical-cancer-screening"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "encounter",
+                              "transform": "reference",
+                              "parameter": [
+                                {
+                                  "valueId": "encounter"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "effective",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "now()"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_sub_ever_via_screening_refer",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "subject",
+                              "variable": "ref",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Reference"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_sub_ref_via_screening_refer",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "ref",
+                                  "contextType": "variable",
+                                  "element": "reference",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_ever_via_screening_refer_obs_value",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "screeningRefer"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractViaDate",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_2_via_via_date",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page2",
+              "condition": "(linkId = 'page-2')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_screening_via_via_date",
+              "source": [
+                {
+                  "context": "page2",
+                  "element": "item",
+                  "variable": "screeningGroup",
+                  "condition": "(linkId = 'cervical-cancer-screening-required-25-plus')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_via_group_via_date",
+                  "source": [
+                    {
+                      "context": "screeningGroup",
+                      "element": "item",
+                      "variable": "viaGroup",
+                      "condition": "(linkId = 'via-selected')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_item_via_via_date",
+                      "source": [
+                        {
+                          "context": "viaGroup",
+                          "element": "item",
+                          "variable": "viaDate",
+                          "condition": "(linkId = 'date-of-last-via-screen')"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_via_via_date",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "bundle",
+                              "contextType": "variable",
+                              "element": "entry",
+                              "variable": "entry"
+                            },
+                            {
+                              "context": "entry",
+                              "contextType": "variable",
+                              "element": "resource",
+                              "variable": "obs",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Observation"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_data-via_via_date",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "id",
+                                  "transform": "uuid"
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "code",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://d-tree.org"
+                                    },
+                                    {
+                                      "valueString": "art-client-womens-health-screening-female-25-years-plus-date-of-last-via-screen"
+                                    },
+                                    {
+                                      "valueString": "art-client-womens-health-screening-via_date"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "category",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                    },
+                                    {
+                                      "valueString": "vital-signs"
+                                    },
+                                    {
+                                      "valueString": "cervical-cancer-screening"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "encounter",
+                                  "transform": "reference",
+                                  "parameter": [
+                                    {
+                                      "valueId": "encounter"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "effective",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "now()"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_obs_sub_ever_via_via_date",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "subject",
+                                  "variable": "ref",
+                                  "transform": "create",
+                                  "parameter": [
+                                    {
+                                      "valueString": "Reference"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_obs_sub_ref_via_via_date",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "context": "ref",
+                                      "contextType": "variable",
+                                      "element": "reference",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "src"
+                                        },
+                                        {
+                                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_ever_via_via_date_obs_value",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "viaDate"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value.toString()"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractHPVDate",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_2_hpv_date",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page2",
+              "condition": "(linkId = 'page-2')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_screening_hpv_date",
+              "source": [
+                {
+                  "context": "page2",
+                  "element": "item",
+                  "variable": "screeningGroup",
+                  "condition": "(linkId = 'cervical-cancer-screening-required-25-plus')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_via_group_hpv_date",
+                  "source": [
+                    {
+                      "context": "screeningGroup",
+                      "element": "item",
+                      "variable": "hpvGroup",
+                      "condition": "(linkId = 'hpv-selected')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_item_hpv_date",
+                      "source": [
+                        {
+                          "context": "hpvGroup",
+                          "element": "item",
+                          "variable": "hpvDate",
+                          "condition": "(linkId = 'date-of-last-hpv-screen')"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_hpv_date",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "bundle",
+                              "contextType": "variable",
+                              "element": "entry",
+                              "variable": "entry"
+                            },
+                            {
+                              "context": "entry",
+                              "contextType": "variable",
+                              "element": "resource",
+                              "variable": "obs",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Observation"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_data_hpv_date",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "id",
+                                  "transform": "uuid"
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "code",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://d-tree.org"
+                                    },
+                                    {
+                                      "valueString": "art-client-womens-health-screening-female-25-years-plus-date-of-last-hpv-screen"
+                                    },
+                                    {
+                                      "valueString": "art-client-womens-health-screening-hpv_date"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "category",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                    },
+                                    {
+                                      "valueString": "vital-signs"
+                                    },
+                                    {
+                                      "valueString": "cervical-cancer-screening"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "encounter",
+                                  "transform": "reference",
+                                  "parameter": [
+                                    {
+                                      "valueId": "encounter"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "effective",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "now()"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_obs_sub_ever_hpv_date",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "subject",
+                                  "variable": "ref",
+                                  "transform": "create",
+                                  "parameter": [
+                                    {
+                                      "valueString": "Reference"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_obs_sub_ref_hpv_date",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "context": "ref",
+                                      "contextType": "variable",
+                                      "element": "reference",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "src"
+                                        },
+                                        {
+                                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_ever_hpv_date_obs_value",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "hpvDate"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value.toString()"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractHPVScreeningReference",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_2_hpv_confirm_referral",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page2",
+              "condition": "(linkId = 'page-2')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_screening_hpv_confirm_referral",
+              "source": [
+                {
+                  "context": "page2",
+                  "element": "item",
+                  "variable": "screeningGroup",
+                  "condition": "(linkId = 'cervical-cancer-screening-required-25-plus')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_via_group_hpv_confirm_referral",
+                  "source": [
+                    {
+                      "context": "screeningGroup",
+                      "element": "item",
+                      "variable": "hpvGroup",
+                      "condition": "(linkId = 'hpv-selected')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_item_hpv_confirm_referral",
+                      "source": [
+                        {
+                          "context": "hpvGroup",
+                          "element": "item",
+                          "variable": "confirmReferral",
+                          "condition": "(linkId = 'confirm-referral-hpv')"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_hpv_confirm_referral",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "bundle",
+                              "contextType": "variable",
+                              "element": "entry",
+                              "variable": "entry"
+                            },
+                            {
+                              "context": "entry",
+                              "contextType": "variable",
+                              "element": "resource",
+                              "variable": "obs",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Observation"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_data_hpv_confirm_referral",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "id",
+                                  "transform": "uuid"
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "code",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://d-tree.org"
+                                    },
+                                    {
+                                      "valueString": "art-client-womens-health-screening-female-25-years-plus-confirm-referral-hpv"
+                                    },
+                                    {
+                                      "valueString": "art-client-womens-health-screening-hpv_confirm_referral"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "category",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                    },
+                                    {
+                                      "valueString": "vital-signs"
+                                    },
+                                    {
+                                      "valueString": "cervical-cancer-screening"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "encounter",
+                                  "transform": "reference",
+                                  "parameter": [
+                                    {
+                                      "valueId": "encounter"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "effective",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "now()"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_obs_sub_ever_hpv_confirm_referral",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "subject",
+                                  "variable": "ref",
+                                  "transform": "create",
+                                  "parameter": [
+                                    {
+                                      "valueString": "Reference"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_obs_sub_ref_hpv_confirm_referral",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "context": "ref",
+                                      "contextType": "variable",
+                                      "element": "reference",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "src"
+                                        },
+                                        {
+                                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_ever_hpv_confirm_referral_obs_value",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "confirmReferral"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractviaScreeningReference",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_2_via_confirm_referral",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page2",
+              "condition": "(linkId = 'page-2')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_screening_via_confirm_referral",
+              "source": [
+                {
+                  "context": "page2",
+                  "element": "item",
+                  "variable": "screeningGroup",
+                  "condition": "(linkId = 'cervical-cancer-screening-required-25-plus')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_via_group_via_confirm_referral",
+                  "source": [
+                    {
+                      "context": "screeningGroup",
+                      "element": "item",
+                      "variable": "viaGroup",
+                      "condition": "(linkId = 'via-selected')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_item_via_confirm_referral",
+                      "source": [
+                        {
+                          "context": "viaGroup",
+                          "element": "item",
+                          "variable": "confirmReferral",
+                          "condition": "(linkId = 'confirm-referral-via')"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_via_confirm_referral",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "bundle",
+                              "contextType": "variable",
+                              "element": "entry",
+                              "variable": "entry"
+                            },
+                            {
+                              "context": "entry",
+                              "contextType": "variable",
+                              "element": "resource",
+                              "variable": "obs",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Observation"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_data_via_confirm_referral",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "id",
+                                  "transform": "uuid"
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "code",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://d-tree.org"
+                                    },
+                                    {
+                                      "valueString": "art-client-womens-health-screening-female-25-years-plus-confirm-referral-via"
+                                    },
+                                    {
+                                      "valueString": "art-client-womens-health-screening-via-confirm-referral"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "category",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                    },
+                                    {
+                                      "valueString": "vital-signs"
+                                    },
+                                    {
+                                      "valueString": "cervical-cancer-screening"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "encounter",
+                                  "transform": "reference",
+                                  "parameter": [
+                                    {
+                                      "valueId": "encounter"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "effective",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "now()"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_obs_sub_ever_via_confirm_referral",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "subject",
+                                  "variable": "ref",
+                                  "transform": "create",
+                                  "parameter": [
+                                    {
+                                      "valueString": "Reference"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_obs_sub_ref_via_confirm_referral",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "context": "ref",
+                                      "contextType": "variable",
+                                      "element": "reference",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "src"
+                                        },
+                                        {
+                                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_ever_via_confirm_referral_obs_value",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "confirmReferral"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractHPVResult",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_2_hpv_result",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page2",
+              "condition": "(linkId = 'page-2')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_screening_hpv_result",
+              "source": [
+                {
+                  "context": "page2",
+                  "element": "item",
+                  "variable": "screeningGroup",
+                  "condition": "(linkId = 'cervical-cancer-screening-required-25-plus')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_via_group_hpv_result",
+                  "source": [
+                    {
+                      "context": "screeningGroup",
+                      "element": "item",
+                      "variable": "hpvGroup",
+                      "condition": "(linkId = 'hpv-selected')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_item_hpv_result",
+                      "source": [
+                        {
+                          "context": "hpvGroup",
+                          "element": "item",
+                          "variable": "hpvResult",
+                          "condition": "(linkId = 'check-last-hpv-result')"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_hpv_result",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "bundle",
+                              "contextType": "variable",
+                              "element": "entry",
+                              "variable": "entry"
+                            },
+                            {
+                              "context": "entry",
+                              "contextType": "variable",
+                              "element": "resource",
+                              "variable": "obs",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Observation"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_data_hpv_result",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "id",
+                                  "transform": "uuid"
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "code",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://d-tree.org"
+                                    },
+                                    {
+                                      "valueString": "art-client-womens-health-screening-female-25-years-plus-check-last-hpv-result"
+                                    },
+                                    {
+                                      "valueString": "art-client-womens-health-screening-hpv-last-result"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "category",
+                                  "transform": "cc",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                    },
+                                    {
+                                      "valueString": "vital-signs"
+                                    },
+                                    {
+                                      "valueString": "cervical-cancer-screening"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "encounter",
+                                  "transform": "reference",
+                                  "parameter": [
+                                    {
+                                      "valueId": "encounter"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "effective",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "now()"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_obs_sub_ever_hpv_confirm_referral",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "subject",
+                                  "variable": "ref",
+                                  "transform": "create",
+                                  "parameter": [
+                                    {
+                                      "valueString": "Reference"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_obs_sub_ref_hpv_result",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "context": "ref",
+                                      "contextType": "variable",
+                                      "element": "reference",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "src"
+                                        },
+                                        {
+                                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_hpv_result_obs_value",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "obs",
+                                  "contextType": "variable",
+                                  "element": "value",
+                                  "variable": "codeableConcept",
+                                  "transform": "create",
+                                  "parameter": [
+                                    {
+                                      "valueString": "CodeableConcept"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_hpv_result_obs_value_display",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "context": "codeableConcept",
+                                      "contextType": "variable",
+                                      "element": "text",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "hpvResult"
+                                        },
+                                        {
+                                          "valueString": "$this.answer.value.display"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "name": "r_hpv_result_value_coding",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "context": "codeableConcept",
+                                      "contextType": "variable",
+                                      "element": "coding",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "hpvResult"
+                                        },
+                                        {
+                                          "valueString": "$this.answer.value"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractNoReferenceReason",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_2_negative_referral",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page2",
+              "condition": "(linkId = 'page-2')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_screening_group_negative_referral",
+              "source": [
+                {
+                  "context": "page2",
+                  "element": "item",
+                  "variable": "screeningGroup",
+                  "condition": "(linkId = 'cervical-cancer-screening-required-25-plus')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_item_negative_referral",
+                  "source": [
+                    {
+                      "context": "screeningGroup",
+                      "element": "item",
+                      "variable": "negativeReferral",
+                      "condition": "(linkId = 'confirm-via-referral-negative')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_negative_referral",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "bundle",
+                          "contextType": "variable",
+                          "element": "entry",
+                          "variable": "entry"
+                        },
+                        {
+                          "context": "entry",
+                          "contextType": "variable",
+                          "element": "resource",
+                          "variable": "obs",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Observation"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_data_negative_referral",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "id",
+                              "transform": "uuid"
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://d-tree.org"
+                                },
+                                {
+                                  "valueString": "art-client-womens-health-screening-female-25-years-plus-confirm-via-referral-negative"
+                                },
+                                {
+                                  "valueString": "art-client-womens-health-screening-negative_referral"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "category",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                },
+                                {
+                                  "valueString": "vital-signs"
+                                },
+                                {
+                                  "valueString": "cervical-cancer-screening"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "encounter",
+                              "transform": "reference",
+                              "parameter": [
+                                {
+                                  "valueId": "encounter"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "effective",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "now()"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_sub_negative_referral",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "subject",
+                              "variable": "ref",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Reference"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_sub_ref_negative_referral",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "ref",
+                                  "contextType": "variable",
+                                  "element": "reference",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_negative_referral_obs_value",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "value",
+                              "variable": "codeableConcept",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "CodeableConcept"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_negative_referral_obs_value_display",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "codeableConcept",
+                                  "contextType": "variable",
+                                  "element": "text",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "negativeReferral"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value.display"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_negative_referral_value_coding",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "codeableConcept",
+                                  "contextType": "variable",
+                                  "element": "coding",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "negativeReferral"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractReferralOtheReason",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_page_2_negative_referral_other",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "page2",
+              "condition": "(linkId = 'page-2')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_screening_group_negative_referral_other",
+              "source": [
+                {
+                  "context": "page2",
+                  "element": "item",
+                  "variable": "screeningGroup",
+                  "condition": "(linkId = 'cervical-cancer-screening-required-25-plus')"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_item_negative_referral_other",
+                  "source": [
+                    {
+                      "context": "screeningGroup",
+                      "element": "item",
+                      "variable": "negativeReferralOtherReason",
+                      "condition": "(linkId = 'other-reason')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_negative_referral_other",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "bundle",
+                          "contextType": "variable",
+                          "element": "entry",
+                          "variable": "entry"
+                        },
+                        {
+                          "context": "entry",
+                          "contextType": "variable",
+                          "element": "resource",
+                          "variable": "obs",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Observation"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_data_negative_referral_other",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "id",
+                              "transform": "uuid"
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://d-tree.org"
+                                },
+                                {
+                                  "valueString": "art-client-womens-health-screening-female-25-years-plus-other-reason"
+                                },
+                                {
+                                  "valueString": "art-client-womens-health-screening-negative_referral-other-reason"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "category",
+                              "transform": "cc",
+                              "parameter": [
+                                {
+                                  "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                                },
+                                {
+                                  "valueString": "vital-signs"
+                                },
+                                {
+                                  "valueString": "cervical-cancer-screening"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "encounter",
+                              "transform": "reference",
+                              "parameter": [
+                                {
+                                  "valueId": "encounter"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "effective",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "src"
+                                },
+                                {
+                                  "valueString": "now()"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_sub_negative_referral_other",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "subject",
+                              "variable": "ref",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Reference"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_obs_sub_ref_negative_referral_other",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "ref",
+                                  "contextType": "variable",
+                                  "element": "reference",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "src"
+                                    },
+                                    {
+                                      "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_negative_referral_other_obs_value",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "obs",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "negativeReferralOtherReason"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EvaluateAppointment",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_summary",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "pageGroup",
+              "condition": "(linkId = 'page-2')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_last_visited",
+              "source": [
+                {
+                  "context": "pageGroup",
+                  "element": "item",
+                  "variable": "itemAnswer",
+                  "condition": "((linkId = 'last-via-date-entered-is-older-than-a-year-ago') and (answer.value = true))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_create_app",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "appointment",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Appointment"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_bundle",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "contained",
+                          "listMode": "first",
+                          "variable": "item",
+                          "condition": "($this.ofType(Bundle).exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_appointment_missing_eval",
+                          "source": [
+                            {
+                              "context": "item",
+                              "element": "entry",
+                              "variable": "appointmentContainer",
+                              "condition": "($this.resource.ofType(Appointment).exists() and $this.resource.ofType(Appointment).start.empty())"
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_get_app_item",
+                              "source": [
+                                {
+                                  "context": "appointmentContainer"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "variable": "appointmentItem",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "appointmentContainer"
+                                    },
+                                    {
+                                      "valueString": "$this.resource"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_get_appointment_id",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "variable": "actualAppId",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "appointmentItem"
+                                        },
+                                        {
+                                          "valueString": "$this.id.value.replace('#', '')"
+                                        }
+                                      ]
+                                    }
+                                  ],
+                                  "rule": [
+                                    {
+                                      "name": "r_appointment_id",
+                                      "source": [
+                                        {
+                                          "context": "src"
+                                        }
+                                      ],
+                                      "target": [
+                                        {
+                                          "context": "appointment",
+                                          "contextType": "variable",
+                                          "element": "id",
+                                          "variable": "appId",
+                                          "transform": "create",
+                                          "parameter": [
+                                            {
+                                              "valueString": "id"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "context": "appId",
+                                          "contextType": "variable",
+                                          "element": "value",
+                                          "transform": "copy",
+                                          "parameter": [
+                                            {
+                                              "valueId": "actualAppId"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "name": "r_reason_switch",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "variable": "reasonCode",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "appointmentContainer"
+                                        },
+                                        {
+                                          "valueString": "$this.resource.reasonCode"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "variable": "reasonItem",
+                                      "transform": "evaluate",
+                                      "parameter": [
+                                        {
+                                          "valueId": "reasonCode"
+                                        },
+                                        {
+                                          "valueString": "$this"
+                                        }
+                                      ]
+                                    }
+                                  ],
+                                  "rule": [
+                                    {
+                                      "name": "r_create_reasonItem",
+                                      "source": [
+                                        {
+                                          "context": "src"
+                                        }
+                                      ],
+                                      "target": [
+                                        {
+                                          "context": "appointment",
+                                          "contextType": "variable",
+                                          "element": "reasonCode",
+                                          "transform": "copy",
+                                          "parameter": [
+                                            {
+                                              "valueId": "reasonItem"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_app_empty_container",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "isListEmpty",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "item"
+                                },
+                                {
+                                  "valueString": "$this.entry.resource.ofType(Appointment).empty()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "allEvaluated",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "item"
+                                },
+                                {
+                                  "valueString": "$this.entry.resource.ofType(Appointment).all($this.start.exists())"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_app_empty",
+                              "source": [
+                                {
+                                  "context": "src",
+                                  "condition": "((isListEmpty = true) or (allEvaluated = true))"
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_app_populate",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "dependent": [
+                                    {
+                                      "name": "PopulateAppointment",
+                                      "variable": [
+                                        "src",
+                                        "appointment"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_appointment_code",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "appointment",
+                          "contextType": "variable",
+                          "element": "reasonCode",
+                          "variable": "codeableConcept",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "CodeableConcept"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_appointment_code_text",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Cervical Cancer Screening"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_appointment_code_coding",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "codeableConcept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "variable": "coding",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "Coding"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_appointment_code_coding_value",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "coding",
+                                  "contextType": "variable",
+                                  "element": "system",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    {
+                                      "valueString": "https://d-tree.org"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "coding",
+                                  "contextType": "variable",
+                                  "element": "code",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    {
+                                      "valueString": "VIA"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "context": "coding",
+                                  "contextType": "variable",
+                                  "element": "display",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    {
+                                      "valueString": "Cervical Cancer Screening"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PopulateAppointment",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "appointment",
+          "type": "Appointment",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_appointment_data",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "id",
+              "transform": "uuid"
+            },
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "status",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "booked"
+                }
+              ]
+            },
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "created",
+              "variable": "current_date_time",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "src"
+                },
+                {
+                  "valueString": "now()"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_appointment_service_category",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "serviceCategory",
+              "variable": "codeableConcept",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "CodeableConcept"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_code_text",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "text",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "HIV-AIDS program"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_code_coding",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "coding",
+                  "variable": "coding",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Coding"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_coding_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "HIVAIDS"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "HIV-AIDS program"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_appointment_type",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "appointmentType",
+              "variable": "codeableConcept",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "CodeableConcept"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_code_text",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "text",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "Routine appointment"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_code_coding",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "codeableConcept",
+                  "contextType": "variable",
+                  "element": "coding",
+                  "variable": "coding",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Coding"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_coding_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/v2-0276"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "ROUTINE"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "Routine appointment"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_ppointment_part_patient_component",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "condition": "(linkId = 'patient-id')"
+            }
+          ],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "participant",
+              "variable": "partComp",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Appointment_Participant"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_comp_one_liners",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "required",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "required"
+                    }
+                  ]
+                },
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "accepted"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_participant_code",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "type",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_code_text",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "Subject"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_participant_code_coding",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_appointment_code_coding_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "SBJ"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "subject"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_ppointment_part_actor",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "partComp",
+                  "contextType": "variable",
+                  "element": "actor",
+                  "variable": "encOwner",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_ppointment_part_reference",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "encOwner",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "'Patient/' + $this.item.where(linkId = 'patient-id').answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_appointment_part_performer",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "listMode": "first",
+              "condition": "(linkId = 'practitioner-ref')"
+            }
+          ],
+          "target": [
+            {
+              "context": "appointment",
+              "contextType": "variable",
+              "element": "participant",
+              "variable": "performerComp",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Appointment_Participant"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_appointment_part_one_liners",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "required",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "required"
+                    }
+                  ]
+                },
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "accepted"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_performer_type",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "type",
+                  "variable": "codeableConcept",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_appointment_part_performer_type_text",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "Performer"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_appointment_part_performer_type_coding",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "codeableConcept",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "PRF"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "coding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "Performer"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_appointment_actor_performer",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "performerComp",
+                  "contextType": "variable",
+                  "element": "actor",
+                  "variable": "performer",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
+                },
+                {
+                  "context": "performer",
+                  "contextType": "variable",
+                  "element": "reference",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "$this.item.where(linkId = 'practitioner-ref').answer.value"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
