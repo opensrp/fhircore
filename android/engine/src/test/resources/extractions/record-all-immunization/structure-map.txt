@@ -42,10 +42,11 @@ group ExtractImmunization(source src : QuestionnaireResponse, source encounter: 
 
     //adding encounter as task.output
      src.item as vaccinesItemAnswer where(linkId='vaccines') then {
+     src -> evaluate(vaccinesItemAnswer,$this.answer.first()) as answerItem then{
            src -> bundle.entry as entry,
                   entry.resource = create('Task') as task then {
                   src->create("id") as task_id then {
-                       src->task_id.value = evaluate(vaccinesItemAnswer,$this.answer.first().value.reference) "r_set_task_id_value";
+                       src->task_id.value = evaluate(answerItem,$this.value.reference) "r_set_task_id_value";
                        src->task.id = task_id "r_set_task_id";
                        src -> task.output = create('Task_Output') as output then{
                               src -> output.type = cc("http://snomed.info/sct", "41000179103", "Immunization record (record artifact)") ,
@@ -57,7 +58,8 @@ group ExtractImmunization(source src : QuestionnaireResponse, source encounter: 
 
            }"r_reference";
 
-    }"r_taskouput";
+    }"r_answer_item";
+    }"r_task_output";
 }
 
 
