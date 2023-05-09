@@ -101,15 +101,16 @@ fun List<ActionConfig>.handleClickEvent(
           )
 
         // Register is the entry point destination, clear back stack with every register switch
-        val currentDestination = navController.currentDestination
-        if (currentDestination != null && currentDestination.id != MainNavigationScreen.Home.route
-        ) {
-          val sameRegisterId =
-            currentDestination.arguments[NavigationArg.REGISTER_ID].toString() ==
-              args.getString(NavigationArg.REGISTER_ID)
-          if (!sameRegisterId) {
-            navController.navigate(resId = MainNavigationScreen.Home.route, args = args)
-          } else return
+        val currentDestinationId = navController.currentDestination?.id
+        val sameRegisterId =
+          args.getString(NavigationArg.REGISTER_ID) ==
+            navController.previousBackStackEntry?.arguments?.getString(NavigationArg.REGISTER_ID)
+        if (currentDestinationId != MainNavigationScreen.Home.route && !sameRegisterId) {
+          navController.navigate(
+            resId = MainNavigationScreen.Home.route,
+            args = args,
+            navOptions = navOptions(currentDestinationId!!, false)
+          )
         } else return
       }
       ApplicationWorkflow.LAUNCH_REPORT -> {
