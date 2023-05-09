@@ -1472,7 +1472,61 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
-  fun testConditionallyUpdateCarePlanStatusRevokesCarePlanWhenCarePlanStatusIsClosed() {
+  fun testConditionallyUpdateCarePlanStatusRevokesCarePlanWhenCarePlanStatusIsActive() {
+    val planDefinitions = listOf("plandef-1")
+    val carePlanConfig =
+      CarePlanConfig(
+        fhirPathExpression =
+          "Patient.active and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/450cb100-0c5b-47c6-9f33-2830a79be726').exists()"
+      )
+    val questionnaireConfig: QuestionnaireConfig =
+      QuestionnaireConfig(
+        id = "id-1",
+        planDefinitions = planDefinitions,
+        carePlanConfigs = listOf(carePlanConfig)
+      )
+    val patient =
+      Patient().apply {
+        id = "patient-1"
+        active = true
+      }
+    val carePlan =
+      CarePlan().apply {
+        id = "careplan-1"
+        status = CarePlan.CarePlanStatus.ACTIVE
+      }
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        questionnaire = "Questionnaire/450cb100-0c5b-47c6-9f33-2830a79be726"
+      }
+    val bundle =
+      Bundle().apply {
+        /* addEntry().resource = patient
+        addEntry().resource = questionnaireResponse*/
+        entry =
+          listOf(
+            Bundle.BundleEntryComponent().apply { resource = patient },
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponse }
+          )
+      }
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
+    coEvery { fhirEngine.update(any()) } just runs
+
+    runBlocking {
+      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
+        questionnaireConfig = questionnaireConfig,
+        subject = patient,
+        bundle = bundle
+      )
+    }
+
+    val carePlanSlot = slot<CarePlan>()
+    coVerify { fhirEngine.update(capture(carePlanSlot)) }
+    assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
+  }
+
+  @Test
+  fun testConditionallyUpdateCarePlanStatusDoesNotUpdateCarePlanWhenFhirPathResourceExpressionFails() {
     val planDefinitions = listOf("plandef-1")
     val carePlanConfig = CarePlanConfig(fhirPathExpression = "Patient.active")
     val questionnaireConfig: QuestionnaireConfig =
@@ -1484,7 +1538,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val patient =
       Patient().apply {
         id = "patient-1"
-        active = true
+        active = false
       }
     val carePlan =
       CarePlan().apply {
@@ -1503,107 +1557,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       )
     }
 
-    val carePlanSlot = slot<CarePlan>()
-    coVerify { fhirEngine.update(capture(carePlanSlot)) }
-    assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
-  }
-
-  @Test
-  fun testConditionallyUpdateCarePlanStatusFetchesResourceUsingFhirPathResourceId() {
-    val planDefinitions = listOf("plandef-1")
-    val carePlanConfig =
-      CarePlanConfig(
-        fhirPathExpression = "Group.active",
-        fhirPathResource = "Group",
-        fhirPathResourceId = "4595a221-7ad3-4219-97f0-1920a02f8882"
-      )
-    val questionnaireConfig: QuestionnaireConfig =
-      QuestionnaireConfig(
-        id = "id-1",
-        planDefinitions = planDefinitions,
-        carePlanConfigs = listOf(carePlanConfig)
-      )
-    val patient =
-      Patient().apply {
-        id = "patient-1"
-        active = true
-      }
-    val carePlan =
-      CarePlan().apply {
-        id = "careplan-1"
-        status = CarePlan.CarePlanStatus.ACTIVE
-      }
-    val bundle = Bundle().apply { addEntry().resource = patient }
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
-    coEvery { fhirEngine.get(any(), any()) } returns Group().apply { active = true }
-    coEvery { fhirEngine.update(any()) } just runs
-
-    runBlocking {
-      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
-        questionnaireConfig = questionnaireConfig,
-        subject = patient,
-        bundle = bundle
-      )
-    }
-
-    coVerify { fhirEngine.get(ResourceType.Group, carePlanConfig.fhirPathResourceId!!) }
-
-    val carePlanSlot = slot<CarePlan>()
-    coVerify { fhirEngine.update(capture(carePlanSlot)) }
-    assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
-  }
-
-  @Test
-  fun testConditionallyUpdateCarePlanStatusDoesNotUpdateCarePlanWhenFhirPathResourceExpressionFails() {
-    val planDefinitions = listOf("plandef-1")
-    val carePlanConfig =
-      CarePlanConfig(
-        fhirPathExpression = "Group.active",
-        fhirPathResource = "Group",
-        fhirPathResourceId = "4595a221-7ad3-4219-97f0-1920a02f8882"
-      )
-    val questionnaireConfig: QuestionnaireConfig =
-      QuestionnaireConfig(
-        id = "id-1",
-        planDefinitions = planDefinitions,
-        carePlanConfigs = listOf(carePlanConfig)
-      )
-    val patient =
-      Patient().apply {
-        id = "patient-1"
-        active = true
-      }
-    val carePlan =
-      CarePlan().apply {
-        id = "careplan-1"
-        status = CarePlan.CarePlanStatus.ACTIVE
-      }
-    val bundle = Bundle().apply { addEntry().resource = patient }
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
-    coEvery { fhirEngine.get(any(), any()) } returns Group().apply { active = false }
-    coEvery { fhirEngine.update(any()) } just runs
-
-    runBlocking {
-      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
-        questionnaireConfig = questionnaireConfig,
-        subject = patient,
-        bundle = bundle
-      )
-    }
-
-    coVerify { fhirEngine.get(ResourceType.Group, carePlanConfig.fhirPathResourceId!!) }
     coVerify(exactly = 0) { fhirEngine.update(any()) }
   }
 
   @Test
   fun testConditionallyUpdateCarePlanStatusCancelsTasks() {
     val planDefinitions = listOf("plandef-1")
-    val carePlanConfig =
-      CarePlanConfig(
-        fhirPathExpression = "Group.active",
-        fhirPathResource = "Group",
-        fhirPathResourceId = "4595a221-7ad3-4219-97f0-1920a02f8882"
-      )
+    val carePlanConfig = CarePlanConfig(fhirPathExpression = "Patient.active")
     val questionnaireConfig: QuestionnaireConfig =
       QuestionnaireConfig(
         id = "id-1",
@@ -1646,8 +1606,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       )
     }
 
-    coVerify { fhirEngine.get(ResourceType.Group, carePlanConfig.fhirPathResourceId!!) }
-
     val carePlanSlot = slot<CarePlan>()
     coVerify { fhirEngine.update(capture(carePlanSlot)) }
     assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
@@ -1661,12 +1619,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testConditionallyUpdateCarePlanStatusDoesNotCancelTasksWhenStatusIsCompleted() {
     val planDefinitions = listOf("plandef-1")
-    val carePlanConfig =
-      CarePlanConfig(
-        fhirPathExpression = "Group.active",
-        fhirPathResource = "Group",
-        fhirPathResourceId = "4595a221-7ad3-4219-97f0-1920a02f8882"
-      )
+    val carePlanConfig = CarePlanConfig(fhirPathExpression = "Patient.active")
     val questionnaireConfig: QuestionnaireConfig =
       QuestionnaireConfig(
         id = "id-1",
@@ -1691,7 +1644,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       }
     val bundle = Bundle().apply { addEntry().resource = patient }
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
-    coEvery { fhirEngine.get(any(), any()) } returns Group().apply { active = true }
     coEvery { fhirEngine.update(any()) } just runs
     val task =
       Task().apply {
@@ -1708,8 +1660,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         bundle = bundle
       )
     }
-
-    coVerify { fhirEngine.get(ResourceType.Group, carePlanConfig.fhirPathResourceId!!) }
 
     val carePlanSlot = slot<CarePlan>()
     coVerify { fhirEngine.update(capture(carePlanSlot)) }
