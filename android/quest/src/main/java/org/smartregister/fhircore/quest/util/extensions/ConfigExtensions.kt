@@ -71,7 +71,9 @@ fun List<ActionConfig>.handleClickEvent(
               context = navController.context,
               intentBundle = intentBundle,
               questionnaireConfig = questionnaireConfigInterpolated,
-              actionParams = interpolateActionParamsValue(actionConfig, resourceData).toList()
+              actionParams = interpolateActionParamsValue(actionConfig, resourceData).toList(),
+              baseResourceId = resourceData?.baseResourceId,
+              baseResourceType = resourceData?.baseResourceType?.name
             )
           }
         }
