@@ -1078,7 +1078,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     val patient = samplePatient().apply { id = "2" }
     coEvery { fhirEngine.get(ResourceType.Patient, "2") } returns patient
-    coEvery { defaultRepo.loadResource<Patient>(any()) } returns patient
+    coEvery { fhirEngine.get<Patient>(any()) } returns patient
     coEvery { questionnaireViewModel.saveBundleResources(any()) } just runs
     coEvery { questionnaireViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().resource = patient }
