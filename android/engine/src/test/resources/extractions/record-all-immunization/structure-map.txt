@@ -40,25 +40,21 @@ group ExtractImmunization(source src : QuestionnaireResponse, source encounter: 
 
     } "r2";
 
-    //adding encounter as task.output
+    //adding record encounter as task.output
      src.item as vaccinesItemAnswer where(linkId='vaccines') then {
-     src -> evaluate(vaccinesItemAnswer,$this.answer.first()) as answerItem then{
-           src -> bundle.entry as entry,
-                  entry.resource = create('Task') as task then {
-                  src->create("id") as task_id then {
-                       src->task_id.value = evaluate(answerItem,$this.value.reference) "r_set_task_id_value";
-                       src->task.id = task_id "r_set_task_id";
-                       src -> task.output = create('Task_Output') as output then{
-                              src -> output.type = cc("http://snomed.info/sct", "41000179103", "Immunization record (record artifact)") ,
-                                     output.value = create("Reference") as ref then {
-                                                   src -> ref.reference =  evaluate(encounter,'Encounter/'+$this.id) "r_output_ref";
-                                     }"r_reference";
-                       }"r_task";
-                  }"r_taskId";
+     vaccinesItemAnswer.answer as answerItem -> bundle.entry as entry, entry.resource = create('Task') as task then {
+              src->create("id") as task_id then {
+                   src->task_id.value = evaluate(answerItem,$this.value.reference) "r_set_task_id_value";
+                   src->task.id = task_id "r_set_task_id";
+                   src -> task.output = create('Task_Output') as output then{
+                          src -> output.type = cc("http://snomed.info/sct", "41000179103", "Immunization record (record artifact)") ,
+                          output.value = create("Reference") as ref then {
+                                         src -> ref.reference =  evaluate(encounter,'Encounter/'+$this.id) "r_output_ref";
+                          }"r_reference";
+                   }"r_task";
+              }"r_taskId";
 
-           }"r_reference";
-
-    }"r_answer_item";
+    }"r_reference";
     }"r_task_output";
 }
 
@@ -95,7 +91,7 @@ group ExtractAdministrationEncounter(source src : QuestionnaireResponse,target e
                 src -> period.end = evaluate(src, now()) "r_end";
         }"r_period";
         src -> encounter.partOf = create('Reference') as ref then {
-               src -> ref.reference = encounter.id "r_ref";
+               src -> ref.reference = evaluate(encounter,$this.id) "r_ref";
         }"r_partof";
         src -> bundle.entry as entry, entry.resource = encounter "r_enc_cp";
 
