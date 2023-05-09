@@ -155,65 +155,8 @@ constructor(
   fun onEvent(event: ProfileEvent) {
     when (event) {
       is ProfileEvent.OverflowMenuClick -> {
-        val context = event.navController.context
         val actions = event.overflowMenuItemConfig?.actions
         viewModelScope.launch {
-          val questionnaireResponse =
-            actions
-              ?.find {
-                it.workflow == ApplicationWorkflow.LAUNCH_QUESTIONNAIRE &&
-                  it.trigger == ActionTrigger.ON_CLICK
-              }
-              ?.questionnaire
-              ?.let { questionnaireConfig ->
-                questionnaireConfig.interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
-                val questionnaire = loadQuestionnaire(questionnaireConfig.id)
-                if (questionnaire == null) {
-                  emitSnackBarState(
-                    SnackBarMessageConfig(
-                      context.getString(R.string.error_msg_questionnaire_is_not_found_in_database)
-                    )
-                  )
-                  Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE")
-                    .d(context.getString(R.string.error_msg_questionnaire_is_not_found_in_database))
-                  return@launch
-                }
-                questionnaire.apply {
-                  this.url = this.url ?: this.referenceValue()
-                  if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditMode()
-                  ) {
-                    item.prepareQuestionsForReadingOrEditing(
-                      "QuestionnaireResponse.item",
-                      questionnaireConfig.type.isReadOnly()
-                    )
-                  }
-                }
-
-                var questionnaireResponse: QuestionnaireResponse? = null
-                if (event.resourceData == null) return@let null
-
-                if (!questionnaireConfig.type.isDefault()) {
-                  questionnaireResponse =
-                    getQuestionnaireResponseFromDbOrPopulation(
-                      questionnaire = questionnaire,
-                      subjectId = event.resourceData.baseResourceId.extractLogicalIdUuid(),
-                      subjectType = event.resourceData.baseResourceType
-                    )
-                  questionnaireResponse.apply { generateMissingItems(questionnaire) }
-
-                  if (!isQuestionnaireResponseValid(questionnaire, questionnaireResponse, context)
-                  ) {
-                    emitSnackBarState(
-                      SnackBarMessageConfig(
-                        context.getString(R.string.error_msg_questionnaire_response_is_broken)
-                      )
-                    )
-                    return@launch
-                  }
-                }
-                questionnaireResponse
-              }
-
           actions?.run {
             find { it.workflow == ApplicationWorkflow.CHANGE_MANAGING_ENTITY }?.let {
               changeManagingEntity(
@@ -224,8 +167,7 @@ constructor(
             }
             handleClickEvent(
               navController = event.navController,
-              resourceData = event.resourceData,
-              questionnaireResponse = questionnaireResponse
+              resourceData = event.resourceData
             )
           }
         }
