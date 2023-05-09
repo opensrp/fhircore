@@ -52,21 +52,26 @@ class QuestApplication :
 
   @Inject lateinit var xFhirQueryResolver: FhirXFhirQueryResolver
 
-  var onInActivityListener: OnInActivityListener? = null
-
-  var appInActivityListener: AppInActivityListener =
-    AppInActivityListener(
-      listOf(LoginActivity::class.java.name, AppSettingActivity::class.java.name)
-    ) { onInActivityListener?.onTimeout() }
-
-  private var mForegroundActivityContext: Context? = null
-
   private val launcherActivityName: String? by lazy {
     val pm = packageManager
     val launcherIntent = pm.getLaunchIntentForPackage(packageName)
     val activityList = pm.queryIntentActivities(launcherIntent!!, 0)
     activityList.first().activityInfo.name
   }
+
+  private val activitiesAccessWithoutAuth by lazy {
+    listOfNotNull(
+      LoginActivity::class.java.name,
+      AppSettingActivity::class.java.name,
+      launcherActivityName
+    )
+  }
+
+  var onInActivityListener: OnInActivityListener? = null
+
+  lateinit var appInActivityListener: AppInActivityListener
+
+  private var mForegroundActivityContext: Context? = null
 
   private var configuration: DataCaptureConfig? = null
 
@@ -83,11 +88,15 @@ class QuestApplication :
       Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
     }
 
+    appInActivityListener =
+      AppInActivityListener(activitiesAccessWithoutAuth) { onInActivityListener?.onTimeout() }
+
     registerActivityLifecycleCallbacks(
       object : ActivityLifecycleCallbacks {
         override fun onActivityStarted(activity: Activity) {
           appInActivityListener.current(activity.javaClass)
-          if (activity::class.java.name != launcherActivityName) {
+          val activityName = activity::class.java.name
+          if (activityName !in activitiesAccessWithoutAuth) {
             mForegroundActivityContext = activity
           }
         }
@@ -127,16 +136,12 @@ class QuestApplication :
 
   override fun onStart(owner: LifecycleOwner) {
     appInActivityListener.stop()
-    if (mForegroundActivityContext != null) {
-      accountAuthenticator.loadActiveAccount(
-        onActiveAuthTokenFound = {},
-        onValidTokenMissing = {
-          if (it.component!!.className != mForegroundActivityContext!!::class.java.name) {
-            mForegroundActivityContext!!.startActivity(it)
-          }
-        }
-      )
-    }
+    mForegroundActivityContext
+      ?.takeIf {
+        val name = it::class.java.name
+        name !in activitiesAccessWithoutAuth
+      }
+      ?.let { accountAuthenticator.confirmActiveAccount { intent -> it.startActivity(intent) } }
   }
 
   private fun initANRWatcher() {

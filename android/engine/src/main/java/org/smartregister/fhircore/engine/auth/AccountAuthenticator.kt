@@ -142,7 +142,16 @@ constructor(
     response: AccountAuthenticatorResponse,
     account: Account,
     options: Bundle?
-  ): Bundle = bundleOf()
+  ): Bundle {
+    Timber.i("Confirming credentials for ${account.name}")
+    val intent =
+      Intent(context, getLoginActivityClass()).apply {
+        putExtra(AccountManager.KEY_ACCOUNT_TYPE, account.type)
+        putExtra(AccountManager.KEY_ACCOUNT_NAME, account.name)
+        putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
+      }
+    return bundleOf(AccountManager.KEY_INTENT to intent)
+  }
 
   override fun getAuthTokenLabel(authTokenType: String): String {
     return authTokenType.uppercase(Locale.ROOT)
@@ -298,6 +307,21 @@ constructor(
     }
   }
 
+  fun confirmActiveAccount(onResult: (Intent) -> Unit) {
+    tokenManagerService.getActiveAccount()?.run {
+      confirmAccount(
+        this,
+        callback = {
+          val bundle = it.result
+          bundle.getParcelable<Intent>(AccountManager.KEY_INTENT)?.let { loginIntent ->
+            loginIntent.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
+            onResult(loginIntent)
+          }
+        }
+      )
+    }
+  }
+
   fun invalidateAccount() {
     tokenManagerService.getActiveAccount()?.run {
       accountManager.invalidateAuthToken(
@@ -322,6 +346,14 @@ constructor(
   ) {
     Timber.i("Trying to load from getAuthToken for account %s", account.name)
     accountManager.getAuthToken(account, getAccountType(), Bundle(), false, callback, errorHandler)
+  }
+
+  fun confirmAccount(
+    account: Account,
+    callback: AccountManagerCallback<Bundle>,
+    errorHandler: Handler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
+  ) {
+    accountManager.confirmCredentials(account, Bundle(), null, callback, errorHandler)
   }
 
   fun logout() {
