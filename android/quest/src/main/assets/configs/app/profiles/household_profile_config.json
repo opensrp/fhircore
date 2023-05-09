@@ -35,7 +35,8 @@
     "relatedResources": [
       {
         "resource": "Patient",
-        "fhirPathExpression": "Group.member.entity",
+        "isRevInclude": false,
+        "searchParameter": "member",
         "relatedResources": [
           {
             "resource": "Condition",
