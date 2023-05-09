@@ -55,7 +55,7 @@ group ExtractRecordEncounter(source src : QuestionnaireResponse, target encounte
             encounter.type = cc("http://snomed.info/sct", "41000179103", "Immunization record (record artifact)") "r_type";
         src -> encounter.subject = create('Reference') as reference then {
                    src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ee_6_1";
-        } "rule_ee_6"; // TODO add patient id it in questionnaireResponse
+        } "rule_ee_6"; // TODO add patient id in questionnaireResponse
         src -> encounter.period = create("Period") as period then{
                 src -> period.start = evaluate(src, now()) "r_start";
                 src -> period.end = evaluate(src, now()) "r_end";
@@ -70,7 +70,7 @@ group ExtractAdministrationEncounter(source src : QuestionnaireResponse,target a
                adminEncounter.type = cc("http://snomed.info/sct", "33879002", "Administration of vaccine to produce active immunity (procedure)") "r_type";
         src -> adminEncounter.subject = create('Reference') as reference then {
                src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ee_6_1";
-        } "rule_ee_6"; // TODO add patient id it in questionnaireResponse
+        } "rule_ee_6"; // TODO add patient id in questionnaireResponse
         src -> adminEncounter.period = create("Period") as period then {
                src -> period.end = evaluate(src, now()) "r_end";
         } "r_period";
