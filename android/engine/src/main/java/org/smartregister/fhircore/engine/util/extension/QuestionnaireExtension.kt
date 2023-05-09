@@ -146,12 +146,14 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
   prePopulationParams: List<ActionParameter>
 ) {
   forEach { item ->
-    if (!item.hasExtension(ITEM_INITIAL_EXPRESSION_URL)) {
+    if (item.hasExtension(ITEM_INITIAL_EXPRESSION_URL)) {
+      item.removeExtension(ITEM_INITIAL_EXPRESSION_URL)
+    }
       prePopulationParams
         .firstOrNull {
           it.linkId == item.linkId &&
-                  !it.value.isNullOrEmpty() &&
-                  !it.value.contains(interpolationPrefix)
+            !it.value.isNullOrEmpty() &&
+            !it.value.contains(interpolationPrefix)
         }
         ?.let { actionParam ->
           item.initial =
@@ -165,7 +167,6 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
         item.item.prePopulateInitialValues(interpolationPrefix, prePopulationParams)
       }
     }
-  }
 }
 
 /** Cast string value (including json string) to the FHIR {@link org.hl7.fhir.r4.model.Type} */
