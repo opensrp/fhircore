@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor register search to support configurable forward or reverse include
 
 ### Fixed
-- 
+- Fix navigate back from Household registers to practitioner profile
 
 ### Changed
 - 
