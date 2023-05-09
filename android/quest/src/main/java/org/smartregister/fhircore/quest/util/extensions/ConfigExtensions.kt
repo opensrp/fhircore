@@ -105,11 +105,14 @@ fun List<ActionConfig>.handleClickEvent(
         val sameRegisterId =
           args.getString(NavigationArg.REGISTER_ID) ==
             navController.previousBackStackEntry?.arguments?.getString(NavigationArg.REGISTER_ID)
-        if (currentDestinationId != MainNavigationScreen.Home.route && !sameRegisterId) {
+        if (currentDestinationId != null &&
+            currentDestinationId != MainNavigationScreen.Home.route &&
+            !sameRegisterId
+        ) {
           navController.navigate(
             resId = MainNavigationScreen.Home.route,
             args = args,
-            navOptions = navOptions(currentDestinationId!!, false)
+            navOptions = navOptions(currentDestinationId, inclusive = false)
           )
         } else return
       }
