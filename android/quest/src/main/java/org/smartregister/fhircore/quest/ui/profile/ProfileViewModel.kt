@@ -192,7 +192,7 @@ constructor(
                 var questionnaireResponse: QuestionnaireResponse? = null
                 if (event.resourceData == null) return@let null
 
-                if (!questionnaireConfig.type.isDefault()) {
+                if (questionnaireConfig.type.isDefault()) {
                   questionnaireResponse =
                     getQuestionnaireResponseFromDbOrPopulation(
                       questionnaire = questionnaire,
