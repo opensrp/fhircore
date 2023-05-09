@@ -174,8 +174,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           dispatcherProvider = defaultRepo.dispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
           libraryEvaluator = libraryEvaluator,
-          fhirCarePlanGenerator = fhirCarePlanGenerator,
-          jsonParser = jsonParser
+          fhirCarePlanGenerator = fhirCarePlanGenerator
         )
       )
 
@@ -615,33 +614,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     Assert.assertEquals("2", patientSlot.captured.id)
     unmockkObject(ResourceMapper)
-  }
-
-  @Test
-  @ExperimentalCoroutinesApi
-  fun testLoadPatientShouldReturnPatientResource() {
-    val patient =
-      Patient().apply {
-        name =
-          listOf(
-            HumanName().apply {
-              given = listOf(StringType("John"))
-              family = "Doe"
-            }
-          )
-      }
-
-    coEvery { fhirEngine.get(ResourceType.Patient, "1") } returns patient
-
-    runBlocking {
-      val loadedPatient = questionnaireViewModel.loadPatient("1")
-
-      Assert.assertEquals(
-        patient.name.first().given.first().value,
-        loadedPatient?.name?.first()?.given?.first()?.value
-      )
-      Assert.assertEquals(patient.name.first().family, loadedPatient?.name?.first()?.family)
-    }
   }
 
   @Test
@@ -1106,7 +1078,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     val patient = samplePatient().apply { id = "2" }
     coEvery { fhirEngine.get(ResourceType.Patient, "2") } returns patient
-    coEvery { questionnaireViewModel.loadPatient(any()) } returns patient
+    coEvery { defaultRepo.loadResource<Patient>(any()) } returns patient
     coEvery { questionnaireViewModel.saveBundleResources(any()) } just runs
     coEvery { questionnaireViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().resource = patient }

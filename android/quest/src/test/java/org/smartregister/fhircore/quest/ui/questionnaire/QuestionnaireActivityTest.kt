@@ -45,7 +45,6 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import javax.inject.Inject
 import kotlin.test.assertTrue
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Enumerations.DataType
@@ -61,7 +60,6 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.junit.jupiter.api.Assertions
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowAlertDialog
@@ -113,7 +111,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         sharedPreferencesHelper = mockk(),
         libraryEvaluator = mockk(),
         fhirCarePlanGenerator = mockk(),
-        jsonParser = mockk()
       )
     )
 
@@ -699,17 +696,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
             BooleanType(true)
           )
         )
-      }
-    }
-  }
-
-  @Test
-  fun `Bundle#attachQuestionnaireResponse() should throw exception when QR not available and QuestionnaireConfig is readOnly`() {
-    questionnaireConfig.type = QuestionnaireType.READ_ONLY
-
-    Assertions.assertThrows(java.lang.IllegalArgumentException::class.java) {
-      runBlocking {
-        questionnaireActivity.decodeQuestionnaireResponse(Intent(), questionnaireConfig)
       }
     }
   }
