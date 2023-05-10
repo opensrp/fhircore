@@ -68,7 +68,7 @@ fun CardView(
           navController = navController
         )
         // TODO Display viewAll action text
-        if(viewProperties.headerAction != null){
+        if (viewProperties.headerAction != null) {
           CompoundText(
             modifier = modifier.wrapContentWidth(Alignment.End),
             compoundTextProperties = viewProperties.headerAction!!.copy(),
@@ -122,11 +122,11 @@ private fun CardViewWithoutPaddingPreview() {
             ),
           headerAction =
             CompoundTextProperties(
-            primaryText = "Record all",
-            primaryTextColor = "#6F7274",
-            clickable = "true",
-            visible = "true"
-          )
+              primaryText = "Record all",
+              primaryTextColor = "#6F7274",
+              clickable = "true",
+              visible = "true"
+            )
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
