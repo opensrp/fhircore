@@ -20,6 +20,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
+import androidx.navigation.NavGraph
 import androidx.navigation.NavOptions
 import com.google.android.fhir.logicalId
 import io.mockk.every
@@ -109,8 +110,10 @@ class ConfigExtensionsTest : RobolectricTest() {
         display = "menu",
         toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK
       )
+    val graph = mockk<NavGraph>()
     every { navController.currentDestination } returns NavDestination(navigatorName = "navigating")
     every { navController.previousBackStackEntry } returns null
+    every { navController.graph.id } returns 1
     listOf(clickAction)
       .handleClickEvent(
         navController = navController,
