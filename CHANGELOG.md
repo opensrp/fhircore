@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fix navigate back from Household registers to practitioner profile
+- Harmonize launching Questionnaires
 
 ### Changed
 - 
