@@ -167,9 +167,35 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         .setShowSubmitButton(true)
         .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(DEFAULT_PROVIDER)
         .setIsReadOnly(questionnaireType.isReadOnly())
-    questionnaireResponse?.let {
-      questionnaireFragmentBuilder.setQuestionnaireResponse(it.encodeResourceToString())
-    }
+    questionnaireResponse
+      ?.apply {
+        // Ensure multiple linkId only when they have answers, otherwise only have one distinct
+        // linkId
+        fun distinctifyLinkId(
+          itemComponents: List<QuestionnaireResponse.QuestionnaireResponseItemComponent>
+        ): List<QuestionnaireResponse.QuestionnaireResponseItemComponent> {
+          return itemComponents
+            .groupBy { it.linkId }
+            .flatMap {
+              it.value.filter(QuestionnaireResponse.QuestionnaireResponseItemComponent::hasAnswer)
+                .ifEmpty {
+                  it.value.distinctBy { elem ->
+                    elem.item.joinToString(
+                      transform =
+                        QuestionnaireResponse.QuestionnaireResponseItemComponent::getLinkId
+                    )
+                  }
+                }
+            }
+            .onEach { it.item = distinctifyLinkId(it.item) }
+        }
+
+        item = distinctifyLinkId(item)
+      }
+      ?.let {
+        //        Timber.e(it.encodeResourceToString())
+        questionnaireFragmentBuilder.setQuestionnaireResponse(it.encodeResourceToString())
+      }
     intent.getStringExtra(QUESTIONNAIRE_LAUNCH_CONTEXT)?.let {
       questionnaireFragmentBuilder.setQuestionnaireResourceContext(it)
     }
