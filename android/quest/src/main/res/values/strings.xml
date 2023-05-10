@@ -99,10 +99,8 @@
     <string name="structure_success">Successfully extracted resources for %1$s</string>
     <string name="reassigned_managing_entity">Managing entity reassigned successfully</string>
     <string name="error_fetching_user_details">Failed to fetch user details</string>
-    <string name="questionnaire_missing">Questionnaire not found.  Sync all questionnaires to fix</string>
+    <string name="questionnaire_not_found">Questionnaire not found.  Sync all questionnaires to fix</string>
     <string name="no_visits">No visits</string>
-    <string name="error_msg_questionnaire_config_is_not_found">Questionnaire config is not found</string>
-    <string name="error_msg_questionnaire_is_not_found_in_database">Questionnaire is not found in database</string>
-    <string name="error_msg_questionnaire_response_is_broken">Questionnaire response is broken</string>
+    <string name="questionnaire_response_broken">Questionnaire response broken</string>
 
 </resources>
