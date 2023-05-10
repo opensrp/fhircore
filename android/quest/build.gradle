@@ -140,6 +140,12 @@ android {
             getIsDefault().set(true)
         }
 
+        mpower {
+            dimension "apps"
+            applicationIdSuffix ".mpower"
+            versionNameSuffix "-mpower"
+        }
+
         ecbis {
             dimension "apps"
             applicationIdSuffix ".ecbis"
