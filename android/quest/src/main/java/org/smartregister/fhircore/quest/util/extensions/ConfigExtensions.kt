@@ -106,7 +106,7 @@ fun List<ActionConfig>.handleClickEvent(
           args.getString(NavigationArg.REGISTER_ID) ==
             navController.previousBackStackEntry?.arguments?.getString(NavigationArg.REGISTER_ID)
         if (currentDestinationId != null &&
-            currentDestinationId !=navController.graph.id &&
+            currentDestinationId != navController.graph.id &&
             !sameRegisterId
         ) {
           navController.navigate(
