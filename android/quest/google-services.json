@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "528852723735",
+    "project_id": "tingathe-1ebf1",
+    "storage_bucket": "tingathe-1ebf1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:528852723735:android:80bcc2ae471da85e2e9452",
+        "android_client_info": {
+          "package_name": "org.smartregister.fhircore.mwcore"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "528852723735-hkd6d3086ss74oi180pquih9681o8rsj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKzGZneKugSwUC46bJJNmlUZJtWjYrlIo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "528852723735-hkd6d3086ss74oi180pquih9681o8rsj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:528852723735:android:d3383b637757af5e2e9452",
+        "android_client_info": {
+          "package_name": "org.smartregister.fhircore.mwcoreDev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "528852723735-hkd6d3086ss74oi180pquih9681o8rsj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKzGZneKugSwUC46bJJNmlUZJtWjYrlIo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "528852723735-hkd6d3086ss74oi180pquih9681o8rsj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
