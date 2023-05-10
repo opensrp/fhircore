@@ -728,11 +728,6 @@ constructor(
       }
     }
 
-  /** Loads a Questionnaire resource with the given ID. */
-  private suspend fun loadQuestionnaire(questionnaireId: String): Questionnaire? {
-    return defaultRepository.loadResource(questionnaireId)
-  }
-
   /**
    * Loads resources to be populated into a Questionnaire Response.
    *
