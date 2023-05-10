@@ -9,8 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Use _revinclude when fetching related resources to improve performance
 - Refactor handling of questionnaire submission to use generic event bus
+- Refactor register search to support configurable forward or reverse include
 
 ### Fixed
+- Fix navigate back from Household registers to practitioner profile
 - Harmonize launching Questionnaires
 
 ### Changed

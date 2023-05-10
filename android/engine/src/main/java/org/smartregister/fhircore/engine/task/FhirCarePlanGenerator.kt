@@ -60,7 +60,6 @@ import org.smartregister.fhircore.engine.util.extension.extractFhirpathDuration
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathPeriod
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isIn
-import org.smartregister.fhircore.engine.util.extension.isValidResourceType
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.updateDependentTaskDueDate
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
@@ -325,7 +324,8 @@ constructor(
    */
   suspend fun conditionallyUpdateCarePlanStatus(
     questionnaireConfig: QuestionnaireConfig,
-    subject: Resource
+    subject: Resource,
+    bundle: Bundle
   ) {
     questionnaireConfig.planDefinitions?.forEach { planDefinition ->
       val carePlans =
@@ -339,20 +339,13 @@ constructor(
       if (carePlans.isEmpty()) return@forEach
 
       questionnaireConfig.carePlanConfigs.forEach { carePlanConfig ->
-        val base: Base =
-          if ((carePlanConfig.fhirPathResource?.isNotEmpty() == true) &&
-              (carePlanConfig.fhirPathResourceId?.isNotEmpty() == true) &&
-              isValidResourceType(carePlanConfig.fhirPathResource)
-          ) {
-            fhirEngine.get(
-              ResourceType.fromCode(carePlanConfig.fhirPathResource),
-              carePlanConfig.fhirPathResourceId
-            )
-          } else {
-            subject
-          }
-
-        if (fhirPathEngine.evaluateToBoolean(null, null, base, carePlanConfig.fhirPathExpression)) {
+        if (fhirPathEngine.evaluateToBoolean(
+            bundle,
+            null,
+            subject,
+            carePlanConfig.fhirPathExpression
+          )
+        ) {
           carePlans.forEach { carePlan ->
             carePlan.status = CarePlan.CarePlanStatus.COMPLETED
             fhirEngine.update(carePlan)
