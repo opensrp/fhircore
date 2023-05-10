@@ -101,11 +101,20 @@ fun List<ActionConfig>.handleClickEvent(
           )
 
         // Register is the entry point destination, clear back stack with every register switch
-        navController.navigate(
-          resId = MainNavigationScreen.Home.route,
-          args = args,
-          navOptions = navOptions(MainNavigationScreen.Home.route),
-        )
+        val currentDestinationId = navController.currentDestination?.id
+        val sameRegisterId =
+          args.getString(NavigationArg.REGISTER_ID) ==
+            navController.previousBackStackEntry?.arguments?.getString(NavigationArg.REGISTER_ID)
+        if (currentDestinationId != null &&
+            currentDestinationId != navController.graph.id &&
+            !sameRegisterId
+        ) {
+          navController.navigate(
+            resId = MainNavigationScreen.Home.route,
+            args = args,
+            navOptions = navOptions(currentDestinationId, inclusive = false)
+          )
+        } else return
       }
       ApplicationWorkflow.LAUNCH_REPORT -> {
         val args = bundleOf(Pair(NavigationArg.REPORT_ID, actionConfig.id))
@@ -142,7 +151,7 @@ fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: Resou
  * Apply navigation options. Restrict destination to only use a single instance in the back stack.
  */
 fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = true) =
-  NavOptions.Builder().setPopUpTo(resId, true, inclusive).setLaunchSingleTop(singleOnTop).build()
+  NavOptions.Builder().setPopUpTo(resId, inclusive, true).setLaunchSingleTop(singleOnTop).build()
 
 fun ViewProperties.clickable(ResourceData: ResourceData) =
   this.clickable.interpolate(ResourceData.computedValuesMap).toBoolean()
