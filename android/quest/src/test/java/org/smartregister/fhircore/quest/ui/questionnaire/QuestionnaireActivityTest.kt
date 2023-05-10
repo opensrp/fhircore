@@ -32,6 +32,7 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -43,6 +44,7 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import java.util.Date
 import javax.inject.Inject
 import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
@@ -74,8 +76,10 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
 
 @HiltAndroidTest
@@ -744,6 +748,189 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   fun testRemoveOperationWithValueOfTrueFinishesActivity() {
     questionnaireActivity.questionnaireViewModel.removeOperation.postValue(true)
     assertTrue { questionnaireActivity.isFinishing }
+  }
+
+  @Test
+  fun testQuestionnaireShouldExist() {
+    val expectedQuestionnaireConfig =
+      QuestionnaireConfig(
+        id = "patient-registration",
+        title = "Patient registration",
+        type = QuestionnaireType.DEFAULT
+      )
+    intent =
+      Intent()
+        .putExtras(
+          bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig))
+        )
+
+    coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
+      Questionnaire().apply { id = "12345" }
+
+    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    questionnaireActivity = controller.create().resume().get()
+
+    val questionnaire =
+      ReflectionHelpers.getField<Questionnaire>(questionnaireActivity, "questionnaire")
+    Assert.assertNotNull(questionnaire)
+  }
+
+  @Test
+  fun testQuestionnaireShouldNotExist() {
+    val expectedQuestionnaireConfig =
+      QuestionnaireConfig(
+        id = "patient-registration",
+        title = "Patient registration",
+        type = QuestionnaireType.DEFAULT
+      )
+    intent =
+      Intent()
+        .putExtras(
+          bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig))
+        )
+
+    coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns null
+
+    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    questionnaireActivity = controller.create().resume().get()
+
+    val questionnaire =
+      ReflectionHelpers.getField<Questionnaire>(questionnaireActivity, "questionnaire")
+    Assert.assertNull(questionnaire)
+  }
+
+  @Test
+  fun testQuestionnaireShouldSetBarcode() {
+    val expectedQuestionnaireConfig =
+      QuestionnaireConfig(
+        id = "patient-registration",
+        title = "Patient registration",
+        resourceIdentifier = "1234",
+        type = QuestionnaireType.DEFAULT
+      )
+    intent =
+      Intent()
+        .putExtras(
+          bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig))
+        )
+
+    coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
+      Questionnaire().apply {
+        id = "12345"
+        addItem().apply { linkId = QUESTIONNAIRE_ARG_BARCODE }
+      }
+
+    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    questionnaireActivity = controller.create().resume().get()
+
+    val questionnaire =
+      ReflectionHelpers.getField<Questionnaire>(questionnaireActivity, "questionnaire")
+    Assert.assertNotNull(questionnaire.find(QUESTIONNAIRE_ARG_BARCODE))
+    Assert.assertTrue(
+      "Barcode initial not found with ID 1234",
+      questionnaire.find(QUESTIONNAIRE_ARG_BARCODE)!!.initial.first().valueStringType.value ==
+        "1234"
+    )
+    Assert.assertTrue(
+      "Barcode not in read only mode",
+      questionnaire.find(QUESTIONNAIRE_ARG_BARCODE)!!.readOnly
+    )
+  }
+
+  @Test
+  fun testQuestionnaireResponseShouldExistInEditMode() {
+    val questionnaireId = "patient-registration"
+    val questionnaireConfig =
+      QuestionnaireConfig(
+        id = questionnaireId,
+        title = "Patient registration",
+        type = QuestionnaireType.EDIT
+      )
+    val baseResourceId = "Patient/1122"
+    val baseResourceType = "Patient"
+    intent =
+      Intent()
+        .putExtras(
+          bundleOf(
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, questionnaireConfig),
+            Pair(QuestionnaireActivity.BASE_RESOURCE_ID, baseResourceId),
+            Pair(QuestionnaireActivity.BASE_RESOURCE_TYPE, baseResourceType)
+          )
+        )
+
+    val questionnaireResponseId = "patient-registration-response"
+    coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
+      Questionnaire().apply { id = questionnaireId }
+    coEvery {
+      questionnaireViewModel.defaultRepository.fhirEngine.search<QuestionnaireResponse> {
+        filter(QuestionnaireResponse.SUBJECT, { value = baseResourceId })
+        filter(QuestionnaireResponse.QUESTIONNAIRE, { value = "Questionnaire/$questionnaireId" })
+      }
+    } returns
+      listOf(
+        QuestionnaireResponse().apply {
+          id = questionnaireResponseId
+          meta.lastUpdated = Date()
+        }
+      )
+
+    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    questionnaireActivity = controller.create().resume().get()
+
+    val questionnaireResponse =
+      ReflectionHelpers.getField<QuestionnaireResponse>(
+        questionnaireActivity,
+        "questionnaireResponse"
+      )
+    Assert.assertNotNull("Questionnaire Response is null", questionnaireResponse)
+  }
+
+  @Test
+  fun testQuestionnaireResponseShouldExistInReadOnlyMode() {
+    val questionnaireId = "patient-registration"
+    val questionnaireConfig =
+      QuestionnaireConfig(
+        id = questionnaireId,
+        title = "Patient registration",
+        type = QuestionnaireType.READ_ONLY
+      )
+    val baseResourceId = "Patient/1122"
+    val baseResourceType = "Patient"
+    intent =
+      Intent()
+        .putExtras(
+          bundleOf(
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, questionnaireConfig),
+            Pair(QuestionnaireActivity.BASE_RESOURCE_ID, baseResourceId),
+            Pair(QuestionnaireActivity.BASE_RESOURCE_TYPE, baseResourceType)
+          )
+        )
+
+    val questionnaireResponseId = "patient-registration-response"
+    coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
+      Questionnaire().apply { id = questionnaireId }
+    coEvery {
+      questionnaireViewModel.defaultRepository.fhirEngine.search<QuestionnaireResponse> {
+        filter(QuestionnaireResponse.SUBJECT, { value = baseResourceId })
+        filter(QuestionnaireResponse.QUESTIONNAIRE, { value = "Questionnaire/$questionnaireId" })
+      }
+    } returns
+      listOf(
+        QuestionnaireResponse().apply {
+          id = questionnaireResponseId
+          meta.lastUpdated = Date()
+        }
+      )
+
+    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    questionnaireActivity = controller.create().resume().get()
+
+    val questionnaireResponse =
+      ReflectionHelpers.getField<QuestionnaireResponse>(
+        questionnaireActivity,
+        "questionnaireResponse"
+      )
+    Assert.assertNotNull("Questionnaire Response is null", questionnaireResponse)
   }
 
   override fun getActivity(): Activity {
