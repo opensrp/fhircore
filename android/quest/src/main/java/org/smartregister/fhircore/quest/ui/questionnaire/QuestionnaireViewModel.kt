@@ -630,7 +630,7 @@ constructor(
       )
       true
     } catch (e: IllegalArgumentException) {
-      Timber.tag("QuestionnaireResponseHandler.isQuestionnaireResponseValid").d(e)
+      Timber.tag("QuestionnaireViewModel.isQuestionnaireResponseValid").d(e)
       false
     }
   }
@@ -673,7 +673,7 @@ constructor(
     return ResourceMapper.populate(questionnaire, *populationResources.toTypedArray()).also {
       questionnaireResponse ->
       if (!questionnaireResponse.hasItem()) {
-        Timber.tag("QuestionnaireViewModel").d("Questionnaire response has no populated answers")
+        Timber.tag("QuestionnaireViewModel.populateQuestionnaireResponse").d("Questionnaire response has no populated answers")
       }
     }
   }
@@ -699,7 +699,7 @@ constructor(
       .maxByOrNull { it.meta.lastUpdated }
       .also { questionnaireResponse ->
         if (questionnaireResponse == null) {
-          Timber.tag("QuestionnaireResponseHandler.loadQuestionnaireResponse")
+          Timber.tag("QuestionnaireViewModel.loadQuestionnaireResponse")
             .d("Questionnaire response is not found in database")
         }
       }
