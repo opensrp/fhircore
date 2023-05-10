@@ -673,7 +673,8 @@ constructor(
     return ResourceMapper.populate(questionnaire, *populationResources.toTypedArray()).also {
       questionnaireResponse ->
       if (!questionnaireResponse.hasItem()) {
-        Timber.tag("QuestionnaireViewModel.populateQuestionnaireResponse").d("Questionnaire response has no populated answers")
+        Timber.tag("QuestionnaireViewModel.populateQuestionnaireResponse")
+          .d("Questionnaire response has no populated answers")
       }
     }
   }
