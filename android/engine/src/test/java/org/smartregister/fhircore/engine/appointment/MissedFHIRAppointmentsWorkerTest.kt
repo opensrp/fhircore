@@ -27,6 +27,7 @@ import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -94,7 +95,7 @@ class MissedFHIRAppointmentsWorkerTest : RobolectricTest() {
         start = null
       }
     val appointments = listOf(missedAppointment, bookedAppointment, bookedAppointmentStartNull)
-    coEvery { fhirEngine.search<Appointment>(any()) } returns appointments
+    coEvery { fhirEngine.search<Appointment>(any<Search>()) } returns appointments
     coEvery { fhirEngine.update(*anyVararg()) } just runs
 
     val result = missedFHIRAppointmentsWorker.doWork()
