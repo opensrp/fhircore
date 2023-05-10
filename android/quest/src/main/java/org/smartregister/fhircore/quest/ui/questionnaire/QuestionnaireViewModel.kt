@@ -749,7 +749,7 @@ constructor(
         loadGroup(subjectId)?.run { populationResources.add(this) }
       }
       else -> {
-        Timber.tag("QuestionnaireResponseHandler.loadPopulationResources")
+        Timber.tag("QuestionnaireViewModel.loadPopulationResources")
           .d("$subjectType resource type is not supported to load populated resources!")
       }
     }
