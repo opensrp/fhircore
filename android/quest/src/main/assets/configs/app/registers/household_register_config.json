@@ -42,14 +42,11 @@
     "relatedResources": [
       {
         "resource": "Patient",
-        "fhirPathExpression": "Group.member.entity",
+        "isRevInclude": false,
+        "searchParameter": "member",
         "relatedResources": [
           {
             "resource": "Condition",
-            "searchParameter": "subject"
-          },
-          {
-            "resource": "CarePlan",
             "searchParameter": "subject"
           },
           {
@@ -91,11 +88,6 @@
                 ]
               }
             ]
-          },
-          {
-            "id": "filterPractitioners",
-            "resource": "Practitioner",
-            "searchParameter": "subject"
           }
         ]
       }

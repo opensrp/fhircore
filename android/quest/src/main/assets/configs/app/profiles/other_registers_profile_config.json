@@ -915,6 +915,7 @@
               "resources": [
                 {
                   "id": "tasks",
+                  "relatedResourceId": "Task",
                   "resourceType": "Task"
                 }
               ],

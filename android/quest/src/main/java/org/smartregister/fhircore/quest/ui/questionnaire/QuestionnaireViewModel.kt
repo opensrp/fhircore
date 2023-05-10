@@ -116,11 +116,16 @@ constructor(
   suspend fun loadQuestionnaire(
     id: String,
     type: QuestionnaireType,
-    prePopulationParams: List<ActionParameter>? = emptyList()
+    prePopulationParams: List<ActionParameter>? = emptyList(),
+    readOnlyLinkIds: List<String>? = emptyList()
   ): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(id)?.apply {
       if (type.isReadOnly() || type.isEditMode()) {
-        item.prepareQuestionsForReadingOrEditing(QUESTIONNAIRE_RESPONSE_ITEM, type.isReadOnly())
+        item.prepareQuestionsForReadingOrEditing(
+          QUESTIONNAIRE_RESPONSE_ITEM,
+          type.isReadOnly(),
+          readOnlyLinkIds
+        )
       }
       // prepopulate questionnaireItems with initial values
       prePopulationParams?.takeIf { it.isNotEmpty() }?.let { nonEmptyParams ->
@@ -363,7 +368,7 @@ constructor(
           Timber.e(it)
           extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
         }
-      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(questionnaireConfig, subject)
+      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(questionnaireConfig, subject, data)
     }
   }
 
@@ -591,11 +596,15 @@ constructor(
           .resourceClassType()
           .newInstance()
           .resourceType
-      if (resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
-        defaultRepository.loadResource(resourceId, resourceType).let { resource ->
-          resource.updateLastUpdated()
-          defaultRepository.addOrUpdate(true, resource)
+      try {
+        if (resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
+          defaultRepository.loadResource(resourceId, resourceType).let { resource ->
+            resource.updateLastUpdated()
+            defaultRepository.addOrUpdate(true, resource)
+          }
         }
+      } catch (exception: ResourceNotFoundException) {
+        Timber.e(exception)
       }
     }
   }

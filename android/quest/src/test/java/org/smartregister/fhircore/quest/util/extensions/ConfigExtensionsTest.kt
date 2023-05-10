@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.util.extensions
 import android.content.Context
 import android.os.Bundle
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
 import com.google.android.fhir.logicalId
 import io.mockk.every
@@ -106,8 +107,10 @@ class ConfigExtensionsTest : RobolectricTest() {
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_REGISTER,
         display = "menu",
-        toolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
+        toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK
       )
+    every { navController.currentDestination } returns NavDestination(navigatorName = "navigating")
+    every { navController.previousBackStackEntry } returns null
     listOf(clickAction)
       .handleClickEvent(
         navController = navController,
@@ -123,10 +126,10 @@ class ConfigExtensionsTest : RobolectricTest() {
     Assert.assertEquals("registerId", slotBundle.captured.getString(NavigationArg.REGISTER_ID))
     Assert.assertEquals("menu", slotBundle.captured.getString(NavigationArg.SCREEN_TITLE))
     Assert.assertEquals(
-      ToolBarHomeNavigation.OPEN_DRAWER,
+      ToolBarHomeNavigation.NAVIGATE_BACK,
       slotBundle.captured.getSerializable(NavigationArg.TOOL_BAR_HOME_NAVIGATION)
     )
-    Assert.assertTrue(navOptions.captured.isPopUpToInclusive())
+    Assert.assertFalse(navOptions.captured.isPopUpToInclusive())
     Assert.assertTrue(navOptions.captured.shouldLaunchSingleTop())
   }
 
@@ -173,6 +176,31 @@ class ConfigExtensionsTest : RobolectricTest() {
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(1, slotBundle.captured.size())
     Assert.assertEquals("geoWidgetId", slotBundle.captured.getString(NavigationArg.CONFIG_ID))
+  }
+  @Test
+  fun testNavigateBackToHomeWhenCurrentAndPreviousDestinationIdsAreNull() {
+    val clickAction =
+      ActionConfig(
+        id = null,
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER,
+        display = null,
+        toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK
+      )
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val navOptions = slot<NavOptions>()
+    every { navController.currentDestination } returns null
+    every { navController.previousBackStackEntry } returns null
+    listOf(clickAction)
+      .handleClickEvent(
+        navController = navController,
+        resourceData = resourceData,
+        navMenu = navigationMenuConfig,
+      )
+    verify(exactly = 0) {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(navOptions))
+    }
   }
 
   @Test

@@ -16,55 +16,49 @@
 
 package org.smartregister.fhircore.engine.data.local.register
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.getQuery
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
 import io.mockk.spyk
-import io.mockk.verify
 import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
-import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
+import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
 class RegisterRepositoryTest : RobolectricTest() {
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
-  var context: Context = ApplicationProvider.getApplicationContext()
+  @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   @Inject lateinit var rulesFactory: RulesFactory
   private val fhirEngine: FhirEngine = mockk()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-  private val fhirPathDataExtractor: FhirPathDataExtractor = mockk()
   private val patient = Faker.buildPatient("12345")
   private lateinit var registerRepository: RegisterRepository
 
@@ -75,11 +69,10 @@ class RegisterRepositoryTest : RobolectricTest() {
       spyk(
         RegisterRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = DefaultDispatcherProvider(),
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
-          configService = mockk(),
-          fhirPathDataExtractor = fhirPathDataExtractor
+          configService = mockk()
         )
       )
     coEvery { fhirEngine.search<Immunization>(Search(type = ResourceType.Immunization)) } returns
@@ -87,337 +80,258 @@ class RegisterRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun loadRegisterDataGivenRelatedResourceHasNoFhirPathExpression() {
-    coEvery { fhirEngine.search<Group>(Search(type = ResourceType.Group)) } returns listOf(Group())
-    coEvery { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) } returns
-      listOf(Observation())
-    coEvery {
-      fhirEngine.search<Patient>(Search(type = ResourceType.Patient, count = 10, from = 10))
-    } returns listOf(patient)
-
-    runBlocking {
-      val listResourceData = registerRepository.loadRegisterData(1, "patientRegister")
-      val queryResult = listResourceData.first().queryResult
-
-      Assert.assertTrue(queryResult is RepositoryResourceData.QueryResult.Search)
-      Assert.assertEquals(1, listResourceData.size)
-
-      Assert.assertEquals(
-        ResourceType.Patient,
-        (queryResult as RepositoryResourceData.QueryResult.Search).resource.resourceType
-      )
-    }
-
-    verify { registerRepository.retrieveRegisterConfiguration("patientRegister", emptyMap()) }
-
-    coVerify {
-      fhirEngine.search<Patient>(Search(type = ResourceType.Patient, count = 10, from = 10))
-    }
-
-    coVerify { fhirEngine.search<Immunization>(Search(type = ResourceType.Immunization)) }
-  }
-
-  @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun loadRegisterDataGivenRelatedResourceHasFhirPathExpression() {
-    val group =
-      Group().apply {
-        id = "12345"
-        name = "Snow"
-        active = true
-        addMember().apply { entity = Reference("Patient/${patient.logicalId}") }
-      }
-
-    coEvery {
-      fhirEngine.search<Group>(Search(type = ResourceType.Group, count = 10, from = 10))
-    } returns listOf(group)
-
-    every { fhirPathDataExtractor.extractData(group, "Group.member.entity") } returns
-      listOf(Reference("Patient/12345"))
-
-    coEvery { fhirEngine.get(type = ResourceType.Patient, "12345") } returns patient
-
-    coEvery { fhirEngine.search<Condition>(Search(type = ResourceType.Condition)) } returns
-      listOf(Condition())
-
-    coEvery { fhirEngine.search<CarePlan>(Search(type = ResourceType.CarePlan)) } returns
-      listOf(CarePlan())
-
-    runBlocking {
-      configurationRegistry.loadConfigurations("app/debug", context) { Assert.assertTrue(it) }
-      val listResourceData = registerRepository.loadRegisterData(1, "householdRegister")
-      val queryResult = listResourceData.first().queryResult
-
-      Assert.assertEquals(1, listResourceData.size)
-
-      Assert.assertEquals(
-        ResourceType.Group,
-        (queryResult as RepositoryResourceData.QueryResult.Search).resource.resourceType
-      )
-    }
-
-    verify { registerRepository.retrieveRegisterConfiguration("householdRegister", emptyMap()) }
-
-    coVerify { fhirEngine.search<Group>(Search(type = ResourceType.Group, count = 10, from = 10)) }
-
-    verify { fhirPathDataExtractor.extractData(group, "Group.member.entity") }
-
-    coVerify { fhirEngine.get(type = ResourceType.Patient, "12345") }
-
-    coVerify { fhirEngine.search<Condition>(Search(type = ResourceType.Condition)) }
-
-    coVerify { fhirEngine.search<CarePlan>(Search(type = ResourceType.CarePlan)) }
-  }
-
-  @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun loadProfileDataIsNotSupportedYet() {
-    coEvery { fhirEngine.search<Group>(Search(type = ResourceType.Group)) } returns listOf(Group())
-    coEvery { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) } returns
-      listOf(Observation())
-    coEvery { fhirEngine.get(ResourceType.Patient, patient.id) } returns patient
-    runBlocking {
-      val profileData =
-        registerRepository.loadProfileData(
-          profileId = "patientProfile",
-          resourceId = "12345",
-          paramsList = emptyArray()
-        )
-      Assert.assertNotNull(profileData)
-      Assert.assertEquals(
-        ResourceType.Patient,
-        (profileData.queryResult as RepositoryResourceData.QueryResult.Search).resource.resourceType
-      )
-    }
-  }
-
-  @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun loadRegisterDataGivenSecondaryResourcesAreConfigured() {
-    val group =
-      Group().apply {
-        id = "1234567"
-        name = "Paracetamol"
-        active = true
-      }
-
-    coEvery { fhirEngine.search<Group>(Search(type = ResourceType.Group)) } returns listOf(group)
-
-    coEvery { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) } returns
-      listOf(Observation())
-
-    coEvery {
-      fhirEngine.search<Patient>(Search(type = ResourceType.Patient, count = 10, from = 10))
-    } returns listOf(patient)
-
-    runBlocking { registerRepository.loadRegisterData(1, "patientRegister") }
-
-    coVerify { fhirEngine.search<Group>(Search(type = ResourceType.Group)) }
-
-    coVerify { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) }
-  }
-
-  @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun loadProfileDataGivenSecondaryResourcesAreConfigured() {
-    val group =
-      Group().apply {
-        id = "1234567"
-        name = "Paracetamol"
-        active = true
-      }
-
-    coEvery { fhirEngine.search<Group>(Search(type = ResourceType.Group)) } returns listOf(group)
-
-    coEvery { fhirEngine.get(ResourceType.Patient, patient.id) } returns patient
-
-    coEvery { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) } returns
-      listOf(Observation())
-
-    runBlocking {
-      val profileData =
-        registerRepository.loadProfileData(
-          profileId = "patientProfile",
-          resourceId = "12345",
-          paramsList = emptyArray()
-        )
-      Assert.assertNotNull(profileData)
-    }
-
-    coVerify { fhirEngine.search<Group>(Search(type = ResourceType.Group)) }
-
-    coVerify { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) }
-  }
-
-  @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun countRegisterDataReturnsCorrectCount() {
-    coEvery { fhirEngine.count(Search(type = ResourceType.Patient)) } returns 20
-
-    runBlocking {
+    runTest {
+      coEvery { fhirEngine.count(Search(type = ResourceType.Patient)) } returns 20
       val recordsCount = registerRepository.countRegisterData("patientRegister")
-
       Assert.assertEquals(20, recordsCount)
     }
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun countRegisterDataReturnsCorrectCountForGroups() {
-    coEvery { fhirEngine.count(Search(type = ResourceType.Group)) } returns 10
-
-    runBlocking {
+    runTest {
+      coEvery { fhirEngine.count(Search(type = ResourceType.Group)) } returns 10
       val recordsCount = registerRepository.countRegisterData("householdRegister")
-
       Assert.assertEquals(10, recordsCount)
     }
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun loadRegisterDataWithParamsReturnsFilteredResources() = runTest {
-    val group =
-      Group().apply {
-        id = "1234567"
-        name = "Paracetamol"
-        active = true
-      }
-    val paramsList =
-      arrayListOf(
-        ActionParameter(
-          key = "paramsName",
-          paramType = ActionParameterType.PARAMDATA,
-          value = "testing1",
-          dataType = DataType.STRING,
-          linkId = null
-        ),
-        ActionParameter(
-          key = "paramName2",
-          paramType = ActionParameterType.PARAMDATA,
-          value = "testing2",
-          dataType = DataType.STRING,
-          linkId = null
-        ),
-        ActionParameter(
-          key = "paramName3",
-          paramType = ActionParameterType.PREPOPULATE,
-          value = "testing3",
-          dataType = DataType.STRING,
-          linkId = null
-        ),
-      )
-    val paramsMap =
+  fun countRegisterDataWithParams() {
+    runTest {
+      val paramsList =
+        arrayListOf(
+          ActionParameter(
+            key = "paramsName",
+            paramType = ActionParameterType.PARAMDATA,
+            value = "testing1",
+            dataType = DataType.STRING,
+            linkId = null
+          ),
+          ActionParameter(
+            key = "paramName2",
+            paramType = ActionParameterType.PARAMDATA,
+            value = "testing2",
+            dataType = DataType.STRING,
+            linkId = null
+          ),
+        )
       paramsList
         .asSequence()
-        .filter { it.paramType == ActionParameterType.PARAMDATA && !it.value.isNullOrEmpty() }
+        .filter { it.paramType == ActionParameterType.PARAMDATA && it.value.isNotEmpty() }
         .associate { it.key to it.value }
-
-    coEvery { fhirEngine.search<Group>(Search(type = ResourceType.Group)) } returns listOf(group)
-
-    coEvery { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) } returns
-      listOf(Observation())
-
-    coEvery {
-      fhirEngine.search<Patient>(Search(type = ResourceType.Patient, count = 10, from = 10))
-    } returns listOf(patient)
-
-    val result = registerRepository.loadRegisterData(1, "patientRegister", paramsMap = paramsMap)
-
-    coVerify { fhirEngine.search<Group>(Search(type = ResourceType.Group)) }
-
-    coVerify { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) }
-    Assert.assertNotNull(result.size)
-  }
-
-  @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun countRegisterDataWithParams() {
-    val paramsList =
-      arrayListOf(
-        ActionParameter(
-          key = "paramsName",
-          paramType = ActionParameterType.PARAMDATA,
-          value = "testing1",
-          dataType = DataType.STRING,
-          linkId = null
-        ),
-        ActionParameter(
-          key = "paramName2",
-          paramType = ActionParameterType.PARAMDATA,
-          value = "testing2",
-          dataType = DataType.STRING,
-          linkId = null
-        ),
-      )
-    paramsList
-      .asSequence()
-      .filter { it.paramType == ActionParameterType.PARAMDATA && !it.value.isNullOrEmpty() }
-      .associate { it.key to it.value }
-    val paramsMap = emptyMap<String, String>()
-    coEvery { fhirEngine.count(Search(type = ResourceType.Patient)) } returns 20
-
-    runBlocking {
+      val paramsMap = emptyMap<String, String>()
+      coEvery { fhirEngine.count(Search(type = ResourceType.Patient)) } returns 20
       val recordsCount = registerRepository.countRegisterData("patientRegister", paramsMap)
-
       Assert.assertEquals(20, recordsCount)
     }
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun loadProfileDataSqlContainsFilterForActiveGroups() {
-    val group =
-      Group().apply {
-        id = "1234567"
-        name = "Paracetamol"
-        active = true
-      }
+  fun testLoadRegisterDataWithForwardAndReverseIncludedResources() {
+    runTest {
+      val registerId = "householdRegister"
+      every { registerRepository.retrieveRegisterConfiguration(registerId, emptyMap()) } returns
+        RegisterConfiguration(appId = "app", id = registerId, fhirResource = fhirResourceConfig())
 
-    val expectedSql =
-      "SELECT a.serializedResource\n" +
-        "FROM ResourceEntity a\n" +
-        "WHERE a.resourceType = ?\n" +
-        "AND a.resourceUuid IN (\n" +
-        "SELECT resourceUuid FROM TokenIndexEntity\n" +
-        "WHERE resourceType = ? AND index_name = ? AND (index_value = ? AND IFNULL(index_system,'') = ?)\n" +
-        ")\n" +
-        "AND a.resourceUuid IN (\n" +
-        "SELECT resourceUuid FROM TokenIndexEntity\n" +
-        "WHERE resourceType = ? AND index_name = ? AND index_value = ?\n" +
-        ")"
-
-    val expectedArgs =
-      listOf(
-        "Group",
-        "Group",
-        "code",
-        "386452003",
-        "http://snomed.info/sct",
-        "Group",
-        "active",
-        "true"
-      )
-
-    val groupSlot = slot<Search>()
-    coEvery { fhirEngine.search<Group>(capture(groupSlot)) } returns listOf(group)
-
-    coEvery { fhirEngine.get(ResourceType.Patient, patient.id) } returns patient
-
-    coEvery { fhirEngine.search<Observation>(Search(type = ResourceType.Observation)) } returns
-      listOf(Observation())
-
-    runBlocking {
-      val profileData =
-        registerRepository.loadProfileData(
-          profileId = "patientProfile",
-          resourceId = "12345",
-          paramsList = emptyArray()
+      // Mock search for Groups; should return list of Group resources.
+      val retrievedGroup = retrieveGroup()
+      coEvery {
+        fhirEngine.search<Resource>(Search(type = ResourceType.Group, count = 10, from = 0))
+      } returns
+        listOf(
+          retrievedGroup,
+          Group().apply {
+            id = "inactiveGroup"
+            active = false
+          }
         )
-      Assert.assertNotNull(profileData)
-    }
 
-    Assert.assertEquals(expectedSql, groupSlot.captured.getQuery().query)
-    Assert.assertEquals(expectedArgs, groupSlot.captured.getQuery().args)
+      // Mock search for Group member (Patient) with forward include
+      coEvery {
+        fhirEngine.searchWithRevInclude<Resource>(false, Search(ResourceType.Group, null, null))
+      } returns
+        mutableMapOf(
+          retrievedGroup to
+            mapOf<ResourceType, List<Resource>>(ResourceType.Patient to listOf(patient))
+        )
+
+      // Mock searchWithRevInclude for CarePlan and Task related resources for the Patient
+      coEvery {
+        fhirEngine.searchWithRevInclude<Resource>(true, Search(ResourceType.Patient, null, null))
+      } returns mutableMapOf(patient to retrieveRelatedResourcesMap())
+
+      val registerData =
+        registerRepository.loadRegisterData(
+          currentPage = 0,
+          registerId = registerId,
+          mutableMapOf()
+        )
+      Assert.assertTrue(registerData.isNotEmpty())
+      val repositoryResourceData = registerData.firstOrNull()
+      Assert.assertTrue(repositoryResourceData is RepositoryResourceData.Search)
+      Assert.assertTrue((repositoryResourceData as RepositoryResourceData.Search).resource is Group)
+      Assert.assertEquals("theGroup", (repositoryResourceData.resource as Group).id)
+      Assert.assertTrue((repositoryResourceData.resource as Group).member.isNotEmpty())
+
+      // Ensure the related resources were included
+      val relatedResources = repositoryResourceData.relatedResources
+      Assert.assertTrue(relatedResources.isNotEmpty())
+      Assert.assertTrue(relatedResources.containsKey("groupMembers"))
+
+      val patientRepositoryResourceData: RepositoryResourceData.Search? =
+        relatedResources["groupMembers"]?.firstOrNull() as RepositoryResourceData.Search?
+      Assert.assertNotNull(patientRepositoryResourceData)
+      val patientRelatedResources = patientRepositoryResourceData?.relatedResources
+      Assert.assertTrue(patientRelatedResources?.containsKey("memberTasks")!!)
+      Assert.assertTrue(patientRelatedResources["memberTasks"]!!.isNotEmpty())
+      Assert.assertTrue(patientRelatedResources.containsKey("memberCarePlans"))
+      Assert.assertTrue(patientRelatedResources["memberCarePlans"]!!.isNotEmpty())
+    }
   }
+
+  @Test
+  fun testLoadProfileDataWithForwardAndReverseIncludedResources() {
+    runTest {
+      val profileId = "profile"
+      every { registerRepository.retrieveProfileConfiguration(profileId, emptyMap()) } returns
+        ProfileConfiguration(
+          appId = "app",
+          id = profileId,
+          fhirResource = fhirResourceConfig(),
+          // Load extra resources not related to the baseResource
+          secondaryResources =
+            listOf(
+              FhirResourceConfig(
+                baseResource = ResourceConfig(resource = "CarePlan"),
+                relatedResources =
+                  listOf(
+                    ResourceConfig(
+                      resource = "Encounter",
+                      searchParameter = "encounter",
+                      isRevInclude = false
+                    )
+                  )
+              )
+            )
+        )
+
+      // Mock search for Groups; should return list of Group resources
+      val group = retrieveGroup()
+      coEvery { fhirEngine.get(type = ResourceType.Group, id = group.id) } returns group
+
+      // Mock search for Group member (Patient) with forward include
+      coEvery {
+        fhirEngine.searchWithRevInclude<Resource>(false, Search(ResourceType.Group, null, null))
+      } returns
+        mutableMapOf(
+          group to mapOf<ResourceType, List<Resource>>(ResourceType.Patient to listOf(patient))
+        )
+
+      // Mock searchWithRevInclude for CarePlan and Task related resources for the Patient
+      coEvery {
+        fhirEngine.searchWithRevInclude<Resource>(true, Search(ResourceType.Patient, null, null))
+      } returns mutableMapOf(patient to retrieveRelatedResourcesMap())
+
+      // Mock search for secondary resources
+      val encounterId = "encounter123"
+      val carePlan =
+        CarePlan().apply {
+          id = "secondaryResourceCarePlan"
+          encounter = Reference("${ResourceType.Encounter.name}/$encounterId")
+        }
+      coEvery {
+        fhirEngine.search<Resource>(Search(type = ResourceType.CarePlan, count = null, from = null))
+      } returns listOf(carePlan)
+
+      // Mock search for secondary resource member (Encounter) with forward include
+      coEvery {
+        fhirEngine.searchWithRevInclude<Resource>(false, Search(ResourceType.CarePlan, null, null))
+      } returns
+        mutableMapOf(
+          carePlan to
+            mapOf<ResourceType, List<Resource>>(
+              ResourceType.Encounter to listOf(Encounter().apply { id = encounterId })
+            )
+        )
+
+      val repositoryResourceData =
+        registerRepository.loadProfileData(
+          profileId = profileId,
+          resourceId = group.id,
+          fhirResourceConfig = null,
+          paramsList = null
+        )
+      Assert.assertTrue(repositoryResourceData is RepositoryResourceData.Search)
+      Assert.assertTrue((repositoryResourceData as RepositoryResourceData.Search).resource is Group)
+      Assert.assertEquals("theGroup", (repositoryResourceData.resource as Group).id)
+      Assert.assertTrue((repositoryResourceData.resource as Group).member.isNotEmpty())
+
+      // Ensure the related resources were included
+      val relatedResources = repositoryResourceData.relatedResources
+      Assert.assertTrue(relatedResources.isNotEmpty())
+      Assert.assertTrue(relatedResources.containsKey("groupMembers"))
+
+      val patientRepositoryResourceData: RepositoryResourceData.Search? =
+        relatedResources["groupMembers"]?.firstOrNull() as RepositoryResourceData.Search?
+      Assert.assertNotNull(patientRepositoryResourceData)
+      val patientRelatedResources = patientRepositoryResourceData?.relatedResources
+      Assert.assertTrue(patientRelatedResources?.containsKey("memberTasks")!!)
+      Assert.assertTrue(patientRelatedResources["memberTasks"]!!.isNotEmpty())
+      Assert.assertTrue(patientRelatedResources.containsKey("memberCarePlans"))
+      Assert.assertTrue(patientRelatedResources["memberCarePlans"]!!.isNotEmpty())
+
+      // Assert that secondary resources are loaded
+      val secondaryRepositoryResourceDataList =
+        repositoryResourceData.secondaryRepositoryResourceData
+      Assert.assertNotNull(secondaryRepositoryResourceDataList)
+      Assert.assertTrue(secondaryRepositoryResourceDataList!!.isNotEmpty())
+      val secondaryRepositoryResourceData: RepositoryResourceData =
+        secondaryRepositoryResourceDataList[0]
+      Assert.assertTrue(secondaryRepositoryResourceData is RepositoryResourceData.Search)
+      Assert.assertTrue(
+        (secondaryRepositoryResourceData as RepositoryResourceData.Search).resource is CarePlan
+      )
+      Assert.assertEquals("secondaryResourceCarePlan", secondaryRepositoryResourceData.resource.id)
+      Assert.assertTrue(secondaryRepositoryResourceData.relatedResources.isNotEmpty())
+      Assert.assertTrue(secondaryRepositoryResourceData.relatedResources.containsKey("Encounter"))
+    }
+  }
+
+  private fun fhirResourceConfig() =
+    FhirResourceConfig(
+      baseResource = ResourceConfig(resource = "Group"),
+      relatedResources =
+        listOf(
+          ResourceConfig(
+            resource = "Patient",
+            id = "groupMembers",
+            searchParameter = "member",
+            isRevInclude = false,
+            relatedResources =
+              listOf(
+                ResourceConfig(id = "memberTasks", resource = "Task", searchParameter = "subject"),
+                ResourceConfig(
+                  id = "memberCarePlans",
+                  resource = "CarePlan",
+                  searchParameter = "subject"
+                )
+              )
+          )
+        )
+    )
+
+  private fun retrieveRelatedResourcesMap(): Map<ResourceType, List<Resource>> =
+    mapOf(
+      ResourceType.Task to listOf(Task().apply { id = "taskId" }),
+      ResourceType.CarePlan to listOf(CarePlan().apply { id = "carePlan" })
+    )
+
+  private fun retrieveGroup() =
+    Group().apply {
+      id = "theGroup"
+      active = true
+      addMember(Group.GroupMemberComponent(Reference("Patient/12345")))
+    }
 }

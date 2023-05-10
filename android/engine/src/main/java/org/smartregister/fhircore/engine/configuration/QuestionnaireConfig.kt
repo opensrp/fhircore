@@ -41,7 +41,8 @@ data class QuestionnaireConfig(
   val saveDraft: Boolean = false,
   val snackBarMessage: SnackBarMessageConfig? = null,
   val carePlanConfigs: List<CarePlanConfig> = emptyList(),
-  val refreshContent: Boolean = false
+  val refreshContent: Boolean = false,
+  val readOnlyLinkIds: List<String>? = emptyList(),
 ) : java.io.Serializable
 
 @Serializable
@@ -77,5 +78,6 @@ fun QuestionnaireConfig.interpolate(computedValuesMap: Map<String, Any>) =
         message = confirmationDialog.message.interpolate(computedValuesMap),
         actionButtonText = confirmationDialog.actionButtonText.interpolate(computedValuesMap)
       ),
-    planDefinitions = planDefinitions?.map { it.interpolate(computedValuesMap) }
+    planDefinitions = planDefinitions?.map { it.interpolate(computedValuesMap) },
+    readOnlyLinkIds = readOnlyLinkIds?.map { it.interpolate(computedValuesMap) }
   )

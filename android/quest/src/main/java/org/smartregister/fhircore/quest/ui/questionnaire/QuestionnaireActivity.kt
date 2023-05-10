@@ -125,7 +125,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireViewModel.loadQuestionnaire(
           questionnaireConfig.id,
           questionnaireConfig.type,
-          prePopulationParams
+          prePopulationParams,
+          questionnaireConfig.readOnlyLinkIds
         )
         .let { thisQuestionnaire ->
           if (thisQuestionnaire == null) {
@@ -237,7 +238,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           questionnaireViewModel.loadQuestionnaire(
             questionnaireConfig.id,
             questionnaireConfig.type,
-            prePopulationParams
+            prePopulationParams,
+            questionnaireConfig.readOnlyLinkIds
           )!!
         supportFragmentManager.commit { detach(fragment) }
         renderFragment()

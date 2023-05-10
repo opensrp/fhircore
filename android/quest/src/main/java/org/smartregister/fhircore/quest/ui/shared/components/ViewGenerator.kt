@@ -147,7 +147,6 @@ fun GenerateView(
             if (isWeighted) Arrangement.spacedBy(properties.spacedBy.dp)
             else properties.arrangement?.position ?: Arrangement.Start
         ) {
-          children.any { it.weight > 0 }
           for (child in children) {
             GenerateView(
               modifier = generateModifier(child),

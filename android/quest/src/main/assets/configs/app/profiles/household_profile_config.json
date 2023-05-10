@@ -35,7 +35,8 @@
     "relatedResources": [
       {
         "resource": "Patient",
-        "fhirPathExpression": "Group.member.entity",
+        "isRevInclude": false,
+        "searchParameter": "member",
         "relatedResources": [
           {
             "resource": "Condition",
@@ -378,6 +379,7 @@
                   {
                     "name": "showMemberTasks",
                     "condition": "true",
+                "priority": 2,
                     "actions": [
                       "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(Task) > 0)"
                     ]
