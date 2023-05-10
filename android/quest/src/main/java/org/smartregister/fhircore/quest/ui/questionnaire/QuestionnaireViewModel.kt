@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.content.Context
 import android.widget.Toast
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -666,7 +667,8 @@ constructor(
    * @param questionnaire Questionnaire as the basis for how the resources are to be populated
    * @param populationResources resources to be populated
    */
-  private suspend fun populateQuestionnaireResponse(
+  @VisibleForTesting
+  suspend fun populateQuestionnaireResponse(
     questionnaire: Questionnaire,
     populationResources: ArrayList<Resource>
   ): QuestionnaireResponse {
