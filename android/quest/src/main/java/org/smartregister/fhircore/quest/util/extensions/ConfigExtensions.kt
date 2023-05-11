@@ -71,7 +71,9 @@ fun List<ActionConfig>.handleClickEvent(
               context = navController.context,
               intentBundle = intentBundle,
               questionnaireConfig = questionnaireConfigInterpolated,
-              actionParams = interpolateActionParamsValue(actionConfig, resourceData).toList()
+              actionParams = interpolateActionParamsValue(actionConfig, resourceData).toList(),
+              baseResourceId = resourceData?.baseResourceId,
+              baseResourceType = resourceData?.baseResourceType?.name
             )
           }
         }
@@ -106,7 +108,7 @@ fun List<ActionConfig>.handleClickEvent(
           args.getString(NavigationArg.REGISTER_ID) ==
             navController.previousBackStackEntry?.arguments?.getString(NavigationArg.REGISTER_ID)
         if (currentDestinationId != null &&
-            currentDestinationId != MainNavigationScreen.Home.route &&
+            currentDestinationId != navController.graph.id &&
             !sameRegisterId
         ) {
           navController.navigate(
