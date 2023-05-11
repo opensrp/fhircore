@@ -1598,15 +1598,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         subject = Reference("Group/2511692c-74d5-401d-bc29-a70aff33d176")
       }
     val group = Group().apply { id = "2511692c-74d5-401d-bc29-a70aff33d176" }
-    val resourceId = questionnaireResponse.subject.reference.extractLogicalIdUuid()
-    val resourceType =
-      questionnaireResponse
-        .subject
-        .extractType()
-        .toString()
-        .resourceClassType()
-        .newInstance()
-        .resourceType
     coEvery { ResourceMapper.extract(any(), any(), any()) } returns
       Bundle().apply { addEntry().resource = group }
     coEvery { fhirEngine.get(ResourceType.Patient, "12345") } returns group
@@ -1624,17 +1615,18 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     questionnaireConfig = questionnaireConfig.copy(type = QuestionnaireType.DEFAULT)
     coEvery { fhirEngine.get(ResourceType.Patient, "2511692c-74d5-401d-bc29-a70aff33d176") } returns
       group
-    coEvery { defaultRepo.loadResource(resourceId, resourceType) } returns group
+    val beforeTime = Date()
     questionnaireViewModel.extractAndSaveResources(
       context = context,
       questionnaireResponse = questionnaireResponse,
       questionnaire = questionnaire,
       questionnaireConfig = questionnaireConfig
     )
-    runBlocking { defaultRepo.loadResource(resourceId, resourceType) }
-    coVerify { defaultRepo.loadResource(resourceId = resourceId, resourceType = resourceType) }
-    val formatter = SimpleDateFormat("dd MM yyyy HH:mm:ss")
-    Assert.assertEquals(formatter.format(group.meta.lastUpdated), formatter.format(Date()))
+    val afterTime = Date()
+    assertTrue(
+      (group.meta.lastUpdated.equals(beforeTime) || group.meta.lastUpdated.after(beforeTime)) &&
+        (group.meta.lastUpdated.equals(afterTime) || group.meta.lastUpdated.before(afterTime))
+    )
     unmockkObject(ResourceMapper)
   }
 
