@@ -154,10 +154,6 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
       }
       ?.let { actionParam ->
 
-        if (item.hasExtension(ITEM_INITIAL_EXPRESSION_URL)) {
-          item.removeExtension(ITEM_INITIAL_EXPRESSION_URL)
-        }
-
         item.initial =
           arrayListOf(
             Questionnaire.QuestionnaireItemInitialComponent().apply {

@@ -129,6 +129,14 @@ constructor(
           readOnlyLinkIds
         )
       }
+
+      this.item.forEach {
+        it.item.forEach {
+          it.extension.removeIf {
+            it.url == "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden"
+          }
+        }
+      }
       // prepopulate questionnaireItems with initial values
       prePopulationParams?.takeIf { it.isNotEmpty() }?.let { nonEmptyParams ->
         editQuestionnaireResourceParams =
