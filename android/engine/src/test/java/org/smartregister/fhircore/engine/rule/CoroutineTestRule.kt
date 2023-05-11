@@ -39,12 +39,12 @@ class CoroutineTestRule(val testDispatcher: TestCoroutineDispatcher = TestCorout
       override fun unconfined() = testDispatcher
     }
 
-  override fun apply(base: Statement?, description: Description?) =
+  override fun apply(base: Statement, description: Description): Statement =
     object : Statement() {
       @Throws(Throwable::class)
       override fun evaluate() {
         Dispatchers.setMain(testDispatcher)
-        base?.evaluate()
+        base.evaluate()
         Dispatchers.resetMain()
         testDispatcher.cleanupTestCoroutines()
       }
