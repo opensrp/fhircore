@@ -72,7 +72,7 @@ data class FhirResourceConfig(
 @Parcelize
 data class ResourceConfig(
   val id: String? = null,
-  val resource: String,
+  val resource: ResourceType,
   val searchParameter: String? = null,
   val isRevInclude: Boolean = true,
   val dataQueries: List<DataQuery>? = null,

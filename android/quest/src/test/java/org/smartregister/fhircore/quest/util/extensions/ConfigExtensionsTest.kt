@@ -78,7 +78,7 @@ class ConfigExtensionsTest : RobolectricTest() {
 
   @Test
   fun testLaunchProfileActionOnClick() {
-    val resourceConfig = FhirResourceConfig(ResourceConfig(resource = "Patient"))
+    val resourceConfig = FhirResourceConfig(ResourceConfig(resource = ResourceType.Patient))
     val clickAction =
       ActionConfig(
         id = "profileId",

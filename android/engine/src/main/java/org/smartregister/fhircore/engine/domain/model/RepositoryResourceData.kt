@@ -17,40 +17,38 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import androidx.compose.runtime.Stable
-import java.util.LinkedList
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 
 /**
  * This represent the outcome of a query performed via the Repository. The query performed can
- * either return a count which is wrapped in the [RepositoryResourceData.Count] data class or return
- * a list of [Resource]'s (with optional nested [Resource]'s) wrapped in
- * [RepositoryResourceData.Search] data class. [RepositoryResourceData.Search] has an optional
- * property [RepositoryResourceData.Search.baseResourceRulesId] that can be used as the key in the
- * rules factory facts map (each fact is represented as a key-value pair). The key for the
- * [RepositoryResourceData.Search.relatedResources] will either be the configured unique id for
- * representing the resource(s) in Rules engine Facts map or the [ResourceType].
- * [RepositoryResourceData.Search.secondaryRepositoryResourceData] returns a list of independent
- * resources (which may include nested resource(s)) that have NO relationship with the base
- * [RepositoryResourceData.Search.resource].
+ * either return a count or map of [Resource]'s (including nested resources flattened in the map).
+ * The optional property [resourceRulesEngineFactId] that can be used as the key in the rules
+ * factory facts map (each fact is represented as a key-value pair). The key for the
+ * [relatedResourcesMap] will either be the configured unique id for representing the resource(s) in
+ * Rules engine Facts map or the [ResourceType]. [secondaryRepositoryResourceData] returns a list of
+ * independent resources (which may include nested resource(s)) that have NO relationship with the
+ * base [resource].
  */
 @Stable
-sealed class RepositoryResourceData {
-  data class Search(
-    val baseResourceRulesId: String? = null,
-    val resource: Resource,
-    val relatedResources: Map<String, LinkedList<RepositoryResourceData>> = mutableMapOf(),
-    val secondaryRepositoryResourceData: List<RepositoryResourceData>? = null
-  ) : RepositoryResourceData()
-  data class Count(val resourceType: ResourceType, val relatedResourceCount: RelatedResourceCount) :
-    RepositoryResourceData()
-}
+data class RepositoryResourceData(
+  val resourceRulesEngineFactId: String? = null,
+  val resource: Resource,
+  val relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
+  val relatedResourcesCountMap: Map<String, List<RelatedResourceCount>> = emptyMap(),
+  val secondaryRepositoryResourceData: List<RepositoryResourceData>? = null
+)
 
 /**
  * This model represent a count result for [RepositoryResourceData]. The [parentResourceId] refers
  * to the id of the parent resource that we are interested in counting it's related resources.
  *
  * Example: Count all Task resources for a Patient identified by 'abcxyz'. The response will be
- * represented as RelatedResourceCount(relatedResourceId = "abcxyz", count = 0)
+ * represented as RelatedResourceCount(relatedResourceType= 'Task', relatedResourceId = "abcxyz",
+ * count = 0)
  */
-data class RelatedResourceCount(val parentResourceId: String, val count: Long = 0L)
+data class RelatedResourceCount(
+  val relatedResourceType: ResourceType,
+  val parentResourceId: String,
+  val count: Long = 0L
+)
