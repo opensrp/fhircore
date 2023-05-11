@@ -23,6 +23,7 @@ import android.content.Intent
 import android.view.MenuItem
 import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
@@ -124,8 +125,9 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     val questionnaireString = parser.encodeResourceToString(Questionnaire())
 
-    questionnaireFragment =
-      spyk(QuestionnaireFragment.builder().setQuestionnaire(questionnaireString).build())
+    questionnaireFragment = spyk()
+
+    questionnaireFragment.apply { arguments = bundleOf(Pair("questionnaire", questionnaireString)) }
 
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
 
@@ -145,6 +147,9 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testActivityShouldNotNull() {
+    Assert.assertNotNull(
+      questionnaireActivity.supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG)
+    )
     Assert.assertNotNull(questionnaireActivity)
   }
 
@@ -218,8 +223,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     val questionnaireString = parser.encodeResourceToString(Questionnaire())
 
-    val questionnaireFragment =
-      spyk(QuestionnaireFragment.builder().setQuestionnaire(questionnaireString).build())
+    val questionnaireFragment = spyk<QuestionnaireFragment>()
+    questionnaireFragment.apply { arguments = bundleOf(Pair("questionnaire", questionnaireString)) }
 
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
 
