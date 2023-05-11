@@ -23,4 +23,4 @@ captures/
 # IntelliJ
 *.iml
 .idea
-android/quest/google-services.json
+*google-services.json

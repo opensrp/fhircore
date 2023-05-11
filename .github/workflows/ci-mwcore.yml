@@ -30,6 +30,11 @@ jobs:
         with:
           java-version: 11
 
+      - name: Decode google-services.json
+        run: echo $ENCODED_GOOGLE_SERVICES_JSON | base64 -d > android/quest/google-services.json
+        env:
+          ENCODED_GOOGLE_SERVICES_JSON: ${{ secrets.MWCORE_GOOGLE_SERVICES_JSON }}
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: android
@@ -64,6 +69,11 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
+
+      - name: Decode google-services.json
+        run: echo $ENCODED_GOOGLE_SERVICES_JSON | base64 -d > android/quest/google-services.json
+        env:
+          ENCODED_GOOGLE_SERVICES_JSON: ${{ secrets.MWCORE_GOOGLE_SERVICES_JSON }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
