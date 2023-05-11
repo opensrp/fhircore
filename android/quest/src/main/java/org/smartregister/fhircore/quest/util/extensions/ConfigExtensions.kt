@@ -54,7 +54,7 @@ fun List<ActionConfig>.handleClickEvent(
 
           val intentBundle =
             when (questionnaireConfigInterpolated.type) {
-              QuestionnaireType.EDIT, QuestionnaireType.READ_ONLY, QuestionnaireType.DEFAULT -> {
+              QuestionnaireType.EDIT, QuestionnaireType.READ_ONLY -> {
                 actionConfig.paramsBundle(resourceData?.computedValuesMap ?: emptyMap()).apply {
                   putString(
                     QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
