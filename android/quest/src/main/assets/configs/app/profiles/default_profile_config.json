@@ -2235,6 +2235,7 @@
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
             "id": "3276f55c-b25e-455b-ae4e-8846fb8fd039",
+            "type": "EDIT",
             "title": "Record sick child",
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
