@@ -103,7 +103,7 @@ constructor(
 
   fun onShowPinError(showError: Boolean) = _showError.postValue(showError)
 
-  fun onSetPin(newPin: String) {
+  fun onSetPin(newPin: CharArray) {
     secureSharedPreference.saveSessionPin(newPin)
     _navigateToHome.postValue(true)
   }

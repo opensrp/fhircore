@@ -94,6 +94,8 @@ fun PinInput(
           if (inputMode) onPinSet(enteredPin)
           else {
             val validPin = enteredPin == actualPin
+            // val loginPinSalt =
+            // secureSharedPreferences.getString(SharedPreferenceKey.LOGIN_PIN_SALT.name, null)
             onPinVerified(validPin)
             // Wrong PIN, clear entered PIN
             if (!validPin) {

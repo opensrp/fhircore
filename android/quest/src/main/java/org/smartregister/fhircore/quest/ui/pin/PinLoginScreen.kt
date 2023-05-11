@@ -87,7 +87,7 @@ fun PinLoginPage(
   modifier: Modifier = Modifier,
   showError: Boolean,
   pinUiState: PinUiState,
-  onSetPin: (String) -> Unit,
+  onSetPin: (CharArray) -> Unit,
   onPinVerified: (Boolean) -> Unit,
   onMenuLoginClicked: (Boolean) -> Unit,
   onShowPinError: (Boolean) -> Unit,
@@ -168,7 +168,7 @@ fun PinLoginPage(
           } else {
             // Enable button when a new PIN of required length is entered
             Button(
-              onClick = { onSetPin(newPin) },
+              onClick = { onSetPin(newPin.toCharArray()) },
               enabled = newPin.length == pinUiState.pinLength,
               modifier =
                 modifier

@@ -58,8 +58,15 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
       .getString(SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name, null)
       ?.decodeJson<AuthCredentials>()
 
-  fun saveSessionPin(pin: String) =
-    secureSharedPreferences.edit { putString(SharedPreferenceKey.LOGIN_PIN_KEY.name, pin) }
+  fun saveSessionPin(pin: CharArray) {
+
+    val randomSaltBytes = getRandomBytesOfSize(256)
+
+    secureSharedPreferences.edit {
+      putString(SharedPreferenceKey.LOGIN_PIN_KEY.name, randomSaltBytes.toString(Charsets.UTF_8))
+      putString(SharedPreferenceKey.LOGIN_PIN_KEY.name, pin.toPasswordHash(randomSaltBytes))
+    }
+  }
 
   fun retrieveSessionPin() =
     secureSharedPreferences.getString(SharedPreferenceKey.LOGIN_PIN_KEY.name, null)
