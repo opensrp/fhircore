@@ -67,8 +67,8 @@ fun CardView(
           resourceData = resourceData,
           navController = navController
         )
-        // TODO Display viewAll action text
-        if (viewProperties.headerAction != null) {
+        if (viewProperties.headerAction != null && viewProperties.headerAction!!.visible.toBoolean()
+        ) {
           CompoundText(
             modifier = modifier.wrapContentWidth(Alignment.End),
             compoundTextProperties = viewProperties.headerAction!!.copy(),
@@ -116,7 +116,7 @@ private fun CardViewWithoutPaddingPreview() {
             ),
           header =
             CompoundTextProperties(
-              primaryText = "IMMUNIZATIONS",
+              primaryText = "HOUSE MEMBERS",
               fontSize = 18.0f,
               primaryTextColor = "#6F7274",
             ),
