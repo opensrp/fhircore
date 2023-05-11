@@ -153,7 +153,6 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
           !it.value.contains(interpolationPrefix)
       }
       ?.let { actionParam ->
-
         item.initial =
           arrayListOf(
             Questionnaire.QuestionnaireItemInitialComponent().apply {
