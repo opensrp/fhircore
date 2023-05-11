@@ -153,13 +153,17 @@ constructor(
     relatedResourceWrapper: RelatedResourceWrapper,
   ): RelatedResourceWrapper {
 
-    // Search with forward include
-    searchWithRevInclude(
-      isRevInclude = false,
-      relatedResourcesConfigs = relatedResourcesConfigs,
-      resources = resources,
-      relatedResourceWrapper = relatedResourceWrapper
-    )
+    // Forward include related resources e.g. Members (Patient) referenced in Group resource
+    val forwardIncludeResourceConfigs =
+      relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(false)
+    if (!forwardIncludeResourceConfigs.isNullOrEmpty()) {
+      searchWithRevInclude(
+        isRevInclude = false,
+        relatedResourcesConfigs = forwardIncludeResourceConfigs,
+        resources = resources,
+        relatedResourceWrapper = relatedResourceWrapper
+      )
+    }
 
     val countResourceConfigs = relatedResourcesConfigs?.filter { it.resultAsCount }
     countResourceConfigs?.forEach { resourceConfig ->
@@ -197,12 +201,17 @@ constructor(
       }
     }
 
-    searchWithRevInclude(
-      isRevInclude = true,
-      relatedResourcesConfigs = relatedResourcesConfigs,
-      resources = resources,
-      relatedResourceWrapper = relatedResourceWrapper
-    )
+    // Reverse include related resources e.g. All CarePlans, Immunization for Patient resource
+    val reverseIncludeResourceConfigs =
+      relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(true)
+    if (!reverseIncludeResourceConfigs.isNullOrEmpty()) {
+      searchWithRevInclude(
+        isRevInclude = true,
+        relatedResourcesConfigs = reverseIncludeResourceConfigs,
+        resources = resources,
+        relatedResourceWrapper = relatedResourceWrapper
+      )
+    }
 
     return relatedResourceWrapper
   }
@@ -219,13 +228,9 @@ constructor(
     resources: List<Resource>,
     relatedResourceWrapper: RelatedResourceWrapper
   ) {
-    val revIncludeRelatedResourceConfigs =
-      relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(isRevInclude)
+    val relatedResourcesConfigsMap = relatedResourcesConfigs?.groupBy { it.resource }
 
-    val revIncludeRelatedResourcesConfigsMap: Map<String, List<ResourceConfig>>? =
-      revIncludeRelatedResourceConfigs?.groupBy { it.resource.name }
-
-    if (!revIncludeRelatedResourcesConfigsMap.isNullOrEmpty()) {
+    if (!relatedResourcesConfigsMap.isNullOrEmpty()) {
       if (resources.isEmpty()) return
 
       val firstResourceType = resources.first().resourceType
@@ -239,7 +244,7 @@ constructor(
           filter(Resource.RES_ID, *filters.toTypedArray())
         }
 
-      revIncludeRelatedResourceConfigs.forEach { resourceConfig ->
+      relatedResourcesConfigs.forEach { resourceConfig ->
         search.apply {
           if (isRevInclude) {
             revInclude(
@@ -257,20 +262,21 @@ constructor(
 
       searchResult.values.forEach { theRelatedResourcesMap: Map<ResourceType, List<Resource>> ->
         theRelatedResourcesMap.forEach { entry ->
-          val key =
-            if (revIncludeRelatedResourcesConfigsMap.containsKey(entry.key.name)) {
-              revIncludeRelatedResourcesConfigsMap[entry.key.name]?.firstOrNull()?.id
-                ?: entry.key.name
+          val currentResourceConfigs = relatedResourcesConfigsMap[entry.key]
+
+          val key = // Use configured id as key otherwise default to ResourceType
+            if (relatedResourcesConfigsMap.containsKey(entry.key)) {
+              currentResourceConfigs?.firstOrNull()?.id ?: entry.key.name
             } else entry.key.name
 
-          // Append to existing list if key exists
+          // All nested resources flattened to one map by adding to existing list
           relatedResourceWrapper.relatedResourceMap[key] =
             relatedResourceWrapper
               .relatedResourceMap
               .getOrPut(key) { LinkedList() }
               .plus(entry.value)
 
-          relatedResourcesConfigs.forEach { resourceConfig ->
+          currentResourceConfigs?.forEach { resourceConfig ->
             if (resourceConfig.relatedResources.isNotEmpty())
               retrieveRelatedResources(
                 resources = entry.value,
@@ -388,7 +394,7 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramsMap)
 
   /**
-   * A wrapper class to hold search results. All related resources are flattened into one Map
+   * A wrapper data class to hold search results. All related resources are flattened into one Map
    * including the nested related resources as required by the Rules Engine facts.
    */
   private data class RelatedResourceWrapper(
