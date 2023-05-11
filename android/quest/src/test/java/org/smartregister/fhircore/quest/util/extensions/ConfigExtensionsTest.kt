@@ -238,7 +238,9 @@ class ConfigExtensionsTest : RobolectricTest() {
         context = any(),
         intentBundle = any(),
         questionnaireConfig = any(),
-        actionParams = emptyList()
+        actionParams = emptyList(),
+        baseResourceId = patient.logicalId,
+        baseResourceType = patient.resourceType.name
       )
     }
   }

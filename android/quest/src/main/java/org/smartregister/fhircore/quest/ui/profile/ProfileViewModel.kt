@@ -43,10 +43,8 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
-import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
@@ -58,10 +56,7 @@ import org.smartregister.fhircore.engine.rulesengine.retrieveListProperties
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
-import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.getActivity
-import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
-import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
@@ -150,65 +145,8 @@ constructor(
   fun onEvent(event: ProfileEvent) {
     when (event) {
       is ProfileEvent.OverflowMenuClick -> {
-        val context = event.navController.context
         val actions = event.overflowMenuItemConfig?.actions
         viewModelScope.launch {
-          val questionnaireResponse =
-            actions
-              ?.find {
-                it.workflow == ApplicationWorkflow.LAUNCH_QUESTIONNAIRE &&
-                  it.trigger == ActionTrigger.ON_CLICK
-              }
-              ?.questionnaire
-              ?.let { questionnaireConfig ->
-                questionnaireConfig.interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
-                val questionnaire = loadQuestionnaire(questionnaireConfig.id)
-                if (questionnaire == null) {
-                  emitSnackBarState(
-                    SnackBarMessageConfig(
-                      context.getString(R.string.error_msg_questionnaire_is_not_found_in_database)
-                    )
-                  )
-                  Timber.tag("ProfileViewModel.onEvent.LAUNCH_QUESTIONNAIRE")
-                    .d(context.getString(R.string.error_msg_questionnaire_is_not_found_in_database))
-                  return@launch
-                }
-                questionnaire.apply {
-                  this.url = this.url ?: this.referenceValue()
-                  if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditMode()
-                  ) {
-                    item.prepareQuestionsForReadingOrEditing(
-                      "QuestionnaireResponse.item",
-                      questionnaireConfig.type.isReadOnly()
-                    )
-                  }
-                }
-
-                var questionnaireResponse: QuestionnaireResponse? = null
-                if (event.resourceData == null) return@let null
-
-                if (!questionnaireConfig.type.isDefault()) {
-                  questionnaireResponse =
-                    getQuestionnaireResponseFromDbOrPopulation(
-                      questionnaire = questionnaire,
-                      subjectId = event.resourceData.baseResourceId.extractLogicalIdUuid(),
-                      subjectType = event.resourceData.baseResourceType
-                    )
-                  questionnaireResponse.apply { generateMissingItems(questionnaire) }
-
-                  if (!isQuestionnaireResponseValid(questionnaire, questionnaireResponse, context)
-                  ) {
-                    emitSnackBarState(
-                      SnackBarMessageConfig(
-                        context.getString(R.string.error_msg_questionnaire_response_is_broken)
-                      )
-                    )
-                    return@launch
-                  }
-                }
-                questionnaireResponse
-              }
-
           actions?.run {
             find { it.workflow == ApplicationWorkflow.CHANGE_MANAGING_ENTITY }?.let {
               changeManagingEntity(
@@ -217,11 +155,7 @@ constructor(
                   it.interpolateManagingEntity(event.resourceData?.computedValuesMap ?: emptyMap())
               )
             }
-            handleClickEvent(
-              navController = event.navController,
-              resourceData = event.resourceData,
-              questionnaireResponse = questionnaireResponse
-            )
+            handleClickEvent(navController = event.navController, resourceData = event.resourceData)
           }
         }
       }
