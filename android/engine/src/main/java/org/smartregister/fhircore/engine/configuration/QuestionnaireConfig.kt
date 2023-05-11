@@ -32,7 +32,7 @@ data class QuestionnaireConfig(
   val setOrganizationDetails: Boolean = true,
   val setAppVersion: Boolean = true,
   val planDefinitions: List<String>? = null,
-  var type: QuestionnaireType = QuestionnaireType.EDIT,
+  var type: QuestionnaireType = QuestionnaireType.DEFAULT,
   val resourceIdentifier: String? = null,
   val resourceType: String? = null,
   val confirmationDialog: ConfirmationDialog? = null,

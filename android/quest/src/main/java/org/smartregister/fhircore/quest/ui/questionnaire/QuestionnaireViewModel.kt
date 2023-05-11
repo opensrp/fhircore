@@ -129,7 +129,6 @@ constructor(
           readOnlyLinkIds
         )
       }
-      //this.item.first().item.first().extension.removeLast()
       // prepopulate questionnaireItems with initial values
       prePopulationParams?.takeIf { it.isNotEmpty() }?.let { nonEmptyParams ->
         editQuestionnaireResourceParams =
