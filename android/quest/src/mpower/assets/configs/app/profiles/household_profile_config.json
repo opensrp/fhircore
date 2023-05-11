@@ -35,7 +35,8 @@
     "relatedResources": [
       {
         "resource": "Patient",
-        "fhirPathExpression": "Group.member.entity",
+        "isRevInclude": false,
+        "searchParameter": "member",
         "relatedResources": [
           {
             "resource": "Condition",
@@ -199,7 +200,7 @@
       "viewType": "COMPOUND_TEXT",
       "primaryText": "@{familyName} Family",
       "primaryTextColor": "#FFFFFF",
-      "fontSize": 20,
+      "fontSize": 20.0,
       "maxLines": 1,
       "primaryTextFontWeight": "BOLD"
     },
@@ -208,7 +209,7 @@
         "viewType": "COMPOUND_TEXT",
         "primaryText": "@{familyName} Family",
         "primaryTextColor": "#FFFFFF",
-        "fontSize": 16,
+        "fontSize": 16.0,
         "maxLines": 1,
         "primaryTextFontWeight": "BOLD"
       },
@@ -221,7 +222,7 @@
             "primaryText": "@{familyVillage} - HH No: @{familyId}",
             "primaryTextColor": "#FFFFFF",
             "colorOpacity": 0.76,
-            "fontSize": 16
+            "fontSize": 16.0
           }
         ]
       }
@@ -267,10 +268,10 @@
                     {
                       "resourceType": "Observation",
                       "fhirPathExpression": "Observation.subject.reference"
-                },
-                {
-                  "resourceType": "RelatedPerson",
-                  "fhirPathExpression": "RelatedPerson.patient.reference"
+                    },
+                    {
+                      "resourceType": "RelatedPerson",
+                      "fhirPathExpression": "RelatedPerson.patient.reference"
                     }
                   ]
                 }
@@ -378,6 +379,7 @@
                   {
                     "name": "showMemberTasks",
                     "condition": "true",
+                    "priority": 2,
                     "actions": [
                       "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(Task) > 0)"
                     ]
@@ -534,11 +536,11 @@
                             "paramType": "UPDATE_DATE_ON_EDIT",
                             "key": "familyLogicalId",
                             "value": "@{familyLogicalId}"
-                      },
-                      {
-                        "paramType": "PARAMDATA",
-                        "key": "isFamilyHeadExists",
-                        "value": "@{isFamilyHeadExists}"
+                          },
+                          {
+                            "paramType": "PARAMDATA",
+                            "key": "isFamilyHeadExists",
+                            "value": "@{isFamilyHeadExists}"
                           }
                         ]
                       }

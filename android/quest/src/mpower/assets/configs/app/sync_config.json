@@ -2,7 +2,6 @@
   "resourceType": "Parameters",
   "configType": "sync",
   "parameter": [
-
     {
       "resource": {
         "resourceType": "SearchParameter",
