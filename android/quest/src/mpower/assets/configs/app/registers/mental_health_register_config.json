@@ -1,0 +1,212 @@
+{
+  "appId": "app",
+  "configType": "register",
+  "id": "mentalHealthRegister",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Patient",
+      "nestedSearchResources": [
+        {
+          "resourceType": "Condition",
+          "referenceParam": "subject",
+          "dataQueries": [
+            {
+              "paramName": "code",
+              "filterCriteria": [
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://snomed.info/sct",
+                    "code": "99990004"
+                  }
+                }
+              ]
+            },
+            {
+              "paramName": "clinical-status",
+              "filterCriteria": [
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                    "code": "active"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "sortConfigs": [
+        {
+          "paramName": "_lastUpdated",
+          "dataType": "DATE",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    "relatedResources": [
+      {
+        "resource": "CarePlan",
+        "searchParameter": "subject"
+      },
+      {
+        "resource": "Task",
+        "searchParameter": "subject"
+      }
+    ]
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "{{ search.by.name }}",
+    "computedRules": [
+      "patientName",
+      "patientId"
+    ]
+  },
+  "registerCard": {
+    "rules": [
+      {
+        "name": "patientFirstName",
+        "condition": "true",
+        "actions": [
+          "data.put('patientFirstName', fhirPath.extractValue(Patient, \"Patient.name[0].select(given[0])\"))"
+        ]
+      },
+      {
+        "name": "patientMiddleName",
+        "condition": "true",
+        "actions": [
+          "data.put('patientMiddleName', fhirPath.extractValue(Patient, \"Patient.name[0].select(text)\"))"
+        ]
+      },
+      {
+        "name": "patientLastName",
+        "condition": "true",
+        "actions": [
+          "data.put('patientLastName', fhirPath.extractValue(Patient, \"Patient.name[0].select(family)\"))"
+        ]
+      },
+      {
+        "name": "patientAge",
+        "condition": "true",
+        "actions": [
+          "data.put('patientAge', service.extractAge(Patient))"
+        ]
+      },
+      {
+        "name": "patientGender",
+        "condition": "true",
+        "actions": [
+          "data.put('patientGender', service.extractGender(Patient))"
+        ]
+      },
+      {
+        "name": "patientName",
+        "condition": "true",
+        "actions": [
+          "data.put('patientName', data.get('patientFirstName') + ' ' + data.get('patientMiddleName') + ' ' + data.get('patientLastName') + ' , ' + (data.get('patientGender') == 'Female'? 'F': data.get('patientGender') == 'Male'? 'M': data.get('patientGender')) + ' , ' +  data.get('patientAge'))"
+        ]
+      },
+      {
+        "name": "patientId",
+        "condition": "true",
+        "actions": [
+          "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
+        ]
+      },
+      {
+        "name": "showMemberTasks",
+        "condition": "true",
+        "actions": [
+          "data.put('showMemberTasks', size(Task) > 0)"
+        ]
+      },
+      {
+        "name": "serviceStatus",
+        "condition": "true",
+        "actions": [
+          "data.put('serviceStatus', service.evaluateToBoolean(Task, \"Task.status = 'failed' \", false) ? 'OVERDUE' : 'DUE')"
+        ]
+      },
+      {
+        "name": "taskDescription",
+        "condition": "true",
+        "actions": [
+          "data.put('taskDescription', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.description'))"
+        ]
+      },
+      {
+        "name": "taskId",
+        "condition": "true",
+        "actions": [
+          "data.put('taskId', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.id'))"
+        ]
+      },
+      {
+        "name": "taskFor",
+        "condition": "true",
+        "actions": [
+          "data.put('taskFor', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.for.reference'))"
+        ]
+      },
+      {
+        "name": "taskQuestionnaireId",
+        "condition": "true",
+        "actions": [
+          "data.put('taskQuestionnaireId', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.reasonReference.reference'))"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "SERVICE_CARD",
+            "details": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{patientName}",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "ID: @{patientId}",
+                "fontSize": 14.0,
+                "primaryTextColor": "#000000"
+              }
+            ],
+            "showVerticalDivider": false,
+            "serviceButton": {
+              "visible": "@{showMemberTasks}",
+              "text": "@{taskDescription}",
+              "status": "@{serviceStatus}",
+              "smallSized": true,
+              "actions": [
+                {
+                  "trigger": "ON_CLICK",
+                  "workflow": "LAUNCH_QUESTIONNAIRE",
+                  "questionnaire": {
+                    "id": "@{taskQuestionnaireId}",
+                    "title": "@{taskDescription}",
+                    "saveButtonText": "Save",
+                    "taskId": "@{taskId}",
+                    "resourceIdentifier": "@{taskFor}"
+                  }
+                }
+              ]
+            },
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "otherRegistersProfile"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

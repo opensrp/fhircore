@@ -2,7 +2,7 @@
   "appId": "app",
   "configType": "application",
   "theme": "DEFAULT",
-  "appTitle": "eCBIS (CHA & CHSS)",
+  "appTitle": "mPower",
   "registerDate": "2020-10-27",
   "reportRepeatTime": "23:22",
   "remoteSyncPageSize": 100,
