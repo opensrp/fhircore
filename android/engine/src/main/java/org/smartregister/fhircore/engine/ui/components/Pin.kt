@@ -68,6 +68,7 @@ fun PinInput(
   onPinSet: (String) -> Unit,
   onPinVerified: (Boolean) -> Unit,
   onShowPinError: (Boolean) -> Unit,
+  onPinEntered: (CharArray) -> Unit
 ) {
   val keyboard = LocalSoftwareKeyboardController.current
   val focusRequester = remember { FocusRequester() }
@@ -93,6 +94,7 @@ fun PinInput(
 
           if (inputMode) onPinSet(enteredPin)
           else {
+            onPinEntered(it.toCharArray())
             val validPin = enteredPin == actualPin
             // val loginPinSalt =
             // secureSharedPreferences.getString(SharedPreferenceKey.LOGIN_PIN_SALT.name, null)
@@ -185,7 +187,14 @@ fun PinCell(
 @Composable
 @PreviewWithBackgroundExcludeGenerated
 private fun PinViewWithActiveInputModePreview() {
-  PinInput(pinLength = 4, inputMode = true, onPinSet = {}, onPinVerified = {}, onShowPinError = {})
+  PinInput(
+    pinLength = 4,
+    inputMode = true,
+    onPinSet = {},
+    onPinVerified = {},
+    onShowPinError = {},
+    onPinEntered = {}
+  )
 }
 
 @Composable
@@ -197,6 +206,7 @@ private fun PinViewWithInActiveInputModePreview() {
     actualPin = "1234",
     onPinSet = {},
     onPinVerified = {},
-    onShowPinError = {}
+    onShowPinError = {},
+    onPinEntered = {}
   )
 }

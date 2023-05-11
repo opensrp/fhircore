@@ -77,7 +77,8 @@ fun PinLoginScreen(viewModel: PinViewModel) {
     forgotPin = viewModel::forgotPin,
     onSetPin = viewModel::onSetPin,
     onPinVerified = viewModel::onPinVerified,
-    onShowPinError = viewModel::onShowPinError
+    onShowPinError = viewModel::onShowPinError,
+    onPinEntered = viewModel::login
   )
 }
 
@@ -92,6 +93,7 @@ fun PinLoginPage(
   onMenuLoginClicked: (Boolean) -> Unit,
   onShowPinError: (Boolean) -> Unit,
   forgotPin: () -> Unit,
+  onPinEntered: (CharArray) -> Unit,
 ) {
   var showMenu by remember { mutableStateOf(false) }
   var showForgotPinDialog by remember { mutableStateOf(false) }
@@ -139,7 +141,8 @@ fun PinLoginPage(
             pinLength = pinUiState.pinLength,
             onPinSet = { enteredPin -> newPin = enteredPin },
             onPinVerified = onPinVerified,
-            onShowPinError = onShowPinError
+            onShowPinError = onShowPinError,
+            onPinEntered = onPinEntered
           )
 
           // Only show error message and forgot password when not setting the pin
@@ -300,7 +303,8 @@ private fun PinSetupPreview() {
         showLogo = true
       ),
     onPinVerified = {},
-    onShowPinError = {}
+    onShowPinError = {},
+    onPinEntered = {}
   )
 }
 
@@ -322,6 +326,7 @@ private fun PinLoginPreview() {
         showLogo = true
       ),
     onPinVerified = {},
-    onShowPinError = {}
+    onShowPinError = {},
+    onPinEntered = {}
   )
 }

@@ -23,6 +23,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Base64
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -31,6 +32,8 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.toPasswordHash
+import timber.log.Timber
 
 @HiltViewModel
 class PinViewModel
@@ -60,6 +63,10 @@ constructor(
   private val _showError = MutableLiveData(false)
   val showError
     get() = _showError
+
+  private val _showProgressBar = MutableLiveData(false)
+  val showProgressBar
+    get() = _showProgressBar
 
   val pinUiState: MutableState<PinUiState> =
     mutableStateOf(
@@ -121,5 +128,22 @@ constructor(
   fun forgotPin() {
     // TODO use valid supervisor (Practitioner) telephone number
     _launchDialPad.value = "tel:####"
+  }
+
+  fun login(enteredPin: CharArray) {
+    _showProgressBar.postValue(true)
+
+    val storedPinHash = secureSharedPreference.retrieveSessionPin()
+    val salt = secureSharedPreference.retrievePinSalt()
+    val generatedHash = enteredPin.toPasswordHash(Base64.getDecoder().decode(salt))
+
+    if (generatedHash == storedPinHash) {
+
+      Timber.d("######## Success logging in")
+    } else {
+
+      Timber.e("######## Error logging in")
+    }
+    _showProgressBar.postValue(false)
   }
 }

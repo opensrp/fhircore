@@ -46,7 +46,7 @@ fun passwordHashString(password: CharArray, salt: ByteArray): String {
 
 fun getRandomBytesOfSize(size: Int): ByteArray {
   val random = SecureRandom()
-  val randomSaltBytes = ByteArray(256)
+  val randomSaltBytes = ByteArray(size)
   random.nextBytes(randomSaltBytes)
   return randomSaltBytes
 }

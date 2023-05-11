@@ -21,6 +21,7 @@ import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.Base64
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.auth.AuthCredentials
@@ -63,10 +64,15 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     val randomSaltBytes = getRandomBytesOfSize(256)
 
     secureSharedPreferences.edit {
-      putString(SharedPreferenceKey.LOGIN_PIN_KEY.name, randomSaltBytes.toString(Charsets.UTF_8))
+      putString(
+        SharedPreferenceKey.LOGIN_PIN_SALT.name,
+        Base64.getEncoder().encodeToString(randomSaltBytes)
+      )
       putString(SharedPreferenceKey.LOGIN_PIN_KEY.name, pin.toPasswordHash(randomSaltBytes))
     }
   }
+  fun retrievePinSalt() =
+    secureSharedPreferences.getString(SharedPreferenceKey.LOGIN_PIN_SALT.name, null)
 
   fun retrieveSessionPin() =
     secureSharedPreferences.getString(SharedPreferenceKey.LOGIN_PIN_KEY.name, null)
