@@ -38,10 +38,10 @@ abstract class ViewProperties {
   abstract val fillMaxHeight: Boolean
   abstract val clickable: String
   abstract val visible: String
-  open fun interpolateVisible(computedValuesMap: Map<String, Any>) : String{
+  open fun interpolateVisible(computedValuesMap: Map<String, Any>): String {
     return this.visible.interpolate(computedValuesMap)
   }
-  open fun interpolateBackgroundColor(computedValuesMap: Map<String, Any>) : String{
+  open fun interpolateBackgroundColor(computedValuesMap: Map<String, Any>): String {
     val interpolated = this.backgroundColor?.interpolate(computedValuesMap)
     return if (!interpolated.isNullOrEmpty()) {
       return interpolated

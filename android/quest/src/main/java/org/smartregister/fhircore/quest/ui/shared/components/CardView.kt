@@ -53,7 +53,8 @@ fun CardView(
   resourceData: ResourceData,
   navController: NavController
 ) {
-  val headerActionVisible = viewProperties.headerAction?.interpolateVisible(resourceData.computedValuesMap).toBoolean()
+  val headerActionVisible =
+    viewProperties.headerAction?.interpolateVisible(resourceData.computedValuesMap).toBoolean()
   Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
     // Header section
     Spacer(modifier = modifier.height(8.dp))
@@ -64,17 +65,18 @@ fun CardView(
     ) {
       if (viewProperties.header != null) {
         CompoundText(
-          modifier = modifier.conditional(
-            viewProperties.headerAction != null,
-            { weight(if (headerActionVisible) 0.6f else 1f) }
-          )
-            .wrapContentWidth(Alignment.Start),
+          modifier =
+            modifier
+              .conditional(
+                viewProperties.headerAction != null,
+                { weight(if (headerActionVisible) 0.6f else 1f) }
+              )
+              .wrapContentWidth(Alignment.Start),
           compoundTextProperties = viewProperties.header!!.copy(textCase = TextCase.UPPER_CASE),
           resourceData = resourceData,
           navController = navController
         )
-        if (viewProperties.headerAction != null && headerActionVisible
-        ) {
+        if (viewProperties.headerAction != null && headerActionVisible) {
           CompoundText(
             modifier = modifier.wrapContentWidth(Alignment.End),
             compoundTextProperties = viewProperties.headerAction!!.copy(),
