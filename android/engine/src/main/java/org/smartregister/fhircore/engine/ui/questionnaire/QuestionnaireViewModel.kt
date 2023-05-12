@@ -41,6 +41,7 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
@@ -495,11 +496,29 @@ constructor(
     viewModelScope.launch { defaultRepository.save(resource = resource) }
   }
 
-  open suspend fun getPopulationResources(intent: Intent): Array<Resource> {
+  open suspend fun getPopulationResources(
+    intent: Intent,
+    questionnaireLogicalId: String
+  ): Array<Resource> {
     val resourcesList = mutableListOf<Resource>()
 
     intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
-      forEach { resourcesList.add(jsonParser.parseResource(it) as Resource) }
+      val obs4Questionnaire = Bundle()
+      forEach {
+        val resource = jsonParser.parseResource(it) as Resource
+        if (resource !is Bundle) {
+          resourcesList.add(jsonParser.parseResource(it) as Resource)
+        } else {
+          resource.entry.forEach { entry ->
+            if (entry.resource is Observation) {
+              val code = (entry.resource as Observation).code.coding.first().code.toString()
+              //              if (code.contains(questionnaireLogicalId))
+              obs4Questionnaire.addEntry(entry)
+            }
+          }
+        }
+      }
+      resourcesList.add(obs4Questionnaire)
     }
 
     intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let { patientId ->
@@ -533,7 +552,7 @@ constructor(
     questionnaire: Questionnaire,
     intent: Intent
   ): QuestionnaireResponse {
-    val resources = getPopulationResources(intent)
+    val resources = getPopulationResources(intent, questionnaire.logicalId)
     val questResponse = ResourceMapper.populate(questionnaire, *resources)
     questResponse.contained = resources.toList()
     return questResponse

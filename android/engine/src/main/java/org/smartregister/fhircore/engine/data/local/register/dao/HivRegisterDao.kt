@@ -169,6 +169,7 @@ constructor(
       conditions = patient.activeConditions(),
       otherPatients = patient.otherChildren(),
       guardians = patient.guardians(),
+      observations = patient.observations(),
       practitioners = patient.practitioners()
     )
   }
@@ -271,10 +272,17 @@ constructor(
 
   internal suspend fun Patient.observations() =
     defaultRepository.searchResourceFor<Observation>(
-      subjectId = this.logicalId,
-      subjectParam = Observation.SUBJECT,
-      subjectType = ResourceType.Patient
-    )
+        subjectId = this.logicalId,
+        subjectParam = Observation.SUBJECT,
+        subjectType = ResourceType.Patient
+      )
+      .also {
+        return if (it.isNullOrEmpty().not()) {
+          it.sortedByDescending { it.effectiveDateTimeType.value }.distinctBy {
+            it.code.coding.last().code
+          }
+        } else emptyList()
+      }
 
   internal suspend fun Patient.activeTasks(): List<Task> {
     return this.activeCarePlans()
