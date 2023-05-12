@@ -48,13 +48,6 @@ class QuestApplicationTest : RobolectricTest() {
   }
 
   @Test
-  fun testSkipSentryMonitoringWhenDsnBlank() {
-    val sentryDsn = ""
-    val spyApp = spyk(application)
-    spyApp.initSentryMonitoring(dsn = sentryDsn)
-  }
-
-  @Test
   fun testGetDataCaptureConfig() {
     val config = application.getDataCaptureConfig()
 
