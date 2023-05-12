@@ -27,4 +27,6 @@ class EventBus @Inject constructor() {
   val events = _events.asSharedFlow()
 
   suspend fun triggerEvent(event: AppEvent) = _events.emit(event)
+
+  fun resetReplayCache() = _events.resetReplayCache()
 }

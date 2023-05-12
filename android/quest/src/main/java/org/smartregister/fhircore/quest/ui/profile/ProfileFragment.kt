@@ -91,6 +91,9 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
 
   @VisibleForTesting
   suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
+    // clear replay cache
+    eventBus.resetReplayCache()
+
     appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
     // Always refresh data when questionnaire is submitted
