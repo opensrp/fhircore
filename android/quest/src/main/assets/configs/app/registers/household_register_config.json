@@ -93,6 +93,16 @@
       }
     ]
   },
+  "activeResourceFilters": [
+    {
+      "resourceType": "Group",
+      "active": "false"
+    },
+    {
+      "resourceType": "Patient",
+      "active": "true"
+    }
+  ],
   "searchBar": {
     "visible": true,
     "display": "{{ search.name.or.id }}",

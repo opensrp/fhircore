@@ -37,6 +37,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
+import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFilterConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
@@ -79,14 +80,16 @@ constructor(
   ): List<RepositoryResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     return searchResourcesRecursively(
+      filterActiveResources = registerConfiguration.activeResourceFilters,
       fhirResourceConfig = registerConfiguration.fhirResource,
-      registerConfiguration.secondaryResources,
+      secondaryResourceConfigs = registerConfiguration.secondaryResources,
       currentPage = currentPage,
       pageSize = registerConfiguration.pageSize
     )
   }
 
   private suspend fun searchResourcesRecursively(
+    filterActiveResources: List<ActiveResourceFilterConfig>?,
     fhirResourceConfig: FhirResourceConfig,
     secondaryResourceConfigs: List<FhirResourceConfig>?,
     currentPage: Int? = null,
@@ -99,7 +102,7 @@ constructor(
       Search(type = baseResourceConfig.resource).apply {
         applyConfiguredSortAndFilters(
           resourceConfig = baseResourceConfig,
-          filterActive = true,
+          filterActiveResources = filterActiveResources,
           sortData = true
         )
         if (currentPage != null && pageSize != null) {
@@ -127,19 +130,24 @@ constructor(
         relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
         secondaryRepositoryResourceData =
           withContext(dispatcherProvider.io()) {
-            secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData()
+            secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData(filterActiveResources)
           }
       )
     }
   }
 
   /** This function fetches other resources that are not linked to the base/primary resource. */
-  private suspend fun List<FhirResourceConfig>?.retrieveSecondaryRepositoryResourceData():
-    LinkedList<RepositoryResourceData> {
+  private suspend fun List<FhirResourceConfig>?.retrieveSecondaryRepositoryResourceData(
+    filterActiveResources: List<ActiveResourceFilterConfig>?
+  ): LinkedList<RepositoryResourceData> {
     val secondaryRepositoryResourceDataLinkedList = LinkedList<RepositoryResourceData>()
     this?.forEach {
       secondaryRepositoryResourceDataLinkedList.addAll(
-        searchResourcesRecursively(fhirResourceConfig = it, secondaryResourceConfigs = null)
+        searchResourcesRecursively(
+          fhirResourceConfig = it,
+          filterActiveResources = filterActiveResources,
+          secondaryResourceConfigs = null
+        )
       )
     }
     return secondaryRepositoryResourceDataLinkedList
@@ -241,10 +249,11 @@ constructor(
 
   private fun Search.applyConfiguredSortAndFilters(
     resourceConfig: ResourceConfig,
-    filterActive: Boolean = false,
+    filterActiveResources: List<ActiveResourceFilterConfig>? = null,
     sortData: Boolean
   ) {
-    if (filterActive && resourceConfig.resource in filterActiveResources) {
+    val activeResource = filterActiveResources?.find { it.resourceType == resourceConfig.resource }
+    if (!filterActiveResources.isNullOrEmpty() && activeResource?.active == true) {
       filter(TokenClientParam(ACTIVE), { value = of(true) })
     }
     resourceConfig.dataQueries?.forEach { filterBy(it) }
@@ -358,8 +367,8 @@ constructor(
       Search(baseResourceConfig.resource).apply {
         applyConfiguredSortAndFilters(
           resourceConfig = baseResourceConfig,
-          filterActive = true,
-          sortData = false
+          sortData = false,
+          filterActiveResources = registerConfiguration.activeResourceFilters
         )
       }
     return fhirEngine.count(search)
@@ -405,7 +414,9 @@ constructor(
       relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
       secondaryRepositoryResourceData =
         withContext(dispatcherProvider.io()) {
-          profileConfiguration.secondaryResources.retrieveSecondaryRepositoryResourceData()
+          profileConfiguration.secondaryResources.retrieveSecondaryRepositoryResourceData(
+            profileConfiguration.filterActiveResources
+          )
         }
     )
   }
@@ -433,7 +444,6 @@ constructor(
   )
 
   companion object {
-    private val filterActiveResources = listOf(ResourceType.Patient, ResourceType.Group)
     const val ACTIVE = "active"
   }
 }
