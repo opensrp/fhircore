@@ -35,7 +35,6 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
-import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -664,7 +663,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { fhirEngine.loadResource<Questionnaire>(theId) } returns questionnaire
     coEvery { defaultRepo.loadResource(uuid, ResourceType.Group) } returns resource
-    coEvery { defaultRepo.addOrUpdate(addMandatoryTags = true,resource=resource) } just runs
+    coEvery { defaultRepo.addOrUpdate(addMandatoryTags = true, resource = resource) } just runs
 
     runBlocking {
       questionnaireViewModel.loadQuestionnaire(
