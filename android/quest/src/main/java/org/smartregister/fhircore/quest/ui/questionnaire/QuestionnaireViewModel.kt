@@ -52,7 +52,6 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
-import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -68,7 +67,6 @@ import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
 import org.smartregister.fhircore.engine.util.extension.isIn
-import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
@@ -113,7 +111,6 @@ constructor(
       .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
       ?.extractLogicalIdUuid()
   }
-  private var editQuestionnaireResourceParams: List<ActionParameter>? = emptyList()
 
   suspend fun loadQuestionnaire(
     id: String,
@@ -130,11 +127,6 @@ constructor(
         )
       }
       // prepopulate questionnaireItems with initial values
-      prePopulationParams?.takeIf { it.isNotEmpty() }?.let { nonEmptyParams ->
-        editQuestionnaireResourceParams =
-          nonEmptyParams.filter { it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT }
-        item.prePopulateInitialValues(STRING_INTERPOLATION_PREFIX, nonEmptyParams)
-      }
 
       // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
       this.url = this.url ?: this.referenceValue()
@@ -258,7 +250,7 @@ constructor(
           questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
         }
 
-        saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+        saveQuestionnaireResponse(questionnaire, questionnaireResponse, questionnaireConfig)
 
         // TODO https://github.com/opensrp/fhircore/issues/900
         // reassess following i.e. deleting/updating older resources because one resource
@@ -268,7 +260,7 @@ constructor(
         }
         performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle)
       } else {
-        saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+        saveQuestionnaireResponse(questionnaire, questionnaireResponse, questionnaireConfig)
         performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle = null)
       }
       viewModelScope.launch(dispatcherProvider.main()) { extractionProgress.postValue(true) }
@@ -292,11 +284,12 @@ constructor(
 
   fun savePartialQuestionnaireResponse(
     questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
+    questionnaireResponse: QuestionnaireResponse,
+    questionnaireConfig: QuestionnaireConfig? = null
   ) {
     viewModelScope.launch(dispatcherProvider.io()) {
       questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
-      saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+      saveQuestionnaireResponse(questionnaire, questionnaireResponse, questionnaireConfig)
     }
   }
 
@@ -424,7 +417,8 @@ constructor(
    */
   suspend fun saveQuestionnaireResponse(
     questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
+    questionnaireResponse: QuestionnaireResponse,
+    questionnaireConfig: QuestionnaireConfig? = null
   ) {
     if (questionnaire.experimental) {
       Timber.w(
@@ -433,18 +427,18 @@ constructor(
       return
     }
     defaultRepository.addOrUpdate(resource = questionnaireResponse)
-    editQuestionnaireResourceParams?.forEach { param ->
-      try {
-        val resource =
-          param.value.let {
-            val resourceType =
-              it.substringBefore("/").resourceClassType().newInstance().resourceType
-            defaultRepository.loadResource(it.extractLogicalIdUuid(), resourceType)
-          }
-        resource.let { defaultRepository.addOrUpdate(resource = it) }
-      } catch (e: ResourceNotFoundException) {
-        Timber.e(e)
+    try {
+      questionnaireConfig?.groupResource.let { resourceJson ->
+        val resourceId = resourceJson?.groupIdentifier?.extractLogicalIdUuid()
+        val resourceType =
+          resourceJson?.memberResourceType?.resourceClassType()?.newInstance()?.resourceType
+        if (resourceId != null && resourceType != null) {
+          val resource = defaultRepository.loadResource(resourceId, resourceType)
+          defaultRepository.addOrUpdate(addMandatoryTags = true, resource = resource)
+        }
       }
+    } catch (e: ResourceNotFoundException) {
+      Timber.e(e)
     }
   }
 

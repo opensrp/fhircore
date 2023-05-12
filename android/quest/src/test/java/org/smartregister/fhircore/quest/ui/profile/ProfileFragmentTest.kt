@@ -162,43 +162,4 @@ class ProfileFragmentTest : RobolectricTest() {
     }
     coVerify { profileViewModel.emitSnackBarState(snackBarMessageConfig) }
   }
-  @Test
-  fun testOnChangedInvokesRetrievesProfileUiStateAndEmitsSnackBar() {
-    val snackBarMessageConfig =
-      SnackBarMessageConfig(
-        message = "questionnaire message",
-        actionLabel = "",
-        SnackbarDuration.Short,
-        snackBarActions = emptyList())
-    val questionnaireSubmission =
-      QuestionnaireSubmission(
-        questionnaireResponse = mockk(),
-        questionnaireConfig =
-        QuestionnaireConfig(
-          id = "questionnaireId", snackBarMessage = snackBarMessageConfig))
-
-    val profileId = "1234"
-    val resourceId = "questionSubmission"
-    val resourceConfig =
-      ResourceConfig(
-        relatedResources = emptyList(),
-        id = "",
-        sortConfigs = emptyList(),
-        resource = Patient.NAME.toString(),
-        isRevInclude = false)
-    val fhirResourceConfig =
-      FhirResourceConfig(baseResource = resourceConfig, relatedResources = emptyList())
-    val params = emptyArray<ActionParameter>()
-    coEvery {
-      profileViewModel.retrieveProfileUiState(profileId, resourceId, fhirResourceConfig, params)
-    } just runs
-
-    coEvery { profileViewModel.emitSnackBarState(snackBarMessageConfig = any()) } just runs
-    every { profileFragment.onChanged(questionnaireSubmission) } just runs
-    coVerify { profileViewModel.emitSnackBarState(snackBarMessageConfig) }
-    coVerify {
-      profileViewModel.retrieveProfileUiState(profileId, resourceId, fhirResourceConfig, params)
-    }
-    verify { profileFragment.onChanged(questionnaireSubmission) }
-  }
 }

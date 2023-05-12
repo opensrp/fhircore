@@ -395,7 +395,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open fun handlePartialQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     dismissSaveProcessing()
-    questionnaireViewModel.savePartialQuestionnaireResponse(questionnaire, questionnaireResponse)
+    questionnaireViewModel.savePartialQuestionnaireResponse(
+      questionnaire,
+      questionnaireResponse,
+      questionnaireConfig
+    )
   }
 
   private fun confirmationDialog(questionnaireConfig: QuestionnaireConfig) {
