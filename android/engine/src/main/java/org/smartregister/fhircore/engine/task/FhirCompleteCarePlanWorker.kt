@@ -30,6 +30,7 @@ import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.getLastOffset
 import timber.log.Timber
 
 @HiltWorker
@@ -82,7 +83,9 @@ constructor(
       fhirEngine.update(carePlan)
     }
     Timber.i("Finishing FhirCompleteCarePlanWorker with careplan count : ${carePlans.size} ++++++")
-    val updatedLastOffset = if (carePlans.isNotEmpty()) lastOffset + BATCH_SIZE else 0
+    val updatedLastOffset =
+      getLastOffset(items = carePlans, lastOffset = lastOffset, batchSize = BATCH_SIZE)
+
     sharedPreferencesHelper.write(
       key = SharedPreferenceKey.FHIR_COMPLETE_CAREPLAN_WORKER_LAST_OFFSET.name,
       updatedLastOffset.toString()

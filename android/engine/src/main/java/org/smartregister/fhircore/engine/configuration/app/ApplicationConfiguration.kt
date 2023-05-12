@@ -36,5 +36,6 @@ data class ApplicationConfiguration(
   val reportRepeatTime: String = "",
   val taskExpireJobDuration: String = "PT01H",
   val taskCompleteCarePlanJobDuration: String = "PT01H",
-  val showLogo: Boolean = true
+  val showLogo: Boolean = true,
+  val taskBgWorkerBatchSize: Int = 1000
 ) : Configuration()
