@@ -17,7 +17,9 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -52,19 +54,31 @@ fun CardView(
 ) {
   Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
     // Header section
-    Column(modifier = modifier.fillMaxWidth()) {
+    Spacer(modifier = modifier.height(8.dp))
+    Row(
+      modifier = modifier.fillMaxWidth(),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween
+    ) {
       if (viewProperties.header != null) {
-        Spacer(modifier = modifier.height(8.dp))
         CompoundText(
           modifier = modifier.wrapContentWidth(Alignment.Start),
           compoundTextProperties = viewProperties.header!!.copy(textCase = TextCase.UPPER_CASE),
           resourceData = resourceData,
           navController = navController
         )
-        // TODO Display viewAll action text
-        Spacer(modifier = modifier.height(8.dp))
+        if (viewProperties.headerAction != null && viewProperties.headerAction!!.visible.toBoolean()
+        ) {
+          CompoundText(
+            modifier = modifier.wrapContentWidth(Alignment.End),
+            compoundTextProperties = viewProperties.headerAction!!.copy(),
+            resourceData = resourceData,
+            navController = navController
+          )
+        }
       }
     }
+    Spacer(modifier = modifier.height(8.dp))
     // Card section
     Card(
       elevation = viewProperties.elevation.dp,
@@ -105,7 +119,13 @@ private fun CardViewWithoutPaddingPreview() {
               primaryText = "HOUSE MEMBERS",
               fontSize = 18.0f,
               primaryTextColor = "#6F7274",
-              padding = 16
+            ),
+          headerAction =
+            CompoundTextProperties(
+              primaryText = "Record all",
+              primaryTextColor = "#6F7274",
+              clickable = "true",
+              visible = "true"
             )
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
