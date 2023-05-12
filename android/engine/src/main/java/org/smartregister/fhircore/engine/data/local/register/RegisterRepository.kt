@@ -24,6 +24,7 @@ import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.has
 import java.util.LinkedList
@@ -41,7 +42,6 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.NestedSearchConfig
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
@@ -49,9 +49,9 @@ import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
-import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import timber.log.Timber
 
 class RegisterRepository
@@ -97,12 +97,7 @@ constructor(
 
     val search =
       Search(type = baseResourceConfig.resource).apply {
-        baseResourceConfig.dataQueries?.forEach { filterBy(it) }
-        applyNestedSearchFilters(baseResourceConfig.nestedSearchResources)
-        // Filter only active resources
-        if (baseResourceConfig.resource in filterActiveResources) {
-          filter(TokenClientParam(ACTIVE), { value = of(true) })
-        }
+        applyConfiguredQueryFilters(resourceConfig = baseResourceConfig, filterActive = true)
         sort(baseResourceConfig.sortConfigs)
         if (currentPage != null && pageSize != null) {
           count = pageSize
@@ -171,33 +166,28 @@ constructor(
         Timber.e("Search parameter require to perform count query. Current config: $resourceConfig")
       }
 
-      // Return counts for the related resources using the count API
+      // Count for each related resource or aggregate total count in one query; as configured
       if (resourceConfig.resultAsCount && !resourceConfig.searchParameter.isNullOrEmpty()) {
-        val relatedResourceCountLinkedList = LinkedList<RelatedResourceCount>()
-        resources.forEach { baseResource ->
+        if (resourceConfig.countResultConfig?.sumCounts == true) {
           val search =
-            Search(type = resourceConfig.resource).apply {
-              filterByResourceTypeId(
-                ReferenceClientParam(resourceConfig.searchParameter),
-                baseResource.resourceType,
-                baseResource.logicalId
-              )
-              resourceConfig.dataQueries?.forEach { filterBy(it) }
-              applyNestedSearchFilters(resourceConfig.nestedSearchResources)
+            Search(resourceConfig.resource).apply {
+              val filters =
+                resources.map {
+                  val apply: ReferenceParamFilterCriterion.() -> Unit = {
+                    value = it.logicalId.asReference(it.resourceType).reference
+                  }
+                  apply
+                }
+              filter(ReferenceClientParam(resourceConfig.searchParameter), *filters.toTypedArray())
+              applyConfiguredQueryFilters(resourceConfig)
             }
           val count = fhirEngine.count(search)
-          relatedResourceCountLinkedList.add(
-            RelatedResourceCount(
-              relatedResourceType = resourceConfig.resource,
-              parentResourceId = baseResource.logicalId,
-              count = count
-            )
-          )
+          relatedResourceWrapper.relatedResourceCountMap[
+            resourceConfig.id ?: resourceConfig.resource.name] =
+            LinkedList<RelatedResourceCount>().apply { add(RelatedResourceCount(count = count)) }
+        } else {
+          computeCountForEachRelatedResource(resources, resourceConfig, relatedResourceWrapper)
         }
-
-        // Add to the count query result to map
-        relatedResourceWrapper.relatedResourceCountMap[
-          resourceConfig.id ?: resourceConfig.resource.name] = relatedResourceCountLinkedList
       }
     }
 
@@ -214,6 +204,51 @@ constructor(
     }
 
     return relatedResourceWrapper
+  }
+
+  private suspend fun computeCountForEachRelatedResource(
+    resources: List<Resource>,
+    resourceConfig: ResourceConfig,
+    relatedResourceWrapper: RelatedResourceWrapper
+  ) {
+    val relatedResourceCountLinkedList = LinkedList<RelatedResourceCount>()
+    resources.forEach { baseResource ->
+      val search =
+        Search(type = resourceConfig.resource).apply {
+          filter(
+            ReferenceClientParam(resourceConfig.searchParameter),
+            { value = baseResource.logicalId.asReference(baseResource.resourceType).reference }
+          )
+          applyConfiguredQueryFilters(resourceConfig)
+        }
+      val count = fhirEngine.count(search)
+      relatedResourceCountLinkedList.add(
+        RelatedResourceCount(
+          relatedResourceType = resourceConfig.resource,
+          parentResourceId = baseResource.logicalId,
+          count = count
+        )
+      )
+    }
+
+    // Add each related resource count query result to map
+    relatedResourceWrapper.relatedResourceCountMap[
+      resourceConfig.id ?: resourceConfig.resource.name] = relatedResourceCountLinkedList
+  }
+
+  private fun Search.applyConfiguredQueryFilters(
+    resourceConfig: ResourceConfig,
+    filterActive: Boolean = false
+  ) {
+    if (filterActive && resourceConfig.resource in filterActiveResources) {
+      filter(TokenClientParam(ACTIVE), { value = of(true) })
+    }
+    resourceConfig.dataQueries?.forEach { filterBy(it) }
+    resourceConfig.nestedSearchResources?.forEach {
+      has(it.resourceType, ReferenceClientParam((it.referenceParam))) {
+        it.dataQueries?.forEach { dataQuery -> filterBy(dataQuery) }
+      }
+    }
   }
 
   /**
@@ -246,6 +281,7 @@ constructor(
 
       relatedResourcesConfigs.forEach { resourceConfig ->
         search.apply {
+          applyConfiguredQueryFilters(resourceConfig)
           if (isRevInclude) {
             revInclude(
               resourceConfig.resource,
@@ -293,14 +329,6 @@ constructor(
     if (isRevInclude) this.filter { it.isRevInclude && !it.resultAsCount }
     else this.filter { !it.isRevInclude && !it.resultAsCount }
 
-  private fun Search.applyNestedSearchFilters(nestedSearchResources: List<NestedSearchConfig>?) {
-    nestedSearchResources?.forEach {
-      has(it.resourceType, ReferenceClientParam((it.referenceParam))) {
-        it.dataQueries?.forEach { dataQuery -> filterBy(dataQuery) }
-      }
-    }
-  }
-
   private fun Search.sort(sortConfigs: List<SortConfig>) {
     sortConfigs.forEach { sortConfig ->
       when (sortConfig.dataType) {
@@ -321,17 +349,10 @@ constructor(
   ): Long {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     val baseResourceConfig = registerConfiguration.fhirResource.baseResource
-
     val search =
       Search(baseResourceConfig.resource).apply {
-        baseResourceConfig.dataQueries?.forEach { filterBy(it) }
-        // Filter only active resources
-        if (baseResourceConfig.resource in filterActiveResources) {
-          filter(TokenClientParam(ACTIVE), { value = of(true) })
-        }
-        applyNestedSearchFilters(baseResourceConfig.nestedSearchResources)
+        applyConfiguredQueryFilters(resourceConfig = baseResourceConfig, filterActive = true)
       }
-
     return fhirEngine.count(search)
   }
 

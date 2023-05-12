@@ -47,8 +47,9 @@ data class RepositoryResourceData(
  * represented as RelatedResourceCount(relatedResourceType= 'Task', relatedResourceId = "abcxyz",
  * count = 0)
  */
+@Stable
 data class RelatedResourceCount(
-  val relatedResourceType: ResourceType,
-  val parentResourceId: String,
-  val count: Long = 0L
+  val relatedResourceType: ResourceType? = null,
+  val parentResourceId: String? = null,
+  val count: Long
 )
