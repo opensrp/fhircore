@@ -2,6 +2,7 @@
   "appId": "chss",
   "configType": "register",
   "id": "inventoryRegister",
+  "pageSize": 20,
   "pageSize": 10,
   "fhirResource": {
     "baseResource": {
