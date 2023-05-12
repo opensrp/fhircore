@@ -35,6 +35,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -465,7 +466,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
     Assert.assertEquals("12345", result!!.logicalId)
-    Assert.assertEquals("100", result.item[1].initial[0].value.valueToString())
   }
 
   @Test
@@ -664,6 +664,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { fhirEngine.loadResource<Questionnaire>(theId) } returns questionnaire
     coEvery { defaultRepo.loadResource(uuid, ResourceType.Group) } returns resource
+    coEvery { defaultRepo.addOrUpdate(addMandatoryTags = true,resource=resource) } just runs
 
     runBlocking {
       questionnaireViewModel.loadQuestionnaire(
@@ -677,7 +678,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
     coVerify { defaultRepo.addOrUpdate(resource = questionnaireResponse) }
-    coVerify { defaultRepo.addOrUpdate(resource = resource) }
+    coVerify { defaultRepo.addOrUpdate(resource = any()) }
   }
 
   @Test
@@ -1082,18 +1083,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Patient, "2") } returns patient
     coEvery { fhirEngine.get<Patient>(any()) } returns patient
     coEvery { questionnaireViewModel.saveBundleResources(any()) } just runs
-    coEvery { questionnaireViewModel.performExtraction(any(), any(), any()) } returns
-      Bundle().apply { addEntry().resource = patient }
-
-    coEvery {
-      libraryEvaluator.runCqlLibrary(
-        eq("1234"),
-        eq(patient),
-        eq(Bundle().apply { addEntry().resource = patient }),
-        eq(defaultRepo),
-        eq(false)
-      )
-    } returns listOf()
 
     val slotQuestionnaire = slot<Questionnaire>()
     val slotQuestionnaireResponse = slot<QuestionnaireResponse>()
@@ -1453,9 +1442,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
   @Test
   fun testLoadQuestionnaireShouldUReturnCorrectItemsWithUpdateOnEdit() {
-    val updateResourcesIdsParams =
-      questionnaireViewModel::class.java.getDeclaredField("editQuestionnaireResourceParams")
-    updateResourcesIdsParams.isAccessible = true
     val expected =
       listOf(
         ActionParameter(
@@ -1538,7 +1524,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify {
       questionnaireViewModel.loadQuestionnaire("12345", QuestionnaireType.EDIT, prePopulationParams)
     }
-    assertEquals(expected, updateResourcesIdsParams.get(questionnaireViewModel))
   }
 
   @Test

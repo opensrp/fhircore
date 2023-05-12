@@ -434,7 +434,7 @@ constructor(
           resourceJson?.memberResourceType?.resourceClassType()?.newInstance()?.resourceType
         if (resourceId != null && resourceType != null) {
           val resource = defaultRepository.loadResource(resourceId, resourceType)
-          defaultRepository.addOrUpdate(addMandatoryTags = true, resource = resource)
+          defaultRepository.addOrUpdate(resource = resource)
         }
       }
     } catch (e: ResourceNotFoundException) {
