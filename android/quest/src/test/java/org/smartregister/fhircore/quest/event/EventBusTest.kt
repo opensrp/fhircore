@@ -17,10 +17,12 @@
 package org.smartregister.fhircore.quest.event
 
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -69,5 +71,23 @@ class EventBusTest : RobolectricTest() {
     }
 
     assertEquals(onSubmitQuestionnaireEvent, emittedEvents[0])
+  }
+
+  @Test
+  @OptIn(ExperimentalCoroutinesApi::class)
+  fun testResetReplayCacheClearsReplayCache() {
+    val refreshCacheEvent = AppEvent.RefreshCache(QuestionnaireConfig("test-config"))
+
+    runBlockingTest {
+      val collectJob = launch { eventBus.events.collect { emittedEvents.add(it) } }
+      eventBus.triggerEvent(refreshCacheEvent)
+      collectJob.cancel()
+    }
+
+    assertEquals(refreshCacheEvent, emittedEvents[0])
+    assertFalse(eventBus.events.replayCache.isEmpty())
+
+    eventBus.resetReplayCache()
+    assertTrue(eventBus.events.replayCache.isEmpty())
   }
 }
