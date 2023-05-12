@@ -43,10 +43,17 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper
 ) : CoroutineWorker(context, workerParams) {
   override suspend fun doWork(): Result {
-    val lastOffset = sharedPreferencesHelper.read(key = SharedPreferenceKey.FHIR_COMPLETE_CAREPLAN_WORKER_LAST_OFFSET.name, defaultValue = "0")!!.toInt()
-    Timber.i("Starting FhirCompleteCarePlanWorker with from : $lastOffset and batch-size : $BATCH_SIZE ++++++")
-    val carePlans = fhirEngine
-      .search<CarePlan> {
+    val lastOffset =
+      sharedPreferencesHelper.read(
+          key = SharedPreferenceKey.FHIR_COMPLETE_CAREPLAN_WORKER_LAST_OFFSET.name,
+          defaultValue = "0"
+        )!!
+        .toInt()
+    Timber.i(
+      "Starting FhirCompleteCarePlanWorker with from : $lastOffset and batch-size : $BATCH_SIZE ++++++"
+    )
+    val carePlans =
+      fhirEngine.search<CarePlan> {
         filter(
           CarePlan.STATUS,
           { value = of(CarePlan.CarePlanStatus.DRAFT.toCode()) },
@@ -56,27 +63,30 @@ constructor(
           { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) }
         )
         count = BATCH_SIZE
-        from = if (lastOffset > 0 ) lastOffset + 1 else 0
+        from = if (lastOffset > 0) lastOffset + 1 else 0
       }
 
     carePlans.forEach carePlanLoop@{ carePlan ->
-        carePlan
-          .activity
-          .flatMap { it.outcomeReference }
-          .filter { it.reference.startsWith(ResourceType.Task.name) }
-          .mapNotNull { fhirCarePlanGenerator.getTask(it.extractId()) }
-          .forEach { task ->
-            if (task.status !in listOf(Task.TaskStatus.CANCELLED, Task.TaskStatus.COMPLETED))
-              return@carePlanLoop
-          }
+      carePlan
+        .activity
+        .flatMap { it.outcomeReference }
+        .filter { it.reference.startsWith(ResourceType.Task.name) }
+        .mapNotNull { fhirCarePlanGenerator.getTask(it.extractId()) }
+        .forEach { task ->
+          if (task.status !in listOf(Task.TaskStatus.CANCELLED, Task.TaskStatus.COMPLETED))
+            return@carePlanLoop
+        }
 
-        // complete CarePlan
-        carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-        fhirEngine.update(carePlan)
-      }
+      // complete CarePlan
+      carePlan.status = CarePlan.CarePlanStatus.COMPLETED
+      fhirEngine.update(carePlan)
+    }
     Timber.i("Finishing FhirCompleteCarePlanWorker with careplan count : ${carePlans.size} ++++++")
-    val updatedLastOffset = if (carePlans.isNotEmpty())  lastOffset + BATCH_SIZE else 0
-    sharedPreferencesHelper.write(key = SharedPreferenceKey.FHIR_COMPLETE_CAREPLAN_WORKER_LAST_OFFSET.name, updatedLastOffset.toString())
+    val updatedLastOffset = if (carePlans.isNotEmpty()) lastOffset + BATCH_SIZE else 0
+    sharedPreferencesHelper.write(
+      key = SharedPreferenceKey.FHIR_COMPLETE_CAREPLAN_WORKER_LAST_OFFSET.name,
+      updatedLastOffset.toString()
+    )
     return Result.success()
   }
 
