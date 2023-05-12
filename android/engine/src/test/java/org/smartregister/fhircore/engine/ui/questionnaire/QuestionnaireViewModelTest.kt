@@ -609,6 +609,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { defaultRepo.loadRelatedPersons("2") } returns
       listOf(RelatedPerson().apply { id = "3" })
 
+    val questionnaire = Questionnaire()
+
     val intent = Intent()
     intent.putStringArrayListExtra(
       QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
@@ -619,7 +621,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "2")
 
     runBlocking {
-      val resourceList = questionnaireViewModel.getPopulationResources(intent)
+      val resourceList =
+        questionnaireViewModel.getPopulationResources(intent, questionnaire.logicalId)
       Assert.assertEquals(3, resourceList.size)
     }
   }
@@ -1119,7 +1122,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun `test generateQuestionnaireResponse`() = runTest {
     val questionnaire = Questionnaire()
     val patient = samplePatient()
-    coEvery { questionnaireViewModel.getPopulationResources(any()) } returns arrayOf(patient)
+    coEvery {
+      questionnaireViewModel.getPopulationResources(any(), questionnaire.logicalId)
+    } returns arrayOf(patient)
     val intent = Intent()
 
     val response = questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
