@@ -1,0 +1,134 @@
+{
+  "appId": "app",
+  "configType": "register",
+  "id": "practitionerRegister",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Practitioner",
+      "sortConfigs": [
+        {
+          "paramName": "_lastUpdated",
+          "dataType": "DATE",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    "relatedResources": [
+      {
+        "resource": "PractitionerRole",
+        "searchParameter": "practitioner",
+        "relatedResources": [
+          {
+            "resource": "Organization",
+            "fhirPathExpression": "PractitionerRole.organization",
+            "relatedResources": [
+              {
+                "resource": "OrganizationAffiliation",
+                "searchParameter": "primary-organization",
+                "relatedResources": [
+                  {
+                    "resource": "Location",
+                    "fhirPathExpression": "OrganizationAffiliation.location"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "{{ search.by.name }}",
+    "computedRules": [
+      "practitionerName"
+    ]
+  },
+  "registerCard": {
+
+    "rules": [
+      {
+        "name": "practitionerFirstName",
+        "condition": "true",
+        "actions": [
+          "data.put('practitionerFirstName', fhirPath.extractValue(Practitioner, \"Practitioner.name[0].select(given[0])\"))"
+        ]
+      },
+      {
+        "name": "practitionerLastName",
+        "condition": "true",
+        "actions": [
+          "data.put('practitionerLastName', fhirPath.extractValue(Practitioner, \"Practitioner.name[0].select(family)\"))"
+        ]
+      },
+      {
+        "name": "practitionerName",
+        "condition": "true",
+        "actions": [
+          "data.put('practitionerName', (data.get('practitionerFirstName') + ' ' + data.get('practitionerLastName')).trim())"
+        ]
+      },
+      {
+        "name": "assignedLocation",
+        "condition": "true",
+        "actions": [
+          "data.put('assignedLocation', fhirPath.extractValue(size(Location) > 0 ? Location.get(0) : null, 'Location.name'))"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "SERVICE_CARD",
+            "details": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{practitionerName}",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "Village: @{assignedLocation}",
+                "fontSize": 13.0,
+                "primaryTextColor": "#000000"
+              }
+            ],
+            "showVerticalDivider": true,
+            "serviceButton": {
+              "visible": true,
+              "text": "CHA Visit",
+              "status": "DUE",
+              "fontSize": 12.0,
+              "smallSized": false,
+              "actions": [
+                {
+                  "trigger": "ON_CLICK",
+                  "workflow": "LAUNCH_QUESTIONNAIRE",
+                  "id": "practitionerRegister",
+                  "questionnaire": {
+                    "id": "6ed91fd2-cb89-4a3c-b29d-984861fef4de",
+                    "title": "Supervisory CHA Visit",
+                    "saveButtonText": "Supervisory CHA Visit",
+                    "setPractitionerDetails": true,
+                    "setOrganizationDetails": true
+                  }
+                }
+
+              ]
+            },
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "practitionerProfile"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
