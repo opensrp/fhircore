@@ -79,7 +79,7 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
-        eventBus.events.receiveAsFlow().collect { appEvent ->
+        eventBus.events.receiveAsFlow().collectLatest { appEvent ->
           when (appEvent) {
             is AppEvent.OnSubmitQuestionnaire ->
               handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
