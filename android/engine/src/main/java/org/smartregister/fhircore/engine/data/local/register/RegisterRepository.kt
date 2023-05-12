@@ -97,8 +97,11 @@ constructor(
 
     val search =
       Search(type = baseResourceConfig.resource).apply {
-        applyConfiguredQueryFilters(resourceConfig = baseResourceConfig, filterActive = true)
-        sort(baseResourceConfig.sortConfigs)
+        applyConfiguredSortAndFilters(
+          resourceConfig = baseResourceConfig,
+          filterActive = true,
+          sortData = true
+        )
         if (currentPage != null && pageSize != null) {
           count = pageSize
           from = currentPage * pageSize
@@ -179,7 +182,7 @@ constructor(
                   apply
                 }
               filter(ReferenceClientParam(resourceConfig.searchParameter), *filters.toTypedArray())
-              applyConfiguredQueryFilters(resourceConfig)
+              applyConfiguredSortAndFilters(resourceConfig = resourceConfig, sortData = false)
             }
           val count = fhirEngine.count(search)
           relatedResourceWrapper.relatedResourceCountMap[
@@ -219,7 +222,7 @@ constructor(
             ReferenceClientParam(resourceConfig.searchParameter),
             { value = baseResource.logicalId.asReference(baseResource.resourceType).reference }
           )
-          applyConfiguredQueryFilters(resourceConfig)
+          applyConfiguredSortAndFilters(resourceConfig = resourceConfig, sortData = false)
         }
       val count = fhirEngine.count(search)
       relatedResourceCountLinkedList.add(
@@ -236,9 +239,10 @@ constructor(
       resourceConfig.id ?: resourceConfig.resource.name] = relatedResourceCountLinkedList
   }
 
-  private fun Search.applyConfiguredQueryFilters(
+  private fun Search.applyConfiguredSortAndFilters(
     resourceConfig: ResourceConfig,
-    filterActive: Boolean = false
+    filterActive: Boolean = false,
+    sortData: Boolean
   ) {
     if (filterActive && resourceConfig.resource in filterActiveResources) {
       filter(TokenClientParam(ACTIVE), { value = of(true) })
@@ -249,6 +253,7 @@ constructor(
         it.dataQueries?.forEach { dataQuery -> filterBy(dataQuery) }
       }
     }
+    if (sortData) sort(resourceConfig.sortConfigs)
   }
 
   /**
@@ -281,7 +286,7 @@ constructor(
 
       relatedResourcesConfigs.forEach { resourceConfig ->
         search.apply {
-          applyConfiguredQueryFilters(resourceConfig)
+          applyConfiguredSortAndFilters(resourceConfig = resourceConfig, sortData = true)
           if (isRevInclude) {
             revInclude(
               resourceConfig.resource,
@@ -351,7 +356,11 @@ constructor(
     val baseResourceConfig = registerConfiguration.fhirResource.baseResource
     val search =
       Search(baseResourceConfig.resource).apply {
-        applyConfiguredQueryFilters(resourceConfig = baseResourceConfig, filterActive = true)
+        applyConfiguredSortAndFilters(
+          resourceConfig = baseResourceConfig,
+          filterActive = true,
+          sortData = false
+        )
       }
     return fhirEngine.count(search)
   }
