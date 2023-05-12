@@ -20,11 +20,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.channels.Channel
 
 @Singleton
 class EventBus @Inject constructor() {
-  private val _events = MutableSharedFlow<AppEvent>(replay = 1)
-  val events = _events.asSharedFlow()
+   val events = Channel<AppEvent>()
 
-  suspend fun triggerEvent(event: AppEvent) = _events.emit(event)
+  suspend fun triggerEvent(event: AppEvent) = events.send(event)
 }

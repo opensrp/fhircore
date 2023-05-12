@@ -35,6 +35,7 @@ import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.event.AppEvent
@@ -78,7 +79,7 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
-        eventBus.events.collectLatest { appEvent ->
+        eventBus.events.receiveAsFlow().collect { appEvent ->
           when (appEvent) {
             is AppEvent.OnSubmitQuestionnaire ->
               handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
