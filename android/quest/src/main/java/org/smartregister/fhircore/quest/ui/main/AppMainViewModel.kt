@@ -25,6 +25,7 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -78,6 +79,7 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
+import timber.log.Timber
 
 @HiltViewModel
 class AppMainViewModel
@@ -289,10 +291,15 @@ constructor(
     )
   }
 
+  fun scheduleImmediateJobs() {
+    Timber.e("Calling AppmainViewmodel workManager.enqueue ++++")
+    workManager.enqueue(OneTimeWorkRequestBuilder<FhirCompleteCarePlanWorker>().build())
+  }
+
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
     // Schedule job that updates the status of the tasks periodically
-    workManager.run {
+/*    workManager.run {
       schedulePeriodically<FhirTaskPlanWorker>(
         workId = FhirTaskPlanWorker.WORK_ID,
         requiresNetwork = false
@@ -311,10 +318,10 @@ constructor(
       )
 
       // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
-      /* // Schedule job for generating measure report in the background
+      *//* // Schedule job for generating measure report in the background
        MeasureReportWorker.scheduleMeasureReportWorker(workManager)
-      */
-    }
+      *//*
+    }*/
   }
 
   suspend fun onQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {

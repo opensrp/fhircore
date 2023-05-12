@@ -27,7 +27,10 @@ import dagger.assisted.AssistedInject
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
+import timber.log.Timber
 
 @HiltWorker
 class FhirCompleteCarePlanWorker
@@ -36,10 +39,13 @@ constructor(
   @Assisted val context: Context,
   @Assisted workerParams: WorkerParameters,
   val fhirEngine: FhirEngine,
-  val fhirCarePlanGenerator: FhirCarePlanGenerator
+  val fhirCarePlanGenerator: FhirCarePlanGenerator,
+  val sharedPreferencesHelper: SharedPreferencesHelper
 ) : CoroutineWorker(context, workerParams) {
   override suspend fun doWork(): Result {
-    fhirEngine
+    val lastOffset = sharedPreferencesHelper.read(key = SharedPreferenceKey.FHIR_COMPLETE_CAREPLAN_WORKER_LAST_OFFSET.name, defaultValue = "0")!!.toInt()
+    Timber.i("Starting FhirCompleteCarePlanWorker with from : $lastOffset and batch-size : $BATCH_SIZE ++++++")
+    val carePlans = fhirEngine
       .search<CarePlan> {
         filter(
           CarePlan.STATUS,
@@ -49,8 +55,11 @@ constructor(
           { value = of(CarePlan.CarePlanStatus.ENTEREDINERROR.toCode()) },
           { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) }
         )
+        count = BATCH_SIZE
+        from = if (lastOffset > 0 ) lastOffset + 1 else 0
       }
-      .forEach carePlanLoop@{ carePlan ->
+
+    carePlans.forEach carePlanLoop@{ carePlan ->
         carePlan
           .activity
           .flatMap { it.outcomeReference }
@@ -65,10 +74,14 @@ constructor(
         carePlan.status = CarePlan.CarePlanStatus.COMPLETED
         fhirEngine.update(carePlan)
       }
+    Timber.i("Finishing FhirCompleteCarePlanWorker with careplan count : ${carePlans.size} ++++++")
+    val updatedLastOffset = if (carePlans.isNotEmpty())  lastOffset + BATCH_SIZE else 0
+    sharedPreferencesHelper.write(key = SharedPreferenceKey.FHIR_COMPLETE_CAREPLAN_WORKER_LAST_OFFSET.name, updatedLastOffset.toString())
     return Result.success()
   }
 
   companion object {
     const val WORK_ID = "FhirCompleteCarePlanWorker"
+    const val BATCH_SIZE = 100
   }
 }

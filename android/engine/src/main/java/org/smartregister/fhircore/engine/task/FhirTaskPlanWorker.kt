@@ -29,6 +29,8 @@ import dagger.assisted.AssistedInject
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.isReady
@@ -41,18 +43,22 @@ class FhirTaskPlanWorker
 constructor(
   @Assisted val appContext: Context,
   @Assisted workerParams: WorkerParameters,
-  val fhirEngine: FhirEngine
+  val fhirEngine: FhirEngine,
+  val sharedPreferencesHelper: SharedPreferencesHelper
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
-    Timber.i("Starting task scheduler")
+
 
     // TODO also filter by date range for better performance
     // TODO This is a temp fix for https://github.com/google/android-fhir/issues/1825 - search fails
     // due to indexing outdated resources
-    fhirEngine
+    val lastOffset = sharedPreferencesHelper.read(key = SharedPreferenceKey.FHIR_TASK_PLAN_WORKER_LAST_OFFSET.name, defaultValue = "0")!!.toInt()
+    Timber.i("Starting FhirTaskPlanWorker with from : $lastOffset and batch-size : $BATCH_SIZE ++++++")
+    Timber.e("Done task scheduling")
+    val tasks = fhirEngine
       .search<Task> {
-        filter(
+      filter(
           Task.STATUS,
           { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
           { value = of(Task.TaskStatus.READY.toCoding()) },
@@ -60,8 +66,11 @@ constructor(
           { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
           { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
         )
+        from = if (lastOffset > 0 ) lastOffset + 1 else 0
+        count = BATCH_SIZE
       }
-      .asSequence()
+
+    tasks.asSequence()
       .filter {
         it.status == Task.TaskStatus.REQUESTED ||
           it.status == Task.TaskStatus.READY ||
@@ -92,6 +101,10 @@ constructor(
       }
 
     Timber.i("Done task scheduling")
+    Timber.i("Finishing FhirTaskPlanWorker with task count : ${tasks.size} ++++++")
+    val updatedLastOffset = if (tasks.isNotEmpty())  lastOffset + BATCH_SIZE else 0
+    sharedPreferencesHelper.write(key = SharedPreferenceKey.FHIR_TASK_PLAN_WORKER_LAST_OFFSET.name, updatedLastOffset.toString())
+    Timber.i("Finishing FhirTaskPlanWorker with lastOffset : $updatedLastOffset ++++++")
     return Result.success()
   }
 
@@ -100,5 +113,6 @@ constructor(
 
   companion object {
     const val WORK_ID = "FhirTaskPlanWorker"
+    const val BATCH_SIZE = 1000
   }
 }
