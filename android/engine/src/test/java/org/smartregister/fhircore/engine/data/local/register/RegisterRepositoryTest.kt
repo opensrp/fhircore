@@ -46,6 +46,7 @@ import org.smartregister.fhircore.engine.configuration.profile.ProfileConfigurat
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.CountResultConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
@@ -96,7 +97,9 @@ class RegisterRepositoryTest : RobolectricTest() {
 
     // Simulate count for Encounter & Observation resources
     coEvery { fhirEngine.count(Search(type = ResourceType.Encounter)) } returns 2
-    coEvery { fhirEngine.count(Search(type = ResourceType.Observation)) } returns 5
+    coEvery {
+      fhirEngine.count(Search(type = ResourceType.Observation, count = null, from = null))
+    } returns 5
   }
 
   @Test
@@ -398,13 +401,15 @@ class RegisterRepositoryTest : RobolectricTest() {
                   id = ENCOUNTERS_COUNT,
                   resource = ResourceType.Encounter,
                   searchParameter = SUBJECT,
+                  countResultConfig = CountResultConfig(sumCounts = false),
                   resultAsCount = true
                 ),
                 ResourceConfig(
                   id = OBSERVATIONS_COUNT,
                   resource = ResourceType.Observation,
                   searchParameter = SUBJECT,
-                  resultAsCount = true
+                  resultAsCount = true,
+                  countResultConfig = CountResultConfig(sumCounts = false),
                 ),
                 ResourceConfig(
                   id = ALL_TASKS,
