@@ -7,11 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.4] - 2023-xx-xx
 ### Added
+- Add "Record all" feature in card view
+- Functionality to aggregate count for related resources 
 
 ### Fixed
+- Member icons display wrapping; hiding some texts
+- Member icons count on register not tallying with retrieved resources on profile
+- Issue with loading related resources
 
 ### Changed
-- 
+- Refactored how the related resources SELECT and COUNT queries search results are represented. 
+- RepositoryResourceData now uses two map to represent SELECT/COUNT SQL query results
+- Retrieve related resources all at once for resources include via _include SEARCH API
 
 ## [0.2.3] - 2023-05-11
 ### Added
