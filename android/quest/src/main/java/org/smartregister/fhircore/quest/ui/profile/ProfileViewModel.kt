@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.profile
 import android.content.Context
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
@@ -83,7 +84,8 @@ constructor(
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow: SharedFlow<SnackBarMessageConfig> = _snackBarStateFlow.asSharedFlow()
   private lateinit var profileConfiguration: ProfileConfiguration
-  private val listResourceDataMapState = mutableStateMapOf<String, List<ResourceData>>()
+  private val listResourceDataStateMap =
+    mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
 
   suspend fun retrieveProfileUiState(
     profileId: String,
@@ -103,7 +105,7 @@ constructor(
             ruleConfigs = profileConfigs.rules,
             params = paramsMap
           )
-          .copy(listResourceDataMap = listResourceDataMapState)
+          .copy(listResourceDataMap = listResourceDataStateMap)
 
       profileUiState.value =
         ProfileUiState(
@@ -113,15 +115,13 @@ constructor(
           showDataLoadProgressIndicator = false
         )
 
-      profileConfigs.views.retrieveListProperties().forEach {
-        val listResourceData =
-          rulesExecutor.processListResourceData(
-            listProperties = it,
-            relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
-            computedValuesMap =
-              resourceData.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
-          )
-        listResourceDataMapState[it.id] = listResourceData
+      profileConfigs.views.retrieveListProperties().forEach { listProperties ->
+        rulesExecutor.processListResourceData(
+          listProperties = listProperties,
+          relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
+          computedValuesMap = resourceData.computedValuesMap.plus(paramsMap),
+          listResourceDataStateMap = listResourceDataStateMap
+        )
       }
     }
   }
