@@ -2677,11 +2677,15 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "07200c16-b2d6-4d7d-a53f-128115b0ab2f"
-            ]
+            ],
+            "groupResource": {
+              "groupIdentifier": "@{familyLogicalId}",
+              "memberResourceType": "Group"
+            }
           },
           "params": [
             {
-              "paramType": "UPDATE_DATE_ON_EDIT",
+              "paramType": "PARAMDATA",
               "key": "familyLogicalId",
               "value": "@{familyLogicalId}"
             },
