@@ -31,6 +31,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -44,6 +45,7 @@ constructor(
   val sharedPreferences: SharedPreferencesHelper,
   val secureSharedPreference: SecureSharedPreference,
   val configurationRegistry: ConfigurationRegistry,
+  val dispatcherProvider: DispatcherProvider
 ) : ViewModel() {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -96,11 +98,14 @@ constructor(
   }
 
   fun onPinVerified(validPin: Boolean) {
+    _validPin.postValue(validPin)
     if (validPin) {
+      pinUiState.value = pinUiState.value.copy(showProgressBar = false)
       _navigateToHome.postValue(true)
     }
   }
   fun onShowPinError(showError: Boolean) {
+    pinUiState.value = pinUiState.value.copy(showProgressBar = false)
     _showError.postValue(showError)
   }
 
@@ -124,9 +129,11 @@ constructor(
     _launchDialPad.value = "tel:####"
   }
 
-  fun login(enteredPin: CharArray, callback: (Boolean) -> Unit) {
+  fun pinLogin(enteredPin: CharArray, callback: (Boolean) -> Unit) {
 
-    viewModelScope.launch {
+    viewModelScope.launch(dispatcherProvider.io()) {
+      pinUiState.value = pinUiState.value.copy(showProgressBar = true)
+
       val storedPinHash = secureSharedPreference.retrieveSessionPin()
       val salt = secureSharedPreference.retrievePinSalt()
       val generatedHash = enteredPin.toPasswordHash(Base64.getDecoder().decode(salt))
@@ -134,10 +141,9 @@ constructor(
 
       if (validPin) clearPasswordInMemory(enteredPin)
 
-      onPinVerified(validPin)
       callback.invoke(validPin)
 
-      _validPin.postValue(validPin)
+      onPinVerified(validPin)
     }
   }
 }

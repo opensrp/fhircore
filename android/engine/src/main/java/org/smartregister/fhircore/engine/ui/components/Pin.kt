@@ -66,13 +66,13 @@ fun PinInput(
   inputMode: Boolean = true,
   onPinSet: (CharArray) -> Unit,
   onShowPinError: (Boolean) -> Unit,
-  onPinEntered: (CharArray, (Boolean) -> Unit) -> Unit,
-  validPin: Boolean = false
+  onPinEntered: (CharArray, (Boolean) -> Unit) -> Unit
 ) {
   val keyboard = LocalSoftwareKeyboardController.current
   val focusRequester = remember { FocusRequester() }
   var enteredPin by remember { mutableStateOf("") }
   var nextCellIndex by remember { mutableStateOf(0) }
+  var isValidPin by remember { mutableStateOf<Boolean?>(null) }
 
   // Launch keyboard and request focus on the hidden input field, delay of 300ms as workaround
   LaunchedEffect(Unit) {
@@ -93,8 +93,10 @@ fun PinInput(
 
           if (inputMode) onPinSet(enteredPin.toCharArray())
           else {
-            onPinEntered(it.toCharArray()) { isValidPin ->
-              if (!isValidPin) { // Wrong PIN, clear entered PIN
+            onPinEntered(it.toCharArray()) { isValid ->
+              isValidPin = isValid
+              if (!isValid) {
+
                 keyboard?.show()
                 onShowPinError(true)
               }
@@ -102,6 +104,7 @@ fun PinInput(
           }
         }
         it.length < pinLength -> {
+          isValidPin = null
           keyboard?.show()
           enteredPin = it
           nextCellIndex = enteredPin.length
@@ -121,8 +124,8 @@ fun PinInput(
         when {
           inputMode -> Color.White
           enteredPin.getOrNull(index) == null -> Color.LightGray
-          enteredPin.length == pinLength && validPin -> SuccessColor
-          enteredPin.length == pinLength && !validPin -> DangerColor
+          enteredPin.length == pinLength && isValidPin == true -> SuccessColor
+          enteredPin.length == pinLength && isValidPin == false -> DangerColor
           else -> InfoColor
         }
       PinCell(
@@ -187,8 +190,7 @@ private fun PinViewWithActiveInputModePreview() {
     inputMode = true,
     onPinSet = {},
     onShowPinError = {},
-    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
-    validPin = false
+    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
   )
 }
 
@@ -200,7 +202,6 @@ private fun PinViewWithInActiveInputModePreview() {
     inputMode = false,
     onPinSet = {},
     onShowPinError = {},
-    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
-    validPin = false
+    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
   )
 }

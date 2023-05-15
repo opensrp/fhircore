@@ -61,6 +61,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.PinInput
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -68,8 +69,7 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
 @Composable
 fun PinLoginScreen(viewModel: PinViewModel) {
   val showError by viewModel.showError.observeAsState(initial = false)
-  val pinUiState by remember { mutableStateOf(viewModel.pinUiState.value) }
-  val validPin by viewModel.validPin.observeAsState(initial = false)
+  val pinUiState = viewModel.pinUiState.value
 
   PinLoginPage(
     showError = showError,
@@ -78,8 +78,7 @@ fun PinLoginScreen(viewModel: PinViewModel) {
     forgotPin = viewModel::forgotPin,
     onSetPin = viewModel::onSetPin,
     onShowPinError = viewModel::onShowPinError,
-    onPinEntered = viewModel::login,
-    validPin = validPin
+    onPinEntered = viewModel::pinLogin
   )
 }
 
@@ -88,7 +87,6 @@ fun PinLoginScreen(viewModel: PinViewModel) {
 fun PinLoginPage(
   modifier: Modifier = Modifier,
   showError: Boolean,
-  validPin: Boolean,
   pinUiState: PinUiState,
   onSetPin: (CharArray) -> Unit,
   onMenuLoginClicked: (Boolean) -> Unit,
@@ -141,12 +139,14 @@ fun PinLoginPage(
             pinLength = pinUiState.pinLength,
             onPinSet = { enteredPin -> newPin = enteredPin },
             onShowPinError = onShowPinError,
-            onPinEntered = onPinEntered,
-            validPin = validPin
+            onPinEntered = onPinEntered
           )
 
           // Only show error message and forgot password when not setting the pin
           if (!pinUiState.setupPin) {
+
+            if (pinUiState.showProgressBar) CircularProgressBar()
+
             if (showError) {
               Text(
                 text = stringResource(R.string.incorrect_pin_please_retry),
@@ -290,7 +290,6 @@ fun ForgotPinDialog(
 private fun PinSetupPreview() {
   PinLoginPage(
     showError = false,
-    validPin = false,
     pinUiState =
       PinUiState(
         message = "CHA will use this PIN to login",
@@ -312,7 +311,6 @@ private fun PinSetupPreview() {
 private fun PinLoginPreview() {
   PinLoginPage(
     showError = false,
-    validPin = false,
     pinUiState =
       PinUiState(
         message = "Enter PIN for ecbis",
