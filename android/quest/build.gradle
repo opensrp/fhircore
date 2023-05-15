@@ -7,6 +7,9 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'jacoco'
     id 'dagger.hilt.android.plugin'
+    id 'com.google.firebase.firebase-perf'
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
 }
 
 apply from: '../jacoco.gradle'
@@ -58,6 +61,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
+            firebaseCrashlytics {
+                nativeSymbolUploadEnabled false
+            }
         }
     }
 
@@ -206,6 +212,13 @@ dependencies {
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0'
+
+    // analytics
+    implementation platform('com.google.firebase:firebase-bom:31.2.0')
+
+    implementation 'com.google.firebase:firebase-perf-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.google.firebase:firebase-analytics-ktx'
 
     // Hilt test dependencies
     testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
