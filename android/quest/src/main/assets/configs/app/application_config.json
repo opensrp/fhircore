@@ -2,12 +2,14 @@
   "appId": "app",
   "configType": "application",
   "theme": "DEFAULT",
-  "appTitle": "eCBIS (CHA & CHSS)",
+  "appTitle": "Quest",
   "registerDate": "2020-10-27",
   "reportRepeatTime": "23:22",
   "remoteSyncPageSize": 100,
   "languages": [
-    "en"
+    "en",
+    "sw",
+    "fr"
   ],
   "useDarkTheme": false,
   "syncInterval": 30,
