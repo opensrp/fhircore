@@ -1,86 +1,81 @@
-map "http://hl7.org/fhir/StructureMap/PatientRegistration" = 'PatientRegistration'
+map "http://fhir.labs.smartregister.org/fhir/StructureMap/followup-structuremap" = 'ImmunizationCarePlan'
 
-uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
 
-group PatientRegistration(source src : QuestionnaireResponse, target bundle: Bundle) {
-    src -> bundle.type = 'collection' "r_bun_type";
-    src -> bundle.entry as entry, entry.resource = create('Patient') as patient then
-        ExtractPatient(src, patient), ExtractPregnancyCondition(src, bundle, patient) "r_bun_entries";
+group ImmunizationCarePlan(source src : QuestionnaireResponse, target tgt: Bundle) {
+        src -> create('Encounter') as encounter,
+               create('Encounter') as administrationEncounter
+        then ExtractRecordEncounter(src,encounter,tgt),
+             ExtractAdministrationEncounter(src, administrationEncounter,encounter, tgt),
+             ExtractImmunization(src, encounter, tgt) "r_careplan";
 }
 
-group ExtractPatient(source src : QuestionnaireResponse, target patient : Patient) {
-    src -> patient.id = uuid() "r_p_id_1";
+group ExtractImmunization(source src : QuestionnaireResponse, source encounter: Encounter, target bundle : Bundle) {
+        src.item as vaccinesItem where(linkId='vaccines codes group') then {
+            vaccinesItem.item as vaccine -> bundle.entry as entry, entry.resource = create('Immunization') as immunization,
+            create('dateTime') as vaccineDate then {
+              src.item where(linkId = 'vaccines same date' and answer.value = true) -> vaccineDate.value = evaluate(src, item.where(linkId='vaccines date').answer.value.value) "r_vaccine_date_is_same";
+              src.item where(linkId = 'vaccines same date' and answer.value = false) ->
+                     vaccineDate.value = evaluate(vaccine, src.item.descendants().where(linkId=vaccine.linkId+' date').answer.value.value) "r_vaccine_date_is_same";
+              src -> immunization.id = uuid(),
+                     immunization.recorded = evaluate(src, now()),
+                     immunization.status = "completed",
+                     immunization.occurrence = vaccineDate,
+                     immunization.patient = evaluate(src, subject),
+                     immunization.encounter = reference(encounter) "rule_ei_11";
+              src -> immunization.vaccineCode = create('CodeableConcept') as concept then {
+                     src -> concept.text = evaluate(vaccine,$this.linkId.upper()),
+                            concept.coding = evaluate(vaccine,$this.answer.value) "rule_ei_4_2";
+              } "rule_ei_4";
+            } "rule_ei_13";
+        } "r2";
 
-    src.item as item_bio where(linkId = 'bio') then {
-       item_bio.item as item_name where(linkId = 'PR-name') -> patient.name = create('HumanName') as patientName then {
-          src -> patientName.family = evaluate(item_name, $this.item.where(linkId = 'PR-name-family').answer.value) "r_p_fname";
-          src -> patientName.given = evaluate(item_name, $this.item.where(linkId = 'PR-name-given').answer.value) "r_p_gname";
-       } "r_p_name";
-
-       item_bio.item as item_iden where(linkId = 'PR-identifier-info') -> patient.identifier = create('Identifier') as patientIdent then {
-         src -> patientIdent.value = evaluate(item_iden, $this.item.where(linkId = 'PR-identifier-nid').answer.value) "r_p_iden_val";
-       } "r_p_iden";
-
-       src -> patient.gender = evaluate(item_bio, $this.item.where(linkId = 'PR-gender').answer.value.code) "r_p_gender";
-
-       item_bio.item as item_dob where(linkId = 'PR-birth-date' and answer.count() > 0) -> patient.birthDate = evaluate(item_dob, $this.answer.value) "r_p_dob";
-       item_bio.item as item_age where(linkId = 'PR-age' and answer.count() > 0) -> patient.birthDate = evaluate(item_age, today() - ($this.answer.value.toString() + " 'years'").toQuantity()) "r_p_age";
-
-       item_bio.item as item_marital where(linkId = 'PR-marital-status') -> patient.maritalStatus = create('CodeableConcept') as mcc then {
-          src -> mcc.coding = evaluate(item_marital, $this.answer.value) "r_p_martial_cod";
-       } "r_p_marital";
-
-       item_bio.item as item_tele where (linkId = 'PR-telecom') -> patient.telecom = create('ContactPoint') as patientContact then {
-          src -> patientContact.value = evaluate(item_tele, $this.item.where(linkId = 'PR-telecom-value').answer.value) "r_p_tel_num";
-          src -> patientContact.system = "phone" "r_p_tel_sys";
-       } "r_p_tel";
-
-       item_bio.item as item_addr where (linkId = 'PR-address') -> patient.address = create('Address') as patientAddress then {
-          src -> patientAddress.city = evaluate(item_addr, $this.item.where(linkId = 'PR-address-city').answer.value) "r_p_add_cty";
-          src -> patientAddress.country = evaluate(item_addr, $this.item.where(linkId = 'PR-address-country').answer.value) "r_p_add_cntry";
-          src -> patientAddress.use = "home" "r_p_add_use";
-          src -> patientAddress.type = "physical" "r_p_add_typ";
-       } "r_p_addr";
-
-       item_bio.item as item_eth where (linkId = 'PR-ethnicity-group') -> patient.extension = create('Extension') as patientEthnicity then {
-         src -> patientEthnicity.url = evaluate(item_eth, $this.item.where(linkId = 'PR-ethnicity-authority').answer.value) "r_p_eth_url";
-         src -> patientEthnicity.value = evaluate(item_eth, $this.item.where(linkId = 'PR-ethnicity').answer.value) "r_p_eth_val";
-       } "r_p_eth";
-
-       item_bio.item as item_occ where (linkId = 'PR-occupation-group') -> patient.extension = create('Extension') as patientOccupation then {
-        src -> patientOccupation.url = evaluate(item_occ, $this.item.where(linkId = 'PR-occupation-authority').answer.value) "r_p_occ_url";
-        src -> patientOccupation.value = evaluate(item_occ, $this.item.where(linkId = 'PR-occupation').answer.value) "r_p_occ_val";
-       } "r_p_occ";
-
-       src -> patient.active = evaluate(item_bio, $this.item.where(linkId = 'PR-active').answer.value) "r_p_act";
-    };
+        // adding record encounter as task.output
+        src.item as vaccinesItemAnswer where(linkId='vaccines') then {
+            vaccinesItemAnswer.answer as answerItem -> bundle.entry as entry, entry.resource = create('Task') as task then {
+              src->create("id") as task_id then {
+                   src->task_id.value = evaluate(answerItem,$this.value.reference) "r_set_task_id_value";
+                   src->task.id = task_id "r_set_task_id";
+                   src -> task.output = create('Task_Output') as output then {
+                          src -> output.type = cc("http://snomed.info/sct", "41000179103", "Immunization record (record artifact)") ,
+                          output.value = create("Reference") as ref then {
+                              src -> ref.reference =  evaluate(encounter,'Encounter/'+$this.id) "r_output_ref";
+                          } "r_reference";
+                   } "r_task";
+              } "r_taskId";
+            } "r_reference";
+        } "r_task_output";
 }
 
-group ExtractPregnancyCondition(source src : QuestionnaireResponse, target bundle : Bundle, source patient : Patient) {
-    src.item as item_bio where(linkId = 'bio') then {
-        item_bio.item as item_preg where(linkId = 'is_pregnant' and answer.count() > 0 and answer.value.code = '77386006') then {
-        	src -> bundle.entry as entry, entry.resource = create('Condition') as cnd then {
-    	    	src -> cnd.id = uuid() "r_c_id";
-    	    	src -> cnd.recordedDate = evaluate(src, now()) "r_c_rec_date";
-    	    	src -> cnd.clinicalStatus = create('CodeableConcept') as concept then {
-                    src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") as coding then {
-                        src -> coding.display = 'Active' "r_c_ct_cod_disp";
-                    } "r_c_ct_coding";
-                    src -> concept.text = "Active" "r_c_ct_text";
-                } "r_c_ct";
-    	    	src -> cnd.verificationStatus = create('CodeableConcept') as concept then {
-                    src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") as coding then {
-                        src -> coding.display = 'Confirmed' "r_c_vs_cod_disp";
-                    } "r_c_vs_coding";
-                    src -> concept.text = "Confirmed" "r_c_vs_text";
-                } "r_c_vs";
-    	    	src -> cnd.subject = reference(patient) "r_c_sub";
-    	    	src -> cnd.code = create('CodeableConcept') as ccPreg then {
-                  src -> ccPreg.coding = evaluate(item_preg, $this.answer.value) "r_c_cod_cod";
-                  src -> ccPreg.text = "Pregnant" "r_c_cod_text";
-               } "r_c_code";
-        	} "r_c";
-    	} "r_c_preg";
-    };
+// Immunization Record Encounter Sample
+group ExtractRecordEncounter(source src : QuestionnaireResponse, target encounter: Encounter, target bundle : Bundle) {
+        src -> encounter.id = uuid(),
+            encounter.status = "finished",
+            encounter.type = cc("http://snomed.info/sct", "41000179103", "Immunization record (record artifact)") "r_type";
+        src -> encounter.subject = create('Reference') as reference then {
+                   src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ee_6_1";
+        } "rule_ee_6"; // TODO add patient id in questionnaireResponse
+        src -> encounter.period = create("Period") as period then{
+                src -> period.start = evaluate(src, now()) "r_start";
+                src -> period.end = evaluate(src, now()) "r_end";
+        } "r_period";
+        src -> bundle.entry as entry, entry.resource = encounter "r_enc_cp";
+}
+
+// Immunization Administration Encounter
+group ExtractAdministrationEncounter(source src : QuestionnaireResponse,target administrationEncounter: Encounter,target encounter: Encounter, target bundle : Bundle) {
+        src -> administrationEncounter.id = uuid(),
+               administrationEncounter.status = "finished",
+               administrationEncounter.type = cc("http://snomed.info/sct", "33879002", "Administration of vaccine to produce active immunity (procedure)") "r_type";
+        src -> administrationEncounter.subject = create('Reference') as reference then {
+               src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ee_6_1";
+        } "rule_ee_6"; // TODO add patient id in questionnaireResponse
+        src -> administrationEncounter.period = create("Period") as period then {
+               src -> period.end = evaluate(src, now()) "r_end";
+        } "r_period";
+        src -> administrationEncounter.partOf = create('Reference') as ref then {
+               src -> ref.reference = evaluate(encounter,$this.id) "r_ref";
+        } "r_partof";
+        src -> bundle.entry as entry, entry.resource = administrationEncounter "r_enc_cp";
 }

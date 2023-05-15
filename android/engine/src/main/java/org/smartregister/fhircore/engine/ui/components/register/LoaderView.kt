@@ -56,7 +56,7 @@ fun LoaderDialog(
   isSyncUploadFlow: Flow<Boolean> = flowOf(false)
 ) {
   val openDialog = remember { mutableStateOf(true) }
-  if (openDialog.value) {
+  if (!openDialog.value) {
     Dialog(
       onDismissRequest = { openDialog.value = true },
       properties = DialogProperties(dismissOnBackPress = true)
