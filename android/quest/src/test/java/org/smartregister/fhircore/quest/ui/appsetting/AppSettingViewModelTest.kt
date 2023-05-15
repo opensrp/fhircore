@@ -158,11 +158,11 @@ class AppSettingViewModelTest : RobolectricTest() {
                         configType = "register",
                         fhirResource =
                           FhirResourceConfig(
-                            baseResource = ResourceConfig(resource = "Patient"),
+                            baseResource = ResourceConfig(resource = ResourceType.Patient),
                             relatedResources =
                               listOf(
-                                ResourceConfig(resource = "Encounter"),
-                                ResourceConfig(resource = "Task")
+                                ResourceConfig(resource = ResourceType.Encounter),
+                                ResourceConfig(resource = ResourceType.Task)
                               )
                           )
                       )

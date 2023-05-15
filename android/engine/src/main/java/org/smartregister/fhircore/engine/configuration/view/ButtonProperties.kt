@@ -76,13 +76,6 @@ data class ButtonProperties(
       ServiceStatus.valueOf(interpolated)
     else ServiceStatus.UPCOMING
   }
-
-  private fun interpolateBackgroundColor(computedValuesMap: Map<String, Any>): String {
-    val interpolated = this.backgroundColor?.interpolate(computedValuesMap)
-    return if (!interpolated.isNullOrEmpty()) {
-      return interpolated
-    } else Color.Unspecified.toString()
-  }
 }
 
 enum class ButtonType {
