@@ -85,36 +85,27 @@ constructor(
         count = batchSize
       }
 
-    tasks
-      .asSequence()
-      .filter {
-        it.status == Task.TaskStatus.REQUESTED ||
-          it.status == Task.TaskStatus.READY ||
-          it.status == Task.TaskStatus.ACCEPTED ||
-          it.status == Task.TaskStatus.INPROGRESS ||
-          it.status == Task.TaskStatus.RECEIVED
-      }
-      .forEach { task ->
-        if (task.hasPastEnd()) {
-          task.status = Task.TaskStatus.FAILED
-          fhirEngine.update(task)
-          task
-            .basedOn
-            .find { it.reference.startsWith(ResourceType.CarePlan.name) }
-            ?.extractId()
-            ?.takeIf { it.isNotBlank() }
-            ?.let {
-              val carePlan = fhirEngine.get<CarePlan>(it)
-              if (carePlan.isLastTask(task)) {
-                carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-                fhirEngine.update(carePlan)
-              }
+    tasks.forEach { task ->
+      if (task.hasPastEnd()) {
+        task.status = Task.TaskStatus.FAILED
+        fhirEngine.update(task)
+        task
+          .basedOn
+          .find { it.reference.startsWith(ResourceType.CarePlan.name) }
+          ?.extractId()
+          ?.takeIf { it.isNotBlank() }
+          ?.let {
+            val carePlan = fhirEngine.get<CarePlan>(it)
+            if (carePlan.isLastTask(task)) {
+              carePlan.status = CarePlan.CarePlanStatus.COMPLETED
+              fhirEngine.update(carePlan)
             }
-        } else if (task.isReady() && task.status == Task.TaskStatus.REQUESTED) {
-          task.status = Task.TaskStatus.READY
-          fhirEngine.update(task)
-        }
+          }
+      } else if (task.isReady() && task.status == Task.TaskStatus.REQUESTED) {
+        task.status = Task.TaskStatus.READY
+        fhirEngine.update(task)
       }
+    }
 
     Timber.i("Done task scheduling")
     Timber.i("Finishing FhirTaskPlanWorker with task count : ${tasks.size} ++++++")
