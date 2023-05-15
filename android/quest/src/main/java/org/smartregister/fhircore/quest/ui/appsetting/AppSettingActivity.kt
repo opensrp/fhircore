@@ -54,7 +54,7 @@ class AppSettingActivity : AppCompatActivity() {
     setContent { AppTheme { LoaderDialog(dialogMessage = stringResource(R.string.initializing)) } }
     lifecycleScope.launch(dispatcherProvider.io()) { libraryEvaluator.initialize() }
     val existingAppId =
-      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
+      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "app/debug")?.trimEnd()
 
     appSettingViewModel.error.observe(appSettingActivity) { error ->
       if (!error.isNullOrEmpty()) showToast(error)

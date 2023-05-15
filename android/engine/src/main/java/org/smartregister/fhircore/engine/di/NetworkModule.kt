@@ -42,6 +42,7 @@ import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.util.extension.getCustomJsonParser
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import timber.log.Timber
 
 @InstallIn(SingletonComponent::class)
 @Module
@@ -52,7 +53,9 @@ class NetworkModule {
   fun provideAuthOkHttpClient() =
     OkHttpClient.Builder()
       .addInterceptor(
-        HttpLoggingInterceptor().apply {
+        HttpLoggingInterceptor {
+          Timber.d(it)
+        }.apply {
           level = HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)
@@ -79,7 +82,9 @@ class NetworkModule {
         }
       )
       .addInterceptor(
-        HttpLoggingInterceptor().apply {
+        HttpLoggingInterceptor {
+          Timber.d(it)
+        }.apply {
           level = HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)

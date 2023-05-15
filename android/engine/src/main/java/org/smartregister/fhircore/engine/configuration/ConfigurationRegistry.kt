@@ -319,7 +319,7 @@ constructor(
    */
   @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources() {
-    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId: String ->
+    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "app/debug")?.let { appId: String ->
       fhirEngine.searchCompositionByIdentifier(appId)?.let { composition ->
         composition
           .retrieveCompositionSections()

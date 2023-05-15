@@ -21,6 +21,7 @@ import java.util.LinkedList
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.TabViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.ListResource
@@ -185,6 +186,7 @@ fun List<ViewProperties>.retrieveListProperties(): List<ListProperties> {
       ViewType.COLUMN -> viewPropertiesLinkedList.addAll((properties as ColumnProperties).children)
       ViewType.ROW -> viewPropertiesLinkedList.addAll((properties as RowProperties).children)
       ViewType.CARD -> viewPropertiesLinkedList.addAll((properties as CardViewProperties).content)
+      ViewType.TABS -> viewPropertiesLinkedList.addAll((properties as TabViewProperties).tabContents)
       ViewType.LIST ->
         viewPropertiesLinkedList.addAll((properties as ListProperties).registerCard.views)
       else -> {}

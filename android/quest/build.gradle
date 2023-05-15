@@ -140,6 +140,12 @@ android {
             getIsDefault().set(true)
         }
 
+        mpower {
+            dimension "apps"
+            applicationIdSuffix ".mpower"
+            versionNameSuffix "-mpower"
+        }
+
         ecbis {
             dimension "apps"
             applicationIdSuffix ".ecbis"
@@ -299,6 +305,10 @@ dependencies {
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 
     implementation 'androidx.work:work-testing:2.7.1'
+
+    // Paging Compose
+    implementation "com.google.accompanist:accompanist-pager:0.24.1-alpha"
+    implementation "com.google.accompanist:accompanist-pager-indicators:0.24.1-alpha"
 
     testImplementation deps.junit5_api
     testRuntimeOnly deps.junit5_engine

@@ -5,18 +5,6 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
-        "name": "organization",
-        "code": "organization",
-        "base": [
-          "Patient"
-        ],
-        "type": "token",
-        "expression": "#organization"
-      }
-    },
-    {
-      "resource": {
-        "resourceType": "SearchParameter",
         "name": "_id",
         "code": "_id",
         "base": [
