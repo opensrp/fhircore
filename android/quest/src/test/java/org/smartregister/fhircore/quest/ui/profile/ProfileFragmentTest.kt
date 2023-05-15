@@ -116,7 +116,7 @@ class ProfileFragmentTest : RobolectricTest() {
 
     // Simulate the returned value of loadProfile
     coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns
-      RepositoryResourceData.Search(resource = Faker.buildPatient())
+      RepositoryResourceData(resource = Faker.buildPatient())
     Navigation.setViewNavController(mainActivity.navHostFragment.requireView(), navController)
     mainActivity.supportFragmentManager.run {
       commitNow { add(profileFragment, ProfileFragment::class.java.simpleName) }

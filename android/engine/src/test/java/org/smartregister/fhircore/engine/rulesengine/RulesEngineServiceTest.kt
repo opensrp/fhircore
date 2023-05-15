@@ -20,6 +20,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import java.util.Locale
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -70,9 +71,9 @@ class RulesEngineServiceTest : RobolectricTest() {
     val totalCount =
       rulesEngineService.computeTotalCount(
         listOf(
-          RelatedResourceCount("abc", 20),
-          RelatedResourceCount("zyx", 40),
-          RelatedResourceCount("xyz", 40)
+          RelatedResourceCount(relatedResourceType = ResourceType.Task, "abc", 20),
+          RelatedResourceCount(relatedResourceType = ResourceType.Task, "zyx", 40),
+          RelatedResourceCount(relatedResourceType = ResourceType.Task, "xyz", 40)
         )
       )
     Assert.assertEquals(100, totalCount)
@@ -85,9 +86,9 @@ class RulesEngineServiceTest : RobolectricTest() {
   fun testRetrieveCountShouldReturnExactCount() {
     val relatedResourceCounts =
       listOf(
-        RelatedResourceCount("abc", 20),
-        RelatedResourceCount("zyx", 40),
-        RelatedResourceCount("xyz", 40)
+        RelatedResourceCount(relatedResourceType = ResourceType.Task, "abc", 20),
+        RelatedResourceCount(relatedResourceType = ResourceType.Task, "zyx", 40),
+        RelatedResourceCount(relatedResourceType = ResourceType.Task, "xyz", 40)
       )
     val theCount = rulesEngineService.retrieveCount("xyz", relatedResourceCounts)
     Assert.assertEquals(40, theCount)
