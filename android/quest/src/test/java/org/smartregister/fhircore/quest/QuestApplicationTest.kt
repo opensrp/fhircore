@@ -18,8 +18,15 @@ package org.smartregister.fhircore.quest
 
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.runs
 import io.mockk.spyk
+import io.sentry.Sentry
+import io.sentry.android.core.SentryAndroid
+import io.sentry.android.core.SentryAndroidOptions
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -43,6 +50,12 @@ class QuestApplicationTest : RobolectricTest() {
   @Test
   fun testSentryMonitoringWhenDsnNotBlank() {
     val sentryDsn = "debb3087-167a-47ff-b6d4-737be3965a4c"
+
+    mockkStatic(SentryAndroid::class)
+    every {
+      SentryAndroid.init(any(), any<Sentry.OptionsConfiguration<SentryAndroidOptions>>())
+    } just runs
+
     val spyApp = spyk(application)
     spyApp.initSentryMonitoring(dsn = sentryDsn)
   }
