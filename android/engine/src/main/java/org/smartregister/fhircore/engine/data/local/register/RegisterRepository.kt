@@ -78,14 +78,24 @@ constructor(
     registerId: String,
     paramsMap: Map<String, String>?
   ): List<RepositoryResourceData> {
+    Timber.e("Starting to profile $registerId")
+    val start = System.currentTimeMillis()
+
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
-    return searchResourcesRecursively(
+    val result = searchResourcesRecursively(
       filterActiveResources = registerConfiguration.activeResourceFilters,
       fhirResourceConfig = registerConfiguration.fhirResource,
       secondaryResourceConfigs = registerConfiguration.secondaryResources,
       currentPage = currentPage,
       pageSize = registerConfiguration.pageSize
     )
+
+    val end = System.currentTimeMillis()
+    val duration = end - start
+
+    Timber.e("Time taken to load $registerId = ${duration/1000} secs OR $duration ms")
+
+    return result
   }
 
   private suspend fun searchResourcesRecursively(
@@ -390,6 +400,10 @@ constructor(
         ?.associate { it.key to it.value }
         ?: emptyMap()
 
+
+    Timber.e("Starting to profile Profile $profileId")
+    val start = System.currentTimeMillis()
+
     val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
     val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
     val baseResourceConfig = resourceConfig.baseResource
@@ -407,7 +421,7 @@ constructor(
           relatedResourceWrapper = RelatedResourceWrapper()
         )
       }
-    return RepositoryResourceData(
+    val result = RepositoryResourceData(
       resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
       resource = baseResource,
       relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
@@ -419,6 +433,13 @@ constructor(
           )
         }
     )
+
+    val end = System.currentTimeMillis()
+    val duration = end - start
+
+    Timber.e("Time taken to load Profile $profileId = ${duration/1000} secs OR $duration ms")
+
+    return result
   }
 
   fun retrieveProfileConfiguration(profileId: String, paramsMap: Map<String, String>) =

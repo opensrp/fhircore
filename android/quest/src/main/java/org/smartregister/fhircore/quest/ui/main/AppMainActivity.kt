@@ -28,10 +28,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -120,10 +122,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     // Setup the drawer and schedule jobs
     appMainViewModel.run {
       retrieveAppMainUiState()
-      schedulePeriodicJobs()
+      //schedulePeriodicJobs()
+      workManager.cancelAllWork()
     }
 
-    runSync(syncBroadcaster)
+    //runSync(syncBroadcaster)
   }
 
   override fun onResume() {
