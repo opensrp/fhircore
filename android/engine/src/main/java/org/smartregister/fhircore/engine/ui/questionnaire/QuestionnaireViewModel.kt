@@ -125,6 +125,8 @@ constructor(
 
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
+  private var currentFormName = ""
+
   private val authenticatedUserInfo by lazy {
     sharedPreferencesHelper.read<UserInfo>(USER_INFO_SHARED_PREFERENCE_KEY)
   }

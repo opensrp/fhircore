@@ -294,6 +294,17 @@ constructor(
         }
     }
 
+    private suspend fun Patient.activeCarePlan() =
+        fhirEngine
+            .search<CarePlan> {
+                filter(CarePlan.SUBJECT, { value = this@activeCarePlan.referenceValue() })
+                filter(CarePlan.STATUS, { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) })
+            }
+            .filter { it.period?.start != null }
+            .filter { it.status == CarePlan.CarePlanStatus.ACTIVE }
+            .sortedByDescending { it.period.start }
+            .firstOrNull()
+
     fun createTracingClients(context: Context) {
         viewModelScope.launch {
             Toast.makeText(context, "Adding users", Toast.LENGTH_SHORT).show()
@@ -308,7 +319,8 @@ constructor(
                         && patient.hasName()
                         && patient.hasGender()
                         && patient.meta.tag.none{it.code.equals(HivRegisterDao.HAPI_MDM_TAG, true)}
-            }.take(120)
+            }.filter { it.activeCarePlan() != null }
+             .take(20)
 
             lists.forEach { patient ->
                 if (!patient.hasGender()) {
@@ -321,11 +333,11 @@ constructor(
                 val task = generateTracingTask(patient.logicalId, isHomeTracing)
                 task.id = generateUniqueId()
                 val list: MutableList<DomainResource> = mutableListOf()
-                val random = Random.nextInt(1, 5)
-                for (numberOfOutcomes in 0..random) {
-                    val create = createEncounter(patient, task, numberOfOutcomes == random, isHomeTracing, numberOfOutcomes)
-                    list.addAll(create)
-                }
+//                val random = Random.nextInt(1, 5)
+//                for (numberOfOutcomes in 0..random) {
+//                    val create = createEncounter(patient, task, numberOfOutcomes == random, isHomeTracing, numberOfOutcomes)
+//                    list.addAll(create)
+//                }
                 fhirEngine.create(task, *list.toTypedArray())
             }
             Toast.makeText(context, "Finished adding users", Toast.LENGTH_SHORT).show()
@@ -456,9 +468,9 @@ constructor(
           ],
           "text": "Contact Tracing"
         },
-        "executionPeriod": { "start": "2022-11-22T09:51:57+02:00" },
-        "authoredOn": "2022-11-22T09:51:57+02:00",
-        "lastModified": "2022-11-22T09:51:57+02:00",
+        "executionPeriod": { "start": "2023-04-29T09:51:57+02:00" },
+        "authoredOn": "2023-04-01T09:51:57+02:00",
+        "lastModified": "2023-04-01T09:51:57+02:00",
         "owner": {
           "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec"
         },
@@ -466,14 +478,14 @@ constructor(
           "coding": [
             {
               "system": "https://d-tree.org",
-              "code": "missing-vl",
-              "display": "Missing Viral Load"
+              "code": "interrupt-treat",
+              "display": "Interrupted Treatment"
             }
           ],
-          "text": "Missing VL"
+          "text": "Interrupt Treat"
         },
         "reasonReference": {
-          "reference": "Questionnaire/art-client-viral-load-test-results"
+          "reference": "Questionnaire/art-tracing-outcome"
         },
         "for": { "reference": "Patient/$patientId" }
       }
