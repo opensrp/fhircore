@@ -31,6 +31,7 @@ import javax.inject.Inject
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -84,7 +85,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
 
     val appId = "appId"
     val id = "id"
-    val fhirResource = FhirResourceConfig(ResourceConfig(resource = "Patient"))
+    val fhirResource = FhirResourceConfig(ResourceConfig(resource = ResourceType.Patient))
 
     measureReportConfiguration = MeasureReportConfiguration(appId, id = id, registerId = registerId)
     val registerConfiguration = RegisterConfiguration(appId, id = id, fhirResource = fhirResource)
@@ -148,7 +149,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
     val resource = Faker.buildPatient()
     coEvery {
       registerRepository.loadRegisterData(0, measureReportConfiguration.registerId)
-    } returns listOf(RepositoryResourceData.Search(resource = resource))
+    } returns listOf(RepositoryResourceData(resource = resource))
     runBlocking(Dispatchers.Default) {
       val data = measureReportRepository.retrievePatients(0)
       Assert.assertEquals(1, data.size)
