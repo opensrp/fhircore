@@ -528,7 +528,7 @@
                     "id": "defaultProfile",
                     "params": [
                       {
-                        "paramType": "UPDATE_DATE_ON_EDIT",
+                        "paramType": "PARAMDATA",
                         "key": "familyLogicalId",
                         "value": "@{familyLogicalId}"
                       },
