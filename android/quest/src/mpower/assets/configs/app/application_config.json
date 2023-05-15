@@ -2,7 +2,7 @@
   "appId": "app",
   "configType": "application",
   "theme": "DEFAULT",
-  "appTitle": "mPower",
+  "appTitle": "fhir HA",
   "registerDate": "2020-10-27",
   "reportRepeatTime": "23:22",
   "remoteSyncPageSize": 100,
@@ -19,7 +19,7 @@
   ],
   "loginConfig": {
     "showLogo": true,
-    "enablePin": true
+    "enablePin": false
   },
   "deviceToDeviceSync": {
     "resourcesToSync": [

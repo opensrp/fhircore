@@ -138,6 +138,13 @@
               "dataType": "INTEGER",
               "key": "isFamilyHeadExists",
               "value": "@{isFamilyHeadExists}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "2588ee71-9699-440d-8364-6ac7c1e63ccd",
+              "dataType": "STRING",
+              "key": "familyMemberId",
+              "value": "@{familyMemberId}"
             }
           ]
         }
@@ -193,6 +200,20 @@
       "actions": [
         "data.put('isFamilyHeadExists', empty(data.get('familyHeadId'))? 0 : 1)"
       ]
+    },
+    {
+      "name": "familyMemberCount",
+      "condition": "true",
+      "actions": [
+        "data.put('familyMemberCount', size(Patient))"
+      ]
+    },
+    {
+      "name": "familyMemberId",
+      "condition": "true",
+      "actions": [
+        "data.put('familyMemberId', (data.get('familyId').toString() + ((data.get('familyMemberCount') + 1) > 9 ? (data.get('familyMemberCount') + 1).toString() : ('0' + (data.get('familyMemberCount') + 1).toString()))))"
+      ]
     }
   ],
   "topAppBar": {
@@ -219,10 +240,10 @@
         "children": [
           {
             "viewType": "COMPOUND_TEXT",
-            "primaryText": "@{familyVillage} - HH No: @{familyId}",
+            "primaryText": "HH No: @{familyId}",
             "primaryTextColor": "#FFFFFF",
             "colorOpacity": 0.76,
-            "fontSize": 16.0
+            "fontSize": 14.0
           }
         ]
       }
@@ -612,83 +633,6 @@
                 "paramType": "UPDATE_DATE_ON_EDIT"
               }
             ]
-          }
-        }
-      ]
-    },
-    {
-      "title": "Change family head",
-      "titleColor": "#000000",
-      "visible": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "CHANGE_MANAGING_ENTITY",
-          "managingEntity": {
-            "nameFhirPathExpression": "Patient.name.given + ' ' + Patient.name.family | Patient.name.given",
-            "resourceType": "Patient",
-            "eligibilityCriteriaFhirPathExpression": "Patient.active and (Patient.birthDate <= today() - 5 'years')",
-            "dialogTitle": "{{ assign.household.head.title }}",
-            "dialogWarningMessage": "{{ assign.household.head.warning }}",
-            "dialogContentMessage": "{{ select.new.household.head }}",
-            "noMembersErrorMessage": "{{ no.members.error.message }}",
-            "managingEntityReassignedMessage": "Household head reassigned successfully",
-            "relationshipCode": {
-              "system": "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype",
-              "code": "99990006",
-              "display": "Family Head"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "title": "View past encounters",
-      "titleColor": "@{patientTextColor}",
-      "visible": "true",
-      "enabled": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_PROFILE",
-          "id": "householdpastencountersProfile"
-        }
-      ]
-    },
-    {
-      "title": "Remove family",
-      "titleColor": "#FF0000",
-      "visible": "true",
-      "showSeparator": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "params": [
-            {
-              "key": "familyId",
-              "value": "@{familyLogicalId}",
-              "paramType": "UPDATE_DATE_ON_EDIT"
-            },
-            {
-              "key": "familyName",
-              "value": "@{familyName}"
-            }
-          ],
-          "questionnaire": {
-            "id": "454",
-            "title": "Remove Household",
-            "groupResource": {
-              "groupIdentifier": "@{familyLogicalId}",
-              "memberResourceType": "Patient",
-              "removeGroup": true
-            },
-            "confirmationDialog": {
-              "title": "Remove household",
-              "message": "Removing @{familyName} will remove their entire health record from your device. This action can’t be undone.",
-              "actionButtonText": "Remove household"
-            },
-            "refreshContent": true
           }
         }
       ]

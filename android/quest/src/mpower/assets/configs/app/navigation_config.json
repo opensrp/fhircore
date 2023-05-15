@@ -40,49 +40,9 @@
           "id": "householdRegister"
         }
       ]
-    },
-    {
-      "id": "childRegister",
-      "display": "Children",
-      "showCount": true,
-      "menuIconConfig": {
-        "type": "local",
-        "reference": "ic_baby_mother"
-      },
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_REGISTER",
-          "id": "childRegister"
-        },
-        {
-          "trigger": "ON_COUNT",
-          "id": "childRegister"
-        }
-      ]
-    },
-    {
-      "id": "sickChildRegister",
-      "display": "Sick child",
-      "showCount": true,
-      "menuIconConfig": {
-        "type": "local",
-        "reference": "ic_needle"
-      },
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_REGISTER",
-          "id": "sickChildRegister"
-        },
-        {
-          "trigger": "ON_COUNT",
-          "id": "sickChildRegister"
-        }
-      ]
     }
   ],
-  "bottomSheetRegisters": {
+  "_bottomSheetRegisters": {
     "display": "Other patients",
     "visible": true,
     "menuIconConfig": {
@@ -208,92 +168,6 @@
     ]
   },
   "staticMenu": [
-    {
-      "id": "practitionerRegister",
-      "display": "CHAs",
-      "showCount": true,
-      "menuIconConfig": {
-        "type": "local","reference": "ic_households"},
-      "actions": [
-    {
-      "trigger": "ON_CLICK",
-      "workflow": "LAUNCH_REGISTER",
-      "id": "practitionerRegister"},
-    {
-      "trigger": "ON_COUNT",
-      "id": "practitionerRegister"
-    }
-  ]
-},
-    {
-      "id": "inventoryRegister",
-      "display": "Stock Inventory",
-      "icon": "",
-      "menuIconConfig": {
-        "type": "local",
-        "reference": "ic_inventory"
-      },
-      "showCount": true,
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_REGISTER",
-          "id": "inventoryRegister"
-        },
-        {
-          "trigger": "ON_COUNT",
-          "id": "inventoryRegister"
-        }
-      ]
-    },
-    {
-      "id": "serviceDeliveryReports",
-      "visible": true,
-      "display": "Service Delivery Reports",
-      "menuIconConfig": {
-        "type": "local",
-        "reference": "ic_reports"
-      },
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_REPORT",
-          "id": "serviceDeliveryMeasureReport"
-        }
-      ]
-    },
-    {
-      "id": "supplyChainReports",
-      "visible": true,
-      "display": "Supply Chain Reports",
-      "menuIconConfig": {
-        "type": "local",
-        "reference": "ic_reports"
-      },
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_REPORT",
-          "id": "supplyChainMeasureReport"
-        }
-      ]
-    },
-    {
-      "id": "p2p_sync",
-      "visible": true,
-      "display": "Transfer Data",
-      "menuIconConfig": {
-        "type": "local",
-        "reference": "ic_p2p"
-      },
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "DEVICE_TO_DEVICE_SYNC",
-          "id": "navigateToP2PScreen"
-        }
-      ]
-    },
     {
       "id": "settings",
       "visible": true,

@@ -175,6 +175,13 @@
         "actions": [
           "data.put('serviceMemberIcons', StringUtils:join([service.mapResourcesToLabeledCSV(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\", 'CHILD'), service.mapResourcesToLabeledCSV(Condition, \"Condition.code.text = 'Pregnant'\", 'PREGNANT_WOMAN')], ','))"
         ]
+      },
+      {
+        "name": "familyMemberCount",
+        "condition": "true",
+        "actions": [
+          "data.put('familyMemberCount', size(Patient))"
+        ]
       }
     ],
     "views": [
@@ -187,11 +194,18 @@
               {
                 "viewType": "COMPOUND_TEXT",
                 "primaryText": "@{familyName} Family",
+                "fontSize": 16.0,
                 "primaryTextColor": "#000000"
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "@{familyVillage} - HH No: @{familyId}",
+                "primaryText": "HH No: @{familyId}",
+                "fontSize": 14.0,
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "Registered Member: @{familyMemberCount}",
                 "fontSize": 14.0,
                 "primaryTextColor": "#000000"
               }
