@@ -67,20 +67,28 @@ data class FhirResourceConfig(
  *
  * A [ResourceConfig] can have nested list of other [ResourceConfig] configured via
  * [relatedResources] property.
+ *
+ * [CountResultConfig] is used to configure how to compute the total counts returned. If
+ * [CountResultConfig.sumCounts] is set to true, all the related resources counts are computed once
+ * via one query. However there may be scenarios to return count for each related resource e.g. for
+ * every Patient in a Group, return their Tasks count.
  */
 @Serializable
 @Parcelize
 data class ResourceConfig(
   val id: String? = null,
-  val resource: String,
+  val resource: ResourceType,
   val searchParameter: String? = null,
   val isRevInclude: Boolean = true,
   val dataQueries: List<DataQuery>? = null,
   val relatedResources: List<ResourceConfig> = emptyList(),
   val sortConfigs: List<SortConfig> = emptyList(),
   val resultAsCount: Boolean = false,
+  val countResultConfig: CountResultConfig? = CountResultConfig(),
   val nestedSearchResources: List<NestedSearchConfig>? = null
 ) : Parcelable
+
+@Serializable @Parcelize data class CountResultConfig(val sumCounts: Boolean = true) : Parcelable
 
 @Serializable
 @Parcelize
