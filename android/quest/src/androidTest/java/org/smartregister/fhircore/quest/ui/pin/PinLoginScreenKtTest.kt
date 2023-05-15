@@ -41,15 +41,17 @@ class PinLoginScreenKtTest {
         forgotPin = {},
         pinUiState =
           PinUiState(
-            currentUserPin = "",
             message = "CHA will use this PIN to login",
             appName = "MOH eCBIS",
             setupPin = true,
             pinLength = 4,
             showLogo = true
           ),
-        onPinVerified = {},
-        onShowPinError = {}
+        onShowPinError = {},
+        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
+        onShowProgressIndicator = {},
+        showProgressIndicator = false,
+        validPin = false
       )
     }
 
@@ -72,15 +74,17 @@ class PinLoginScreenKtTest {
         forgotPin = {},
         pinUiState =
           PinUiState(
-            currentUserPin = "1234",
             message = "Enter PIN for ecbis",
             appName = "MOH eCBIS",
             setupPin = false,
             pinLength = 4,
             showLogo = true
           ),
-        onPinVerified = {},
-        onShowPinError = {}
+        onShowPinError = {},
+        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
+        onShowProgressIndicator = {},
+        showProgressIndicator = false,
+        validPin = false
       )
     }
     composeRule.onNodeWithText("MOH eCBIS", ignoreCase = true).assertExists().assertIsDisplayed()
@@ -109,15 +113,17 @@ class PinLoginScreenKtTest {
         forgotPin = {},
         pinUiState =
           PinUiState(
-            currentUserPin = "",
             message = errorMessage,
             appName = "MOH eCBIS",
             setupPin = false,
             pinLength = 4,
             showLogo = true
           ),
-        onPinVerified = {},
-        onShowPinError = {}
+        onShowPinError = {},
+        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
+        onShowProgressIndicator = {},
+        showProgressIndicator = false,
+        validPin = false
       )
     }
     composeRule.onNodeWithText(errorMessage, ignoreCase = true).assertExists().assertIsDisplayed()

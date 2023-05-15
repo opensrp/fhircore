@@ -62,13 +62,12 @@ const val PIN_TEXT_FIELD_TEST_TAG = "pinTextField"
 @Composable
 fun PinInput(
   modifier: Modifier = Modifier,
-  actualPin: String? = null,
   pinLength: Int,
   inputMode: Boolean = true,
-  onPinSet: (String) -> Unit,
-  onPinVerified: (Boolean) -> Unit,
+  onPinSet: (CharArray) -> Unit,
   onShowPinError: (Boolean) -> Unit,
-  onPinEntered: (CharArray) -> Unit
+  onPinEntered: (CharArray, (Boolean) -> Unit) -> Unit,
+  validPin: Boolean = false
 ) {
   val keyboard = LocalSoftwareKeyboardController.current
   val focusRequester = remember { FocusRequester() }
@@ -92,17 +91,13 @@ fun PinInput(
           nextCellIndex = enteredPin.length
           keyboard?.hide()
 
-          if (inputMode) onPinSet(enteredPin)
+          if (inputMode) onPinSet(enteredPin.toCharArray())
           else {
-            onPinEntered(it.toCharArray())
-            val validPin = enteredPin == actualPin
-            // val loginPinSalt =
-            // secureSharedPreferences.getString(SharedPreferenceKey.LOGIN_PIN_SALT.name, null)
-            onPinVerified(validPin)
-            // Wrong PIN, clear entered PIN
-            if (!validPin) {
-              keyboard?.show()
-              onShowPinError(true)
+            onPinEntered(it.toCharArray()) { isValidPin ->
+              if (!isValidPin) { // Wrong PIN, clear entered PIN
+                keyboard?.show()
+                onShowPinError(true)
+              }
             }
           }
         }
@@ -110,7 +105,7 @@ fun PinInput(
           keyboard?.show()
           enteredPin = it
           nextCellIndex = enteredPin.length
-          onPinSet(enteredPin)
+          onPinSet(enteredPin.toCharArray())
           onShowPinError(false)
         }
       }
@@ -126,8 +121,8 @@ fun PinInput(
         when {
           inputMode -> Color.White
           enteredPin.getOrNull(index) == null -> Color.LightGray
-          enteredPin.length == pinLength && enteredPin == actualPin -> SuccessColor
-          enteredPin.length == pinLength && enteredPin != actualPin -> DangerColor
+          enteredPin.length == pinLength && validPin -> SuccessColor
+          enteredPin.length == pinLength && !validPin -> DangerColor
           else -> InfoColor
         }
       PinCell(
@@ -191,9 +186,9 @@ private fun PinViewWithActiveInputModePreview() {
     pinLength = 4,
     inputMode = true,
     onPinSet = {},
-    onPinVerified = {},
     onShowPinError = {},
-    onPinEntered = {}
+    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
+    validPin = false
   )
 }
 
@@ -203,10 +198,9 @@ private fun PinViewWithInActiveInputModePreview() {
   PinInput(
     pinLength = 4,
     inputMode = false,
-    actualPin = "1234",
     onPinSet = {},
-    onPinVerified = {},
     onShowPinError = {},
-    onPinEntered = {}
+    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
+    validPin = false
   )
 }

@@ -69,6 +69,7 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
 fun PinLoginScreen(viewModel: PinViewModel) {
   val showError by viewModel.showError.observeAsState(initial = false)
   val pinUiState by remember { mutableStateOf(viewModel.pinUiState.value) }
+  val validPin by viewModel.validPin.observeAsState(initial = false)
 
   PinLoginPage(
     showError = showError,
@@ -76,9 +77,9 @@ fun PinLoginScreen(viewModel: PinViewModel) {
     onMenuLoginClicked = viewModel::onMenuItemClicked,
     forgotPin = viewModel::forgotPin,
     onSetPin = viewModel::onSetPin,
-    onPinVerified = viewModel::onPinVerified,
     onShowPinError = viewModel::onShowPinError,
-    onPinEntered = viewModel::login
+    onPinEntered = viewModel::login,
+    validPin = validPin
   )
 }
 
@@ -87,17 +88,17 @@ fun PinLoginScreen(viewModel: PinViewModel) {
 fun PinLoginPage(
   modifier: Modifier = Modifier,
   showError: Boolean,
+  validPin: Boolean,
   pinUiState: PinUiState,
   onSetPin: (CharArray) -> Unit,
-  onPinVerified: (Boolean) -> Unit,
   onMenuLoginClicked: (Boolean) -> Unit,
   onShowPinError: (Boolean) -> Unit,
   forgotPin: () -> Unit,
-  onPinEntered: (CharArray) -> Unit,
+  onPinEntered: (CharArray, (Boolean) -> Unit) -> Unit,
 ) {
   var showMenu by remember { mutableStateOf(false) }
   var showForgotPinDialog by remember { mutableStateOf(false) }
-  var newPin by remember { mutableStateOf("") }
+  var newPin by remember { mutableStateOf(charArrayOf()) }
   val bringIntoViewRequester = remember { BringIntoViewRequester() }
 
   LaunchedEffect(Unit) { bringIntoViewRequester.bringIntoView() }
@@ -136,13 +137,12 @@ fun PinLoginPage(
           )
 
           PinInput(
-            actualPin = pinUiState.currentUserPin,
             inputMode = pinUiState.setupPin,
             pinLength = pinUiState.pinLength,
             onPinSet = { enteredPin -> newPin = enteredPin },
-            onPinVerified = onPinVerified,
             onShowPinError = onShowPinError,
-            onPinEntered = onPinEntered
+            onPinEntered = onPinEntered,
+            validPin = validPin
           )
 
           // Only show error message and forgot password when not setting the pin
@@ -156,23 +156,23 @@ fun PinLoginPage(
                 color = DangerColor,
                 modifier = modifier.padding(vertical = 8.dp).align(Alignment.CenterHorizontally)
               )
-            }
-            Text(
-              text = stringResource(R.string.forgot_pin),
-              color = MaterialTheme.colors.primary.copy(alpha = 0.8f),
-              fontSize = 16.sp,
-              modifier =
-                modifier
-                  .padding(top = 24.dp)
-                  .align(Alignment.CenterHorizontally)
-                  .clickable { showForgotPinDialog = !showForgotPinDialog }
-                  .bringIntoViewRequester(bringIntoViewRequester)
-            )
+            } else
+              Text(
+                text = stringResource(R.string.forgot_pin),
+                color = MaterialTheme.colors.primary.copy(alpha = 0.8f),
+                fontSize = 16.sp,
+                modifier =
+                  modifier
+                    .padding(top = 24.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .clickable { showForgotPinDialog = !showForgotPinDialog }
+                    .bringIntoViewRequester(bringIntoViewRequester)
+              )
           } else {
             // Enable button when a new PIN of required length is entered
             Button(
-              onClick = { onSetPin(newPin.toCharArray()) },
-              enabled = newPin.length == pinUiState.pinLength,
+              onClick = { onSetPin(newPin) },
+              enabled = newPin.size == pinUiState.pinLength,
               modifier =
                 modifier
                   .bringIntoViewRequester(bringIntoViewRequester)
@@ -289,22 +289,21 @@ fun ForgotPinDialog(
 @PreviewWithBackgroundExcludeGenerated
 private fun PinSetupPreview() {
   PinLoginPage(
-    onSetPin = {},
     showError = false,
-    onMenuLoginClicked = {},
-    forgotPin = {},
+    validPin = false,
     pinUiState =
       PinUiState(
-        currentUserPin = "",
         message = "CHA will use this PIN to login",
         appName = "MOH eCBIS",
         setupPin = true,
         pinLength = 4,
         showLogo = true
       ),
-    onPinVerified = {},
+    onSetPin = {},
+    onMenuLoginClicked = {},
     onShowPinError = {},
-    onPinEntered = {}
+    forgotPin = {},
+    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
   )
 }
 
@@ -312,21 +311,20 @@ private fun PinSetupPreview() {
 @PreviewWithBackgroundExcludeGenerated
 private fun PinLoginPreview() {
   PinLoginPage(
-    onSetPin = {},
     showError = false,
-    onMenuLoginClicked = {},
-    forgotPin = {},
+    validPin = false,
     pinUiState =
       PinUiState(
-        currentUserPin = "1234",
         message = "Enter PIN for ecbis",
         appName = "MOH eCBIS",
         setupPin = false,
         pinLength = 4,
         showLogo = true
       ),
-    onPinVerified = {},
+    onSetPin = {},
+    onMenuLoginClicked = {},
     onShowPinError = {},
-    onPinEntered = {}
+    forgotPin = {},
+    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
   )
 }

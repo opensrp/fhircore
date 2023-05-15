@@ -20,6 +20,7 @@ import android.os.Build
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.security.SecureRandom
+import java.util.Arrays
 import java.util.Locale
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
@@ -35,7 +36,7 @@ private fun hashString(type: String, input: String): String {
 fun CharArray.toPasswordHash(salt: ByteArray) = passwordHashString(this, salt)
 
 fun passwordHashString(password: CharArray, salt: ByteArray): String {
-  val pbKeySpec = PBEKeySpec(password, salt, 200000, 256)
+  val pbKeySpec = PBEKeySpec(password, salt, 1000000, 256)
   val secretKeyFactory =
     SecretKeyFactory.getInstance(
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) "PBKDF2withHmacSHA256"
@@ -50,3 +51,5 @@ fun getRandomBytesOfSize(size: Int): ByteArray {
   random.nextBytes(randomSaltBytes)
   return randomSaltBytes
 }
+
+fun clearPasswordInMemory(charArray: CharArray) = Arrays.fill(charArray, '*')

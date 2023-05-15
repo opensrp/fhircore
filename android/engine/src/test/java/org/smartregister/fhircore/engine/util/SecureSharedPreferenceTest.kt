@@ -21,6 +21,8 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
+import io.mockk.mockkStatic
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -73,8 +75,15 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
 
   @Test
   fun testSaveAndRetrievePin() {
-    secureSharedPreference.saveSessionPin(pin = "1234")
-    Assert.assertEquals("1234", secureSharedPreference.retrieveSessionPin())
+
+    mockkStatic(::getRandomBytesOfSize)
+
+    every { getRandomBytesOfSize(256) } returns byteArrayOf(-100, 0, 100, 101)
+    secureSharedPreference.saveSessionPin(pin = "1234".toCharArray())
+    Assert.assertEquals(
+      passwordHashString("1234".toCharArray(), byteArrayOf(-100, 0, 100, 101)),
+      secureSharedPreference.retrieveSessionPin()
+    )
     secureSharedPreference.deleteSessionPin()
     Assert.assertNull(secureSharedPreference.retrieveSessionPin())
   }
@@ -82,10 +91,18 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
   @Test
   fun testResetSharedPrefsClearsData() {
 
-    secureSharedPreference.saveSessionPin(pin = "6699")
+    mockkStatic(::getRandomBytesOfSize)
+
+    every { getRandomBytesOfSize(256) } returns byteArrayOf(-128, 100, 112, 127)
+
+    secureSharedPreference.saveSessionPin(pin = "6699".toCharArray())
 
     val retrievedSessionPin = secureSharedPreference.retrieveSessionPin()
-    Assert.assertEquals("6699", retrievedSessionPin)
+
+    Assert.assertEquals(
+      passwordHashString("6699".toCharArray(), byteArrayOf(-128, 100, 112, 127)),
+      retrievedSessionPin
+    )
 
     secureSharedPreference.resetSharedPrefs()
 

@@ -22,9 +22,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Base64
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -32,8 +34,8 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.clearPasswordInMemory
 import org.smartregister.fhircore.engine.util.toPasswordHash
-import timber.log.Timber
 
 @HiltViewModel
 class PinViewModel
@@ -64,20 +66,13 @@ constructor(
   val showError
     get() = _showError
 
-  private val _showProgressBar = MutableLiveData(false)
-  val showProgressBar
-    get() = _showProgressBar
+  private val _validPin = MutableLiveData(false)
+  val validPin
+    get() = _validPin
 
   val pinUiState: MutableState<PinUiState> =
     mutableStateOf(
-      PinUiState(
-        currentUserPin = "",
-        message = "",
-        appName = "",
-        setupPin = false,
-        pinLength = 0,
-        showLogo = false
-      )
+      PinUiState(message = "", appName = "", setupPin = false, pinLength = 0, showLogo = false)
     )
 
   private val applicationConfiguration: ApplicationConfiguration by lazy {
@@ -89,7 +84,6 @@ constructor(
     pinUiState.value =
       PinUiState(
         appName = applicationConfiguration.appTitle,
-        currentUserPin = secureSharedPreference.retrieveSessionPin() ?: "",
         setupPin = setupPin,
         message =
           if (setupPin)
@@ -102,13 +96,13 @@ constructor(
   }
 
   fun onPinVerified(validPin: Boolean) {
-    onShowPinError(!validPin)
     if (validPin) {
       _navigateToHome.postValue(true)
     }
   }
-
-  fun onShowPinError(showError: Boolean) = _showError.postValue(showError)
+  fun onShowPinError(showError: Boolean) {
+    _showError.postValue(showError)
+  }
 
   fun onSetPin(newPin: CharArray) {
     secureSharedPreference.saveSessionPin(newPin)
@@ -130,20 +124,20 @@ constructor(
     _launchDialPad.value = "tel:####"
   }
 
-  fun login(enteredPin: CharArray) {
-    _showProgressBar.postValue(true)
+  fun login(enteredPin: CharArray, callback: (Boolean) -> Unit) {
 
-    val storedPinHash = secureSharedPreference.retrieveSessionPin()
-    val salt = secureSharedPreference.retrievePinSalt()
-    val generatedHash = enteredPin.toPasswordHash(Base64.getDecoder().decode(salt))
+    viewModelScope.launch {
+      val storedPinHash = secureSharedPreference.retrieveSessionPin()
+      val salt = secureSharedPreference.retrievePinSalt()
+      val generatedHash = enteredPin.toPasswordHash(Base64.getDecoder().decode(salt))
+      val validPin = generatedHash == storedPinHash
 
-    if (generatedHash == storedPinHash) {
+      if (validPin) clearPasswordInMemory(enteredPin)
 
-      Timber.d("######## Success logging in")
-    } else {
+      onPinVerified(validPin)
+      callback.invoke(validPin)
 
-      Timber.e("######## Error logging in")
+      _validPin.postValue(validPin)
     }
-    _showProgressBar.postValue(false)
   }
 }
