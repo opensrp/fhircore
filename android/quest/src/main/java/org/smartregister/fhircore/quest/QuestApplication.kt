@@ -21,6 +21,7 @@ import android.content.Intent
 import android.database.CursorWindow
 import android.os.Looper
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.google.android.fhir.datacapture.DataCaptureConfig
@@ -29,7 +30,6 @@ import io.sentry.android.core.SentryAndroid
 import io.sentry.android.core.SentryAndroidOptions
 import io.sentry.android.fragment.FragmentLifecycleIntegration
 import javax.inject.Inject
-import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
