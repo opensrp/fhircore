@@ -68,10 +68,6 @@ constructor(
   val showError
     get() = _showError
 
-  private val _validPin = MutableLiveData(false)
-  val validPin
-    get() = _validPin
-
   val pinUiState: MutableState<PinUiState> =
     mutableStateOf(
       PinUiState(message = "", appName = "", setupPin = false, pinLength = 0, showLogo = false)
@@ -98,7 +94,6 @@ constructor(
   }
 
   fun onPinVerified(validPin: Boolean) {
-    _validPin.postValue(validPin)
     if (validPin) {
       pinUiState.value = pinUiState.value.copy(showProgressBar = false)
       _navigateToHome.postValue(true)

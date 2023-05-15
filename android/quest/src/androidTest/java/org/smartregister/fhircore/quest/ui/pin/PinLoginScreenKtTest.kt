@@ -48,10 +48,7 @@ class PinLoginScreenKtTest {
             showLogo = true
           ),
         onShowPinError = {},
-        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
-        onShowProgressIndicator = {},
-        showProgressIndicator = false,
-        validPin = false
+        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
       )
     }
 
@@ -81,10 +78,7 @@ class PinLoginScreenKtTest {
             showLogo = true
           ),
         onShowPinError = {},
-        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
-        onShowProgressIndicator = {},
-        showProgressIndicator = false,
-        validPin = false
+        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
       )
     }
     composeRule.onNodeWithText("MOH eCBIS", ignoreCase = true).assertExists().assertIsDisplayed()
@@ -120,10 +114,7 @@ class PinLoginScreenKtTest {
             showLogo = true
           ),
         onShowPinError = {},
-        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
-        onShowProgressIndicator = {},
-        showProgressIndicator = false,
-        validPin = false
+        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
       )
     }
     composeRule.onNodeWithText(errorMessage, ignoreCase = true).assertExists().assertIsDisplayed()
