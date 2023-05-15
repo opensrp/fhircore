@@ -27,6 +27,9 @@ import dagger.assisted.AssistedInject
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -41,9 +44,15 @@ constructor(
   @Assisted workerParams: WorkerParameters,
   val fhirEngine: FhirEngine,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
-  val sharedPreferencesHelper: SharedPreferencesHelper
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val configurationRegistry: ConfigurationRegistry
 ) : CoroutineWorker(context, workerParams) {
   override suspend fun doWork(): Result {
+
+    val appRegistry =
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+    val batchSize = appRegistry.taskBgWorkerBatchSize.div(BATCH_SIZE_FACTOR)
+
     val lastOffset =
       sharedPreferencesHelper.read(
           key = SharedPreferenceKey.FHIR_COMPLETE_CAREPLAN_WORKER_LAST_OFFSET.name,
@@ -51,7 +60,7 @@ constructor(
         )!!
         .toInt()
     Timber.i(
-      "Starting FhirCompleteCarePlanWorker with from : $lastOffset and batch-size : $BATCH_SIZE ++++++"
+      "Starting FhirCompleteCarePlanWorker with from : $lastOffset and batch-size : $batchSize ++++++"
     )
     val carePlans =
       fhirEngine.search<CarePlan> {
@@ -63,7 +72,7 @@ constructor(
           { value = of(CarePlan.CarePlanStatus.ENTEREDINERROR.toCode()) },
           { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) }
         )
-        count = BATCH_SIZE
+        count = batchSize
         from = if (lastOffset > 0) lastOffset + 1 else 0
       }
 
@@ -84,7 +93,7 @@ constructor(
     }
     Timber.i("Finishing FhirCompleteCarePlanWorker with careplan count : ${carePlans.size} ++++++")
     val updatedLastOffset =
-      getLastOffset(items = carePlans, lastOffset = lastOffset, batchSize = BATCH_SIZE)
+      getLastOffset(items = carePlans, lastOffset = lastOffset, batchSize = batchSize)
 
     sharedPreferencesHelper.write(
       key = SharedPreferenceKey.FHIR_COMPLETE_CAREPLAN_WORKER_LAST_OFFSET.name,
@@ -95,6 +104,6 @@ constructor(
 
   companion object {
     const val WORK_ID = "FhirCompleteCarePlanWorker"
-    const val BATCH_SIZE = 100
+    const val BATCH_SIZE_FACTOR = 10
   }
 }

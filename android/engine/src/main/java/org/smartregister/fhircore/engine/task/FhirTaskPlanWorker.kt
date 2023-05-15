@@ -29,6 +29,9 @@ import dagger.assisted.AssistedInject
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -45,7 +48,8 @@ constructor(
   @Assisted val appContext: Context,
   @Assisted workerParams: WorkerParameters,
   val fhirEngine: FhirEngine,
-  val sharedPreferencesHelper: SharedPreferencesHelper
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val configurationRegistry: ConfigurationRegistry
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
@@ -53,6 +57,10 @@ constructor(
     // TODO also filter by date range for better performance
     // TODO This is a temp fix for https://github.com/google/android-fhir/issues/1825 - search fails
     // due to indexing outdated resources
+
+    val appRegistry =
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+    val batchSize = appRegistry.taskBgWorkerBatchSize
     val lastOffset =
       sharedPreferencesHelper.read(
           key = SharedPreferenceKey.FHIR_TASK_PLAN_WORKER_LAST_OFFSET.name,
@@ -60,7 +68,7 @@ constructor(
         )!!
         .toInt()
     Timber.i(
-      "Starting FhirTaskPlanWorker with from : $lastOffset and batch-size : $BATCH_SIZE ++++++"
+      "Starting FhirTaskPlanWorker with from : $lastOffset and batch-size : $batchSize ++++++"
     )
     Timber.e("Done task scheduling")
     val tasks =
@@ -74,7 +82,7 @@ constructor(
           { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
         )
         from = if (lastOffset > 0) lastOffset + 1 else 0
-        count = BATCH_SIZE
+        count = batchSize
       }
 
     tasks
@@ -111,11 +119,7 @@ constructor(
     Timber.i("Done task scheduling")
     Timber.i("Finishing FhirTaskPlanWorker with task count : ${tasks.size} ++++++")
     val updatedLastOffset =
-      getLastOffset(
-        items = tasks,
-        lastOffset = lastOffset,
-        batchSize = FhirCompleteCarePlanWorker.BATCH_SIZE
-      )
+      getLastOffset(items = tasks, lastOffset = lastOffset, batchSize = batchSize)
     sharedPreferencesHelper.write(
       key = SharedPreferenceKey.FHIR_TASK_PLAN_WORKER_LAST_OFFSET.name,
       updatedLastOffset.toString()
@@ -129,6 +133,5 @@ constructor(
 
   companion object {
     const val WORK_ID = "FhirTaskPlanWorker"
-    const val BATCH_SIZE = 1000
   }
 }
