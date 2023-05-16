@@ -43,10 +43,22 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
   private fun getMasterKey() =
     MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
 
-  fun saveCredentials(authCredentials: AuthCredentials) {
+  fun saveCredentials(username: String, password: CharArray) {
+
+    val randomSaltBytes = getRandomBytesOfSize(256)
+
     secureSharedPreferences.edit {
-      putString(SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name, authCredentials.encodeJson())
+      putString(
+        SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name,
+        AuthCredentials(
+            username,
+            Base64.getEncoder().encodeToString(randomSaltBytes),
+            password.toPasswordHash(randomSaltBytes)
+          )
+          .encodeJson()
+      )
     }
+    clearPasswordInMemory(password)
   }
 
   fun deleteCredentials() =

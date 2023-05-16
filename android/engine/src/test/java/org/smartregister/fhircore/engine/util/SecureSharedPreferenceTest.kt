@@ -27,7 +27,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -48,26 +47,20 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
 
   @Test
   fun testSaveCredentialsAndRetrieveSessionToken() {
-    secureSharedPreference.saveCredentials(
-      AuthCredentials(username = "userName", password = "!@#$")
-    )
+    secureSharedPreference.saveCredentials(username = "userName", password = "!@#$".toCharArray())
     Assert.assertEquals("userName", secureSharedPreference.retrieveSessionUsername()!!)
   }
 
   @Test
   fun testRetrieveCredentials() {
-    secureSharedPreference.saveCredentials(
-      AuthCredentials(username = "userName", password = "!@#$")
-    )
+    secureSharedPreference.saveCredentials(username = "userName", password = "!@#$".toCharArray())
     Assert.assertEquals("userName", secureSharedPreference.retrieveCredentials()!!.username)
-    Assert.assertEquals("!@#$", secureSharedPreference.retrieveCredentials()!!.password)
+    Assert.assertEquals("!@#$", secureSharedPreference.retrieveCredentials()!!.passwordHash)
   }
 
   @Test
   fun testDeleteCredentialReturnsNull() {
-    secureSharedPreference.saveCredentials(
-      AuthCredentials(username = "userName", password = "!@#$")
-    )
+    secureSharedPreference.saveCredentials(username = "userName", password = "!@#$".toCharArray())
     Assert.assertNotNull(secureSharedPreference.retrieveCredentials())
     secureSharedPreference.deleteCredentials()
     Assert.assertNull(secureSharedPreference.retrieveCredentials())
@@ -81,7 +74,7 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
     every { getRandomBytesOfSize(256) } returns byteArrayOf(-100, 0, 100, 101)
     secureSharedPreference.saveSessionPin(pin = "1234".toCharArray())
     Assert.assertEquals(
-      passwordHashString("1234".toCharArray(), byteArrayOf(-100, 0, 100, 101)),
+      "1234".toCharArray().toPasswordHash(byteArrayOf(-100, 0, 100, 101)),
       secureSharedPreference.retrieveSessionPin()
     )
     secureSharedPreference.deleteSessionPin()
@@ -100,7 +93,7 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
     val retrievedSessionPin = secureSharedPreference.retrieveSessionPin()
 
     Assert.assertEquals(
-      passwordHashString("6699".toCharArray(), byteArrayOf(-128, 100, 112, 127)),
+      "6699".toCharArray().toPasswordHash(byteArrayOf(-128, 100, 112, 127)),
       retrievedSessionPin
     )
 

@@ -34,7 +34,7 @@ internal class SecurityUtilKtTest {
   fun testPasswordHashStringGeneratesHash() {
     val secretPassword = "MySecretPassword"
     val hashedPassword =
-      passwordHashString(secretPassword.toCharArray(), byteArrayOf(102, 103, 105, 107))
+      secretPassword.toCharArray().toPasswordHash(byteArrayOf(102, 103, 105, 107))
     Assert.assertNotNull(hashedPassword)
     Assert.assertNotEquals(secretPassword, hashedPassword)
   }

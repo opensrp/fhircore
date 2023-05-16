@@ -18,24 +18,14 @@ package org.smartregister.fhircore.engine.util
 
 import android.os.Build
 import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.Arrays
-import java.util.Locale
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
-import javax.xml.bind.DatatypeConverter
-
-fun String.toSha1() = hashString("SHA-1", this)
-
-private fun hashString(type: String, input: String): String {
-  val bytes = MessageDigest.getInstance(type).digest(input.toByteArray())
-  return DatatypeConverter.printHexBinary(bytes).uppercase(Locale.getDefault())
-}
 
 fun CharArray.toPasswordHash(salt: ByteArray) = passwordHashString(this, salt)
 
-fun passwordHashString(password: CharArray, salt: ByteArray): String {
+private fun passwordHashString(password: CharArray, salt: ByteArray): String {
   val pbKeySpec = PBEKeySpec(password, salt, 1000000, 256)
   val secretKeyFactory =
     SecretKeyFactory.getInstance(
