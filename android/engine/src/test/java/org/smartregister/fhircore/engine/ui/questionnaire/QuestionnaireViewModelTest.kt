@@ -62,6 +62,7 @@ import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
@@ -615,7 +616,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     intent.putStringArrayListExtra(
       QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
       arrayListOf(
-        "{\"resourceType\":\"Patient\",\"id\":\"1\",\"text\":{\"status\":\"generated\",\"div\":\"\"}}"
+        "{\"resourceType\":\"Patient\",\"id\":\"1\",\"text\":{\"status\":\"generated\",\"div\":\"\"}}",
+        "{\"resourceType\":\"Bundle\",\"id\":\"34\",\"text\":{\"status\":\"generated\",\"div\":\"\"}}",
       )
     )
     intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "2")
@@ -623,6 +625,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     runBlocking {
       val resourceList =
         questionnaireViewModel.getPopulationResources(intent, questionnaire.logicalId)
+      Assert.assertTrue(resourceList.any { it is Bundle })
       Assert.assertEquals(4, resourceList.size)
     }
   }
@@ -1140,5 +1143,20 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.extractRelevantObservation(bundle, questionnaire.logicalId)
     Assert.assertArrayEquals(bundle.entry.toTypedArray(), response.entry.toTypedArray())
     Assert.assertTrue(response.entry.isEmpty())
+  }
+
+  @Test
+  fun `test extractRelevantObservation with Observation resource`() = runTest {
+    val questionnaire = Questionnaire().apply { id = "1234" }
+    val bundle = Bundle()
+    val observation =
+      Observation().apply {
+        code = CodeableConcept().apply { addCoding(Coding().apply { code = "Observation-1234" }) }
+      }
+    bundle.entry.add(Bundle.BundleEntryComponent().setResource(observation))
+    val response =
+      questionnaireViewModel.extractRelevantObservation(bundle, questionnaire.logicalId)
+    Assert.assertNotEquals(bundle.entry.toTypedArray(), response.entry.toTypedArray())
+    Assert.assertEquals(response.entry.size, 1)
   }
 }
