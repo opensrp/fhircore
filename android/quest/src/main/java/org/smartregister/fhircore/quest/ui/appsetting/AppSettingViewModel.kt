@@ -199,7 +199,7 @@ constructor(
   }
 
   private fun ResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
-    target.add(ResourceType.fromCode(resource))
+    target.add(resource)
     relatedResources.forEach { it.dependentResourceTypes(target) }
   }
 
