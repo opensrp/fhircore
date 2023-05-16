@@ -28,6 +28,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -77,7 +78,7 @@ class RegisterViewModelTest : RobolectricTest() {
         id = registerId,
         fhirResource =
           FhirResourceConfig(
-            baseResource = ResourceConfig(resource = "Patient"),
+            baseResource = ResourceConfig(resource = ResourceType.Patient),
           ),
         pageSize = 10
       )

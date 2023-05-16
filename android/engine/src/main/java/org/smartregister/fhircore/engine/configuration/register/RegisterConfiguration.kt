@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration.register
 
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
@@ -35,5 +36,10 @@ data class RegisterConfiguration(
   val registerCard: RegisterCardConfig = RegisterCardConfig(),
   val fabActions: List<NavigationMenuConfig> = emptyList(),
   val noResults: NoResultsConfig? = null,
-  val pageSize: Int = 10
+  val pageSize: Int = 10,
+  val activeResourceFilters: List<ActiveResourceFilterConfig> =
+    listOf(
+      ActiveResourceFilterConfig(resourceType = ResourceType.Patient, active = true),
+      ActiveResourceFilterConfig(resourceType = ResourceType.Group, active = true)
+    )
 ) : Configuration()
