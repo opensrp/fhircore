@@ -21,6 +21,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
 import com.google.android.fhir.search.search
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -62,19 +63,7 @@ constructor(
     Timber.i(
       "Starting FhirCompleteCarePlanWorker with from : $lastOffset and batch-size : $batchSize ++++++"
     )
-    val carePlans =
-      fhirEngine.search<CarePlan> {
-        filter(
-          CarePlan.STATUS,
-          { value = of(CarePlan.CarePlanStatus.DRAFT.toCode()) },
-          { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) },
-          { value = of(CarePlan.CarePlanStatus.ONHOLD.toCode()) },
-          { value = of(CarePlan.CarePlanStatus.ENTEREDINERROR.toCode()) },
-          { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) }
-        )
-        count = batchSize
-        from = if (lastOffset > 0) lastOffset + 1 else 0
-      }
+    val carePlans = getCarePlans(batchSize = batchSize, lastOffset = lastOffset)
 
     carePlans.forEach carePlanLoop@{ carePlan ->
       carePlan
@@ -101,6 +90,20 @@ constructor(
     )
     return Result.success()
   }
+
+  suspend fun getCarePlans(batchSize: Int, lastOffset: Int) =
+    fhirEngine.search<CarePlan> {
+      filter(
+        CarePlan.STATUS,
+        { value = of(CarePlan.CarePlanStatus.DRAFT.toCode()) },
+        { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) },
+        { value = of(CarePlan.CarePlanStatus.ONHOLD.toCode()) },
+        { value = of(CarePlan.CarePlanStatus.ENTEREDINERROR.toCode()) },
+        { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) }
+      )
+      count = batchSize
+      from = if (lastOffset > 0) lastOffset + 1 else 0
+    }
 
   companion object {
     const val WORK_ID = "FhirCompleteCarePlanWorker"
