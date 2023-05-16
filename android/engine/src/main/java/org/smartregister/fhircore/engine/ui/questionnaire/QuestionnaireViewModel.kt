@@ -512,8 +512,7 @@ constructor(
           resource.entry.forEach { entry ->
             if (entry.resource is Observation) {
               val code = (entry.resource as Observation).code.coding.first().code.toString()
-              //              if (code.contains(questionnaireLogicalId))
-              obs4Questionnaire.addEntry(entry)
+              if (code.contains(questionnaireLogicalId)) obs4Questionnaire.addEntry(entry)
             }
           }
         }

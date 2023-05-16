@@ -623,7 +623,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     runBlocking {
       val resourceList =
         questionnaireViewModel.getPopulationResources(intent, questionnaire.logicalId)
-      Assert.assertEquals(3, resourceList.size)
+      Assert.assertEquals(4, resourceList.size)
     }
   }
 
