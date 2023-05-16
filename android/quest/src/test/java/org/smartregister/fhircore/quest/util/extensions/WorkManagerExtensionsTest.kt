@@ -33,7 +33,6 @@ package org.smartregister.fhircore.quest.util.extensions
  */
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ListenableWorker
@@ -62,7 +61,6 @@ class WorkManagerExtensionsTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @Inject lateinit var fhirEngine: FhirEngine
   private lateinit var fhirTaskPlanWorker: FhirTaskPlanWorker
-  @Inject lateinit var sharedPreferences: SharedPreferences
   private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
