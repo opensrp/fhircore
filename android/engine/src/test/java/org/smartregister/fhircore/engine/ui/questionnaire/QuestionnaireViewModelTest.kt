@@ -1131,4 +1131,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     Assert.assertNotNull(response.contained.firstOrNull { it.resourceType == ResourceType.Patient })
   }
+
+  @Test
+  fun `test extractRelevantObservation`() = runTest {
+    val questionnaire = Questionnaire()
+    val bundle = Bundle()
+    val response =
+      questionnaireViewModel.extractRelevantObservation(bundle, questionnaire.logicalId)
+    Assert.assertArrayEquals(bundle.entry.toTypedArray(), response.entry.toTypedArray())
+    Assert.assertTrue(response.entry.isEmpty())
+  }
 }

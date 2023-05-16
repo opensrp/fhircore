@@ -496,6 +496,20 @@ constructor(
     viewModelScope.launch { defaultRepository.save(resource = resource) }
   }
 
+  fun extractRelevantObservation(
+    resource: Bundle,
+    questionnaireLogicalId: String,
+  ): Bundle {
+    val bundle = Bundle()
+    resource.entry.forEach { entry ->
+      if (entry.resource is Observation) {
+        val code = (entry.resource as Observation).code.coding.first().code.toString()
+        if (code.contains(questionnaireLogicalId)) bundle.addEntry(entry)
+      }
+    }
+    return bundle
+  }
+
   open suspend fun getPopulationResources(
     intent: Intent,
     questionnaireLogicalId: String
@@ -503,21 +517,16 @@ constructor(
     val resourcesList = mutableListOf<Resource>()
 
     intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
-      val obs4Questionnaire = Bundle()
+      var bundle = Bundle()
       forEach {
         val resource = jsonParser.parseResource(it) as Resource
         if (resource !is Bundle) {
           resourcesList.add(jsonParser.parseResource(it) as Resource)
         } else {
-          resource.entry.forEach { entry ->
-            if (entry.resource is Observation) {
-              val code = (entry.resource as Observation).code.coding.first().code.toString()
-              if (code.contains(questionnaireLogicalId)) obs4Questionnaire.addEntry(entry)
-            }
-          }
+          bundle = extractRelevantObservation(resource, questionnaireLogicalId)
         }
       }
-      resourcesList.add(obs4Questionnaire)
+      resourcesList.add(bundle)
     }
 
     intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let { patientId ->
