@@ -25,14 +25,17 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import io.mockk.verifyOrder
+import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -44,6 +47,7 @@ class PinViewModelTest : RobolectricTest() {
   private var secureSharedPreference: SecureSharedPreference = mockk(relaxUnitFun = true)
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var pinViewModel: PinViewModel
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Before
   fun setUp() {
@@ -53,17 +57,18 @@ class PinViewModelTest : RobolectricTest() {
         secureSharedPreference = secureSharedPreference,
         sharedPreferences = sharedPreferenceHelper,
         configurationRegistry = configurationRegistry,
+        dispatcherProvider = dispatcherProvider
       )
   }
 
   @Test
   fun testSetPinUiState() {
     val context = ApplicationProvider.getApplicationContext<Application>()
-    every { secureSharedPreference.retrieveSessionPin() } returns "1245"
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     pinViewModel.setPinUiState(true, context)
     val pinUiState = pinViewModel.pinUiState.value
-    Assert.assertEquals("1245", pinUiState.currentUserPin)
+    Assert.assertEquals(context.getString(R.string.set_pin_message), pinUiState.message)
+    Assert.assertEquals(true, pinUiState.setupPin)
     Assert.assertTrue(pinUiState.setupPin)
   }
 
@@ -96,19 +101,16 @@ class PinViewModelTest : RobolectricTest() {
     pinViewModel.onPinVerified(true)
 
     Assert.assertEquals(true, pinViewModel.navigateToHome.value)
-
-    pinViewModel.onPinVerified(false)
-    Assert.assertEquals(true, pinViewModel.showError.value)
   }
 
   @Test
   fun testOnSetPin() {
-    pinViewModel.onSetPin("1990")
+    pinViewModel.onSetPin("1990".toCharArray())
 
-    val newPinSlot = slot<String>()
+    val newPinSlot = slot<CharArray>()
     verify { secureSharedPreference.saveSessionPin(capture(newPinSlot)) }
 
-    Assert.assertEquals("1990", newPinSlot.captured)
+    Assert.assertEquals("1990", newPinSlot.captured.concatToString())
     Assert.assertEquals(true, pinViewModel.navigateToHome.value)
   }
 
