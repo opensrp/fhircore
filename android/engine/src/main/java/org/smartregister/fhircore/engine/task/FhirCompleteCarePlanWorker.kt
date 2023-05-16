@@ -35,7 +35,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.getLastOffset
-import timber.log.Timber
 
 @HiltWorker
 class FhirCompleteCarePlanWorker
@@ -60,9 +59,7 @@ constructor(
           defaultValue = "0"
         )!!
         .toInt()
-    Timber.i(
-      "Starting FhirCompleteCarePlanWorker with from : $lastOffset and batch-size : $batchSize ++++++"
-    )
+
     val carePlans = getCarePlans(batchSize = batchSize, lastOffset = lastOffset)
 
     carePlans.forEach carePlanLoop@{ carePlan ->
@@ -80,7 +77,7 @@ constructor(
       carePlan.status = CarePlan.CarePlanStatus.COMPLETED
       fhirEngine.update(carePlan)
     }
-    Timber.i("Finishing FhirCompleteCarePlanWorker with careplan count : ${carePlans.size} ++++++")
+
     val updatedLastOffset =
       getLastOffset(items = carePlans, lastOffset = lastOffset, batchSize = batchSize)
 

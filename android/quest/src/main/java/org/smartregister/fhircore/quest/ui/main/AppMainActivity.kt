@@ -133,8 +133,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     appMainViewModel.viewModelScope.launch(dispatcherProvider.io()) {
       fhirEngine.addDateTimeIndex()
     }
-    Timber.e("Calling Appmainactivity onresume ++++")
-    appMainViewModel.scheduleImmediateJobs()
   }
 
   override fun onSubmitQuestionnaire(activityResult: ActivityResult) {

@@ -44,12 +44,16 @@ import androidx.work.testing.TestListenableWorkerBuilder
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.mockk
 import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -59,6 +63,8 @@ class WorkManagerExtensionsTest : RobolectricTest() {
   @Inject lateinit var fhirEngine: FhirEngine
   private lateinit var fhirTaskPlanWorker: FhirTaskPlanWorker
   @Inject lateinit var sharedPreferences: SharedPreferences
+  private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Before
   fun setup() {
@@ -89,7 +95,13 @@ class WorkManagerExtensionsTest : RobolectricTest() {
       workerClassName: String,
       workerParameters: WorkerParameters
     ): ListenableWorker {
-      return FhirTaskPlanWorker(appContext, workerParameters, fhirEngine)
+      return FhirTaskPlanWorker(
+        appContext,
+        workerParameters,
+        fhirEngine,
+        sharedPreferencesHelper,
+        configurationRegistry
+      )
     }
   }
 }

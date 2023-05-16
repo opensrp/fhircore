@@ -25,7 +25,6 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,6 +34,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
+import kotlin.time.Duration
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -55,6 +55,8 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
+import org.smartregister.fhircore.engine.task.FhirTaskExpireWorker
+import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -68,13 +70,14 @@ import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
+import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
-import timber.log.Timber
+import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
 
 @HiltViewModel
 class AppMainViewModel
@@ -286,39 +289,32 @@ constructor(
     )
   }
 
-  fun scheduleImmediateJobs() {
-    Timber.e("Calling AppmainViewmodel workManager.enqueue ++++")
-    workManager.enqueue(OneTimeWorkRequestBuilder<FhirCompleteCarePlanWorker>().build())
-  }
-
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
     // Schedule job that updates the status of the tasks periodically
-    /*    workManager.run {
-    schedulePeriodically<FhirTaskPlanWorker>(
-      workId = FhirTaskPlanWorker.WORK_ID,
-      requiresNetwork = false
-    )
+    workManager.run {
+      schedulePeriodically<FhirTaskPlanWorker>(
+        workId = FhirTaskPlanWorker.WORK_ID,
+        requiresNetwork = false
+      )
 
-    schedulePeriodically<FhirTaskExpireWorker>(
-      workId = FhirTaskExpireWorker.WORK_ID,
-      duration = Duration.tryParse(applicationConfiguration.taskExpireJobDuration),
-      requiresNetwork = false
-    )
+      schedulePeriodically<FhirTaskExpireWorker>(
+        workId = FhirTaskExpireWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskExpireJobDuration),
+        requiresNetwork = false
+      )
 
-    schedulePeriodically<FhirCompleteCarePlanWorker>(
-      workId = FhirCompleteCarePlanWorker.WORK_ID,
-      duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
-      requiresNetwork = false
-    )
+      schedulePeriodically<FhirCompleteCarePlanWorker>(
+        workId = FhirCompleteCarePlanWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
+        requiresNetwork = false
+      )
 
-    // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
-    */
-    /* // Schedule job for generating measure report in the background
-     MeasureReportWorker.scheduleMeasureReportWorker(workManager)
-    */
-    /*
-    }*/
+      // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
+      /* // Schedule job for generating measure report in the background
+       MeasureReportWorker.scheduleMeasureReportWorker(workManager)
+      */
+    }
   }
 
   suspend fun onQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {

@@ -67,9 +67,7 @@ constructor(
           defaultValue = "0"
         )!!
         .toInt()
-    Timber.i(
-      "Starting FhirTaskPlanWorker with from : $lastOffset and batch-size : $batchSize ++++++"
-    )
+
     Timber.e("Done task scheduling")
     val tasks =
       fhirEngine.search<Task> {
@@ -108,14 +106,12 @@ constructor(
     }
 
     Timber.i("Done task scheduling")
-    Timber.i("Finishing FhirTaskPlanWorker with task count : ${tasks.size} ++++++")
     val updatedLastOffset =
       getLastOffset(items = tasks, lastOffset = lastOffset, batchSize = batchSize)
     sharedPreferencesHelper.write(
       key = SharedPreferenceKey.FHIR_TASK_PLAN_WORKER_LAST_OFFSET.name,
       updatedLastOffset.toString()
     )
-    Timber.i("Finishing FhirTaskPlanWorker with lastOffset : $updatedLastOffset ++++++")
     return Result.success()
   }
 
