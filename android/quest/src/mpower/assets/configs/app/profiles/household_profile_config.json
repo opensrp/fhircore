@@ -636,6 +636,32 @@
           }
         }
       ]
+    },
+    {
+      "title": "Change family head",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "CHANGE_MANAGING_ENTITY",
+          "managingEntity": {
+            "nameFhirPathExpression": "Patient.name.given + ' ' + Patient.name.family | Patient.name.given",
+            "resourceType": "Patient",
+            "eligibilityCriteriaFhirPathExpression": "Patient.active and (Patient.birthDate <= today() - 5 'years')",
+            "dialogTitle": "{{ assign.household.head.title }}",
+            "dialogWarningMessage": "{{ assign.household.head.warning }}",
+            "dialogContentMessage": "{{ select.new.household.head }}",
+            "noMembersErrorMessage": "{{ no.members.error.message }}",
+            "managingEntityReassignedMessage": "Household head reassigned successfully",
+            "relationshipCode": {
+              "system": "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype",
+              "code": "99990006",
+              "display": "Family Head"
+            }
+          }
+        }
+      ]
     }
   ]
 }
