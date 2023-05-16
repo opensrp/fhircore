@@ -25,6 +25,8 @@ import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.ResourceSyncException
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJobStatus
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.perf.ktx.performance
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -59,7 +61,7 @@ constructor(
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider(),
   @ApplicationContext val appContext: Context
 ) {
-
+  val syncTrace = Firebase.performance.newTrace("sync")
   /**
    * Workaround to ensure terminal SyncJobStatus, i.e SyncJobStatus.Failed and
    * SyncJobStatus.Finished, get emitted
@@ -89,7 +91,14 @@ constructor(
       networkState(appContext).apply {
         if (this) {
           Sync.oneTimeSync<AppSyncWorker>(appContext)
-          getWorkerInfo<AppSyncWorker>().collect { sharedSyncStatus.emit(it) }
+          getWorkerInfo<AppSyncWorker>().collect {
+            if (it is SyncJobStatus.Started) {
+              syncTrace.start()
+            } else if(it !is SyncJobStatus.InProgress) {
+              syncTrace.stop()
+            }
+            sharedSyncStatus.emit(it)
+          }
         } else {
           val message = appContext.getString(R.string.unable_to_sync)
           val resourceSyncException =
