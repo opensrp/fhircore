@@ -27,6 +27,8 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.logicalId
+import com.google.firebase.perf.FirebasePerformance
+import com.google.firebase.perf.metrics.AddTrace
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
 import java.util.Date
@@ -77,6 +79,7 @@ import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import org.smartregister.fhircore.engine.util.trace
 import timber.log.Timber
 
 @HiltViewModel
@@ -250,6 +253,7 @@ constructor(
     questionnaire: Questionnaire
   ) {
     viewModelScope.launch(dispatcherProvider.io()) {
+      val trace = FirebasePerformance.startTrace("Questionnaire-extractAndSaveResources")
       // important to set response subject so that structure map can handle subject for all entities
       handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
       val extras = mutableListOf<Resource>()
@@ -334,7 +338,7 @@ constructor(
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
         extractCqlOutput(questionnaire, questionnaireResponse, null)
       }
-
+trace.stop()
       viewModelScope.launch(Dispatchers.Main) {
         extractionProgress.postValue(ExtractionProgress.Success(extras))
       }
