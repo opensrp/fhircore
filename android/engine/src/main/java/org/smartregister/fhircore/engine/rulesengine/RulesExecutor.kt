@@ -29,7 +29,6 @@ import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.ListResource
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
-import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -76,9 +75,9 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
       filteredListResources(relatedResourcesMap, listResource)
         .mapToResourceData(
+          listResource = listResource,
           relatedResourcesMap = relatedResourcesMap,
           ruleConfigs = listProperties.registerCard.rules,
-          listRelatedResources = listResource.relatedResources,
           computedValuesMap = computedValuesMap,
           resourceDataSnapshotStateList = resourceDataSnapshotStateList
         )
@@ -102,15 +101,15 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
   }
 
   private suspend fun List<Resource>.mapToResourceData(
+    listResource: ListResource,
     relatedResourcesMap: Map<String, List<Resource>>,
     ruleConfigs: List<RuleConfig>,
-    listRelatedResources: List<ExtractedResource>,
     computedValuesMap: Map<String, Any>,
-    resourceDataSnapshotStateList: SnapshotStateList<ResourceData>
+    resourceDataSnapshotStateList: SnapshotStateList<ResourceData>,
   ) {
     this.forEach { resource ->
       val listItemRelatedResources: Map<String, List<Resource>> =
-        listRelatedResources.associate { (id, resourceType, fhirPathExpression) ->
+        listResource.relatedResources.associate { (id, resourceType, fhirPathExpression) ->
           (id
             ?: resourceType.name) to
             rulesFactory.rulesEngineService.retrieveRelatedResources(
