@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Member icons display wrapping; hiding some texts
 - Member icons count on register not tallying with retrieved resources on profile
 - Issue with loading related resources
+- Fix P2P sync progress showing greater than 100%
 
 ### Changed
 - Refactored how the related resources SELECT and COUNT queries search results are represented. 
