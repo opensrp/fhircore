@@ -21,7 +21,6 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.get
 import com.google.android.fhir.search.search
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -51,7 +50,7 @@ constructor(
 
     val appRegistry =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
-    val batchSize = appRegistry.taskBgWorkerBatchSize.div(BATCH_SIZE_FACTOR)
+    val batchSize = appRegistry.taskBackgroundWorkerBatchSize.div(BATCH_SIZE_FACTOR)
 
     val lastOffset =
       sharedPreferencesHelper.read(

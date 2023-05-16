@@ -37,5 +37,5 @@ data class ApplicationConfiguration(
   val taskExpireJobDuration: String = "PT01H",
   val taskCompleteCarePlanJobDuration: String = "PT01H",
   val showLogo: Boolean = true,
-  val taskBgWorkerBatchSize: Int = 1000
+  val taskBackgroundWorkerBatchSize: Int = 1000
 ) : Configuration()

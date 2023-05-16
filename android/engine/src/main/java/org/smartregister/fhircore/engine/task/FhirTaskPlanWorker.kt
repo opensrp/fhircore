@@ -60,7 +60,7 @@ constructor(
 
     val appRegistry =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
-    val batchSize = appRegistry.taskBgWorkerBatchSize
+    val batchSize = appRegistry.taskBackgroundWorkerBatchSize
     val lastOffset =
       sharedPreferencesHelper.read(
           key = SharedPreferenceKey.FHIR_TASK_PLAN_WORKER_LAST_OFFSET.name,
