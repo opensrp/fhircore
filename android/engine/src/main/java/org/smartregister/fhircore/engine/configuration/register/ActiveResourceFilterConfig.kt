@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.event
+package org.smartregister.fhircore.engine.configuration.register
 
-import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.ResourceType
 
-sealed class AppEvent {
-  data class RefreshCache(val questionnaireConfig: QuestionnaireConfig) : AppEvent()
-  data class OnSubmitQuestionnaire(val questionnaireSubmission: QuestionnaireSubmission) :
-    AppEvent()
-}
+@Serializable
+@Parcelize
+data class ActiveResourceFilterConfig(val resourceType: ResourceType, val active: Boolean) :
+  Parcelable

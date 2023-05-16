@@ -34,7 +34,9 @@ interface QuestionnaireHandler {
     context: Context,
     intentBundle: Bundle = bundleOf(),
     questionnaireConfig: QuestionnaireConfig? = null,
-    actionParams: List<ActionParameter> = emptyList()
+    actionParams: List<ActionParameter> = emptyList(),
+    baseResourceId: String? = null,
+    baseResourceType: String? = null
   ) {
     if (questionnaireConfig != null)
       startForResult.launch(
@@ -42,7 +44,9 @@ interface QuestionnaireHandler {
           .putExtras(
             QuestionnaireActivity.intentArgs(
               questionnaireConfig = questionnaireConfig,
-              actionParams = actionParams
+              actionParams = actionParams,
+              baseResourceId = baseResourceId,
+              baseResourceType = baseResourceType
             )
           )
           .putExtras(intentBundle)

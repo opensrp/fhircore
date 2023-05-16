@@ -41,6 +41,9 @@ import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import junit.framework.Assert.assertEquals
+import junit.framework.Assert.assertNotNull
+import junit.framework.Assert.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -75,9 +78,6 @@ import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.junit.Assert
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -1062,7 +1062,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinition,
         patient,
-        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
+          )
       )!!
       .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
@@ -1144,9 +1148,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       runBlocking {
     val planDefinitionResources =
       loadPlanDefinitionResources("child-immunization-schedule", listOf("register-temp"))
+    val questionnaireResponses = planDefinitionResources.questionnaireResponses
     val planDefinition = planDefinitionResources.planDefinition
     val patient = planDefinitionResources.patient
-    val data = Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+    val data =
+      Bundle()
+        .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+        .addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() })
 
     val dynamicValue = planDefinition.action.first().dynamicValue
     val expressionValue = dynamicValue.find { it.expression.expression == "%rootResource.title" }
@@ -1175,7 +1183,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinition,
         patient,
-        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
+          )
       )!!
       .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
@@ -1273,6 +1285,73 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       }
   }
 
+  @Test
+  @ExperimentalCoroutinesApi
+  fun `Generate CarePlan should generate child immunization schedule with pre-req def and expiry timing`() =
+      runTest {
+    val planDefinitionResources =
+      loadPlanDefinitionResources("child-immunization-schedule", listOf("register-temp"))
+    val planDefinition = planDefinitionResources.planDefinition
+    val patient = planDefinitionResources.patient
+    val questionnaireResponses = planDefinitionResources.questionnaireResponses
+    val resourcesSlot = planDefinitionResources.resourcesSlot
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        planDefinition,
+        patient,
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
+          )
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also { carePlan ->
+        assertCarePlan(
+          carePlan,
+          planDefinition,
+          patient,
+          patient.birthDate,
+          patient.birthDate.plusDays(4017),
+          20
+        )
+
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map {
+            println(it.encodeResourceToString())
+            it as Task
+          }
+          .also { tasks ->
+            assertTrue(tasks.all { it.input.firstOrNull()?.value.valueToString() == "28" })
+            assertTrue(
+              tasks.all {
+                it.input.firstOrNull()?.type?.coding!![0].display == "Dependent (qualifier value)"
+              }
+            )
+            assertTrue(tasks.all { it.input.firstOrNull()?.type?.coding!![0].code == "371154000" })
+
+            assertTrue(
+              tasks.all {
+                it.restriction.period.start.asYyyyMmDd() == patient.birthDate.asYyyyMmDd()
+              }
+            )
+            val opv2 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "OPV 2" }
+            val opv1 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "OPV 1" }
+            val pcv3 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "PCV 3" }
+            val pcv2 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "PCV 2" }
+            val bcg = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "BCG " }
+
+            assertTrue(opv2?.partOf?.firstOrNull()?.reference.toString() == opv1?.id)
+            assertTrue(pcv3?.partOf?.firstOrNull()?.reference.toString() == pcv2?.id)
+            assertTrue(bcg?.partOf?.isEmpty() == true)
+            val c = Calendar.getInstance()
+            c.time = opv1?.restriction?.period?.start!!
+            c.add(Calendar.YEAR, 5)
+            c.add(Calendar.DATE, -1)
+            assertTrue(opv1.restriction?.period?.end == c.time)
+          }
+      }
+  }
   @Test
   @ExperimentalCoroutinesApi
   fun `Generate CarePlan should generate disease followup schedule`() = runTest {
@@ -1377,12 +1456,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         id = "patient-1"
         active = true
       }
+    val bundle = Bundle().apply { addEntry().resource = patient }
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
     runBlocking {
       fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
         questionnaireConfig = questionnaireConfig,
-        subject = patient
+        subject = patient,
+        bundle = bundle
       )
     }
 
@@ -1391,7 +1472,96 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
-  fun testConditionallyUpdateCarePlanStatusRevokesCarePlanWhenCarePlanStatusIsClosed() {
+  fun testConditionallyUpdateCarePlanStatusRevokesCarePlanWhenCarePlanStatusIsActive() {
+    val planDefinitions = listOf("plandef-1")
+    val carePlanConfig =
+      CarePlanConfig(
+        fhirPathExpression =
+          "Patient.active and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/450cb100-0c5b-47c6-9f33-2830a79be726').exists()"
+      )
+    val questionnaireConfig: QuestionnaireConfig =
+      QuestionnaireConfig(
+        id = "id-1",
+        planDefinitions = planDefinitions,
+        carePlanConfigs = listOf(carePlanConfig)
+      )
+    val patient =
+      Patient().apply {
+        id = "patient-1"
+        active = true
+      }
+    val carePlan =
+      CarePlan().apply {
+        id = "careplan-1"
+        status = CarePlan.CarePlanStatus.ACTIVE
+      }
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        questionnaire = "Questionnaire/450cb100-0c5b-47c6-9f33-2830a79be726"
+      }
+    val bundle =
+      Bundle().apply {
+        /* addEntry().resource = patient
+        addEntry().resource = questionnaireResponse*/
+        entry =
+          listOf(
+            Bundle.BundleEntryComponent().apply { resource = patient },
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponse }
+          )
+      }
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
+    coEvery { fhirEngine.update(any()) } just runs
+
+    runBlocking {
+      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
+        questionnaireConfig = questionnaireConfig,
+        subject = patient,
+        bundle = bundle
+      )
+    }
+
+    val carePlanSlot = slot<CarePlan>()
+    coVerify { fhirEngine.update(capture(carePlanSlot)) }
+    assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
+  }
+
+  @Test
+  fun testConditionallyUpdateCarePlanStatusDoesNotUpdateCarePlanWhenFhirPathResourceExpressionFails() {
+    val planDefinitions = listOf("plandef-1")
+    val carePlanConfig = CarePlanConfig(fhirPathExpression = "Patient.active")
+    val questionnaireConfig: QuestionnaireConfig =
+      QuestionnaireConfig(
+        id = "id-1",
+        planDefinitions = planDefinitions,
+        carePlanConfigs = listOf(carePlanConfig)
+      )
+    val patient =
+      Patient().apply {
+        id = "patient-1"
+        active = false
+      }
+    val carePlan =
+      CarePlan().apply {
+        id = "careplan-1"
+        status = CarePlan.CarePlanStatus.ACTIVE
+      }
+    val bundle = Bundle().apply { addEntry().resource = patient }
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
+    coEvery { fhirEngine.update(any()) } just runs
+
+    runBlocking {
+      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
+        questionnaireConfig = questionnaireConfig,
+        subject = patient,
+        bundle = bundle
+      )
+    }
+
+    coVerify(exactly = 0) { fhirEngine.update(any()) }
+  }
+
+  @Test
+  fun testConditionallyUpdateCarePlanStatusCancelsTasks() {
     val planDefinitions = listOf("plandef-1")
     val carePlanConfig = CarePlanConfig(fhirPathExpression = "Patient.active")
     val questionnaireConfig: QuestionnaireConfig =
@@ -1409,129 +1579,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       CarePlan().apply {
         id = "careplan-1"
         status = CarePlan.CarePlanStatus.ACTIVE
-      }
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
-    coEvery { fhirEngine.update(any()) } just runs
-
-    runBlocking {
-      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
-        questionnaireConfig = questionnaireConfig,
-        subject = patient
-      )
-    }
-
-    val carePlanSlot = slot<CarePlan>()
-    coVerify { fhirEngine.update(capture(carePlanSlot)) }
-    assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
-  }
-
-  @Test
-  fun testConditionallyUpdateCarePlanStatusFetchesResourceUsingFhirPathResourceId() {
-    val planDefinitions = listOf("plandef-1")
-    val carePlanConfig =
-      CarePlanConfig(
-        fhirPathExpression = "Group.active",
-        fhirPathResource = "Group",
-        fhirPathResourceId = "4595a221-7ad3-4219-97f0-1920a02f8882"
-      )
-    val questionnaireConfig: QuestionnaireConfig =
-      QuestionnaireConfig(
-        id = "id-1",
-        planDefinitions = planDefinitions,
-        carePlanConfigs = listOf(carePlanConfig)
-      )
-    val patient =
-      Patient().apply {
-        id = "patient-1"
-        active = true
-      }
-    val carePlan =
-      CarePlan().apply {
-        id = "careplan-1"
-        status = CarePlan.CarePlanStatus.ACTIVE
-      }
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
-    coEvery { fhirEngine.get(any(), any()) } returns Group().apply { active = true }
-    coEvery { fhirEngine.update(any()) } just runs
-
-    runBlocking {
-      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
-        questionnaireConfig = questionnaireConfig,
-        subject = patient
-      )
-    }
-
-    coVerify { fhirEngine.get(ResourceType.Group, carePlanConfig.fhirPathResourceId!!) }
-
-    val carePlanSlot = slot<CarePlan>()
-    coVerify { fhirEngine.update(capture(carePlanSlot)) }
-    assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
-  }
-
-  @Test
-  fun testConditionallyUpdateCarePlanStatusDoesNotUpdateCarePlanWhenFhirPathResourceExpressionFails() {
-    val planDefinitions = listOf("plandef-1")
-    val carePlanConfig =
-      CarePlanConfig(
-        fhirPathExpression = "Group.active",
-        fhirPathResource = "Group",
-        fhirPathResourceId = "4595a221-7ad3-4219-97f0-1920a02f8882"
-      )
-    val questionnaireConfig: QuestionnaireConfig =
-      QuestionnaireConfig(
-        id = "id-1",
-        planDefinitions = planDefinitions,
-        carePlanConfigs = listOf(carePlanConfig)
-      )
-    val patient =
-      Patient().apply {
-        id = "patient-1"
-        active = true
-      }
-    val carePlan =
-      CarePlan().apply {
-        id = "careplan-1"
-        status = CarePlan.CarePlanStatus.ACTIVE
-      }
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
-    coEvery { fhirEngine.get(any(), any()) } returns Group().apply { active = false }
-    coEvery { fhirEngine.update(any()) } just runs
-
-    runBlocking {
-      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
-        questionnaireConfig = questionnaireConfig,
-        subject = patient
-      )
-    }
-
-    coVerify { fhirEngine.get(ResourceType.Group, carePlanConfig.fhirPathResourceId!!) }
-    coVerify(exactly = 0) { fhirEngine.update(any()) }
-  }
-
-  @Test
-  fun testConditionallyUpdateCarePlanStatusCancelsTasks() {
-    val planDefinitions = listOf("plandef-1")
-    val carePlanConfig =
-      CarePlanConfig(
-        fhirPathExpression = "Group.active",
-        fhirPathResource = "Group",
-        fhirPathResourceId = "4595a221-7ad3-4219-97f0-1920a02f8882"
-      )
-    val questionnaireConfig: QuestionnaireConfig =
-      QuestionnaireConfig(
-        id = "id-1",
-        planDefinitions = planDefinitions,
-        carePlanConfigs = listOf(carePlanConfig)
-      )
-    val patient =
-      Patient().apply {
-        id = "patient-1"
-        active = true
-      }
-    val carePlan =
-      CarePlan().apply {
-        id = "careplan-1"
-        status = CarePlan.CarePlanStatus.ACTIVE
         activity =
           listOf(
             CarePlanActivityComponent().apply {
@@ -1539,6 +1586,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             }
           )
       }
+    val bundle = Bundle().apply { addEntry().resource = patient }
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
     coEvery { fhirEngine.get(any(), any()) } returns Group().apply { active = true }
     coEvery { fhirEngine.update(any()) } just runs
@@ -1553,11 +1601,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     runBlocking {
       fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
         questionnaireConfig = questionnaireConfig,
-        subject = patient
+        subject = patient,
+        bundle = bundle
       )
     }
-
-    coVerify { fhirEngine.get(ResourceType.Group, carePlanConfig.fhirPathResourceId!!) }
 
     val carePlanSlot = slot<CarePlan>()
     coVerify { fhirEngine.update(capture(carePlanSlot)) }
@@ -1572,12 +1619,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testConditionallyUpdateCarePlanStatusDoesNotCancelTasksWhenStatusIsCompleted() {
     val planDefinitions = listOf("plandef-1")
-    val carePlanConfig =
-      CarePlanConfig(
-        fhirPathExpression = "Group.active",
-        fhirPathResource = "Group",
-        fhirPathResourceId = "4595a221-7ad3-4219-97f0-1920a02f8882"
-      )
+    val carePlanConfig = CarePlanConfig(fhirPathExpression = "Patient.active")
     val questionnaireConfig: QuestionnaireConfig =
       QuestionnaireConfig(
         id = "id-1",
@@ -1600,8 +1642,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             }
           )
       }
+    val bundle = Bundle().apply { addEntry().resource = patient }
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
-    coEvery { fhirEngine.get(any(), any()) } returns Group().apply { active = true }
     coEvery { fhirEngine.update(any()) } just runs
     val task =
       Task().apply {
@@ -1614,11 +1656,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     runBlocking {
       fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
         questionnaireConfig = questionnaireConfig,
-        subject = patient
+        subject = patient,
+        bundle = bundle
       )
     }
-
-    coVerify { fhirEngine.get(ResourceType.Group, carePlanConfig.fhirPathResourceId!!) }
 
     val carePlanSlot = slot<CarePlan>()
     coVerify { fhirEngine.update(capture(carePlanSlot)) }

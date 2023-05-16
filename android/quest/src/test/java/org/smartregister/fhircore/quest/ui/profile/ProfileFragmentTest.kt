@@ -26,23 +26,32 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.spyk
+import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
+import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 
 @OptIn(ExperimentalMaterialApi::class)
 @HiltAndroidTest
@@ -54,6 +63,18 @@ class ProfileFragmentTest : RobolectricTest() {
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @BindValue val registerRepository: RegisterRepository = mockk(relaxUnitFun = true, relaxed = true)
+
+  @BindValue
+  val profileViewModel =
+    spyk(
+      ProfileViewModel(
+        mockk(),
+        configurationRegistry = configurationRegistry,
+        mockk(),
+        mockk(),
+        mockk()
+      )
+    )
 
   private val activityController = Robolectric.buildActivity(AppMainActivity::class.java)
 
@@ -95,19 +116,45 @@ class ProfileFragmentTest : RobolectricTest() {
 
     // Simulate the returned value of loadProfile
     coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns
-      RepositoryResourceData(
-        queryResult = RepositoryResourceData.QueryResult.Search(resource = Faker.buildPatient())
-      )
-  }
-
-  @Test
-  fun testProfileFragmentCreation() {
+      RepositoryResourceData(resource = Faker.buildPatient())
     Navigation.setViewNavController(mainActivity.navHostFragment.requireView(), navController)
     mainActivity.supportFragmentManager.run {
       commitNow { add(profileFragment, ProfileFragment::class.java.simpleName) }
       executePendingTransactions()
     }
+  }
+
+  @Test
+  fun testProfileFragmentCreation() {
     Assert.assertTrue(profileFragment.view is ComposeView)
     activityController.destroy()
+  }
+
+  @Test
+  fun testHandleQuestionnaireSubmissionCallsProfileViewModelRetrieveProfileUiStateAndEmitSnackBarState() {
+    val snackBarMessageConfig = SnackBarMessageConfig(message = "Family member added")
+    val questionnaireConfig =
+      QuestionnaireConfig(id = "add-member", snackBarMessage = snackBarMessageConfig)
+    val questionnaireResponse = QuestionnaireResponse().apply { id = "1234" }
+    val questionnaireSubmission =
+      QuestionnaireSubmission(
+        questionnaireConfig = questionnaireConfig,
+        questionnaireResponse = questionnaireResponse
+      )
+
+    coEvery { profileViewModel.retrieveProfileUiState(any(), any(), any(), any()) } just runs
+    coEvery { profileViewModel.emitSnackBarState(any()) } just runs
+
+    runBlocking { profileFragment.handleQuestionnaireSubmission(questionnaireSubmission) }
+
+    coVerify {
+      profileViewModel.retrieveProfileUiState(
+        profileId = "defaultProfile",
+        resourceId = "sampleId",
+        any(),
+        any()
+      )
+    }
+    coVerify { profileViewModel.emitSnackBarState(snackBarMessageConfig) }
   }
 }

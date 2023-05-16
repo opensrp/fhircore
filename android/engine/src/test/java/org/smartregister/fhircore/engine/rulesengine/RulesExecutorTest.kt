@@ -74,8 +74,7 @@ class RulesExecutorTest : RobolectricTest() {
   fun processResourceData() {
     val patientId = "patient id"
     val baseResource = Faker.buildPatient(id = patientId)
-    val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
-      LinkedList<RepositoryResourceData>()
+    val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
     val ruleConfig =
       RuleConfig(
         name = "patientName",
@@ -87,10 +86,14 @@ class RulesExecutorTest : RobolectricTest() {
     runBlocking(Dispatchers.Default) {
       val resourceData =
         rulesExecutor.processResourceData(
-          baseResource,
-          relatedRepositoryResourceData,
-          ruleConfigs,
-          emptyMap()
+          repositoryResourceData =
+            RepositoryResourceData(
+              resourceRulesEngineFactId = null,
+              resource = baseResource,
+              relatedResourcesMap = relatedRepositoryResourceData
+            ),
+          ruleConfigs = ruleConfigs,
+          params = emptyMap()
         )
 
       Assert.assertEquals(patientId, resourceData.baseResourceId)
@@ -105,16 +108,15 @@ class RulesExecutorTest : RobolectricTest() {
     val registerCard = RegisterCardConfig()
     val viewType = ViewType.CARD
     val listProperties = ListProperties(registerCard = registerCard, viewType = viewType)
-    val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
-      LinkedList<RepositoryResourceData>()
+    val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
 
     runBlocking(Dispatchers.Default) {
       val resourceData =
         rulesExecutor.processListResourceData(
-          listProperties,
-          relatedRepositoryResourceData,
-          computedValuesMap
+          listProperties = listProperties,
+          relatedResourcesMap = relatedRepositoryResourceData,
+          computedValuesMap = computedValuesMap
         )
 
       Assert.assertEquals(0, resourceData.size)
@@ -131,15 +133,11 @@ class RulesExecutorTest : RobolectricTest() {
     val resources = listOf(listResource)
     val listProperties =
       ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
-    val repositoryResourceData =
-      RepositoryResourceData(
-        queryResult = RepositoryResourceData.QueryResult.Search(resource = patient)
-      )
-    val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
-      LinkedList<RepositoryResourceData>()
+    val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
 
-    relatedRepositoryResourceData.add(repositoryResourceData)
+    relatedRepositoryResourceData[ResourceType.Patient.name] =
+      LinkedList<Resource>().apply { add(patient) }
 
     runBlocking(Dispatchers.Default) {
       val resourceData =
@@ -170,15 +168,12 @@ class RulesExecutorTest : RobolectricTest() {
     val resources = listOf(listResource)
     val listProperties =
       ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
-    val repositoryResourceData =
-      RepositoryResourceData(
-        queryResult = RepositoryResourceData.QueryResult.Search(resource = patient)
-      )
-    val relatedRepositoryResourceData: LinkedList<RepositoryResourceData> =
-      LinkedList<RepositoryResourceData>()
+
+    val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
     val computedValuesMap: Map<String, List<Resource>> = emptyMap()
 
-    relatedRepositoryResourceData.add(repositoryResourceData)
+    relatedRepositoryResourceData[ResourceType.Patient.name] =
+      LinkedList<Resource>().apply { add(patient) }
 
     runBlocking(Dispatchers.Default) {
       val resourceData =

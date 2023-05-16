@@ -24,13 +24,6 @@ import kotlinx.serialization.Serializable
  *
  * @param fhirPathExpression: A FHIRPath expression that is evaluated against the
  *   QuestionnaireResponse or resource referenced by [fhirPathResourceId] to return a boolean value.
- * @param fhirPathResource: If set, the type of resource to evaluate against.
- * @param fhirPathResourceId: If set, the id of the resource to evaluate against.
- * @param operation: The operation to perform on the CarePlan and its associated Tasks.
  */
 @Serializable
-data class CarePlanConfig(
-  val fhirPathExpression: String? = null,
-  val fhirPathResource: String? = null,
-  val fhirPathResourceId: String? = null
-) : java.io.Serializable
+data class CarePlanConfig(val fhirPathExpression: String? = null) : java.io.Serializable

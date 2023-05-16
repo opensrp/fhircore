@@ -48,6 +48,7 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StructureMap
+import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.junit.Before
 import org.junit.Rule
@@ -100,6 +101,20 @@ class FhirExtractionTest : RobolectricTest() {
         )
         .also { println(it.encodeResourceToString()) }
     val encounter = result.entry.find { it.resource is Encounter }!!.resource as Encounter
+    result.entry.filter { it.resource is Task }.also { taskList ->
+      assertTrue(taskList.size == 3)
+
+      val firstTask = taskList.first().resource as Task
+      assertTrue(
+        firstTask.output.first().type.coding.first().code ==
+          encounter.type.first().coding.first().code
+      )
+      assertTrue(!firstTask.output.first().value.isEmpty)
+
+      val administrationEncounter =
+        result.entry.filter { it.resource is Encounter }.last().resource as Encounter
+      assertTrue(administrationEncounter.partOf.reference == encounter.id)
+    }
     result.entry.filter { it.resource is Immunization }.map { it.resource as Immunization }.also {
       assertEquals(3, it.size)
       assertTrue(it.all { it.encounter.reference == encounter.referenceValue() })

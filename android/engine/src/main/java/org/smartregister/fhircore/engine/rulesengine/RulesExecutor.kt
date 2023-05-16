@@ -36,21 +36,18 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
   suspend fun processResourceData(
-    baseResource: Resource,
-    relatedRepositoryResourceData: LinkedList<RepositoryResourceData>,
+    repositoryResourceData: RepositoryResourceData,
     ruleConfigs: List<RuleConfig>,
     params: Map<String, String>?
   ): ResourceData {
-    val relatedResourcesMap = relatedRepositoryResourceData.createQueryResultMap()
     val computedValuesMap =
-      computeRules(
+      computeResourceDataRules(
         ruleConfigs = ruleConfigs,
-        baseResource = baseResource,
-        relatedResourcesMap = relatedResourcesMap
+        repositoryResourceData = repositoryResourceData
       )
     return ResourceData(
-      baseResourceId = baseResource.logicalId.extractLogicalIdUuid(),
-      baseResourceType = baseResource.resourceType,
+      baseResourceId = repositoryResourceData.resource.logicalId.extractLogicalIdUuid(),
+      baseResourceType = repositoryResourceData.resource.resourceType,
       computedValuesMap =
         if (params != null) computedValuesMap.plus(params).toMap() else computedValuesMap.toMap()
     )
@@ -62,17 +59,13 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
    */
   suspend fun processListResourceData(
     listProperties: ListProperties,
-    relatedRepositoryResourceData: LinkedList<RepositoryResourceData>,
+    relatedResourcesMap: Map<String, List<Resource>>,
     computedValuesMap: Map<String, Any>,
   ): List<ResourceData> {
-    val relatedResourcesMap = relatedRepositoryResourceData.createQueryResultMap()
     return listProperties.resources.flatMap { listResource ->
       filteredListResources(relatedResourcesMap, listResource)
         .mapToResourceData(
-          relatedResourcesMap =
-            relatedResourcesMap.mapValues { entry ->
-              entry.value.map { (it as RepositoryResourceData.QueryResult.Search).resource }
-            },
+          relatedResourcesMap = relatedResourcesMap,
           ruleConfigs = listProperties.registerCard.rules,
           listRelatedResources = listResource.relatedResources,
           computedValuesMap = computedValuesMap
@@ -80,17 +73,21 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     }
   }
 
-  private suspend fun computeRules(
+  /**
+   * This function computes rules based on the provided facts [RepositoryResourceData.resource],
+   * [RepositoryResourceData.relatedResourcesMap] and
+   * [RepositoryResourceData.relatedResourcesCountMap]. The function returns the outcome of the
+   * computation in a map; the name of the rule is used as the key.
+   */
+  private suspend fun computeResourceDataRules(
     ruleConfigs: List<RuleConfig>,
-    baseResource: Resource,
-    relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>>
-  ): Map<String, Any> =
-    // Compute values via rules engine and return a map. Rule names MUST be unique
-    rulesFactory.fireRules(
+    repositoryResourceData: RepositoryResourceData
+  ): Map<String, Any> {
+    return rulesFactory.fireRules(
       rules = rulesFactory.generateRules(ruleConfigs),
-      baseResource = baseResource,
-      relatedResourcesMap = relatedResourcesMap
+      repositoryResourceData = repositoryResourceData
     )
+  }
 
   private suspend fun List<Resource>.mapToResourceData(
     relatedResourcesMap: Map<String, List<Resource>>,
@@ -112,13 +109,14 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
         }
 
       val listComputedValuesMap =
-        computeRules(
+        computeResourceDataRules(
           ruleConfigs = ruleConfigs,
-          baseResource = resource,
-          relatedResourcesMap =
-            listItemRelatedResources.mapValues { entry ->
-              entry.value.map { RepositoryResourceData.QueryResult.Search(resource = it) }
-            }
+          repositoryResourceData =
+            RepositoryResourceData(
+              resourceRulesEngineFactId = null,
+              resource = resource,
+              relatedResourcesMap = listItemRelatedResources
+            )
         )
 
       // LIST view should reuse the previously computed values
@@ -135,14 +133,11 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
    * extraction of the [ListResource] conditional FHIR path expression
    */
   private fun filteredListResources(
-    relatedResourceMap: Map<String, List<RepositoryResourceData.QueryResult>>,
+    relatedResourceMap: Map<String, List<Resource>>,
     listResource: ListResource
   ): List<Resource> {
     val relatedResourceKey = listResource.relatedResourceId ?: listResource.resourceType.name
-    val newListRelatedResources =
-      relatedResourceMap[relatedResourceKey]?.map {
-        (it as RepositoryResourceData.QueryResult.Search).resource
-      }
+    val newListRelatedResources = relatedResourceMap[relatedResourceKey]
 
     // conditionalFhirPath expression e.g. "Task.status == 'ready'" to filter tasks that are due
     if (newListRelatedResources != null &&
@@ -156,55 +151,6 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
     return newListRelatedResources ?: listOf()
   }
-}
-
-/**
- * This function creates a map of resource config Id ( or resource type if the id is not configured)
- * against [Resource] from a list of nested [RepositoryResourceData].
- *
- * Example: A list of [RepositoryResourceData] with Patient as its base resource and two nested
- * [RepositoryResourceData] of resource type Condition & CarePlan returns:
- * ```
- * {
- * "Patient" -> [Patient],
- * "Condition" -> [Condition],
- * "CarePlan" -> [CarePlan]
- * }
- * ```
- *
- * NOTE: [RepositoryResourceData] are represented as tree however they grouped by their resource
- * config Id ( or resource type if the id is not configured) as key and value as list of [Resource]
- * s in the map.
- */
-fun LinkedList<RepositoryResourceData>.createQueryResultMap():
-  MutableMap<String, MutableList<RepositoryResourceData.QueryResult>> {
-  val relatedResourcesMap = mutableMapOf<String, MutableList<RepositoryResourceData.QueryResult>>()
-  while (this.isNotEmpty()) {
-    val relatedResourceData = this.removeFirst()
-    when (relatedResourceData.queryResult) {
-      is RepositoryResourceData.QueryResult.Count ->
-        relatedResourcesMap.putQueryResult(
-          key = relatedResourceData.id ?: relatedResourceData.queryResult.resourceType.name,
-          queryResult = relatedResourceData.queryResult
-        )
-      is RepositoryResourceData.QueryResult.Search -> {
-        relatedResourcesMap.putQueryResult(
-          key = relatedResourceData.id
-              ?: relatedResourceData.queryResult.resource.resourceType.name,
-          queryResult = relatedResourceData.queryResult
-        )
-        this.addAll(relatedResourceData.queryResult.relatedResources)
-      }
-    }
-  }
-  return relatedResourcesMap
-}
-
-private fun MutableMap<String, MutableList<RepositoryResourceData.QueryResult>>.putQueryResult(
-  key: String,
-  queryResult: RepositoryResourceData.QueryResult,
-) {
-  this.getOrPut(key) { mutableListOf() }.add(queryResult)
 }
 
 /**

@@ -18,14 +18,16 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.content.Context
 import android.widget.Toast
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
+import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
 import java.util.Date
@@ -41,6 +43,7 @@ import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
@@ -60,6 +63,7 @@ import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.extractType
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
@@ -71,6 +75,7 @@ import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
@@ -87,7 +92,6 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val libraryEvaluator: LibraryEvaluator,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
-  val jsonParser: IParser
 ) : ViewModel() {
 
   val extractionProgress = MutableLiveData<Boolean>()
@@ -114,11 +118,16 @@ constructor(
   suspend fun loadQuestionnaire(
     id: String,
     type: QuestionnaireType,
-    prePopulationParams: List<ActionParameter>? = emptyList()
+    prePopulationParams: List<ActionParameter>? = emptyList(),
+    readOnlyLinkIds: List<String>? = emptyList()
   ): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(id)?.apply {
       if (type.isReadOnly() || type.isEditMode()) {
-        item.prepareQuestionsForReadingOrEditing(QUESTIONNAIRE_RESPONSE_ITEM, type.isReadOnly())
+        item.prepareQuestionsForReadingOrEditing(
+          QUESTIONNAIRE_RESPONSE_ITEM,
+          type.isReadOnly(),
+          readOnlyLinkIds
+        )
       }
       // prepopulate questionnaireItems with initial values
       prePopulationParams?.takeIf { it.isNotEmpty() }?.let { nonEmptyParams ->
@@ -211,7 +220,7 @@ constructor(
           if (questionnaireConfig.setAppVersion) {
             appendAppVersion(bundleEntry.resource)
           }
-
+          if (bundleEntry.hasResource()) bundleEntry.resource.updateLastUpdated()
           if (questionnaireConfig.type != QuestionnaireType.EDIT &&
               bundleEntry.resource.resourceType.isIn(
                 ResourceType.Patient,
@@ -222,6 +231,7 @@ constructor(
               addGroupMember(resource = bundleEntry.resource, groupResourceId = it)
             }
           }
+          updateResourceLastUpdatedLinkedAsSubject(questionnaireResponse)
 
           // TODO https://github.com/opensrp/fhircore/issues/900
           // for edit mode replace client and resource subject ids.
@@ -236,6 +246,7 @@ constructor(
           }
           questionnaireResponse.contained.add(bundleEntry.resource)
         }
+        updateResourceLastUpdatedLinkedAsSubject(questionnaireResponse)
 
         if (questionnaire.experimental) {
           Timber.w(
@@ -359,7 +370,7 @@ constructor(
           Timber.e(it)
           extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
         }
-      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(questionnaireConfig, subject)
+      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(questionnaireConfig, subject, data)
     }
   }
 
@@ -497,10 +508,6 @@ constructor(
     return structureMapProvider!!
   }
 
-  suspend fun loadPatient(patientId: String): Patient? {
-    return defaultRepository.loadResource(patientId)
-  }
-
   fun saveResource(resource: Resource) {
     viewModelScope.launch { defaultRepository.create(true, resource) }
   }
@@ -576,11 +583,204 @@ constructor(
       defaultRepository.delete(resourceType = resourceType, resourceId = resourceIdentifier)
     }
   }
+  suspend fun updateResourceLastUpdatedLinkedAsSubject(
+    questionnaireResponse: QuestionnaireResponse
+  ) {
+    if (questionnaireResponse.hasSubject() && questionnaireResponse.subject.hasReference()) {
+      val resourceId = questionnaireResponse.subject.reference.extractLogicalIdUuid()
+      val resourceType =
+        questionnaireResponse.subject.extractType()!!
+          .name
+          .resourceClassType()
+          .newInstance()
+          .resourceType
+      try {
+        if (resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
+          defaultRepository.loadResource(resourceId, resourceType).let { resource ->
+            resource.updateLastUpdated()
+            defaultRepository.addOrUpdate(true, resource)
+          }
+        }
+      } catch (exception: ResourceNotFoundException) {
+        Timber.e(exception)
+      }
+    }
+  }
+
+  /**
+   * Validates the given Questionnaire Response using the SDK [QuestionnaireResponseValidator].
+   *
+   * @param questionnaire Questionnaire to use in validation
+   * @param questionnaireResponse QuestionnaireResponse to validate
+   * @param context Context to use in validation
+   */
+  fun isQuestionnaireResponseValid(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    context: Context
+  ): Boolean {
+    return try {
+      QuestionnaireResponseValidator.checkQuestionnaireResponse(
+        questionnaire,
+        questionnaireResponse
+      )
+      QuestionnaireResponseValidator.validateQuestionnaireResponse(
+        questionnaire,
+        questionnaireResponse,
+        context
+      )
+      true
+    } catch (e: IllegalArgumentException) {
+      Timber.tag("QuestionnaireViewModel.isQuestionnaireResponseValid").d(e)
+      false
+    }
+  }
+
+  /**
+   * Gets a Questionnaire Response from the database if it exists. Generates Questionnaire Response
+   * from population, otherwise.
+   *
+   * @param questionnaire Questionnaire as the basis for how the resources are to be populated
+   * @param subjectId ID of the resource that submitted the Questionnaire Response, and related with
+   * the population resources
+   * @param subjectType resource type of the resource that submitted the Questionnaire Response
+   */
+  suspend fun getQuestionnaireResponseFromDbOrPopulation(
+    questionnaire: Questionnaire,
+    subjectId: String,
+    subjectType: ResourceType,
+  ): QuestionnaireResponse {
+    var questionnaireResponse =
+      loadQuestionnaireResponse(subjectId, subjectType, questionnaire.logicalId)
+
+    if (questionnaireResponse == null) {
+      val populationResources = loadPopulationResources(subjectId, subjectType)
+      questionnaireResponse = populateQuestionnaireResponse(questionnaire, populationResources)
+    }
+
+    return questionnaireResponse
+  }
+
+  /**
+   * Generates a Questionnaire Response by populating the given resources.
+   *
+   * @param questionnaire Questionnaire as the basis for how the resources are to be populated
+   * @param populationResources resources to be populated
+   */
+  @VisibleForTesting
+  suspend fun populateQuestionnaireResponse(
+    questionnaire: Questionnaire,
+    populationResources: ArrayList<Resource>
+  ): QuestionnaireResponse {
+    return ResourceMapper.populate(questionnaire, *populationResources.toTypedArray()).also {
+      questionnaireResponse ->
+      if (!questionnaireResponse.hasItem()) {
+        Timber.tag("QuestionnaireViewModel.populateQuestionnaireResponse")
+          .d("Questionnaire response has no populated answers")
+      }
+    }
+  }
+
+  /**
+   * Loads the latest Questionnaire Response resource that is associated with the given subject ID
+   * and Questionnaire ID.
+   *
+   * @param subjectId ID of the resource that submitted the Questionnaire Response
+   * @param subjectType resource type of the resource that submitted the Questionnaire Response
+   * @param questionnaireId ID of the Questionnaire that owns the Questionnaire Response
+   */
+  private suspend fun loadQuestionnaireResponse(
+    subjectId: String,
+    subjectType: ResourceType,
+    questionnaireId: String
+  ): QuestionnaireResponse? {
+    return searchQuestionnaireResponses(
+      subjectId = subjectId,
+      subjectType = subjectType,
+      questionnaireId = questionnaireId
+    )
+      .maxByOrNull { it.meta.lastUpdated }
+      .also { questionnaireResponse ->
+        if (questionnaireResponse == null) {
+          Timber.tag("QuestionnaireViewModel.loadQuestionnaireResponse")
+            .d("Questionnaire response is not found in database")
+        }
+      }
+  }
+
+  /**
+   * Search Questionnaire Response resources that are associated with the given subject ID and
+   * Questionnaire ID.
+   *
+   * @param subjectId ID of the resource that submitted the Questionnaire Response
+   * @param subjectType resource type of the resource that submitted the Questionnaire Response
+   * @param questionnaireId ID of the Questionnaire that owns the Questionnaire Response
+   */
+  private suspend fun searchQuestionnaireResponses(
+    subjectId: String,
+    subjectType: ResourceType,
+    questionnaireId: String
+  ): List<QuestionnaireResponse> =
+    withContext(dispatcherProvider.io()) {
+      defaultRepository.fhirEngine.search {
+        filter(QuestionnaireResponse.SUBJECT, { value = "${subjectType.name}/$subjectId" })
+        filter(
+          QuestionnaireResponse.QUESTIONNAIRE,
+          { value = "${ResourceType.Questionnaire.name}/$questionnaireId" }
+        )
+      }
+    }
+
+  /**
+   * Loads resources to be populated into a Questionnaire Response.
+   *
+   * @param subjectId can be Patient ID or Group ID
+   * @param subjectType resource type of the ID
+   */
+  private suspend fun loadPopulationResources(
+    subjectId: String,
+    subjectType: ResourceType
+  ): ArrayList<Resource> {
+    val populationResources = arrayListOf<Resource>()
+    when (subjectType) {
+      ResourceType.Patient -> {
+        loadPatient(subjectId)?.run { populationResources.add(this) }
+        loadRelatedPerson(subjectId)?.run { populationResources.add(this) }
+      }
+      ResourceType.Group -> {
+        loadGroup(subjectId)?.run { populationResources.add(this) }
+      }
+      else -> {
+        Timber.tag("QuestionnaireViewModel.loadPopulationResources")
+          .d("$subjectType resource type is not supported to load populated resources!")
+      }
+    }
+    return populationResources
+  }
+
+  /** Loads a Patient resource with the given ID. */
+  private suspend fun loadPatient(patientId: String): Patient? {
+    return defaultRepository.loadResource(patientId)
+  }
+
+  /** Loads a Group resource with the given ID. */
+  private suspend fun loadGroup(groupId: String): Group? {
+    return defaultRepository.loadResource(groupId)
+  }
+
+  /** Loads a RelatedPerson resource that belongs to the given Patient ID. */
+  private suspend fun loadRelatedPerson(patientId: String): RelatedPerson? {
+    return defaultRepository
+      .searchResourceFor<RelatedPerson>(
+        subjectType = ResourceType.Patient,
+        subjectId = patientId,
+        subjectParam = RelatedPerson.PATIENT,
+      )
+      .singleOrNull()
+  }
 
   companion object {
     private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"
-    private const val EXTENSION_QUESTIONNAIRE_TARGET_STRUCTUREMAP =
-      "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap"
     private const val STRING_INTERPOLATION_PREFIX = "@{"
   }
 }
