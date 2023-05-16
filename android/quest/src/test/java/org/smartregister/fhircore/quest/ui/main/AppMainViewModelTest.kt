@@ -43,6 +43,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
@@ -180,7 +181,7 @@ class AppMainViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnEventOpenProfile() {
-    val resourceConfig = FhirResourceConfig(ResourceConfig(resource = "Patient"))
+    val resourceConfig = FhirResourceConfig(ResourceConfig(resource = ResourceType.Patient))
     appMainViewModel.onEvent(
       AppMainEvent.OpenProfile(
         navController = navController,

@@ -49,7 +49,6 @@ import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkf
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
@@ -93,18 +92,14 @@ constructor(
     paramsList: Array<ActionParameter>? = emptyArray()
   ) {
     if (resourceId.isNotEmpty()) {
-      val repoResourceData =
+      val repositoryResourceData =
         registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
       val paramsMap: Map<String, String> = paramsList.toParamDataMap<String, String>()
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
-      val queryResult = repoResourceData as RepositoryResourceData.Search
       val resourceData =
         rulesExecutor
           .processResourceData(
-            baseResourceRulesId = queryResult.baseResourceRulesId,
-            baseResource = queryResult.resource,
-            relatedResourcesMap = queryResult.relatedResources,
-            secondaryRepositoryResourceData = queryResult.secondaryRepositoryResourceData,
+            repositoryResourceData = repositoryResourceData,
             ruleConfigs = profileConfigs.rules,
             params = paramsMap
           )
@@ -122,7 +117,7 @@ constructor(
         val listResourceData =
           rulesExecutor.processListResourceData(
             listProperties = it,
-            relatedResourcesMap = queryResult.relatedResources,
+            relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
             computedValuesMap =
               resourceData.computedValuesMap.toMutableMap().plus(paramsMap).toMap()
           )
