@@ -40,6 +40,46 @@
           "id": "householdRegister"
         }
       ]
+    },
+    {
+      "id": "childRegister",
+      "display": "Children",
+      "showCount": true,
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_baby_mother"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "childRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "childRegister"
+        }
+      ]
+    },
+    {
+      "id": "sickChildRegister",
+      "display": "Sick child",
+      "showCount": true,
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_needle"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "sickChildRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "sickChildRegister"
+        }
+      ]
     }
   ],
   "_bottomSheetRegisters": {

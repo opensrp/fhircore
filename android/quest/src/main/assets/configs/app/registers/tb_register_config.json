@@ -2,6 +2,7 @@
   "appId": "app",
   "configType": "register",
   "id": "tbRegister",
+  "pageSize": 20,
   "fhirResource": {
     "baseResource": {
       "resource": "Patient",
