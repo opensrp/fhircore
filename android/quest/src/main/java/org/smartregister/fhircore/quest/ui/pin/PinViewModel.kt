@@ -105,7 +105,13 @@ constructor(
   }
 
   fun onSetPin(newPin: CharArray) {
-    secureSharedPreference.saveSessionPin(newPin)
+
+    viewModelScope.launch(dispatcherProvider.io()) {
+      pinUiState.value = pinUiState.value.copy(showProgressBar = true)
+      secureSharedPreference.saveSessionPin(newPin)
+      pinUiState.value = pinUiState.value.copy(showProgressBar = false)
+    }
+
     _navigateToHome.postValue(true)
   }
 

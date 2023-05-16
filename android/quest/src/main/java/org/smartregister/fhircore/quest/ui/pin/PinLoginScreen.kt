@@ -29,11 +29,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
@@ -169,10 +171,11 @@ fun PinLoginPage(
                     .bringIntoViewRequester(bringIntoViewRequester)
               )
           } else {
+
             // Enable button when a new PIN of required length is entered
             Button(
               onClick = { onSetPin(newPin) },
-              enabled = newPin.size == pinUiState.pinLength,
+              enabled = newPin.size == pinUiState.pinLength && !pinUiState.showProgressBar,
               modifier =
                 modifier
                   .bringIntoViewRequester(bringIntoViewRequester)
@@ -185,10 +188,19 @@ fun PinLoginPage(
                 ),
               elevation = null
             ) {
-              Text(
-                text = stringResource(id = R.string.set_pin).uppercase(),
-                modifier = modifier.padding(8.dp)
-              )
+              if (pinUiState.showProgressBar) {
+
+                CircularProgressIndicator(
+                  modifier = modifier.size(18.dp),
+                  strokeWidth = 1.6.dp,
+                  color = Color.White
+                )
+              } else {
+                Text(
+                  text = stringResource(id = R.string.set_pin).uppercase(),
+                  modifier = modifier.padding(8.dp)
+                )
+              }
             }
           }
         }
