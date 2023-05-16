@@ -62,6 +62,7 @@ import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
@@ -609,18 +610,23 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { defaultRepo.loadRelatedPersons("2") } returns
       listOf(RelatedPerson().apply { id = "3" })
 
+    val questionnaire = Questionnaire()
+
     val intent = Intent()
     intent.putStringArrayListExtra(
       QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
       arrayListOf(
-        "{\"resourceType\":\"Patient\",\"id\":\"1\",\"text\":{\"status\":\"generated\",\"div\":\"\"}}"
+        "{\"resourceType\":\"Patient\",\"id\":\"1\",\"text\":{\"status\":\"generated\",\"div\":\"\"}}",
+        "{\"resourceType\":\"Bundle\",\"id\":\"34\",\"text\":{\"status\":\"generated\",\"div\":\"\"}}",
       )
     )
     intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "2")
 
     runBlocking {
-      val resourceList = questionnaireViewModel.getPopulationResources(intent)
-      Assert.assertEquals(3, resourceList.size)
+      val resourceList =
+        questionnaireViewModel.getPopulationResources(intent, questionnaire.logicalId)
+      Assert.assertTrue(resourceList.any { it is Bundle })
+      Assert.assertEquals(4, resourceList.size)
     }
   }
 
@@ -1119,11 +1125,38 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun `test generateQuestionnaireResponse`() = runTest {
     val questionnaire = Questionnaire()
     val patient = samplePatient()
-    coEvery { questionnaireViewModel.getPopulationResources(any()) } returns arrayOf(patient)
+    coEvery {
+      questionnaireViewModel.getPopulationResources(any(), questionnaire.logicalId)
+    } returns arrayOf(patient)
     val intent = Intent()
 
     val response = questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
 
     Assert.assertNotNull(response.contained.firstOrNull { it.resourceType == ResourceType.Patient })
+  }
+
+  @Test
+  fun `test extractRelevantObservation`() = runTest {
+    val questionnaire = Questionnaire()
+    val bundle = Bundle()
+    val response =
+      questionnaireViewModel.extractRelevantObservation(bundle, questionnaire.logicalId)
+    Assert.assertArrayEquals(bundle.entry.toTypedArray(), response.entry.toTypedArray())
+    Assert.assertTrue(response.entry.isEmpty())
+  }
+
+  @Test
+  fun `test extractRelevantObservation with Observation resource`() = runTest {
+    val questionnaire = Questionnaire().apply { id = "1234" }
+    val bundle = Bundle()
+    val observation =
+      Observation().apply {
+        code = CodeableConcept().apply { addCoding(Coding().apply { code = "Observation-1234" }) }
+      }
+    bundle.entry.add(Bundle.BundleEntryComponent().setResource(observation))
+    val response =
+      questionnaireViewModel.extractRelevantObservation(bundle, questionnaire.logicalId)
+    Assert.assertNotEquals(bundle.entry.toTypedArray(), response.entry.toTypedArray())
+    Assert.assertEquals(response.entry.size, 1)
   }
 }
