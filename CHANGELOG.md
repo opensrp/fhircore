@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add "Record all" feature in card view
 - Functionality to aggregate count for related resources 
+- Incremental rendering of content of LIST widget used mostly on profile screen
 
 ### Fixed
 - Member icons display wrapping; hiding some texts
