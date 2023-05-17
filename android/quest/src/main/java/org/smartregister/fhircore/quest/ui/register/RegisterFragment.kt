@@ -37,7 +37,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
@@ -71,7 +70,7 @@ import timber.log.Timber
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
-class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmission?> {
+class RegisterFragment : Fragment(), OnSyncListener {
   @Inject lateinit var syncListenerManager: SyncListenerManager
   @Inject lateinit var eventBus: EventBus
   @VisibleForTesting val appMainViewModel by activityViewModels<AppMainViewModel>()
@@ -302,35 +301,6 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
     }
   }
 
-  /**
-   * Overridden method for [Observer] class used to address [QuestionnaireSubmission] triggered
-   * while performing registration . A new [Observer] is needed for every fragment since the
-   * [AppMainViewModel]'s questionnaireSubmissionLiveData outlives the Fragment. Cannot use Kotlin
-   * Observer { } as it is optimized to a singleton resulting to an exception using an observer from
-   * a detached fragment.
-   */
-  override fun onChanged(questionnaireSubmission: QuestionnaireSubmission?) {
-    lifecycleScope.launch {
-      questionnaireSubmission?.let {
-        appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
-
-        // Always refresh data when registration happens
-        registerViewModel.paginateRegisterData(
-          registerId = registerFragmentArgs.registerId,
-          loadAll = false,
-          clearCache = true
-        )
-        // Update side menu counts
-        appMainViewModel.retrieveAppMainUiState()
-
-        // Display SnackBar message
-        val (questionnaireConfig, _) = questionnaireSubmission
-        questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
-          registerViewModel.emitSnackBarState(snackBarMessageConfig)
-        }
-      }
-    }
-  }
   @VisibleForTesting
   fun emitPercentageProgress(percentageProgress: Int, isUploadSync: Boolean) {
     lifecycleScope.launch {
