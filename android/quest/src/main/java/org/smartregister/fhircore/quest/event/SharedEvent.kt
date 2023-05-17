@@ -16,13 +16,8 @@
 
 package org.smartregister.fhircore.quest.event
 
-import javax.inject.Inject
-import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
 
-@Singleton
-class EventBus @Inject constructor(private val eventQueue: EventQueue<AppEvent>) {
-  val events: SharedEvent<AppEvent>
-    get() = eventQueue
-
-  suspend fun triggerEvent(event: AppEvent) = eventQueue.push(event = event)
+interface SharedEvent<out T> {
+  fun getFor(consumerId: String): Flow<T>
 }

@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.event
+package org.smartregister.fhircore.engine.util
 
-import javax.inject.Inject
-import javax.inject.Singleton
+import timber.log.Timber
 
-@Singleton
-class EventBus @Inject constructor(private val eventQueue: EventQueue<AppEvent>) {
-  val events: SharedEvent<AppEvent>
-    get() = eventQueue
-
-  suspend fun triggerEvent(event: AppEvent) = eventQueue.push(event = event)
+fun getLastOffset(items: List<Any>, lastOffset: Int, batchSize: Int): Int {
+  val updatedLastOffset =
+    when {
+      items.isNotEmpty() && items.size >= batchSize -> lastOffset + batchSize
+      items.isNotEmpty() && items.size < batchSize -> lastOffset + items.size
+      else -> 0
+    }
+  Timber.w(
+    "Previous last offset = $lastOffset next last offset = $updatedLastOffset batch size = $batchSize"
+  )
+  return updatedLastOffset
 }
