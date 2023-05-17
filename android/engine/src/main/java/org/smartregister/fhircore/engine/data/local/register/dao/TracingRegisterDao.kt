@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.data.local.register.dao
 
+import androidx.annotation.VisibleForTesting
+import androidx.annotation.VisibleForTesting.Companion.PROTECTED
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
@@ -84,7 +86,8 @@ constructor(
   val dispatcherProvider: DefaultDispatcherProvider,
   val sharedPreferencesHelper: SharedPreferencesHelper
 ) : RegisterDao {
-  protected abstract val tracingCoding: Coding
+
+  @VisibleForTesting(otherwise = PROTECTED) abstract val tracingCoding: Coding
 
   private val alternateTracingCoding = lazy {
     tracingCoding.copy().apply { system = "http://snomed.info/sct" }

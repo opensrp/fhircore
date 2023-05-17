@@ -25,20 +25,29 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Group
+import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.Appointment
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Practitioner
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.app.fakes.Faker.buildPatient
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.AppointmentRegisterFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.HealthStatus
+import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -72,9 +81,7 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
     hiltRule.inject()
 
     coEvery { fhirEngine.get(ResourceType.Patient, "1234") } returns
-      buildPatient("1", "doe", "john", 50)
-
-    coEvery { fhirEngine.search<Group>(any<Search>()) } returns emptyList()
+      buildPatient("1", "doe", "john", 10, patientType = "exposed-infant")
 
     coEvery { configurationRegistry.retrieveDataFilterConfiguration(any()) } returns emptyList()
 
@@ -91,21 +98,147 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
       )
   }
 
-  @Test
-  @Ignore("To be implemented")
-  fun testLoadProfileData() {
-    val data = runBlocking {
-      appointmentRegisterDao.loadProfileData(appFeatureName = "HIV", resourceId = "1234")
-    }
-    // TODO update this test once AppointmentRegisterDao
-    //  implements load Patient and Profile Data
-    Assert.assertNull(data)
+  @Test(expected = NotImplementedError::class)
+  fun testLoadProfileData() = runTest {
+    appointmentRegisterDao.loadProfileData(appFeatureName = "HIV", resourceId = "1234")
   }
 
   @Test
-  fun testCountRegisterData() {
-    val count = runBlocking { appointmentRegisterDao.countRegisterData("1234") }
-    Assert.assertTrue(count >= 0)
+  fun testCountRegisterData() = runTest {
+    val search =
+      Search(ResourceType.Appointment).apply {
+        filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
+        filter(Appointment.DATE, { value = of(DateTimeType.today()) })
+      }
+    val appointments =
+      listOf<Appointment>(
+        Appointment().apply {
+          status = Appointment.AppointmentStatus.BOOKED
+          start = Date()
+          addParticipant().apply { actor = Reference().apply { reference = "Patient/random" } }
+
+          addParticipant().apply { actor = Reference().apply { reference = "Practitioner/random" } }
+        },
+        Appointment().apply {
+          status = Appointment.AppointmentStatus.BOOKED
+          start = Date()
+        }
+      )
+    coEvery { fhirEngine.search<Appointment>(search) } returns appointments
+
+    val count = appointmentRegisterDao.countRegisterData("1234")
+    Assert.assertEquals(1, count)
+  }
+
+  @Test
+  fun testCountRegisterFiltered() = runTest {
+    val startDate = Date()
+    val appointment1 =
+      Appointment().apply {
+        status = Appointment.AppointmentStatus.BOOKED
+        start = startDate
+
+        addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
+        addParticipant().apply { actor = Reference().apply { reference = "Patient/1234" } }
+        addReasonCode(CodeableConcept(Coding().apply { code = "Milestone" }))
+      }
+    val appointment2 =
+      Appointment().apply {
+        status = Appointment.AppointmentStatus.BOOKED
+        start = startDate
+        addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
+        addParticipant().apply { actor = Reference().apply { reference = "Patient/1234" } }
+        addReasonCode(CodeableConcept(Coding().apply { code = "ICT" }))
+      }
+    coEvery { fhirEngine.search<Appointment>(any<Search>()) } returns
+      listOf(appointment1, appointment2)
+    val registerFilter =
+      AppointmentRegisterFilter(
+        startDate,
+        myPatients = true,
+        patientCategory = null,
+        reasonCode = "ICT"
+      )
+    val counts = appointmentRegisterDao.countRegisterFiltered(filters = registerFilter)
+    Assert.assertEquals(1, counts)
+  }
+
+  @Test
+  fun loadRegisterDataReturnsAppointmentRegisterData() = runTest {
+    val startDate = Date()
+    val appointment =
+      Appointment().apply {
+        status = Appointment.AppointmentStatus.BOOKED
+        start = startDate
+
+        addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
+        addParticipant().apply { actor = Reference().apply { reference = "Patient/1234" } }
+        addReasonCode(CodeableConcept(Coding().apply { code = "Milestone" }))
+      }
+
+    coEvery { fhirEngine.search<Appointment>(Search(ResourceType.Appointment)) } returns
+      listOf(appointment)
+    coEvery { fhirEngine.search<Condition>(Search(ResourceType.Condition)) } returns listOf()
+    val data = appointmentRegisterDao.loadRegisterData(0, loadAll = true, appFeatureName = null)
+    Assert.assertTrue(data.isNotEmpty())
+    Assert.assertTrue(data.all { it is RegisterData.AppointmentRegisterData })
+  }
+
+  @Test
+  fun loadRegisterFilteredReturnsDataFiltered() = runTest {
+    val startDate = Date()
+    val patient1 =
+      buildPatient("12345-3214", "doe", "june", 10, patientType = "exposed-infant").apply {
+        addIdentifier(
+          Identifier().apply {
+            use = Identifier.IdentifierUse.OFFICIAL
+            value = "3214"
+          }
+        )
+      }
+    coEvery { fhirEngine.get(ResourceType.Patient, "12345-3214") } returns patient1
+    val appointment1 =
+      Appointment().apply {
+        id = "appointment1"
+        status = Appointment.AppointmentStatus.BOOKED
+        start = startDate
+
+        addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
+        addParticipant().apply { actor = Reference().apply { reference = "Patient/12345-3214" } }
+        addReasonCode(CodeableConcept(Coding().apply { code = "Milestone" }))
+      }
+    val patient2 =
+      buildPatient("1234-4321-3214", "doedoe", "janen", 10, patientType = "exposed-infant")
+    coEvery { fhirEngine.get(ResourceType.Patient, "1234-4321-3214") } returns patient2
+    val appointment2 =
+      Appointment().apply {
+        id = "appointment2"
+        status = Appointment.AppointmentStatus.BOOKED
+        start = startDate
+        addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
+        addParticipant().apply {
+          actor = Reference().apply { reference = "Patient/1234-4321-3214" }
+        }
+        addReasonCode(CodeableConcept(Coding().apply { code = "ICT" }))
+      }
+    coEvery { fhirEngine.search<Condition>(Search(ResourceType.Condition)) } returns listOf()
+    coEvery { fhirEngine.search<Appointment>(Search(ResourceType.Appointment)) } returns
+      listOf(appointment1, appointment2)
+    val data =
+      appointmentRegisterDao.loadRegisterFiltered(
+        0,
+        loadAll = false,
+        filters =
+          AppointmentRegisterFilter(
+            startDate,
+            myPatients = true,
+            patientCategory = listOf(HealthStatus.EXPOSED_INFANT),
+            reasonCode = null
+          )
+      )
+    Assert.assertEquals(2, data.size)
+    Assert.assertEquals("appointment2", data.elementAt(0).logicalId)
+    Assert.assertEquals("appointment1", data.elementAt(1).logicalId)
   }
 
   @Test
