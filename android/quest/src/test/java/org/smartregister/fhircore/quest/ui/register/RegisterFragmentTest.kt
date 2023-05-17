@@ -147,7 +147,7 @@ class RegisterFragmentTest : RobolectricTest() {
   }
 
   @Test
-  @OptIn(ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class)
+  @OptIn(ExperimentalCoroutinesApi::class)
   fun `test On changed emits a snack bar message`() {
     val snackBarMessageConfig =
       SnackBarMessageConfig(
@@ -156,19 +156,7 @@ class RegisterFragmentTest : RobolectricTest() {
         duration = SnackbarDuration.Short,
         snackBarActions = emptyList()
       )
-    val questionnaireResponse = QuestionnaireResponse()
-    val questionnaireConfig = mockk<QuestionnaireConfig>()
-    val questionnaireSubmission =
-      QuestionnaireSubmission(
-        questionnaireConfig = questionnaireConfig,
-        questionnaireResponse = questionnaireResponse
-      )
     val registerViewModel = mockk<RegisterViewModel>()
-    coEvery {
-      registerFragmentMock.onChanged(questionnaireSubmission = questionnaireSubmission)
-    } just runs
-    registerFragmentMock.onChanged(questionnaireSubmission = questionnaireSubmission)
-    verify { registerFragmentMock.onChanged(questionnaireSubmission = questionnaireSubmission) }
     coroutineTestRule.launch {
       registerViewModel.emitSnackBarState(snackBarMessageConfig = snackBarMessageConfig)
     }
