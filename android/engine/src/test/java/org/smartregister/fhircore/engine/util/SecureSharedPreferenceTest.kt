@@ -53,9 +53,16 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
 
   @Test
   fun testRetrieveCredentials() {
+    mockkStatic(::getRandomBytesOfSize)
+    every { getRandomBytesOfSize(256) } returns byteArrayOf(-100, 0, 100, 101)
+
     secureSharedPreference.saveCredentials(username = "userName", password = "!@#$".toCharArray())
+
     Assert.assertEquals("userName", secureSharedPreference.retrieveCredentials()!!.username)
-    Assert.assertEquals("!@#$", secureSharedPreference.retrieveCredentials()!!.passwordHash)
+    Assert.assertEquals(
+      "!@#$".toCharArray().toPasswordHash(byteArrayOf(-100, 0, 100, 101)),
+      secureSharedPreference.retrieveCredentials()!!.passwordHash
+    )
   }
 
   @Test
