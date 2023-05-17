@@ -119,65 +119,42 @@ constructor(
   /**
    * This function executes the actions defined in the [Rule] s generated from the provided list of
    * [RuleConfig] against the [Facts] populated by the provided FHIR [Resource] s available in the
-   * [relatedResourcesMap] and the [baseResource].
+   * [RepositoryResourceData.resource], [RepositoryResourceData.relatedResourcesMap] and
+   * [RepositoryResourceData.relatedResourcesCountMap]. All related resources of same type are
+   * flattened in a map for ease of usage in the rule engine.
    */
-  fun fireRules(
-    rules: Rules,
-    baseResourceRulesId: String?,
-    baseResource: Resource?,
-    relatedResourcesMap: Map<String, List<RepositoryResourceData>> = emptyMap(),
-    secondaryRepositoryResourceData: List<RepositoryResourceData>?
-  ): Map<String, Any> {
+  fun fireRules(rules: Rules, repositoryResourceData: RepositoryResourceData): Map<String, Any> {
 
-    // Initialize new facts and fire rules in background
-    facts =
-      Facts().apply {
-        put(FHIR_PATH, fhirPathDataExtractor)
-        put(DATA, mutableMapOf<String, Any>())
-        put(SERVICE, rulesEngineService)
-        if (baseResource != null) {
-          put(baseResourceRulesId ?: baseResource.resourceType.name, baseResource)
-        }
-        populateRelatedResourcesRecursively(relatedResourcesMap)
+    with(repositoryResourceData) {
+      // Initialize new facts and fire rules in background
+      facts =
+        Facts().apply {
+          put(FHIR_PATH, fhirPathDataExtractor)
+          put(DATA, mutableMapOf<String, Any>())
+          put(SERVICE, rulesEngineService)
+          put(resourceRulesEngineFactId ?: resource.resourceType.name, resource)
 
-        // Populate the facts map with secondary resource data
-        secondaryRepositoryResourceData?.forEach {
-          if (it is RepositoryResourceData.Search) {
-            put(it.baseResourceRulesId ?: it.resource.resourceType.name, it.resource)
-            if (it.relatedResources.isNotEmpty()) {
-              populateRelatedResourcesRecursively(it.relatedResources)
-            }
+          relatedResourcesMap.addToFacts(this)
+          relatedResourcesCountMap.addToFacts(this)
+
+          // Populate the facts map with secondary resource data
+          secondaryRepositoryResourceData?.forEach {
+            put(it.resourceRulesEngineFactId ?: it.resource.resourceType.name, it.resource)
+            relatedResourcesMap.addToFacts(this)
+            relatedResourcesCountMap.addToFacts(this)
           }
         }
-      }
 
-    if (BuildConfig.DEBUG) {
-      val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
-      Timber.d("Rule executed in $timeToFireRules millisecond(s)")
-    } else rulesEngine.fire(rules, facts)
-
+      if (BuildConfig.DEBUG) {
+        val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
+        Timber.d("Rule executed in $timeToFireRules millisecond(s)")
+      } else rulesEngine.fire(rules, facts)
+    }
     return facts.get(DATA) as Map<String, Any>
   }
 
-  private fun Facts.populateRelatedResourcesRecursively(
-    relatedResourcesMap: Map<String, List<RepositoryResourceData>>?
-  ) {
-    relatedResourcesMap?.forEach {
-      val actualValue: List<Any> =
-        it.value.map { repositoryResourceData ->
-          when (repositoryResourceData) {
-            is RepositoryResourceData.Count -> repositoryResourceData.relatedResourceCount
-            is RepositoryResourceData.Search -> {
-              if (repositoryResourceData.relatedResources.isNotEmpty()) {
-                populateRelatedResourcesRecursively(repositoryResourceData.relatedResources)
-              }
-              repositoryResourceData.resource
-            }
-          }
-        }
-      put(it.key, actualValue)
-    }
-  }
+  private fun Map<String, List<*>>.addToFacts(facts: Facts) =
+    this.forEach { facts.put(it.key, it.value) }
 
   suspend fun generateRules(ruleConfigs: List<RuleConfig>): Rules =
     withContext(dispatcherProvider.io()) {

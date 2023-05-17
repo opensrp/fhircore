@@ -2,6 +2,7 @@
   "appId": "app",
   "configType": "register",
   "id": "practitionerRegister",
+  "pageSize": 20,
   "fhirResource": {
     "baseResource": {
       "resource": "Practitioner",

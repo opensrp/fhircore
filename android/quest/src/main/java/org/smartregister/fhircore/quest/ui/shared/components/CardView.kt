@@ -44,6 +44,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.parseColor
+import org.smartregister.fhircore.quest.util.extensions.conditional
 
 @Composable
 fun CardView(
@@ -52,23 +53,30 @@ fun CardView(
   resourceData: ResourceData,
   navController: NavController
 ) {
+  val headerActionVisible =
+    viewProperties.headerAction?.interpolateVisible(resourceData.computedValuesMap).toBoolean()
   Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
     // Header section
     Spacer(modifier = modifier.height(8.dp))
     Row(
       modifier = modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
+      verticalAlignment = Alignment.Top,
       horizontalArrangement = Arrangement.SpaceBetween
     ) {
       if (viewProperties.header != null) {
         CompoundText(
-          modifier = modifier.wrapContentWidth(Alignment.Start),
+          modifier =
+            modifier
+              .conditional(
+                viewProperties.headerAction != null,
+                { weight(if (headerActionVisible) 0.6f else 1f) }
+              )
+              .wrapContentWidth(Alignment.Start),
           compoundTextProperties = viewProperties.header!!.copy(textCase = TextCase.UPPER_CASE),
           resourceData = resourceData,
           navController = navController
         )
-        if (viewProperties.headerAction != null && viewProperties.headerAction!!.visible.toBoolean()
-        ) {
+        if (viewProperties.headerAction != null && headerActionVisible) {
           CompoundText(
             modifier = modifier.wrapContentWidth(Alignment.End),
             compoundTextProperties = viewProperties.headerAction!!.copy(),
