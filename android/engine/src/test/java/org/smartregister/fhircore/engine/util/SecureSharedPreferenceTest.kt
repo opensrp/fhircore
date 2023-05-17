@@ -22,7 +22,7 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
-import io.mockk.mockkStatic
+import io.mockk.spyk
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -42,7 +42,7 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    secureSharedPreference = SecureSharedPreference(application)
+    secureSharedPreference = spyk(SecureSharedPreference(application))
   }
 
   @Test
@@ -53,8 +53,7 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
 
   @Test
   fun testRetrieveCredentials() {
-    mockkStatic(::getRandomBytesOfSize)
-    every { getRandomBytesOfSize(256) } returns byteArrayOf(-100, 0, 100, 101)
+    every { secureSharedPreference.get256RandomBytes() } returns byteArrayOf(-100, 0, 100, 101)
 
     secureSharedPreference.saveCredentials(username = "userName", password = "!@#$".toCharArray())
 
@@ -76,9 +75,7 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
   @Test
   fun testSaveAndRetrievePin() {
 
-    mockkStatic(::getRandomBytesOfSize)
-
-    every { getRandomBytesOfSize(256) } returns byteArrayOf(-100, 0, 100, 101)
+    every { secureSharedPreference.get256RandomBytes() } returns byteArrayOf(-100, 0, 100, 101)
     secureSharedPreference.saveSessionPin(pin = "1234".toCharArray())
     Assert.assertEquals(
       "1234".toCharArray().toPasswordHash(byteArrayOf(-100, 0, 100, 101)),
@@ -91,9 +88,7 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
   @Test
   fun testResetSharedPrefsClearsData() {
 
-    mockkStatic(::getRandomBytesOfSize)
-
-    every { getRandomBytesOfSize(256) } returns byteArrayOf(-128, 100, 112, 127)
+    every { secureSharedPreference.get256RandomBytes() } returns byteArrayOf(-128, 100, 112, 127)
 
     secureSharedPreference.saveSessionPin(pin = "6699".toCharArray())
 

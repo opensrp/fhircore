@@ -231,9 +231,7 @@ constructor(
 
   fun validateSavedLoginCredentials(username: String, enteredPassword: CharArray): Boolean {
     val credentials = secureSharedPreference.retrieveCredentials()
-
     return if (username.equals(credentials?.username, ignoreCase = true)) {
-
       val generatedHash =
         enteredPassword.toPasswordHash(Base64.getDecoder().decode(credentials!!.salt))
       generatedHash == credentials.passwordHash

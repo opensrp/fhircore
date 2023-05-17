@@ -37,9 +37,9 @@ fun passwordHashString(password: CharArray, salt: ByteArray): String {
   return secretKeyFactory.generateSecret(pbKeySpec).encoded.toString(StandardCharsets.UTF_8)
 }
 
-fun getRandomBytesOfSize(size: Int): ByteArray {
+fun Int.getRandomBytesOfSize(): ByteArray {
   val random = SecureRandom()
-  val randomSaltBytes = ByteArray(size)
+  val randomSaltBytes = ByteArray(this)
   random.nextBytes(randomSaltBytes)
   return randomSaltBytes
 }

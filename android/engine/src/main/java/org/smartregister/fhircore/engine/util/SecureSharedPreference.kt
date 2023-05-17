@@ -24,6 +24,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Base64
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
@@ -44,16 +45,15 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
 
   fun saveCredentials(username: String, password: CharArray) {
-
-    val randomSaltBytes = getRandomBytesOfSize(256)
+    val randomSaltBytes = get256RandomBytes()
 
     secureSharedPreferences.edit {
       putString(
         SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name,
         AuthCredentials(
-            username,
-            Base64.getEncoder().encodeToString(randomSaltBytes),
-            password.toPasswordHash(randomSaltBytes)
+            username = username,
+            salt = Base64.getEncoder().encodeToString(randomSaltBytes),
+            passwordHash = password.toPasswordHash(randomSaltBytes)
           )
           .encodeJson()
       )
@@ -72,9 +72,7 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
       ?.decodeJson<AuthCredentials>()
 
   fun saveSessionPin(pin: CharArray) {
-
-    val randomSaltBytes = getRandomBytesOfSize(256)
-
+    val randomSaltBytes = get256RandomBytes()
     secureSharedPreferences.edit {
       putString(
         SharedPreferenceKey.LOGIN_PIN_SALT.name,
@@ -83,6 +81,7 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
       putString(SharedPreferenceKey.LOGIN_PIN_KEY.name, pin.toPasswordHash(randomSaltBytes))
     }
   }
+  @VisibleForTesting fun get256RandomBytes() = 256.getRandomBytesOfSize()
   fun retrievePinSalt() =
     secureSharedPreferences.getString(SharedPreferenceKey.LOGIN_PIN_SALT.name, null)
 

@@ -30,7 +30,6 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
@@ -54,7 +53,6 @@ import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator.C
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.getRandomBytesOfSize
 import org.smartregister.fhircore.engine.util.toPasswordHash
 import retrofit2.HttpException
 import retrofit2.Response
@@ -168,6 +166,19 @@ class TokenAuthenticatorTest : RobolectricTest() {
     val password = charArrayOf('P', '4', '5', '5', 'W', '4', '0')
     var passwordSalt = byteArrayOf(-128, 100, 112, 127)
 
+    val secureSharedPreference = spyk(secureSharedPreference)
+    val tokenAuthenticator =
+      spyk(
+        TokenAuthenticator(
+          secureSharedPreference = secureSharedPreference,
+          configService = configService,
+          oAuthService = oAuthService,
+          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          accountManager = accountManager,
+          context = context
+        )
+      )
+
     val oAuthResponse =
       OAuthResponse(
         accessToken = token,
@@ -178,8 +189,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
 
-    mockkStatic(::getRandomBytesOfSize)
-    every { getRandomBytesOfSize(256) } returns passwordSalt
+    every { secureSharedPreference.get256RandomBytes() } returns passwordSalt
     every { accountManager.accounts } returns arrayOf()
 
     val accountSlot = slot<Account>()

@@ -96,7 +96,6 @@ fun PinInput(
             onPinEntered(it.toCharArray()) { isValid ->
               isValidPin = isValid
               if (!isValid) {
-
                 keyboard?.show()
                 onShowPinError(true)
               }

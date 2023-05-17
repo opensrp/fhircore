@@ -25,10 +25,12 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.slot
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import io.mockk.verifyOrder
 import java.util.Base64
 import javax.inject.Inject
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -156,6 +158,7 @@ class PinViewModelTest : RobolectricTest() {
   fun testPinLogin() {
 
     mockkStatic(::passwordHashString)
+
     coEvery { passwordHashString(any(), any()) } returns "currentStoredPinHash"
     coEvery { secureSharedPreference.retrieveSessionPin() } returns "currentStoredPinHash"
     coEvery { secureSharedPreference.retrievePinSalt() } returns
@@ -165,8 +168,7 @@ class PinViewModelTest : RobolectricTest() {
 
     var pinIsValid = false
     val callback = { valid: Boolean -> pinIsValid = valid }
-    pinViewModel.pinLogin(loginPin, callback)
-
+    runTest { pinViewModel.pinLogin(loginPin, callback) }
     // Verify the credentials are fetched from the secure shared prefs helper
     verify { secureSharedPreference.retrieveSessionPin() }
     verify { secureSharedPreference.retrievePinSalt() }
@@ -179,5 +181,7 @@ class PinViewModelTest : RobolectricTest() {
 
     // Verify the progressBar flag is set to hidden
     Assert.assertFalse(pinViewModel.pinUiState.value.showProgressBar)
+
+    unmockkStatic(::passwordHashString)
   }
 }

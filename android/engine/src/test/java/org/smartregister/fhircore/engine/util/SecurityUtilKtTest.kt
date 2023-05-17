@@ -42,11 +42,11 @@ internal class SecurityUtilKtTest {
   @Test
   fun testGetRandomBytesOfSizeGeneratesRandomByteArray() {
 
-    val firstBytes = getRandomBytesOfSize(5)
+    val firstBytes = 5.getRandomBytesOfSize()
     Assert.assertNotNull(firstBytes)
     Assert.assertEquals(5, firstBytes.size)
 
-    val secondBytes = getRandomBytesOfSize(5)
+    val secondBytes = 5.getRandomBytesOfSize()
     Assert.assertNotNull(secondBytes)
     Assert.assertEquals(5, firstBytes.size)
 
