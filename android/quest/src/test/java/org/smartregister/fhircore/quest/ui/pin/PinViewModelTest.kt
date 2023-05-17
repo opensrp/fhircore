@@ -20,11 +20,14 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.verify
 import io.mockk.verifyOrder
+import java.util.Base64
 import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
@@ -35,6 +38,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.passwordHashString
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -146,5 +150,34 @@ class PinViewModelTest : RobolectricTest() {
   fun testOnShowPinError() {
     pinViewModel.onShowPinError(false)
     Assert.assertEquals(false, pinViewModel.showError.value)
+  }
+
+  @Test
+  fun testPinLogin() {
+
+    mockkStatic(::passwordHashString)
+    coEvery { passwordHashString(any(), any()) } returns "currentStoredPinHash"
+    coEvery { secureSharedPreference.retrieveSessionPin() } returns "currentStoredPinHash"
+    coEvery { secureSharedPreference.retrievePinSalt() } returns
+      Base64.getEncoder().encodeToString("currentStoredSalt".toByteArray())
+
+    val loginPin = charArrayOf('1', '2', '1', '3', '1', '4')
+
+    var pinIsValid = false
+    val callback = { valid: Boolean -> pinIsValid = valid }
+    pinViewModel.pinLogin(loginPin, callback)
+
+    // Verify the credentials are fetched from the secure shared prefs helper
+    verify { secureSharedPreference.retrieveSessionPin() }
+    verify { secureSharedPreference.retrievePinSalt() }
+
+    // Verify callback is invoked with result after PIN validation
+    Assert.assertTrue(pinIsValid)
+
+    // Verify pin char array is overwritten in memory for valid pin
+    Assert.assertEquals("******", loginPin.concatToString())
+
+    // Verify the progressBar flag is set to hidden
+    Assert.assertFalse(pinViewModel.pinUiState.value.showProgressBar)
   }
 }

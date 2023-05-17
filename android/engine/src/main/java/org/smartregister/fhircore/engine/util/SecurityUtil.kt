@@ -22,10 +22,12 @@ import java.security.SecureRandom
 import java.util.Arrays
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
+import org.jetbrains.annotations.VisibleForTesting
 
 fun CharArray.toPasswordHash(salt: ByteArray) = passwordHashString(this, salt)
 
-private fun passwordHashString(password: CharArray, salt: ByteArray): String {
+@VisibleForTesting
+fun passwordHashString(password: CharArray, salt: ByteArray): String {
   val pbKeySpec = PBEKeySpec(password, salt, 1000000, 256)
   val secretKeyFactory =
     SecretKeyFactory.getInstance(
