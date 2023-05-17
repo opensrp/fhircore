@@ -129,6 +129,13 @@ constructor(
           readOnlyLinkIds
         )
       }
+      //FIXME: For testing purpose only
+      this.item.forEach {
+        it.removeExtension("http://hl7.org/fhir/StructureDefinition/questionnaire-hidden")
+        it.item.forEach {
+          it.removeExtension("http://hl7.org/fhir/StructureDefinition/questionnaire-hidden")
+        }
+      }
       // prepopulate questionnaireItems with initial values
       prePopulationParams?.takeIf { it.isNotEmpty() }?.let { nonEmptyParams ->
         editQuestionnaireResourceParams =
@@ -649,9 +656,14 @@ constructor(
     questionnaire: Questionnaire,
     subjectId: String,
     subjectType: ResourceType,
+    questionnaireConfig: QuestionnaireConfig,
   ): QuestionnaireResponse {
-    var questionnaireResponse =
-      loadQuestionnaireResponse(subjectId, subjectType, questionnaire.logicalId)
+    var questionnaireResponse : QuestionnaireResponse?= null
+    //if questionnaireType is Default that means we have no questionnaireResponse saved on DB
+    if (!questionnaireConfig.type.isDefault()) {
+      questionnaireResponse =
+        loadQuestionnaireResponse(subjectId, subjectType, questionnaire.logicalId)
+    }
 
     if (questionnaireResponse == null) {
       val populationResources = loadPopulationResources(subjectId, subjectType)

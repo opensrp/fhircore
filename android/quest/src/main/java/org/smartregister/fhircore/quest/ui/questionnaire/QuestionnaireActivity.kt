@@ -146,26 +146,25 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
             }
           }
-
-        if (questionnaireConfig.type.isEditMode() || questionnaireConfig.type.isReadOnly()) {
-          questionnaireResponse =
-            questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
-                questionnaire = questionnaire,
-                subjectId = baseResourceId.extractLogicalIdUuid(),
-                subjectType = baseResourceType
-              )
-              .apply { generateMissingItems(questionnaire) }
-
-          if (!questionnaireViewModel.isQuestionnaireResponseValid(
-              questionnaire,
-              questionnaireResponse,
-              this@QuestionnaireActivity
+        questionnaireResponse =
+          questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
+              questionnaire = questionnaire,
+              subjectId = baseResourceId.extractLogicalIdUuid(),
+              subjectType = baseResourceType,
+            questionnaireConfig
             )
-          ) {
-            showToast(getString(R.string.questionnaire_response_broken))
-            finish()
-          }
+            .apply { generateMissingItems(questionnaire) }
+
+        if (!questionnaireViewModel.isQuestionnaireResponseValid(
+            questionnaire,
+            questionnaireResponse,
+            this@QuestionnaireActivity
+          )
+        ) {
+          showToast(getString(R.string.questionnaire_response_broken))
+          finish()
         }
+
 
         // Only add the fragment once, when the activity is first created.
         if (savedInstanceState == null) renderFragment()
