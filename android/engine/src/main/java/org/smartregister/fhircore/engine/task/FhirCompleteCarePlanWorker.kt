@@ -47,10 +47,9 @@ constructor(
   val configurationRegistry: ConfigurationRegistry
 ) : CoroutineWorker(context, workerParams) {
   override suspend fun doWork(): Result {
-
-    val appRegistry =
+    val applicationConfiguration =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
-    val batchSize = appRegistry.taskBackgroundWorkerBatchSize.div(BATCH_SIZE_FACTOR)
+    val batchSize = applicationConfiguration.taskBackgroundWorkerBatchSize.div(BATCH_SIZE_FACTOR)
 
     val lastOffset =
       sharedPreferencesHelper.read(key = WORK_ID.lastOffset(), defaultValue = "0")!!.toInt()
