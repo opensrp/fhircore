@@ -40,7 +40,6 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
-import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.ResourceType
@@ -360,13 +359,6 @@ constructor(
     defaultRepository.patientConditions(this.logicalId).filter { condition ->
       condition.clinicalStatus.coding.any { it.code == "active" }
     }
-
-  suspend fun Patient.observations() =
-    defaultRepository.searchResourceFor<Observation>(
-      subjectId = this.logicalId,
-      subjectParam = Observation.SUBJECT,
-      subjectType = ResourceType.Patient
-    )
 
   suspend fun Patient.practitioners(): List<Practitioner> {
     return generalPractitioner.mapNotNull {
