@@ -48,8 +48,8 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.lastOffset
 
 @HiltAndroidTest
 class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
@@ -71,16 +71,10 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         .setWorkerFactory(FhirCompleteCarePlanWorkerFactory())
         .build()
     every {
-      sharedPreferencesHelper.read(
-        SharedPreferenceKey.FHIR_COMPLETE_CAREPLAN_WORKER_LAST_OFFSET.name,
-        "0"
-      )
+      sharedPreferencesHelper.read(FhirCompleteCarePlanWorker.WORK_ID.lastOffset(), "0")
     } returns "100"
     every {
-      sharedPreferencesHelper.write(
-        SharedPreferenceKey.FHIR_COMPLETE_CAREPLAN_WORKER_LAST_OFFSET.name,
-        "101"
-      )
+      sharedPreferencesHelper.write(FhirCompleteCarePlanWorker.WORK_ID.lastOffset(), "101")
     } just runs
   }
 

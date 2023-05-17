@@ -23,6 +23,7 @@ import java.util.Locale
 import java.util.regex.Pattern
 import org.apache.commons.text.CaseUtils
 import org.apache.commons.text.StringSubstitutor
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import timber.log.Timber
 
 /**
@@ -112,3 +113,5 @@ fun String.parseDate(pattern: String): Date? =
 /** Compare characters of identical strings */
 fun String.compare(anotherString: String): Boolean =
   this.toSortedSet().containsAll(anotherString.toSortedSet())
+
+fun String.lastOffset() = this.uppercase() + "_" + SharedPreferenceKey.LAST_OFFSET.name

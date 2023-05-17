@@ -42,10 +42,10 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.isReady
+import org.smartregister.fhircore.engine.util.extension.lastOffset
 
 class FhirTaskPlanWorkerTest : RobolectricTest() {
 
@@ -57,15 +57,10 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
   @Before
   fun setUp() {
     context = ApplicationProvider.getApplicationContext()
-    every {
-      sharedPreferencesHelper.read(SharedPreferenceKey.FHIR_TASK_PLAN_WORKER_LAST_OFFSET.name, "0")
-    } returns "100"
-    every {
-      sharedPreferencesHelper.write(
-        SharedPreferenceKey.FHIR_TASK_PLAN_WORKER_LAST_OFFSET.name,
-        "101"
-      )
-    } just runs
+    every { sharedPreferencesHelper.read(FhirTaskPlanWorker.WORK_ID.lastOffset(), "0") } returns
+      "100"
+    every { sharedPreferencesHelper.write(FhirTaskPlanWorker.WORK_ID.lastOffset(), "101") } just
+      runs
   }
 
   @Test
@@ -92,12 +87,8 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         Task().apply { status = Task.TaskStatus.INPROGRESS },
         Task().apply { status = Task.TaskStatus.RECEIVED }
       )
-    every {
-      sharedPreferencesHelper.write(
-        SharedPreferenceKey.FHIR_TASK_PLAN_WORKER_LAST_OFFSET.name,
-        "104"
-      )
-    } just runs
+    every { sharedPreferencesHelper.write(FhirTaskPlanWorker.WORK_ID.lastOffset(), "104") } just
+      runs
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
         .setWorkerFactory(

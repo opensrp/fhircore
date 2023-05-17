@@ -30,9 +30,9 @@ import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.lastOffset
 import org.smartregister.fhircore.engine.util.getLastOffset
 
 @HiltWorker
@@ -53,11 +53,7 @@ constructor(
     val batchSize = appRegistry.taskBackgroundWorkerBatchSize.div(BATCH_SIZE_FACTOR)
 
     val lastOffset =
-      sharedPreferencesHelper.read(
-          key = WORK_ID + SharedPreferenceKey.LAST_OFFSET.name,
-          defaultValue = "0"
-        )!!
-        .toInt()
+      sharedPreferencesHelper.read(key = WORK_ID.lastOffset(), defaultValue = "0")!!.toInt()
 
     val carePlans = getCarePlans(batchSize = batchSize, lastOffset = lastOffset)
 
@@ -80,10 +76,7 @@ constructor(
     val updatedLastOffset =
       getLastOffset(items = carePlans, lastOffset = lastOffset, batchSize = batchSize)
 
-    sharedPreferencesHelper.write(
-      key = WORK_ID + SharedPreferenceKey.LAST_OFFSET.name,
-      value = updatedLastOffset.toString()
-    )
+    sharedPreferencesHelper.write(key = WORK_ID.lastOffset(), value = updatedLastOffset.toString())
     return Result.success()
   }
 
