@@ -101,7 +101,6 @@ constructor(
       }
     }
 
-    Timber.i("Done task scheduling")
     val updatedLastOffset =
       getLastOffset(items = tasks, lastOffset = lastOffset, batchSize = batchSize)
     sharedPreferencesHelper.write(
