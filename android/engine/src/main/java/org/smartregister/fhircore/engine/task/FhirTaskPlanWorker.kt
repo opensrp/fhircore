@@ -54,16 +54,12 @@ constructor(
 
   override suspend fun doWork(): Result {
 
-    // TODO also filter by date range for better performance
-    // TODO This is a temp fix for https://github.com/google/android-fhir/issues/1825 - search fails
-    // due to indexing outdated resources
-
-    val appRegistry =
+    val appConfig =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
-    val batchSize = appRegistry.taskBackgroundWorkerBatchSize
+    val batchSize = appConfig.taskBackgroundWorkerBatchSize
     val lastOffset =
       sharedPreferencesHelper.read(
-          key = SharedPreferenceKey.FHIR_TASK_PLAN_WORKER_LAST_OFFSET.name,
+          key = WORK_ID + SharedPreferenceKey.LAST_OFFSET.name,
           defaultValue = "0"
         )!!
         .toInt()
@@ -109,8 +105,8 @@ constructor(
     val updatedLastOffset =
       getLastOffset(items = tasks, lastOffset = lastOffset, batchSize = batchSize)
     sharedPreferencesHelper.write(
-      key = SharedPreferenceKey.FHIR_TASK_PLAN_WORKER_LAST_OFFSET.name,
-      updatedLastOffset.toString()
+      key = WORK_ID + SharedPreferenceKey.LAST_OFFSET.name,
+      value = updatedLastOffset.toString()
     )
     return Result.success()
   }

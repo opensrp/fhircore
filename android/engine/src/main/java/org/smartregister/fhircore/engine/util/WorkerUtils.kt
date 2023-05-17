@@ -16,12 +16,9 @@
 
 package org.smartregister.fhircore.engine.util
 
-fun getLastOffset(items: List<Any>, lastOffset: Int, batchSize: Int): Int {
-  return if (items.isNotEmpty() && items.size >= batchSize) {
-    lastOffset + batchSize
-  } else if (items.isNotEmpty() && items.size < batchSize) {
-    lastOffset + items.size
-  } else {
-    0
+fun getLastOffset(items: List<Any>, lastOffset: Int, batchSize: Int): Int =
+  when {
+    items.isNotEmpty() && items.size >= batchSize -> lastOffset + batchSize
+    items.isNotEmpty() && items.size < batchSize -> lastOffset + items.size
+    else -> 0
   }
-}

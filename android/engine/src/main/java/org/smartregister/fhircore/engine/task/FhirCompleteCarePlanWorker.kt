@@ -54,7 +54,7 @@ constructor(
 
     val lastOffset =
       sharedPreferencesHelper.read(
-          key = SharedPreferenceKey.FHIR_COMPLETE_CAREPLAN_WORKER_LAST_OFFSET.name,
+          key = WORK_ID + SharedPreferenceKey.LAST_OFFSET.name,
           defaultValue = "0"
         )!!
         .toInt()
@@ -81,8 +81,8 @@ constructor(
       getLastOffset(items = carePlans, lastOffset = lastOffset, batchSize = batchSize)
 
     sharedPreferencesHelper.write(
-      key = SharedPreferenceKey.FHIR_COMPLETE_CAREPLAN_WORKER_LAST_OFFSET.name,
-      updatedLastOffset.toString()
+      key = WORK_ID + SharedPreferenceKey.LAST_OFFSET.name,
+      value = updatedLastOffset.toString()
     )
     return Result.success()
   }
