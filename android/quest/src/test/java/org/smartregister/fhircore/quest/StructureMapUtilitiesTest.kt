@@ -199,7 +199,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val immunization = iParser.parseResource(Immunization::class.java, immunizationJson)
     var questionnaireResponse: QuestionnaireResponse
 
-    runBlocking { questionnaireResponse = ResourceMapper.populate(questionnaire, immunization) }
+    runBlocking { questionnaireResponse = ResourceMapper.populate(questionnaire, immunization, Patient()) }
 
     val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     val contextR4 =

@@ -47,6 +47,7 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
@@ -585,7 +586,7 @@ constructor(
     }
   }
 
-  fun deleteResource(resourceType: String, resourceIdentifier: String) {
+  fun deleteResource(resourceType: ResourceType, resourceIdentifier: String) {
     viewModelScope.launch {
       defaultRepository.delete(resourceType = resourceType, resourceId = resourceIdentifier)
     }
@@ -665,8 +666,17 @@ constructor(
         loadQuestionnaireResponse(subjectId, subjectType, questionnaire.logicalId)
     }
 
+    var populationResources = ArrayList<Resource>()
     if (questionnaireResponse == null) {
-      val populationResources = loadPopulationResources(subjectId, subjectType)
+      if (subjectType == ResourceType.Task) {
+        if (questionnaireConfig.resourceIdentifier != null && questionnaireConfig.resourceType != null) {
+          Timber.d("value of id %s, value of resourceType %s", questionnaireConfig.resourceIdentifier, questionnaireConfig.resourceType)
+          populationResources = loadPopulationResources(questionnaireConfig.resourceIdentifier!!,
+            questionnaireConfig.resourceType!!
+          )
+        }
+      }
+      populationResources.addAll(loadPopulationResources(subjectId, subjectType))
       questionnaireResponse = populateQuestionnaireResponse(questionnaire, populationResources)
     }
 
@@ -762,12 +772,20 @@ constructor(
       ResourceType.Group -> {
         loadGroup(subjectId)?.run { populationResources.add(this) }
       }
+      ResourceType.Task -> {
+        loadTask(subjectId)?.run { populationResources.add(this)}
+      }
       else -> {
         Timber.tag("QuestionnaireViewModel.loadPopulationResources")
           .d("$subjectType resource type is not supported to load populated resources!")
       }
     }
     return populationResources
+  }
+
+  /** Loads a Resource resource with the given ID. */
+  private suspend fun loadTask(resourceId: String): Task? {
+    return defaultRepository.loadResource(resourceId)
   }
 
   /** Loads a Patient resource with the given ID. */
