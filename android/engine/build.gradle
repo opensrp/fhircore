@@ -172,7 +172,7 @@ dependencies {
     api("androidx.compose.material:material-icons-core:$composeVersion")
     api("androidx.compose.material:material-icons-extended:$composeVersion")
     api("androidx.compose.runtime:runtime-livedata:$composeVersion")
-    api("androidx.navigation:navigation-compose:2.5.0-alpha03")
+    api("androidx.navigation:navigation-compose:2.5.3")
     api ("androidx.hilt:hilt-navigation-compose:1.0.0")
     api("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0-alpha04")
     api("androidx.paging:paging-compose:1.0.0-alpha16")
@@ -184,12 +184,12 @@ dependencies {
     def coroutineVersion = '1.6.0'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
-    api("org.smartregister:contrib-barcode:0.1.0-beta3-preview4-SNAPSHOT"){
+    api("org.smartregister:contrib-barcode:0.1.0-beta3-preview5-SNAPSHOT"){
         transitive = true
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.google.android.fhir', module: 'engine'
     }
-    api('org.smartregister:data-capture:1.0.0-preview3-SNAPSHOT') {
+    api('org.smartregister:data-capture:1.0.0-preview5-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
