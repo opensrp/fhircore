@@ -917,6 +917,28 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       }
   }
 
+  fun `generateOrUpdateCarePlan should verify ANC tests`() =
+    runTest {
+      val planDefinitionResources = loadPlanDefinitionResources("anc-test", listOf("register"))
+      val planDefinition = planDefinitionResources.planDefinition
+      val patient = planDefinitionResources.patient
+      val questionnaireResponses = planDefinitionResources.questionnaireResponses
+      val resourcesSlot = planDefinitionResources.resourcesSlot
+
+      // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
+
+      fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        planDefinition,
+        patient,
+        Bundle()
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
+          )
+      )!!
+        .also { println(it.encodeResourceToString()) }
+    }
+
+
   @Test
   fun `generateOrUpdateCarePlan should generate careplan for 5 visits when lmp has passed 3 months`() =
       runTest {
