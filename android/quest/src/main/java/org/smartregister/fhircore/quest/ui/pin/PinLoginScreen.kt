@@ -56,6 +56,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -67,6 +68,9 @@ import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.PinInput
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+
+const val CIRCULAR_PROGRESS_INDICATOR = "progress_indicator"
+const val PIN_LOGO_IMAGE = "pin_logo_image"
 
 @Composable
 fun PinLoginScreen(viewModel: PinViewModel) {
@@ -123,9 +127,12 @@ fun PinLoginPage(
         Spacer(modifier = modifier.fillMaxHeight(0.22f))
         Column(modifier = modifier.fillMaxWidth()) {
           if (pinUiState.setupPin) {
-            PinLogoSection(showLogo = true, title = stringResource(id = R.string.set_pin))
+            PinLogoSection(
+              showLogo = pinUiState.showLogo,
+              title = stringResource(id = R.string.set_pin)
+            )
           } else {
-            PinLogoSection(showLogo = true, title = pinUiState.appName)
+            PinLogoSection(showLogo = pinUiState.showLogo, title = pinUiState.appName)
           }
           Text(
             text = pinUiState.message,
@@ -191,7 +198,7 @@ fun PinLoginPage(
               if (pinUiState.showProgressBar) {
 
                 CircularProgressIndicator(
-                  modifier = modifier.size(18.dp),
+                  modifier = modifier.size(18.dp).testTag(CIRCULAR_PROGRESS_INDICATOR),
                   strokeWidth = 1.6.dp,
                   color = Color.White
                 )
@@ -217,7 +224,11 @@ private fun PinLogoSection(modifier: Modifier = Modifier, showLogo: Boolean, tit
         painter = painterResource(id = R.drawable.ic_app_logo),
         contentDescription = stringResource(id = R.string.app_logo),
         modifier =
-          modifier.align(Alignment.CenterHorizontally).requiredHeight(120.dp).requiredWidth(140.dp)
+          modifier
+            .align(Alignment.CenterHorizontally)
+            .requiredHeight(120.dp)
+            .requiredWidth(140.dp)
+            .testTag(PIN_LOGO_IMAGE)
       )
     }
     Text(

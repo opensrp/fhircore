@@ -22,6 +22,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import org.junit.Rule
@@ -111,12 +112,66 @@ class PinLoginScreenKtTest {
             appName = "MOH eCBIS",
             setupPin = false,
             pinLength = 4,
-            showLogo = true
+            showLogo = true,
+            showProgressBar = true
           ),
         onShowPinError = {},
         onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
       )
     }
     composeRule.onNodeWithText(errorMessage, ignoreCase = true).assertExists().assertIsDisplayed()
+  }
+  @Test
+  fun testThatPinSetupPageShowsCircularProgressIndicator() {
+    composeRule.setContent {
+      PinLoginPage(
+        onSetPin = {},
+        showError = false,
+        onMenuLoginClicked = {},
+        forgotPin = {},
+        pinUiState =
+          PinUiState(
+            message = "Provider will use this PIN to login",
+            appName = "Quest",
+            setupPin = true,
+            pinLength = 4,
+            showLogo = false,
+            showProgressBar = true
+          ),
+        onShowPinError = {},
+        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
+      )
+    }
+
+    composeRule.onAllNodesWithText("Set Pin", ignoreCase = true).assertCountEquals(1)
+    composeRule.onAllNodesWithTag(PIN_CELL_TEST_TAG).assertCountEquals(4)
+    composeRule.onNodeWithTag(CIRCULAR_PROGRESS_INDICATOR).assertExists().assertIsDisplayed()
+  }
+  @Test
+  fun testThatPinLoginPageWithShowLogoFalseHidesLogoImage() {
+    val pinStateMessage = "Provider will use this PIN to login"
+    composeRule.setContent {
+      PinLoginPage(
+        onSetPin = {},
+        showError = false,
+        onMenuLoginClicked = {},
+        forgotPin = {},
+        pinUiState =
+          PinUiState(
+            message = pinStateMessage,
+            appName = "Quest APP",
+            setupPin = false,
+            pinLength = 1,
+            showLogo = false,
+            showProgressBar = true
+          ),
+        onShowPinError = {},
+        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
+      )
+    }
+
+    composeRule.onAllNodesWithText("Quest APP", ignoreCase = true).assertCountEquals(1)
+    composeRule.onNodeWithText(pinStateMessage).assertExists().assertIsDisplayed()
+    composeRule.onNodeWithTag(PIN_LOGO_IMAGE).assertDoesNotExist()
   }
 }
