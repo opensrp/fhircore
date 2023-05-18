@@ -30,6 +30,7 @@ import io.mockk.verify
 import io.mockk.verifyOrder
 import java.util.Base64
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
@@ -154,6 +155,7 @@ class PinViewModelTest : RobolectricTest() {
     Assert.assertEquals(false, pinViewModel.showError.value)
   }
 
+  @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun testPinLogin() {
 
