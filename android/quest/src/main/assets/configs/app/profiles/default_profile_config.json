@@ -1061,9 +1061,10 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
-                          "type": "EDIT",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
+                          "resourceType": "Patient",
                           "resourceIdentifier": "@{taskFor}"
                         },
                         "params": [
@@ -1331,7 +1332,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
-                          "type": "EDIT",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -1452,7 +1453,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
-                          "type": "EDIT",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -1573,7 +1574,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
-                          "type": "EDIT",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -1694,7 +1695,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
-                          "type": "EDIT",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -1815,7 +1816,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
-                          "type": "EDIT",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -1936,7 +1937,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
-                          "type": "EDIT",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -2056,7 +2057,7 @@
                         "workflow": "LAUNCH_QUESTIONNAIRE",
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
-                          "type": "EDIT",
+
                           "title": "@{taskDescription}",
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
@@ -2178,7 +2179,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
-                          "type": "EDIT",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -2244,7 +2245,6 @@
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
             "id": "3276f55c-b25e-455b-ae4e-8846fb8fd039",
-            "type": "EDIT",
             "title": "Record sick child",
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
