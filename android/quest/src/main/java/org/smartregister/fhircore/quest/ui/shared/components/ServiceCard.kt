@@ -211,7 +211,7 @@ private fun ServiceMemberIcons(modifier: Modifier = Modifier, serviceMemberIcons
   val iconsSplit = serviceMemberIcons?.split(",") ?: listOf()
   val twoMemberIcons = iconsSplit.map { it.capitalize().trim() }.take(2)
   if (twoMemberIcons.isNotEmpty()) {
-    Row(modifier.padding(horizontal = 8.dp)) {
+    Row(modifier.padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
       twoMemberIcons.forEach {
         if (it.isNotEmpty() && ServiceMemberIcon.values().map { icon -> icon.name }.contains(it))
           Icon(
@@ -224,8 +224,18 @@ private fun ServiceMemberIcons(modifier: Modifier = Modifier, serviceMemberIcons
       if (twoMemberIcons.size == 2 && iconsSplit.size > 2) {
         Box(
           contentAlignment = Alignment.Center,
-          modifier = modifier.clip(CircleShape).size(24.dp).background(DefaultColor.copy(0.1f))
-        ) { Text(text = "+${iconsSplit.size - 2}", fontSize = 12.sp, color = Color.DarkGray) }
+          modifier = Modifier.clip(CircleShape).size(24.dp).background(DefaultColor.copy(0.1f))
+        ) {
+          Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "+${iconsSplit.size - 2}",
+            fontSize = 12.sp,
+            color = Color.DarkGray,
+            softWrap = false,
+            maxLines = 1,
+            textAlign = TextAlign.Center
+          )
+        }
       }
     }
   }
@@ -380,7 +390,8 @@ private fun ServiceCardServiceDuePreview() {
                     primaryTextColor = "#5A5A5A",
                   )
                 ),
-              serviceMemberIcons = "CHILD,PREGNANT_WOMAN,CHILD,CHILD",
+              serviceMemberIcons =
+                "CHILD,PREGNANT_WOMAN,CHILD,CHILD,PREGNANT_WOMAN,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD",
               showVerticalDivider = true,
               serviceButton =
                 ButtonProperties(
