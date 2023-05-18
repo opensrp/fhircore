@@ -34,8 +34,9 @@ data class ApplicationConfiguration(
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null,
   val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
   val reportRepeatTime: String = "",
-  val taskExpireJobDuration: String = "PT01H",
-  val taskCompleteCarePlanJobDuration: String = "PT01H",
+  val taskStatusUpdateJobDuration: String = "PT15M",
+  val taskExpireJobDuration: String = "PT15M",
+  val taskCompleteCarePlanJobDuration: String = "PT15M",
   val showLogo: Boolean = true,
-  val taskBackgroundWorkerBatchSize: Int = 500
+  val taskBackgroundWorkerBatchSize: Int = 100
 ) : Configuration()

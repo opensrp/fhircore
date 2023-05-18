@@ -105,19 +105,12 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 @HiltAndroidTest
 class FhirCarePlanGeneratorTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
-  val fhirEngine: FhirEngine = mockk()
-
-  lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
-
   @Inject lateinit var transformSupportServices: TransformSupportServices
-
   @Inject lateinit var fhirPathEngine: FHIRPathEngine
-
-  lateinit var structureMapUtilities: StructureMapUtilities
-
+  val fhirEngine: FhirEngine = mockk()
+  private lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
+  private lateinit var structureMapUtilities: StructureMapUtilities
   private val defaultRepository: DefaultRepository = mockk()
-
   private val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
   private var immunizationResource = Immunization()
   private var encounter = Encounter()

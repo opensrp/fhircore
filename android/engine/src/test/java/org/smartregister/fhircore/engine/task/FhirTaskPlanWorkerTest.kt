@@ -38,10 +38,12 @@ import org.hl7.fhir.r4.model.Task
 import org.joda.time.DateTime
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.isReady
@@ -49,6 +51,7 @@ import org.smartregister.fhircore.engine.util.extension.lastOffset
 
 class FhirTaskPlanWorkerTest : RobolectricTest() {
 
+  @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   private lateinit var context: Context
   val fhirEngine: FhirEngine = mockk()
   val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
@@ -375,7 +378,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
     Assert.assertEquals(Task.TaskStatus.INPROGRESS, task.status)
   }
 
-  class FhirTaskPlanWorkerFactory(
+  inner class FhirTaskPlanWorkerFactory(
     val fhirEngine: FhirEngine,
     val sharedPreferencesHelper: SharedPreferencesHelper,
     val configurationRegistry: ConfigurationRegistry
@@ -390,7 +393,8 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         workerParams = workerParameters,
         fhirEngine = fhirEngine,
         sharedPreferencesHelper = sharedPreferencesHelper,
-        configurationRegistry = configurationRegistry
+        configurationRegistry = configurationRegistry,
+        dispatcherProvider = coroutineTestRule.testDispatcherProvider
       )
     }
   }
