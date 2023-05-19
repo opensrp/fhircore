@@ -18,19 +18,20 @@ package org.smartregister.fhircore.engine.configuration.view
 
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
 data class CardViewProperties(
   override val viewType: ViewType,
   override val weight: Float = 0f,
-  override val backgroundColor: String? = null,
+  override var backgroundColor: String? = null,
   override val padding: Int = 0,
   override val borderRadius: Int = 2,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "true",
-  override val visible: String = "true",
+  override var visible: String = "true",
   val content: List<ViewProperties> = emptyList(),
   val elevation: Int = 5,
   val cornerSize: Int = 6,
@@ -39,4 +40,11 @@ data class CardViewProperties(
   val headerAction: CompoundTextProperties? = null,
   val emptyContentMessage: String = "",
   val contentPadding: Int = 16
-) : ViewProperties()
+) : ViewProperties() {
+  override fun interpolate(computedValuesMap: Map<String, Any>): CardViewProperties {
+    return (super.interpolate(computedValuesMap) as CardViewProperties).copy(
+      headerAction = headerAction?.interpolate(computedValuesMap),
+      header = header?.interpolate(computedValuesMap)
+    )
+  }
+}

@@ -23,14 +23,14 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 data class PersonalDataProperties(
   override val viewType: ViewType = ViewType.PERSONAL_DATA,
   override val weight: Float = 0f,
-  override val backgroundColor: String? = "#FFFFFF",
+  override var backgroundColor: String? = "#FFFFFF",
   override val padding: Int = 0,
   override val borderRadius: Int = 2,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
-  override val visible: String = "true",
+  override var visible: String = "true",
   val personalDataItems: List<PersonalDataItem> = emptyList()
 ) : ViewProperties()
 

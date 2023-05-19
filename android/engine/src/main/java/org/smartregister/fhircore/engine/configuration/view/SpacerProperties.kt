@@ -23,14 +23,14 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 data class SpacerProperties(
   override val viewType: ViewType = ViewType.SPACER,
   override val weight: Float = 0f,
-  override val backgroundColor: String? = "#FFFFFF",
+  override var backgroundColor: String? = "#FFFFFF",
   override val padding: Int = 0,
   override val borderRadius: Int = 2,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
-  override val visible: String = "true",
+  override var visible: String = "true",
   val height: Float? = null,
   val width: Float? = null,
 ) : ViewProperties()

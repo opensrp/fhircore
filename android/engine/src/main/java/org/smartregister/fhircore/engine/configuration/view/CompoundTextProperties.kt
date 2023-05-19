@@ -20,19 +20,20 @@ import androidx.compose.ui.text.font.FontWeight
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
 data class CompoundTextProperties(
   override val viewType: ViewType = ViewType.COMPOUND_TEXT,
   override val weight: Float = 0f,
-  override val backgroundColor: String? = null,
+  override var backgroundColor: String? = null,
   override val padding: Int = 0,
   override val borderRadius: Int = 2,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
-  override val visible: String = "true",
+  override var visible: String = "false",
   val primaryText: String? = null,
   val primaryTextColor: String? = null,
   val secondaryText: String? = null,
@@ -49,7 +50,19 @@ data class CompoundTextProperties(
   val colorOpacity: Float = 1f,
   val textCase: TextCase? = null,
   val overflow: TextOverFlow? = null
-) : ViewProperties()
+) : ViewProperties() {
+  override fun interpolate(computedValuesMap: Map<String, Any>): CompoundTextProperties {
+    return (super.interpolate(computedValuesMap) as CompoundTextProperties).copy(
+      primaryText = primaryText?.interpolate(computedValuesMap),
+      secondaryText = secondaryText?.interpolate(computedValuesMap),
+      primaryTextColor = primaryTextColor?.interpolate(computedValuesMap),
+      primaryTextBackgroundColor = primaryTextBackgroundColor?.interpolate(computedValuesMap),
+      secondaryTextColor = secondaryTextColor?.interpolate(computedValuesMap),
+      secondaryTextBackgroundColor = secondaryTextBackgroundColor?.interpolate(computedValuesMap),
+      separator = separator?.interpolate(computedValuesMap)
+    )
+  }
+}
 
 enum class TextFontWeight(val fontWeight: FontWeight) {
   THIN(FontWeight.Thin),

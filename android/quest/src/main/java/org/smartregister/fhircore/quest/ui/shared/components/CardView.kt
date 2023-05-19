@@ -53,8 +53,7 @@ fun CardView(
   resourceData: ResourceData,
   navController: NavController
 ) {
-  val headerActionVisible =
-    viewProperties.headerAction?.interpolateVisible(resourceData.computedValuesMap).toBoolean()
+  val headerActionVisible = viewProperties.headerAction?.visible.toBoolean()
   Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
     // Header section
     Spacer(modifier = modifier.height(8.dp))
@@ -67,10 +66,7 @@ fun CardView(
         CompoundText(
           modifier =
             modifier
-              .conditional(
-                viewProperties.headerAction != null,
-                { weight(if (headerActionVisible) 0.6f else 1f) }
-              )
+              .conditional(headerActionVisible, { weight(if (headerActionVisible) 0.6f else 1f) })
               .wrapContentWidth(Alignment.Start),
           compoundTextProperties = viewProperties.header!!.copy(textCase = TextCase.UPPER_CASE),
           resourceData = resourceData,
@@ -78,8 +74,8 @@ fun CardView(
         )
         if (viewProperties.headerAction != null && headerActionVisible) {
           CompoundText(
-            modifier = modifier.wrapContentWidth(Alignment.End),
-            compoundTextProperties = viewProperties.headerAction!!.copy(),
+            modifier = modifier.wrapContentWidth(Alignment.End).weight(0.4f),
+            compoundTextProperties = viewProperties.headerAction!!,
             resourceData = resourceData,
             navController = navController
           )
@@ -124,14 +120,14 @@ private fun CardViewWithoutPaddingPreview() {
             ),
           header =
             CompoundTextProperties(
-              primaryText = "HOUSE MEMBERS",
+              primaryText = "Immunizations at 10 weeks",
               fontSize = 18.0f,
               primaryTextColor = "#6F7274",
             ),
           headerAction =
             CompoundTextProperties(
-              primaryText = "Record all",
-              primaryTextColor = "#6F7274",
+              primaryText = "Record All",
+              primaryTextColor = "infoColor",
               clickable = "true",
               visible = "true"
             )
