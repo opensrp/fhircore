@@ -29,6 +29,7 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator.checkQuestionnaireResponse
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -40,10 +41,13 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -55,6 +59,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.Test.None
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowAlertDialog
@@ -67,6 +72,7 @@ import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.distinctifyLinkId
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -186,6 +192,139 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(patient),
       result.getStringArrayList(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.get(0)
     )
+  }
+
+  @Test
+  fun testGeneratedQuestionnaireResponseWithMultipleLinkIdNotValid() = runTest {
+    val questionnaireViewModel2 = spyk(questionnaireViewModel)
+    val questionnaire =
+      Questionnaire().apply {
+        addItem().apply {
+          linkId = "page-1"
+          type = Questionnaire.QuestionnaireItemType.GROUP
+          text = "Page 1"
+          addExtension().apply {
+            url = "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl"
+            setValue(
+              CodeableConcept(
+                Coding("http://hl7.org/fhir/questionnaire-item-control", "page", "Page")
+              )
+            )
+          }
+          addItem().apply {
+            linkId = "phone-info"
+            type = Questionnaire.QuestionnaireItemType.GROUP
+            text = "Phone Info"
+            addItem().apply {
+              linkId = "phone-type"
+              text = "Phone Type"
+              type = Questionnaire.QuestionnaireItemType.CHOICE
+              addAnswerOption().apply { value = StringType("Mobile") }
+              addAnswerOption().apply { value = StringType("Office") }
+            }
+
+            addItem().apply {
+              linkId = "phone-value-1"
+              text = "Phone Number"
+              type = Questionnaire.QuestionnaireItemType.STRING
+              addEnableWhen().apply {
+                question = "phone-type"
+                operator = Questionnaire.QuestionnaireItemOperator.EQUAL
+                answer = StringType("Office")
+              }
+            }
+
+            addItem().apply {
+              linkId = "phone-value-1"
+              text = "Phone Number"
+              type = Questionnaire.QuestionnaireItemType.STRING
+              addEnableWhen().apply {
+                question = "phone-type"
+                operator = Questionnaire.QuestionnaireItemOperator.EQUAL
+                answer = StringType("Mobile")
+              }
+            }
+          }
+        }
+      }
+    val populationIntent =
+      Intent().apply {
+        putStringArrayListExtra(
+          QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
+          arrayListOf(Patient().encodeResourceToString())
+        )
+      }
+    val questionnaireResponse =
+      questionnaireViewModel2.generateQuestionnaireResponse(questionnaire, populationIntent)
+    assertFailsWith<IllegalArgumentException>(
+      message = "Multiple answers for non-repeat questionnaire item phone-value-1"
+    ) { checkQuestionnaireResponse(questionnaire, questionnaireResponse) }
+  }
+
+  @Test(expected = None::class)
+  fun testGeneratedQuestionnaireResponseWithDistinctifyLinkIdValid() = runTest {
+    val questionnaireViewModel2 = spyk(questionnaireViewModel)
+    val questionnaire =
+      Questionnaire().apply {
+        addItem().apply {
+          linkId = "page-1"
+          type = Questionnaire.QuestionnaireItemType.GROUP
+          text = "Page 1"
+          addExtension().apply {
+            url = "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl"
+            setValue(
+              CodeableConcept(
+                Coding("http://hl7.org/fhir/questionnaire-item-control", "page", "Page")
+              )
+            )
+          }
+          addItem().apply {
+            linkId = "phone-info"
+            type = Questionnaire.QuestionnaireItemType.GROUP
+            text = "Phone Info"
+            addItem().apply {
+              linkId = "phone-type"
+              text = "Phone Type"
+              type = Questionnaire.QuestionnaireItemType.CHOICE
+              addAnswerOption().apply { value = StringType("Mobile") }
+              addAnswerOption().apply { value = StringType("Office") }
+            }
+
+            addItem().apply {
+              linkId = "phone-value-1"
+              text = "Phone Number"
+              type = Questionnaire.QuestionnaireItemType.STRING
+              addEnableWhen().apply {
+                question = "phone-type"
+                operator = Questionnaire.QuestionnaireItemOperator.EQUAL
+                answer = StringType("Office")
+              }
+            }
+
+            addItem().apply {
+              linkId = "phone-value-1"
+              text = "Phone Number"
+              type = Questionnaire.QuestionnaireItemType.STRING
+              addEnableWhen().apply {
+                question = "phone-type"
+                operator = Questionnaire.QuestionnaireItemOperator.EQUAL
+                answer = StringType("Mobile")
+              }
+            }
+          }
+        }
+      }
+    val populationIntent =
+      Intent().apply {
+        putStringArrayListExtra(
+          QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
+          arrayListOf(Patient().encodeResourceToString())
+        )
+      }
+    val questionnaireResponse =
+      questionnaireViewModel2.generateQuestionnaireResponse(questionnaire, populationIntent)
+    questionnaireResponse.distinctifyLinkId()
+    checkQuestionnaireResponse(questionnaire, questionnaireResponse)
   }
 
   @Test
