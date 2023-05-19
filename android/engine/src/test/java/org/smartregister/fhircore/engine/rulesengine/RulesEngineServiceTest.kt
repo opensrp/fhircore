@@ -21,6 +21,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import java.util.Locale
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
+import org.joda.time.LocalDate
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -28,6 +29,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.formatDate
 
 @HiltAndroidTest
 class RulesEngineServiceTest : RobolectricTest() {
@@ -96,5 +99,18 @@ class RulesEngineServiceTest : RobolectricTest() {
     Assert.assertEquals(0, rulesEngineService.retrieveCount("abz", relatedResourceCounts))
     Assert.assertEquals(0, rulesEngineService.retrieveCount("abc", emptyList()))
     Assert.assertEquals(0, rulesEngineService.retrieveCount("abc", null))
+  }
+  @Test
+  fun testGetDateDifferenceFromYears() {
+    val criteria1 = "5" // Under 5 years
+    val criteria2 = "18" // Under 18 years
+    val actualUnderFive = rulesEngineService.getDateFilterFromCriteria(criteria1)
+    val actualUnder18 = rulesEngineService.getDateFilterFromCriteria(criteria2)
+    val expectedUnderFive =
+      LocalDate.now().minusYears(criteria1.toInt()).toDate().formatDate(SDF_YYYY_MM_DD)
+    val expectedUnder18 =
+      LocalDate.now().minusYears(criteria2.toInt()).toDate().formatDate(SDF_YYYY_MM_DD)
+    Assert.assertEquals(expectedUnderFive, actualUnderFive)
+    Assert.assertEquals(expectedUnder18, actualUnder18)
   }
 }

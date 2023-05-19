@@ -31,11 +31,11 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
-import org.jeasy.rules.api.RuleListener
 import org.jeasy.rules.api.Rules
 import org.jeasy.rules.core.DefaultRulesEngine
 import org.jeasy.rules.jexl.JexlRule
 import org.joda.time.DateTime
+import org.joda.time.LocalDate
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -44,6 +44,7 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -62,8 +63,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val dispatcherProvider: DispatcherProvider
-) : RuleListener {
-
+) : RulesInterface {
   val rulesEngineService = RulesEngineService()
   private val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
   private val jexlEngine =
@@ -85,36 +85,6 @@ constructor(
   init {
     rulesEngine.registerRuleListener(this)
   }
-
-  override fun beforeEvaluate(rule: Rule, facts: Facts): Boolean = true
-
-  override fun onSuccess(rule: Rule, facts: Facts) {
-    if (BuildConfig.DEBUG) {
-      val computedValuesMap = facts.get(DATA) as Map<String, Any>
-      Timber.d("Rule executed: %s -> %s", rule, computedValuesMap[rule.name])
-    }
-  }
-
-  override fun onFailure(rule: Rule, facts: Facts, exception: Exception) =
-    if (exception is JexlException) {
-      when (exception) {
-        // Just display error message for undefined variable; expected for missing facts
-        is JexlException.Variable ->
-          log(
-            exception,
-            "${exception.localizedMessage}, consider checking for null before usage: e.g ${exception.variable} != null"
-          )
-        else -> log(exception)
-      }
-    } else log(exception)
-
-  override fun onEvaluationError(rule: Rule, facts: Facts, exception: java.lang.Exception) {
-    log(exception, "Evaluation error")
-  }
-
-  override fun afterEvaluate(rule: Rule, facts: Facts, evaluationResult: Boolean) = Unit
-
-  fun log(exception: java.lang.Exception, message: String? = null) = Timber.e(exception, message)
 
   /**
    * This function executes the actions defined in the [Rule] s generated from the provided list of
@@ -417,6 +387,9 @@ constructor(
         ?.find { parentResourceId.equals(it.parentResourceId, ignoreCase = true) }
         ?.count
         ?: 0
+
+    fun getDateFilterFromCriteria(criteria: String) =
+      LocalDate.now().minusYears(criteria.toInt()).toDate().formatDate(SDF_YYYY_MM_DD)
   }
 
   companion object {
