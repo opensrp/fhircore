@@ -130,7 +130,7 @@ constructor(
           readOnlyLinkIds
         )
       }
-      //FIXME: For testing purpose only
+      // FIXME: For testing purpose only
       this.item.forEach {
         it.removeExtension("http://hl7.org/fhir/StructureDefinition/questionnaire-hidden")
         it.item.forEach {
@@ -659,21 +659,23 @@ constructor(
     subjectType: ResourceType,
     questionnaireConfig: QuestionnaireConfig,
   ): QuestionnaireResponse {
-    var questionnaireResponse : QuestionnaireResponse?= null
-    //if questionnaireType is Default that means we have no questionnaireResponse saved on DB
+    var questionnaireResponse: QuestionnaireResponse? = null
+    // if questionnaireType is Default that means we don't have to load response from DB
     if (!questionnaireConfig.type.isDefault()) {
       questionnaireResponse =
         loadQuestionnaireResponse(subjectId, subjectType, questionnaire.logicalId)
     }
-
     var populationResources = ArrayList<Resource>()
     if (questionnaireResponse == null) {
       if (subjectType == ResourceType.Task) {
-        if (questionnaireConfig.resourceIdentifier != null && questionnaireConfig.resourceType != null) {
-          Timber.d("value of id %s, value of resourceType %s", questionnaireConfig.resourceIdentifier, questionnaireConfig.resourceType)
-          populationResources = loadPopulationResources(questionnaireConfig.resourceIdentifier!!,
-            questionnaireConfig.resourceType!!
-          )
+        if (questionnaireConfig.resourceIdentifier != null &&
+            questionnaireConfig.resourceType != null
+        ) {
+          populationResources =
+            loadPopulationResources(
+              questionnaireConfig.resourceIdentifier!!,
+              questionnaireConfig.resourceType!!
+            )
         }
       }
       populationResources.addAll(loadPopulationResources(subjectId, subjectType))
@@ -773,7 +775,7 @@ constructor(
         loadGroup(subjectId)?.run { populationResources.add(this) }
       }
       ResourceType.Task -> {
-        loadTask(subjectId)?.run { populationResources.add(this)}
+        loadTask(subjectId)?.run { populationResources.add(this) }
       }
       else -> {
         Timber.tag("QuestionnaireViewModel.loadPopulationResources")
