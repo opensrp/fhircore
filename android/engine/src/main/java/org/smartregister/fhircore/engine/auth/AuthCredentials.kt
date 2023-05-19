@@ -18,4 +18,5 @@ package org.smartregister.fhircore.engine.auth
 
 import kotlinx.serialization.Serializable
 
-@Serializable data class AuthCredentials(val username: String, val password: String)
+@Serializable
+data class AuthCredentials(val username: String, val salt: String, val passwordHash: String)

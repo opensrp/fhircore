@@ -14,20 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util
+package org.smartregister.fhircore.quest.event
 
-enum class SharedPreferenceKey {
-  APP_ID,
-  LAST_SYNC_TIMESTAMP,
-  LANG,
-  PRACTITIONER_ID,
-  PRACTITIONER_DETAILS,
-  PRACTITIONER_LOCATION_HIERARCHIES,
-  THEME,
-  REMOTE_SYNC_RESOURCES,
-  OVERDUE_TASK_LAST_AUTHORED_ON_DATE,
-  LOGIN_CREDENTIAL_KEY,
-  LOGIN_PIN_KEY,
-  LOGIN_PIN_SALT,
-  LAST_OFFSET
+import kotlinx.coroutines.flow.Flow
+
+interface SharedEvent<out T> {
+  fun getFor(consumerId: String): Flow<T>
 }
