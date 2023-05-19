@@ -16,13 +16,22 @@
 
 package org.smartregister.fhircore.quest.event
 
-import javax.inject.Inject
-import javax.inject.Singleton
+import java.util.concurrent.CopyOnWriteArraySet
 
-@Singleton
-class EventBus @Inject constructor(private val eventQueue: EventQueue<AppEvent>) {
-  val events: SharedEvent<AppEvent>
-    get() = eventQueue
+/**
+ * Event designed to be delivered only once to a concrete entity, but it can also be delivered to
+ * multiple different entities.
+ *
+ * Keeps track of who has already handled its content.
+ */
+class OneTimeEvent<out T>(private val content: T) {
 
-  suspend fun triggerEvent(event: AppEvent) = eventQueue.push(event = event)
+  private val handlers = CopyOnWriteArraySet<String>()
+
+  /**
+   * @param asker Used to identify, whether this "asker" has already handled this Event.
+   *
+   * @return Event content or null if it has been already handled by asker
+   */
+  fun getIfNotHandled(asker: String): T? = if (handlers.add(asker)) content else null
 }

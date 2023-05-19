@@ -16,18 +16,17 @@
 
 package org.smartregister.fhircore.engine.util
 
-enum class SharedPreferenceKey {
-  APP_ID,
-  LAST_SYNC_TIMESTAMP,
-  LANG,
-  PRACTITIONER_ID,
-  PRACTITIONER_DETAILS,
-  PRACTITIONER_LOCATION_HIERARCHIES,
-  THEME,
-  REMOTE_SYNC_RESOURCES,
-  OVERDUE_TASK_LAST_AUTHORED_ON_DATE,
-  LOGIN_CREDENTIAL_KEY,
-  LOGIN_PIN_KEY,
-  LOGIN_PIN_SALT,
-  LAST_OFFSET
+import timber.log.Timber
+
+fun getLastOffset(items: List<Any>, lastOffset: Int, batchSize: Int): Int {
+  val updatedLastOffset =
+    when {
+      items.isNotEmpty() && items.size >= batchSize -> lastOffset + batchSize
+      items.isNotEmpty() && items.size < batchSize -> lastOffset + items.size
+      else -> 0
+    }
+  Timber.w(
+    "Previous last offset = $lastOffset next last offset = $updatedLastOffset batch size = $batchSize"
+  )
+  return updatedLastOffset
 }

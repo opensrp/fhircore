@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import com.google.android.fhir.logicalId
 import java.util.LinkedList
 import javax.inject.Inject
@@ -26,7 +29,6 @@ import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.ListResource
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
-import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -55,20 +57,29 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
   /**
    * This function pre-computes all the Rules for [ViewType]'s of List including list nested in the
-   * views. The LIST view computed values includes the parent's.
+   * views. The LIST view computed values includes the parent's. Every list identified by
+   * [ListProperties.id] is added to the [listResourceDataStateMap], where the value is
+   * [SnapshotStateList] to ensure the items are rendered (incrementally) as they are added to the
+   * list
    */
   suspend fun processListResourceData(
     listProperties: ListProperties,
     relatedResourcesMap: Map<String, List<Resource>>,
     computedValuesMap: Map<String, Any>,
-  ): List<ResourceData> {
-    return listProperties.resources.flatMap { listResource ->
+    listResourceDataStateMap: SnapshotStateMap<String, SnapshotStateList<ResourceData>>
+  ) {
+    listProperties.resources.forEach { listResource ->
+      // Initialize to be updated incrementally as resources are transformed into ResourceData
+      val resourceDataSnapshotStateList = mutableStateListOf<ResourceData>()
+      listResourceDataStateMap[listProperties.id] = resourceDataSnapshotStateList
+
       filteredListResources(relatedResourcesMap, listResource)
         .mapToResourceData(
+          listResource = listResource,
           relatedResourcesMap = relatedResourcesMap,
           ruleConfigs = listProperties.registerCard.rules,
-          listRelatedResources = listResource.relatedResources,
-          computedValuesMap = computedValuesMap
+          computedValuesMap = computedValuesMap,
+          resourceDataSnapshotStateList = resourceDataSnapshotStateList
         )
     }
   }
@@ -90,14 +101,15 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
   }
 
   private suspend fun List<Resource>.mapToResourceData(
+    listResource: ListResource,
     relatedResourcesMap: Map<String, List<Resource>>,
     ruleConfigs: List<RuleConfig>,
-    listRelatedResources: List<ExtractedResource>,
-    computedValuesMap: Map<String, Any>
-  ) =
-    this.map { resource ->
+    computedValuesMap: Map<String, Any>,
+    resourceDataSnapshotStateList: SnapshotStateList<ResourceData>,
+  ) {
+    this.forEach { resource ->
       val listItemRelatedResources: Map<String, List<Resource>> =
-        listRelatedResources.associate { (id, resourceType, fhirPathExpression) ->
+        listResource.relatedResources.associate { (id, resourceType, fhirPathExpression) ->
           (id
             ?: resourceType.name) to
             rulesFactory.rulesEngineService.retrieveRelatedResources(
@@ -119,13 +131,15 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
             )
         )
 
-      // LIST view should reuse the previously computed values
-      ResourceData(
-        baseResourceId = resource.logicalId.extractLogicalIdUuid(),
-        baseResourceType = resource.resourceType,
-        computedValuesMap = computedValuesMap.plus(listComputedValuesMap)
+      resourceDataSnapshotStateList.add(
+        ResourceData(
+          baseResourceId = resource.logicalId.extractLogicalIdUuid(),
+          baseResourceType = resource.resourceType,
+          computedValuesMap = computedValuesMap.plus(listComputedValuesMap) // Reuse computed values
+        )
       )
     }
+  }
 
   /**
    * This function returns a list of filtered resources. The required list is obtained from

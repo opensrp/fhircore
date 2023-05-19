@@ -21,8 +21,10 @@ import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.Base64
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
@@ -42,10 +44,21 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
   private fun getMasterKey() =
     MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
 
-  fun saveCredentials(authCredentials: AuthCredentials) {
+  fun saveCredentials(username: String, password: CharArray) {
+    val randomSaltBytes = get256RandomBytes()
+
     secureSharedPreferences.edit {
-      putString(SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name, authCredentials.encodeJson())
+      putString(
+        SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name,
+        AuthCredentials(
+            username = username,
+            salt = Base64.getEncoder().encodeToString(randomSaltBytes),
+            passwordHash = password.toPasswordHash(randomSaltBytes)
+          )
+          .encodeJson()
+      )
     }
+    clearPasswordInMemory(password)
   }
 
   fun deleteCredentials() =
@@ -58,8 +71,19 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
       .getString(SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name, null)
       ?.decodeJson<AuthCredentials>()
 
-  fun saveSessionPin(pin: String) =
-    secureSharedPreferences.edit { putString(SharedPreferenceKey.LOGIN_PIN_KEY.name, pin) }
+  fun saveSessionPin(pin: CharArray) {
+    val randomSaltBytes = get256RandomBytes()
+    secureSharedPreferences.edit {
+      putString(
+        SharedPreferenceKey.LOGIN_PIN_SALT.name,
+        Base64.getEncoder().encodeToString(randomSaltBytes)
+      )
+      putString(SharedPreferenceKey.LOGIN_PIN_KEY.name, pin.toPasswordHash(randomSaltBytes))
+    }
+  }
+  @VisibleForTesting fun get256RandomBytes() = 256.getRandomBytesOfSize()
+  fun retrievePinSalt() =
+    secureSharedPreferences.getString(SharedPreferenceKey.LOGIN_PIN_SALT.name, null)
 
   fun retrieveSessionPin() =
     secureSharedPreferences.getString(SharedPreferenceKey.LOGIN_PIN_KEY.name, null)
