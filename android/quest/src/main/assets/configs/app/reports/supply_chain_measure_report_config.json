@@ -1,0 +1,52 @@
+{
+  "appId": "app",
+  "configType": "measureReport",
+  "registerDate": "2020-10-27",
+  "showFixedRangeSelection": true,
+  "id": "supplyChainMeasureReport",
+  "registerId": "inventoryRegister",
+  "reports": [
+    {
+      "title": "Stock Consumption",
+      "description": "Stock Consumption Report",
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/STOCKIND01",
+      "module": "Stock Consumption",
+      "subjectXFhirQuery": "Group?code=386452003"
+    },
+    {
+      "title": "Stock Consumption Monthly Average (AMC)",
+      "description": "Stock Consumption Monthly Average Report",
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/STOCKIND02",
+      "module": "Stock Consumption Monthly Average (AMC)",
+      "subjectXFhirQuery": "Group?code=386452003"
+    },
+    {
+      "title": "Stock Out Days",
+      "description": "Stock out Days Report",
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/STOCKIND03",
+      "module": "Stock Out Days",
+      "subjectXFhirQuery": "Group?code=386452003"
+    },
+    {
+      "title": "Stock out Rate",
+      "description": "Stock Out Rate Report",
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/STOCKIND06",
+      "module": "Stock Out Rate",
+      "subjectXFhirQuery": "Group?code=386452003"
+    },
+    {
+      "title": "Stock On Hand",
+      "description": "Stock on Hand Report",
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/STOCKIND04",
+      "module": "Stock On Hand",
+      "subjectXFhirQuery": "Group?code=386452003"
+    },
+    {
+      "title": "Months of Stock (MOS)",
+      "description": "Months of Stock Report",
+      "url": "https://fhir.labs.smartregister.org/fhir/Measure/STOCKIND05",
+      "module": "Months of Stock (MOS)",
+      "subjectXFhirQuery": "Group?code=386452003"
+    }
+  ]
+}
