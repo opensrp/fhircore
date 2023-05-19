@@ -33,11 +33,11 @@ import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.engine.util.toSha1
 
 object Faker {
 
-  val authCredentials = AuthCredentials(username = "demo", password = "51r1K4l1".toSha1())
+  val authCredentials =
+    AuthCredentials(username = "demo", salt = "ChUmvi", passwordHash = "GENERATED_PASSWORD_HASH")
 
   val json = Json {
     encodeDefaults = true

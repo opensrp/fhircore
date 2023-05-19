@@ -18,11 +18,26 @@ package org.smartregister.fhircore.quest.event
 
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.transform
 
+/**
+ * (See [this](https://github.com/Kotlin/kotlinx.coroutines/issues/3002#issuecomment-1239063714)).
+ */
 @Singleton
-class EventBus @Inject constructor(private val eventQueue: EventQueue<AppEvent>) {
-  val events: SharedEvent<AppEvent>
-    get() = eventQueue
+class EventQueue<T> @Inject constructor() : SharedEvent<T> {
 
-  suspend fun triggerEvent(event: AppEvent) = eventQueue.push(event = event)
+  private val innerQueue = MutableSharedFlow<OneTimeEvent<T>>()
+
+  suspend fun push(event: T) {
+    innerQueue.emit(OneTimeEvent(event))
+  }
+
+  override fun getFor(consumerId: String): Flow<T> = innerQueue.filterNotHandledBy(consumerId)
+
+  fun <T> Flow<OneTimeEvent<T>>.filterNotHandledBy(consumerId: String): Flow<T> =
+      transform { event ->
+    event.getIfNotHandled(consumerId)?.let { emit(it) }
+  }
 }
