@@ -17,10 +17,10 @@
 package org.smartregister.fhircore.quest.ui.pin
 
 data class PinUiState(
-  val currentUserPin: String?,
   val message: String,
   val appName: String,
   val setupPin: Boolean,
   val pinLength: Int,
   val showLogo: Boolean,
+  val showProgressBar: Boolean = false
 )

@@ -16,11 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Member icons count on register not tallying with retrieved resources on profile
 - Issue with loading related resources
 - Fix P2P sync progress showing greater than 100%
+- Background worker performance
 
 ### Changed
 - Refactored how the related resources SELECT and COUNT queries search results are represented. 
 - RepositoryResourceData now uses two map to represent SELECT/COUNT SQL query results
 - Retrieve related resources all at once for resources include via _include SEARCH API
+- Enhanced security in Authentication, Authorization and Credentials managagment
 
 ## [0.2.3] - 2023-05-11
 ### Added
