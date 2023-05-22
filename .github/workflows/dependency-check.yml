@@ -33,9 +33,9 @@ jobs:
         run: chmod +x gradlew
         working-directory: android
 
-      - name: Build Gradle project
-        run: ./gradlew build
-        working-directory: android
+      # - name: Build Gradle project
+      #   run: ./gradlew build
+      #   working-directory: android
 
       - name: Run Dependency Check
         run: ./gradlew dependencyCheckAnalyze
