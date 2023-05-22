@@ -15,6 +15,17 @@ plugins {
 sonar {
     properties {
         property "sonar.projectKey", "fhircore"
+        property "sonar.kotlin.source.version", "1.5"
+        property "sonar.androidLint.reportPaths","${project.buildDir}/reports/lint-results-questDebug.xml"
+        property "sonar.host.url", "https://sonarqube.fhir.onalabs.org"
+        property "sonar.login", System.getenv("SONAR_TOKEN")
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.exclusions", '**/*Test*/**,' +
+                '**/*test*/**,' +
+                '**/.gradle/**,' +
+                '**/R.class' +
+                '*.json,' +
+                '*.yaml,'
     }
 }
 
