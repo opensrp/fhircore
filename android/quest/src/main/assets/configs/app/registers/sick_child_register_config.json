@@ -2,6 +2,7 @@
   "appId": "app",
   "configType": "register",
   "id": "sickChildRegister",
+  "pageSize": 20,
   "fhirResource": {
     "baseResource": {
       "resource": "Patient",

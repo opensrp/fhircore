@@ -16,25 +16,37 @@
 
 package org.smartregister.fhircore.quest.event
 
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 
+@HiltAndroidTest
 class EventBusTest : RobolectricTest() {
 
-  var eventBus = EventBus()
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @Inject lateinit var eventQueue: EventQueue<AppEvent>
+
+  private lateinit var eventBus: EventBus
   lateinit var emittedEvents: MutableList<AppEvent>
 
   @Before
   fun setUp() {
+    hiltRule.inject()
     emittedEvents = mutableListOf()
+    eventBus = EventBus(eventQueue)
   }
 
   @Test
@@ -43,7 +55,13 @@ class EventBusTest : RobolectricTest() {
     val refreshCacheEvent = AppEvent.RefreshCache(QuestionnaireConfig("test-config"))
 
     runBlockingTest {
-      val collectJob = launch { eventBus.events.collect { emittedEvents.add(it) } }
+      val collectJob = launch {
+        eventBus
+          .events
+          .getFor("TestTag")
+          .onEach { appEvent -> emittedEvents.add(appEvent) }
+          .launchIn(this)
+      }
       eventBus.triggerEvent(refreshCacheEvent)
       collectJob.cancel()
     }
@@ -63,7 +81,13 @@ class EventBusTest : RobolectricTest() {
       )
 
     runBlockingTest {
-      val collectJob = launch { eventBus.events.collect { emittedEvents.add(it) } }
+      val collectJob = launch {
+        eventBus
+          .events
+          .getFor("TestTag")
+          .onEach { appEvent -> emittedEvents.add(appEvent) }
+          .launchIn(this)
+      }
       eventBus.triggerEvent(onSubmitQuestionnaireEvent)
       collectJob.cancel()
     }

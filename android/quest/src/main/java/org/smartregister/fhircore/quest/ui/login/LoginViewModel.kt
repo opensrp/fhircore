@@ -45,6 +45,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.clearPasswordInMemory
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
@@ -117,8 +118,8 @@ constructor(
       val trimmedUsername = username.value!!.trim()
       val passwordAsCharArray = password.value!!.toCharArray()
 
-      if (context.getActivity()!!.isDeviceOnline()) {
-        viewModelScope.launch {
+      viewModelScope.launch(dispatcherProvider.io()) {
+        if (context.getActivity()!!.isDeviceOnline()) {
           fetchToken(
             username = trimmedUsername,
             password = passwordAsCharArray,
@@ -142,15 +143,16 @@ constructor(
               }
             }
           )
-        }
-      } else {
-        if (accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)) {
-          _showProgressBar.postValue(false)
-          updateNavigateHome(true)
         } else {
-          _showProgressBar.postValue(false)
-          _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
+          if (accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)) {
+            _showProgressBar.postValue(false)
+            updateNavigateHome(true)
+          } else {
+            _showProgressBar.postValue(false)
+            _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
+          }
         }
+        clearPasswordInMemory(passwordAsCharArray)
       }
     }
   }
