@@ -11,8 +11,7 @@ on:
       # - main
       - security-automation-additions
   workflow_dispatch:
-    inputs:
-    
+    # inputs:    
 
 jobs:
   dependency-check:
@@ -37,6 +36,13 @@ jobs:
       - name: Run Dependency Check
         run: ./gradlew dependencyCheckAggregate 
         working-directory: android
+        env:
+          FHIR_BASE_URL: ${{secrets.FHIR_BASE_URL}}
+          OAUTH_BASE_URL: ${{secrets.OAUTH_BASE_URL}}
+          OAUTH_CIENT_ID: ${{secrets.OAUTH_CIENT_ID}}
+          OAUTH_CLIENT_SECRET: ${{secrets.OAUTH_CLIENT_SECRET}}
+          OAUTH_SCOPE: ${{secrets.OAUTH_SCOPE}}
+          MAPBOX_SDK_TOKEN: ${{secrets.MAPBOX_SDK_TOKEN}}
 
       - name: Install Dependency Check CLI
         run: |
