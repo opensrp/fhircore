@@ -2115,14 +2115,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
             Questionnaire.QuestionnaireItemComponent().apply {
               linkId = "patient-birthDate"
               addExtension(
-               "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
                 Expression().apply {
                   language = "text/fhirpath"
                   expression = "Patient.birthDate"
                 }
               )
             }
-
           )
       }
     val group = Group().apply { id = "112233" }
