@@ -393,8 +393,8 @@ constructor(
     }
 
     /**
-     * This function combines all string indexes to a list separated by the separator defined by the
-     * implementor
+     * This function combines all string indexes to a list separated by the separator and regex
+     * defined by the content author
      */
     fun joinToString(sourceString: MutableList<String?>, regex: String, separator: String): String {
       sourceString.removeIf { it == null }
