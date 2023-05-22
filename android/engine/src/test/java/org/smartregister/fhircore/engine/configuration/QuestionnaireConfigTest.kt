@@ -38,6 +38,7 @@ class QuestionnaireConfigTest : RobolectricTest() {
       Assert.assertEquals(null, groupResource)
       Assert.assertEquals(null, confirmationDialog)
       Assert.assertEquals(null, planDefinitions)
+      Assert.assertEquals(emptyList<String>(), readOnlyLinkIds)
     }
   }
 
@@ -69,7 +70,8 @@ class QuestionnaireConfigTest : RobolectricTest() {
         taskId = "@{taskId}",
         saveDraft = true,
         carePlanConfigs = listOf(CarePlanConfig()),
-        planDefinitions = listOf("@{planDef1}")
+        planDefinitions = listOf("@{planDef1}"),
+        readOnlyLinkIds = listOf("@{linkId1}", "@{linkId2}")
       )
 
     val map =
@@ -82,7 +84,9 @@ class QuestionnaireConfigTest : RobolectricTest() {
         "dialogTitle" to "Alert",
         "dialogMessage" to "Are you sure?",
         "dialogActionButtonText" to "Yes",
-        "planDef1" to "97c5f33b-389c-4ecb-abd3-46c5a3ac4026"
+        "planDef1" to "97c5f33b-389c-4ecb-abd3-46c5a3ac4026",
+        "linkId1" to "1",
+        "linkId2" to "2"
       )
 
     val interpolatedConfig = questionnaireConfig.interpolate(map)
@@ -99,6 +103,8 @@ class QuestionnaireConfigTest : RobolectricTest() {
       "97c5f33b-389c-4ecb-abd3-46c5a3ac4026",
       interpolatedConfig.planDefinitions?.firstOrNull()
     )
+    Assert.assertEquals("1", interpolatedConfig.readOnlyLinkIds!![0])
+    Assert.assertEquals("2", interpolatedConfig.readOnlyLinkIds!![1])
   }
 
   @Test

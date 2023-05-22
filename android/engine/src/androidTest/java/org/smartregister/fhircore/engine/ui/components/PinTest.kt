@@ -35,8 +35,8 @@ internal class PinTest {
         pinLength = 4,
         inputMode = true,
         onPinSet = {},
-        onPinVerified = {},
-        onShowPinError = {}
+        onShowPinError = {},
+        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
       )
     }
     composeRule.onNodeWithTag(PIN_TEXT_FIELD_TEST_TAG).performTextInput("1234")

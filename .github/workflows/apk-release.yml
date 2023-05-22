@@ -66,20 +66,20 @@ jobs:
         run: ./gradlew :quest:spotlessCheck
         working-directory: android
 
-      - name: Generate AAB (Android App Bundle) file
-        if: ${{ false }}
-        run: ./gradlew :quest:bundle${{steps.product-flavor.outputs.idCapitalized}} -x :quest:test${{steps.product-flavor.outputs.idCapitalized}}DebugUnitTest --stacktrace
-        working-directory: android
+    #  - name: Generate AAB (Android App Bundle) file
+    #    if: ${{ false }}
+    #    run: ./gradlew :quest:bundle${{steps.product-flavor.outputs.idCapitalized}} -x :quest:test${{steps.product-flavor.outputs.idCapitalized}}DebugUnitTest --stacktrace
+    #    working-directory: android
         
-      - name: Upload AAB file to tag assets
-        if: ${{ false }}
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: android/quest/build/outputs/bundle/${{steps.product-flavor.outputs.id}}/release/quest-${{steps.product-flavor.outputs.id}}-release.aab
-          asset_name: "quest-$tag.aab"
-          tag: ${{ github.ref }}
-          overwrite: true
+    #  - name: Upload AAB file to tag assets
+    #    if: ${{ false }}
+    #    uses: svenstaro/upload-release-action@v2
+    #    with:
+    #      repo_token: ${{ secrets.GITHUB_TOKEN }}
+    #      file: android/quest/build/outputs/bundle/${{steps.product-flavor.outputs.id}}/release/quest-${{steps.product-flavor.outputs.id}}-release.aab
+    #      asset_name: "quest-$tag.aab"
+    #      tag: ${{ github.ref }}
+    #      overwrite: true
       
       - name: Generate APK (Android App PacKage) file
         run: ./gradlew :quest:assemble${{steps.product-flavor.outputs.idCapitalized}} -x :quest:test${{steps.product-flavor.outputs.idCapitalized}}DebugUnitTest --stacktrace
@@ -94,4 +94,3 @@ jobs:
           tag: ${{ github.ref }}
           prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
           overwrite: true
- 

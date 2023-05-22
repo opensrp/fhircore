@@ -119,43 +119,42 @@ constructor(
   /**
    * This function executes the actions defined in the [Rule] s generated from the provided list of
    * [RuleConfig] against the [Facts] populated by the provided FHIR [Resource] s available in the
-   * [relatedResourcesMap] and the [baseResource].
+   * [RepositoryResourceData.resource], [RepositoryResourceData.relatedResourcesMap] and
+   * [RepositoryResourceData.relatedResourcesCountMap]. All related resources of same type are
+   * flattened in a map for ease of usage in the rule engine.
    */
-  @Suppress("UNCHECKED_CAST")
-  fun fireRules(
-    rules: Rules,
-    baseResource: Resource? = null,
-    relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap(),
-  ): Map<String, Any> {
+  fun fireRules(rules: Rules, repositoryResourceData: RepositoryResourceData): Map<String, Any> {
 
-    // Initialize new facts and fire rules in background
-    facts =
-      Facts().apply {
-        put(FHIR_PATH, fhirPathDataExtractor)
-        put(DATA, mutableMapOf<String, Any>())
-        put(SERVICE, rulesEngineService)
-        if (baseResource != null) {
-          put(baseResource.resourceType.name, baseResource)
+    with(repositoryResourceData) {
+      // Initialize new facts and fire rules in background
+      facts =
+        Facts().apply {
+          put(FHIR_PATH, fhirPathDataExtractor)
+          put(DATA, mutableMapOf<String, Any>())
+          put(SERVICE, rulesEngineService)
+          put(resourceRulesEngineFactId ?: resource.resourceType.name, resource)
+
+          relatedResourcesMap.addToFacts(this)
+          relatedResourcesCountMap.addToFacts(this)
+
+          // Populate the facts map with secondary resource data
+          secondaryRepositoryResourceData?.forEach {
+            put(it.resourceRulesEngineFactId ?: it.resource.resourceType.name, it.resource)
+            relatedResourcesMap.addToFacts(this)
+            relatedResourcesCountMap.addToFacts(this)
+          }
         }
-        relatedResourcesMap.forEach {
-          val actualValue =
-            it.value.map { queryResult ->
-              when (queryResult) {
-                is RepositoryResourceData.QueryResult.Count -> queryResult.relatedResourceCount
-                is RepositoryResourceData.QueryResult.Search -> queryResult.resource
-              }
-            }
-          put(it.key, actualValue)
-        }
-      }
 
-    if (BuildConfig.DEBUG) {
-      val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
-      Timber.d("Rule executed in $timeToFireRules millisecond(s)")
-    } else rulesEngine.fire(rules, facts)
-
+      if (BuildConfig.DEBUG) {
+        val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
+        Timber.d("Rule executed in $timeToFireRules millisecond(s)")
+      } else rulesEngine.fire(rules, facts)
+    }
     return facts.get(DATA) as Map<String, Any>
   }
+
+  private fun Map<String, List<*>>.addToFacts(facts: Facts) =
+    this.forEach { facts.put(it.key, it.value) }
 
   suspend fun generateRules(ruleConfigs: List<RuleConfig>): Rules =
     withContext(dispatcherProvider.io()) {

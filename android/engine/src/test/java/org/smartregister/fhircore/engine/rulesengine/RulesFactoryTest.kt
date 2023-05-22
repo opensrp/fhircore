@@ -36,6 +36,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
@@ -103,7 +104,7 @@ class RulesFactoryTest : RobolectricTest() {
   fun fireRulesCallsRulesEngineFireWithCorrectRulesAndFacts() {
     runTest {
       val baseResource = Faker.buildPatient()
-      val relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap()
+      val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
       val ruleConfig =
         RuleConfig(
           name = "patientName",
@@ -117,8 +118,12 @@ class RulesFactoryTest : RobolectricTest() {
       val rules = rulesFactory.generateRules(ruleConfigs)
       rulesFactory.fireRules(
         rules = rules,
-        baseResource = baseResource,
-        relatedResourcesMap = relatedResourcesMap
+        repositoryResourceData =
+          RepositoryResourceData(
+            resource = baseResource,
+            secondaryRepositoryResourceData = null,
+            relatedResourcesMap = relatedResourcesMap
+          )
       )
 
       val factsSlot = slot<Facts>()
@@ -157,7 +162,10 @@ class RulesFactoryTest : RobolectricTest() {
       ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
       every { rulesEngine.fire(any(), any()) } just runs
       val rules = rulesFactory.generateRules(ruleConfigs)
-      rulesFactory.fireRules(rules = rules, baseResource = baseResource)
+      rulesFactory.fireRules(
+        rules = rules,
+        repositoryResourceData = RepositoryResourceData(resource = baseResource)
+      )
 
       val factsSlot = slot<Facts>()
       val rulesSlot = slot<Rules>()
@@ -179,37 +187,6 @@ class RulesFactoryTest : RobolectricTest() {
     }
   }
 
-  @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun fireRulesIgnoresBaseResourceWhenNull() {
-    runTest {
-      val baseResource = Faker.buildPatient()
-      val relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap()
-      val ruleConfig =
-        RuleConfig(
-          name = "patientName",
-          description = "Retrieve patient name",
-          actions = listOf("data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))")
-        )
-      val ruleConfigs = listOf(ruleConfig)
-
-      ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
-      every { rulesEngine.fire(any(), any()) } just runs
-      val rules = rulesFactory.generateRules(ruleConfigs)
-      rulesFactory.fireRules(rules = rules, relatedResourcesMap = relatedResourcesMap)
-
-      val factsSlot = slot<Facts>()
-      val rulesSlot = slot<Rules>()
-      verify { rulesEngine.fire(capture(rulesSlot), capture(factsSlot)) }
-
-      val capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
-      Assert.assertNull(capturedBaseResource)
-
-      val capturedRule = rulesSlot.captured.first()
-      Assert.assertEquals(ruleConfig.name, capturedRule.name)
-      Assert.assertEquals(ruleConfig.description, capturedRule.description)
-    }
-  }
   @Test
   fun retrieveRelatedResourcesReturnsCorrectResource() {
     populateFactsWithResources()

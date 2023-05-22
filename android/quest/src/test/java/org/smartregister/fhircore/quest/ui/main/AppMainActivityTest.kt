@@ -34,6 +34,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.runs
+import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -50,10 +51,10 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 
 @OptIn(ExperimentalMaterialApi::class)
 @HiltAndroidTest
@@ -172,9 +173,10 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       )
     )
 
-    val questionnaireSubmission =
-      appMainActivity.appMainViewModel.questionnaireSubmissionLiveData.value
-    Assert.assertNotNull(questionnaireSubmission)
+    val onSubmitQuestionnaireSlot = slot<AppEvent.OnSubmitQuestionnaire>()
+    coVerify { eventBus.triggerEvent(capture(onSubmitQuestionnaireSlot)) }
+    Assert.assertNotNull(onSubmitQuestionnaireSlot)
+    val questionnaireSubmission = onSubmitQuestionnaireSlot.captured.questionnaireSubmission
     Assert.assertEquals("Task/12345", questionnaireSubmission?.questionnaireConfig?.taskId)
     Assert.assertEquals("questionnaireId", questionnaireSubmission?.questionnaireConfig?.id)
     Assert.assertEquals(
@@ -186,10 +188,6 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnSubmitQuestionnaireShouldUpdateDataRefreshLivedata() {
     val appMainViewModel = mockk<AppMainViewModel>()
-    val questionnaireSubmissionLiveData = mockk<MutableLiveData<QuestionnaireSubmission?>>()
-    every { questionnaireSubmissionLiveData.postValue(any()) } just runs
-    every { appMainViewModel.questionnaireSubmissionLiveData } returns
-      questionnaireSubmissionLiveData
     val refreshLiveDataMock = mockk<MutableLiveData<Boolean?>>()
     every { refreshLiveDataMock.postValue(true) } just runs
     every { appMainActivity.appMainViewModel } returns appMainViewModel

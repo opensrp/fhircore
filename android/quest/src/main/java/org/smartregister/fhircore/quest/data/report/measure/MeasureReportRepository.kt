@@ -55,7 +55,7 @@ class MeasureReportRepository(
           baseResource = it,
           relatedRepositoryResourceData = LinkedList(),
           ruleConfigs = registerConfiguration.registerCard.rules,
-          emptyMap()
+          params = emptyMap()
         )
       }
   }

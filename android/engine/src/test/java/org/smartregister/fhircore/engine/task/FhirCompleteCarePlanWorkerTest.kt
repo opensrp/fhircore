@@ -27,23 +27,29 @@ import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.slot
+import io.mockk.spyk
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.lastOffset
 
 @HiltAndroidTest
 class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
@@ -51,6 +57,8 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
   private val fhirEngine: FhirEngine = mockk(relaxed = true)
   private val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk(relaxed = true)
   private lateinit var fhirCompleteCarePlanWorker: FhirCompleteCarePlanWorker
+  private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Before
   fun setUp() {
@@ -62,6 +70,12 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         )
         .setWorkerFactory(FhirCompleteCarePlanWorkerFactory())
         .build()
+    every {
+      sharedPreferencesHelper.read(FhirCompleteCarePlanWorker.WORK_ID.lastOffset(), "0")
+    } returns "100"
+    every {
+      sharedPreferencesHelper.write(FhirCompleteCarePlanWorker.WORK_ID.lastOffset(), "101")
+    } just runs
   }
 
   @Test
@@ -81,7 +95,9 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
             }
           )
       }
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
+    fhirCompleteCarePlanWorker = spyk(fhirCompleteCarePlanWorker)
+    coEvery { fhirCompleteCarePlanWorker.getCarePlans(any(), any()) } returns listOf(carePlan)
+
     val task1 =
       Task().apply {
         id = "f10eec84-ef78-4bd1-bac4-6e68c7548f4c"
@@ -124,7 +140,8 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
             }
           )
       }
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
+    fhirCompleteCarePlanWorker = spyk(fhirCompleteCarePlanWorker)
+    coEvery { fhirCompleteCarePlanWorker.getCarePlans(any(), any()) } returns listOf(carePlan)
     val task1 =
       Task().apply {
         id = "f10eec84-ef78-4bd1-bac4-6e68c7548f4c"
@@ -168,7 +185,8 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
             }
           )
       }
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
+    fhirCompleteCarePlanWorker = spyk(fhirCompleteCarePlanWorker)
+    coEvery { fhirCompleteCarePlanWorker.getCarePlans(any(), any()) } returns listOf(carePlan)
     val task1 =
       Task().apply {
         id = "f10eec84-ef78-4bd1-bac4-6e68c7548f4c"
@@ -222,7 +240,9 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         context = appContext,
         workerParams = workerParameters,
         fhirEngine = fhirEngine,
-        fhirCarePlanGenerator = fhirCarePlanGenerator
+        fhirCarePlanGenerator = fhirCarePlanGenerator,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configurationRegistry = configurationRegistry
       )
     }
   }
