@@ -3,7 +3,7 @@
 Rules are used to define logic and conditions for evaluating and processing healthcare data. FHIR rules can be used to validate data, create alerts and notifications based on certain conditions, or trigger workflows and other automated processes.
 Rules can also be used to extract specific data from a FHIR resource or to transform data from one format to another.
 
-## extractValue() rule
+## Using the `extractValue()` rule
 
 To extract specific data value in the sample JSON below, include **extractValue()** and add the required parameters to the method in order to extract the required value.
 
@@ -33,7 +33,8 @@ To extract specific data value in the sample JSON below, include **extractValue(
   ],
 ```
 
-## Config properties of extractValue() rule using the above json config
+### Configuring the properties of the `extractValue()`
+
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 name | Provides a descriptive name for the rule to be extracted | Yes | |
@@ -42,8 +43,7 @@ actions | Specifies the specific operations to be performed when the rule is eva
 
 The **"data.put()"** function is used to store the extracted data in a data object, using a key-value pair format.
 
-
-## evaluateToBoolean() rule
+## Using the `evaluateToBoolean()` rule
 
 This rule is used within the rules engine or workflow to be able to determine whether an expression or condition is true or not. To evaluate specific data in the sample JSON below, include **evaluateToBoolean()** and add the required parameters to the method in order to determine whether the output is true or false.
 
@@ -56,7 +56,9 @@ This rule is used within the rules engine or workflow to be able to determine wh
       ]  
     },
 ```   
-## Config properties of evaluateToBoolean() rule using the above json config
+
+### Configuring the properties of the `evaluateToBoolean()`
+
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 name | Provides a descriptive name for the rule to be extracted | Yes | |
@@ -65,10 +67,8 @@ actions | Specifies the specific operations to be performed when the rule is eva
 description | Provides relevant information about the rule to be evaluated | | |
 priority | Specifies the priority of the component. The priority value determines the order in which the components are evaluated and executed. Lower values indicate higher priority | | 1 |
 
-**evaluateToBoolean()**  takes **three** parameters:
+### Passing parameters to `evaluateToBoolean()`
 
-|Parameter | Example | Description | Required |
-|--|--|:--:|:--:|
-context| 'isPregnant' | Specifies the context or data from which the expression is being evaluated | Yes |
-FhirPathExpression | service.evaluateToBoolean(data.get('activeConditions'), \"Condition.code.text = 'Pregnant' \")| Specifies the expression to be evaluated. It contains the logical operators and variables that refernce values from the context | Yes |
-defaultValue | false | A boolean value that specifies the defaultValue to be returned if the expression results in an error or does not produce a boolean value | |
+1. `context`, e.g. `data.get('activeConditions')`, specifies the context or data from which the expression is being evaluated
+2. `FhirPathExpression`, e.g. `"Condition.code.text = 'Pregnant' \"`, specifies the expression to be evaluated. It contains the logical operators and variables that refernce values from the context
+3. An optional `defaultValue`, e.g. `false`, specifies a boolean default to be returned if the expression results in an error or does not produce a boolean value
