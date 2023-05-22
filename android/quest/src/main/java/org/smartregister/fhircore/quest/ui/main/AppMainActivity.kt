@@ -25,8 +25,6 @@ import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.sync.SyncJobStatus
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.perf.ktx.performance
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlin.math.max
