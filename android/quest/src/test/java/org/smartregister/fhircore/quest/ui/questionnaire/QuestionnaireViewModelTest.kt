@@ -1394,7 +1394,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testDeleteResourceCallsDefaultRepositoryDelete() {
-    val resourceType = "Patient"
+    val resourceType = ResourceType.Patient
     val resourceIdentifier = "rdsfjkdfh-dfdf-dfsd"
     questionnaireViewModel.deleteResource(
       resourceType = resourceType,
@@ -1716,7 +1716,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
         questionnaire,
         patient.id,
-        patient.resourceType
+        patient.resourceType,
+        questionnaireConfig
       )
     }
 
@@ -1808,7 +1809,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
         questionnaire,
         patient.id,
-        patient.resourceType
+        patient.resourceType,
+        questionnaireConfig
       )
     }
 
@@ -1892,7 +1894,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
         questionnaire,
         group.id,
-        group.resourceType
+        group.resourceType,
+        questionnaireConfig
       )
     }
 
@@ -1972,7 +1975,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
         questionnaire,
         group.id,
-        group.resourceType
+        group.resourceType,
+        questionnaireConfig
       )
     }
 
@@ -2047,7 +2051,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
         questionnaire,
         task.id,
-        task.resourceType
+        task.resourceType,
+        questionnaireConfig
       )
     }
 
