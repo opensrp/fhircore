@@ -48,11 +48,12 @@ jobs:
         run: |
           wget https://github.com/jeremylong/DependencyCheck/releases/download/v8.2.1/dependency-check-8.2.1-release.zip
           unzip dependency-check-8.2.1-release.zip
+        working-directory: android
 
       - name: Convert XML report to HTML
         run: |
           cd dependency-check/bin
-          ./dependency-check.sh --project android --scan . --format "HTML"
+          ./dependency-check.sh --project "fhircore" --scan "android" --format "HTML"
         working-directory: android
 
 
