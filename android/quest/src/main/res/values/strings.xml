@@ -68,8 +68,10 @@
     <string name="individual">Individual</string>
     <string name="please_wait">Please wait…</string>
     <string name="patient">Patient</string>
+    <string name="subject">Subject</string>
     <string name="generate_report">GENERATE REPORT</string>
     <string name="select_patient">SELECT PATIENT</string>
+    <string name="select_subject">SELECT SUBJECT</string>
     <string name="start_date">Start date</string>
     <string name="end_date">End date</string>
     <string name="select_date">Select dates</string>

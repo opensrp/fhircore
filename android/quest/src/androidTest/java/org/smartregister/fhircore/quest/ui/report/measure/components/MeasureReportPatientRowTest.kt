@@ -46,7 +46,7 @@ class MeasureReportPatientRowTest {
   @Before
   fun setup() {
     composeTestRule.setContent {
-      MeasureReportPatientRow(
+      MeasureReportSubjectRow(
         measureReportPatientViewData = measureReportPatientViewData,
         onRowClick = mockListener
       )
@@ -55,7 +55,7 @@ class MeasureReportPatientRowTest {
 
   @Test
   fun testPatientRowRendersPatientDetailsCorrectly() {
-    composeTestRule.onNodeWithTag(PATIENT_DETAILS_TEST_TAG, useUnmergedTree = true).assertExists()
+    composeTestRule.onNodeWithTag(SUBJECT_DETAILS_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule
       .onNodeWithText(
         listOf(
@@ -80,7 +80,7 @@ class MeasureReportPatientRowTest {
 
   @Test
   fun testThatRowClickCallsTheListener() {
-    val patientRow = composeTestRule.onNodeWithTag(PATIENT_ROW_TEST_TAG)
+    val patientRow = composeTestRule.onNodeWithTag(SUBJECT_ROW_TEST_TAG)
     patientRow.assertExists()
     patientRow.performClick()
     verify { mockListener(any()) }

@@ -29,6 +29,7 @@ data class MeasureReportConfiguration(
   val registerId: String,
   val registerDate: String? = null,
   val showFixedRangeSelection: Boolean? = null,
+  val showSubjectSelection: Boolean? = null,
   val reports: List<MeasureReportConfig> = emptyList(),
   val subjectType: ResourceType = ResourceType.Patient,
 ) : Configuration()

@@ -38,15 +38,15 @@ import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
-const val PATIENT_DETAILS_TEST_TAG = "patientDetailsTestTag"
+const val SUBJECT_DETAILS_TEST_TAG = "subjectDetailsTestTag"
 const val FAMILY_NAME_TEST_TAG = "familyNameTestTag"
-const val PATIENT_ROW_TEST_TAG = "patientRowTestTag"
+const val SUBJECT_ROW_TEST_TAG = "subjectRowTestTag"
 
 @Composable
-fun MeasureReportPatientRow(
-    measureReportPatientViewData: MeasureReportSubjectViewData,
-    onRowClick: (MeasureReportSubjectViewData) -> Unit,
-    modifier: Modifier = Modifier
+fun MeasureReportSubjectRow(
+  measureReportSubjectViewData: MeasureReportSubjectViewData,
+  onRowClick: (MeasureReportSubjectViewData) -> Unit,
+  modifier: Modifier = Modifier
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -55,8 +55,8 @@ fun MeasureReportPatientRow(
       modifier
         .fillMaxWidth()
         .height(IntrinsicSize.Min)
-        .clickable { onRowClick(measureReportPatientViewData) }
-        .testTag(PATIENT_ROW_TEST_TAG)
+        .clickable { onRowClick(measureReportSubjectViewData) }
+        .testTag(SUBJECT_ROW_TEST_TAG)
   ) {
     Column(
       modifier =
@@ -65,21 +65,21 @@ fun MeasureReportPatientRow(
       Text(
         text =
           listOf(
-              measureReportPatientViewData.name,
-              measureReportPatientViewData.gender,
-              measureReportPatientViewData.age
+              measureReportSubjectViewData.name,
+              measureReportSubjectViewData.gender,
+              measureReportSubjectViewData.age
             )
             .joinToString(", "),
         fontSize = 18.sp,
-        modifier = modifier.wrapContentWidth().testTag(PATIENT_DETAILS_TEST_TAG),
+        modifier = modifier.wrapContentWidth().testTag(SUBJECT_DETAILS_TEST_TAG),
         maxLines = 1,
         overflow = TextOverflow.Ellipsis
       )
       Spacer(modifier = modifier.height(8.dp))
-      if (measureReportPatientViewData.family != null) {
+      if (measureReportSubjectViewData.family != null) {
         Text(
           color = SubtitleTextColor,
-          text = measureReportPatientViewData.family,
+          text = measureReportSubjectViewData.family,
           fontSize = 14.sp,
           modifier = modifier.wrapContentWidth().testTag(FAMILY_NAME_TEST_TAG),
           maxLines = 1,
@@ -92,9 +92,9 @@ fun MeasureReportPatientRow(
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
-private fun MeasureReportPatientRowPreview() {
-  MeasureReportPatientRow(
-    measureReportPatientViewData =
+private fun MeasureReportSubjectRowPreview() {
+  MeasureReportSubjectRow(
+    measureReportSubjectViewData =
       MeasureReportSubjectViewData(
         logicalId = "1291029",
         name = "John Jared",

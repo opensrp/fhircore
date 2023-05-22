@@ -31,12 +31,13 @@ class MeasureReportSubjectsPagingSource(
   ): LoadResult<Int, MeasureReportSubjectViewData> {
     return try {
       val currentPage = params.key ?: 0
+      val pageSize = params.loadSize
       val data =
         measureReportRepository.retrieveSubjects(currentPage).map { resourceData ->
           measureReportSubjectViewDataMapper.transformInputToOutputModel(resourceData)
         }
       val prevKey = if (currentPage == 0) null else currentPage - 1
-      val nextKey = if (data.isNotEmpty()) currentPage + 1 else null
+      val nextKey = if (data.isNotEmpty() && data.size > pageSize) currentPage + 1 else null
       LoadResult.Page(data = data, prevKey = prevKey, nextKey = nextKey)
     } catch (exception: Exception) {
       LoadResult.Error(exception)

@@ -26,8 +26,8 @@ import androidx.navigation.navArgument
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportListScreen
-import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportSubjectsScreen
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportResultScreen
+import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportSubjectsScreen
 import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportTypeSelectorScreen
 
 @Composable
@@ -78,7 +78,7 @@ fun MeasureReportMainScreen(
       )
     }
 
-    // Page for selecting patient to evaluate their measure
+    // Page for selecting subject to evaluate their measure
     composable(MeasureReportNavigationScreen.SubjectsList.route) {
       MeasureReportSubjectsScreen(
         reportId = reportId,

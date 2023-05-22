@@ -36,13 +36,13 @@ class PatientSelectorTest {
   @Before
   fun setup() {
     composeTestRule.setContent {
-      PatientSelector(patientName = "Mary Magdalene", onChangePatient = mockListener)
+      SubjectSelector(name = "Mary Magdalene", onChangeSubject = mockListener)
     }
   }
 
   @Test
   fun testPatientSelectorRendersPatientNameCorrectly() {
-    composeTestRule.onNodeWithTag(PATIENT_NAME_TEST_TAG, useUnmergedTree = true).assertExists()
+    composeTestRule.onNodeWithTag(SUBJECT_NAME_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule.onNodeWithText("Mary Magdalene").assertExists().assertIsDisplayed()
   }
 

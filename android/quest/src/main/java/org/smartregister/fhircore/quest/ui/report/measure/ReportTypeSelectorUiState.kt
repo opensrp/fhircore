@@ -22,5 +22,5 @@ data class ReportTypeSelectorUiState(
   val startDate: String = "",
   val endDate: String = "",
   val showProgressIndicator: Boolean = false,
-  val patientViewData: MeasureReportSubjectViewData? = null
+  val subjectViewData: MutableList<MeasureReportSubjectViewData> = mutableListOf()
 )

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
@@ -67,7 +68,7 @@ fun MeasureReportResultScreen(
     navController = navController,
     startDate = uiState.startDate,
     endDate = uiState.endDate,
-    patientViewData = uiState.patientViewData,
+    subjectViewData = uiState.subjectViewData,
     measureReportIndividualResult = measureReportViewModel.measureReportIndividualResult.value,
     measureReportPopulationResult = measureReportViewModel.measureReportPopulationResults.value
   )
@@ -75,14 +76,14 @@ fun MeasureReportResultScreen(
 
 @Composable
 fun MeasureReportResultPage(
-    screenTitle: String,
-    navController: NavController,
-    startDate: String,
-    endDate: String,
-    patientViewData: MeasureReportSubjectViewData?,
-    measureReportIndividualResult: MeasureReportIndividualResult?,
-    measureReportPopulationResult: List<MeasureReportPopulationResult>?,
-    modifier: Modifier = Modifier
+  screenTitle: String,
+  navController: NavController,
+  startDate: String,
+  endDate: String,
+  subjectViewData: List<MeasureReportSubjectViewData>,
+  measureReportIndividualResult: MeasureReportIndividualResult?,
+  measureReportPopulationResult: List<MeasureReportPopulationResult>?,
+  modifier: Modifier = Modifier
 ) {
   Scaffold(
     topBar = {
@@ -120,13 +121,17 @@ fun MeasureReportResultPage(
         Spacer(modifier = modifier.height(16.dp))
 
         // Switch between individual and population result views
-        if (measureReportIndividualResult != null && patientViewData != null) {
-          MeasureReportIndividualResultView(
-            patientViewData = patientViewData,
-            isMatchedIndicator = measureReportIndividualResult.isMatchedIndicator,
-            indicatorStatus = measureReportIndividualResult.status,
-            indicatorDescription = measureReportIndividualResult.description
-          )
+        if (measureReportIndividualResult != null && subjectViewData.isNotEmpty()) {
+          Row(modifier = modifier.fillMaxWidth()) {
+            subjectViewData.forEach {
+              MeasureReportIndividualResultView(
+                patientViewData = it,
+                isMatchedIndicator = measureReportIndividualResult.isMatchedIndicator,
+                indicatorStatus = measureReportIndividualResult.status,
+                indicatorDescription = measureReportIndividualResult.description
+              )
+            }
+          }
         }
         if (measureReportPopulationResult != null) {
           MeasureReportPopulationResultView(
@@ -146,12 +151,20 @@ private fun MeasureReportResultScreenForIndividualPreview() {
     navController = rememberNavController(),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
-    patientViewData =
-      MeasureReportSubjectViewData(
-        name = "Jacky Coughlin",
-        gender = "F",
-        age = "27",
-        logicalId = "1920192"
+    subjectViewData =
+      listOf(
+        MeasureReportSubjectViewData(
+          name = "Jacky Coughlin",
+          gender = "F",
+          age = "27",
+          logicalId = "1920192"
+        ),
+        MeasureReportSubjectViewData(
+          name = "Jane Doe",
+          gender = "F",
+          age = "18",
+          logicalId = "1910192"
+        )
       ),
     measureReportIndividualResult =
       MeasureReportIndividualResult(status = "True", isMatchedIndicator = true, description = ""),
@@ -171,12 +184,20 @@ private fun MeasureReportResultScreenForPopulationPreview() {
     navController = rememberNavController(),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
-    patientViewData =
-      MeasureReportSubjectViewData(
-        name = "Jacky Coughlin",
-        gender = "F",
-        age = "27",
-        logicalId = "1902912"
+    subjectViewData =
+      listOf(
+        MeasureReportSubjectViewData(
+          name = "Jacky Coughlin",
+          gender = "F",
+          age = "27",
+          logicalId = "1902912"
+        ),
+        MeasureReportSubjectViewData(
+          name = "Jane Doe",
+          gender = "F",
+          age = "18",
+          logicalId = "1912912"
+        )
       ),
     measureReportIndividualResult = null,
     measureReportPopulationResult =

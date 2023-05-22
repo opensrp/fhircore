@@ -44,16 +44,16 @@ import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
 
-const val PATIENT_NAME_TEST_TAG = "patientNameTestTag"
+const val SUBJECT_NAME_TEST_TAG = "subjectNameTestTag"
 const val CLOSE_ICON_TEST_TAG = "closeIconTestTag"
 const val CLOSE_ICON_BACKGROUND_TEST_TAG = "closeIconBackgroundTestTag"
 const val CHANGE_TEXT_TEST_TAG = "changeTextTestTag"
 const val CHANGE_ROW_TEST_TAG = "changeRowTestTag"
 
 @Composable
-fun PatientSelector(
-  patientName: String,
-  onChangePatient: () -> Unit,
+fun SubjectSelector(
+  names: List<String>,
+  onChangeSubject: () -> Unit,
   modifier: Modifier = Modifier
 ) {
   Row(
@@ -74,37 +74,40 @@ fun PatientSelector(
         modifier = Modifier.align(Alignment.Center),
         verticalAlignment = Alignment.CenterVertically
       ) {
-        Text(
-          text = patientName,
-          textAlign = TextAlign.Center,
-          fontSize = 16.sp,
-          modifier = modifier.testTag(PATIENT_NAME_TEST_TAG)
-        )
-        Spacer(modifier = Modifier.size(8.dp))
-        Row(
-          modifier =
-            modifier
-              .clip(RoundedCornerShape(8.dp))
-              .background(color = Color.LightGray)
-              .wrapContentWidth()
-              .clickable { onChangePatient() }
-        ) {
-          Box(
+        names.forEach {
+          Text(
+            text = it,
+            textAlign = TextAlign.Center,
+            fontSize = 16.sp,
+            modifier = modifier.testTag(SUBJECT_NAME_TEST_TAG)
+          )
+
+          Spacer(modifier = Modifier.size(8.dp))
+          Row(
             modifier =
               modifier
-                .clip(RoundedCornerShape(25.dp))
-                .size(24.dp)
-                .background(color = Color.DarkGray.copy(alpha = 0.4f))
+                .clip(RoundedCornerShape(8.dp))
+                .background(color = Color.LightGray)
                 .wrapContentWidth()
-                .padding(4.dp)
-                .testTag(CLOSE_ICON_BACKGROUND_TEST_TAG),
-            contentAlignment = Alignment.Center
+                .clickable { onChangeSubject() }
           ) {
-            Icon(
-              Icons.Filled.Close,
-              contentDescription = "Back arrow",
-              modifier = Modifier.size(20.dp).testTag(CLOSE_ICON_TEST_TAG)
-            )
+            Box(
+              modifier =
+                modifier
+                  .clip(RoundedCornerShape(25.dp))
+                  .size(24.dp)
+                  .background(color = Color.DarkGray.copy(alpha = 0.4f))
+                  .wrapContentWidth()
+                  .padding(4.dp)
+                  .testTag(CLOSE_ICON_BACKGROUND_TEST_TAG),
+              contentAlignment = Alignment.Center
+            ) {
+              Icon(
+                Icons.Filled.Close,
+                contentDescription = "Back arrow",
+                modifier = Modifier.size(20.dp).testTag(CLOSE_ICON_TEST_TAG)
+              )
+            }
           }
         }
       }
@@ -113,14 +116,14 @@ fun PatientSelector(
       modifier =
         modifier
           .wrapContentWidth()
-          .clickable { onChangePatient() }
+          .clickable { onChangeSubject() }
           .padding(vertical = 8.dp, horizontal = 12.dp)
           .testTag(CHANGE_ROW_TEST_TAG),
       horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.CenterVertically
     ) {
       Text(
-        text = stringResource(id = R.string.change),
+        text = stringResource(id = R.string.add),
         textAlign = TextAlign.Center,
         color = InfoColor,
         fontSize = 16.sp,
@@ -132,6 +135,6 @@ fun PatientSelector(
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
-fun SelectedPatientPreview() {
-  PatientSelector(patientName = "Mary Magdalene", onChangePatient = {})
+fun SelectedSubjectPreview() {
+  SubjectSelector(names = listOf("Mary Magdalene", "Jane Doe"), onChangeSubject = {})
 }

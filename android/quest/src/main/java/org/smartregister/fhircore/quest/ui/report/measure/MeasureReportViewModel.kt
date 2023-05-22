@@ -81,8 +81,8 @@ import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGeneratedMeasureReports
 import org.smartregister.fhircore.engine.util.extension.valueCode
-import org.smartregister.fhircore.quest.data.report.measure.MeasureReportSubjectsPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
+import org.smartregister.fhircore.quest.data.report.measure.MeasureReportSubjectsPagingSource
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
@@ -103,7 +103,7 @@ constructor(
   val dispatcherProvider: DefaultDispatcherProvider,
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
-  val measureReportPatientViewDataMapper: MeasureReportSubjectViewDataMapper,
+  val measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper,
   val defaultRepository: DefaultRepository,
   val rulesExecutor: RulesExecutor
 ) : ViewModel() {
@@ -206,17 +206,19 @@ constructor(
           if (this == MeasureReport.MeasureReportType.INDIVIDUAL) {
             event.navController.navigate(MeasureReportNavigationScreen.SubjectsList.route)
           } else {
-            // Reset previously selected patient
+            // Reset previously selected subject
             reportTypeSelectorUiState.value =
-              reportTypeSelectorUiState.value.copy(patientViewData = null)
+              reportTypeSelectorUiState.value.copy(subjectViewData = mutableListOf())
           }
         }
       }
-      is MeasureReportEvent.OnPatientSelected -> // Reset previously selected patient
+      is MeasureReportEvent.OnSubjectSelected -> // Reset previously selected patient
         //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
       {
         reportTypeSelectorUiState.value =
-          reportTypeSelectorUiState.value.copy(patientViewData = event.patientViewData)
+          reportTypeSelectorUiState.value.copy().apply {
+            subjectViewData.add(event.subjectViewData)
+          }
       }
       is MeasureReportEvent.OnSearchTextChanged -> // Reset previously selected patient
         //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
@@ -253,7 +255,7 @@ constructor(
                 registerRepository = registerRepository,
                 rulesExecutor = rulesExecutor
               ),
-              measureReportPatientViewDataMapper,
+              measureReportSubjectViewDataMapper,
             )
           }
         )
@@ -589,6 +591,10 @@ constructor(
   /** This function lists the fixed range selection in months for the entire year */
   fun showFixedRangeSelection(reportId: String) =
     retrieveMeasureReportConfiguration(reportId).showFixedRangeSelection == true
+
+  /** This function lists the subject selection in report selector */
+  fun showSubjectSelection(reportId: String) =
+    retrieveMeasureReportConfiguration(reportId).showSubjectSelection == true
 
   fun resetState() {
     reportTypeSelectorUiState.value = ReportTypeSelectorUiState()

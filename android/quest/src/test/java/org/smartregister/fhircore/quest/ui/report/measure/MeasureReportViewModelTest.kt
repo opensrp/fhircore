@@ -117,7 +117,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
           fhirOperator = fhirOperator,
           sharedPreferencesHelper = sharedPreferencesHelper,
           dispatcherProvider = mockk(),
-          measureReportPatientViewDataMapper = measureReportPatientViewDataMapper,
+          measureReportSubjectViewDataMapper = measureReportPatientViewDataMapper,
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
           defaultRepository = defaultRepository,
@@ -244,7 +244,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
     measureReportViewModel.onEvent(
       MeasureReportEvent.OnReportTypeChanged(MeasureReportType.SUMMARY, navController)
     )
-    Assert.assertNull(measureReportViewModel.reportTypeSelectorUiState.value.patientViewData)
+    Assert.assertNull(measureReportViewModel.reportTypeSelectorUiState.value.subjectViewData)
   }
 
   @Test
@@ -257,8 +257,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
         age = "28",
         family = "Orion"
       )
-    measureReportViewModel.onEvent(MeasureReportEvent.OnPatientSelected(samplePatientViewData))
-    val patientViewData = measureReportViewModel.reportTypeSelectorUiState.value.patientViewData
+    measureReportViewModel.onEvent(MeasureReportEvent.OnSubjectSelected(samplePatientViewData))
+    val patientViewData = measureReportViewModel.reportTypeSelectorUiState.value.subjectViewData
     Assert.assertNotNull(samplePatientViewData.logicalId, patientViewData?.logicalId)
     Assert.assertNotNull(samplePatientViewData.name, patientViewData?.name)
     Assert.assertNotNull(samplePatientViewData.gender, patientViewData?.gender)
