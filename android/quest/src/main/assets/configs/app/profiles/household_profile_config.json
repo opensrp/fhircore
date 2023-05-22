@@ -571,7 +571,12 @@
                 "value": "@{familyLogicalId}",
                 "paramType": "UPDATE_DATE_ON_EDIT"
               }
-            ]
+            ],
+            "snackBarMessage": {
+              "message": "Household details have been updated",
+              "actionLabel": "",
+              "duration": "Short"
+            }
           }
         }
       ]
