@@ -11,6 +11,7 @@ on:
       # - main
       - security-automation-additions
   workflow_dispatch:
+    inputs:
     
 
 jobs:
@@ -34,7 +35,7 @@ jobs:
         working-directory: android
 
       - name: Run Dependency Check
-        run: ./gradlew dependencyCheckAnalyze --format HTML -out dependency-check-report.html
+        run: ./gradlew dependencyCheckAggregate -DdependencyCheckFormat=HTML
         working-directory: android
 
 
@@ -53,4 +54,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: dependency-check-report
-          path: android/reports/dependency-check-report.xml
+          path: android/reports/dependency-check-report.html
