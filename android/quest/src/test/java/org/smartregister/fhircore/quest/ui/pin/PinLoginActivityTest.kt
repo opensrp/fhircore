@@ -103,7 +103,7 @@ class PinLoginActivityTest : RobolectricTest() {
     every { P2PLibrary.init(any()) } returns mockk()
 
     // When new pin is setup the app navigates to home screen
-    pinLoginActivity.pinViewModel.onSetPin("1234")
+    pinLoginActivity.pinViewModel.onSetPin("1234".toCharArray())
     val resultIntent = Shadows.shadowOf(pinLoginActivity).nextStartedActivity
     Assert.assertNotNull(resultIntent)
     val shadowIntent: ShadowIntent = Shadows.shadowOf(resultIntent)

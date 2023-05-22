@@ -27,23 +27,24 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 
 @AndroidEntryPoint
-class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
+class ProfileFragment : Fragment() {
 
   @Inject lateinit var eventBus: EventBus
   val profileFragmentArgs by navArgs<ProfileFragmentArgs>()
@@ -78,13 +79,17 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
-        eventBus.events.collectLatest { appEvent ->
-          when (appEvent) {
-            is AppEvent.OnSubmitQuestionnaire ->
-              handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
-            else -> {}
+        eventBus
+          .events
+          .getFor(MainNavigationScreen.Profile.route.toString())
+          .onEach { appEvent ->
+            when (appEvent) {
+              is AppEvent.OnSubmitQuestionnaire ->
+                handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+              else -> {}
+            }
           }
-        }
+          .launchIn(lifecycleScope)
       }
     }
   }
@@ -102,30 +107,6 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
     val (questionnaireConfig, _) = questionnaireSubmission
     questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
       profileViewModel.emitSnackBarState(snackBarMessageConfig)
-    }
-  }
-
-  /**
-   * Overridden method for [Observer] class used to address [QuestionnaireSubmission] events. A new
-   * [Observer] is needed for every fragment since the [AppMainViewModel]'s
-   * questionnaireSubmissionLiveData outlives the Fragment. Cannot use Kotlin Observer { } as it is
-   * optimized to a singleton resulting to an exception using an observer from a detached fragment.
-   */
-  override fun onChanged(questionnaireSubmission: QuestionnaireSubmission?) {
-    lifecycleScope.launch {
-      questionnaireSubmission?.let {
-        appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
-        // Always refresh data when questionnaire is submitted
-        with(profileFragmentArgs) {
-          profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
-        }
-
-        // Display SnackBar message
-        val (questionnaireConfig, _) = questionnaireSubmission
-        questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
-          profileViewModel.emitSnackBarState(snackBarMessageConfig)
-        }
-      }
     }
   }
 }

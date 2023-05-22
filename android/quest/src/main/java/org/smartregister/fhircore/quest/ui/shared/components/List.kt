@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +32,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
@@ -62,6 +65,7 @@ fun List(
   resourceData: ResourceData,
   navController: NavController,
 ) {
+  val density = LocalDensity.current
   val currentListResourceData = resourceData.listResourceDataMap?.get(viewProperties.id)
   if (currentListResourceData.isNullOrEmpty()) {
     Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxSize()) {
@@ -99,11 +103,20 @@ fun List(
                     vertical = viewProperties.padding.div(4).dp
                   )
               ) {
-                ViewRenderer(
-                  viewProperties = viewProperties.registerCard.views,
-                  resourceData = listResourceData,
-                  navController = navController,
-                )
+                AnimatedVisibility(
+                  visible = true,
+                  enter =
+                    slideInVertically {
+                      // Slide in from 40 dp from the top.
+                      with(density) { -40.dp.roundToPx() }
+                    }
+                ) {
+                  ViewRenderer(
+                    viewProperties = viewProperties.registerCard.views,
+                    resourceData = listResourceData,
+                    navController = navController,
+                  )
+                }
               }
               Spacer(modifier = modifier.height(6.dp))
               if (index < currentListResourceData.lastIndex && viewProperties.showDivider)
