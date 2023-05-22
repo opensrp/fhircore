@@ -1,0 +1,47 @@
+name: Dependency Check Scan
+
+on:
+  push:
+    branches:
+      # - main
+      - security-automation-additions
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      # - main
+      - security-automation-additions
+  workflow_dispatch:
+    
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+
+      - name: Build Gradle project
+        run: ./gradlew build
+
+      - name: Run Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "fhircore"
+          path: "."
+          format: 'XML'
+          out: 'reports'
+        
+
+      - name: Upload Dependency Check report in XML format
+        uses: actions/upload-artifact@v2
+        with:
+          name: dependency-check-report
+          path: dependency-check-report.xml
