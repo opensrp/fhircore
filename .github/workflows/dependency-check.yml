@@ -37,7 +37,7 @@ jobs:
         working-directory: android
 
       - name: Build Gradle project
-        run: ./gradlew build
+        run: ./gradlew check --scan
         working-directory: android
 
       - name: Run Dependency Check
