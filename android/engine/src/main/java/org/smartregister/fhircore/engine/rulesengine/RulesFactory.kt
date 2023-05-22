@@ -387,12 +387,19 @@ constructor(
         ?: emptyList()
     }
 
-    /** This function combines all string indexes to comma separated */
+    /** This function combines all the string indexes to a comma separated list */
     fun joinToString(source: MutableList<String?>): String {
-      source.removeIf { it == null }
-      val inputString = source.joinToString()
-      val regex = "(?<=^|,)[\\s,]*(\\w[\\w\\s]*)(?=[\\s,]*$|,)".toRegex()
-      return regex.findAll(inputString).joinToString(", ") { it.groupValues[1] }
+      return joinToString(source, DEFAULT_REGEX, DEFAULT_STRING_SEPARATOR)
+    }
+
+    /**
+     * This function combines all string indexes to a list separated by the separator defined by the
+     * implementor
+     */
+    fun joinToString(sourceString: MutableList<String?>, regex: String, separator: String): String {
+      sourceString.removeIf { it == null }
+      val inputString = sourceString.joinToString()
+      return regex.toRegex().findAll(inputString).joinToString(separator) { it.groupValues[1] }
     }
 
     fun mapResourcesToExtractedValues(
@@ -426,5 +433,7 @@ constructor(
     private const val SERVICE = "service"
     private const val INCLUSIVE_SIX_DIGIT_MINIMUM = 100000
     private const val INCLUSIVE_SIX_DIGIT_MAXIMUM = 999999
+    private const val DEFAULT_REGEX = "(?<=^|,)[\\s,]*(\\w[\\w\\s]*)(?=[\\s,]*$|,)"
+    private const val DEFAULT_STRING_SEPARATOR = ", "
   }
 }
