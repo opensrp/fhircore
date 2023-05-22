@@ -130,13 +130,6 @@ constructor(
           readOnlyLinkIds
         )
       }
-      // FIXME: For testing purpose only
-      this.item.forEach {
-        it.removeExtension("http://hl7.org/fhir/StructureDefinition/questionnaire-hidden")
-        it.item.forEach {
-          it.removeExtension("http://hl7.org/fhir/StructureDefinition/questionnaire-hidden")
-        }
-      }
       // prepopulate questionnaireItems with initial values
       prePopulationParams?.takeIf { it.isNotEmpty() }?.let { nonEmptyParams ->
         editQuestionnaireResourceParams =

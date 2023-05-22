@@ -164,7 +164,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         type = QuestionnaireType.READ_ONLY,
         setPractitionerDetails = false,
         setOrganizationDetails = false,
-        resourceIdentifier = "2"
+        resourceIdentifier = "2",
+        resourceType = ResourceType.Patient
       )
 
     questionnaireViewModel =
@@ -2065,5 +2066,94 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.populateQuestionnaireResponse(any(), capture(slotPopulationResources))
     }
     assertTrue(slotPopulationResources.captured.isEmpty())
+  }
+
+  @Test
+  fun testInitialExpressionBeingPopulated() {
+    val questionnaire =
+      Questionnaire().apply {
+        id = "12345"
+        item =
+          listOf(
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-first-name"
+              type = Questionnaire.QuestionnaireItemType.TEXT
+              item =
+                listOf(
+                  Questionnaire.QuestionnaireItemComponent().apply {
+                    linkId = "patient-last-name"
+                    type = Questionnaire.QuestionnaireItemType.TEXT
+                  }
+                )
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-age"
+              type = Questionnaire.QuestionnaireItemType.INTEGER
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-contact"
+              type = Questionnaire.QuestionnaireItemType.GROUP
+              item =
+                listOf(
+                  Questionnaire.QuestionnaireItemComponent().apply {
+                    linkId = "patient-dob"
+                    type = Questionnaire.QuestionnaireItemType.DATE
+                  },
+                  Questionnaire.QuestionnaireItemComponent().apply {
+                    linkId = "patient-related-person"
+                    type = Questionnaire.QuestionnaireItemType.GROUP
+                    item =
+                      listOf(
+                        Questionnaire.QuestionnaireItemComponent().apply {
+                          linkId = "rp-name"
+                          type = Questionnaire.QuestionnaireItemType.TEXT
+                        }
+                      )
+                  }
+                )
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-birthDate"
+              addExtension(
+               "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                Expression().apply {
+                  language = "text/fhirpath"
+                  expression = "Patient.birthDate"
+                }
+              )
+            }
+
+          )
+      }
+    val group = Group().apply { id = "112233" }
+
+    coEvery {
+      fhirEngine.search<QuestionnaireResponse> {
+        filter(QuestionnaireResponse.SUBJECT, { value = group.id })
+        filter(QuestionnaireResponse.QUESTIONNAIRE, { value = questionnaire.id })
+      }
+    } returns listOf()
+
+    // gets population resources
+    coEvery { fhirEngine.get(group.resourceType, group.id) } returns group
+
+    val result = runBlocking {
+      questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
+        questionnaire,
+        group.id,
+        group.resourceType,
+        questionnaireConfig
+      )
+    }
+
+    assertTrue("Questionnaire Response has no item", result.hasItem())
+
+    coVerify { fhirEngine.get(group.resourceType, group.id) }
+
+    val slotPopulationResources = slot<ArrayList<Resource>>()
+    coVerify {
+      questionnaireViewModel.populateQuestionnaireResponse(any(), capture(slotPopulationResources))
+    }
+    assertTrue(slotPopulationResources.captured.isNotEmpty())
   }
 }
