@@ -62,17 +62,17 @@ const val PIN_TEXT_FIELD_TEST_TAG = "pinTextField"
 @Composable
 fun PinInput(
   modifier: Modifier = Modifier,
-  actualPin: String? = null,
   pinLength: Int,
   inputMode: Boolean = true,
-  onPinSet: (String) -> Unit,
-  onPinVerified: (Boolean) -> Unit,
+  onPinSet: (CharArray) -> Unit,
   onShowPinError: (Boolean) -> Unit,
+  onPinEntered: (CharArray, (Boolean) -> Unit) -> Unit
 ) {
   val keyboard = LocalSoftwareKeyboardController.current
   val focusRequester = remember { FocusRequester() }
   var enteredPin by remember { mutableStateOf("") }
   var nextCellIndex by remember { mutableStateOf(0) }
+  var isValidPin by remember { mutableStateOf<Boolean?>(null) }
 
   // Launch keyboard and request focus on the hidden input field, delay of 300ms as workaround
   LaunchedEffect(Unit) {
@@ -91,22 +91,23 @@ fun PinInput(
           nextCellIndex = enteredPin.length
           keyboard?.hide()
 
-          if (inputMode) onPinSet(enteredPin)
+          if (inputMode) onPinSet(enteredPin.toCharArray())
           else {
-            val validPin = enteredPin == actualPin
-            onPinVerified(validPin)
-            // Wrong PIN, clear entered PIN
-            if (!validPin) {
-              keyboard?.show()
-              onShowPinError(true)
+            onPinEntered(it.toCharArray()) { isValid ->
+              isValidPin = isValid
+              if (!isValid) {
+                keyboard?.show()
+                onShowPinError(true)
+              }
             }
           }
         }
         it.length < pinLength -> {
+          isValidPin = null
           keyboard?.show()
           enteredPin = it
           nextCellIndex = enteredPin.length
-          onPinSet(enteredPin)
+          onPinSet(enteredPin.toCharArray())
           onShowPinError(false)
         }
       }
@@ -122,8 +123,8 @@ fun PinInput(
         when {
           inputMode -> Color.White
           enteredPin.getOrNull(index) == null -> Color.LightGray
-          enteredPin.length == pinLength && enteredPin == actualPin -> SuccessColor
-          enteredPin.length == pinLength && enteredPin != actualPin -> DangerColor
+          enteredPin.length == pinLength && isValidPin == true -> SuccessColor
+          enteredPin.length == pinLength && isValidPin == false -> DangerColor
           else -> InfoColor
         }
       PinCell(
@@ -183,7 +184,13 @@ fun PinCell(
 @Composable
 @PreviewWithBackgroundExcludeGenerated
 private fun PinViewWithActiveInputModePreview() {
-  PinInput(pinLength = 4, inputMode = true, onPinSet = {}, onPinVerified = {}, onShowPinError = {})
+  PinInput(
+    pinLength = 4,
+    inputMode = true,
+    onPinSet = {},
+    onShowPinError = {},
+    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
+  )
 }
 
 @Composable
@@ -192,9 +199,8 @@ private fun PinViewWithInActiveInputModePreview() {
   PinInput(
     pinLength = 4,
     inputMode = false,
-    actualPin = "1234",
     onPinSet = {},
-    onPinVerified = {},
-    onShowPinError = {}
+    onShowPinError = {},
+    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
   )
 }

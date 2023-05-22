@@ -20,19 +20,29 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.slot
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import io.mockk.verifyOrder
+import java.util.Base64
+import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.passwordHashString
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -44,6 +54,7 @@ class PinViewModelTest : RobolectricTest() {
   private var secureSharedPreference: SecureSharedPreference = mockk(relaxUnitFun = true)
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var pinViewModel: PinViewModel
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Before
   fun setUp() {
@@ -53,17 +64,18 @@ class PinViewModelTest : RobolectricTest() {
         secureSharedPreference = secureSharedPreference,
         sharedPreferences = sharedPreferenceHelper,
         configurationRegistry = configurationRegistry,
+        dispatcherProvider = dispatcherProvider
       )
   }
 
   @Test
   fun testSetPinUiState() {
     val context = ApplicationProvider.getApplicationContext<Application>()
-    every { secureSharedPreference.retrieveSessionPin() } returns "1245"
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     pinViewModel.setPinUiState(true, context)
     val pinUiState = pinViewModel.pinUiState.value
-    Assert.assertEquals("1245", pinUiState.currentUserPin)
+    Assert.assertEquals(context.getString(R.string.set_pin_message), pinUiState.message)
+    Assert.assertEquals(true, pinUiState.setupPin)
     Assert.assertTrue(pinUiState.setupPin)
   }
 
@@ -96,19 +108,16 @@ class PinViewModelTest : RobolectricTest() {
     pinViewModel.onPinVerified(true)
 
     Assert.assertEquals(true, pinViewModel.navigateToHome.value)
-
-    pinViewModel.onPinVerified(false)
-    Assert.assertEquals(true, pinViewModel.showError.value)
   }
 
   @Test
   fun testOnSetPin() {
-    pinViewModel.onSetPin("1990")
+    pinViewModel.onSetPin("1990".toCharArray())
 
-    val newPinSlot = slot<String>()
+    val newPinSlot = slot<CharArray>()
     verify { secureSharedPreference.saveSessionPin(capture(newPinSlot)) }
 
-    Assert.assertEquals("1990", newPinSlot.captured)
+    Assert.assertEquals("1990", newPinSlot.captured.concatToString())
     Assert.assertEquals(true, pinViewModel.navigateToHome.value)
   }
 
@@ -144,5 +153,37 @@ class PinViewModelTest : RobolectricTest() {
   fun testOnShowPinError() {
     pinViewModel.onShowPinError(false)
     Assert.assertEquals(false, pinViewModel.showError.value)
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun testPinLogin() {
+
+    mockkStatic(::passwordHashString)
+
+    coEvery { passwordHashString(any(), any()) } returns "currentStoredPinHash"
+    coEvery { secureSharedPreference.retrieveSessionPin() } returns "currentStoredPinHash"
+    coEvery { secureSharedPreference.retrievePinSalt() } returns
+      Base64.getEncoder().encodeToString("currentStoredSalt".toByteArray())
+
+    val loginPin = charArrayOf('1', '2', '1', '3', '1', '4')
+
+    var pinIsValid = false
+    val callback = { valid: Boolean -> pinIsValid = valid }
+    runTest { pinViewModel.pinLogin(loginPin, callback) }
+    // Verify the credentials are fetched from the secure shared prefs helper
+    verify { secureSharedPreference.retrieveSessionPin() }
+    verify { secureSharedPreference.retrievePinSalt() }
+
+    // Verify callback is invoked with result after PIN validation
+    Assert.assertTrue(pinIsValid)
+
+    // Verify pin char array is overwritten in memory for valid pin
+    Assert.assertEquals("******", loginPin.concatToString())
+
+    // Verify the progressBar flag is set to hidden
+    Assert.assertFalse(pinViewModel.pinUiState.value.showProgressBar)
+
+    unmockkStatic(::passwordHashString)
   }
 }

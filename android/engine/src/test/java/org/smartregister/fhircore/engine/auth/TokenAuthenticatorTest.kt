@@ -53,7 +53,7 @@ import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator.C
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.toSha1
+import org.smartregister.fhircore.engine.util.toPasswordHash
 import retrofit2.HttpException
 import retrofit2.Response
 
@@ -164,6 +164,20 @@ class TokenAuthenticatorTest : RobolectricTest() {
     val refreshToken = "refreshToken"
     val username = sampleUsername
     val password = charArrayOf('P', '4', '5', '5', 'W', '4', '0')
+    var passwordSalt = byteArrayOf(-128, 100, 112, 127)
+
+    val secureSharedPreference = spyk(secureSharedPreference)
+    val tokenAuthenticator =
+      spyk(
+        TokenAuthenticator(
+          secureSharedPreference = secureSharedPreference,
+          configService = configService,
+          oAuthService = oAuthService,
+          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          accountManager = accountManager,
+          context = context
+        )
+      )
 
     val oAuthResponse =
       OAuthResponse(
@@ -175,6 +189,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
 
+    every { secureSharedPreference.get256RandomBytes() } returns passwordSalt
     every { accountManager.accounts } returns arrayOf()
 
     val accountSlot = slot<Account>()
@@ -193,7 +208,11 @@ class TokenAuthenticatorTest : RobolectricTest() {
     val credentials = secureSharedPreference.retrieveCredentials()
     Assert.assertNotNull(credentials)
     Assert.assertTrue(username.contentEquals(credentials?.username))
-    Assert.assertTrue(password.concatToString().toSha1().contentEquals(credentials?.password))
+
+    Assert.assertEquals(
+      charArrayOf('P', '4', '5', '5', 'W', '4', '0').toPasswordHash(passwordSalt),
+      credentials?.passwordHash
+    )
   }
 
   @Test
@@ -289,7 +308,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testFindAccountShouldReturnAnAccount() {
-    secureSharedPreference.saveCredentials(AuthCredentials(sampleUsername, "sirikali"))
+    secureSharedPreference.saveCredentials(sampleUsername, "sirikali".toCharArray())
     val account = Account(sampleUsername, PROVIDER)
     every { accountManager.getAccountsByType(any()) } returns arrayOf(account)
     val resultAccount = tokenAuthenticator.findAccount()
