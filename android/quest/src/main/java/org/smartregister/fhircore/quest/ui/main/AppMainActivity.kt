@@ -30,6 +30,7 @@ import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
+import io.sentry.android.navigation.SentryNavigationListener
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -70,6 +71,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
 
   lateinit var navHostFragment: NavHostFragment
+
+  private val sentryNavListener =
+    SentryNavigationListener(
+      enableNavigationBreadcrumbs = true, // enabled by default
+      enableNavigationTracing = true // enabled by default
+    )
 
   override val startForResult =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
@@ -128,11 +135,17 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override fun onResume() {
     super.onResume()
+    navHostFragment.navController.addOnDestinationChangedListener(sentryNavListener)
     syncListenerManager.registerSyncListener(this, lifecycle)
 
     appMainViewModel.viewModelScope.launch(dispatcherProvider.io()) {
       fhirEngine.addDateTimeIndex()
     }
+  }
+
+  override fun onPause() {
+    super.onPause()
+    navHostFragment.navController.removeOnDestinationChangedListener(sentryNavListener)
   }
 
   override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
