@@ -10,11 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add "Record all" feature in card view
 - Functionality to aggregate count for related resources 
 - Incremental rendering of content of LIST widget used mostly on profile screen
-<<<<<<< HEAD
 - The ability to define a regex and separator on the `RulesFactory.RulesEngineService#joinToString(java.util.List<java.lang.String>, java.lang.String, java.lang.String)`
-=======
 - Use Sentry to track and monitor performance bottlenecks on quest and FHIR Core
->>>>>>> e7aab4835d0c63e817e066e84648a4e6b86c7f45
 
 ### Fixed
 - Member icons display wrapping; hiding some texts
