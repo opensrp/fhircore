@@ -334,6 +334,7 @@ constructor(
             CarePlan.INSTANTIATES_CANONICAL,
             { value = "${PlanDefinition().fhirType()}/$planDefinition" }
           )
+          filter(CarePlan.SUBJECT, { value = subject.referenceValue() })
         }
 
       if (carePlans.isEmpty()) return@forEach
