@@ -65,7 +65,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
       Timber.e(e)
     }
 
-    initSentryMonitoring()
+    // initSentryMonitoring()
   }
 
   @VisibleForTesting

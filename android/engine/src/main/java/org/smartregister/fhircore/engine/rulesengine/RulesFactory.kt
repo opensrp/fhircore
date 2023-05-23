@@ -387,16 +387,15 @@ constructor(
         ?: emptyList()
     }
 
-    /** This function combines all the string indexes to a comma separated list */
-    fun joinToString(source: MutableList<String?>): String {
-      return joinToString(source, DEFAULT_REGEX, DEFAULT_STRING_SEPARATOR)
-    }
-
     /**
      * This function combines all string indexes to a list separated by the separator and regex
      * defined by the content author
      */
-    fun joinToString(sourceString: MutableList<String?>, regex: String, separator: String): String {
+    fun joinToString(
+      sourceString: MutableList<String?>,
+      regex: String = DEFAULT_REGEX,
+      separator: String = DEFAULT_STRING_SEPARATOR
+    ): String {
       sourceString.removeIf { it == null }
       val inputString = sourceString.joinToString()
       return regex.toRegex().findAll(inputString).joinToString(separator) { it.groupValues[1] }
