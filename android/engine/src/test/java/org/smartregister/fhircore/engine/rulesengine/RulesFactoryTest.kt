@@ -446,6 +446,33 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun testJoinToStringSpecialCharacters() {
+    val source = mutableListOf("apple", "banana", " cherry", "  ", "date ", "CM-NTD Leprosy")
+    val expected = "apple,banana,cherry,date ,CM-NTD Leprosy"
+    Assert.assertTrue(
+      expected ==
+        rulesEngineService.joinToString(
+          source.toMutableList(),
+          "(?<=^|,)[\\s,]*(\\w[\\w\\s&-]*)(?=[\\s,]*$|,)",
+          ","
+        )
+    )
+  }
+  @Test
+  fun testJoinToStringSpecialCharactersWithDefinedSeparator() {
+    val source = mutableListOf("apple", "banana", " cherry", "  ", "date ", "CM&NTD Leprosy")
+    val expected = "apple:banana:cherry:date :CM&NTD Leprosy"
+    Assert.assertTrue(
+      expected ==
+        rulesEngineService.joinToString(
+          source.toMutableList(),
+          "(?<=^|,)[\\s,]*(\\w[\\w\\s&-]*)(?=[\\s,]*$|,)",
+          ":"
+        )
+    )
+  }
+
+  @Test
   fun testJoinToStringWithExtraCommasAndSpaces() {
     val source =
       mutableListOf(
