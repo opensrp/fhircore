@@ -47,7 +47,6 @@ constructor(
 
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
-      val currentTime = System.currentTimeMillis()
       val lastAuthoredOnDate =
         sharedPreferences
           .read(SharedPreferenceKey.OVERDUE_TASK_LAST_AUTHORED_ON_DATE.name, null)
@@ -65,9 +64,6 @@ constructor(
       sharedPreferences.write(
         SharedPreferenceKey.OVERDUE_TASK_LAST_AUTHORED_ON_DATE.name,
         maxDate?.formatDate(SDF_YYYY_MM_DD)
-      )
-      Timber.w(
-        "$WORK_ID job executed in ${(System.currentTimeMillis() - currentTime) / 1000} second(s) on thread ${Thread.currentThread().name}"
       )
       Result.success()
     }

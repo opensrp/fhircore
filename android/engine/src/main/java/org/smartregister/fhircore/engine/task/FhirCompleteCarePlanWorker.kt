@@ -52,7 +52,6 @@ constructor(
 ) : CoroutineWorker(context, workerParams) {
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
-      val currentTime = System.currentTimeMillis()
       val applicationConfiguration =
         configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
           ConfigType.Application
@@ -86,9 +85,6 @@ constructor(
       sharedPreferencesHelper.write(
         key = WORK_ID.lastOffset(),
         value = updatedLastOffset.toString()
-      )
-      Timber.w(
-        "$WORK_ID job executed in ${(System.currentTimeMillis() - currentTime) / 1000} second(s) on thread ${Thread.currentThread().name}"
       )
       Result.success()
     }

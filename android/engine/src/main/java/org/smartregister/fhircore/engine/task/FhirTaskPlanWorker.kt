@@ -58,7 +58,6 @@ constructor(
 
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
-      val currentTime = System.currentTimeMillis()
       val appConfig =
         configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
           ConfigType.Application
@@ -67,7 +66,6 @@ constructor(
       val lastOffset =
         sharedPreferencesHelper.read(key = WORK_ID.lastOffset(), defaultValue = "0")!!.toInt()
 
-      Timber.e("Done task scheduling")
       val tasks =
         fhirEngine.search<Task> {
           filter(
@@ -86,8 +84,7 @@ constructor(
         if (task.hasPastEnd()) {
           task.status = Task.TaskStatus.FAILED
           fhirEngine.update(task)
-          task
-            .basedOn
+          task.basedOn
             .find { it.reference.startsWith(ResourceType.CarePlan.name) }
             ?.extractId()
             ?.takeIf { it.isNotBlank() }
@@ -109,9 +106,6 @@ constructor(
       sharedPreferencesHelper.write(
         key = WORK_ID.lastOffset(),
         value = updatedLastOffset.toString()
-      )
-      Timber.w(
-        "$WORK_ID job executed in ${(System.currentTimeMillis() - currentTime) / 1000} second(s) on thread ${Thread.currentThread().name}"
       )
       Result.success()
     }
