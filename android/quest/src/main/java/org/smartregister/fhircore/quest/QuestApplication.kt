@@ -52,6 +52,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
 
     if (BuildConfig.DEBUG.not()) {
       Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
+      initSentryMonitoring()
     }
 
     // TODO Fix this workaround for cursor size issue. Currently size set to 10 MB
@@ -64,8 +65,6 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
     } catch (e: Exception) {
       Timber.e(e)
     }
-
-    initSentryMonitoring()
   }
 
   @VisibleForTesting
