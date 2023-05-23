@@ -60,11 +60,7 @@ jobs:
         run: echo $KEYSTORE_PROPERTIES | base64 -di > keystore.properties
         working-directory: android
         env:
-          KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }} 
- 
-      - name: Spotless check quest application
-        run: ./gradlew :quest:spotlessCheck
-        working-directory: android
+          KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }}
 
     #  - name: Generate AAB (Android App Bundle) file
     #    if: ${{ false }}
