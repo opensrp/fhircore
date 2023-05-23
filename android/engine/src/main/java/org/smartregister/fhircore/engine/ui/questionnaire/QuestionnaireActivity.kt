@@ -61,6 +61,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireItemViewH
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.FieldType
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.distinctifyLinkId
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
@@ -176,10 +177,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(DEFAULT_PROVIDER)
         .setIsReadOnly(questionnaireType.isReadOnly())
     questionnaireResponse?.let {
+      it.distinctifyLinkId()
+      //        Timber.e(it.encodeResourceToString())
       questionnaireFragmentBuilder.setQuestionnaireResponse(it.encodeResourceToString())
     }
     intent.getStringExtra(QUESTIONNAIRE_LAUNCH_CONTEXT)?.let {
-      questionnaireFragmentBuilder.setQuestionnaireResourceContext(it)
+      questionnaireFragmentBuilder.setQuestionnaireLaunchContext(it)
     }
 
     fragment = questionnaireFragmentBuilder.build()
