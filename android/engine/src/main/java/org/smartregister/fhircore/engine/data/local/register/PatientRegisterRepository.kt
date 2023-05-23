@@ -48,13 +48,13 @@ constructor(
     healthModule: HealthModule
   ): List<RegisterData> =
     withContext(dispatcherProvider.io()) {
-        trace("PatientRegister.loadRegisterData") {
-            registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterData(
-                    currentPage = currentPage,
-                    appFeatureName = appFeatureName
-            )
-                    ?: emptyList()
-        }
+      trace("PatientRegister.loadRegisterData") {
+        registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterData(
+          currentPage = currentPage,
+          appFeatureName = appFeatureName
+        )
+          ?: emptyList()
+      }
     }
 
   suspend fun searchByName(
@@ -64,14 +64,14 @@ constructor(
     healthModule: HealthModule
   ): List<RegisterData> =
     withContext(dispatcherProvider.io()) {
-        trace("PatientRegister.searchByName") {
-            registerDaoFactory.registerDaoMap[healthModule]?.searchByName(
-                    currentPage = currentPage,
-                    appFeatureName = appFeatureName,
-                    nameQuery = nameQuery
-            )
-                    ?: emptyList()
-        }
+      trace("PatientRegister.searchByName") {
+        registerDaoFactory.registerDaoMap[healthModule]?.searchByName(
+          currentPage = currentPage,
+          appFeatureName = appFeatureName,
+          nameQuery = nameQuery
+        )
+          ?: emptyList()
+      }
     }
 
   override suspend fun countRegisterData(
@@ -79,9 +79,9 @@ constructor(
     healthModule: HealthModule
   ): Long =
     withContext(dispatcherProvider.io()) {
-        trace("PatientRegister.countRegisterData") {
-            registerDaoFactory.registerDaoMap[healthModule]?.countRegisterData(appFeatureName) ?: 0
-        }
+      trace("PatientRegister.countRegisterData") {
+        registerDaoFactory.registerDaoMap[healthModule]?.countRegisterData(appFeatureName) ?: 0
+      }
     }
 
   override suspend fun loadPatientProfileData(
@@ -90,13 +90,12 @@ constructor(
     patientId: String
   ): ProfileData? =
     withContext(dispatcherProvider.io()) {
-        trace("PatientRegister.loadPatientProfileData") {
-            registerDaoFactory.registerDaoMap[healthModule]?.loadProfileData(
-                    appFeatureName = appFeatureName,
-                    resourceId = patientId
-            )
-        }
-
+      trace("PatientRegister.loadPatientProfileData") {
+        registerDaoFactory.registerDaoMap[healthModule]?.loadProfileData(
+          appFeatureName = appFeatureName,
+          resourceId = patientId
+        )
+      }
     }
 
   suspend fun loadChildrenRegisterData(
@@ -104,15 +103,15 @@ constructor(
     otherPatientResource: List<Resource>
   ): List<RegisterData> =
     withContext(dispatcherProvider.io()) {
-        trace("PatientRegister.loadChildrenRegisterData") {
-            val dataList: ArrayList<Patient> = arrayListOf()
-            val hivRegisterDao = registerDaoFactory.registerDaoMap[healthModule] as HivRegisterDao
+      trace("PatientRegister.loadChildrenRegisterData") {
+        val dataList: ArrayList<Patient> = arrayListOf()
+        val hivRegisterDao = registerDaoFactory.registerDaoMap[healthModule] as HivRegisterDao
 
-            for (item: Resource in otherPatientResource) {
-                val itemPatient = item as Patient
-                dataList.add(itemPatient)
-            }
-            hivRegisterDao.transformChildrenPatientToRegisterData(dataList)
+        for (item: Resource in otherPatientResource) {
+          val itemPatient = item as Patient
+          dataList.add(itemPatient)
         }
+        hivRegisterDao.transformChildrenPatientToRegisterData(dataList)
+      }
     }
 }

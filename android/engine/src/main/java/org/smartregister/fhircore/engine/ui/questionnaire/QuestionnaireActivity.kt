@@ -39,6 +39,8 @@ import com.google.android.fhir.datacapture.extensions.isPaginated
 import com.google.android.fhir.datacapture.validation.Invalid
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.logicalId
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.perf.ktx.performance
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -63,6 +65,7 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.trace
 import timber.log.Timber
 
 /**
@@ -94,6 +97,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   private lateinit var saveProcessingAlertDialog: AlertDialog
 
+  val questionnaireTrace = Firebase.performance.newTrace("Questionnaire.renderFragment")
+
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
     outState.clear()
@@ -116,8 +121,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     lifecycleScope.launch {
       withContext(dispatcherProvider.io()) {
-        loadQuestionnaireAndConfig(formName)
-        questionnaireViewModel.libraryEvaluator.initialize()
+        trace("Questionnaire.loadQuestionnaireAndConfig") {
+          loadQuestionnaireAndConfig(formName)
+          questionnaireViewModel.libraryEvaluator.initialize()
+        }
       }
 
       withContext(dispatcherProvider.main()) {
@@ -145,6 +152,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   private suspend fun renderFragment() {
+    questionnaireTrace.start()
     val questionnaireString = parser.encodeResourceToString(questionnaire)
     val questionnaireResponse: QuestionnaireResponse?
     if (clientIdentifier != null) {
@@ -177,6 +185,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     fragment = questionnaireFragmentBuilder.build()
     supportFragmentManager.registerFragmentLifecycleCallbacks(
       object : FragmentManager.FragmentLifecycleCallbacks() {
+        override fun onFragmentCreated(
+          fm: FragmentManager,
+          f: Fragment,
+          savedInstanceState: Bundle?
+        ) {
+          super.onFragmentCreated(fm, f, savedInstanceState)
+          questionnaireTrace.stop()
+        }
+
         override fun onFragmentViewCreated(
           fm: FragmentManager,
           f: Fragment,

@@ -28,7 +28,6 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.logicalId
 import com.google.firebase.perf.FirebasePerformance
-import com.google.firebase.perf.metrics.AddTrace
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Calendar
 import java.util.Date
@@ -338,7 +337,7 @@ constructor(
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
         extractCqlOutput(questionnaire, questionnaireResponse, null)
       }
-trace.stop()
+      trace.stop()
       viewModelScope.launch(Dispatchers.Main) {
         extractionProgress.postValue(ExtractionProgress.Success(extras))
       }

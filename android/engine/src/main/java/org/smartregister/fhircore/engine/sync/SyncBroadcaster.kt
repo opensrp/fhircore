@@ -94,7 +94,7 @@ constructor(
           getWorkerInfo<AppSyncWorker>().collect {
             if (it is SyncJobStatus.Started) {
               syncTrace.start()
-            } else if(it !is SyncJobStatus.InProgress) {
+            } else if (it !is SyncJobStatus.InProgress) {
               syncTrace.stop()
             }
             sharedSyncStatus.emit(it)
