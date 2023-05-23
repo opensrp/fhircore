@@ -85,7 +85,8 @@ data class ResourceConfig(
   val sortConfigs: List<SortConfig> = emptyList(),
   val resultAsCount: Boolean = false,
   val countResultConfig: CountResultConfig? = CountResultConfig(),
-  val nestedSearchResources: List<NestedSearchConfig>? = null
+  val nestedSearchResources: List<NestedSearchConfig>? = null,
+  val configRules: List<RuleConfig>? = null
 ) : Parcelable
 
 @Serializable @Parcelize data class CountResultConfig(val sumCounts: Boolean = true) : Parcelable

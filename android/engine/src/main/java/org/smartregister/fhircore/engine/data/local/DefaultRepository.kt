@@ -60,11 +60,11 @@ import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 open class DefaultRepository
 @Inject
 constructor(
-  open val fhirEngine: FhirEngine,
-  open val dispatcherProvider: DispatcherProvider,
-  open val sharedPreferencesHelper: SharedPreferencesHelper,
-  open val configurationRegistry: ConfigurationRegistry,
-  open val configService: ConfigService
+    open val fhirEngine: FhirEngine,
+    open val dispatcherProvider: DispatcherProvider,
+    open val sharedPreferencesHelper: SharedPreferencesHelper,
+    open val configurationRegistry: ConfigurationRegistry,
+    open val configService: ConfigService
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
@@ -72,52 +72,54 @@ constructor(
   }
 
   suspend fun loadResource(resourceId: String, resourceType: ResourceType): Resource =
-    withContext(dispatcherProvider.io()) { fhirEngine.get(resourceType, resourceId) }
+      withContext(dispatcherProvider.io()) { fhirEngine.get(resourceType, resourceId) }
 
   suspend fun loadResource(reference: Reference) =
-    withContext(dispatcherProvider.io()) {
-      IdType(reference.reference).let {
-        fhirEngine.get(ResourceType.fromCode(it.resourceType), it.idPart)
+      withContext(dispatcherProvider.io()) {
+        IdType(reference.reference).let {
+          fhirEngine.get(ResourceType.fromCode(it.resourceType), it.idPart)
+        }
       }
-    }
 
   suspend inline fun <reified T : Resource> searchResourceFor(
-    subjectId: String,
-    subjectType: ResourceType = ResourceType.Patient,
-    subjectParam: ReferenceClientParam,
-    filters: List<DataQuery>? = null
+      subjectId: String,
+      subjectType: ResourceType = ResourceType.Patient,
+      subjectParam: ReferenceClientParam,
+      filters: List<DataQuery>? = null,
+      configComputedRuleValues: Map<String, Any>
   ): List<T> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        filterByResourceTypeId(subjectParam, subjectType, subjectId)
-        filters?.forEach { filterBy(it) }
+      withContext(dispatcherProvider.io()) {
+        fhirEngine.search {
+          filterByResourceTypeId(subjectParam, subjectType, subjectId)
+          filters?.forEach { filterBy(it, configComputedRuleValues = configComputedRuleValues) }
+        }
       }
-    }
 
   suspend inline fun <reified T : Resource> searchResourceFor(
-    token: TokenClientParam,
-    subjectType: ResourceType,
-    subjectId: String,
-    filters: List<DataQuery> = listOf()
+      token: TokenClientParam,
+      subjectType: ResourceType,
+      subjectId: String,
+      filters: List<DataQuery> = listOf(),
+      configComputedRuleValues: Map<String, Any>
   ): List<T> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        filterByResourceTypeId(token, subjectType, subjectId)
-        filters.forEach { filterBy(it) }
+      withContext(dispatcherProvider.io()) {
+        fhirEngine.search {
+          filterByResourceTypeId(token, subjectType, subjectId)
+          filters.forEach { filterBy(it, configComputedRuleValues) }
+        }
       }
-    }
 
   suspend fun search(dataRequirement: DataRequirement) =
-    when (dataRequirement.type) {
-      Enumerations.ResourceType.CONDITION.toCode() ->
-        fhirEngine.search<Condition> {
-          dataRequirement.codeFilter.forEach {
-            filter(TokenClientParam(it.path), { value = of(it.codeFirstRep) })
-          }
-          // TODO handle date filter
-        }
-      else -> listOf()
-    }
+      when (dataRequirement.type) {
+        Enumerations.ResourceType.CONDITION.toCode() ->
+            fhirEngine.search<Condition> {
+              dataRequirement.codeFilter.forEach {
+                filter(TokenClientParam(it.path), { value = of(it.codeFirstRep) })
+              }
+              // TODO handle date filter
+            }
+        else -> listOf()
+      }
 
   suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
@@ -152,36 +154,36 @@ constructor(
   }
 
   suspend fun loadManagingEntity(group: Group) =
-    group.managingEntity?.let { reference ->
-      searchResourceFor<RelatedPerson>(
-        token = RelatedPerson.RES_ID,
-        subjectType = ResourceType.RelatedPerson,
-        subjectId = reference.extractId()
-      )
-        .firstOrNull()
-        ?.let { relatedPerson ->
-          searchResourceFor<Patient>(
-              token = Patient.RES_ID,
-              subjectType = ResourceType.Patient,
-              subjectId = relatedPerson.patient.extractId()
-            )
+      group.managingEntity?.let { reference ->
+        searchResourceFor<RelatedPerson>(
+                token = RelatedPerson.RES_ID,
+                subjectType = ResourceType.RelatedPerson,
+                subjectId = reference.extractId(),
+        configComputedRuleValues = emptyMap()
+        )
             .firstOrNull()
-        }
-    }
+            ?.let { relatedPerson ->
+              searchResourceFor<Patient>(
+                      token = Patient.RES_ID,
+                      subjectType = ResourceType.Patient,
+                      subjectId = relatedPerson.patient.extractId())
+                  .firstOrNull()
+            }
+      }
 
   suspend fun changeManagingEntity(
-    newManagingEntityId: String,
-    groupId: String,
-    managingEntityConfig: ManagingEntityConfig?
+      newManagingEntityId: String,
+      groupId: String,
+      managingEntityConfig: ManagingEntityConfig?
   ) {
     val group = fhirEngine.get<Group>(groupId)
     if (managingEntityConfig?.resourceType == ResourceType.Patient) {
       val relatedPerson =
-        if (group.managingEntity.reference != null) {
-          fhirEngine.get<RelatedPerson>(group.managingEntity.reference.extractLogicalIdUuid())
-        } else {
-          RelatedPerson().apply { id = UUID.randomUUID().toString() }
-        }
+          if (group.managingEntity.reference != null) {
+            fhirEngine.get<RelatedPerson>(group.managingEntity.reference.extractLogicalIdUuid())
+          } else {
+            RelatedPerson().apply { id = UUID.randomUUID().toString() }
+          }
       val newPatient = fhirEngine.get<Patient>(newManagingEntityId)
 
       updateRelatedPersonDetails(relatedPerson, newPatient, managingEntityConfig.relationshipCode)
@@ -194,9 +196,9 @@ constructor(
   }
 
   private fun updateRelatedPersonDetails(
-    existingPerson: RelatedPerson,
-    newPatient: Patient,
-    relationshipCode: Code?
+      existingPerson: RelatedPerson,
+      newPatient: Patient,
+      relationshipCode: Code?
   ) {
     existingPerson.apply {
       active = true
@@ -215,17 +217,15 @@ constructor(
   suspend fun removeGroup(groupId: String, isDeactivateMembers: Boolean?) {
     loadResource<Group>(groupId)?.let { group ->
       if (!group.active) throw IllegalStateException("Group already deleted")
-      group
-        .managingEntity
-        ?.let { reference ->
-          searchResourceFor<RelatedPerson>(
-            token = RelatedPerson.RES_ID,
-            subjectType = ResourceType.RelatedPerson,
-            subjectId = reference.extractId()
-          )
-        }
-        ?.firstOrNull()
-        ?.let { relatedPerson -> delete(relatedPerson) }
+      group.managingEntity
+          ?.let { reference ->
+            searchResourceFor<RelatedPerson>(
+                token = RelatedPerson.RES_ID,
+                subjectType = ResourceType.RelatedPerson,
+                subjectId = reference.extractId())
+          }
+          ?.firstOrNull()
+          ?.let { relatedPerson -> delete(relatedPerson) }
 
       group.apply {
         managingEntity = null
@@ -248,21 +248,21 @@ constructor(
 
   /** Remove member of a group using the provided [memberId] and [groupMemberResourceType] */
   suspend fun removeGroupMember(
-    memberId: String,
-    groupId: String?,
-    groupMemberResourceType: String?
+      memberId: String,
+      groupId: String?,
+      groupMemberResourceType: String?
   ) {
     val memberResourceType =
-      groupMemberResourceType?.resourceClassType()?.newInstance()?.resourceType
+        groupMemberResourceType?.resourceClassType()?.newInstance()?.resourceType
     val fhirResource: Resource? =
-      try {
-        if (memberResourceType == null) {
-          return
+        try {
+          if (memberResourceType == null) {
+            return
+          }
+          fhirEngine.get(memberResourceType, memberId.extractLogicalIdUuid())
+        } catch (resourceNotFoundException: ResourceNotFoundException) {
+          null
         }
-        fhirEngine.get(memberResourceType, memberId.extractLogicalIdUuid())
-      } catch (resourceNotFoundException: ResourceNotFoundException) {
-        null
-      }
 
     fhirResource?.let { resource ->
       if (resource is Patient) {
@@ -271,22 +271,20 @@ constructor(
 
       if (groupId != null) {
         loadResource<Group>(groupId)?.let { group ->
-          group
-            .managingEntity
-            ?.let { reference ->
-              searchResourceFor<RelatedPerson>(
-                token = RelatedPerson.RES_ID,
-                subjectType = ResourceType.RelatedPerson,
-                subjectId = reference.extractId()
-              )
-            }
-            ?.firstOrNull()
-            ?.let { relatedPerson ->
-              if (relatedPerson.patient.id.extractLogicalIdUuid() == memberId) {
-                delete(relatedPerson)
-                group.managingEntity = null
+          group.managingEntity
+              ?.let { reference ->
+                searchResourceFor<RelatedPerson>(
+                    token = RelatedPerson.RES_ID,
+                    subjectType = ResourceType.RelatedPerson,
+                    subjectId = reference.extractId())
               }
-            }
+              ?.firstOrNull()
+              ?.let { relatedPerson ->
+                if (relatedPerson.patient.id.extractLogicalIdUuid() == memberId) {
+                  delete(relatedPerson)
+                  group.managingEntity = null
+                }
+              }
 
           // Update this group resource
           addOrUpdate(resource = group)

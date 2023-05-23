@@ -53,28 +53,34 @@ import timber.log.Timber
  * either to use either 'AND' or 'OR' in the where clause of the Query.
  */
 @Suppress("UNCHECKED_CAST")
-fun Search.filterBy(dataQuery: DataQuery) {
+fun Search.filterBy(dataQuery: DataQuery, configComputedRuleValues: Map<String, Any>) {
   val filterQueriesMap: Map<DataType, List<FilterCriterionConfig>> =
-    dataQuery.filterCriteria.groupBy { it.dataType }
+      dataQuery.filterCriteria.groupBy { it.dataType }
   filterQueriesMap.forEach { dataTypeListEntry ->
     when (dataTypeListEntry.key) {
       DataType.QUANTITY ->
-        filterByQuantity(dataTypeListEntry.value as List<QuantityFilterCriterionConfig>, dataQuery)
-      DataType.DATETIME, DataType.DATE, DataType.TIME ->
-        filterByDateTime(dataTypeListEntry.value as List<DateFilterCriterionConfig>, dataQuery)
-      DataType.DECIMAL, DataType.INTEGER ->
-        filterByNumber(dataTypeListEntry.value as List<NumberFilterCriterionConfig>, dataQuery)
+          filterByQuantity(
+              dataTypeListEntry.value as List<QuantityFilterCriterionConfig>, dataQuery)
+      DataType.DATETIME,
+      DataType.DATE,
+      DataType.TIME ->
+          filterByDateTime(dataTypeListEntry.value as List<DateFilterCriterionConfig>, dataQuery,configComputedRuleValues)
+      DataType.DECIMAL,
+      DataType.INTEGER ->
+          filterByNumber(dataTypeListEntry.value as List<NumberFilterCriterionConfig>, dataQuery)
       DataType.STRING ->
-        filterByString(dataTypeListEntry.value as List<StringFilterCriterionConfig>, dataQuery)
-      DataType.URI, DataType.URL ->
-        filterByUri(dataTypeListEntry.value as List<UriFilterCriterionConfig>, dataQuery)
+          filterByString(dataTypeListEntry.value as List<StringFilterCriterionConfig>, dataQuery)
+      DataType.URI,
+      DataType.URL ->
+          filterByUri(dataTypeListEntry.value as List<UriFilterCriterionConfig>, dataQuery)
       DataType.REFERENCE ->
-        filterByReference(
-          dataTypeListEntry.value as List<FilterCriterionConfig.ReferenceFilterCriterionConfig>,
-          dataQuery
-        )
-      DataType.CODING, DataType.CODEABLECONCEPT, DataType.CODE ->
-        filterByToken(dataTypeListEntry.value as List<TokenFilterCriterionConfig>, dataQuery)
+          filterByReference(
+              dataTypeListEntry.value as List<FilterCriterionConfig.ReferenceFilterCriterionConfig>,
+              dataQuery)
+      DataType.CODING,
+      DataType.CODEABLECONCEPT,
+      DataType.CODE ->
+          filterByToken(dataTypeListEntry.value as List<TokenFilterCriterionConfig>, dataQuery)
       else -> {
         Timber.e("Search operation not supported for the given data type: ${dataTypeListEntry.key}")
       }
@@ -83,159 +89,155 @@ fun Search.filterBy(dataQuery: DataQuery) {
 }
 
 private fun Search.filterByReference(
-  referenceFilterCriterionConfigs: List<FilterCriterionConfig.ReferenceFilterCriterionConfig>,
-  dataQuery: DataQuery
+    referenceFilterCriterionConfigs: List<FilterCriterionConfig.ReferenceFilterCriterionConfig>,
+    dataQuery: DataQuery
 ) {
   val filters =
-    referenceFilterCriterionConfigs.map { referenceFilterCriterionConfig ->
-      val apply: ReferenceParamFilterCriterion.() -> Unit = {
-        this.value = referenceFilterCriterionConfig.value
+      referenceFilterCriterionConfigs.map { referenceFilterCriterionConfig ->
+        val apply: ReferenceParamFilterCriterion.() -> Unit = {
+          this.value = referenceFilterCriterionConfig.value
+        }
+        apply
       }
-      apply
-    }
   filter(
-    referenceParameter = ReferenceClientParam(dataQuery.paramName),
-    init = filters.toTypedArray(),
-    operation = dataQuery.operation
-  )
+      referenceParameter = ReferenceClientParam(dataQuery.paramName),
+      init = filters.toTypedArray(),
+      operation = dataQuery.operation)
 }
 
 private fun Search.filterByUri(
-  uriFilterCriterionConfigs: List<UriFilterCriterionConfig>,
-  dataQuery: DataQuery
+    uriFilterCriterionConfigs: List<UriFilterCriterionConfig>,
+    dataQuery: DataQuery
 ) {
   val filters =
-    uriFilterCriterionConfigs.map { uriFilterCriterionConfig ->
-      val apply: UriParamFilterCriterion.() -> Unit = {
-        this.value = uriFilterCriterionConfig.value
+      uriFilterCriterionConfigs.map { uriFilterCriterionConfig ->
+        val apply: UriParamFilterCriterion.() -> Unit = {
+          this.value = uriFilterCriterionConfig.value
+        }
+        apply
       }
-      apply
-    }
   filter(
-    uriParam = UriClientParam(dataQuery.paramName),
-    init = filters.toTypedArray(),
-    operation = dataQuery.operation
-  )
+      uriParam = UriClientParam(dataQuery.paramName),
+      init = filters.toTypedArray(),
+      operation = dataQuery.operation)
 }
 
 private fun Search.filterByString(
-  stringFilterCriterionConfigs: List<StringFilterCriterionConfig>,
-  dataQuery: DataQuery
+    stringFilterCriterionConfigs: List<StringFilterCriterionConfig>,
+    dataQuery: DataQuery
 ) {
   val filters =
-    stringFilterCriterionConfigs.map { stringFilterCriterionConfig ->
-      val apply: StringParamFilterCriterion.() -> Unit = {
-        this.value = stringFilterCriterionConfig.value
-        this.modifier = stringFilterCriterionConfig.modifier
+      stringFilterCriterionConfigs.map { stringFilterCriterionConfig ->
+        val apply: StringParamFilterCriterion.() -> Unit = {
+          this.value = stringFilterCriterionConfig.value
+          this.modifier = stringFilterCriterionConfig.modifier
+        }
+        apply
       }
-      apply
-    }
   filter(
-    stringParameter = StringClientParam(dataQuery.paramName),
-    init = filters.toTypedArray(),
-    operation = dataQuery.operation
-  )
+      stringParameter = StringClientParam(dataQuery.paramName),
+      init = filters.toTypedArray(),
+      operation = dataQuery.operation)
 }
 
 private fun Search.filterByNumber(
-  numberFilterCriterionConfigs: List<NumberFilterCriterionConfig>,
-  dataQuery: DataQuery
+    numberFilterCriterionConfigs: List<NumberFilterCriterionConfig>,
+    dataQuery: DataQuery
 ) {
   val filters =
-    numberFilterCriterionConfigs.map { numberFilterCriterionConfig ->
-      val apply: NumberParamFilterCriterion.() -> Unit = {
-        this.prefix = numberFilterCriterionConfig.prefix
-        this.value = numberFilterCriterionConfig.value
+      numberFilterCriterionConfigs.map { numberFilterCriterionConfig ->
+        val apply: NumberParamFilterCriterion.() -> Unit = {
+          this.prefix = numberFilterCriterionConfig.prefix
+          this.value = numberFilterCriterionConfig.value
+        }
+        apply
       }
-      apply
-    }
   filter(
-    numberParameter = NumberClientParam(dataQuery.paramName),
-    init = filters.toTypedArray(),
-    operation = dataQuery.operation
-  )
+      numberParameter = NumberClientParam(dataQuery.paramName),
+      init = filters.toTypedArray(),
+      operation = dataQuery.operation)
 }
 
 private fun Search.filterByDateTime(
-  dateFilterCriterionConfigs: List<DateFilterCriterionConfig>,
-  dataQuery: DataQuery
+    dateFilterCriterionConfigs: List<DateFilterCriterionConfig>,
+    dataQuery: DataQuery,
+    configComputedRuleValues: Map<String, Any>
 ) {
   val filters =
-    dateFilterCriterionConfigs.map { dateFilterCriterionConfig ->
-      val apply: DateParamFilterCriterion.() -> Unit = {
-        this.prefix = dateFilterCriterionConfig.prefix
-        this.value =
-          when {
-            dateFilterCriterionConfig.valueDate != null ->
-              of(DateType(dateFilterCriterionConfig.valueDate))
-            dateFilterCriterionConfig.valueDateTime != null ->
-              of(DateTimeType(dateFilterCriterionConfig.valueDateTime))
-            else -> null
-          }
+      dateFilterCriterionConfigs.map { dateFilterCriterionConfig ->
+        val apply: DateParamFilterCriterion.() -> Unit = {
+          this.prefix = dateFilterCriterionConfig.prefix
+            val interpolateBoolean=dateFilterCriterionConfig.interpolateValue
+          this.value =
+              when {
+                dateFilterCriterionConfig.valueDate != null ->
+                    of(DateType(dateFilterCriterionConfig.valueDate))
+                dateFilterCriterionConfig.valueDateTime != null ->
+                    of(DateTimeType(dateFilterCriterionConfig.valueDateTime))
+                else -> null
+              }
+        }
+        apply
       }
-      apply
-    }
   filter(
-    dateParameter = DateClientParam(dataQuery.paramName),
-    init = filters.toTypedArray(),
-    operation = dataQuery.operation,
+      dateParameter = DateClientParam(dataQuery.paramName),
+      init = filters.toTypedArray(),
+      operation = dataQuery.operation,
   )
 }
 
 private fun Search.filterByQuantity(
-  quantityFilterCriterionConfigs: List<QuantityFilterCriterionConfig>,
-  dataQuery: DataQuery
+    quantityFilterCriterionConfigs: List<QuantityFilterCriterionConfig>,
+    dataQuery: DataQuery
 ) {
   val filters =
-    quantityFilterCriterionConfigs.map { quantityFilterCriterionConfig ->
-      val apply: QuantityParamFilterCriterion.() -> Unit = {
-        this.prefix = quantityFilterCriterionConfig.prefix
-        this.value = quantityFilterCriterionConfig.value
-        this.system = quantityFilterCriterionConfig.system
-        this.unit = quantityFilterCriterionConfig.unit
+      quantityFilterCriterionConfigs.map { quantityFilterCriterionConfig ->
+        val apply: QuantityParamFilterCriterion.() -> Unit = {
+          this.prefix = quantityFilterCriterionConfig.prefix
+          this.value = quantityFilterCriterionConfig.value
+          this.system = quantityFilterCriterionConfig.system
+          this.unit = quantityFilterCriterionConfig.unit
+        }
+        apply
       }
-      apply
-    }
   filter(
-    quantityParameter = QuantityClientParam(dataQuery.paramName),
-    init = filters.toTypedArray(),
-    operation = dataQuery.operation
-  )
+      quantityParameter = QuantityClientParam(dataQuery.paramName),
+      init = filters.toTypedArray(),
+      operation = dataQuery.operation)
 }
 
 private fun Search.filterByToken(
-  tokenFilterCriterionConfigs: List<TokenFilterCriterionConfig>,
-  dataQuery: DataQuery
+    tokenFilterCriterionConfigs: List<TokenFilterCriterionConfig>,
+    dataQuery: DataQuery
 ) {
   val filters =
-    tokenFilterCriterionConfigs.map { tokenFilterCriterionConfig ->
-      val configuredCode = tokenFilterCriterionConfig.value
-      val apply: TokenParamFilterCriterion.() -> Unit = {
-        if (configuredCode?.code != null) {
-          value = of(Coding(configuredCode.system, configuredCode.code, configuredCode.display))
+      tokenFilterCriterionConfigs.map { tokenFilterCriterionConfig ->
+        val configuredCode = tokenFilterCriterionConfig.value
+        val apply: TokenParamFilterCriterion.() -> Unit = {
+          if (configuredCode?.code != null) {
+            value = of(Coding(configuredCode.system, configuredCode.code, configuredCode.display))
+          }
         }
+        apply
       }
-      apply
-    }
   filter(
-    tokenParameter = TokenClientParam(dataQuery.paramName),
-    init = filters.toTypedArray(),
-    operation = dataQuery.operation
-  )
+      tokenParameter = TokenClientParam(dataQuery.paramName),
+      init = filters.toTypedArray(),
+      operation = dataQuery.operation)
 }
 
 fun Search.filterByResourceTypeId(
-  reference: ReferenceClientParam,
-  resourceType: ResourceType,
-  resourceId: String
+    reference: ReferenceClientParam,
+    resourceType: ResourceType,
+    resourceId: String
 ) {
   filter(reference, { value = "${resourceType.name}/$resourceId" })
 }
 
 fun Search.filterByResourceTypeId(
-  token: TokenClientParam,
-  resourceType: ResourceType,
-  resourceId: String
+    token: TokenClientParam,
+    resourceType: ResourceType,
+    resourceId: String
 ) {
   filter(token, { value = of("${resourceType.name}/$resourceId") })
 }

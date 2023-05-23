@@ -35,7 +35,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
 class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
-  suspend fun processResourceData(
+  fun processResourceData(
     repositoryResourceData: RepositoryResourceData,
     ruleConfigs: List<RuleConfig>,
     params: Map<String, String>?
@@ -79,7 +79,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
    * [RepositoryResourceData.relatedResourcesCountMap]. The function returns the outcome of the
    * computation in a map; the name of the rule is used as the key.
    */
-  private suspend fun computeResourceDataRules(
+  private fun computeResourceDataRules(
     ruleConfigs: List<RuleConfig>,
     repositoryResourceData: RepositoryResourceData
   ): Map<String, Any> {
