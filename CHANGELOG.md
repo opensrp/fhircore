@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Incremental rendering of content of LIST widget used mostly on profile screen
 - The ability to define a regex and separator on the `RulesFactory.RulesEngineService#joinToString(java.util.List<java.lang.String>, java.lang.String, java.lang.String)`
 - Use Sentry to track and monitor performance bottlenecks on quest and FHIR Core
+- Use Sentry to track and monitor performance bottlenecks on quest and FHIR Core release app variants
 
 ### Fixed
 - Member icons display wrapping; hiding some texts
