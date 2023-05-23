@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add "Record all" feature in card view
 - Functionality to aggregate count for related resources 
 - Incremental rendering of content of LIST widget used mostly on profile screen
+- Use Sentry to track and monitor performance bottlenecks on quest and FHIR Core release app variants
 
 ### Fixed
 - Member icons display wrapping; hiding some texts
