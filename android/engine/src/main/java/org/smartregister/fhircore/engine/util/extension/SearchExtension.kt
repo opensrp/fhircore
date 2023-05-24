@@ -328,6 +328,7 @@ private fun interpolateDynamicValue(
   configComputedRuleValues: Map<String, Any>,
   defaultValue: Any?
 ): String? {
-  val value = dynamicValue?.interpolate(configComputedRuleValues) ?: defaultValue?.toString()
-  return value?.takeUnless { it.startsWith("@{") && it.endsWith("}") }
+  val value =
+    dynamicValue?.interpolate(configComputedRuleValues) ?: defaultValue.let { it.toString() }
+  return value.takeUnless { it.startsWith("@{") && it.endsWith("}") }
 }
