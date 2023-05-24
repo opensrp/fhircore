@@ -93,7 +93,7 @@ fun Base?.valueToString(): String {
         this.gender.name.first() +
         ", " +
         this.birthDate.yearsPassed()
-    this is Practitioner -> this.nameFirstRep.nameAsSingleString + ", " + this.gender?.name?.first()
+    this is Practitioner -> this.nameFirstRep.nameAsSingleString
     this is Group -> this.name
     else -> this.toString()
   }
