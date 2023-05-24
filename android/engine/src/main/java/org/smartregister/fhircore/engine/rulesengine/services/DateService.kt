@@ -22,6 +22,7 @@ import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.formatDate
 
 object DateService {
+  @JvmOverloads
   fun addOrSubtractYearFromCurrentDate(
     years: Int,
     operation: String,

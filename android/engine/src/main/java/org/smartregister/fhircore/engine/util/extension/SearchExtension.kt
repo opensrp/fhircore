@@ -59,7 +59,11 @@ fun Search.filterBy(dataQuery: DataQuery, configComputedRuleValues: Map<String, 
   filterQueriesMap.forEach { dataTypeListEntry ->
     when (dataTypeListEntry.key) {
       DataType.QUANTITY ->
-        filterByQuantity(dataTypeListEntry.value as List<QuantityFilterCriterionConfig>, dataQuery)
+        filterByQuantity(
+          dataTypeListEntry.value as List<QuantityFilterCriterionConfig>,
+          dataQuery,
+          configComputedRuleValues
+        )
       DataType.DATETIME, DataType.DATE, DataType.TIME ->
         filterByDateTime(
           dataTypeListEntry.value as List<DateFilterCriterionConfig>,
@@ -67,18 +71,35 @@ fun Search.filterBy(dataQuery: DataQuery, configComputedRuleValues: Map<String, 
           configComputedRuleValues
         )
       DataType.DECIMAL, DataType.INTEGER ->
-        filterByNumber(dataTypeListEntry.value as List<NumberFilterCriterionConfig>, dataQuery)
+        filterByNumber(
+          dataTypeListEntry.value as List<NumberFilterCriterionConfig>,
+          dataQuery,
+          configComputedRuleValues
+        )
       DataType.STRING ->
-        filterByString(dataTypeListEntry.value as List<StringFilterCriterionConfig>, dataQuery)
+        filterByString(
+          dataTypeListEntry.value as List<StringFilterCriterionConfig>,
+          dataQuery,
+          configComputedRuleValues
+        )
       DataType.URI, DataType.URL ->
-        filterByUri(dataTypeListEntry.value as List<UriFilterCriterionConfig>, dataQuery)
+        filterByUri(
+          dataTypeListEntry.value as List<UriFilterCriterionConfig>,
+          dataQuery,
+          configComputedRuleValues
+        )
       DataType.REFERENCE ->
         filterByReference(
           dataTypeListEntry.value as List<FilterCriterionConfig.ReferenceFilterCriterionConfig>,
-          dataQuery
+          dataQuery,
+          configComputedRuleValues
         )
       DataType.CODING, DataType.CODEABLECONCEPT, DataType.CODE ->
-        filterByToken(dataTypeListEntry.value as List<TokenFilterCriterionConfig>, dataQuery)
+        filterByToken(
+          dataTypeListEntry.value as List<TokenFilterCriterionConfig>,
+          dataQuery,
+          configComputedRuleValues
+        )
       else -> {
         Timber.e("Search operation not supported for the given data type: ${dataTypeListEntry.key}")
       }
@@ -88,12 +109,19 @@ fun Search.filterBy(dataQuery: DataQuery, configComputedRuleValues: Map<String, 
 
 private fun Search.filterByReference(
   referenceFilterCriterionConfigs: List<FilterCriterionConfig.ReferenceFilterCriterionConfig>,
-  dataQuery: DataQuery
+  dataQuery: DataQuery,
+  configComputedRuleValues: Map<String, Any>
 ) {
   val filters =
     referenceFilterCriterionConfigs.map { referenceFilterCriterionConfig ->
       val apply: ReferenceParamFilterCriterion.() -> Unit = {
-        this.value = referenceFilterCriterionConfig.value
+        val value =
+          interpolateDynamicValue(
+            referenceFilterCriterionConfig.dynamicValue,
+            configComputedRuleValues,
+            referenceFilterCriterionConfig.value
+          )
+        if (value != null) this.value = referenceFilterCriterionConfig.value
       }
       apply
     }
@@ -106,12 +134,19 @@ private fun Search.filterByReference(
 
 private fun Search.filterByUri(
   uriFilterCriterionConfigs: List<UriFilterCriterionConfig>,
-  dataQuery: DataQuery
+  dataQuery: DataQuery,
+  configComputedRuleValues: Map<String, Any>
 ) {
   val filters =
     uriFilterCriterionConfigs.map { uriFilterCriterionConfig ->
       val apply: UriParamFilterCriterion.() -> Unit = {
-        this.value = uriFilterCriterionConfig.value
+        val value =
+          interpolateDynamicValue(
+            uriFilterCriterionConfig.dynamicValue,
+            configComputedRuleValues,
+            uriFilterCriterionConfig.value
+          )
+        if (value != null) this.value = value
       }
       apply
     }
@@ -124,12 +159,19 @@ private fun Search.filterByUri(
 
 private fun Search.filterByString(
   stringFilterCriterionConfigs: List<StringFilterCriterionConfig>,
-  dataQuery: DataQuery
+  dataQuery: DataQuery,
+  configComputedRuleValues: Map<String, Any>
 ) {
   val filters =
     stringFilterCriterionConfigs.map { stringFilterCriterionConfig ->
       val apply: StringParamFilterCriterion.() -> Unit = {
-        this.value = stringFilterCriterionConfig.value
+        val value =
+          interpolateDynamicValue(
+            stringFilterCriterionConfig.dynamicValue,
+            configComputedRuleValues,
+            stringFilterCriterionConfig.value
+          )
+        if (value != null) this.value = value
         this.modifier = stringFilterCriterionConfig.modifier
       }
       apply
@@ -143,13 +185,22 @@ private fun Search.filterByString(
 
 private fun Search.filterByNumber(
   numberFilterCriterionConfigs: List<NumberFilterCriterionConfig>,
-  dataQuery: DataQuery
+  dataQuery: DataQuery,
+  configComputedRuleValues: Map<String, Any>
 ) {
   val filters =
     numberFilterCriterionConfigs.map { numberFilterCriterionConfig ->
+      val value =
+        interpolateDynamicValue(
+          numberFilterCriterionConfig.dynamicValue,
+          configComputedRuleValues,
+          numberFilterCriterionConfig.value
+        )
       val apply: NumberParamFilterCriterion.() -> Unit = {
-        this.prefix = numberFilterCriterionConfig.prefix
-        this.value = numberFilterCriterionConfig.value
+        if (value != null) {
+          this.prefix = numberFilterCriterionConfig.prefix
+          this.value = value.toBigDecimal()
+        }
       }
       apply
     }
@@ -169,20 +220,22 @@ private fun Search.filterByDateTime(
     dateFilterCriterionConfigs.map { dateFilterCriterionConfig ->
       val apply: DateParamFilterCriterion.() -> Unit = {
         this.prefix = dateFilterCriterionConfig.prefix
-        val interpolateBoolean = dateFilterCriterionConfig.interpolateValue
         val valueDate =
-          if (interpolateBoolean)
-            dateFilterCriterionConfig.valueDate.toString().interpolate(configComputedRuleValues)
-          else dateFilterCriterionConfig.valueDate
+          interpolateDynamicValue(
+            dateFilterCriterionConfig.dynamicValue,
+            configComputedRuleValues,
+            dateFilterCriterionConfig.valueDate
+          )
         val valueDateTime =
-          if (interpolateBoolean)
-            dateFilterCriterionConfig.valueDateTime.toString().interpolate(configComputedRuleValues)
-          else dateFilterCriterionConfig.valueDateTime
-
+          interpolateDynamicValue(
+            dateFilterCriterionConfig.dynamicValue,
+            configComputedRuleValues,
+            dateFilterCriterionConfig.valueDateTime
+          )
         this.value =
           when {
-            dateFilterCriterionConfig.valueDate != null -> of(DateType(valueDate))
-            dateFilterCriterionConfig.valueDateTime != null -> of(DateTimeType(valueDateTime))
+            valueDate != null -> of(DateType(valueDate))
+            valueDateTime != null -> of(DateTimeType(valueDateTime))
             else -> null
           }
       }
@@ -197,15 +250,24 @@ private fun Search.filterByDateTime(
 
 private fun Search.filterByQuantity(
   quantityFilterCriterionConfigs: List<QuantityFilterCriterionConfig>,
-  dataQuery: DataQuery
+  dataQuery: DataQuery,
+  configComputedRuleValues: Map<String, Any>
 ) {
   val filters =
     quantityFilterCriterionConfigs.map { quantityFilterCriterionConfig ->
       val apply: QuantityParamFilterCriterion.() -> Unit = {
-        this.prefix = quantityFilterCriterionConfig.prefix
-        this.value = quantityFilterCriterionConfig.value
-        this.system = quantityFilterCriterionConfig.system
-        this.unit = quantityFilterCriterionConfig.unit
+        val value =
+          interpolateDynamicValue(
+            quantityFilterCriterionConfig.dynamicValue,
+            configComputedRuleValues,
+            quantityFilterCriterionConfig.value
+          )
+        if (value != null) {
+          this.prefix = quantityFilterCriterionConfig.prefix
+          this.value = value.toBigDecimal()
+          this.system = quantityFilterCriterionConfig.system
+          this.unit = quantityFilterCriterionConfig.unit
+        }
       }
       apply
     }
@@ -218,14 +280,22 @@ private fun Search.filterByQuantity(
 
 private fun Search.filterByToken(
   tokenFilterCriterionConfigs: List<TokenFilterCriterionConfig>,
-  dataQuery: DataQuery
+  dataQuery: DataQuery,
+  configComputedRuleValues: Map<String, Any>
 ) {
   val filters =
     tokenFilterCriterionConfigs.map { tokenFilterCriterionConfig ->
       val configuredCode = tokenFilterCriterionConfig.value
       val apply: TokenParamFilterCriterion.() -> Unit = {
         if (configuredCode?.code != null) {
-          value = of(Coding(configuredCode.system, configuredCode.code, configuredCode.display))
+          val tokenValue =
+            interpolateDynamicValue(
+              tokenFilterCriterionConfig.dynamicValue,
+              configComputedRuleValues,
+              configuredCode.code
+            )
+          if (tokenValue != null)
+            value = of(Coding(configuredCode.system, tokenValue, configuredCode.display))
         }
       }
       apply
@@ -251,4 +321,13 @@ fun Search.filterByResourceTypeId(
   resourceId: String
 ) {
   filter(token, { value = of("${resourceType.name}/$resourceId") })
+}
+
+private fun interpolateDynamicValue(
+  dynamicValue: String?,
+  configComputedRuleValues: Map<String, Any>,
+  defaultValue: Any?
+): String? {
+  val value = dynamicValue?.interpolate(configComputedRuleValues) ?: defaultValue?.toString()
+  return value?.takeUnless { it.startsWith("@{") && it.endsWith("}") }
 }

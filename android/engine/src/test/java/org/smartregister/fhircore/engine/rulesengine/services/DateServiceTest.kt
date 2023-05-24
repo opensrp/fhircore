@@ -20,10 +20,8 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.apache.commons.lang3.NotImplementedException
 import org.joda.time.LocalDate
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -34,33 +32,25 @@ import org.smartregister.fhircore.engine.util.extension.formatDate
 @HiltAndroidTest
 class DateServiceTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  private lateinit var dateService: DateService
-
-  @Before
-  fun setUp() {
-    hiltRule.inject()
-    dateService = DateService
-    Assert.assertNotNull(dateService)
-  }
 
   @Test
-  fun `test subtracting years from current date`() {
-    val result = dateService.addOrSubtractYearFromCurrentDate(5, "-", dateFormat = SDF_DD_MMM_YYYY)
+  fun testSubtractingYearsFromCurrentDate() {
+    val result = DateService.addOrSubtractYearFromCurrentDate(5, "-", dateFormat = SDF_DD_MMM_YYYY)
     val expected = LocalDate.now().minusYears(5).toDate().formatDate(SDF_DD_MMM_YYYY)
     assertEquals(expected, result)
   }
 
   @Test
-  fun `test adding years to current date`() {
-    val result = dateService.addOrSubtractYearFromCurrentDate(3, "+")
+  fun testAddingYearsToCurrentDate() {
+    val result = DateService.addOrSubtractYearFromCurrentDate(3, "+")
     val expected = LocalDate.now().plusYears(3).toDate().formatDate(SDF_YYYY_MM_DD)
     assertEquals(expected, result)
   }
 
   @Test
-  fun `test unsupported operation`() {
+  fun testUnsupportedOperation() {
     assertThrows(NotImplementedException::class.java) {
-      dateService.addOrSubtractYearFromCurrentDate(2, "*")
+      DateService.addOrSubtractYearFromCurrentDate(2, "*")
     }
   }
 }

@@ -38,6 +38,7 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -125,6 +126,7 @@ constructor(
      * reference Id from the related resources
      */
     @Suppress("UNCHECKED_CAST")
+    @JvmOverloads
     fun retrieveRelatedResources(
       resource: Resource,
       relatedResourceKey: String,
@@ -176,6 +178,7 @@ constructor(
      *            When false the function checks whether any of the resources fulfills the expression provided
      * ```
      */
+    @JvmOverloads
     fun evaluateToBoolean(
       resources: List<Resource>?,
       fhirPathExpression: String,
@@ -267,10 +270,11 @@ constructor(
      * and then it gives output in expected Format, [expectedFormat] is by default (Example: Mon,
      * Nov 5 2021)
      */
+    @JvmOverloads
     fun formatDate(
       inputDate: String,
       inputDateFormat: String,
-      expectedFormat: String = "E, MMM dd yyyy"
+      expectedFormat: String = SDF_E_MMM_DD_YYYY
     ): String? = inputDate.parseDate(inputDateFormat)?.formatDate(expectedFormat)
 
     /**
@@ -278,7 +282,8 @@ constructor(
      * takes an input a [date] as input and then it gives output in expected Format,
      * [expectedFormat] is by default (Example: Mon, Nov 5 2021)
      */
-    fun formatDate(date: Date, expectedFormat: String = "E, MMM dd yyyy"): String =
+    @JvmOverloads
+    fun formatDate(date: Date, expectedFormat: String = SDF_E_MMM_DD_YYYY): String =
       date.formatDate(expectedFormat)
 
     /**
@@ -308,6 +313,7 @@ constructor(
      * This function combines all string indexes to a list separated by the separator and regex
      * defined by the content author
      */
+    @JvmOverloads
     fun joinToString(
       sourceString: MutableList<String?>,
       regex: String = DEFAULT_REGEX,
