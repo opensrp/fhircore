@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
@@ -46,7 +47,7 @@ const val RESULT_VIEW_INDICATOR_DESCRIPTION = "resultViewIndicatorDescription"
 @Composable
 fun MeasureReportIndividualResultView(
   modifier: Modifier = Modifier,
-  patientViewData: MeasureReportSubjectViewData,
+  subjectViewData: MeasureReportSubjectViewData,
   isMatchedIndicator: Boolean = true,
   indicatorStatus: String = "",
   indicatorDescription: String = ""
@@ -66,7 +67,7 @@ fun MeasureReportIndividualResultView(
     ) {
       Text(
         color = SubtitleTextColor,
-        text = patientViewData.personalDetails(),
+        text = subjectViewData.display,
         fontSize = 16.sp,
         modifier = Modifier.wrapContentWidth().testTag(PERSONAL_DETAILS_TEST_TAG)
       )
@@ -78,12 +79,11 @@ fun MeasureReportIndividualResultView(
 @Composable
 private fun MeasureReportIndividualResultViewPreview() {
   MeasureReportIndividualResultView(
-    patientViewData =
+    subjectViewData =
       MeasureReportSubjectViewData(
-        name = "Jacky Coughlin",
-        gender = "F",
-        age = "27",
-        logicalId = "12444"
+        display = "Jacky Coughlin, F, 27",
+        logicalId = "12444",
+        type = ResourceType.Patient
       ),
     isMatchedIndicator = true,
     indicatorStatus = "True",

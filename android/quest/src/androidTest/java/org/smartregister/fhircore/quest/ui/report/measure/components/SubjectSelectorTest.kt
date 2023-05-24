@@ -27,7 +27,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class PatientSelectorTest {
+class SubjectSelectorTest {
 
   private val mockListener: () -> Unit = spyk({})
 
@@ -36,18 +36,18 @@ class PatientSelectorTest {
   @Before
   fun setup() {
     composeTestRule.setContent {
-      SubjectSelector(name = "Mary Magdalene", onChangeSubject = mockListener)
+      SubjectSelector(names = listOf("Mary Magdalene"), onChangeSubject = mockListener)
     }
   }
 
   @Test
-  fun testPatientSelectorRendersPatientNameCorrectly() {
+  fun testSubjectSelectorRendersSubjectNameCorrectly() {
     composeTestRule.onNodeWithTag(SUBJECT_NAME_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule.onNodeWithText("Mary Magdalene").assertExists().assertIsDisplayed()
   }
 
   @Test
-  fun testPatientSelectorRendersCloseIconCorrectly() {
+  fun testSubjectSelectorRendersCloseIconCorrectly() {
     composeTestRule
       .onNodeWithTag(CLOSE_ICON_TEST_TAG, useUnmergedTree = true)
       .assertExists()
@@ -55,7 +55,7 @@ class PatientSelectorTest {
   }
 
   @Test
-  fun testPatientSelectorRendersCloseIconBackgroundCorrectly() {
+  fun testSubjectSelectorRendersCloseIconBackgroundCorrectly() {
     composeTestRule
       .onNodeWithTag(CLOSE_ICON_BACKGROUND_TEST_TAG, useUnmergedTree = true)
       .assertExists()
@@ -63,7 +63,7 @@ class PatientSelectorTest {
   }
 
   @Test
-  fun testPatientSelectorRendersChangeTextCorrectly() {
+  fun testSubjectSelectorRendersChangeTextCorrectly() {
     composeTestRule.onNodeWithTag(CHANGE_TEXT_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule.onNodeWithText("Change").assertExists().assertIsDisplayed()
   }

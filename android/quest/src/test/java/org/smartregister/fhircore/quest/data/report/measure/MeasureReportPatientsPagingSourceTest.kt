@@ -50,7 +50,7 @@ class MeasureReportPatientsPagingSourceTest : RobolectricTest() {
 
   @Test
   fun loadShouldReturnResults() {
-    coEvery { reportRepository.retrievePatients(0) } returns
+    coEvery { reportRepository.retrieveSubjects(0) } returns
       listOf(
         ResourceData(
           baseResourceId = "resourceId",
@@ -61,6 +61,7 @@ class MeasureReportPatientsPagingSourceTest : RobolectricTest() {
 
     val loadParams = mockk<PagingSource.LoadParams<Int>>()
     every { loadParams.key } returns null
+    every { loadParams.loadSize } returns 100
     runBlocking {
       reportPatientsPagingSource.run {
         val result = load(loadParams)

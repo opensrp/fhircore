@@ -40,10 +40,12 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.PrimitiveType
 import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Questionnaire
@@ -85,6 +87,14 @@ fun Base?.valueToString(): String {
       this.given.firstOrNull().let {
         (if (it != null) "${it.valueToString()} " else "").plus(this.family)
       }
+    this is Patient ->
+      this.nameFirstRep.nameAsSingleString +
+        ", " +
+        this.gender.name.first() +
+        ", " +
+        this.birthDate.yearsPassed()
+    this is Practitioner -> this.nameFirstRep.nameAsSingleString + ", " + this.gender?.name?.first()
+    this is Group -> this.name
     else -> this.toString()
   }
 }

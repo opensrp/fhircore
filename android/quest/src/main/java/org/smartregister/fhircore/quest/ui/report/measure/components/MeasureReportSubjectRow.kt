@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
@@ -63,13 +64,7 @@ fun MeasureReportSubjectRow(
         modifier.wrapContentWidth(Alignment.Start).padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
       Text(
-        text =
-          listOf(
-              measureReportSubjectViewData.name,
-              measureReportSubjectViewData.gender,
-              measureReportSubjectViewData.age
-            )
-            .joinToString(", "),
+        text = measureReportSubjectViewData.display,
         fontSize = 18.sp,
         modifier = modifier.wrapContentWidth().testTag(SUBJECT_DETAILS_TEST_TAG),
         maxLines = 1,
@@ -96,10 +91,9 @@ private fun MeasureReportSubjectRowPreview() {
   MeasureReportSubjectRow(
     measureReportSubjectViewData =
       MeasureReportSubjectViewData(
+        type = ResourceType.Patient,
         logicalId = "1291029",
-        name = "John Jared",
-        gender = "M",
-        age = "56",
+        display = "John Jared, M, 56",
         family = "Oduor"
       ),
     onRowClick = {}

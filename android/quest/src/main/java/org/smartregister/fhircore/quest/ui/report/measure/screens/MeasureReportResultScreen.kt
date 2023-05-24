@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
@@ -80,7 +81,7 @@ fun MeasureReportResultPage(
   navController: NavController,
   startDate: String,
   endDate: String,
-  subjectViewData: List<MeasureReportSubjectViewData>,
+  subjectViewData: Set<MeasureReportSubjectViewData>,
   measureReportIndividualResult: MeasureReportIndividualResult?,
   measureReportPopulationResult: List<MeasureReportPopulationResult>?,
   modifier: Modifier = Modifier
@@ -125,7 +126,7 @@ fun MeasureReportResultPage(
           Row(modifier = modifier.fillMaxWidth()) {
             subjectViewData.forEach {
               MeasureReportIndividualResultView(
-                patientViewData = it,
+                subjectViewData = it,
                 isMatchedIndicator = measureReportIndividualResult.isMatchedIndicator,
                 indicatorStatus = measureReportIndividualResult.status,
                 indicatorDescription = measureReportIndividualResult.description
@@ -152,18 +153,16 @@ private fun MeasureReportResultScreenForIndividualPreview() {
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
     subjectViewData =
-      listOf(
+      setOf(
         MeasureReportSubjectViewData(
-          name = "Jacky Coughlin",
-          gender = "F",
-          age = "27",
-          logicalId = "1920192"
+          display = "Jacky Coughlin, F, 27",
+          logicalId = "1920192",
+          type = ResourceType.Patient
         ),
         MeasureReportSubjectViewData(
-          name = "Jane Doe",
-          gender = "F",
-          age = "18",
-          logicalId = "1910192"
+          display = "Jane Doe, F, 18",
+          logicalId = "1910192",
+          type = ResourceType.Patient
         )
       ),
     measureReportIndividualResult =
@@ -185,18 +184,16 @@ private fun MeasureReportResultScreenForPopulationPreview() {
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
     subjectViewData =
-      listOf(
+      setOf(
         MeasureReportSubjectViewData(
-          name = "Jacky Coughlin",
-          gender = "F",
-          age = "27",
-          logicalId = "1902912"
+          display = "Jacky Coughlin, F, 27",
+          logicalId = "1902912",
+          type = ResourceType.Patient
         ),
         MeasureReportSubjectViewData(
-          name = "Jane Doe",
-          gender = "F",
-          age = "18",
-          logicalId = "1912912"
+          display = "Jane Doe, F, 18",
+          logicalId = "1912912",
+          type = ResourceType.Patient
         )
       ),
     measureReportIndividualResult = null,

@@ -18,13 +18,15 @@ package org.smartregister.fhircore.quest.ui.report.measure.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -40,9 +42,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
 const val SUBJECT_NAME_TEST_TAG = "subjectNameTestTag"
 const val CLOSE_ICON_TEST_TAG = "closeIconTestTag"
@@ -52,31 +56,25 @@ const val CHANGE_ROW_TEST_TAG = "changeRowTestTag"
 
 @Composable
 fun SubjectSelector(
-  names: List<String>,
-  onChangeSubject: () -> Unit,
+  subjects: Set<MeasureReportSubjectViewData>,
+  onAddSubject: () -> Unit,
+  onRemoveSubject: (MeasureReportSubjectViewData) -> Unit,
   modifier: Modifier = Modifier
 ) {
-  Row(
-    modifier = modifier.wrapContentWidth().padding(vertical = 8.dp, horizontal = 8.dp),
-    horizontalArrangement = Arrangement.SpaceBetween,
-    verticalAlignment = Alignment.CenterVertically
-  ) {
-    Box(
-      modifier =
-        modifier
-          .clip(RoundedCornerShape(15.dp))
-          .background(color = Color.LightGray.copy(alpha = 0.4f))
-          .wrapContentWidth()
-          .padding(8.dp),
-      contentAlignment = Alignment.Center
-    ) {
-      Row(
-        modifier = Modifier.align(Alignment.Center),
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        names.forEach {
+  LazyVerticalGrid(columns = GridCells.Adaptive(130.dp), modifier = modifier.fillMaxWidth()) {
+    subjects.forEach { subject ->
+      item {
+        Row(
+          modifier =
+            modifier
+              .clip(RoundedCornerShape(15.dp))
+              .background(color = Color.LightGray.copy(alpha = 0.4f))
+              .wrapContentWidth()
+              .padding(8.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
           Text(
-            text = it,
+            text = subject.display,
             textAlign = TextAlign.Center,
             fontSize = 16.sp,
             modifier = modifier.testTag(SUBJECT_NAME_TEST_TAG)
@@ -89,7 +87,7 @@ fun SubjectSelector(
                 .clip(RoundedCornerShape(8.dp))
                 .background(color = Color.LightGray)
                 .wrapContentWidth()
-                .clickable { onChangeSubject() }
+                .clickable { onRemoveSubject(subject) }
           ) {
             Box(
               modifier =
@@ -112,22 +110,13 @@ fun SubjectSelector(
         }
       }
     }
-    Row(
-      modifier =
-        modifier
-          .wrapContentWidth()
-          .clickable { onChangeSubject() }
-          .padding(vertical = 8.dp, horizontal = 12.dp)
-          .testTag(CHANGE_ROW_TEST_TAG),
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically
-    ) {
+    item {
       Text(
         text = stringResource(id = R.string.add),
         textAlign = TextAlign.Center,
         color = InfoColor,
         fontSize = 16.sp,
-        modifier = modifier.testTag(CHANGE_TEXT_TEST_TAG)
+        modifier = modifier.testTag(CHANGE_TEXT_TEST_TAG).clickable { onAddSubject() }
       )
     }
   }
@@ -136,5 +125,16 @@ fun SubjectSelector(
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun SelectedSubjectPreview() {
-  SubjectSelector(names = listOf("Mary Magdalene", "Jane Doe"), onChangeSubject = {})
+  SubjectSelector(
+    subjects =
+      setOf(
+        MeasureReportSubjectViewData(ResourceType.Patient, "1", "John Jared"),
+        MeasureReportSubjectViewData(ResourceType.Patient, "2", "Jane Doe"),
+        MeasureReportSubjectViewData(ResourceType.Patient, "3", "John Doe"),
+        MeasureReportSubjectViewData(ResourceType.Patient, "4", "Lorem Ipsm"),
+        MeasureReportSubjectViewData(ResourceType.Patient, "5", "Sim Sam")
+      ),
+    onAddSubject = {},
+    onRemoveSubject = {}
+  )
 }

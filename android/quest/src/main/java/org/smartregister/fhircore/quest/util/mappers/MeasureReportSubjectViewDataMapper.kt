@@ -46,10 +46,9 @@ constructor(
       }*/
 
     return MeasureReportSubjectViewData(
+      type = inputModel.baseResourceType,
       logicalId = inputModel.baseResourceId,
-      name = inputModel.computedValuesMap["practitionerName"]?.toString() ?: "",
-      gender = "",
-      age = ",",
+      display = inputModel.computedValuesMap["practitionerName"]?.toString() ?: "",
       family = ""
     )
   }

@@ -21,6 +21,7 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -31,6 +32,7 @@ import javax.inject.Inject
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -42,7 +44,6 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
@@ -139,7 +140,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
   @kotlinx.serialization.ExperimentalSerializationApi
   fun testRetrievePatients() {
     runBlocking(Dispatchers.Default) {
-      assertFailsWith<NoSuchElementException> { measureReportRepository.retrievePatients(0) }
+      assertFailsWith<NoSuchElementException> { measureReportRepository.retrieveSubjects(0) }
     }
   }
 
@@ -147,11 +148,9 @@ class MeasureReportRepositoryTest : RobolectricTest() {
   @kotlinx.serialization.ExperimentalSerializationApi
   fun testRetrievePatientsWithResults() {
     val resource = Faker.buildPatient()
-    coEvery {
-      registerRepository.loadRegisterData(0, measureReportConfiguration.registerId)
-    } returns listOf(RepositoryResourceData(resource = resource))
+    coEvery { fhirEngine.search<Patient>(any<Search>()) } returns listOf(Patient())
     runBlocking(Dispatchers.Default) {
-      val data = measureReportRepository.retrievePatients(0)
+      val data = measureReportRepository.retrieveSubjects(0)
       Assert.assertEquals(1, data.size)
     }
   }

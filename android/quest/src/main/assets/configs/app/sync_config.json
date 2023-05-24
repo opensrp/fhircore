@@ -46,8 +46,7 @@
         "code": "_id",
         "base": [
           "Practitioner"
-        ],
-        "expression": "1,6"
+        ]
       }
     },
     {

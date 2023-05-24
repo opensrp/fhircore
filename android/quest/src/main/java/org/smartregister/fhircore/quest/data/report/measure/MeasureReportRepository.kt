@@ -19,11 +19,12 @@ package org.smartregister.fhircore.quest.data.report.measure
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.google.android.fhir.search.search
-import java.util.LinkedList
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
 
@@ -47,16 +48,16 @@ class MeasureReportRepository(
   }
 
   suspend fun retrieveSubjects(count: Int): List<ResourceData> {
-    return registerRepository.fhirEngine.search(
-        measureReportConfiguration.subjectType.name + "?_count=" + if (count <= 0) 100 else count
+    val xFhirQuery =
+      measureReportConfiguration.reports.firstOrNull()?.subjectXFhirQuery
+        ?: ResourceType.Patient.name
+    return registerRepository.fhirEngine.search(xFhirQuery).map {
+      rulesExecutor.processResourceData(
+        repositoryResourceData =
+          RepositoryResourceData(resourceRulesEngineFactId = it.resourceType.name, resource = it),
+        ruleConfigs = registerConfiguration.registerCard.rules,
+        params = emptyMap()
       )
-      .map {
-        rulesExecutor.processResourceData(
-          baseResource = it,
-          relatedRepositoryResourceData = LinkedList(),
-          ruleConfigs = registerConfiguration.registerCard.rules,
-          params = emptyMap()
-        )
-      }
+    }
   }
 }

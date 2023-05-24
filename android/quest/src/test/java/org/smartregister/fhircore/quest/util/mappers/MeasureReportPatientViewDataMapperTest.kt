@@ -56,10 +56,9 @@ class MeasureReportPatientViewDataMapperTest : RobolectricTest() {
       // TODO Update expected values once refactors in
       //  MeasureReportPatientViewDataMapper#transformInputToOutputModel() are complete
       Assert.assertEquals("TEST_PATIENT", logicalId)
-      Assert.assertEquals("", name)
+      Assert.assertEquals("", display)
       Assert.assertEquals("", getTestPatientAge())
       Assert.assertEquals("", family)
-      Assert.assertEquals("", gender)
     }
     Assert.assertEquals("TEST_PATIENT", profileViewDataHiv.logicalId)
   }

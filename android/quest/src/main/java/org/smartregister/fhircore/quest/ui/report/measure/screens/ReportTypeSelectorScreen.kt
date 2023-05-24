@@ -52,6 +52,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -67,6 +68,7 @@ import java.util.Calendar
 import java.util.Date
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.MeasureReport.MeasureReportType
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SearchHeaderColor
@@ -82,6 +84,7 @@ import org.smartregister.fhircore.quest.ui.report.measure.components.DateSelecti
 import org.smartregister.fhircore.quest.ui.report.measure.components.SubjectSelector
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportTypeData
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 import org.smartregister.fhircore.quest.util.extensions.conditional
 
 const val SHOW_FIXED_RANGE_TEST_TAG = "SHOW_FIXED_RANGE_TEST_TAG"
@@ -112,6 +115,7 @@ fun ReportTypeSelectorScreen(
     uiState = uiState,
     dateRange = measureReportViewModel.dateRange,
     reportPeriodRange = measureReportViewModel.getReportGenerationRange(reportId),
+    modifier = modifier,
     onBackPressed = {
       // Reset UI state
       measureReportViewModel.resetState()
@@ -132,7 +136,7 @@ fun ReportTypeSelectorScreen(
     onReportTypeSelected = {
       measureReportViewModel.onEvent(MeasureReportEvent.OnReportTypeChanged(it, navController))
     },
-    modifier = modifier
+    onSubjectRemoved = { measureReportViewModel.onEvent(MeasureReportEvent.OnSubjectRemoved(it)) }
   )
 }
 
@@ -149,7 +153,8 @@ fun ReportFilterSelector(
   onBackPressed: () -> Unit,
   onGenerateReport: (date: Date?) -> Unit,
   onDateRangeSelected: (Pair<Long, Long>) -> Unit,
-  onReportTypeSelected: (MeasureReportType) -> Unit
+  onReportTypeSelected: (MeasureReportType) -> Unit,
+  onSubjectRemoved: (MeasureReportSubjectViewData) -> Unit
 ) {
   Scaffold(
     topBar = {
@@ -170,7 +175,14 @@ fun ReportFilterSelector(
       )
     }
   ) { innerPadding ->
-    Row {
+    Row(
+      modifier =
+        modifier.conditional(
+          uiState.showProgressIndicator,
+          { modifier.alpha(0f) },
+          { modifier.alpha(1f) }
+        )
+    ) {
       SubjectSelectionBox(
         radioOptions =
           listOf(
@@ -183,9 +195,10 @@ fun ReportFilterSelector(
               measureReportType = MeasureReportType.INDIVIDUAL
             )
           ),
-        names = uiState.subjectViewData.map { it.name },
+        subjects = uiState.subjectViewData,
         reportTypeState = reportTypeState,
-        onReportTypeSelected = onReportTypeSelected
+        onReportTypeSelected = onReportTypeSelected,
+        onSubjectRemoved = onSubjectRemoved
       )
     }
 
@@ -389,9 +402,10 @@ private fun ListItem(
 @Composable
 fun SubjectSelectionBox(
   radioOptions: List<MeasureReportTypeData>,
-  names: List<String>,
+  subjects: Set<MeasureReportSubjectViewData>,
   reportTypeState: MutableState<MeasureReport.MeasureReportType>,
   onReportTypeSelected: (MeasureReport.MeasureReportType) -> Unit,
+  onSubjectRemoved: (MeasureReportSubjectViewData) -> Unit,
   modifier: Modifier = Modifier
 ) {
   Column(
@@ -425,12 +439,14 @@ fun SubjectSelectionBox(
       }
       Spacer(modifier = modifier.size(4.dp))
     }
-    if (reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL && names.isNotEmpty()) {
+    if (reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL && subjects.isNotEmpty()
+    ) {
       Row(modifier = modifier.padding(start = 24.dp)) {
         Spacer(modifier = modifier.size(8.dp))
         SubjectSelector(
-          names = names,
-          onChangeSubject = { onReportTypeSelected(reportTypeState.value) },
+          subjects = subjects,
+          onAddSubject = { onReportTypeSelected(reportTypeState.value) },
+          onRemoveSubject = { onSubjectRemoved(it) }
         )
       }
     }
@@ -476,7 +492,8 @@ fun SubjectSelectionAllPreview() {
       ),
     reportTypeState = reportTypeState,
     onReportTypeSelected = {},
-    names = listOf()
+    onSubjectRemoved = {},
+    subjects = setOf()
   )
 }
 
@@ -498,7 +515,15 @@ fun SubjectSelectionIndividualPreview() {
       ),
     reportTypeState = reportTypeState,
     onReportTypeSelected = {},
-    names = listOf("John Jared", "Jane Doe")
+    onSubjectRemoved = {},
+    subjects =
+      setOf(
+        MeasureReportSubjectViewData(ResourceType.Patient, "1", "John Jared"),
+        MeasureReportSubjectViewData(ResourceType.Patient, "2", "Jane Doe"),
+        MeasureReportSubjectViewData(ResourceType.Patient, "3", "John Doe"),
+        MeasureReportSubjectViewData(ResourceType.Patient, "4", "Lorem Ipsm"),
+        MeasureReportSubjectViewData(ResourceType.Patient, "5", "Sim Sam")
+      )
   )
 }
 
@@ -524,11 +549,12 @@ fun FixedRangeListPreview() {
     showSubjectSelection = true,
     uiState = ReportTypeSelectorUiState(),
     dateRange = null,
-    onGenerateReport = {},
     reportPeriodRange = ranges,
-    onReportTypeSelected = {},
+    onBackPressed = {},
+    onGenerateReport = {},
     onDateRangeSelected = {},
-    onBackPressed = {}
+    onReportTypeSelected = {},
+    onSubjectRemoved = {}
   )
 }
 
@@ -546,10 +572,11 @@ fun ReportFilterPreview() {
     showSubjectSelection = true,
     uiState = ReportTypeSelectorUiState(),
     dateRange = dateRange,
-    onGenerateReport = {},
     reportPeriodRange = mapOf(),
-    onReportTypeSelected = {},
+    onBackPressed = {},
+    onGenerateReport = {},
     onDateRangeSelected = {},
-    onBackPressed = {}
+    onReportTypeSelected = {},
+    onSubjectRemoved = {}
   )
 }

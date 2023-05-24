@@ -101,7 +101,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    coEvery { measureReportRepository.retrievePatients(0) } returns
+    coEvery { measureReportRepository.retrieveSubjects(0) } returns
       listOf(
         ResourceData(
           baseResourceId = Faker.buildPatient().id,
@@ -187,12 +187,13 @@ class MeasureReportViewModelTest : RobolectricTest() {
         module = "Module1"
       )
     val samplePatientViewData =
-      MeasureReportSubjectViewData(
-        logicalId = "member1",
-        name = "Willy Mark",
-        gender = "M",
-        age = "28",
-        family = "Orion"
+      mutableSetOf(
+        MeasureReportSubjectViewData(
+          type = ResourceType.Patient,
+          logicalId = "member1",
+          display = "Willy Mark, M, 28",
+          family = "Orion"
+        )
       )
 
     measureReportViewModel.measureReportConfigList.add(measureReportConfig)
@@ -244,25 +245,26 @@ class MeasureReportViewModelTest : RobolectricTest() {
     measureReportViewModel.onEvent(
       MeasureReportEvent.OnReportTypeChanged(MeasureReportType.SUMMARY, navController)
     )
-    Assert.assertNull(measureReportViewModel.reportTypeSelectorUiState.value.subjectViewData)
+    Assert.assertEquals(
+      0,
+      measureReportViewModel.reportTypeSelectorUiState.value.subjectViewData.size
+    )
   }
 
   @Test
   fun testOnEventOnPatientSelected() {
     val samplePatientViewData =
       MeasureReportSubjectViewData(
+        type = ResourceType.Patient,
         logicalId = "member1",
-        name = "Willy Mark",
-        gender = "M",
-        age = "28",
+        display = "Willy Mark, M, 28",
         family = "Orion"
       )
     measureReportViewModel.onEvent(MeasureReportEvent.OnSubjectSelected(samplePatientViewData))
-    val patientViewData = measureReportViewModel.reportTypeSelectorUiState.value.subjectViewData
+    val patientViewData =
+      measureReportViewModel.reportTypeSelectorUiState.value.subjectViewData.firstOrNull()
     Assert.assertNotNull(samplePatientViewData.logicalId, patientViewData?.logicalId)
-    Assert.assertNotNull(samplePatientViewData.name, patientViewData?.name)
-    Assert.assertNotNull(samplePatientViewData.gender, patientViewData?.gender)
-    Assert.assertNotNull(samplePatientViewData.age, patientViewData?.age)
+    Assert.assertNotNull(samplePatientViewData.display, patientViewData?.display)
     Assert.assertNotNull(samplePatientViewData.family, patientViewData?.family)
   }
 

@@ -37,6 +37,8 @@ sealed class MeasureReportEvent {
   ) : MeasureReportEvent()
   data class OnSubjectSelected(val subjectViewData: MeasureReportSubjectViewData) :
     MeasureReportEvent()
+  data class OnSubjectRemoved(val subjectViewData: MeasureReportSubjectViewData) :
+    MeasureReportEvent()
   data class OnSearchTextChanged(val reportId: String, val searchText: String) :
     MeasureReportEvent()
 }
