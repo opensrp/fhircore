@@ -27,6 +27,8 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.sentry.Sentry
+import io.sentry.protocol.User
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -51,6 +53,7 @@ import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
 import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
 import timber.log.Timber
@@ -145,6 +148,14 @@ constructor(
           )
         } else {
           if (accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)) {
+
+            // Configure Sentry scope
+            Sentry.configureScope { scope ->
+              scope.setTag("versionCode", BuildConfig.VERSION_CODE.toString())
+              scope.setTag("versionName", BuildConfig.VERSION_NAME)
+              scope.user = User().apply { username = trimmedUsername }
+            }
+
             _showProgressBar.postValue(false)
             updateNavigateHome(true)
           } else {
