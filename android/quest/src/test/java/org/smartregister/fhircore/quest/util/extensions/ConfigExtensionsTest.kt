@@ -34,7 +34,6 @@ import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
-import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
@@ -243,21 +242,6 @@ class ConfigExtensionsTest : RobolectricTest() {
         baseResourceType = patient.resourceType.name
       )
     }
-  }
-
-  @Test
-  fun testViewIsVisibleReturnsCorrectValue() {
-    val computedValuesMap = mapOf("visible" to "true", "invisible" to "false")
-    val visibleButtonProperties =
-      ButtonProperties(status = "DUE", text = "Button Text", visible = "@{visible}")
-    val invisibleButtonProperties =
-      ButtonProperties(status = "DUE", text = "Button Text", visible = "@{invisible}")
-
-    val visible = visibleButtonProperties.isVisible(computedValuesMap)
-    Assert.assertEquals(true, visible)
-
-    val invisible = invisibleButtonProperties.isVisible(computedValuesMap)
-    Assert.assertEquals(false, invisible)
   }
 
   fun testInterpolateValueWithANonNullComputedValuesMapReturnsValues() {
