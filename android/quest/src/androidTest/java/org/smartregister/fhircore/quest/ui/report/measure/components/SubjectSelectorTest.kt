@@ -23,9 +23,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import io.mockk.spyk
 import io.mockk.verify
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
 class SubjectSelectorTest {
 
@@ -36,7 +38,11 @@ class SubjectSelectorTest {
   @Before
   fun setup() {
     composeTestRule.setContent {
-      SubjectSelector(names = listOf("Mary Magdalene"), onChangeSubject = mockListener)
+      SubjectSelector(
+        subjects = setOf(MeasureReportSubjectViewData(ResourceType.Patient, "1", "Mary Magdalene")),
+        onAddSubject = mockListener,
+        onRemoveSubject = {}
+      )
     }
   }
 
@@ -47,7 +53,7 @@ class SubjectSelectorTest {
   }
 
   @Test
-  fun testSubjectSelectorRendersCloseIconCorrectly() {
+  fun testSubjectSelectorRendersCloseIconBackgroundCorrectly() {
     composeTestRule
       .onNodeWithTag(CLOSE_ICON_TEST_TAG, useUnmergedTree = true)
       .assertExists()
@@ -55,22 +61,14 @@ class SubjectSelectorTest {
   }
 
   @Test
-  fun testSubjectSelectorRendersCloseIconBackgroundCorrectly() {
-    composeTestRule
-      .onNodeWithTag(CLOSE_ICON_BACKGROUND_TEST_TAG, useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
-  }
-
-  @Test
   fun testSubjectSelectorRendersChangeTextCorrectly() {
     composeTestRule.onNodeWithTag(CHANGE_TEXT_TEST_TAG, useUnmergedTree = true).assertExists()
-    composeTestRule.onNodeWithText("Change").assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText("ADD").assertExists().assertIsDisplayed()
   }
 
   @Test
   fun testThatChangeRowClickCallsTheListener() {
-    val changeRow = composeTestRule.onNodeWithTag(CHANGE_ROW_TEST_TAG)
+    val changeRow = composeTestRule.onNodeWithTag(CHANGE_TEXT_TEST_TAG)
     changeRow.assertExists()
     changeRow.performClick()
     verify { mockListener() }

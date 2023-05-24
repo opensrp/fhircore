@@ -522,7 +522,7 @@ fun SubjectSelectionIndividualPreview() {
         MeasureReportSubjectViewData(ResourceType.Patient, "2", "Jane Doe"),
         MeasureReportSubjectViewData(ResourceType.Patient, "3", "John Doe"),
         MeasureReportSubjectViewData(ResourceType.Patient, "4", "Lorem Ipsm"),
-        MeasureReportSubjectViewData(ResourceType.Patient, "5", "Sim Sam")
+        MeasureReportSubjectViewData(ResourceType.Patient, "5", "Mary Magdalene")
       )
   )
 }

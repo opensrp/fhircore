@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.report.measure.components
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -26,14 +27,17 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import io.mockk.spyk
 import java.util.Date
 import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.MeasureReport.MeasureReportType
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.quest.ui.report.measure.ReportTypeSelectorUiState
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
 import org.smartregister.fhircore.quest.ui.report.measure.screens.DateRangeSelector
 import org.smartregister.fhircore.quest.ui.report.measure.screens.FixedMonthYearListing
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MONTH_TEST_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.PLEASE_WAIT_TEST_TAG
+import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportFilterSelector
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_DATE_PICKER_FORM_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_FIXED_RANGE_TEST_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_PROGRESS_INDICATOR_TAG
@@ -61,11 +65,10 @@ class ReportTypeSelectorScreenTest {
   fun testMonthYearListDisplayed() {
     composeTestRule.setContent {
       FixedMonthYearListing(
-        screenTitle = "Measure Report",
         onMonthSelected = mockRangeSelectListener,
-        onBackPress = mockBackListener,
         reportGenerationRange = dateRange,
-        showProgressIndicator = false
+        showProgressIndicator = false,
+        innerPadding = PaddingValues()
       )
     }
     composeTestRule
@@ -78,11 +81,10 @@ class ReportTypeSelectorScreenTest {
   fun testProgressIndicatorIsDisplayed() {
     composeTestRule.setContent {
       FixedMonthYearListing(
-        screenTitle = "Measure Report",
         onMonthSelected = mockRangeSelectListener,
-        onBackPress = mockBackListener,
         reportGenerationRange = dateRange,
-        showProgressIndicator = true
+        showProgressIndicator = true,
+        innerPadding = PaddingValues()
       )
     }
 
@@ -101,11 +103,10 @@ class ReportTypeSelectorScreenTest {
   fun testMonthClickListener() {
     composeTestRule.setContent {
       FixedMonthYearListing(
-        screenTitle = "Measure Report",
         onMonthSelected = mockRangeSelectListener,
-        onBackPress = mockBackListener,
         reportGenerationRange = dateRange,
-        showProgressIndicator = false
+        showProgressIndicator = false,
+        innerPadding = PaddingValues()
       )
     }
 
@@ -119,18 +120,14 @@ class ReportTypeSelectorScreenTest {
   fun testShowDatePickerFormr() {
     composeTestRule.setContent {
       DateRangeSelector(
-        screenTitle = "Measure Report",
-        onBackPress = mockBackListener,
         showProgressIndicator = false,
         startDate = "Start Date",
         endDate = "End Date",
         onGenerateReportClicked = mockBackListener,
-        reportTypeState = mutableStateOf(MeasureReport.MeasureReportType.SUMMARY),
-        onReportTypeSelected = mockTypeSelectListener,
         dateRange = mutableStateOf(defaultDateRangeState()),
         onDateRangeSelected = mockDateSelectListener,
         generateReport = false,
-        patientName = "Maria"
+        innerPadding = PaddingValues()
       )
     }
     composeTestRule
@@ -144,11 +141,10 @@ class ReportTypeSelectorScreenTest {
   fun testPleaseWaitDisplayedCorrectly() {
     composeTestRule.setContent {
       FixedMonthYearListing(
-        screenTitle = "Measure Report",
         onMonthSelected = mockRangeSelectListener,
-        onBackPress = mockBackListener,
         reportGenerationRange = dateRange,
-        showProgressIndicator = true
+        showProgressIndicator = true,
+        innerPadding = PaddingValues()
       )
     }
     composeTestRule
@@ -160,12 +156,19 @@ class ReportTypeSelectorScreenTest {
   @Test
   fun testScreenTitleIsDisplayedCorrectly() {
     composeTestRule.setContent {
-      FixedMonthYearListing(
+      ReportFilterSelector(
         screenTitle = "Measure Report",
-        onMonthSelected = mockRangeSelectListener,
-        onBackPress = mockBackListener,
-        reportGenerationRange = dateRange,
-        showProgressIndicator = true
+        reportTypeState = mutableStateOf(MeasureReportType.SUMMARY),
+        showFixedRangeSelection = true,
+        showSubjectSelection = true,
+        uiState = ReportTypeSelectorUiState(),
+        dateRange = null,
+        reportPeriodRange = mapOf(),
+        onBackPressed = {},
+        onGenerateReport = {},
+        onDateRangeSelected = {},
+        onReportTypeSelected = {},
+        onSubjectRemoved = {}
       )
     }
     composeTestRule.onNodeWithText("Measure Report").assertExists().assertIsDisplayed()
@@ -174,11 +177,10 @@ class ReportTypeSelectorScreenTest {
   fun testCorrectHeaderYearDisplayedCorrectly() {
     composeTestRule.setContent {
       FixedMonthYearListing(
-        screenTitle = "Measure Report",
         onMonthSelected = mockRangeSelectListener,
-        onBackPress = mockBackListener,
         reportGenerationRange = dateRange,
-        showProgressIndicator = false
+        showProgressIndicator = false,
+        innerPadding = PaddingValues()
       )
     }
     composeTestRule
@@ -193,11 +195,10 @@ class ReportTypeSelectorScreenTest {
   fun testCorrectHeaderMonthDisplayedCorrectly() {
     composeTestRule.setContent {
       FixedMonthYearListing(
-        screenTitle = "Measure Report",
         onMonthSelected = mockRangeSelectListener,
-        onBackPress = mockBackListener,
         reportGenerationRange = dateRange,
-        showProgressIndicator = false
+        showProgressIndicator = false,
+        innerPadding = PaddingValues()
       )
     }
     composeTestRule

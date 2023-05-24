@@ -48,9 +48,7 @@ const val RESULT_VIEW_INDICATOR_DESCRIPTION = "resultViewIndicatorDescription"
 fun MeasureReportIndividualResultView(
   modifier: Modifier = Modifier,
   subjectViewData: MeasureReportSubjectViewData,
-  isMatchedIndicator: Boolean = true,
-  indicatorStatus: String = "",
-  indicatorDescription: String = ""
+  isMatchedIndicator: Boolean = true
 ) {
   Box(
     modifier =
@@ -85,8 +83,6 @@ private fun MeasureReportIndividualResultViewPreview() {
         logicalId = "12444",
         type = ResourceType.Patient
       ),
-    isMatchedIndicator = true,
-    indicatorStatus = "True",
-    indicatorDescription = ""
+    isMatchedIndicator = true
   )
 }

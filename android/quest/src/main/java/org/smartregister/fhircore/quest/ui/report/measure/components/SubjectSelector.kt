@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -50,9 +51,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectVie
 
 const val SUBJECT_NAME_TEST_TAG = "subjectNameTestTag"
 const val CLOSE_ICON_TEST_TAG = "closeIconTestTag"
-const val CLOSE_ICON_BACKGROUND_TEST_TAG = "closeIconBackgroundTestTag"
 const val CHANGE_TEXT_TEST_TAG = "changeTextTestTag"
-const val CHANGE_ROW_TEST_TAG = "changeRowTestTag"
 
 @Composable
 fun SubjectSelector(
@@ -77,7 +76,9 @@ fun SubjectSelector(
             text = subject.display,
             textAlign = TextAlign.Center,
             fontSize = 16.sp,
-            modifier = modifier.testTag(SUBJECT_NAME_TEST_TAG)
+            modifier = modifier.testTag(SUBJECT_NAME_TEST_TAG).width(85.dp),
+            maxLines = 1,
+            softWrap = false,
           )
 
           Spacer(modifier = Modifier.size(8.dp))
@@ -96,14 +97,13 @@ fun SubjectSelector(
                   .size(24.dp)
                   .background(color = Color.DarkGray.copy(alpha = 0.4f))
                   .wrapContentWidth()
-                  .padding(4.dp)
-                  .testTag(CLOSE_ICON_BACKGROUND_TEST_TAG),
+                  .padding(4.dp),
               contentAlignment = Alignment.Center
             ) {
               Icon(
                 Icons.Filled.Close,
                 contentDescription = "Back arrow",
-                modifier = Modifier.size(20.dp).testTag(CLOSE_ICON_TEST_TAG)
+                modifier = modifier.size(20.dp).testTag(CLOSE_ICON_TEST_TAG)
               )
             }
           }
@@ -132,7 +132,7 @@ fun SelectedSubjectPreview() {
         MeasureReportSubjectViewData(ResourceType.Patient, "2", "Jane Doe"),
         MeasureReportSubjectViewData(ResourceType.Patient, "3", "John Doe"),
         MeasureReportSubjectViewData(ResourceType.Patient, "4", "Lorem Ipsm"),
-        MeasureReportSubjectViewData(ResourceType.Patient, "5", "Sim Sam")
+        MeasureReportSubjectViewData(ResourceType.Patient, "5", "Mary Magdalene")
       ),
     onAddSubject = {},
     onRemoveSubject = {}
