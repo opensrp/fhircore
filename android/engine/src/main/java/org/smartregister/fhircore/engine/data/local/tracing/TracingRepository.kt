@@ -156,12 +156,18 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
           operation = Operation.OR
         )
       }
-    outcomeObs.firstOrNull()?.let {
-      conducted = it.code.codingFirstRep.code == "tracing-outcome-conducted"
-      if (it.hasValueCodeableConcept()) {
-        outcome = it.valueCodeableConcept.text
+    outcomeObs
+      .firstOrNull {
+        it.code.coding.any { coding ->
+          coding.code in arrayOf("tracing-outcome-conducted", "tracing-outcome-unconducted")
+        }
       }
-    }
+      ?.let {
+        conducted = it.code.codingFirstRep.code == "tracing-outcome-conducted"
+        if (it.hasValueCodeableConcept()) {
+          outcome = it.valueCodeableConcept.text
+        }
+      }
 
     val dateObs =
       fhirEngine.search<Observation> {
@@ -195,11 +201,17 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
           operation = Operation.OR
         )
       }
-    dateObs.firstOrNull()?.let {
-      if (it.hasValueDateTimeType()) {
-        appointmentDate = it.valueDateTimeType.value
+    dateObs
+      .firstOrNull {
+        it.code.coding.any { coding ->
+          coding.code.endsWith("tracing-outcome-date-of-agreed-appointment")
+        }
       }
-    }
+      ?.let {
+        if (it.hasValueDateTimeType()) {
+          appointmentDate = it.valueDateTimeType.value
+        }
+      }
     return TracingOutcomeDetails(
       title = "",
       date = encounter.period.start,
