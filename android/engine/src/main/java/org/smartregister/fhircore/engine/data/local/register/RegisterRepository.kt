@@ -179,7 +179,7 @@ constructor(
         relatedResourcesConfigs = forwardIncludeResourceConfigs,
         resources = resources,
         relatedResourceWrapper = relatedResourceWrapper,
-        configRules = forwardIncludeResourceConfigs[0].configRules
+        configRules = null
       )
     }
 
@@ -462,7 +462,7 @@ constructor(
     configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
       configType = ConfigType.Profile,
       configId = profileId,
-      paramsMap = paramsMap,
+      paramsMap = paramsMap
     )
 
   fun retrieveRegisterConfiguration(
