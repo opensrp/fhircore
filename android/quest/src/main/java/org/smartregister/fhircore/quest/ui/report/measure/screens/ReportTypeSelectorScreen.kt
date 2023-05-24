@@ -410,8 +410,6 @@ fun SubjectSelectionBox(
 ) {
   Column(
     modifier = modifier.fillMaxWidth(),
-    // verticalArrangement = Arrangement.Center,
-    // horizontalAlignment = Alignment.Start
     ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
       Text(
