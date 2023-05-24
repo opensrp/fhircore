@@ -3,13 +3,13 @@
 > ### Note
 >
 > * You need to have already setup a [project](https://docs.sentry.io/product/sentry-basics/integrate-frontend/create-new-project/) and dashboard with the necessary access permissions, and
-> * are able to obtain the dsn of this project through `[Project] > Settings > Client Keys (DSN)`. This will be required later for configuration and logging.
+> * are able to obtain the dsn (Data Source Name) of this project through `[Project] > Settings > Client Keys (DSN)`. This will be required later for configuration and logging.
 
 
 ### Instructions
 
 1.  Once you have created the Sentry project as instructed above, inside the `local.properties` file add a line in the form
-    `sentry.dsn=xxxxxx` replace the `xxxxxx` with the `sentry dsn` from your project in sentry. This will be picked up 
+    `SENTRY_DSN=xxxxxx` replace the `xxxxxx` with the `sentry dsn` from your project in sentry. This will be picked up 
     automatically by the setup inside the quest module's build.gradle file
 2.  If you want to seperate your staging and production environment logs and performance information you can add an environment variable 
     to the Sentry,init method. You will need to insert an extra option in the form of `options.environment = <Your Environment Name>`. When 
