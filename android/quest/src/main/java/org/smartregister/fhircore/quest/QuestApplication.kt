@@ -29,8 +29,10 @@ import dagger.hilt.android.HiltAndroidApp
 import io.sentry.android.core.SentryAndroid
 import io.sentry.android.core.SentryAndroidOptions
 import io.sentry.android.fragment.FragmentLifecycleIntegration
+import java.net.URL
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
+import org.smartregister.fhircore.engine.util.extension.getSubDomain
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
@@ -70,6 +72,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
   @VisibleForTesting
   fun initSentryMonitoring(dsn: String = BuildConfig.SENTRY_DSN) {
     if (dsn.isNotBlank()) {
+
       val sentryConfiguration = { options: SentryAndroidOptions ->
         options.dsn = dsn.trim { it <= ' ' }
         // To set a uniform sample rate
@@ -83,7 +86,9 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
             enableAutoFragmentLifecycleTracing = true
           )
         )
+        options.environment = URL(BuildConfig.FHIR_BASE_URL).getSubDomain().replace('-', '.')
       }
+
       SentryAndroid.init(this, sentryConfiguration)
     }
   }
