@@ -26,21 +26,22 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
 data class RegisterConfiguration(
-    override var appId: String,
-    override var configType: String = ConfigType.Register.name,
-    val id: String,
-    val registerTitle: String? = null,
-    val fhirResource: FhirResourceConfig,
-    val secondaryResources: List<FhirResourceConfig>? = null,
-    val filter: RegisterContentConfig? = null,
-    val searchBar: RegisterContentConfig? = null,
-    val registerCard: RegisterCardConfig = RegisterCardConfig(),
-    val fabActions: List<NavigationMenuConfig> = emptyList(),
-    val noResults: NoResultsConfig? = null,
-    val pageSize: Int = 10,
-    val activeResourceFilters: List<ActiveResourceFilterConfig> =
-        listOf(
-            ActiveResourceFilterConfig(resourceType = ResourceType.Patient, active = true),
-            ActiveResourceFilterConfig(resourceType = ResourceType.Group, active = true)),
-    val configRules: List<RuleConfig>? = null
+  override var appId: String,
+  override var configType: String = ConfigType.Register.name,
+  val id: String,
+  val registerTitle: String? = null,
+  val fhirResource: FhirResourceConfig,
+  val secondaryResources: List<FhirResourceConfig>? = null,
+  val filter: RegisterContentConfig? = null,
+  val searchBar: RegisterContentConfig? = null,
+  val registerCard: RegisterCardConfig = RegisterCardConfig(),
+  val fabActions: List<NavigationMenuConfig> = emptyList(),
+  val noResults: NoResultsConfig? = null,
+  val pageSize: Int = 10,
+  val activeResourceFilters: List<ActiveResourceFilterConfig> =
+    listOf(
+      ActiveResourceFilterConfig(resourceType = ResourceType.Patient, active = true),
+      ActiveResourceFilterConfig(resourceType = ResourceType.Group, active = true)
+    ),
+  val configRules: List<RuleConfig>? = null
 ) : Configuration()

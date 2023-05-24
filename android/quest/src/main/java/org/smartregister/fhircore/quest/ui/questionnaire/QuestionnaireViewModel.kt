@@ -545,7 +545,11 @@ constructor(
     if (removeGroup) {
       viewModelScope.launch(dispatcherProvider.io()) {
         try {
-          defaultRepository.removeGroup(groupId, deactivateMembers)
+          defaultRepository.removeGroup(
+            groupId,
+            deactivateMembers,
+            configComputedRuleValues = emptyMap()
+          )
         } catch (exception: Exception) {
           Timber.e(exception)
         } finally {
@@ -567,7 +571,8 @@ constructor(
           defaultRepository.removeGroupMember(
             memberId = memberId,
             groupId = groupIdentifier,
-            groupMemberResourceType = memberResourceType
+            groupMemberResourceType = memberResourceType,
+            emptyMap()
           )
         } catch (exception: Exception) {
           Timber.e(exception)
@@ -775,6 +780,7 @@ constructor(
         subjectType = ResourceType.Patient,
         subjectId = patientId,
         subjectParam = RelatedPerson.PATIENT,
+        configComputedRuleValues = emptyMap()
       )
       .singleOrNull()
   }

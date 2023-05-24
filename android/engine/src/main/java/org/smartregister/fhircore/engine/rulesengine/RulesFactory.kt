@@ -24,14 +24,11 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
-import kotlinx.coroutines.withContext
-import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.Rules
-import org.jeasy.rules.jexl.JexlRule
 import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
@@ -55,10 +52,10 @@ import timber.log.Timber
 class RulesFactory
 @Inject
 constructor(
-    @ApplicationContext val context: Context,
-    val configurationRegistry: ConfigurationRegistry,
-    val fhirPathDataExtractor: FhirPathDataExtractor,
-    val dispatcherProvider: DispatcherProvider
+  @ApplicationContext val context: Context,
+  val configurationRegistry: ConfigurationRegistry,
+  val fhirPathDataExtractor: FhirPathDataExtractor,
+  val dispatcherProvider: DispatcherProvider
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
   init {
@@ -77,22 +74,22 @@ constructor(
     with(repositoryResourceData) {
       // Initialize new facts and fire rules in background
       facts =
-          Facts().apply {
-            put(FHIR_PATH, fhirPathDataExtractor)
-            put(DATA, mutableMapOf<String, Any>())
-            put(SERVICE, rulesEngineService)
-            put(resourceRulesEngineFactId ?: resource.resourceType.name, resource)
+        Facts().apply {
+          put(FHIR_PATH, fhirPathDataExtractor)
+          put(DATA, mutableMapOf<String, Any>())
+          put(SERVICE, rulesEngineService)
+          put(resourceRulesEngineFactId ?: resource.resourceType.name, resource)
 
+          relatedResourcesMap.addToFacts(this)
+          relatedResourcesCountMap.addToFacts(this)
+
+          // Populate the facts map with secondary resource data
+          secondaryRepositoryResourceData?.forEach {
+            put(it.resourceRulesEngineFactId ?: it.resource.resourceType.name, it.resource)
             relatedResourcesMap.addToFacts(this)
             relatedResourcesCountMap.addToFacts(this)
-
-            // Populate the facts map with secondary resource data
-            secondaryRepositoryResourceData?.forEach {
-              put(it.resourceRulesEngineFactId ?: it.resource.resourceType.name, it.resource)
-              relatedResourcesMap.addToFacts(this)
-              relatedResourcesCountMap.addToFacts(this)
-            }
           }
+        }
 
       if (BuildConfig.DEBUG) {
         val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
@@ -102,7 +99,6 @@ constructor(
     return facts.get(DATA) as Map<String, Any>
   }
 
-
   /** Provide access to utility functions accessible to the users defining rules in JSON format. */
   inner class RulesEngineService {
 
@@ -111,10 +107,11 @@ constructor(
      * correct translation from the string.properties file.
      */
     fun translate(value: String): String =
-        configurationRegistry.localizationHelper.parseTemplate(
-            LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
-            Locale.getDefault(),
-            "{{${value.translationPropertyKey()}}}")
+      configurationRegistry.localizationHelper.parseTemplate(
+        LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
+        Locale.getDefault(),
+        "{{${value.translationPropertyKey()}}}"
+      )
 
     /**
      * This method retrieves a list of relatedResources for a given resource from the facts map It
@@ -125,26 +122,24 @@ constructor(
      * @param resource The parent resource for which the related resources will be retrieved
      * @param relatedResourceKey The key representing the relatedResources in the map
      * @param referenceFhirPathExpression A fhir path expression used to retrieve the subject
-     *   reference Id from the related resources
+     * reference Id from the related resources
      */
     @Suppress("UNCHECKED_CAST")
     fun retrieveRelatedResources(
-        resource: Resource,
-        relatedResourceKey: String,
-        referenceFhirPathExpression: String,
-        relatedResourcesMap: Map<String, List<Resource>>? = null
+      resource: Resource,
+      relatedResourceKey: String,
+      referenceFhirPathExpression: String,
+      relatedResourcesMap: Map<String, List<Resource>>? = null
     ): List<Resource> {
       val value: List<Resource> =
-          relatedResourcesMap?.get(relatedResourceKey)
-              ?: if (facts.getFact(relatedResourceKey) != null)
-                  facts.getFact(relatedResourceKey).value as List<Resource>
-              else emptyList()
+        relatedResourcesMap?.get(relatedResourceKey)
+          ?: if (facts.getFact(relatedResourceKey) != null)
+            facts.getFact(relatedResourceKey).value as List<Resource>
+          else emptyList()
 
       return value.filter {
         resource.logicalId ==
-            fhirPathDataExtractor
-                .extractValue(it, referenceFhirPathExpression)
-                .extractLogicalIdUuid()
+          fhirPathDataExtractor.extractValue(it, referenceFhirPathExpression).extractLogicalIdUuid()
       }
     }
 
@@ -159,15 +154,13 @@ constructor(
      */
     @Suppress("UNCHECKED_CAST")
     fun retrieveParentResource(
-        childResource: Resource,
-        parentResourceType: String,
-        fhirPathExpression: String
+      childResource: Resource,
+      parentResourceType: String,
+      fhirPathExpression: String
     ): Resource? {
       val value = facts.getFact(parentResourceType).value as List<Resource>
       val parentResourceId =
-          fhirPathDataExtractor
-              .extractValue(childResource, fhirPathExpression)
-              .extractLogicalIdUuid()
+        fhirPathDataExtractor.extractValue(childResource, fhirPathExpression).extractLogicalIdUuid()
       return value.find { it.logicalId == parentResourceId }
     }
 
@@ -184,25 +177,25 @@ constructor(
      * ```
      */
     fun evaluateToBoolean(
-        resources: List<Resource>?,
-        fhirPathExpression: String,
-        matchAll: Boolean = false
+      resources: List<Resource>?,
+      fhirPathExpression: String,
+      matchAll: Boolean = false
     ): Boolean =
-        if (matchAll) {
-          resources?.all { base ->
-            fhirPathDataExtractor.extractData(base, fhirPathExpression).any {
-              it.isBooleanPrimitive && it.primitiveValue().toBoolean()
-            }
+      if (matchAll) {
+        resources?.all { base ->
+          fhirPathDataExtractor.extractData(base, fhirPathExpression).any {
+            it.isBooleanPrimitive && it.primitiveValue().toBoolean()
           }
-              ?: false
-        } else {
-          resources?.any { base ->
-            fhirPathDataExtractor.extractData(base, fhirPathExpression).any {
-              it.isBooleanPrimitive && it.primitiveValue().toBoolean()
-            }
-          }
-              ?: false
         }
+          ?: false
+      } else {
+        resources?.any { base ->
+          fhirPathDataExtractor.extractData(base, fhirPathExpression).any {
+            it.isBooleanPrimitive && it.primitiveValue().toBoolean()
+          }
+        }
+          ?: false
+      }
 
     /**
      * This function transform the provided [resources] into a list of [label] given that the
@@ -213,20 +206,21 @@ constructor(
      * each.
      */
     fun mapResourcesToLabeledCSV(
-        resources: List<Resource>?,
-        fhirPathExpression: String,
-        label: String
+      resources: List<Resource>?,
+      fhirPathExpression: String,
+      label: String
     ): String =
-        resources
-            ?.mapNotNull {
-              if (fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
-                base.isBooleanPrimitive && base.primitiveValue().toBoolean()
-              })
-                  label
-              else null
+      resources
+        ?.mapNotNull {
+          if (fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
+              base.isBooleanPrimitive && base.primitiveValue().toBoolean()
             }
-            ?.joinToString(",")
-            ?: ""
+          )
+            label
+          else null
+        }
+        ?.joinToString(",")
+        ?: ""
 
     /**
      * Transforms a [resource] into [label] if the [fhirPathExpression] is evaluated to true.
@@ -235,9 +229,9 @@ constructor(
      * less than 5years, if 'true' return 'CHILD' (to be serialized to [ServiceMemberIcon])
      */
     fun mapResourceToLabeledCSV(
-        resource: Resource,
-        fhirPathExpression: String,
-        label: String
+      resource: Resource,
+      fhirPathExpression: String,
+      label: String
     ): String = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
 
     /** This function extracts the patient's age from the patient resource */
@@ -250,7 +244,7 @@ constructor(
 
     /** This function extracts the patient's DOB from the FHIR resource */
     fun extractDOB(patient: Patient, dateFormat: String): String =
-        SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(patient.birthDate) }
+      SimpleDateFormat(dateFormat, Locale.ENGLISH).run { format(patient.birthDate) }
 
     /**
      * This function takes [inputDate] and returns a difference (for examples 7 hours, 2 day, 5
@@ -274,9 +268,9 @@ constructor(
      * Nov 5 2021)
      */
     fun formatDate(
-        inputDate: String,
-        inputDateFormat: String,
-        expectedFormat: String = "E, MMM dd yyyy"
+      inputDate: String,
+      inputDateFormat: String,
+      expectedFormat: String = "E, MMM dd yyyy"
     ): String? = inputDate.parseDate(inputDateFormat)?.formatDate(expectedFormat)
 
     /**
@@ -285,7 +279,7 @@ constructor(
      * [expectedFormat] is by default (Example: Mon, Nov 5 2021)
      */
     fun formatDate(date: Date, expectedFormat: String = "E, MMM dd yyyy"): String =
-        date.formatDate(expectedFormat)
+      date.formatDate(expectedFormat)
 
     /**
      * This function generates a random 6-digit integer between a hard-coded range. It may generate
@@ -294,7 +288,7 @@ constructor(
      * @return An Integer.
      */
     fun generateRandomSixDigitInt(): Int =
-        (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
+      (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
 
     /**
      * This function filters resources provided the condition extracted from the
@@ -307,7 +301,7 @@ constructor(
       return resources?.filter {
         fhirPathDataExtractor.extractValue(it, fhirPathExpression).toBoolean()
       }
-          ?: emptyList()
+        ?: emptyList()
     }
 
     /** This function combines all string indexes to comma separated */
@@ -319,27 +313,27 @@ constructor(
     }
 
     fun mapResourcesToExtractedValues(
-        resources: List<Resource>?,
-        fhirPathExpression: String
+      resources: List<Resource>?,
+      fhirPathExpression: String
     ): List<Any> {
       if (fhirPathExpression.isEmpty()) {
         return emptyList()
       }
       return resources?.map { fhirPathDataExtractor.extractValue(it, fhirPathExpression) }
-          ?: emptyList()
+        ?: emptyList()
     }
 
     fun computeTotalCount(relatedResourceCounts: List<RelatedResourceCount>?): Long =
-        relatedResourceCounts?.sumOf { it.count } ?: 0
+      relatedResourceCounts?.sumOf { it.count } ?: 0
 
     fun retrieveCount(
-        parentResourceId: String,
-        relatedResourceCounts: List<RelatedResourceCount>?
+      parentResourceId: String,
+      relatedResourceCounts: List<RelatedResourceCount>?
     ): Long =
-        relatedResourceCounts
-            ?.find { parentResourceId.equals(it.parentResourceId, ignoreCase = true) }
-            ?.count
-            ?: 0
+      relatedResourceCounts
+        ?.find { parentResourceId.equals(it.parentResourceId, ignoreCase = true) }
+        ?.count
+        ?: 0
   }
 
   companion object {

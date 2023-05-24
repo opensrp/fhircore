@@ -223,12 +223,14 @@ constructor(
     questionnaire: Questionnaire,
     subjectId: String,
     subjectType: ResourceType,
+    configComputedRuleValues: Map<String, Any>
   ): QuestionnaireResponse {
     var questionnaireResponse =
       loadQuestionnaireResponse(subjectId, subjectType, questionnaire.logicalId)
 
     if (questionnaireResponse == null) {
-      val populationResources = loadPopulationResources(subjectId, subjectType)
+      val populationResources =
+        loadPopulationResources(subjectId, subjectType, configComputedRuleValues)
       questionnaireResponse = populateQuestionnaireResponse(questionnaire, populationResources)
     }
 
@@ -317,13 +319,16 @@ constructor(
    */
   private suspend fun loadPopulationResources(
     subjectId: String,
-    subjectType: ResourceType
+    subjectType: ResourceType,
+    configComputedRuleValues: Map<String, Any>
   ): ArrayList<Resource> {
     val populationResources = arrayListOf<Resource>()
     when (subjectType) {
       ResourceType.Patient -> {
         loadPatient(subjectId)?.run { populationResources.add(this) }
-        loadRelatedPerson(subjectId)?.run { populationResources.add(this) }
+        loadRelatedPerson(subjectId, configComputedRuleValues)?.run {
+          populationResources.add(this)
+        }
       }
       ResourceType.Group -> {
         loadGroup(subjectId)?.run { populationResources.add(this) }
@@ -347,12 +352,16 @@ constructor(
   }
 
   /** Loads a RelatedPerson resource that belongs to the given Patient ID. */
-  private suspend fun loadRelatedPerson(patientId: String): RelatedPerson? {
+  private suspend fun loadRelatedPerson(
+    patientId: String,
+    configComputedRuleValues: Map<String, Any>
+  ): RelatedPerson? {
     return registerRepository
       .searchResourceFor<RelatedPerson>(
         subjectType = ResourceType.Patient,
         subjectId = patientId,
         subjectParam = RelatedPerson.PATIENT,
+        configComputedRuleValues = configComputedRuleValues
       )
       .singleOrNull()
   }

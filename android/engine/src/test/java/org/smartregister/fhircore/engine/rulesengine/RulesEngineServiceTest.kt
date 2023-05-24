@@ -73,11 +73,13 @@ class RulesEngineServiceTest : RobolectricTest() {
   @Test
   fun testComputeTotalCountShouldReturnSumOfAllCounts() {
     val totalCount =
-        rulesEngineService.computeTotalCount(
-            listOf(
-                RelatedResourceCount(relatedResourceType = ResourceType.Task, "abc", 20),
-                RelatedResourceCount(relatedResourceType = ResourceType.Task, "zyx", 40),
-                RelatedResourceCount(relatedResourceType = ResourceType.Task, "xyz", 40)))
+      rulesEngineService.computeTotalCount(
+        listOf(
+          RelatedResourceCount(relatedResourceType = ResourceType.Task, "abc", 20),
+          RelatedResourceCount(relatedResourceType = ResourceType.Task, "zyx", 40),
+          RelatedResourceCount(relatedResourceType = ResourceType.Task, "xyz", 40)
+        )
+      )
     Assert.assertEquals(100, totalCount)
 
     Assert.assertEquals(0, rulesEngineService.computeTotalCount(emptyList()))
@@ -87,10 +89,11 @@ class RulesEngineServiceTest : RobolectricTest() {
   @Test
   fun testRetrieveCountShouldReturnExactCount() {
     val relatedResourceCounts =
-        listOf(
-            RelatedResourceCount(relatedResourceType = ResourceType.Task, "abc", 20),
-            RelatedResourceCount(relatedResourceType = ResourceType.Task, "zyx", 40),
-            RelatedResourceCount(relatedResourceType = ResourceType.Task, "xyz", 40))
+      listOf(
+        RelatedResourceCount(relatedResourceType = ResourceType.Task, "abc", 20),
+        RelatedResourceCount(relatedResourceType = ResourceType.Task, "zyx", 40),
+        RelatedResourceCount(relatedResourceType = ResourceType.Task, "xyz", 40)
+      )
     val theCount = rulesEngineService.retrieveCount("xyz", relatedResourceCounts)
     Assert.assertEquals(40, theCount)
 
@@ -104,12 +107,12 @@ class RulesEngineServiceTest : RobolectricTest() {
     val limit2 = "18" // Under 18 years
     val simpleDateFormat = SDF_DD_MMM_YYYY
     val actualUnderFive =
-        rulesEngineService.calculateStartOrEndDateFromCriteria(limit1, "BELOW", simpleDateFormat)
+      rulesEngineService.calculateStartOrEndDateFromCriteria(limit1, "BELOW", simpleDateFormat)
     val actualUnder18 = rulesEngineService.calculateStartOrEndDateFromCriteria(limit2, "BELOW")
     val expectedUnderFive =
-        LocalDate.now().minusYears(limit1.toInt()).toDate().formatDate(simpleDateFormat)
+      LocalDate.now().minusYears(limit1.toInt()).toDate().formatDate(simpleDateFormat)
     val expectedUnder18 =
-        LocalDate.now().minusYears(limit2.toInt()).toDate().formatDate(simpleDateFormat)
+      LocalDate.now().minusYears(limit2.toInt()).toDate().formatDate(simpleDateFormat)
     Assert.assertEquals(expectedUnderFive, actualUnderFive)
     Assert.assertEquals(expectedUnder18, actualUnder18)
   }
@@ -117,8 +120,7 @@ class RulesEngineServiceTest : RobolectricTest() {
   fun testGetDateDifferenceFromYearsWithoutDateFormat() {
     val limit1 = "5" // Above 5 years
     val limit2 = "18" // Above 18 years
-    val actualUnderFive =
-      rulesEngineService.calculateStartOrEndDateFromCriteria(limit1, "ABOVE")
+    val actualUnderFive = rulesEngineService.calculateStartOrEndDateFromCriteria(limit1, "ABOVE")
     val actualUnder18 = rulesEngineService.calculateStartOrEndDateFromCriteria(limit2, "ABOVE")
     val expectedUnderFive =
       LocalDate.now().plusYears(limit1.toInt()).toDate().formatDate(SDF_YYYY_MM_DD)
