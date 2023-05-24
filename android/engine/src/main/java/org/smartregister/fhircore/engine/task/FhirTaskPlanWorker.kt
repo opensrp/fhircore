@@ -29,10 +29,16 @@ import dagger.assisted.AssistedInject
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.isReady
+import org.smartregister.fhircore.engine.util.extension.lastOffset
 import org.smartregister.fhircore.engine.util.extension.toCoding
+import org.smartregister.fhircore.engine.util.getLastOffset
 import timber.log.Timber
 
 @HiltWorker
@@ -41,17 +47,22 @@ class FhirTaskPlanWorker
 constructor(
   @Assisted val appContext: Context,
   @Assisted workerParams: WorkerParameters,
-  val fhirEngine: FhirEngine
+  val fhirEngine: FhirEngine,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val configurationRegistry: ConfigurationRegistry
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
-    Timber.i("Starting task scheduler")
 
-    // TODO also filter by date range for better performance
-    // TODO This is a temp fix for https://github.com/google/android-fhir/issues/1825 - search fails
-    // due to indexing outdated resources
-    fhirEngine
-      .search<Task> {
+    val appConfig =
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+    val batchSize = appConfig.taskBackgroundWorkerBatchSize
+    val lastOffset =
+      sharedPreferencesHelper.read(key = WORK_ID.lastOffset(), defaultValue = "0")!!.toInt()
+
+    Timber.e("Done task scheduling")
+    val tasks =
+      fhirEngine.search<Task> {
         filter(
           Task.STATUS,
           { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
@@ -60,38 +71,35 @@ constructor(
           { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
           { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
         )
-      }
-      .asSequence()
-      .filter {
-        it.status == Task.TaskStatus.REQUESTED ||
-          it.status == Task.TaskStatus.READY ||
-          it.status == Task.TaskStatus.ACCEPTED ||
-          it.status == Task.TaskStatus.INPROGRESS ||
-          it.status == Task.TaskStatus.RECEIVED
-      }
-      .forEach { task ->
-        if (task.hasPastEnd()) {
-          task.status = Task.TaskStatus.FAILED
-          fhirEngine.update(task)
-          task
-            .basedOn
-            .find { it.reference.startsWith(ResourceType.CarePlan.name) }
-            ?.extractId()
-            ?.takeIf { it.isNotBlank() }
-            ?.let {
-              val carePlan = fhirEngine.get<CarePlan>(it)
-              if (carePlan.isLastTask(task)) {
-                carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-                fhirEngine.update(carePlan)
-              }
-            }
-        } else if (task.isReady() && task.status == Task.TaskStatus.REQUESTED) {
-          task.status = Task.TaskStatus.READY
-          fhirEngine.update(task)
-        }
+        from = if (lastOffset > 0) lastOffset + 1 else 0
+        count = batchSize
       }
 
-    Timber.i("Done task scheduling")
+    tasks.forEach { task ->
+      if (task.hasPastEnd()) {
+        task.status = Task.TaskStatus.FAILED
+        fhirEngine.update(task)
+        task
+          .basedOn
+          .find { it.reference.startsWith(ResourceType.CarePlan.name) }
+          ?.extractId()
+          ?.takeIf { it.isNotBlank() }
+          ?.let {
+            val carePlan = fhirEngine.get<CarePlan>(it)
+            if (carePlan.isLastTask(task)) {
+              carePlan.status = CarePlan.CarePlanStatus.COMPLETED
+              fhirEngine.update(carePlan)
+            }
+          }
+      } else if (task.isReady() && task.status == Task.TaskStatus.REQUESTED) {
+        task.status = Task.TaskStatus.READY
+        fhirEngine.update(task)
+      }
+    }
+
+    val updatedLastOffset =
+      getLastOffset(items = tasks, lastOffset = lastOffset, batchSize = batchSize)
+    sharedPreferencesHelper.write(key = WORK_ID.lastOffset(), value = updatedLastOffset.toString())
     return Result.success()
   }
 
