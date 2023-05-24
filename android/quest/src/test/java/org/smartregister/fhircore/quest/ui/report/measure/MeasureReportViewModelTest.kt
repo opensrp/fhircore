@@ -83,7 +83,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   @get:Rule(order = 1)
   val coroutinesTestRule = CoroutineTestRule()
   @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
-  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportSubjectViewDataMapper
+  @Inject lateinit var measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
   @Inject lateinit var registerRepository: RegisterRepository
   @Inject lateinit var defaultRepository: DefaultRepository
   @Inject lateinit var rulesExecutor: RulesExecutor
@@ -117,7 +117,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
           fhirOperator = fhirOperator,
           sharedPreferencesHelper = sharedPreferencesHelper,
           dispatcherProvider = mockk(),
-          measureReportSubjectViewDataMapper = measureReportPatientViewDataMapper,
+          measureReportSubjectViewDataMapper = measureReportSubjectViewDataMapper,
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
           defaultRepository = defaultRepository,
@@ -186,7 +186,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
         url = "http://nourl.com",
         module = "Module1"
       )
-    val samplePatientViewData =
+    val sampleSubjectViewData =
       mutableSetOf(
         MeasureReportSubjectViewData(
           type = ResourceType.Patient,
@@ -198,7 +198,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
     measureReportViewModel.measureReportConfigList.add(measureReportConfig)
     measureReportViewModel.reportTypeSelectorUiState.value =
-      ReportTypeSelectorUiState("21 Jan, 2022", "21 Feb, 2022", false, samplePatientViewData)
+      ReportTypeSelectorUiState("21 Jan, 2022", "21 Feb, 2022", false, sampleSubjectViewData)
 
     measureReportViewModel.onEvent(
       MeasureReportEvent.GenerateReport(context = application, navController = navController),
@@ -252,20 +252,20 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnEventOnPatientSelected() {
-    val samplePatientViewData =
+  fun testOnEventOnSubjectSelected() {
+    val sampleSubjectViewData =
       MeasureReportSubjectViewData(
         type = ResourceType.Patient,
         logicalId = "member1",
         display = "Willy Mark, M, 28",
         family = "Orion"
       )
-    measureReportViewModel.onEvent(MeasureReportEvent.OnSubjectSelected(samplePatientViewData))
-    val patientViewData =
+    measureReportViewModel.onEvent(MeasureReportEvent.OnSubjectSelected(sampleSubjectViewData))
+    val subjectViewData =
       measureReportViewModel.reportTypeSelectorUiState.value.subjectViewData.firstOrNull()
-    Assert.assertNotNull(samplePatientViewData.logicalId, patientViewData?.logicalId)
-    Assert.assertNotNull(samplePatientViewData.display, patientViewData?.display)
-    Assert.assertNotNull(samplePatientViewData.family, patientViewData?.family)
+    Assert.assertNotNull(sampleSubjectViewData.logicalId, subjectViewData?.logicalId)
+    Assert.assertNotNull(sampleSubjectViewData.display, subjectViewData?.display)
+    Assert.assertNotNull(sampleSubjectViewData.family, subjectViewData?.family)
   }
 
   @Test
@@ -327,7 +327,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun testFormatMeasureReportsForPatient() = runTest {
+  fun testFormatMeasureReportsForSubject() = runTest {
     measureReport.type = MeasureReportType.SUMMARY
     measureReport.contained.clear()
     measureReport.contained.add(
@@ -418,7 +418,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun reportMeasuresListThrowsExceptionIfPatientRegisterMissing() {
+  fun reportMeasuresListThrowsExceptionIfSubjectRegisterMissing() {
     assertFailsWith<java.util.NoSuchElementException> {
       measureReportViewModel.reportMeasuresList(invalidReportId)
     }
