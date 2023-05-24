@@ -117,12 +117,7 @@ constructor(
 
         val task = welcomeServiceTask(taskId, taskDescription, patient)
         addActivity().apply {
-          addOutcomeReference(
-            Reference().apply {
-              reference = taskId
-              display = taskDescription
-            }
-          )
+          addOutcomeReference(task.asReference().apply { display = taskDescription })
 
           detail =
             CarePlan.CarePlanActivityDetailComponent().apply {
@@ -142,45 +137,6 @@ constructor(
       }
     }
   }
-
-  private fun CarePlan.welcomeServiceTask(
-    taskId: String,
-    taskDescription: String,
-    patient: Patient
-  ) =
-    Task().apply {
-      status = Task.TaskStatus.READY
-      intent = Task.TaskIntent.PLAN
-      priority = Task.TaskPriority.ROUTINE
-      description = taskDescription
-      val dateNow = DateTimeType.now().value
-      authoredOn = dateNow
-      lastModified = dateNow
-      `for` = patient.asReference()
-      executionPeriod = period.copy().apply { start = dateNow }
-      requester = author
-      owner = author
-      addIdentifier(
-        Identifier().apply {
-          value = taskId
-          use = Identifier.IdentifierUse.OFFICIAL
-        }
-      )
-      id = taskId
-      meta =
-        Meta()
-          .addTag(
-            Coding().apply {
-              system = "https://d-tree.org"
-              code = "clinic-visit-task-order-11"
-            }
-          )
-      reasonReference =
-        Reference().apply {
-          reference = "Questionnaire/art-client-welcome-service-back-to-care"
-          display = taskDescription
-        }
-    }
 
   private suspend fun Patient.activeCarePlan() =
     fhirEngine
@@ -209,3 +165,42 @@ constructor(
       )
   }
 }
+
+internal fun CarePlan.welcomeServiceTask(
+  taskId: String,
+  taskDescription: String,
+  patient: Patient
+) =
+  Task().apply {
+    status = Task.TaskStatus.READY
+    intent = Task.TaskIntent.PLAN
+    priority = Task.TaskPriority.ROUTINE
+    description = taskDescription
+    val dateNow = DateTimeType.now().value
+    authoredOn = dateNow
+    lastModified = dateNow
+    `for` = patient.asReference()
+    executionPeriod = period.copy().apply { start = dateNow }
+    requester = author
+    owner = author
+    addIdentifier(
+      Identifier().apply {
+        value = taskId
+        use = Identifier.IdentifierUse.OFFICIAL
+      }
+    )
+    id = taskId
+    meta =
+      Meta()
+        .addTag(
+          Coding().apply {
+            system = "https://d-tree.org"
+            code = "clinic-visit-task-order-11"
+          }
+        )
+    reasonReference =
+      Reference().apply {
+        reference = "Questionnaire/art-client-welcome-service-back-to-care"
+        display = taskDescription
+      }
+  }
