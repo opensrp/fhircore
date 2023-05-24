@@ -25,8 +25,6 @@ import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.ResourceSyncException
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJobStatus
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.perf.ktx.performance
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -43,6 +41,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import timber.log.Timber
@@ -59,9 +58,9 @@ constructor(
   val fhirEngine: FhirEngine,
   val sharedSyncStatus: MutableSharedFlow<SyncJobStatus> = MutableSharedFlow(),
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider(),
+  val tracer: PerformanceReporter,
   @ApplicationContext val appContext: Context
 ) {
-  val syncTrace = Firebase.performance.newTrace("sync")
   /**
    * Workaround to ensure terminal SyncJobStatus, i.e SyncJobStatus.Failed and
    * SyncJobStatus.Finished, get emitted
@@ -93,9 +92,9 @@ constructor(
           Sync.oneTimeSync<AppSyncWorker>(appContext)
           getWorkerInfo<AppSyncWorker>().collect {
             if (it is SyncJobStatus.Started) {
-              syncTrace.start()
+              tracer.startTrace(SYNC_TRACE)
             } else if (it !is SyncJobStatus.InProgress) {
-              syncTrace.stop()
+              tracer.stopTrace(SYNC_TRACE)
             }
             sharedSyncStatus.emit(it)
           }
@@ -114,6 +113,7 @@ constructor(
   }
 
   companion object {
+    const val SYNC_TRACE = "runSync"
     const val DEFAULT_SYNC_INTERVAL: Long = 15
   }
 }

@@ -27,6 +27,7 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.UninstallModules
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
@@ -52,12 +53,16 @@ import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurati
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.di.AnalyticsModule
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
+import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
+@UninstallModules(AnalyticsModule::class)
 @HiltAndroidTest
 class LoginActivityTest : ActivityRobolectricTest() {
 
@@ -82,6 +87,8 @@ class LoginActivityTest : ActivityRobolectricTest() {
   private lateinit var loginService: LoginService
 
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
+
+  @BindValue @JvmField val performanceReporter: PerformanceReporter = FakePerformanceReporter()
 
   @Before
   fun setUp() {

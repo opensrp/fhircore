@@ -39,8 +39,6 @@ import com.google.android.fhir.datacapture.extensions.isPaginated
 import com.google.android.fhir.datacapture.validation.Invalid
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.logicalId
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.perf.ktx.performance
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -53,6 +51,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
@@ -66,7 +65,6 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.showToast
-import org.smartregister.fhircore.engine.util.trace
 import timber.log.Timber
 
 /**
@@ -81,6 +79,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
+
+  @Inject lateinit var tracer: PerformanceReporter
 
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
@@ -97,8 +97,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   private val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   private lateinit var saveProcessingAlertDialog: AlertDialog
-
-  val questionnaireTrace = Firebase.performance.newTrace("Questionnaire.renderFragment")
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
@@ -122,7 +120,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     lifecycleScope.launch {
       withContext(dispatcherProvider.io()) {
-        trace("Questionnaire.loadQuestionnaireAndConfig") {
+        tracer.traceSuspend("Questionnaire.loadQuestionnaireAndConfig") {
           loadQuestionnaireAndConfig(formName)
           questionnaireViewModel.libraryEvaluator.initialize()
         }
@@ -153,7 +151,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   private suspend fun renderFragment() {
-    questionnaireTrace.start()
+    tracer.startTrace(QUESTIONNAIRE_TRACE)
     val questionnaireString = parser.encodeResourceToString(questionnaire)
     val questionnaireResponse: QuestionnaireResponse?
     if (clientIdentifier != null) {
@@ -194,7 +192,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           savedInstanceState: Bundle?
         ) {
           super.onFragmentCreated(fm, f, savedInstanceState)
-          questionnaireTrace.stop()
+          tracer.startTrace(QUESTIONNAIRE_TRACE)
         }
 
         override fun onFragmentViewCreated(
@@ -479,6 +477,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_AGE = "PR-age"
     const val QUESTIONNAIRE_LAUNCH_CONTEXT =
       "org.smartregister.fhircore.engine.ui.questionnaire.launchContext"
+    const val QUESTIONNAIRE_TRACE = "Questionnaire.renderFragment"
 
     fun intentArgs(
       clientIdentifier: String? = null,

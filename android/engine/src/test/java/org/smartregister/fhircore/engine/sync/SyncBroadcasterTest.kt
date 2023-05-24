@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
 
 @ExperimentalCoroutinesApi
 class SyncBroadcasterTest : RobolectricTest() {
@@ -61,7 +62,8 @@ class SyncBroadcasterTest : RobolectricTest() {
         fhirEngine = mockk(),
         sharedSyncStatus,
         dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
-        appContext = context
+        appContext = context,
+        tracer = FakePerformanceReporter()
       )
     val collectedSyncStatusList = mutableListOf<SyncJobStatus>()
     val job =

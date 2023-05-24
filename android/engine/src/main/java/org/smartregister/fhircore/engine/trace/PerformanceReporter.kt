@@ -14,16 +14,25 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util
+package org.smartregister.fhircore.engine.trace
 
-import com.google.firebase.perf.FirebasePerformance.startTrace
 import com.google.firebase.perf.metrics.Trace
 
-inline fun <E> trace(name: String, block: (Trace) -> E): E {
-  val trace = startTrace(name) // creates & starts a new Trace
-  return try {
-    block(trace)
-  } finally {
-    trace.stop()
-  }
+interface PerformanceReporter {
+
+  fun startTrace(traceName: String)
+
+  fun putMetric(traceName: String, metricName: String, value: Long)
+
+  fun putAttribute(traceName: String, attribute: String, value: String)
+
+  fun stopTrace(traceName: String)
+
+  fun clearTraces()
+
+  fun setEnabled(enabled: Boolean)
+
+  fun <E> trace(name: String, block: (Trace) -> E): E
+
+  suspend fun <E> traceSuspend(name: String, block: suspend (Trace) -> E): E
 }
