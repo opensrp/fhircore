@@ -51,7 +51,8 @@ class FirebasePerformanceReporter(private val firebasePerformance: FirebasePerfo
   }
 
   override fun <E> trace(name: String, block: (Trace) -> E): E {
-    val trace = FirebasePerformance.startTrace(name)
+    val trace = firebasePerformance.newTrace(name)
+    trace.start()
     return try {
       block(trace)
     } finally {
@@ -60,7 +61,8 @@ class FirebasePerformanceReporter(private val firebasePerformance: FirebasePerfo
   }
 
   override suspend fun <E> traceSuspend(name: String, block: suspend (Trace) -> E): E {
-    val trace = FirebasePerformance.startTrace(name)
+    val trace = firebasePerformance.newTrace(name)
+    trace.start()
     return try {
       block(trace)
     } finally {
