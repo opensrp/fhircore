@@ -86,7 +86,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
             enableAutoFragmentLifecycleTracing = true
           )
         )
-        options.environment = URL(BuildConfig.FHIR_BASE_URL).getSubDomain().replace('-', '.')
+        options.environment = URL(BuildConfig.FHIR_BASE_URL)?.getSubDomain()?.replace('-', '.')
       }
 
       SentryAndroid.init(this, sentryConfiguration)
