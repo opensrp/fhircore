@@ -314,6 +314,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     val questionnaireResponse = getQuestionnaireResponse()
     if (!validQuestionnaireResponse(questionnaireResponse)) {
       saveProcessingAlertDialog.dismiss()
+      saveProcessingAlertDialog.dismiss()
 
       AlertDialogue.showErrorAlert(
         this,

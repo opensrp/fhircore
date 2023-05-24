@@ -75,6 +75,7 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
@@ -153,12 +154,16 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
       Questionnaire().apply { id = "12345" }
 
+    buildActivity(buildQuestionnaireWithConstraints(), questionnaireConfig)
+  }
+
+  private fun buildActivity(questionnaire: Questionnaire, questionnaireConfig: QuestionnaireConfig){
     questionnaireFragment = spyk()
 
     questionnaireFragment.apply {
       arguments =
         bundleOf(
-          Pair("questionnaire", buildQuestionnaireWithConstraints().encodeResourceToString())
+          Pair("questionnaire", questionnaire.encodeResourceToString())
         )
     }
 
@@ -931,6 +936,24 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         "questionnaireResponse"
       )
     Assert.assertNotNull("Questionnaire Response is null", questionnaireResponse)
+  }
+
+  @Test
+  fun `test covid 19 vaccines questionnaire on followup`() {
+    val questionnaire = "covid-19-followup-questionnaire.json".readFile().decodeResourceFromString<Questionnaire>()
+    buildActivity(questionnaire, questionnaireConfig)
+
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
+
+    val questionnaireResponse = questionnaireActivity.getQuestionnaireResponse()
+
+    Assert.assertNotNull(questionnaireResponse.id)
+    Assert.assertNotNull(questionnaireResponse.authored)
+    Assert.assertEquals(
+      "Patient/${questionnaireConfig.resourceIdentifier}",
+      questionnaireResponse.subject.reference
+    )
+    Assert.assertEquals("Questionnaire/12345", questionnaireResponse.questionnaire)
   }
 
   override fun getActivity(): Activity {
