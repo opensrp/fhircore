@@ -32,7 +32,7 @@ import timber.log.Timber
 abstract class RulesListener : RuleListener {
   protected var facts: Facts = Facts()
   protected val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
-  protected val jexlEngine: JexlEngine by lazy {
+  private val jexlEngine: JexlEngine by lazy {
     JexlBuilder()
       .namespaces(
         mutableMapOf<String, Any>(

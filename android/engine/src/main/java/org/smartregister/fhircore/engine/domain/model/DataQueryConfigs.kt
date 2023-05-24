@@ -50,7 +50,7 @@ sealed class FilterCriterionConfig : Parcelable {
     val prefix: ParamPrefixEnum? = null,
     @Serializable(with = BigDecimalSerializer::class) val value: BigDecimal? = null,
     val system: String? = null,
-    val unit: String? = null,
+    val unit: String? = null
   ) : FilterCriterionConfig(), Parcelable
 
   @Serializable
