@@ -26,7 +26,7 @@ import org.smartregister.fhircore.engine.util.extension.interpolate
 data class CompoundTextProperties(
   override val viewType: ViewType = ViewType.COMPOUND_TEXT,
   override val weight: Float = 0f,
-  override var backgroundColor: String? = null,
+  override val backgroundColor: String? = null,
   override val padding: Int = 0,
   override val borderRadius: Int = 2,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
@@ -52,7 +52,9 @@ data class CompoundTextProperties(
   val overflow: TextOverFlow? = null
 ) : ViewProperties() {
   override fun interpolate(computedValuesMap: Map<String, Any>): CompoundTextProperties {
-    return (super.interpolate(computedValuesMap) as CompoundTextProperties).copy(
+    return this.copy(
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap),
       primaryText = primaryText?.interpolate(computedValuesMap),
       secondaryText = secondaryText?.interpolate(computedValuesMap),
       primaryTextColor = primaryTextColor?.interpolate(computedValuesMap),

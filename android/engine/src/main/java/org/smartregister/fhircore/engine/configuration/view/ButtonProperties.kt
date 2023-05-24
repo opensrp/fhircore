@@ -31,14 +31,14 @@ import org.smartregister.fhircore.engine.util.extension.interpolate
 data class ButtonProperties(
   override val viewType: ViewType = ViewType.BUTTON,
   override val weight: Float = 0f,
-  override var backgroundColor: String? = null,
+  override val backgroundColor: String? = null,
   override val padding: Int = 0,
   override val borderRadius: Int = 2,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = true,
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
-  override var visible: String = "true",
+  override val visible: String = "true",
   val enabled: String = "true",
   val text: String? = null,
   val status: String,
@@ -63,7 +63,9 @@ data class ButtonProperties(
     }
   }
   override fun interpolate(computedValuesMap: Map<String, Any>): ButtonProperties {
-    return (super.interpolate(computedValuesMap) as ButtonProperties).copy(
+    return this.copy(
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap),
       status = interpolateStatus(computedValuesMap).name,
       text = text?.interpolate(computedValuesMap),
       enabled = enabled.interpolate(computedValuesMap)

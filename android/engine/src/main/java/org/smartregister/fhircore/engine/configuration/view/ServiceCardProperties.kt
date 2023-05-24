@@ -19,23 +19,31 @@ package org.smartregister.fhircore.engine.configuration.view
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
 data class ServiceCardProperties(
   override val viewType: ViewType = ViewType.SERVICE_CARD,
   override val weight: Float = 0f,
-  override var backgroundColor: String? = "#FFFFFF",
+  override val backgroundColor: String? = "#FFFFFF",
   override val padding: Int = 0,
   override val borderRadius: Int = 2,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "true",
-  override var visible: String = "true",
+  override val visible: String = "true",
   val details: List<CompoundTextProperties> = emptyList(),
   val showVerticalDivider: Boolean = false,
   val serviceMemberIcons: String? = null,
   val serviceButton: ButtonProperties? = null,
   val services: List<ButtonProperties>? = null,
   val actions: List<ActionConfig> = emptyList()
-) : ViewProperties()
+) : ViewProperties() {
+  override fun interpolate(computedValuesMap: Map<String, Any>): ServiceCardProperties {
+    return this.copy(
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap)
+    )
+  }
+}

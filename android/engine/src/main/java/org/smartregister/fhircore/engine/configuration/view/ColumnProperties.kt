@@ -19,24 +19,32 @@ package org.smartregister.fhircore.engine.configuration.view
 import androidx.compose.foundation.layout.Arrangement
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
 data class ColumnProperties(
   override val viewType: ViewType,
   override val weight: Float = 0f,
-  override var backgroundColor: String? = null,
+  override val backgroundColor: String? = null,
   override val padding: Int = 0,
   override val borderRadius: Int = 0,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
-  override var visible: String = "true",
+  override val visible: String = "true",
   val spacedBy: Int = 8,
   val wrapContent: Boolean = false,
   val arrangement: ColumnArrangement? = null,
   val children: List<ViewProperties> = emptyList(),
-) : ViewProperties()
+) : ViewProperties() {
+  override fun interpolate(computedValuesMap: Map<String, Any>): ColumnProperties {
+    return this.copy(
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap)
+    )
+  }
+}
 
 enum class ColumnArrangement(val position: Arrangement.Vertical) {
   SPACE_BETWEEN(Arrangement.SpaceBetween),
