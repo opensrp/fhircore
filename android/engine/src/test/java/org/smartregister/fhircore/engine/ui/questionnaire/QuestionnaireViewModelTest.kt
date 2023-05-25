@@ -86,6 +86,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
@@ -143,7 +144,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           transformSupportServices = mockk(),
           dispatcherProvider = defaultRepo.dispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
-          libraryEvaluator = libraryEvaluator
+          libraryEvaluator = libraryEvaluator,
+          tracer = FakePerformanceReporter()
         )
       )
 

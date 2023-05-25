@@ -86,7 +86,8 @@ class UserProfileViewModelTest : RobolectricTest() {
         fhirEngine = mockk(),
         sharedSyncStatus,
         dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
-        appContext = context
+        appContext = context,
+        tracer = mockk()
       )
   }
 

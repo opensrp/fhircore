@@ -16,36 +16,160 @@
 
 package org.smartregister.fhircore.engine.sync
 
+import android.content.Context
+import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import androidx.work.workDataOf
+import com.google.android.fhir.OffsetDateTimeTypeAdapter
 import com.google.android.fhir.sync.SyncJobStatus
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.slot
+import io.mockk.unmockkAll
 import io.mockk.verify
+import java.time.OffsetDateTime
+import java.util.UUID
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
+import org.smartregister.fhircore.engine.trace.PerformanceReporter
 
 @ExperimentalCoroutinesApi
 class SyncBroadcasterTest : RobolectricTest() {
 
   private lateinit var syncBroadcaster: SyncBroadcaster
+  private lateinit var workManager: WorkManager
+  private val sharedSyncStatus: MutableSharedFlow<SyncJobStatus> = MutableSharedFlow()
+  private lateinit var tracer: PerformanceReporter
+
+  @Before
+  fun setUp() {
+    val appContext = ApplicationProvider.getApplicationContext<HiltTestApplication>()
+    mockkStatic(WorkManager::class)
+    workManager = mockk()
+    tracer = mockk()
+
+    val mutableLiveData = MutableLiveData(listOf<WorkInfo>())
+    every { WorkManager.getInstance(appContext) } returns workManager
+    every { workManager.getWorkInfosForUniqueWorkLiveData(any()) } returns mutableLiveData
+    val workRequestSlot = slot<OneTimeWorkRequest>()
+    every { workManager.enqueueUniqueWork(any(), any(), capture(workRequestSlot)) } answers
+      {
+        mockk()
+      }
+    every { WorkManager.getInstance(any()) } returns workManager
+
+    every { tracer.startTrace(any()) } returns Unit
+    every { tracer.stopTrace(any()) } returns Unit
+
+    syncBroadcaster =
+      SyncBroadcaster(
+        configurationRegistry = mockk(),
+        configService = mockk(),
+        fhirEngine = mockk(),
+        sharedSyncStatus = sharedSyncStatus,
+        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
+        tracer = tracer,
+        appContext = mockk(relaxed = true)
+      )
+  }
+
+  @After
+  fun tearDown() {
+    // Clean up mocks
+    unmockkAll()
+    Dispatchers.resetMain()
+  }
 
   @Test
-  fun runSync() = runTest {
-    syncBroadcaster = mockk()
-    every { syncBroadcaster.runSync() } returns Unit
-    syncBroadcaster.runSync()
-    verify { syncBroadcaster.runSync() }
+  fun `runSync should initiate one-time sync when network is available`() = runTest {
+    val networkState: (Context) -> Boolean = { true }
+    val gson: Gson =
+      GsonBuilder()
+        .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeTypeAdapter().nullSafe())
+        .create()
+
+    val workInfo =
+      WorkInfo(
+        UUID(0, 0),
+        WorkInfo.State.SUCCEEDED,
+        Data.EMPTY,
+        listOf(),
+        workDataOf(
+          "StateType" to SyncJobStatus.Started::class.java.name,
+          "State" to gson.toJson(SyncJobStatus.Started())
+        ),
+        0
+      )
+    val inProgressInfo =
+      WorkInfo(
+        UUID(0, 0),
+        WorkInfo.State.SUCCEEDED,
+        Data.EMPTY,
+        listOf(),
+        workDataOf(
+          "StateType" to SyncJobStatus.Finished::class.java.name,
+          "State" to gson.toJson(SyncJobStatus.Finished())
+        ),
+        0
+      )
+
+    every { workManager.getWorkInfosForUniqueWorkLiveData(AppSyncWorker::class.java.name) } returns
+      MutableLiveData(mutableListOf(workInfo, inProgressInfo))
+
+    val collectedSyncStatusList = mutableListOf<SyncJobStatus>()
+    val job =
+      launch(UnconfinedTestDispatcher(testScheduler)) {
+        sharedSyncStatus.toList(collectedSyncStatusList)
+      }
+
+    syncBroadcaster.runSync(networkState)
+
+    Assert.assertTrue(collectedSyncStatusList.first() is SyncJobStatus.Started)
+    Assert.assertTrue(collectedSyncStatusList.last() is SyncJobStatus.Finished)
+
+    verify { tracer.startTrace(any()) }
+    verify { tracer.stopTrace(any()) }
+
+    job.cancel()
+  }
+
+  @Test
+  fun `runSync should emit failed status when network is unavailable`() = runTest {
+    val networkState: (Context) -> Boolean = { false }
+
+    val collectedSyncStatusList = mutableListOf<SyncJobStatus>()
+    val job =
+      launch(UnconfinedTestDispatcher(testScheduler)) {
+        sharedSyncStatus.toList(collectedSyncStatusList)
+      }
+
+    syncBroadcaster.runSync(networkState)
+
+    Assert.assertTrue(collectedSyncStatusList.first() is SyncJobStatus.Failed)
+    job.cancel()
   }
 
   @Test
@@ -61,7 +185,8 @@ class SyncBroadcasterTest : RobolectricTest() {
         fhirEngine = mockk(),
         sharedSyncStatus,
         dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
-        appContext = context
+        appContext = context,
+        tracer = FakePerformanceReporter()
       )
     val collectedSyncStatusList = mutableListOf<SyncJobStatus>()
     val job =
