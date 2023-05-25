@@ -660,7 +660,7 @@ constructor(
     }
     var populationResources = ArrayList<Resource>()
     if (questionnaireResponse == null) {
-      if (subjectType == ResourceType.Task) {
+      if (!subjectType.isIn(ResourceType.Group, ResourceType.Patient)) {
         if (questionnaireConfig.resourceIdentifier != null &&
             questionnaireConfig.resourceType != null
         ) {
@@ -759,21 +759,9 @@ constructor(
     subjectType: ResourceType
   ): ArrayList<Resource> {
     val populationResources = arrayListOf<Resource>()
-    when (subjectType) {
-      ResourceType.Patient -> {
-        loadPatient(subjectId)?.run { populationResources.add(this) }
-        loadRelatedPerson(subjectId)?.run { populationResources.add(this) }
-      }
-      ResourceType.Group -> {
-        loadGroup(subjectId)?.run { populationResources.add(this) }
-      }
-      ResourceType.Task -> {
-        loadTask(subjectId)?.run { populationResources.add(this) }
-      }
-      else -> {
-        Timber.tag("QuestionnaireViewModel.loadPopulationResources")
-          .d("$subjectType resource type is not supported to load populated resources!")
-      }
+    populationResources.add(defaultRepository.loadResource(subjectId, subjectType))
+    if (subjectType == ResourceType.Patient) {
+      loadRelatedPerson(subjectId)?.run { populationResources.add(this) }
     }
     return populationResources
   }
