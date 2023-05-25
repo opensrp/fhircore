@@ -26,6 +26,8 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.data.domain.Guardian
 import org.smartregister.fhircore.engine.domain.model.FormButtonData
+import org.smartregister.fhircore.engine.domain.model.TracingAttempt
+import org.smartregister.fhircore.engine.util.extension.extractedTracingCategoryIsPhone
 import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberViewState
 
 sealed class ProfileViewData(
@@ -57,6 +59,11 @@ sealed class ProfileViewData(
     val otherPatients: List<Resource> = emptyList(),
     val viewChildText: String = "",
     val guardians: List<Guardian> = emptyList(),
+    val tracingTask: Task = Task(),
+    val addressDistrict: String = "",
+    val addressTracingCatchment: String = "",
+    val addressPhysicalLocator: String = "",
+    val phoneContacts: List<String> = emptyList(),
     val observations: List<Observation> = emptyList(),
     val practitioners: List<Practitioner> = emptyList()
   ) : ProfileViewData(name = name, logicalId = logicalId, identifier = identifier) {
@@ -72,6 +79,10 @@ sealed class ProfileViewData(
       val resourcesAsBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
       arrayListOf(*carePlans.toTypedArray(), *practitioners.toTypedArray(), resourcesAsBundle)
     }
+
+    // todo : apply filter on tracingTask->meta to check patient is valid for Home or Phone Tracing
+    val validForHomeTrace = false
+    val validForPhoneTracing = tracingTask.extractedTracingCategoryIsPhone("https://d-tree.org")
   }
 
   data class FamilyProfileViewData(
@@ -81,4 +92,44 @@ sealed class ProfileViewData(
     val age: String = "",
     val familyMemberViewStates: List<FamilyMemberViewState> = emptyList()
   ) : ProfileViewData(logicalId = logicalId, name = name)
+
+  data class TracingProfileData(
+    override val logicalId: String = "",
+    override val name: String = "",
+    val isHomeTracing: Boolean? = null,
+    val sex: String = "",
+    val age: String = "",
+    val dueDate: String? = null,
+    override val identifier: String? = null,
+    val identifierKey: String = "",
+    val currentAttempt: TracingAttempt? = null,
+    val showIdentifierInProfile: Boolean = false,
+    val addressDistrict: String = "",
+    val addressTracingCatchment: String = "",
+    val addressPhysicalLocator: String = "",
+    val phoneContacts: List<String> = emptyList(),
+    val tracingTasks: List<Task> = emptyList(),
+    val carePlans: List<CarePlan> = emptyList(),
+    val guardians: List<Guardian> = emptyList(),
+    val practitioners: List<Practitioner> = emptyList(),
+    val conditions: List<Condition> = emptyList(),
+  ) : ProfileViewData(logicalId = logicalId, name = name) {
+    val guardiansRelatedPersonResource =
+      guardians.filterIsInstance<RelatedPerson>().filter { it.telecomFirstRep.hasValue() }
+    val populationResources: ArrayList<Resource> by lazy {
+      val resources = conditions + guardiansRelatedPersonResource
+      val resourcesAsBundle = Bundle().apply { resources.map { this.addEntry().resource = it } }
+      arrayListOf(*carePlans.toTypedArray(), *practitioners.toTypedArray(), resourcesAsBundle)
+    }
+    val hasFinishedAttempts: Boolean =
+      currentAttempt.run {
+        isHomeTracing?.let {
+          val maxAttempts = if (it) 3 else 2
+          if (this != null) {
+            return@run this.numberOfAttempts >= maxAttempts
+          }
+        }
+        return@run true
+      }
+  }
 }

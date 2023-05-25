@@ -90,10 +90,24 @@ sealed class RegisterData(open val logicalId: String, open val name: String) {
     val identifier: String? = null,
     val gender: Enumerations.AdministrativeGender,
     val age: String,
-    val address: String,
+    val healthStatus: HealthStatus,
+    val isPregnant: Boolean,
+    val isBreastfeeding: Boolean,
+    val reasons: List<String> = emptyList(),
+  ) : RegisterData(logicalId = logicalId, name = name)
+
+  data class TracingRegisterData(
+    override val logicalId: String,
+    override val name: String,
+    val identifier: String? = null,
+    val gender: Enumerations.AdministrativeGender,
     val familyName: String? = null,
-    val phoneContacts: List<String>? = null,
-    val practitioners: List<Reference>? = null,
-    val chwAssigned: String
+    val healthStatus: HealthStatus,
+    val isPregnant: Boolean = false,
+    val isBreastfeeding: Boolean = false,
+    val attempts: Int,
+    val lastAttemptDate: Date? = null,
+    val firstAdded: Date? = null, // date first assigned to tracing register
+    val reasons: List<String> = emptyList()
   ) : RegisterData(logicalId = logicalId, name = name)
 }

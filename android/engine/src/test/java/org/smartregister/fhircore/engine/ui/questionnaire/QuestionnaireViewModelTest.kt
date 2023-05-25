@@ -28,6 +28,7 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -45,12 +46,12 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Calendar
 import java.util.Date
-import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
@@ -606,11 +607,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testGetPopulationResourcesShouldReturnListOfResources() {
-
+  fun testGetPopulationResourcesShouldReturnListOfResources() = runTest {
     coEvery { questionnaireViewModel.loadPatient("2") } returns Patient().apply { id = "2" }
     coEvery { defaultRepo.loadRelatedPersons("2") } returns
       listOf(RelatedPerson().apply { id = "3" })
+
+    coEvery { fhirEngine.search<Appointment>(Search(ResourceType.Appointment)) } returns listOf()
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
     val questionnaire = Questionnaire()
 
@@ -624,12 +627,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
     intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "2")
 
-    runBlocking {
-      val resourceList =
-        questionnaireViewModel.getPopulationResources(intent, questionnaire.logicalId)
-      Assert.assertTrue(resourceList.any { it is Bundle })
-      Assert.assertEquals(4, resourceList.size)
-    }
+    val resourceList =
+      questionnaireViewModel.getPopulationResources(intent, questionnaire.logicalId)
+    Assert.assertTrue(resourceList.any { it is Bundle })
+    Assert.assertEquals(4, resourceList.size)
   }
 
   @Test

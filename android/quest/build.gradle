@@ -2,11 +2,12 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'kotlin-kapt'
-    id 'de.mannodermaus.android-junit5'
+    id 'de.mannodermaus.android-junit5' version '1.9.3.0'
     id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'jacoco'
     id 'dagger.hilt.android.plugin'
+    id 'org.jetbrains.kotlin.android'
     id 'com.google.firebase.firebase-perf'
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
@@ -99,7 +100,7 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
-        freeCompilerArgs = ['-Xjvm-default=compatibility', '-opt-in=kotlin.RequiresOptIn']
+        freeCompilerArgs = ['-Xjvm-default=all-compatibility', '-opt-in=kotlin.RequiresOptIn']
     }
 
     buildFeatures {
@@ -108,7 +109,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.1.1'
+        kotlinCompilerExtensionVersion '1.4.2'
     }
 
     testOptions {
@@ -185,12 +186,7 @@ android {
 dependencies {
     coreLibraryDesugaring deps.desugar
     implementation(project(":engine"))
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0'
-    implementation 'androidx.work:work-runtime-ktx:2.7.1'
-    implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
-    implementation deps.lifecycle.viewmodel
+    implementation 'androidx.ui:ui-foundation:0.1.0-dev14'
     implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
     implementation deps.accompanist.swiperefresh
 
@@ -211,7 +207,7 @@ dependencies {
     debugImplementation deps.fragment_testing
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'
 
     // analytics
     implementation platform('com.google.firebase:firebase-bom:31.2.0')
@@ -226,11 +222,19 @@ dependencies {
 
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
-    def composeVersion = "1.1.1"
+    def composeVersion = versions.compose
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 //     debugImplementation because LeakCanary should only run in debug builds.
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
 
-    testImplementation 'info.cqframework:cql-to-elm:1.5.0'
+    testImplementation 'info.cqframework:cql-to-elm:1.5.6'
+}
+
+kapt {
+    correctErrorTypes true
+}
+
+hilt {
+    enableAggregatingTask = true
 }
