@@ -80,7 +80,8 @@ class ProfileViewModelTest : RobolectricTest() {
           dispatcherProvider = DefaultDispatcherProvider(),
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
-          configService = mockk()
+          configService = mockk(),
+          dataQueryRulesExecutor = mockk()
         )
       )
     coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns
