@@ -148,12 +148,16 @@ constructor(
           )
         } else {
           if (accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)) {
+            try {
 
-            // Configure Sentry scope
-            Sentry.configureScope { scope ->
-              scope.setTag("versionCode", BuildConfig.VERSION_CODE.toString())
-              scope.setTag("versionName", BuildConfig.VERSION_NAME)
-              scope.user = User().apply { username = trimmedUsername }
+              // Configure Sentry scope
+              Sentry.configureScope { scope ->
+                scope.setTag("versionCode", BuildConfig.VERSION_CODE.toString())
+                scope.setTag("versionName", BuildConfig.VERSION_NAME)
+                scope.user = User().apply { username = trimmedUsername }
+              }
+            } catch (e: Exception) {
+              Timber.e(e)
             }
 
             _showProgressBar.postValue(false)
