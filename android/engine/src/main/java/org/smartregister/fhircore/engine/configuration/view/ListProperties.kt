@@ -22,6 +22,7 @@ import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.domain.model.ExtractedResource
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
 data class ListProperties(
@@ -41,7 +42,14 @@ data class ListProperties(
   val emptyList: NoResultsConfig? = null,
   val orientation: ListOrientation = ListOrientation.VERTICAL,
   val resources: List<ListResource> = emptyList()
-) : ViewProperties()
+) : ViewProperties() {
+  override fun interpolate(computedValuesMap: Map<String, Any>): ListProperties {
+    return this.copy(
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap)
+    )
+  }
+}
 
 enum class ListOrientation {
   VERTICAL,

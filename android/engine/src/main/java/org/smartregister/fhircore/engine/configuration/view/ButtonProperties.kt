@@ -62,13 +62,15 @@ data class ButtonProperties(
       ServiceStatus.IN_PROGRESS -> WarningColor
     }
   }
-  fun interpolate(computedValuesMap: Map<String, Any>) =
-    this.copy(
+  override fun interpolate(computedValuesMap: Map<String, Any>): ButtonProperties {
+    return this.copy(
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap),
       status = interpolateStatus(computedValuesMap).name,
-      backgroundColor = interpolateBackgroundColor(computedValuesMap),
-      enabled = enabled.interpolate(computedValuesMap),
-      text = text?.interpolate(computedValuesMap)
+      text = text?.interpolate(computedValuesMap),
+      enabled = enabled.interpolate(computedValuesMap)
     )
+  }
 
   private fun interpolateStatus(computedValuesMap: Map<String, Any>): ServiceStatus {
     val interpolated = this.status.interpolate(computedValuesMap)

@@ -88,7 +88,8 @@ class ConfigDownloadWorkerTest : RobolectricTest() {
       return ConfigDownloadWorker(
         appContext = appContext,
         workerParams = workerParameters,
-        configurationRegistry = configurationRegistry
+        configurationRegistry = configurationRegistry,
+        dispatcherProvider = coroutineTestRule.testDispatcherProvider
       )
     }
   }
