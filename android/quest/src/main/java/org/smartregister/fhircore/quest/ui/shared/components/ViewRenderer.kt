@@ -32,7 +32,6 @@ import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import org.smartregister.fhircore.quest.util.extensions.isVisible
 
 /**
  * This function takes a list of [ViewProperties] and build views recursively as configured in the
@@ -50,14 +49,12 @@ fun ViewRenderer(
   navController: NavController
 ) {
   viewProperties.forEach { properties ->
-    if (properties.isVisible(resourceData.computedValuesMap)) {
-      GenerateView(
-        modifier = generateModifier(properties),
-        properties = properties,
-        resourceData = resourceData,
-        navController = navController
-      )
-    }
+    GenerateView(
+      modifier = generateModifier(properties),
+      properties = properties.interpolate(resourceData.computedValuesMap),
+      resourceData = resourceData,
+      navController = navController
+    )
   }
 }
 

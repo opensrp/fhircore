@@ -158,9 +158,6 @@ fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = tr
 fun ViewProperties.clickable(ResourceData: ResourceData) =
   this.clickable.interpolate(ResourceData.computedValuesMap).toBoolean()
 
-fun ViewProperties.isVisible(computedValuesMap: Map<String, Any>) =
-  this.visible.interpolate(computedValuesMap).toBoolean()
-
 /**
  * Function to convert the elements of an array that have paramType [ActionParameterType.PARAMDATA]
  * to a map of their keys to values. It also returns [emptyMap] if [actionParameters] is null.
