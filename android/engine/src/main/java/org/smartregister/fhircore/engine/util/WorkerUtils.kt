@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.navigation
+package org.smartregister.fhircore.engine.util
 
-sealed class MeasureReportNavigationScreen(
-  val route: String,
-) {
-  object MeasureReportList : MeasureReportNavigationScreen("reportMeasuresList")
-  object ReportTypeSelector : MeasureReportNavigationScreen("reportTypeSelector")
-  object SubjectsList : MeasureReportNavigationScreen("subjectsList")
-  object MeasureReportResult : MeasureReportNavigationScreen("measureReportResult")
+import timber.log.Timber
+
+fun getLastOffset(items: List<Any>, lastOffset: Int, batchSize: Int): Int {
+  val updatedLastOffset =
+    when {
+      items.isNotEmpty() && items.size >= batchSize -> lastOffset + batchSize
+      items.isNotEmpty() && items.size < batchSize -> lastOffset + items.size
+      else -> 0
+    }
+  Timber.w(
+    "Previous last offset = $lastOffset next last offset = $updatedLastOffset batch size = $batchSize"
+  )
+  return updatedLastOffset
 }

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.navigation
+package org.smartregister.fhircore.quest.ui.shared.models
 
-sealed class MeasureReportNavigationScreen(
-  val route: String,
-) {
-  object MeasureReportList : MeasureReportNavigationScreen("reportMeasuresList")
-  object ReportTypeSelector : MeasureReportNavigationScreen("reportTypeSelector")
-  object SubjectsList : MeasureReportNavigationScreen("subjectsList")
-  object MeasureReportResult : MeasureReportNavigationScreen("measureReportResult")
-}
+import org.hl7.fhir.r4.model.ResourceType
+
+data class MeasureReportSubjectViewData(
+  val type: ResourceType,
+  val logicalId: String,
+  val display: String,
+  val family: String? = null
+)
