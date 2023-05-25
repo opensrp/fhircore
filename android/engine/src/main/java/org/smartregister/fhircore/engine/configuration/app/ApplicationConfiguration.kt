@@ -35,8 +35,8 @@ data class ApplicationConfiguration(
   val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
   val reportRepeatTime: String = "",
   val taskStatusUpdateJobDuration: String = "PT15M",
-  val taskExpireJobDuration: String = "PT15M",
-  val taskCompleteCarePlanJobDuration: String = "PT15M",
+  val taskExpireJobDuration: String = "PT30M",
+  val taskCompleteCarePlanJobDuration: String = "PT60M",
   val showLogo: Boolean = true,
   val taskBackgroundWorkerBatchSize: Int = 100
 ) : Configuration()
