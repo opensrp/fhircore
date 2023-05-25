@@ -30,7 +30,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.parseDate
-import timber.log.Timber
 
 /** This job runs periodically to mark overdue Tasks as Expired */
 @HiltWorker

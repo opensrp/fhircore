@@ -41,7 +41,6 @@ import org.smartregister.fhircore.engine.util.extension.isReady
 import org.smartregister.fhircore.engine.util.extension.lastOffset
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import org.smartregister.fhircore.engine.util.getLastOffset
-import timber.log.Timber
 
 /** This job runs periodically to update the statuses of Task resources. */
 @HiltWorker
@@ -84,7 +83,8 @@ constructor(
         if (task.hasPastEnd()) {
           task.status = Task.TaskStatus.FAILED
           fhirEngine.update(task)
-          task.basedOn
+          task
+            .basedOn
             .find { it.reference.startsWith(ResourceType.CarePlan.name) }
             ?.extractId()
             ?.takeIf { it.isNotBlank() }

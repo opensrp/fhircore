@@ -36,7 +36,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.lastOffset
 import org.smartregister.fhircore.engine.util.getLastOffset
-import timber.log.Timber
 
 @HiltWorker
 class FhirCompleteCarePlanWorker
