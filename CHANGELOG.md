@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use Sentry to track and monitor performance bottlenecks on quest and FHIR Core
 - Use Sentry to track and monitor performance bottlenecks on quest and FHIR Core release app variants
 - Allow configs to pass multiple subjects to measure evaluate interface so we can create reports per another resource (e.g. a MeasureReport per Practitioner)
+- Introduce an open function on ViewProperties#interpolate to retrieve values from computed values map
 
 ### Fixed
 - Member icons display wrapping; hiding some texts
