@@ -1,43 +1,90 @@
 map "https://fhir.labs.smartregister.org/fhir/StructureMap/ef19b62e-6cbf-43d6-beb5-4c0d9d2c20b8" = "eCBIS Disease Registration"
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
-
 group DiseaseRegistration(source questionnaireResponse : QuestionnaireResponse, target bundle: Bundle) {
     questionnaireResponse -> bundle.type = "collection" "r_bundle_type";
-    questionnaireResponse -> evaluate(questionnaireResponse, $this.subject) as refPatient, evaluate(questionnaireResponse, 0) as count,
-        evaluate(questionnaireResponse, $this.item.where(linkId ='dd55485e-322a-434e-d37d-235e37dd235c').answer.value.count()) as answerSize then
-            extractDiseaseConditions(count, answerSize, questionnaireResponse, bundle, refPatient) "r_bundle_entries";
+    questionnaireResponse -> evaluate(questionnaireResponse, $this.subject) as patientReference then extractDiseaseConditions(questionnaireResponse, bundle, patientReference), extractEncounter(questionnaireResponse, bundle, patientReference) "r_bundle_entries";
 }
-group extractDiseaseConditions(source count: Integer, source answerSize: Integer, source questionnaireResponse : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
-    questionnaireResponse where(count < answerSize) -> bundle.entry as entry, entry.resource = create("Condition") as condition then {
-        questionnaireResponse -> condition.id = uuid() "r_condition_id";
-        questionnaireResponse -> condition.onset = evaluate(questionnaireResponse, today().toString()) "r_condition_onset_date_val";
-        questionnaireResponse -> condition.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_condition_clinical_st";
-        questionnaireResponse -> condition.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_condition_verif_st";
-        questionnaireResponse -> condition.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "encounter-diagnosis") "r_condition_category";
-        questionnaireResponse -> condition.subject = refPatient "r_condition_sub";
-        questionnaireResponse -> condition.recordedDate = evaluate(questionnaireResponse, now()) "r_condition_recorded";
-        questionnaireResponse -> evaluate(questionnaireResponse, $this.item.where(linkId ='dd55485e-322a-434e-d37d-235e37dd235c').answer.value.code[count].toString()) as valueAnswers then extractDiseaseCoding(questionnaireResponse, valueAnswers, condition) "rule_extract_disease_coding";
 
-        questionnaireResponse -> evaluate(questionnaireResponse, count + 1) as nextCount then extractDiseaseConditions(nextCount, answerSize, questionnaireResponse, bundle, refPatient) "r_condition_repeat";
+group extractDiseaseConditions(source questionnaireResponse : QuestionnaireResponse, target bundle : Bundle, source patientReference : Reference) {
+    questionnaireResponse.item as questionnaireResponseItem  where(linkId ='dd55485e-322a-434e-d37d-235e37dd235c' and answer.value.exists()) then {
+        //Extract the hiv disease condition
+        questionnaireResponseItem where(linkId ='dd55485e-322a-434e-d37d-235e37dd235c' and answer.where(value.code = 'hiv').exists()) then {
+            questionnaireResponse -> evaluate(questionnaireResponse, "99990003") as hivcode, evaluate(questionnaireResponse, "HIV") as displayText then extractConditions(hivcode, displayText, questionnaireResponse, bundle, patientReference) "rule_condition_hiv";
+        } "rule_hiv_condition";
+        //Extract the tb disease condition
+        questionnaireResponseItem where(linkId ='dd55485e-322a-434e-d37d-235e37dd235c' and answer.where(value.code = 'tb').exists()) then {
+            questionnaireResponse -> evaluate(questionnaireResponse, "99990005") as tbcode, evaluate(questionnaireResponse, "TB") as displayText then extractConditions(tbcode, displayText, questionnaireResponse, bundle, patientReference) "rule_condition_tb";
+        } "rule_tb_condition";
+        //Extract the mental health disease condition
+        questionnaireResponseItem where(linkId ='dd55485e-322a-434e-d37d-235e37dd235c' and answer.where(value.code = 'mental-health').exists()) then {
+            questionnaireResponse -> evaluate(questionnaireResponse, "99990004") as mhcode, evaluate(questionnaireResponse, "Mental health") as displayText then extractConditions(mhcode, displayText, questionnaireResponse, bundle, patientReference) "r_condition_mental_health";
+        } "rule_mental_health_condition";
+        //Extract the cm-tnd disease condition
+        questionnaireResponseItem where(linkId ='dd55485e-322a-434e-d37d-235e37dd235c' and answer.where(value.code = 'cm-ntd').exists()) then {
+            questionnaireResponse.item as questionnaireResponseItem where(linkId ='605bd5c8-f279-4903-876f-5e7920d80c32' and answer.value.exists()) then {
+                //Extract the mental health disease condition
+                questionnaireResponseItem where(linkId ='605bd5c8-f279-4903-876f-5e7920d80c32' and answer.where(value.code = 'buruli-ulcer').exists()) then {
+                    questionnaireResponse -> evaluate(questionnaireResponse, "99990000") as buruliUlcer, evaluate(questionnaireResponse, "CM-NTD Buruli Ulcer") as displayText then extractConditions(buruliUlcer, displayText, questionnaireResponse, bundle, patientReference) "r_condition_buruli_ulcer";
+                } "rule_buruli_ulcer_condition";
+                //Extract the mental health disease condition
+                questionnaireResponseItem where(linkId ='605bd5c8-f279-4903-876f-5e7920d80c32' and answer.where(value.code = 'leprosy').exists()) then {
+                    questionnaireResponse -> evaluate(questionnaireResponse, "99990001") as leprosy, evaluate(questionnaireResponse, "CM-NTD Leprosy") as displayText then extractConditions(leprosy, displayText, questionnaireResponse, bundle, patientReference) "r_condition_leprosy";
+                } "rule_mental_health_condition";
+                //Extract the mental health disease condition
+                questionnaireResponseItem where(linkId ='605bd5c8-f279-4903-876f-5e7920d80c32' and answer.where(value.code = 'lymphatic-filariasis').exists()) then {
+                    questionnaireResponse -> evaluate(questionnaireResponse, "99990002") as lymphaticFilariasis, evaluate(questionnaireResponse, "CM-NTD Lymphatic Filariasis") as displayText then extractConditions(lymphaticFilariasis, displayText, questionnaireResponse, bundle, patientReference) "r_condition_lymphatic_filariasis";
+                } "rule_mental_health_condition";
+            } "rule_cm_ntd_disease_condition";
+        } "rule_cm_ntd_condition";
+    } "rule_disease_condition";
+}
+
+group extractConditions(source code: String, source displayText: String, source questionnaireResponse : QuestionnaireResponse, target bundle : Bundle, source patientReference : Reference) {
+    questionnaireResponse -> bundle.entry as entry, entry.resource = create("Condition") as patientCondition then {
+            questionnaireResponse -> patientCondition.id = uuid() "r_condition_id";
+            questionnaireResponse -> patientCondition.onset = evaluate(questionnaireResponse, today().toString()) "rule_condition_onset_date_val";
+            questionnaireResponse -> patientCondition.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_condition_clinical_st";
+            questionnaireResponse -> patientCondition.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_condition_verif_st";
+            questionnaireResponse -> patientCondition.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "encounter-diagnosis" ) "r_condition_category";
+            questionnaireResponse -> patientCondition.subject = patientReference "r_condition_sub";
+            questionnaireResponse -> patientCondition.recordedDate = evaluate(questionnaireResponse, now()) "r_condition_recorded";
+            questionnaireResponse then extractCoding(questionnaireResponse, code, displayText, patientCondition) "r_condition_c_hiv";
     } "r_condition_loop";
 }
-group extractDiseaseCoding(source questionnaireResponse: QuestionnaireResponse, source valueAnswers: Coding, target condition: Condition) {
-    questionnaireResponse -> evaluate(questionnaireResponse, "99990003") as code, evaluate(questionnaireResponse, valueAnswers) as displayText then extractCoding(questionnaireResponse, code, displayText, condition) "r_condition_c_hiv";
-    questionnaireResponse -> evaluate(questionnaireResponse, "99990005") as code, evaluate(questionnaireResponse, valueAnswers) as displayText then extractCoding(questionnaireResponse, code, displayText, condition) "r_condition_c_tb";
-    questionnaireResponse -> evaluate(questionnaireResponse, "99990004") as code, evaluate(questionnaireResponse, valueAnswers) as displayText then extractCoding(questionnaireResponse, code, displayText, condition) "r_condition_c_mental";
 
-    questionnaireResponse where(valueAnswers.code='cm-ntd') -> evaluate(valueAnswers, $this.display) as dp then {
-            questionnaireResponse -> evaluate(questionnaireResponse, $this.descendants().where(linkId='605bd5c8-f279-4903-876f-5e7920d80c32').answer.value) as cmValueAns then {
-                questionnaireResponse where(cmValueAns.code='buruli-ulcer') -> evaluate(questionnaireResponse, "99990000") as code, evaluate(questionnaireResponse, "CM-NTD Buruli Ulcer") as displayText then ExtractCoding(questionnaireResponse, code, displayText, condition) "r_cnd_c";
-                questionnaireResponse where(cmValueAns.code='leprosy') -> evaluate(questionnaireResponse, "99990001") as code, evaluate(questionnaireResponse, "CM-NTD Leprosy") as displayText then ExtractCoding(questionnaireResponse, code, displayText, condition) "r_cnd_c";
-                questionnaireResponse where(cmValueAns.code='lymphatic-filariasis') -> evaluate(questionnaireResponse, "99990002") as code, evaluate(questionnaireResponse, "CM-NTD Lymphatic Filariasis") as displayText then ExtractCoding(questionnaireResponse, code, displayText, condition) "r_cnd_c";
-            } "r_cnd_n_cc";
-        } "r_condition_c_cmntd";
-}
 group extractCoding(source questionnaireResponse: QuestionnaireResponse, source code: String, source displayText: String, target condition: Condition) {
     questionnaireResponse -> condition.code = create("CodeableConcept") as codeableConceptDisease then {
         questionnaireResponse -> codeableConceptDisease.coding = c("http://snomed.info/sct", code, displayText) as coding, coding.display = displayText "r_condition_code_coding";
         questionnaireResponse -> codeableConceptDisease.text = displayText "r_condition_code_text";
     } "r_condition_cc";
+}
+
+group extractEncounter(source questionnaireResponse : QuestionnaireResponse, target bundle: Bundle, source patientReference : Reference) {
+    questionnaireResponse -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then {
+        questionnaireResponse -> encounter.id = uuid() "rule_encounter_id";
+        questionnaireResponse -> encounter.status = 'finished' "rule_encounter_status";
+        questionnaireResponse -> encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH", "home health") "rule_encounter_class";
+        questionnaireResponse -> encounter.type = create('CodeableConcept') as concept then {
+            questionnaireResponse -> concept.coding = c("https://smartregister.org/", "disease_registration") as coding then {
+                questionnaireResponse -> coding.display = "Disease Registration" "rule_display";
+            } "rule_encounter_coding";
+            questionnaireResponse -> concept.text = "Disease Registration" "rule_text";
+        } "rule_encounter_type";
+        questionnaireResponse -> encounter.priority = create('CodeableConcept') as priority then {
+            questionnaireResponse -> priority.coding = c("http://terminology.hl7.org/ValueSet/v3-ActPriority", "EL") as priorityCoding then {
+                questionnaireResponse -> priorityCoding.display = "Elective" "rule_encounter_cod_disp";
+            } "rule_encounter_cc_cod";
+            questionnaireResponse -> priority.text = "Elective" "rule_encounter_prio_text";
+        } "rule_priority";
+        questionnaireResponse -> encounter.subject = patientReference "rule_subject";
+        questionnaireResponse -> encounter.period = create('Period') as period then {
+            questionnaireResponse -> period.start = evaluate(questionnaireResponse, now()) "rule_period_start";
+            questionnaireResponse -> period.end = evaluate(questionnaireResponse, now()) "rule_period_end";
+        } "rule_period";
+        questionnaireResponse -> encounter.reasonCode = create('CodeableConcept') as reason then {
+            questionnaireResponse -> reason.text = "Disease Registration" "rule_encounter_text";
+            questionnaireResponse -> reason.coding = c("https://smartregister.org/", "disease_registration") "rule_encounter_reason_cd";
+        } "rule_encounter_reason";
+    } "rule_encountercounter";
 }

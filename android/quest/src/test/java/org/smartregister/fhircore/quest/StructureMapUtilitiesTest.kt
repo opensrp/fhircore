@@ -106,7 +106,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
     structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
 
-    Assert.assertEquals(4, targetResource.entry.size)
+    Assert.assertEquals(7, targetResource.entry.size)
     Assert.assertEquals("Condition", targetResource.entry[0].resource.resourceType.toString())
     Assert.assertEquals("Condition", targetResource.entry[1].resource.resourceType.toString())
   }
