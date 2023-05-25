@@ -143,7 +143,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
             it.exception.message.toString()
           }
         )
-        scheduleFhirTaskStatusUpdater()
+        scheduleFhirBackgroundWorkers()
       }
       is SyncJobStatus.Finished -> {
         showToast(getString(R.string.sync_completed))
@@ -156,17 +156,18 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
           )
           updateLastSyncTimestamp(state.timestamp)
         }
-        scheduleFhirTaskStatusUpdater()
+        scheduleFhirBackgroundWorkers()
       }
     }
   }
 
-  private fun scheduleFhirTaskStatusUpdater() {
+  private fun scheduleFhirBackgroundWorkers() {
     // TODO use sharedpref to save the state
     with(configService) {
-      if (true /*registerViewModel.applicationConfiguration.scheduleDefaultPlanWorker*/)
-        this.schedulePlan(this@AppMainActivity)
-      else this.unschedulePlan(this@AppMainActivity)
+      schedulePlan(applicationContext)
+      scheduleCheckForMissedAppointments(applicationContext)
+      scheduleWelcomeServiceAppointments(applicationContext)
+      scheduleWelcomeServiceToCarePlanForMissedAppointments(applicationContext)
     }
   }
 

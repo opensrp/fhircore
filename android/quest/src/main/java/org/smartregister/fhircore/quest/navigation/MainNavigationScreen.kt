@@ -32,11 +32,15 @@ sealed class MainNavigationScreen(
     MainNavigationScreen(R.string.settings, R.drawable.ic_settings, "settingsRoute", true)
   object PatientProfile :
     MainNavigationScreen(titleResource = R.string.profile, route = "patientProfileRoute")
+  object TracingProfile :
+    MainNavigationScreen(titleResource = R.string.profile, route = "tracingProfileRoute")
   object PatientGuardians : MainNavigationScreen(route = "patientProfileGuardians")
   object FamilyProfile : MainNavigationScreen(route = "familyProfileRoute")
   object ViewChildContacts : MainNavigationScreen(route = "viewChildContacts")
   object GuardianProfile : MainNavigationScreen(route = "guardianProfile")
-
+  object TracingHistory : MainNavigationScreen(route = "tracingHistory")
+  object TracingOutcomes : MainNavigationScreen(route = "tracingOutcome")
+  object TracingHistoryDetails : MainNavigationScreen(route = "tracingHistoryDetails ")
   companion object {
     val appScreens =
       listOf(
@@ -48,7 +52,11 @@ sealed class MainNavigationScreen(
         PatientGuardians,
         FamilyProfile,
         ViewChildContacts,
-        GuardianProfile
+        GuardianProfile,
+        TracingProfile,
+        TracingHistory,
+        TracingOutcomes,
+        TracingHistoryDetails
       )
   }
 }

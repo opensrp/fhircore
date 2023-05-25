@@ -58,17 +58,39 @@ class RegisterDataTest : RobolectricTest() {
   @Test
   fun testMapToDomainModelHomeTracing() {
     val tracingRegisterDto =
-      buildRegisterData(HealthModule.HOME_TRACING) as RegisterData.AppointmentRegisterData
+      buildRegisterData(HealthModule.HOME_TRACING) as RegisterData.TracingRegisterData
     with(tracingRegisterDto) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
       Assert.assertEquals("testIdentifier()", identifier)
-      Assert.assertEquals("testAddress", address)
-      Assert.assertEquals("5y", age)
       Assert.assertEquals(Enumerations.AdministrativeGender.MALE, gender)
       //      Assert.assertEquals(Date("12345678"), birthdate)
-      Assert.assertEquals("reference/Key", chwAssigned)
-      Assert.assertEquals(true, practitioners?.isEmpty())
+    }
+  }
+
+  @Test
+  fun testMapToDomainModelPhoneTracing() {
+    val tracingRegisterDto =
+      buildRegisterData(HealthModule.PHONE_TRACING) as RegisterData.TracingRegisterData
+    with(tracingRegisterDto) {
+      Assert.assertEquals("logicalId", logicalId)
+      Assert.assertEquals("testName", name)
+      Assert.assertEquals("testIdentifier()", identifier)
+      Assert.assertEquals(Enumerations.AdministrativeGender.MALE, gender)
+      //      Assert.assertEquals(Date("12345678"), birthdate)
+    }
+  }
+
+  @Test
+  fun testMapToDomainModelAppointment() {
+    val tracingRegisterDto =
+      buildRegisterData(HealthModule.APPOINTMENT) as RegisterData.AppointmentRegisterData
+    with(tracingRegisterDto) {
+      Assert.assertEquals("logicalId", logicalId)
+      Assert.assertEquals("testName", name)
+      Assert.assertEquals("testIdentifier()", identifier)
+      Assert.assertEquals(Enumerations.AdministrativeGender.MALE, gender)
+      //      Assert.assertEquals(Date("12345678"), birthdate)
     }
   }
 
@@ -122,25 +144,26 @@ class RegisterDataTest : RobolectricTest() {
           healthStatus = HealthStatus.EXPOSED_INFANT
         )
       HealthModule.HOME_TRACING, HealthModule.PHONE_TRACING ->
-        RegisterData.AppointmentRegisterData(
+        RegisterData.TracingRegisterData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",
-          address = "testAddress",
-          age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          practitioners = emptyList(),
-          chwAssigned = "reference/Key"
+          healthStatus = HealthStatus.EXPOSED_INFANT,
+          isBreastfeeding = false,
+          isPregnant = false,
+          attempts = 0
         )
       HealthModule.APPOINTMENT ->
         RegisterData.AppointmentRegisterData(
           logicalId = "logicalId",
           name = "testName",
           identifier = "testIdentifier()",
-          address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          chwAssigned = "reference/Key"
+          healthStatus = HealthStatus.EXPOSED_INFANT,
+          isBreastfeeding = false,
+          isPregnant = false
         )
       HealthModule.ANC ->
         RegisterData.AncRegisterData(

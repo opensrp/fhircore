@@ -101,7 +101,8 @@
           "QuestionnaireResponse",
           "Questionnaire",
           "StructureMap",
-          "Library"
+          "Library",
+          "Appointment"
         ],
         "type": "token",
         "expression": "#count"

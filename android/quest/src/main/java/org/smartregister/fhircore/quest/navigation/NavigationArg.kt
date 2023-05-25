@@ -28,6 +28,8 @@ object NavigationArg {
   const val SCREEN_TITLE = "screenTitle"
   const val PATIENT_ID = "patientId"
   const val ON_ART = "onART"
+  const val TRACING_ID = "tracingId"
+  const val TRACING_ENCOUNTER_ID = "tracingEncounterId"
 
   fun commonNavArgs(appFeatureName: String, healthModule: HealthModule) =
     mutableListOf(
@@ -52,6 +54,6 @@ object NavigationArg {
   private fun List<String>.joinByAmpersand() = this.joinToString("&") { "$it={$it}" }
 
   /** Bind nav arguments values */
-  fun bindArgumentsOf(vararg navArg: Pair<String, String?>): String =
+  fun bindArgumentsOf(vararg navArg: Pair<String, Any?>): String =
     "?" + navArg.joinToString("&") { "${it.first}=${it.second}" }
 }

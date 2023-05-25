@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.data.patient
+package org.smartregister.fhircore.quest.data.register
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.domain.repository.RegisterRepository
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 /**
  * @property _patientPagingSourceState as state containing the properties used in the
- * [PatientRegisterRepository] function for loading data to the paging source.
+ * [RegisterRepository] function for loading data to the paging source.
  */
-class PatientRegisterPagingSource(
-  private val patientRegisterRepository: PatientRegisterRepository,
+class RegisterPagingSource(
+  private val registerRepository: RegisterRepository,
   private val registerViewDataMapper: RegisterViewDataMapper
 ) : PagingSource<Int, RegisterViewData>() {
 
@@ -49,23 +49,32 @@ class PatientRegisterPagingSource(
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RegisterViewData> {
     return try {
       val currentPage = params.key ?: _patientPagingSourceState.currentPage
-      val data =
+      val registerData =
         if (_patientPagingSourceState.searchFilter != null) {
-            patientRegisterRepository.searchByName(
-              currentPage = currentPage,
-              appFeatureName = _patientPagingSourceState.appFeatureName,
-              healthModule = _patientPagingSourceState.healthModule,
-              nameQuery = _patientPagingSourceState.searchFilter!!
-            )
-          } else {
-            patientRegisterRepository.loadRegisterData(
-              currentPage = currentPage,
-              appFeatureName = _patientPagingSourceState.appFeatureName,
-              healthModule = _patientPagingSourceState.healthModule,
-              loadAll = _patientPagingSourceState.loadAll
-            )
-          }
-          .map { registerViewDataMapper.transformInputToOutputModel(it) }
+          registerRepository.searchByName(
+            currentPage = currentPage,
+            appFeatureName = _patientPagingSourceState.appFeatureName,
+            healthModule = _patientPagingSourceState.healthModule,
+            nameQuery = _patientPagingSourceState.searchFilter!!
+          )
+        } else if (_patientPagingSourceState.requiresFilter) {
+          registerRepository.loadRegisterFiltered(
+            currentPage = currentPage,
+            appFeatureName = _patientPagingSourceState.appFeatureName,
+            healthModule = _patientPagingSourceState.healthModule,
+            filters = _patientPagingSourceState.filters!!
+          )
+        } else {
+          registerRepository.loadRegisterData(
+            currentPage = currentPage,
+            appFeatureName = _patientPagingSourceState.appFeatureName,
+            healthModule = _patientPagingSourceState.healthModule,
+            loadAll = _patientPagingSourceState.loadAll
+          )
+        }
+
+      val registerViewData =
+        registerData.map { registerViewDataMapper.transformInputToOutputModel(it) }
       val prevKey =
         when {
           _patientPagingSourceState.loadAll -> if (currentPage == 0) null else currentPage - 1
@@ -73,11 +82,12 @@ class PatientRegisterPagingSource(
         }
       val nextKey =
         when {
-          _patientPagingSourceState.loadAll -> if (data.isNotEmpty()) currentPage + 1 else null
+          _patientPagingSourceState.loadAll ->
+            if (registerViewData.isNotEmpty()) currentPage + 1 else null
           else -> null
         }
 
-      LoadResult.Page(data = data, prevKey = prevKey, nextKey = nextKey)
+      LoadResult.Page(data = registerViewData, prevKey = prevKey, nextKey = nextKey)
     } catch (exception: Exception) {
       LoadResult.Error(exception)
     }

@@ -24,7 +24,9 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Reference
@@ -33,6 +35,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class AppSettingViewModelTest : RobolectricTest() {
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
@@ -58,20 +61,22 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testFetchConfigurations() = runBlockingTest {
-    coEvery { appSettingViewModel.fhirResourceDataSource.loadData(any()) } returns
+  fun testFetchConfigurations() = runTest {
+    val repository = appSettingViewModel.defaultRepository
+    val fhirResourceDataSource = appSettingViewModel.fhirResourceDataSource
+    coEvery { fhirResourceDataSource.loadData(any()) } returns
       Bundle().apply {
         addEntry().resource =
           Composition().apply {
             addSection().apply { this.focus = Reference().apply { reference = "Binary/123" } }
           }
       }
-    coEvery { appSettingViewModel.defaultRepository.save(any()) } just runs
+    coEvery { repository.save(any()) } just runs
 
     appSettingViewModel.fetchConfigurations("appId", ApplicationProvider.getApplicationContext())
 
-    coVerify { appSettingViewModel.fhirResourceDataSource.loadData(any()) }
-    coVerify { appSettingViewModel.defaultRepository.save(any()) }
+    coVerify { fhirResourceDataSource.loadData(any()) }
+    coVerify { repository.save(any()) }
   }
 
   @Test
