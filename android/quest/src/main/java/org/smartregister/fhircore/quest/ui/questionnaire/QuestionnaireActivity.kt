@@ -151,7 +151,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               questionnaire = questionnaire,
               subjectId = baseResourceId.extractLogicalIdUuid(),
               subjectType = baseResourceType,
-              questionnaireConfig
+              questionnaireConfig = questionnaireConfig
             )
             .apply { generateMissingItems(questionnaire) }
 
