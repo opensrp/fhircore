@@ -221,7 +221,35 @@ class SearchExtensionTest {
           "filterCriteria": [
             {
               "dataType": "DATE",
-              "valueDate": "2017-03-14",
+              "value": "2017-03-14",
+              "prefix": "GREATERTHAN_OR_EQUALS"
+            }
+          ]
+        }""".decodeJson<
+        DataQuery>()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
+    val search = spyk(Search(ResourceType.Patient))
+    search.filterBy(dataQuery, computedRulesMap)
+    val dateClientParamSlot = slot<DateClientParam>()
+    verify {
+      search.filter(
+        dateParameter = capture(dateClientParamSlot),
+        init = anyVararg(),
+        operation = any()
+      )
+    }
+    Assert.assertEquals(dataQuery.paramName, dateClientParamSlot.captured.paramName)
+  }
+
+  @Test
+  fun testFilterForDateTypeWithComputedRule() {
+    val dataQuery =
+      """{
+          "paramName": "birthdate",
+          "filterCriteria": [
+            {
+              "dataType": "DATE",
+              "computedRule": "valueDate",
               "prefix": "GREATERTHAN_OR_EQUALS"
             }
           ]

@@ -82,8 +82,6 @@ constructor(
     paramsMap: Map<String, String>?
   ): List<RepositoryResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
-    // computedDataQueryRules
-    // provide the map
     return searchResourcesRecursively(
       filterActiveResources = registerConfiguration.activeResourceFilters,
       fhirResourceConfig = registerConfiguration.fhirResource,
@@ -284,12 +282,19 @@ constructor(
     if (!filterActiveResources.isNullOrEmpty() && activeResource?.active == true) {
       filter(TokenClientParam(ACTIVE), { value = of(true) })
     }
-    resourceConfig.dataQueries?.forEach { filterBy(it, configComputedRuleValues) }
+
+    resourceConfig.dataQueries?.forEach { dataQuery ->
+      filterBy(dataQuery = dataQuery, configComputedRuleValues = configComputedRuleValues)
+    }
+
     resourceConfig.nestedSearchResources?.forEach {
       has(it.resourceType, ReferenceClientParam((it.referenceParam))) {
-        it.dataQueries?.forEach { dataQuery -> filterBy(dataQuery, configComputedRuleValues) }
+        it.dataQueries?.forEach { dataQuery ->
+          filterBy(dataQuery = dataQuery, configComputedRuleValues = configComputedRuleValues)
+        }
       }
     }
+
     if (sortData) sort(resourceConfig.sortConfigs)
   }
 
@@ -397,7 +402,6 @@ constructor(
   ): Long {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     val baseResourceConfig = registerConfiguration.fhirResource.baseResource
-    //
     val search =
       Search(baseResourceConfig.resource).apply {
         applyConfiguredSortAndFilters(

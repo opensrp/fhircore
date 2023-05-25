@@ -40,13 +40,13 @@ data class DataQuery(
 sealed class FilterCriterionConfig : Parcelable {
 
   abstract val dataType: DataType
-  abstract val dynamicValue: String?
+  abstract val computedRule: String?
 
   @Serializable
   @Parcelize
   data class QuantityFilterCriterionConfig(
     override val dataType: DataType = DataType.QUANTITY,
-    override val dynamicValue: String? = null,
+    override val computedRule: String? = null,
     val prefix: ParamPrefixEnum? = null,
     @Serializable(with = BigDecimalSerializer::class) val value: BigDecimal? = null,
     val system: String? = null,
@@ -57,17 +57,17 @@ sealed class FilterCriterionConfig : Parcelable {
   @Parcelize
   data class DateFilterCriterionConfig(
     override val dataType: DataType = DataType.DATETIME,
-    override val dynamicValue: String? = null,
+    override val computedRule: String? = null,
     val prefix: ParamPrefixEnum = ParamPrefixEnum.GREATERTHAN_OR_EQUALS,
-    val valueDate: String? = null,
-    val valueDateTime: String? = null
+    val value: String? = null,
+    val valueAsDateTime: Boolean = false
   ) : FilterCriterionConfig(), Parcelable
 
   @Serializable
   @Parcelize
   data class NumberFilterCriterionConfig(
     override val dataType: DataType = DataType.DECIMAL,
-    override val dynamicValue: String? = null,
+    override val computedRule: String? = null,
     val prefix: ParamPrefixEnum = ParamPrefixEnum.EQUAL,
     @Serializable(with = BigDecimalSerializer::class) val value: BigDecimal? = null
   ) : FilterCriterionConfig(), Parcelable
@@ -75,7 +75,7 @@ sealed class FilterCriterionConfig : Parcelable {
   @Parcelize
   data class StringFilterCriterionConfig(
     override val dataType: DataType = DataType.STRING,
-    override val dynamicValue: String? = null,
+    override val computedRule: String? = null,
     val modifier: StringFilterModifier = StringFilterModifier.STARTS_WITH,
     val value: String? = null
   ) : FilterCriterionConfig(), Parcelable
@@ -84,7 +84,7 @@ sealed class FilterCriterionConfig : Parcelable {
   @Parcelize
   data class UriFilterCriterionConfig(
     override val dataType: DataType = DataType.URI,
-    override val dynamicValue: String? = null,
+    override val computedRule: String? = null,
     val value: String? = null
   ) : FilterCriterionConfig(), Parcelable
 
@@ -92,7 +92,7 @@ sealed class FilterCriterionConfig : Parcelable {
   @Parcelize
   data class ReferenceFilterCriterionConfig(
     override val dataType: DataType = DataType.REFERENCE,
-    override val dynamicValue: String? = null,
+    override val computedRule: String? = null,
     val value: String? = null
   ) : FilterCriterionConfig(), Parcelable
 
@@ -100,7 +100,7 @@ sealed class FilterCriterionConfig : Parcelable {
   @Parcelize
   data class TokenFilterCriterionConfig(
     override val dataType: DataType = DataType.CODE,
-    override val dynamicValue: String? = null,
+    override val computedRule: String? = null,
     val value: Code? = null
   ) : FilterCriterionConfig(), Parcelable
 }

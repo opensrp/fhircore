@@ -30,6 +30,7 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import timber.log.Timber
 
 abstract class RulesListener : RuleListener {
+
   protected var facts: Facts = Facts()
   protected val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
   private val jexlEngine: JexlEngine by lazy {
@@ -46,7 +47,9 @@ abstract class RulesListener : RuleListener {
       .strict(false)
       .create()
   }
+
   override fun beforeEvaluate(rule: Rule, facts: Facts): Boolean = true
+
   override fun onSuccess(rule: Rule, facts: Facts) {
     if (BuildConfig.DEBUG) {
       val computedValuesMap = facts.get(DATA) as Map<String, Any>
