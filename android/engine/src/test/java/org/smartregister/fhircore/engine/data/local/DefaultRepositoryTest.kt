@@ -495,7 +495,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         )
       )
 
-    defaultRepository.delete(resourceType = "Patient", resourceId = "123")
+    defaultRepository.delete(resourceType = ResourceType.Patient, resourceId = "123")
 
     coVerify { fhirEngine.delete(any<ResourceType>(), any<String>()) }
   }

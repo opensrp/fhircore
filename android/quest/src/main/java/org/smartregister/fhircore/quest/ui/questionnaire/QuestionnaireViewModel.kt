@@ -583,7 +583,7 @@ constructor(
     }
   }
 
-  fun deleteResource(resourceType: String, resourceIdentifier: String) {
+  fun deleteResource(resourceType: ResourceType, resourceIdentifier: String) {
     viewModelScope.launch {
       defaultRepository.delete(resourceType = resourceType, resourceId = resourceIdentifier)
     }
@@ -654,13 +654,29 @@ constructor(
     questionnaire: Questionnaire,
     subjectId: String,
     subjectType: ResourceType,
-    configComputedRuleValues: Map<String, Any> = emptyMap()
+    configComputedRuleValues: Map<String, Any> = emptyMap(),
+    questionnaireConfig: QuestionnaireConfig,
   ): QuestionnaireResponse {
-    var questionnaireResponse =
-      loadQuestionnaireResponse(subjectId, subjectType, questionnaire.logicalId)
-
+    var questionnaireResponse: QuestionnaireResponse? = null
+    // if questionnaireType is Default that means we don't have to load response from DB
+    if (!questionnaireConfig.type.isDefault()) {
+      questionnaireResponse =
+        loadQuestionnaireResponse(subjectId, subjectType, questionnaire.logicalId)
+    }
+    var populationResources = ArrayList<Resource>()
     if (questionnaireResponse == null) {
-      val populationResources = loadPopulationResources(subjectId, subjectType)
+      if (!subjectType.isIn(ResourceType.Group, ResourceType.Patient)) {
+        if (questionnaireConfig.resourceIdentifier != null &&
+            questionnaireConfig.resourceType != null
+        ) {
+          populationResources =
+            loadPopulationResources(
+              questionnaireConfig.resourceIdentifier!!,
+              questionnaireConfig.resourceType!!
+            )
+        }
+      }
+      populationResources.addAll(loadPopulationResources(subjectId, subjectType))
       questionnaireResponse = populateQuestionnaireResponse(questionnaire, populationResources)
     }
 
@@ -748,18 +764,13 @@ constructor(
     subjectType: ResourceType
   ): ArrayList<Resource> {
     val populationResources = arrayListOf<Resource>()
-    when (subjectType) {
-      ResourceType.Patient -> {
-        loadPatient(subjectId)?.run { populationResources.add(this) }
-        loadRelatedPerson(subjectId)?.run { populationResources.add(this) }
-      }
-      ResourceType.Group -> {
-        loadGroup(subjectId)?.run { populationResources.add(this) }
-      }
-      else -> {
-        Timber.tag("QuestionnaireViewModel.loadPopulationResources")
-          .d("$subjectType resource type is not supported to load populated resources!")
-      }
+    try {
+      populationResources.add(defaultRepository.loadResource(subjectId, subjectType))
+    } catch (exception: ResourceNotFoundException) {
+      Timber.e(exception)
+    }
+    if (subjectType == ResourceType.Patient) {
+      loadRelatedPerson(subjectId)?.run { populationResources.add(this) }
     }
     return populationResources
   }
@@ -767,11 +778,6 @@ constructor(
   /** Loads a Patient resource with the given ID. */
   private suspend fun loadPatient(patientId: String): Patient? {
     return defaultRepository.loadResource(patientId)
-  }
-
-  /** Loads a Group resource with the given ID. */
-  private suspend fun loadGroup(groupId: String): Group? {
-    return defaultRepository.loadResource(groupId)
   }
 
   /** Loads a RelatedPerson resource that belongs to the given Patient ID. */
