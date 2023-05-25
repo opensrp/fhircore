@@ -123,7 +123,7 @@ fun PinInput(
   )
 
   Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-    for ((index, _) in (0 until pinLength).withIndex()) {
+    for (index in 0 until pinLength) {
       val backgroundColor =
         when {
           inputMode -> Color.White
