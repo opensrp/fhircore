@@ -47,7 +47,6 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
-import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
@@ -766,19 +765,9 @@ constructor(
     return populationResources
   }
 
-  /** Loads a Resource resource with the given ID. */
-  private suspend fun loadTask(resourceId: String): Task? {
-    return defaultRepository.loadResource(resourceId)
-  }
-
   /** Loads a Patient resource with the given ID. */
   private suspend fun loadPatient(patientId: String): Patient? {
     return defaultRepository.loadResource(patientId)
-  }
-
-  /** Loads a Group resource with the given ID. */
-  private suspend fun loadGroup(groupId: String): Group? {
-    return defaultRepository.loadResource(groupId)
   }
 
   /** Loads a RelatedPerson resource that belongs to the given Patient ID. */
