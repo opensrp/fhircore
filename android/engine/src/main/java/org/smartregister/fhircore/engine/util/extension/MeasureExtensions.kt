@@ -18,12 +18,12 @@ package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Operation
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.MeasureReport
-import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 
 // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
@@ -94,28 +94,27 @@ fun MeasureReport.MeasureReportGroupComponent.findStratumForMonth(reportingMonth
  * @param fhirEngine suspend inline fun<reified R: Resource> resourceExists(startDate: Date,
  * endDate: Date, operation: Operation = Operation.AND)
  */
-suspend inline fun <reified R : Resource> retrievePreviouslyGeneratedMeasureReports(
+suspend inline fun retrievePreviouslyGeneratedMeasureReports(
   fhirEngine: FhirEngine,
   startDateFormatted: String,
   endDateFormatted: String,
   measureUrl: String,
-  queryOperation: Operation = Operation.AND
+  subjects: List<String>,
 ): List<MeasureReport> {
-  return fhirEngine
-    .search<MeasureReport> {
-      filter(
-        MeasureReport.PERIOD,
-        {
-          value = of(DateTimeType(startDateFormatted))
-          prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-        },
-        {
-          value = of(DateTimeType(endDateFormatted))
-          prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
-        },
-      )
-      filter(MeasureReport.MEASURE, { value = measureUrl })
-      operation = queryOperation
+  val search = Search(ResourceType.MeasureReport)
+  search.filter(
+    MeasureReport.PERIOD,
+    {
+      value = of(DateTimeType(startDateFormatted))
+      prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+    },
+    {
+      value = of(DateTimeType(endDateFormatted))
+      prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
     }
-    .filter { it.period.start.formatDate(SDF_YYYY_MM_DD) == startDateFormatted }
+  )
+  search.filter(MeasureReport.MEASURE, { value = measureUrl })
+  subjects.forEach { search.filter(MeasureReport.SUBJECT, { value = it }) }
+
+  return fhirEngine.search(search)
 }

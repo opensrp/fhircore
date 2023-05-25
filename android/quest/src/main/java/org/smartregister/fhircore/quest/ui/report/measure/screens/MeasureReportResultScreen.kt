@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
@@ -50,7 +52,7 @@ import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureRepo
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportPopulationResultView
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
 @Composable
 fun MeasureReportResultScreen(
@@ -67,7 +69,7 @@ fun MeasureReportResultScreen(
     navController = navController,
     startDate = uiState.startDate,
     endDate = uiState.endDate,
-    patientViewData = uiState.patientViewData,
+    subjectViewData = uiState.subjectViewData,
     measureReportIndividualResult = measureReportViewModel.measureReportIndividualResult.value,
     measureReportPopulationResult = measureReportViewModel.measureReportPopulationResults.value
   )
@@ -79,7 +81,7 @@ fun MeasureReportResultPage(
   navController: NavController,
   startDate: String,
   endDate: String,
-  patientViewData: MeasureReportPatientViewData?,
+  subjectViewData: Set<MeasureReportSubjectViewData>,
   measureReportIndividualResult: MeasureReportIndividualResult?,
   measureReportPopulationResult: List<MeasureReportPopulationResult>?,
   modifier: Modifier = Modifier
@@ -120,13 +122,15 @@ fun MeasureReportResultPage(
         Spacer(modifier = modifier.height(16.dp))
 
         // Switch between individual and population result views
-        if (measureReportIndividualResult != null && patientViewData != null) {
-          MeasureReportIndividualResultView(
-            patientViewData = patientViewData,
-            isMatchedIndicator = measureReportIndividualResult.isMatchedIndicator,
-            indicatorStatus = measureReportIndividualResult.status,
-            indicatorDescription = measureReportIndividualResult.description
-          )
+        if (measureReportIndividualResult != null && subjectViewData.isNotEmpty()) {
+          Row(modifier = modifier.fillMaxWidth()) {
+            subjectViewData.forEach {
+              MeasureReportIndividualResultView(
+                subjectViewData = it,
+                isMatchedIndicator = measureReportIndividualResult.isMatchedIndicator
+              )
+            }
+          }
         }
         if (measureReportPopulationResult != null) {
           MeasureReportPopulationResultView(
@@ -146,12 +150,18 @@ private fun MeasureReportResultScreenForIndividualPreview() {
     navController = rememberNavController(),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
-    patientViewData =
-      MeasureReportPatientViewData(
-        name = "Jacky Coughlin",
-        gender = "F",
-        age = "27",
-        logicalId = "1920192"
+    subjectViewData =
+      setOf(
+        MeasureReportSubjectViewData(
+          display = "Jacky Coughlin, F, 27",
+          logicalId = "1920192",
+          type = ResourceType.Patient
+        ),
+        MeasureReportSubjectViewData(
+          display = "Jane Doe, F, 18",
+          logicalId = "1910192",
+          type = ResourceType.Patient
+        )
       ),
     measureReportIndividualResult =
       MeasureReportIndividualResult(status = "True", isMatchedIndicator = true, description = ""),
@@ -171,12 +181,18 @@ private fun MeasureReportResultScreenForPopulationPreview() {
     navController = rememberNavController(),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
-    patientViewData =
-      MeasureReportPatientViewData(
-        name = "Jacky Coughlin",
-        gender = "F",
-        age = "27",
-        logicalId = "1902912"
+    subjectViewData =
+      setOf(
+        MeasureReportSubjectViewData(
+          display = "Jacky Coughlin, F, 27",
+          logicalId = "1902912",
+          type = ResourceType.Patient
+        ),
+        MeasureReportSubjectViewData(
+          display = "Jane Doe, F, 18",
+          logicalId = "1912912",
+          type = ResourceType.Patient
+        )
       ),
     measureReportIndividualResult = null,
     measureReportPopulationResult =
