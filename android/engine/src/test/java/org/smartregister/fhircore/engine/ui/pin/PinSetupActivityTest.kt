@@ -23,8 +23,10 @@ import android.content.Intent
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Sync
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.UninstallModules
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -40,13 +42,17 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.di.AnalyticsModule
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
+import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
+@UninstallModules(AnalyticsModule::class)
 @HiltAndroidTest
 class PinSetupActivityTest : ActivityRobolectricTest() {
 
@@ -63,6 +69,8 @@ class PinSetupActivityTest : ActivityRobolectricTest() {
   private lateinit var pinSetupActivity: PinSetupActivity
 
   private lateinit var pinSetupActivitySpy: PinSetupActivity
+
+  @BindValue @JvmField val performanceReporter: PerformanceReporter = FakePerformanceReporter()
 
   @Before
   fun setUp() {

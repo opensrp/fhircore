@@ -29,6 +29,7 @@ import org.smartregister.fhircore.engine.data.local.register.dao.RegisterDaoFact
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterRepository
+import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
 class AppRegisterRepository
@@ -36,7 +37,8 @@ class AppRegisterRepository
 constructor(
   override val fhirEngine: FhirEngine,
   override val dispatcherProvider: DefaultDispatcherProvider,
-  val registerDaoFactory: RegisterDaoFactory
+  val registerDaoFactory: RegisterDaoFactory,
+  val tracer: PerformanceReporter
 ) :
   RegisterRepository,
   DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
@@ -48,11 +50,13 @@ constructor(
     healthModule: HealthModule
   ): List<RegisterData> =
     withContext(dispatcherProvider.io()) {
-      registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterData(
-        currentPage = currentPage,
-        appFeatureName = appFeatureName
-      )
-        ?: emptyList()
+      tracer.traceSuspend("PatientRegister.loadRegisterData") {
+        registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterData(
+          currentPage = currentPage,
+          appFeatureName = appFeatureName
+        )
+          ?: emptyList()
+      }
     }
 
   override suspend fun searchByName(
@@ -62,12 +66,14 @@ constructor(
     healthModule: HealthModule
   ): List<RegisterData> =
     withContext(dispatcherProvider.io()) {
-      registerDaoFactory.registerDaoMap[healthModule]?.searchByName(
-        currentPage = currentPage,
-        appFeatureName = appFeatureName,
-        nameQuery = nameQuery
-      )
-        ?: emptyList()
+      tracer.traceSuspend("PatientRegister.searchByName") {
+        registerDaoFactory.registerDaoMap[healthModule]?.searchByName(
+          currentPage = currentPage,
+          appFeatureName = appFeatureName,
+          nameQuery = nameQuery
+        )
+          ?: emptyList()
+      }
     }
 
   override suspend fun loadRegisterFiltered(
@@ -107,7 +113,9 @@ constructor(
     healthModule: HealthModule
   ): Long =
     withContext(dispatcherProvider.io()) {
-      registerDaoFactory.registerDaoMap[healthModule]?.countRegisterData(appFeatureName) ?: 0
+      tracer.traceSuspend("PatientRegister.countRegisterData") {
+        registerDaoFactory.registerDaoMap[healthModule]?.countRegisterData(appFeatureName) ?: 0
+      }
     }
 
   override suspend fun loadPatientProfileData(
@@ -116,10 +124,12 @@ constructor(
     patientId: String
   ): ProfileData? =
     withContext(dispatcherProvider.io()) {
-      registerDaoFactory.registerDaoMap[healthModule]?.loadProfileData(
-        appFeatureName = appFeatureName,
-        resourceId = patientId
-      )
+      tracer.traceSuspend("PatientRegister.loadPatientProfileData") {
+        registerDaoFactory.registerDaoMap[healthModule]?.loadProfileData(
+          appFeatureName = appFeatureName,
+          resourceId = patientId
+        )
+      }
     }
 
   suspend fun loadChildrenRegisterData(
@@ -127,13 +137,15 @@ constructor(
     otherPatientResource: List<Resource>
   ): List<RegisterData> =
     withContext(dispatcherProvider.io()) {
-      val dataList: ArrayList<Patient> = arrayListOf()
-      val hivRegisterDao = registerDaoFactory.registerDaoMap[healthModule] as HivRegisterDao
+      tracer.traceSuspend("PatientRegister.loadChildrenRegisterData") {
+        val dataList: ArrayList<Patient> = arrayListOf()
+        val hivRegisterDao = registerDaoFactory.registerDaoMap[healthModule] as HivRegisterDao
 
-      for (item: Resource in otherPatientResource) {
-        val itemPatient = item as Patient
-        dataList.add(itemPatient)
+        for (item: Resource in otherPatientResource) {
+          val itemPatient = item as Patient
+          dataList.add(itemPatient)
+        }
+        hivRegisterDao.transformChildrenPatientToRegisterData(dataList)
       }
-      hivRegisterDao.transformChildrenPatientToRegisterData(dataList)
     }
 }

@@ -55,7 +55,6 @@ import timber.log.Timber
 @AndroidEntryPoint
 @ExperimentalMaterialApi
 open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
-
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
