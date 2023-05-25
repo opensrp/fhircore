@@ -33,7 +33,7 @@ data class CompoundTextProperties(
   override val fillMaxWidth: Boolean = false,
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
-  override var visible: String = "false",
+  override val visible: String = "true",
   val primaryText: String? = null,
   val primaryTextColor: String? = null,
   val secondaryText: String? = null,
