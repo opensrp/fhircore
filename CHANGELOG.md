@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add "Record all" feature in card view
 - Functionality to aggregate count for related resources 
 - Incremental rendering of content of LIST widget used mostly on profile screen
+- The ability to define a regex and separator on the `RulesFactory.RulesEngineService#joinToString(java.util.List<java.lang.String>, java.lang.String, java.lang.String)`
+- Use Sentry to track and monitor performance bottlenecks on quest and FHIR Core release app variants
+- Add functionality to allow usage of computed rules on DataQuery values
 
 ### Fixed
 - Member icons display wrapping; hiding some texts
@@ -22,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactored how the related resources SELECT and COUNT queries search results are represented. 
 - RepositoryResourceData now uses two map to represent SELECT/COUNT SQL query results
 - Retrieve related resources all at once for resources include via _include SEARCH API
+- Enhanced security in Authentication, Authorization and Credentials managagment
 
 ## [0.2.3] - 2023-05-11
 ### Added

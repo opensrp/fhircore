@@ -25,6 +25,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.Runs
@@ -98,6 +99,7 @@ import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.plusYears
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.updateDependentTaskDueDate
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
@@ -1450,7 +1452,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         active = true
       }
     val bundle = Bundle().apply { addEntry().resource = patient }
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
+    coEvery {
+      fhirEngine.search<CarePlan> {
+        filter(
+          CarePlan.INSTANTIATES_CANONICAL,
+          { value = "${PlanDefinition().fhirType()}/plandef-1" }
+        )
+        filter(CarePlan.SUBJECT, { value = patient.referenceValue() })
+      }
+    } returns listOf()
 
     runBlocking {
       fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
@@ -1502,7 +1512,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             Bundle.BundleEntryComponent().apply { resource = questionnaireResponse }
           )
       }
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
+    coEvery {
+      fhirEngine.search<CarePlan> {
+        filter(
+          CarePlan.INSTANTIATES_CANONICAL,
+          { value = "${PlanDefinition().fhirType()}/plandef-1" }
+        )
+        filter(CarePlan.SUBJECT, { value = patient.referenceValue() })
+      }
+    } returns listOf(carePlan)
     coEvery { fhirEngine.update(any()) } just runs
 
     runBlocking {
@@ -1539,7 +1557,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         status = CarePlan.CarePlanStatus.ACTIVE
       }
     val bundle = Bundle().apply { addEntry().resource = patient }
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
+    coEvery {
+      fhirEngine.search<CarePlan> {
+        filter(
+          CarePlan.INSTANTIATES_CANONICAL,
+          { value = "${PlanDefinition().fhirType()}/plandef-1" }
+        )
+        filter(CarePlan.SUBJECT, { value = patient.referenceValue() })
+      }
+    } returns listOf(carePlan)
     coEvery { fhirEngine.update(any()) } just runs
 
     runBlocking {
@@ -1580,7 +1606,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           )
       }
     val bundle = Bundle().apply { addEntry().resource = patient }
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
+    coEvery {
+      fhirEngine.search<CarePlan> {
+        filter(
+          CarePlan.INSTANTIATES_CANONICAL,
+          { value = "${PlanDefinition().fhirType()}/plandef-1" }
+        )
+        filter(CarePlan.SUBJECT, { value = patient.referenceValue() })
+      }
+    } returns listOf(carePlan)
     coEvery { fhirEngine.get(any(), any()) } returns Group().apply { active = true }
     coEvery { fhirEngine.update(any()) } just runs
     val task =
@@ -1636,7 +1670,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           )
       }
     val bundle = Bundle().apply { addEntry().resource = patient }
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan)
+    coEvery {
+      fhirEngine.search<CarePlan> {
+        filter(
+          CarePlan.INSTANTIATES_CANONICAL,
+          { value = "${PlanDefinition().fhirType()}/plandef-1" }
+        )
+        filter(CarePlan.SUBJECT, { value = patient.referenceValue() })
+      }
+    } returns listOf(carePlan)
     coEvery { fhirEngine.update(any()) } just runs
     val task =
       Task().apply {
