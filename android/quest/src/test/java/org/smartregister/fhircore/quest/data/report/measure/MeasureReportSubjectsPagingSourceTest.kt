@@ -34,18 +34,18 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDataMapper
 
 @HiltAndroidTest
-class MeasureReportPatientsPagingSourceTest : RobolectricTest() {
+class MeasureReportSubjectsPagingSourceTest : RobolectricTest() {
 
   @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
-  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportSubjectViewDataMapper
+  @Inject lateinit var measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
   private val reportRepository = mockk<MeasureReportRepository>()
-  private lateinit var reportPatientsPagingSource: MeasureReportSubjectsPagingSource
+  private lateinit var reportSubjectsPagingSource: MeasureReportSubjectsPagingSource
 
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-    reportPatientsPagingSource =
-      MeasureReportSubjectsPagingSource(reportRepository, measureReportPatientViewDataMapper)
+    reportSubjectsPagingSource =
+      MeasureReportSubjectsPagingSource(reportRepository, measureReportSubjectViewDataMapper)
   }
 
   @Test
@@ -63,7 +63,7 @@ class MeasureReportPatientsPagingSourceTest : RobolectricTest() {
     every { loadParams.key } returns null
     every { loadParams.loadSize } returns 100
     runBlocking {
-      reportPatientsPagingSource.run {
+      reportSubjectsPagingSource.run {
         val result = load(loadParams)
         Assert.assertNotNull(result)
         Assert.assertEquals(1, (result as PagingSource.LoadResult.Page).data.size)

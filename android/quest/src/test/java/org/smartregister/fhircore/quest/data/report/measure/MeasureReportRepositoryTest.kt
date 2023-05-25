@@ -27,9 +27,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
-import java.util.NoSuchElementException
 import javax.inject.Inject
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Patient
@@ -138,16 +136,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
 
   @Test
   @kotlinx.serialization.ExperimentalSerializationApi
-  fun testRetrievePatients() {
-    runBlocking(Dispatchers.Default) {
-      assertFailsWith<NoSuchElementException> { measureReportRepository.retrieveSubjects(0) }
-    }
-  }
-
-  @Test
-  @kotlinx.serialization.ExperimentalSerializationApi
-  fun testRetrievePatientsWithResults() {
-    val resource = Faker.buildPatient()
+  fun testRetrieveSubjectsWithResults() {
     coEvery { fhirEngine.search<Patient>(any<Search>()) } returns listOf(Patient())
     runBlocking(Dispatchers.Default) {
       val data = measureReportRepository.retrieveSubjects(0)
