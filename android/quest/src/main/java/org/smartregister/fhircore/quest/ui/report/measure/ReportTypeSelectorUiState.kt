@@ -16,11 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.report.measure
 
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
 data class ReportTypeSelectorUiState(
   val startDate: String = "",
   val endDate: String = "",
   val showProgressIndicator: Boolean = false,
-  val patientViewData: MeasureReportPatientViewData? = null
+  val subjectViewData: MutableSet<MeasureReportSubjectViewData> = mutableSetOf()
 )
