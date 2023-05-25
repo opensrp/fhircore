@@ -58,6 +58,7 @@ import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
@@ -90,7 +91,8 @@ constructor(
   val transformSupportServices: TransformSupportServices,
   val dispatcherProvider: DispatcherProvider,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val libraryEvaluator: LibraryEvaluator
+  val libraryEvaluator: LibraryEvaluator,
+  var tracer: PerformanceReporter
 ) : ViewModel() {
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
@@ -251,6 +253,7 @@ constructor(
     questionnaire: Questionnaire
   ) {
     viewModelScope.launch(dispatcherProvider.io()) {
+      tracer.startTrace(QUESTIONNAIRE_TRACE)
       // important to set response subject so that structure map can handle subject for all entities
       handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
       val extras = mutableListOf<Resource>()
@@ -335,7 +338,7 @@ constructor(
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
         extractCqlOutput(questionnaire, questionnaireResponse, null)
       }
-
+      tracer.stopTrace(QUESTIONNAIRE_TRACE)
       viewModelScope.launch(Dispatchers.Main) {
         extractionProgress.postValue(ExtractionProgress.Success(extras))
       }
@@ -587,6 +590,7 @@ constructor(
       .time
 
   companion object {
+    private const val QUESTIONNAIRE_TRACE = "Questionnaire-extractAndSaveResources"
     private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"
   }
 }

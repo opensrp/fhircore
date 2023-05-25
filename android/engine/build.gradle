@@ -229,6 +229,9 @@ dependencies {
     api "com.squareup.okhttp3:okhttp:$okhttpVersion"
     api "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
 
+    implementation platform('com.google.firebase:firebase-bom:31.2.0')
+    implementation 'com.google.firebase:firebase-perf-ktx'
+
     // Hilt test dependencies
     testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
     kaptTest("com.google.dagger:hilt-android-compiler:$hiltVersion")

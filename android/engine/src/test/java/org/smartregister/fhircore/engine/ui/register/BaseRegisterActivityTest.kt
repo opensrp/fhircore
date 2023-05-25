@@ -39,6 +39,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.UninstallModules
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -70,8 +71,11 @@ import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.configuration.ConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.di.AnalyticsModule
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
+import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
@@ -81,6 +85,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asString
 import retrofit2.HttpException
 
+@UninstallModules(AnalyticsModule::class)
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class BaseRegisterActivityTest : ActivityRobolectricTest() {
@@ -94,6 +99,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
   @BindValue val accountAuthenticator = mockk<AccountAuthenticator>()
+  @BindValue @JvmField val performanceReporter: PerformanceReporter = FakePerformanceReporter()
 
   val defaultRepository: DefaultRepository = mockk()
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
