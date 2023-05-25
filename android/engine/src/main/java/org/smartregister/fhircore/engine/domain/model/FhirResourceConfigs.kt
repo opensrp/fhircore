@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.domain.model
 import android.os.Parcelable
 import com.google.android.fhir.search.Order
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.RawValue
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
@@ -85,7 +86,8 @@ data class ResourceConfig(
   val sortConfigs: List<SortConfig> = emptyList(),
   val resultAsCount: Boolean = false,
   val countResultConfig: CountResultConfig? = CountResultConfig(),
-  val nestedSearchResources: List<NestedSearchConfig>? = null
+  val nestedSearchResources: List<NestedSearchConfig>? = null,
+  val configRules: @RawValue List<RuleConfig>? = null
 ) : Parcelable
 
 @Serializable @Parcelize data class CountResultConfig(val sumCounts: Boolean = true) : Parcelable

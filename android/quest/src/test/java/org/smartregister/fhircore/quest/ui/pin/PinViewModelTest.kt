@@ -29,7 +29,6 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import io.mockk.verifyOrder
 import java.util.Base64
-import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
@@ -37,7 +36,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -54,7 +52,6 @@ class PinViewModelTest : RobolectricTest() {
   private var secureSharedPreference: SecureSharedPreference = mockk(relaxUnitFun = true)
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var pinViewModel: PinViewModel
-  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Before
   fun setUp() {
@@ -64,7 +61,7 @@ class PinViewModelTest : RobolectricTest() {
         secureSharedPreference = secureSharedPreference,
         sharedPreferences = sharedPreferenceHelper,
         configurationRegistry = configurationRegistry,
-        dispatcherProvider = dispatcherProvider
+        dispatcherProvider = coroutineTestRule.testDispatcherProvider
       )
   }
 
