@@ -77,7 +77,6 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
-import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -1824,12 +1823,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         filter(RelatedPerson.PATIENT, { value = "${patient.resourceType.name}/${patient.id}" })
       }
     }
-
-    val slotPopulationResources = slot<ArrayList<Resource>>()
-    coVerify {
-      questionnaireViewModel.populateQuestionnaireResponse(any(), capture(slotPopulationResources))
-    }
-    assertTrue(slotPopulationResources.captured.isEmpty())
   }
 
   @Test
@@ -1984,82 +1977,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     assertTrue("Questionnaire Response has no item", result.hasItem())
 
     coVerify { fhirEngine.get(group.resourceType, group.id) }
-
-    val slotPopulationResources = slot<ArrayList<Resource>>()
-    coVerify {
-      questionnaireViewModel.populateQuestionnaireResponse(any(), capture(slotPopulationResources))
-    }
-    assertTrue(slotPopulationResources.captured.isEmpty())
-  }
-
-  @Test
-  fun testQRFromPopulationWithTaskBaseResourceTypeIsNotSupported() {
-    val questionnaire =
-      Questionnaire().apply {
-        id = "12345"
-        item =
-          listOf(
-            Questionnaire.QuestionnaireItemComponent().apply {
-              linkId = "patient-first-name"
-              type = Questionnaire.QuestionnaireItemType.TEXT
-              item =
-                listOf(
-                  Questionnaire.QuestionnaireItemComponent().apply {
-                    linkId = "patient-last-name"
-                    type = Questionnaire.QuestionnaireItemType.TEXT
-                  }
-                )
-            },
-            Questionnaire.QuestionnaireItemComponent().apply {
-              linkId = "patient-age"
-              type = Questionnaire.QuestionnaireItemType.INTEGER
-            },
-            Questionnaire.QuestionnaireItemComponent().apply {
-              linkId = "patient-contact"
-              type = Questionnaire.QuestionnaireItemType.GROUP
-              item =
-                listOf(
-                  Questionnaire.QuestionnaireItemComponent().apply {
-                    linkId = "patient-dob"
-                    type = Questionnaire.QuestionnaireItemType.DATE
-                  },
-                  Questionnaire.QuestionnaireItemComponent().apply {
-                    linkId = "patient-related-person"
-                    type = Questionnaire.QuestionnaireItemType.GROUP
-                    item =
-                      listOf(
-                        Questionnaire.QuestionnaireItemComponent().apply {
-                          linkId = "rp-name"
-                          type = Questionnaire.QuestionnaireItemType.TEXT
-                        }
-                      )
-                  }
-                )
-            }
-          )
-      }
-    val task = Task().apply { id = "112233" }
-
-    // ensures QR from DB returns null, so it will trigger the QR from population
-    coEvery {
-      fhirEngine.search<QuestionnaireResponse> {
-        filter(QuestionnaireResponse.SUBJECT, { value = task.id })
-        filter(QuestionnaireResponse.QUESTIONNAIRE, { value = questionnaire.id })
-      }
-    } returns listOf()
-
-    val result = runBlocking {
-      questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
-        questionnaire,
-        task.id,
-        task.resourceType,
-        questionnaireConfig
-      )
-    }
-
-    assertTrue("Questionnaire Response has no item", result.hasItem())
-
-    coVerify(inverse = true) { fhirEngine.get(task.resourceType, task.id) }
 
     val slotPopulationResources = slot<ArrayList<Resource>>()
     coVerify {

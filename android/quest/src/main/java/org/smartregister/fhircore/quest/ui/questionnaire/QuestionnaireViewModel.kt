@@ -758,7 +758,11 @@ constructor(
     subjectType: ResourceType
   ): ArrayList<Resource> {
     val populationResources = arrayListOf<Resource>()
-    populationResources.add(defaultRepository.loadResource(subjectId, subjectType))
+    try {
+      populationResources.add(defaultRepository.loadResource(subjectId, subjectType))
+    } catch (exception: ResourceNotFoundException) {
+      Timber.e(exception)
+    }
     if (subjectType == ResourceType.Patient) {
       loadRelatedPerson(subjectId)?.run { populationResources.add(this) }
     }
