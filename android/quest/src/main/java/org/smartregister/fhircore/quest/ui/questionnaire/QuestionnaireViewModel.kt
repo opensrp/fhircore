@@ -654,7 +654,7 @@ constructor(
     questionnaire: Questionnaire,
     subjectId: String,
     subjectType: ResourceType,
-    configComputedRuleValues: Map<String, Any> = emptyMap()
+    configComputedRuleValues: Map<String, Any> = emptyMap(),
     questionnaireConfig: QuestionnaireConfig,
   ): QuestionnaireResponse {
     var questionnaireResponse: QuestionnaireResponse? = null
