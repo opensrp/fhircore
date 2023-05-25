@@ -50,7 +50,7 @@ constructor(
     healthModule: HealthModule
   ): List<RegisterData> =
     withContext(dispatcherProvider.io()) {
-      tracer.traceSuspend("PatientRegister.loadRegisterData") {
+      tracer.traceSuspend("AppRegisterRepository.loadRegisterData") {
         registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterData(
           currentPage = currentPage,
           appFeatureName = appFeatureName
@@ -66,7 +66,7 @@ constructor(
     healthModule: HealthModule
   ): List<RegisterData> =
     withContext(dispatcherProvider.io()) {
-      tracer.traceSuspend("PatientRegister.searchByName") {
+      tracer.traceSuspend("AppRegisterRepository.searchByName") {
         registerDaoFactory.registerDaoMap[healthModule]?.searchByName(
           currentPage = currentPage,
           appFeatureName = appFeatureName,
@@ -113,7 +113,7 @@ constructor(
     healthModule: HealthModule
   ): Long =
     withContext(dispatcherProvider.io()) {
-      tracer.traceSuspend("PatientRegister.countRegisterData") {
+      tracer.traceSuspend("AppRegisterRepository.countRegisterData") {
         registerDaoFactory.registerDaoMap[healthModule]?.countRegisterData(appFeatureName) ?: 0
       }
     }
@@ -124,7 +124,7 @@ constructor(
     patientId: String
   ): ProfileData? =
     withContext(dispatcherProvider.io()) {
-      tracer.traceSuspend("PatientRegister.loadPatientProfileData") {
+      tracer.traceSuspend("AppRegisterRepository.loadPatientProfileData") {
         registerDaoFactory.registerDaoMap[healthModule]?.loadProfileData(
           appFeatureName = appFeatureName,
           resourceId = patientId
@@ -137,7 +137,7 @@ constructor(
     otherPatientResource: List<Resource>
   ): List<RegisterData> =
     withContext(dispatcherProvider.io()) {
-      tracer.traceSuspend("PatientRegister.loadChildrenRegisterData") {
+      tracer.traceSuspend("AppRegisterRepository.loadChildrenRegisterData") {
         val dataList: ArrayList<Patient> = arrayListOf()
         val hivRegisterDao = registerDaoFactory.registerDaoMap[healthModule] as HivRegisterDao
 

@@ -44,9 +44,9 @@ import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class PatientRegisterRepositoryTest {
+class AppRegisterRepositoryTest {
 
-  private lateinit var patientRegisterRepository: PatientRegisterRepository
+  private lateinit var repository: AppRegisterRepository
   private val fhirEngine: FhirEngine = mockk()
   private val dispatcherProvider: DefaultDispatcherProvider = mockk()
   private val registerDaoFactory: RegisterDaoFactory = mockk()
@@ -54,8 +54,7 @@ class PatientRegisterRepositoryTest {
 
   @Before
   fun setUp() {
-    patientRegisterRepository =
-      PatientRegisterRepository(fhirEngine, dispatcherProvider, registerDaoFactory, tracer)
+    repository = AppRegisterRepository(fhirEngine, dispatcherProvider, registerDaoFactory, tracer)
     mockkConstructor(DefaultRepository::class)
     mockkStatic("kotlinx.coroutines.DispatchersKt")
     every { anyConstructed<DefaultRepository>().fhirEngine } returns fhirEngine
@@ -82,8 +81,7 @@ class PatientRegisterRepositoryTest {
     coEvery { registerDao.loadRegisterData(currentPage, any(), appFeatureName) } returns
       registerDataList
 
-    val result =
-      patientRegisterRepository.loadRegisterData(currentPage, false, appFeatureName, healthModule)
+    val result = repository.loadRegisterData(currentPage, false, appFeatureName, healthModule)
 
     coVerify { registerDao.loadRegisterData(currentPage, any(), appFeatureName) }
     assertEquals(registerDataList, result)
@@ -104,8 +102,7 @@ class PatientRegisterRepositoryTest {
     coEvery { registerDao.searchByName(nameQuery, currentPage, appFeatureName) } returns
       registerDataList
 
-    val result =
-      patientRegisterRepository.searchByName(nameQuery, currentPage, appFeatureName, healthModule)
+    val result = repository.searchByName(nameQuery, currentPage, appFeatureName, healthModule)
 
     coVerify { registerDao.searchByName(nameQuery, currentPage, appFeatureName) }
     assertEquals(registerDataList, result)
@@ -123,7 +120,7 @@ class PatientRegisterRepositoryTest {
     every { registerDaoFactory.registerDaoMap } returns registerDaoMap
     coEvery { registerDao.countRegisterData(appFeatureName) } returns count
 
-    val result = patientRegisterRepository.countRegisterData(appFeatureName, healthModule)
+    val result = repository.countRegisterData(appFeatureName, healthModule)
 
     coVerify { registerDao.countRegisterData(appFeatureName) }
     assertEquals(count, result)
@@ -142,8 +139,7 @@ class PatientRegisterRepositoryTest {
     every { registerDaoFactory.registerDaoMap } returns registerDaoMap
     coEvery { registerDao.loadProfileData(appFeatureName, patientId) } returns profileData
 
-    val result =
-      patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
+    val result = repository.loadPatientProfileData(appFeatureName, healthModule, patientId)
 
     coVerify { registerDao.loadProfileData(appFeatureName, patientId) }
     assertEquals(profileData, result)
@@ -162,8 +158,7 @@ class PatientRegisterRepositoryTest {
     coEvery { hivRegisterDao.transformChildrenPatientToRegisterData(any()) } returns
       registerDataList
 
-    val result =
-      patientRegisterRepository.loadChildrenRegisterData(healthModule, otherPatientResource)
+    val result = repository.loadChildrenRegisterData(healthModule, otherPatientResource)
 
     coVerify { hivRegisterDao.transformChildrenPatientToRegisterData(otherPatientResource) }
     assertEquals(registerDataList, result)
