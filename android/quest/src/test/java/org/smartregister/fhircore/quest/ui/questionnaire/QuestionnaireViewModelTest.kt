@@ -1363,7 +1363,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       deactivateMembers = deactivateMembers
     )
 
-    coVerify { defaultRepo.removeGroup(groupId, deactivateMembers) }
+    coVerify { defaultRepo.removeGroup(groupId, deactivateMembers, emptyMap()) }
     assertTrue(questionnaireViewModel.removeOperation.value!!)
   }
 
@@ -1386,7 +1386,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       defaultRepo.removeGroupMember(
         memberId = memberId,
         groupId = groupIdentifier,
-        groupMemberResourceType = memberResourceType
+        groupMemberResourceType = memberResourceType,
+        emptyMap()
       )
     }
     assertTrue(questionnaireViewModel.removeOperation.value!!)

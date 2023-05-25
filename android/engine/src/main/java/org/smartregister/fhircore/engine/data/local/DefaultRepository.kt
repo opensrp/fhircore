@@ -85,12 +85,13 @@ constructor(
     subjectId: String,
     subjectType: ResourceType = ResourceType.Patient,
     subjectParam: ReferenceClientParam,
-    filters: List<DataQuery>? = null
+    filters: List<DataQuery>? = null,
+    configComputedRuleValues: Map<String, Any> = emptyMap()
   ): List<T> =
     withContext(dispatcherProvider.io()) {
       fhirEngine.search {
         filterByResourceTypeId(subjectParam, subjectType, subjectId)
-        filters?.forEach { filterBy(it) }
+        filters?.forEach { filterBy(it, configComputedRuleValues = configComputedRuleValues) }
       }
     }
 
@@ -98,12 +99,13 @@ constructor(
     token: TokenClientParam,
     subjectType: ResourceType,
     subjectId: String,
-    filters: List<DataQuery> = listOf()
+    filters: List<DataQuery> = listOf(),
+    configComputedRuleValues: Map<String, Any>
   ): List<T> =
     withContext(dispatcherProvider.io()) {
       fhirEngine.search {
         filterByResourceTypeId(token, subjectType, subjectId)
-        filters.forEach { filterBy(it) }
+        filters.forEach { filterBy(it, configComputedRuleValues) }
       }
     }
 
@@ -151,19 +153,21 @@ constructor(
     }
   }
 
-  suspend fun loadManagingEntity(group: Group) =
+  suspend fun loadManagingEntity(group: Group, configComputedRuleValues: Map<String, Any>) =
     group.managingEntity?.let { reference ->
       searchResourceFor<RelatedPerson>(
         token = RelatedPerson.RES_ID,
         subjectType = ResourceType.RelatedPerson,
-        subjectId = reference.extractId()
+        subjectId = reference.extractId(),
+        configComputedRuleValues = configComputedRuleValues
       )
         .firstOrNull()
         ?.let { relatedPerson ->
           searchResourceFor<Patient>(
               token = Patient.RES_ID,
               subjectType = ResourceType.Patient,
-              subjectId = relatedPerson.patient.extractId()
+              subjectId = relatedPerson.patient.extractId(),
+              configComputedRuleValues = configComputedRuleValues
             )
             .firstOrNull()
         }
@@ -212,7 +216,11 @@ constructor(
     }
   }
 
-  suspend fun removeGroup(groupId: String, isDeactivateMembers: Boolean?) {
+  suspend fun removeGroup(
+    groupId: String,
+    isDeactivateMembers: Boolean?,
+    configComputedRuleValues: Map<String, Any>
+  ) {
     loadResource<Group>(groupId)?.let { group ->
       if (!group.active) throw IllegalStateException("Group already deleted")
       group
@@ -221,7 +229,8 @@ constructor(
           searchResourceFor<RelatedPerson>(
             token = RelatedPerson.RES_ID,
             subjectType = ResourceType.RelatedPerson,
-            subjectId = reference.extractId()
+            subjectId = reference.extractId(),
+            configComputedRuleValues = configComputedRuleValues
           )
         }
         ?.firstOrNull()
@@ -250,7 +259,8 @@ constructor(
   suspend fun removeGroupMember(
     memberId: String,
     groupId: String?,
-    groupMemberResourceType: String?
+    groupMemberResourceType: String?,
+    configComputedRuleValues: Map<String, Any>
   ) {
     val memberResourceType =
       groupMemberResourceType?.resourceClassType()?.newInstance()?.resourceType
@@ -277,7 +287,8 @@ constructor(
               searchResourceFor<RelatedPerson>(
                 token = RelatedPerson.RES_ID,
                 subjectType = ResourceType.RelatedPerson,
-                subjectId = reference.extractId()
+                subjectId = reference.extractId(),
+                configComputedRuleValues = configComputedRuleValues
               )
             }
             ?.firstOrNull()

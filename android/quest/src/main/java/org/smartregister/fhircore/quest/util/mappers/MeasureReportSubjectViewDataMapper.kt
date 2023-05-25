@@ -17,22 +17,21 @@
 package org.smartregister.fhircore.quest.util.mappers
 
 import android.content.Context
-import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
-class MeasureReportPatientViewDataMapper
+class MeasureReportSubjectViewDataMapper
 @Inject
 constructor(
   @ApplicationContext val context: Context,
   val fhirPathDataExtractor: FhirPathDataExtractor
-) : DataMapper<ResourceData, MeasureReportPatientViewData> {
+) : DataMapper<ResourceData, MeasureReportSubjectViewData> {
 
-  override fun transformInputToOutputModel(inputModel: ResourceData): MeasureReportPatientViewData {
+  override fun transformInputToOutputModel(inputModel: ResourceData): MeasureReportSubjectViewData {
     // TODO Refactor measure reporting register to use register configuration
     //  and update MeasureReportPatientViewDataMapperTest#testMapToOutputModelPatient()
     //  once refactor is complete
@@ -46,11 +45,10 @@ constructor(
           inputModel.relatedResourcesMap.getValue(ResourceType.Patient.name).first() as Patient
       }*/
 
-    return MeasureReportPatientViewData(
+    return MeasureReportSubjectViewData(
+      type = inputModel.baseResourceType,
       logicalId = inputModel.baseResourceId,
-      name = "",
-      gender = "",
-      age = ",",
+      display = inputModel.computedValuesMap["practitionerName"]?.toString() ?: "",
       family = ""
     )
   }
