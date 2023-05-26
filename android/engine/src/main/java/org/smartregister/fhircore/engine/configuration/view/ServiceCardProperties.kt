@@ -43,7 +43,9 @@ data class ServiceCardProperties(
   override fun interpolate(computedValuesMap: Map<String, Any>): ServiceCardProperties {
     return this.copy(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),
-      visible = visible.interpolate(computedValuesMap)
+      visible = visible.interpolate(computedValuesMap),
+      serviceMemberIcons = serviceMemberIcons?.interpolate(computedValuesMap),
+      clickable = clickable.interpolate(computedValuesMap)
     )
   }
 }
