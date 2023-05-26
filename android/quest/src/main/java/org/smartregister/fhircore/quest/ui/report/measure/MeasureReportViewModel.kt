@@ -27,7 +27,6 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
-import androidx.paging.map
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
@@ -40,7 +39,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -59,7 +57,7 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.SDF_D_MMM_YYYY_WITH_COMA
@@ -108,7 +106,7 @@ constructor(
   val registerRepository: RegisterRepository,
   val measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper,
   val defaultRepository: DefaultRepository,
-  val rulesExecutor: RulesExecutor
+  val resourceDataRulesExecutor: ResourceDataRulesExecutor
 ) : ViewModel() {
 
   val measureReportConfigList: MutableList<MeasureReportConfig> = mutableListOf()
@@ -154,7 +152,7 @@ constructor(
           measureReportConfiguration = measureReportConfiguration,
           registerConfiguration = registerConfiguration,
           registerRepository = registerRepository,
-          rulesExecutor = rulesExecutor
+          resourceDataRulesExecutor = resourceDataRulesExecutor
         )
       }
       .flow
@@ -262,7 +260,7 @@ constructor(
                 measureReportConfiguration = measureReportConfig,
                 registerConfiguration = registerConfiguration,
                 registerRepository = registerRepository,
-                rulesExecutor = rulesExecutor
+                resourceDataRulesExecutor = resourceDataRulesExecutor
               ),
               measureReportSubjectViewDataMapper,
             )

@@ -25,7 +25,6 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import java.util.UUID
 import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DataRequirement
@@ -56,7 +55,6 @@ import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 
-@Singleton
 open class DefaultRepository
 @Inject
 constructor(
@@ -182,7 +180,7 @@ constructor(
     if (managingEntityConfig?.resourceType == ResourceType.Patient) {
       val relatedPerson =
         if (group.managingEntity.reference != null) {
-          fhirEngine.get<RelatedPerson>(group.managingEntity.reference.extractLogicalIdUuid())
+          fhirEngine.get(group.managingEntity.reference.extractLogicalIdUuid())
         } else {
           RelatedPerson().apply { id = UUID.randomUUID().toString() }
         }

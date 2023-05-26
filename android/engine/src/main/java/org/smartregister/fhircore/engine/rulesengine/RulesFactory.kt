@@ -59,9 +59,7 @@ constructor(
   val dispatcherProvider: DispatcherProvider
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
-  init {
-    rulesEngine.registerRuleListener(this)
-  }
+  private var facts: Facts = Facts()
 
   /**
    * This function executes the actions defined in the [Rule] s generated from the provided list of
