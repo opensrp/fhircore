@@ -50,9 +50,7 @@ import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
-import org.smartregister.fhircore.quest.util.extensions.clickable
 import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
@@ -65,16 +63,15 @@ fun ActionableButton(
   resourceData: ResourceData,
   navController: NavController
 ) {
-  if (buttonProperties.visible.interpolate(resourceData.computedValuesMap).toBoolean()) {
-    val interpolatedButtonProperties = buttonProperties.interpolate(resourceData.computedValuesMap)
+  if (buttonProperties.visible.toBoolean()) {
     val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
-    val status = interpolatedButtonProperties.status
-    val backgroundColor = interpolatedButtonProperties.backgroundColor
-    val isButtonEnabled = interpolatedButtonProperties.enabled.toBoolean()
-    val clickable = buttonProperties.clickable(resourceData)
+    val status = buttonProperties.status
+    val backgroundColor = buttonProperties.backgroundColor
+    val isButtonEnabled = buttonProperties.enabled.toBoolean()
+    val clickable = buttonProperties.clickable.toBoolean()
     OutlinedButton(
       onClick = {
-        if (interpolatedButtonProperties.enabled.toBoolean() &&
+        if (buttonProperties.enabled.toBoolean() &&
             (status == ServiceStatus.DUE.name || status == ServiceStatus.OVERDUE.name || clickable)
         ) {
           buttonProperties.actions.handleClickEvent(
@@ -99,7 +96,7 @@ fun ActionableButton(
           .padding(horizontal = 12.dp, vertical = 4.dp)
           .wrapContentHeight()
           .testTag(ACTIONABLE_BUTTON_TEST_TAG),
-      enabled = interpolatedButtonProperties.enabled.toBoolean(),
+      enabled = buttonProperties.enabled.toBoolean(),
       border = BorderStroke(width = 0.5.dp, color = statusColor.copy(alpha = 0.1f)),
       elevation = null
     ) {
@@ -118,7 +115,7 @@ fun ActionableButton(
         modifier = Modifier.size(16.dp)
       )
       Text(
-        text = interpolatedButtonProperties.text ?: "",
+        text = buttonProperties.text ?: "",
         fontWeight = FontWeight.Medium,
         color =
           if (isButtonEnabled)
