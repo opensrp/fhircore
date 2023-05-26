@@ -238,7 +238,6 @@ private fun BigServiceButton(
   navController: NavController,
   resourceData: ResourceData
 ) {
-  val buttonProperties = buttonProperties.interpolate(resourceData.computedValuesMap)
   val status = buttonProperties.status
   val isButtonEnabled = buttonProperties.enabled.toBoolean()
   val backgroundColor = buttonProperties.backgroundColor

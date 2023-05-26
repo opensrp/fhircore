@@ -47,20 +47,22 @@ data class ActionConfig(
       }
     }
 
-  fun display(computedValuesMap: Map<String, Any> = emptyMap()): String =
-    display?.interpolate(computedValuesMap) ?: ""
-
-  fun interpolateManagingEntity(computedValuesMap: Map<String, Any>) =
-    with(managingEntity) {
-      managingEntity?.copy(
-        dialogTitle = this?.dialogTitle?.interpolate(computedValuesMap),
-        dialogWarningMessage = this?.dialogWarningMessage?.interpolate(computedValuesMap),
-        dialogContentMessage = this?.dialogContentMessage?.interpolate(computedValuesMap),
-        noMembersErrorMessage = this?.noMembersErrorMessage?.interpolate(computedValuesMap) ?: "",
-        managingEntityReassignedMessage =
-          this?.managingEntityReassignedMessage?.interpolate(computedValuesMap) ?: ""
-      )
-    }
+  fun interpolate(computedValuesMap: Map<String, Any>): ActionConfig =
+    this.copy(
+      display = display?.interpolate(computedValuesMap),
+      managingEntity =
+        managingEntity?.copy(
+          dialogTitle = managingEntity.dialogTitle?.interpolate(computedValuesMap),
+          dialogWarningMessage =
+            managingEntity.dialogWarningMessage?.interpolate(computedValuesMap),
+          dialogContentMessage =
+            managingEntity.dialogContentMessage?.interpolate(computedValuesMap),
+          noMembersErrorMessage =
+            managingEntity.noMembersErrorMessage.interpolate(computedValuesMap),
+          managingEntityReassignedMessage =
+            managingEntity.managingEntityReassignedMessage.interpolate(computedValuesMap)
+        )
+    )
 
   companion object {
     const val PREPOPULATE_PARAM_TYPE = "PREPOPULATE"

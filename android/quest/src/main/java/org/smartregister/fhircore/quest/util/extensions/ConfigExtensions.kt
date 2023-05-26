@@ -20,7 +20,6 @@ import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
@@ -44,12 +43,13 @@ fun List<ActionConfig>.handleClickEvent(
   questionnaireResponse: QuestionnaireResponse? = null
 ) {
   val onClickAction = this.find { it.trigger == ActionTrigger.ON_CLICK }
-  onClickAction?.let { actionConfig ->
+  onClickAction?.let { theConfig ->
+    val computedValuesMap = resourceData?.computedValuesMap ?: emptyMap()
+    val actionConfig = theConfig.interpolate(computedValuesMap)
     when (onClickAction.workflow) {
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
-          val questionnaireConfigInterpolated =
-            questionnaireConfig.interpolate(resourceData?.computedValuesMap ?: emptyMap())
+          val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
 
           val intentBundle =
             when (questionnaireConfigInterpolated.type) {
@@ -95,7 +95,7 @@ fun List<ActionConfig>.handleClickEvent(
             Pair(NavigationArg.REGISTER_ID, actionConfig.id ?: navMenu?.id),
             Pair(
               NavigationArg.SCREEN_TITLE,
-              resourceData?.let { actionConfig.display(it.computedValuesMap) } ?: navMenu?.display
+              resourceData?.let { actionConfig.display } ?: navMenu?.display ?: ""
             ),
             Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
             Pair(NavigationArg.PARAMS, interpolateActionParamsValue(actionConfig, resourceData))
@@ -156,12 +156,9 @@ fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = tr
 
 /**
  * Function to convert the elements of an array that have paramType [ActionParameterType.PARAMDATA]
- * to a map of their keys to values. It also returns [emptyMap] if [actionParameters] is null.
- *
- * @return Map of the values or emptyMap if [array] is null
- * @property array The array of ActionParameter elements to convert
+ * to a map of [ActionParameter.key] against [ActionParameter](value).
  */
-fun <K, V> Array<ActionParameter>?.toParamDataMap() =
+fun Array<ActionParameter>?.toParamDataMap(): Map<String, String> =
   this?.asSequence()?.filter { it.paramType == ActionParameterType.PARAMDATA }?.associate {
     it.key to it.value
   }
