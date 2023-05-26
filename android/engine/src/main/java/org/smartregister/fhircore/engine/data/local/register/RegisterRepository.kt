@@ -118,7 +118,12 @@ constructor(
       }
 
     val baseFhirResources =
-      withContext(dispatcherProvider.io()) { fhirEngine.search<Resource>(search) }
+      kotlin
+        .runCatching {
+          withContext(dispatcherProvider.io()) { fhirEngine.search<Resource>(search) }
+        }
+        .onFailure { Timber.e(it, "Error retrieving resources. Empty list returned by default") }
+        .getOrDefault(emptyList())
 
     return baseFhirResources.map { baseFhirResource ->
       val retrievedRelatedResources =
@@ -206,10 +211,19 @@ constructor(
                 configComputedRuleValues = configComputedRuleValues
               )
             }
-          val count = fhirEngine.count(search)
-          relatedResourceWrapper.relatedResourceCountMap[
-            resourceConfig.id ?: resourceConfig.resource.name] =
-            LinkedList<RelatedResourceCount>().apply { add(RelatedResourceCount(count = count)) }
+          val key = resourceConfig.id ?: resourceConfig.resource.name
+          search.count(
+            onSuccess = {
+              relatedResourceWrapper.relatedResourceCountMap[key] =
+                LinkedList<RelatedResourceCount>().apply { add(RelatedResourceCount(count = it)) }
+            },
+            onFailure = {
+              Timber.e(
+                it,
+                "Error retrieving total count for all related resourced identified by $key"
+              )
+            }
+          )
         } else {
           computeCountForEachRelatedResource(
             resources = resources,
@@ -237,6 +251,16 @@ constructor(
     return relatedResourceWrapper
   }
 
+  suspend fun Search.count(
+    onSuccess: (Long) -> Unit = {},
+    onFailure: (Throwable) -> Unit = { throwable -> Timber.e(throwable, "Error counting data") }
+  ): Long =
+    kotlin
+      .runCatching { withContext(dispatcherProvider.io()) { fhirEngine.count(this@count) } }
+      .onSuccess { count -> onSuccess(count) }
+      .onFailure { throwable -> onFailure(throwable) }
+      .getOrDefault(0)
+
   private suspend fun computeCountForEachRelatedResource(
     resources: List<Resource>,
     resourceConfig: ResourceConfig,
@@ -244,6 +268,7 @@ constructor(
     configComputedRuleValues: Map<String, Any>
   ) {
     val relatedResourceCountLinkedList = LinkedList<RelatedResourceCount>()
+    val key = resourceConfig.id ?: resourceConfig.resource.name
     resources.forEach { baseResource ->
       val search =
         Search(type = resourceConfig.resource).apply {
@@ -257,19 +282,27 @@ constructor(
             configComputedRuleValues = configComputedRuleValues
           )
         }
-      val count = fhirEngine.count(search)
-      relatedResourceCountLinkedList.add(
-        RelatedResourceCount(
-          relatedResourceType = resourceConfig.resource,
-          parentResourceId = baseResource.logicalId,
-          count = count
-        )
+      search.count(
+        onSuccess = {
+          relatedResourceCountLinkedList.add(
+            RelatedResourceCount(
+              relatedResourceType = resourceConfig.resource,
+              parentResourceId = baseResource.logicalId,
+              count = it
+            )
+          )
+        },
+        onFailure = {
+          Timber.e(
+            it,
+            "Error retrieving count for ${baseResource.logicalId.asReference(baseResource.resourceType)} for related resource identified ID $key"
+          )
+        }
       )
     }
 
     // Add each related resource count query result to map
-    relatedResourceWrapper.relatedResourceCountMap[
-      resourceConfig.id ?: resourceConfig.resource.name] = relatedResourceCountLinkedList
+    relatedResourceWrapper.relatedResourceCountMap[key] = relatedResourceCountLinkedList
   }
 
   private fun Search.applyConfiguredSortAndFilters(
@@ -345,37 +378,57 @@ constructor(
         }
       }
 
-      val searchResult: Map<Resource, Map<ResourceType, List<Resource>>> =
-        fhirEngine.searchWithRevInclude(isRevInclude, search)
+      searchRelatedResources(
+        isRevInclude = isRevInclude,
+        search = search,
+        relatedResourcesConfigsMap = relatedResourcesConfigsMap,
+        relatedResourceWrapper = relatedResourceWrapper,
+        configComputedRuleValues = configComputedRuleValues
+      )
+    }
+  }
 
-      searchResult.values.forEach { theRelatedResourcesMap: Map<ResourceType, List<Resource>> ->
-        theRelatedResourcesMap.forEach { entry ->
-          val currentResourceConfigs = relatedResourcesConfigsMap[entry.key]
+  private suspend fun searchRelatedResources(
+    isRevInclude: Boolean,
+    search: Search,
+    relatedResourcesConfigsMap: Map<ResourceType, List<ResourceConfig>>,
+    relatedResourceWrapper: RelatedResourceWrapper,
+    configComputedRuleValues: Map<String, Any>
+  ) {
+    kotlin
+      .runCatching { fhirEngine.searchWithRevInclude<Resource>(isRevInclude, search) }
+      .onSuccess { searchResult ->
+        searchResult.values.forEach { theRelatedResourcesMap: Map<ResourceType, List<Resource>> ->
+          theRelatedResourcesMap.forEach { entry ->
+            val currentResourceConfigs = relatedResourcesConfigsMap[entry.key]
 
-          val key = // Use configured id as key otherwise default to ResourceType
-            if (relatedResourcesConfigsMap.containsKey(entry.key)) {
-              currentResourceConfigs?.firstOrNull()?.id ?: entry.key.name
-            } else entry.key.name
+            val key = // Use configured id as key otherwise default to ResourceType
+              if (relatedResourcesConfigsMap.containsKey(entry.key)) {
+                currentResourceConfigs?.firstOrNull()?.id ?: entry.key.name
+              } else entry.key.name
 
-          // All nested resources flattened to one map by adding to existing list
-          relatedResourceWrapper.relatedResourceMap[key] =
-            relatedResourceWrapper
-              .relatedResourceMap
-              .getOrPut(key) { LinkedList() }
-              .plus(entry.value)
+            // All nested resources flattened to one map by adding to existing list
+            relatedResourceWrapper.relatedResourceMap[key] =
+              relatedResourceWrapper
+                .relatedResourceMap
+                .getOrPut(key) { LinkedList() }
+                .plus(entry.value)
 
-          currentResourceConfigs?.forEach { resourceConfig ->
-            if (resourceConfig.relatedResources.isNotEmpty())
-              retrieveRelatedResources(
-                resources = entry.value,
-                relatedResourcesConfigs = resourceConfig.relatedResources,
-                relatedResourceWrapper = relatedResourceWrapper,
-                configComputedRuleValues = configComputedRuleValues
-              )
+            currentResourceConfigs?.forEach { resourceConfig ->
+              if (resourceConfig.relatedResources.isNotEmpty())
+                retrieveRelatedResources(
+                  resources = entry.value,
+                  relatedResourcesConfigs = resourceConfig.relatedResources,
+                  relatedResourceWrapper = relatedResourceWrapper,
+                  configComputedRuleValues = configComputedRuleValues
+                )
+            }
           }
         }
       }
-    }
+      .onFailure {
+        Timber.e(it, "Error fetching configured related resources: $relatedResourcesConfigsMap")
+      }
   }
 
   private fun List<ResourceConfig>.revIncludeRelatedResourceConfigs(isRevInclude: Boolean) =
@@ -412,7 +465,11 @@ constructor(
           configComputedRuleValues = configComputedRuleValues
         )
       }
-    return withContext(dispatcherProvider.io()) { fhirEngine.count(search) }
+    return search.count(
+      onFailure = {
+        Timber.e(it, "Error counting register data for register id: ${registerConfiguration.id}")
+      }
+    )
   }
 
   override suspend fun loadProfileData(
