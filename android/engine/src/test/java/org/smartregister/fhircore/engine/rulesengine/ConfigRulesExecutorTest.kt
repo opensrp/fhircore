@@ -39,9 +39,9 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
-class DataQueryRulesExecutorTest : RobolectricTest() {
+class ConfigRulesExecutorTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  private lateinit var dataQueryRulesExecutor: DataQueryRulesExecutor
+  private lateinit var configRulesExecutor: ConfigRulesExecutor
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val rulesEngine = mockk<DefaultRulesEngine>()
 
@@ -49,7 +49,7 @@ class DataQueryRulesExecutorTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
-    dataQueryRulesExecutor = spyk(DataQueryRulesExecutor(fhirPathDataExtractor))
+    configRulesExecutor = spyk(ConfigRulesExecutor(fhirPathDataExtractor))
   }
 
   @Test
@@ -63,10 +63,10 @@ class DataQueryRulesExecutorTest : RobolectricTest() {
       )
     val ruleConfigs = listOf(ruleConfig)
 
-    ReflectionHelpers.setField(dataQueryRulesExecutor, "rulesEngine", rulesEngine)
+    ReflectionHelpers.setField(configRulesExecutor, "rulesEngine", rulesEngine)
     every { rulesEngine.fire(any(), any()) } just runs
-    val rules = dataQueryRulesExecutor.generateRules(ruleConfigs)
-    dataQueryRulesExecutor.fireRules(rules)
+    val rules = configRulesExecutor.generateRules(ruleConfigs)
+    configRulesExecutor.fireRules(rules)
     val factsSlot = slot<Facts>()
     val rulesSlot = slot<Rules>()
     verify { rulesEngine.fire(capture(rulesSlot), capture(factsSlot)) }
