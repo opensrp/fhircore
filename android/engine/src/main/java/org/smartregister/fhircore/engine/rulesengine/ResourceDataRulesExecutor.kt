@@ -32,7 +32,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
 /**
- * This class is used to to fire rules used to extract and manipulate data from FHIR resources.
+ * This class is used to fire rules used to extract and manipulate data from FHIR resources.
  *
  * NOTE: that the [Facts] object is not thread safe, each thread should have its own set of data to
  * work on. When used in multi-threaded environment may exhibit unexpected behavior and return wrong
