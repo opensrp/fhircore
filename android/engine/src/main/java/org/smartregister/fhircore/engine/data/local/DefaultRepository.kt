@@ -307,7 +307,7 @@ constructor(
     }
   }
 
-  suspend fun delete(resourceType: String, resourceId: String) {
-    fhirEngine.delete(resourceType.resourceClassType().newInstance().resourceType, resourceId)
+  suspend fun delete(resourceType: ResourceType, resourceId: String) {
+    fhirEngine.delete(resourceType, resourceId)
   }
 }

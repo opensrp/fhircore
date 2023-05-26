@@ -273,7 +273,7 @@ class QuestionnaireExtensionTest {
   }
 
   @Test
-  fun testFindQuestionnaireItemComponentPrepopulateRemovesInitialExpression() {
+  fun testFindQuestionnaireItemComponentPrepopulateDoesNotRemoveInitialExpression() {
     val theLinkId = "linkId"
     val questionnaireItemComponent =
       Questionnaire.QuestionnaireItemComponent().apply {
@@ -287,7 +287,7 @@ class QuestionnaireExtensionTest {
         )
       }
     listOf(questionnaireItemComponent).prePopulateInitialValues("", emptyList())
-    Assert.assertFalse(questionnaireItemComponent.hasExtension(ITEM_INITIAL_EXPRESSION_URL))
+    Assert.assertTrue(questionnaireItemComponent.hasExtension(ITEM_INITIAL_EXPRESSION_URL))
   }
 
   @Test

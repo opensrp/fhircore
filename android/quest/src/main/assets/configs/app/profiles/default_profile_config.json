@@ -1061,8 +1061,10 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
+                          "resourceType": "Patient",
                           "resourceIdentifier": "@{taskFor}"
                         },
                         "params": [
@@ -1330,6 +1332,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -1450,6 +1453,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -1570,6 +1574,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -1690,6 +1695,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -1810,6 +1816,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -1930,6 +1937,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -2049,6 +2057,7 @@
                         "workflow": "LAUNCH_QUESTIONNAIRE",
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
+
                           "title": "@{taskDescription}",
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
@@ -2170,6 +2179,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
