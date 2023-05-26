@@ -35,6 +35,7 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
+import org.smartregister.fhircore.engine.util.extension.asDdMmYyyy
 import org.smartregister.fhircore.engine.util.extension.canBeCompleted
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
@@ -45,6 +46,7 @@ import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyMemberView
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileRowItem
 import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSection
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
+import org.smartregister.fhircore.quest.util.extensions.isHomeTracingTask
 
 class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context: Context) :
   DataMapper<ProfileData, ProfileViewData> {
@@ -73,6 +75,10 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           dob = inputModel.birthdate.formatDob(),
           identifier = inputModel.identifier,
           address = inputModel.address,
+          addressDistrict = inputModel.addressDistrict,
+          addressTracingCatchment = inputModel.addressTracingCatchment,
+          addressPhysicalLocator = inputModel.addressPhysicalLocator,
+          phoneContacts = inputModel.phoneContacts,
           identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
           showIdentifierInProfile = inputModel.showIdentifierInProfile,
           showListsHighlights = false,
@@ -80,6 +86,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           otherPatients = inputModel.otherPatients,
           viewChildText =
             context.getString(R.string.view_children_x, inputModel.otherPatients.size.toString()),
+          observations = inputModel.observations,
           carePlans = inputModel.services,
           guardians = inputModel.guardians,
           tasks =
@@ -168,6 +175,28 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                     }
               )
             }
+        )
+      is ProfileData.TracingProfileData ->
+        ProfileViewData.TracingProfileData(
+          logicalId = inputModel.logicalId,
+          name = inputModel.name,
+          sex = inputModel.gender.translateGender(context),
+          age = inputModel.age,
+          isHomeTracing = inputModel.tasks.firstOrNull { x -> x.isHomeTracingTask() } != null,
+          currentAttempt = inputModel.currentAttempt,
+          dueDate = inputModel.dueDate?.asDdMmYyyy(),
+          identifierKey = inputModel.healthStatus.retrieveDisplayIdentifierKey(),
+          identifier = inputModel.identifier,
+          showIdentifierInProfile = true,
+          phoneContacts = inputModel.phoneContacts,
+          addressDistrict = inputModel.addressDistrict,
+          addressTracingCatchment = inputModel.addressTracingCatchment,
+          addressPhysicalLocator = inputModel.addressPhysicalLocator,
+          carePlans = inputModel.services,
+          guardians = inputModel.guardians,
+          practitioners = inputModel.practitioners,
+          conditions = inputModel.conditions,
+          tracingTasks = inputModel.tasks
         )
     }
   }

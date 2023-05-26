@@ -48,6 +48,10 @@ val StatusTextColor = Color(0xFF6F7274)
 val PersonalDataBackgroundColor = Color(0xFFF5F5F5)
 val PatientProfileSectionsBackgroundColor = Color(0xFFF2F4F7)
 
+val WelcomeServiceHVLColor = Color(0xFF8BE48B)
+val WelcomeServiceBackToCareColor = Color(0xFFB6B6F7)
+val WelcomeServiceNewlyDiagnosed = Color(0xFF8B008B)
+
 private val PrimaryColor = Color(0xFF005084)
 private val PrimaryVariantColor = Color(0xFF003D66)
 private val ErrorColor = Color(0xFFDD0000)

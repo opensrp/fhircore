@@ -51,6 +51,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
@@ -59,6 +60,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireItemViewH
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.FieldType
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.distinctifyLinkId
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
@@ -77,6 +79,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
+
+  @Inject lateinit var tracer: PerformanceReporter
 
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
@@ -116,8 +120,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     lifecycleScope.launch {
       withContext(dispatcherProvider.io()) {
-        loadQuestionnaireAndConfig(formName)
-        questionnaireViewModel.libraryEvaluator.initialize()
+        tracer.traceSuspend("Questionnaire.loadQuestionnaireAndConfig") {
+          loadQuestionnaireAndConfig(formName)
+          questionnaireViewModel.libraryEvaluator.initialize()
+        }
       }
 
       withContext(dispatcherProvider.main()) {
@@ -145,6 +151,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   private suspend fun renderFragment() {
+    tracer.startTrace(QUESTIONNAIRE_TRACE)
     val questionnaireString = parser.encodeResourceToString(questionnaire)
     val questionnaireResponse: QuestionnaireResponse?
     if (clientIdentifier != null) {
@@ -168,15 +175,26 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(DEFAULT_PROVIDER)
         .setIsReadOnly(questionnaireType.isReadOnly())
     questionnaireResponse?.let {
+      it.distinctifyLinkId()
+      //        Timber.e(it.encodeResourceToString())
       questionnaireFragmentBuilder.setQuestionnaireResponse(it.encodeResourceToString())
     }
     intent.getStringExtra(QUESTIONNAIRE_LAUNCH_CONTEXT)?.let {
-      questionnaireFragmentBuilder.setQuestionnaireResourceContext(it)
+      questionnaireFragmentBuilder.setQuestionnaireLaunchContext(it)
     }
 
     fragment = questionnaireFragmentBuilder.build()
     supportFragmentManager.registerFragmentLifecycleCallbacks(
       object : FragmentManager.FragmentLifecycleCallbacks() {
+        override fun onFragmentCreated(
+          fm: FragmentManager,
+          f: Fragment,
+          savedInstanceState: Bundle?
+        ) {
+          super.onFragmentCreated(fm, f, savedInstanceState)
+          tracer.startTrace(QUESTIONNAIRE_TRACE)
+        }
+
         override fun onFragmentViewCreated(
           fm: FragmentManager,
           f: Fragment,
@@ -459,6 +477,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_AGE = "PR-age"
     const val QUESTIONNAIRE_LAUNCH_CONTEXT =
       "org.smartregister.fhircore.engine.ui.questionnaire.launchContext"
+    const val QUESTIONNAIRE_TRACE = "Questionnaire.renderFragment"
 
     fun intentArgs(
       clientIdentifier: String? = null,

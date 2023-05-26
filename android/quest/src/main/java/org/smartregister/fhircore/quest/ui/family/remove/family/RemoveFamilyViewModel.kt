@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Group
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
-import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.quest.ui.family.remove.BaseRemoveFamilyEntityViewModel
 import timber.log.Timber
 
@@ -31,7 +31,7 @@ import timber.log.Timber
 class RemoveFamilyViewModel
 @Inject
 constructor(
-  override val repository: PatientRegisterRepository,
+  override val repository: AppRegisterRepository,
   val appFeatureManager: AppFeatureManager
 ) : BaseRemoveFamilyEntityViewModel<Group>(repository) {
 

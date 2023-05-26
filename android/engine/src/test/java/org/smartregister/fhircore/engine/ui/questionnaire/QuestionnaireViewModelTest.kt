@@ -28,6 +28,7 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -45,12 +46,12 @@ import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Calendar
 import java.util.Date
-import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
@@ -62,6 +63,7 @@ import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
@@ -85,6 +87,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
@@ -142,7 +145,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           transformSupportServices = mockk(),
           dispatcherProvider = defaultRepo.dispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
-          libraryEvaluator = libraryEvaluator
+          libraryEvaluator = libraryEvaluator,
+          tracer = FakePerformanceReporter()
         )
       )
 
@@ -603,25 +607,30 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testGetPopulationResourcesShouldReturnListOfResources() {
-
+  fun testGetPopulationResourcesShouldReturnListOfResources() = runTest {
     coEvery { questionnaireViewModel.loadPatient("2") } returns Patient().apply { id = "2" }
     coEvery { defaultRepo.loadRelatedPersons("2") } returns
       listOf(RelatedPerson().apply { id = "3" })
+
+    coEvery { fhirEngine.search<Appointment>(Search(ResourceType.Appointment)) } returns listOf()
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
+
+    val questionnaire = Questionnaire()
 
     val intent = Intent()
     intent.putStringArrayListExtra(
       QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
       arrayListOf(
-        "{\"resourceType\":\"Patient\",\"id\":\"1\",\"text\":{\"status\":\"generated\",\"div\":\"\"}}"
+        "{\"resourceType\":\"Patient\",\"id\":\"1\",\"text\":{\"status\":\"generated\",\"div\":\"\"}}",
+        "{\"resourceType\":\"Bundle\",\"id\":\"34\",\"text\":{\"status\":\"generated\",\"div\":\"\"}}",
       )
     )
     intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "2")
 
-    runBlocking {
-      val resourceList = questionnaireViewModel.getPopulationResources(intent)
-      Assert.assertEquals(3, resourceList.size)
-    }
+    val resourceList =
+      questionnaireViewModel.getPopulationResources(intent, questionnaire.logicalId)
+    Assert.assertTrue(resourceList.any { it is Bundle })
+    Assert.assertEquals(4, resourceList.size)
   }
 
   @Test
@@ -1119,11 +1128,38 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun `test generateQuestionnaireResponse`() = runTest {
     val questionnaire = Questionnaire()
     val patient = samplePatient()
-    coEvery { questionnaireViewModel.getPopulationResources(any()) } returns arrayOf(patient)
+    coEvery {
+      questionnaireViewModel.getPopulationResources(any(), questionnaire.logicalId)
+    } returns arrayOf(patient)
     val intent = Intent()
 
     val response = questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
 
     Assert.assertNotNull(response.contained.firstOrNull { it.resourceType == ResourceType.Patient })
+  }
+
+  @Test
+  fun `test extractRelevantObservation`() = runTest {
+    val questionnaire = Questionnaire()
+    val bundle = Bundle()
+    val response =
+      questionnaireViewModel.extractRelevantObservation(bundle, questionnaire.logicalId)
+    Assert.assertArrayEquals(bundle.entry.toTypedArray(), response.entry.toTypedArray())
+    Assert.assertTrue(response.entry.isEmpty())
+  }
+
+  @Test
+  fun `test extractRelevantObservation with Observation resource`() = runTest {
+    val questionnaire = Questionnaire().apply { id = "1234" }
+    val bundle = Bundle()
+    val observation =
+      Observation().apply {
+        code = CodeableConcept().apply { addCoding(Coding().apply { code = "Observation-1234" }) }
+      }
+    bundle.entry.add(Bundle.BundleEntryComponent().setResource(observation))
+    val response =
+      questionnaireViewModel.extractRelevantObservation(bundle, questionnaire.logicalId)
+    Assert.assertNotEquals(bundle.entry.toTypedArray(), response.entry.toTypedArray())
+    Assert.assertEquals(response.entry.size, 1)
   }
 }

@@ -98,7 +98,7 @@ constructor(
     val commonNavArgs =
       listOf(
         Pair(NavigationArg.FEATURE, appFeatureName),
-        Pair(NavigationArg.HEALTH_MODULE, healthModule.name)
+        Pair(NavigationArg.HEALTH_MODULE, healthModule)
       )
 
     val navArgs =

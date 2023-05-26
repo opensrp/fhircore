@@ -18,10 +18,10 @@ package org.smartregister.fhircore.quest.ui.family.remove
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 
 abstract class BaseRemoveFamilyEntityViewModel<T>
-constructor(open val repository: PatientRegisterRepository) : ViewModel() {
+constructor(open val repository: AppRegisterRepository) : ViewModel() {
 
   val profile = MutableLiveData<T>()
   var isRemoved = MutableLiveData(false)

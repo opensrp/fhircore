@@ -127,5 +127,11 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
     )
+  ),
+  TRACING_PROFILE(
+    listOf(
+      OverflowMenuItem(R.id.tracing_history, R.string.tracing_history),
+      OverflowMenuItem(R.id.edit_profile, R.string.edit_profile)
+    )
   )
 }

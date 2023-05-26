@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.util.helper
 
 import io.mockk.mockk
 import org.hl7.fhir.exceptions.FHIRException
+import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
@@ -116,6 +117,14 @@ class TransformSupportServicesTest : RobolectricTest() {
     Assert.assertTrue(
       transformSupportServices.createType("", "Group_Characteristic") is
         Group.GroupCharacteristicComponent
+    )
+  }
+
+  @Test
+  fun `createType() should return AppointmentParticipantComponent when given Appointment_Participant`() {
+    Assert.assertTrue(
+      transformSupportServices.createType("", "Appointment_Participant") is
+        Appointment.AppointmentParticipantComponent
     )
   }
 

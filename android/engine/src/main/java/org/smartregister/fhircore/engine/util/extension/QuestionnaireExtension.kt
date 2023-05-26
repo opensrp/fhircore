@@ -120,3 +120,26 @@ fun List<Questionnaire.QuestionnaireItemComponent>.find(
     }
   }
 }
+
+/** To ensure multiple linkId only when they have answers, otherwise only have one distinct */
+fun QuestionnaireResponse.distinctifyLinkId() {
+  fun distinctLinkId(
+    itemComponents: List<QuestionnaireResponse.QuestionnaireResponseItemComponent>
+  ): List<QuestionnaireResponse.QuestionnaireResponseItemComponent> {
+    return itemComponents
+      .groupBy { it.linkId }
+      .flatMap {
+        it.value.filter(QuestionnaireResponse.QuestionnaireResponseItemComponent::hasAnswer)
+          .ifEmpty {
+            it.value.distinctBy { elem ->
+              elem.item.joinToString(
+                transform = QuestionnaireResponse.QuestionnaireResponseItemComponent::getLinkId
+              )
+            }
+          }
+      }
+      .onEach { it.item = distinctLinkId(it.item) }
+  }
+
+  this.item = distinctLinkId(item)
+}

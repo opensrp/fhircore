@@ -42,7 +42,7 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.sync.OnSyncListener
@@ -55,8 +55,8 @@ import org.smartregister.fhircore.engine.util.extension.isGuardianVisit
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
+import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
@@ -75,7 +75,7 @@ constructor(
   savedStateHandle: SavedStateHandle,
   val syncBroadcaster: SyncBroadcaster,
   val overflowMenuFactory: OverflowMenuFactory,
-  val patientRegisterRepository: PatientRegisterRepository,
+  val registerRepository: AppRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val profileViewDataMapper: ProfileViewDataMapper,
   val registerViewDataMapper: RegisterViewDataMapper
@@ -240,7 +240,7 @@ constructor(
             val commonParams =
               NavigationArg.bindArgumentsOf(
                 Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-                Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV.name)
+                Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV)
               )
 
             event.navController.navigate(
@@ -252,7 +252,7 @@ constructor(
               val urlParams =
                 NavigationArg.bindArgumentsOf(
                   Pair(NavigationArg.FEATURE, AppFeature.HouseholdManagement.name),
-                  Pair(NavigationArg.HEALTH_MODULE, HealthModule.FAMILY.name),
+                  Pair(NavigationArg.HEALTH_MODULE, HealthModule.FAMILY),
                   Pair(NavigationArg.PATIENT_ID, it)
                 )
               event.navController.navigate(
@@ -265,7 +265,7 @@ constructor(
               val urlParams =
                 NavigationArg.bindArgumentsOf(
                   Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-                  Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV.name),
+                  Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV),
                   Pair(NavigationArg.PATIENT_ID, it)
                 )
               event.navController.navigate(
@@ -341,7 +341,7 @@ constructor(
         val urlParams =
           NavigationArg.bindArgumentsOf(
             Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-            Pair(NavigationArg.HEALTH_MODULE, healthModule.name),
+            Pair(NavigationArg.HEALTH_MODULE, healthModule),
             Pair(NavigationArg.PATIENT_ID, event.patientId)
           )
         if (healthModule == HealthModule.FAMILY)
@@ -385,16 +385,15 @@ constructor(
   fun fetchPatientProfileDataWithChildren() {
     if (patientId.isNotEmpty()) {
       viewModelScope.launch {
-        patientRegisterRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)
-          ?.let {
-            patientProfileData = it
-            _patientProfileViewDataFlow.value =
-              profileViewDataMapper.transformInputToOutputModel(it) as
-                ProfileViewData.PatientProfileViewData
-            refreshOverFlowMenu(healthModule = healthModule, patientProfile = it)
-            paginateChildrenRegisterData(true)
-            handleVisitType(isClientVisit.value)
-          }
+        registerRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)?.let {
+          patientProfileData = it
+          _patientProfileViewDataFlow.value =
+            profileViewDataMapper.transformInputToOutputModel(it) as
+              ProfileViewData.PatientProfileViewData
+          refreshOverFlowMenu(healthModule = healthModule, patientProfile = it)
+          paginateChildrenRegisterData(true)
+          handleVisitType(isClientVisit.value)
+        }
       }
     }
   }
@@ -415,13 +414,13 @@ constructor(
     Pager(
       config =
         PagingConfig(
-          pageSize = PatientRegisterPagingSource.DEFAULT_PAGE_SIZE,
-          initialLoadSize = PatientRegisterPagingSource.DEFAULT_INITIAL_LOAD_SIZE
+          pageSize = RegisterPagingSource.DEFAULT_PAGE_SIZE,
+          initialLoadSize = RegisterPagingSource.DEFAULT_INITIAL_LOAD_SIZE
         ),
       pagingSourceFactory = {
         ChildContactPagingSource(
             patientProfileViewData.value.otherPatients,
-            patientRegisterRepository,
+            registerRepository,
             registerViewDataMapper
           )
           .apply {
@@ -449,5 +448,8 @@ constructor(
     const val PATIENT_FINISH_VISIT = "patient-finish-visit"
     const val PATIENT_CHANGE_STATUS = "patient-change-status"
     const val PATIENT_TRANSFER_OUT = "patient-transfer-out"
+    const val WELCOME_SERVICE_BACK_TO_CARE = "art-client-welcome-service-back-to-care"
+    const val WELCOME_SERVICE_HVL = "art-client-welcome-service-high-or-detectable-viral-load"
+    const val WELCOME_SERVICE_NEWLY_DIAGNOSED = "art-client-welcome-service-newly-diagnosed"
   }
 }

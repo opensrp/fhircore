@@ -21,7 +21,7 @@ import javax.inject.Singleton
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
-import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 import org.smartregister.fhircore.quest.R
 
@@ -30,7 +30,7 @@ class SideMenuOptionFactory
 @Inject
 constructor(
   val appFeatureManager: AppFeatureManager,
-  val patientRegisterRepository: PatientRegisterRepository
+  val registerRepository: AppRegisterRepository
 ) {
   val defaultSideMenu =
     SideMenuOption(
@@ -41,7 +41,7 @@ constructor(
       showCount = true,
       count =
         suspend {
-          patientRegisterRepository.countRegisterData(
+          registerRepository.countRegisterData(
             appFeatureName = AppFeature.PatientManagement.name,
             healthModule = HealthModule.DEFAULT
           )
@@ -81,7 +81,7 @@ constructor(
           showCount = true,
           count =
             suspend {
-              patientRegisterRepository.countRegisterData(
+              registerRepository.countRegisterData(
                 appFeatureName = it.feature,
                 healthModule = it.healthModule!!
               )

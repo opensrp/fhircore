@@ -36,11 +36,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.ui.appointment.register.AppointmentRegisterScreen
 import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileScreen
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
@@ -50,6 +52,11 @@ import org.smartregister.fhircore.quest.ui.patient.profile.guardians.GuardiansRo
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterScreen
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.measureReportNavigationGraph
+import org.smartregister.fhircore.quest.ui.tracing.details.TracingHistoryDetailsScreen
+import org.smartregister.fhircore.quest.ui.tracing.history.TracingHistoryScreen
+import org.smartregister.fhircore.quest.ui.tracing.outcomes.TracingOutcomesScreen
+import org.smartregister.fhircore.quest.ui.tracing.profile.TracingProfileScreen
+import org.smartregister.fhircore.quest.ui.tracing.register.TracingRegisterScreen
 
 @Composable
 fun MainScreen(
@@ -151,11 +158,23 @@ private fun AppMainNavigationGraph(
             val screenTitle: String =
               stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE)
                 ?: stringResource(R.string.all_clients)
-            PatientRegisterScreen(
-              navController = navController,
-              openDrawer = openDrawer,
-              screenTitle = screenTitle
-            )
+
+            val healthModule: HealthModule =
+              stackEntry.arguments?.getSerializable(NavigationArg.HEALTH_MODULE) as HealthModule?
+                ?: HealthModule.HIV
+            if (healthModule == HealthModule.HOME_TRACING ||
+                healthModule == HealthModule.PHONE_TRACING
+            ) {
+              TracingRegisterScreen(navController = navController, screenTitle = screenTitle)
+            } else if (healthModule == HealthModule.APPOINTMENT) {
+              AppointmentRegisterScreen(screenTitle = screenTitle, navController = navController)
+            } else {
+              PatientRegisterScreen(
+                navController = navController,
+                openDrawer = openDrawer,
+                screenTitle = screenTitle
+              )
+            }
           }
         MainNavigationScreen.Tasks -> composable(MainNavigationScreen.Tasks.route) {}
         MainNavigationScreen.Reports ->
@@ -170,6 +189,12 @@ private fun AppMainNavigationGraph(
           ) {
             PatientProfileScreen(navController = navController, appMainViewModel = appMainViewModel)
           }
+        MainNavigationScreen.TracingProfile ->
+          composable(
+            route =
+              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.FAMILY_ID)}",
+            arguments = commonNavArgs.plus(patientIdNavArgument())
+          ) { TracingProfileScreen(navController = navController) }
         MainNavigationScreen.PatientGuardians ->
           composable(
             route =
@@ -222,6 +247,45 @@ private fun AppMainNavigationGraph(
               "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
             arguments = commonNavArgs.plus(patientIdNavArgument())
           ) { ChildContactsProfileScreen(navController = navController) }
+        MainNavigationScreen.TracingHistory ->
+          composable(
+            route =
+              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
+            arguments = commonNavArgs.plus(patientIdNavArgument())
+          ) { TracingHistoryScreen(navController = navController) }
+        MainNavigationScreen.TracingOutcomes ->
+          composable(
+            route =
+              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.TRACING_ID)}",
+            arguments =
+              commonNavArgs.plus(
+                listOf(
+                  navArgument(NavigationArg.PATIENT_ID) { type = NavType.StringType },
+                  navArgument(NavigationArg.TRACING_ID) {
+                    type = NavType.StringType
+                    nullable = false
+                  }
+                )
+              )
+          ) { TracingOutcomesScreen(navController = navController) }
+        MainNavigationScreen.TracingHistoryDetails ->
+          composable(
+            route =
+              "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.TRACING_ID, NavigationArg.TRACING_ENCOUNTER_ID, NavigationArg.SCREEN_TITLE)}",
+            arguments =
+              commonNavArgs.plus(
+                listOf(
+                  navArgument(NavigationArg.PATIENT_ID) { type = NavType.StringType },
+                  navArgument(NavigationArg.TRACING_ID) { type = NavType.StringType },
+                  navArgument(NavigationArg.TRACING_ENCOUNTER_ID) { type = NavType.StringType },
+                  navArgument(NavigationArg.SCREEN_TITLE) { type = NavType.StringType }
+                )
+              )
+          ) { stackEntry ->
+            val screenTitle: String =
+              stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE) ?: ""
+            TracingHistoryDetailsScreen(screenTitle, navController = navController)
+          }
       }
     }
   }

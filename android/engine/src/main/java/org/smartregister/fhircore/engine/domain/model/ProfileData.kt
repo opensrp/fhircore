@@ -22,6 +22,7 @@ import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Flag
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
@@ -89,6 +90,9 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val age: String = birthdate.toAgeDisplay(),
     val gender: Enumerations.AdministrativeGender,
     val address: String,
+    val addressDistrict: String = "",
+    val addressTracingCatchment: String = "",
+    val addressPhysicalLocator: String = "",
     val services: List<CarePlan> = listOf(),
     val tasks: List<Task> = listOf(),
     val chwAssigned: Reference,
@@ -97,6 +101,31 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val showIdentifierInProfile: Boolean = false,
     val conditions: List<Condition> = emptyList(),
     val otherPatients: List<Resource> = listOf(),
+    val guardians: List<Guardian> = emptyList(),
+    val observations: List<Observation> = emptyList(),
+    val practitioners: List<Practitioner> = emptyList()
+  ) : ProfileData(logicalId = logicalId, name = name)
+
+  data class TracingProfileData(
+    override val logicalId: String,
+    override val name: String,
+    val birthdate: Date,
+    val dueDate: Date?,
+    val address: String,
+    val identifier: String?,
+    val chwAssigned: Reference,
+    val healthStatus: HealthStatus,
+    val currentAttempt: TracingAttempt?,
+    val age: String = birthdate.toAgeDisplay(),
+    val gender: Enumerations.AdministrativeGender,
+    val addressDistrict: String = "",
+    val addressTracingCatchment: String = "",
+    val addressPhysicalLocator: String = "",
+    val services: List<CarePlan> = listOf(),
+    val tasks: List<Task> = listOf(),
+    val phoneContacts: List<String> = listOf(),
+    val showIdentifierInProfile: Boolean = false,
+    val conditions: List<Condition> = emptyList(),
     val guardians: List<Guardian> = emptyList(),
     val practitioners: List<Practitioner> = emptyList()
   ) : ProfileData(logicalId = logicalId, name = name)

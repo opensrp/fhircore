@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.domain.repository
 
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.data.local.RegisterFilter
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 
@@ -29,6 +30,19 @@ interface RegisterRepository {
     healthModule: HealthModule = HealthModule.DEFAULT
   ): List<RegisterData>
 
+  suspend fun loadRegisterFiltered(
+    currentPage: Int,
+    loadAll: Boolean = false,
+    appFeatureName: String? = null,
+    healthModule: HealthModule,
+    filters: RegisterFilter
+  ): List<RegisterData>
+
+  suspend fun countRegisterFiltered(
+    appFeatureName: String? = null,
+    healthModule: HealthModule,
+    filters: RegisterFilter
+  ): Long
   suspend fun countRegisterData(
     appFeatureName: String? = null,
     healthModule: HealthModule = HealthModule.DEFAULT
@@ -39,4 +53,11 @@ interface RegisterRepository {
     healthModule: HealthModule = HealthModule.DEFAULT,
     patientId: String
   ): ProfileData?
+
+  suspend fun searchByName(
+    nameQuery: String,
+    currentPage: Int,
+    appFeatureName: String?,
+    healthModule: HealthModule
+  ): List<RegisterData>
 }

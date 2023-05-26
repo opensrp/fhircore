@@ -23,11 +23,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.rest.gclient.TokenClientParam
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Operation
+import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.UUID
@@ -36,11 +43,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
+import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.ListResource
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -49,6 +62,8 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
+import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
@@ -56,10 +71,12 @@ import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.TracingHelpers
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -67,6 +84,7 @@ import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
@@ -75,6 +93,7 @@ import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadi
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
+import org.smartregister.fhircore.engine.util.extension.toCoding
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.model.practitioner.PractitionerDetails
 import timber.log.Timber
@@ -89,7 +108,8 @@ constructor(
   val transformSupportServices: TransformSupportServices,
   val dispatcherProvider: DispatcherProvider,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val libraryEvaluator: LibraryEvaluator
+  val libraryEvaluator: LibraryEvaluator,
+  var tracer: PerformanceReporter
 ) : ViewModel() {
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
@@ -250,6 +270,7 @@ constructor(
     questionnaire: Questionnaire
   ) {
     viewModelScope.launch(dispatcherProvider.io()) {
+      tracer.startTrace(QUESTIONNAIRE_TRACE)
       // important to set response subject so that structure map can handle subject for all entities
       handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
       val extras = mutableListOf<Resource>()
@@ -334,7 +355,7 @@ constructor(
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
         extractCqlOutput(questionnaire, questionnaireResponse, null)
       }
-
+      tracer.stopTrace(QUESTIONNAIRE_TRACE)
       viewModelScope.launch(Dispatchers.Main) {
         extractionProgress.postValue(ExtractionProgress.Success(extras))
       }
@@ -491,15 +512,136 @@ constructor(
     return defaultRepository.loadRelatedPersons(patientId)
   }
 
+  suspend fun loadScheduledAppointments(patientId: String): Iterable<Appointment> {
+    return fhirEngine
+      .search<Appointment> {
+        filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
+      }
+      // filter on patient subject
+      .filter { appointment ->
+        appointment.participant.any {
+          it.hasActor() &&
+            it.actor.referenceElement.resourceType == ResourceType.Patient.name &&
+            it.actor.referenceElement.idPart == patientId
+        }
+      }
+      .filter {
+        it.status == Appointment.AppointmentStatus.BOOKED &&
+          it.hasStart() &&
+          it.start.after(
+            Date.from(
+              LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().minusSeconds(30)
+            )
+          )
+      }
+  }
+
+  private suspend fun getLastActiveCarePlan(patientId: String): CarePlan? {
+    val carePlans =
+      fhirEngine.search<CarePlan> {
+        filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, patientId)
+        filter(
+          CarePlan.STATUS,
+          { value = of(CarePlan.CarePlanStatus.COMPLETED.toCoding()) },
+          operation = Operation.OR
+        )
+      }
+    return carePlans.sortedByDescending { it.meta.lastUpdated }.firstOrNull()
+  }
+
+  private suspend fun getActiveListResource(patient: String): ListResource? {
+    val list =
+      fhirEngine.search<ListResource> {
+        filter(ListResource.SUBJECT, { value = "Patient/$patient" })
+        filter(ListResource.STATUS, { value = of(ListResource.ListStatus.CURRENT.toCode()) })
+        sort(ListResource.TITLE, Order.DESCENDING)
+        count = 1
+        from = 0
+      }
+    return list.firstOrNull()
+  }
+
+  suspend fun loadLatestAppointmentWithNoStartDate(patientId: String): Appointment? {
+    return fhirEngine
+      .search<Appointment> {
+        filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
+      }
+      // filter on patient subject
+      .filter { appointment ->
+        appointment.participant.any {
+          it.hasActor() &&
+            it.actor.referenceElement.resourceType == ResourceType.Patient.name &&
+            it.actor.referenceElement.idPart == patientId
+        }
+      }
+      .filterNot { it.hasStart() && it.status == Appointment.AppointmentStatus.BOOKED }
+      .sortedBy { it.created }
+      .firstOrNull()
+  }
+
+  suspend fun loadTracing(patientId: String): List<Task> {
+    val tasks =
+      fhirEngine.search<Task> {
+        filter(Task.SUBJECT, { value = "Patient/$patientId" })
+        filter(
+          TokenClientParam("code"),
+          {
+            value =
+              of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "225368008", null)))
+          }
+        )
+        filter(
+          Task.STATUS,
+          { value = of(Task.TaskStatus.READY.toCode()) },
+          { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
+          operation = Operation.OR
+        )
+        filter(
+          Task.PERIOD,
+          {
+            value = of(DateTimeType.now())
+            prefix = ParamPrefixEnum.GREATERTHAN
+          }
+        )
+      }
+    return tasks.filter { it.status in arrayOf(TaskStatus.READY, TaskStatus.INPROGRESS) }
+  }
+
   fun saveResource(resource: Resource) {
     viewModelScope.launch { defaultRepository.save(resource = resource) }
   }
 
-  open suspend fun getPopulationResources(intent: Intent): Array<Resource> {
+  fun extractRelevantObservation(
+    resource: Bundle,
+    questionnaireLogicalId: String,
+  ): Bundle {
+    val bundle = Bundle()
+    resource.entry.forEach { entry ->
+      if (entry.resource is Observation) {
+        val code = (entry.resource as Observation).code.coding.first().code.toString()
+        if (code.contains(questionnaireLogicalId)) bundle.addEntry(entry)
+      }
+    }
+    return bundle
+  }
+
+  open suspend fun getPopulationResources(
+    intent: Intent,
+    questionnaireLogicalId: String
+  ): Array<Resource> {
     val resourcesList = mutableListOf<Resource>()
 
     intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
-      forEach { resourcesList.add(jsonParser.parseResource(it) as Resource) }
+      var bundle = Bundle()
+      forEach {
+        val resource = jsonParser.parseResource(it) as Resource
+        if (resource !is Bundle) {
+          resourcesList.add(jsonParser.parseResource(it) as Resource)
+        } else {
+          bundle = extractRelevantObservation(resource, questionnaireLogicalId)
+        }
+      }
+      resourcesList.add(bundle)
     }
 
     intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let { patientId ->
@@ -520,11 +662,51 @@ constructor(
       }
         ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
 
+      val bundleIndex = resourcesList.indexOfFirst { x -> x is Bundle }
+      if (bundleIndex != -1) {
+        val currentBundle = resourcesList[bundleIndex] as Bundle
+
+        if (TracingHelpers.requireTracingTasks(questionnaireConfig.identifier)) {
+          val bundle = Bundle()
+          bundle.id = TracingHelpers.tracingBundleId
+          val tasks = loadTracing(patientId)
+          tasks.forEach { bundle.addEntry(Bundle.BundleEntryComponent().setResource(it)) }
+
+          val list = getActiveListResource(patientId)
+          if (list != null) {
+            bundle.addEntry(Bundle.BundleEntryComponent().setResource(list))
+          }
+
+          currentBundle.addEntry(
+            Bundle.BundleEntryComponent().setResource(bundle).apply {
+              id = TracingHelpers.tracingBundleId
+            }
+          )
+        }
+
+        val appointmentToPopulate = loadLatestAppointmentWithNoStartDate(patientId)
+        if (appointmentToPopulate != null) {
+          currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(appointmentToPopulate))
+        }
+        // Add appointments that may need to be closed
+        loadScheduledAppointments(patientId).forEach {
+          currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(it))
+        }
+
+        val lastCarePlan = getLastActiveCarePlan(patientId)
+        if (lastCarePlan != null) {
+          currentBundle.addEntry(Bundle.BundleEntryComponent().setResource(lastCarePlan))
+        }
+
+        resourcesList[bundleIndex] = currentBundle
+      }
+
       // for situations where patient RelatedPersons not passed through intent extras
       if (resourcesList.none { it.resourceType == ResourceType.RelatedPerson }) {
         loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
       }
     }
+    Timber.e(resourcesList.joinToString("\n") { jsonParser.encodeResourceToString(it) })
 
     return resourcesList.toTypedArray()
   }
@@ -533,7 +715,7 @@ constructor(
     questionnaire: Questionnaire,
     intent: Intent
   ): QuestionnaireResponse {
-    val resources = getPopulationResources(intent)
+    val resources = getPopulationResources(intent, questionnaire.logicalId)
     val questResponse = ResourceMapper.populate(questionnaire, *resources)
     questResponse.contained = resources.toList()
     return questResponse
@@ -560,6 +742,7 @@ constructor(
       .time
 
   companion object {
+    private const val QUESTIONNAIRE_TRACE = "Questionnaire-extractAndSaveResources"
     private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"
   }
 }

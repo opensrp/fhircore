@@ -53,7 +53,7 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.data.local.register.PatientRegisterRepository
+import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -61,10 +61,10 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource
-import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_INITIAL_LOAD_SIZE
-import org.smartregister.fhircore.quest.data.patient.PatientRegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
+import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
+import org.smartregister.fhircore.quest.data.register.RegisterPagingSource.Companion.DEFAULT_INITIAL_LOAD_SIZE
+import org.smartregister.fhircore.quest.data.register.RegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
@@ -77,8 +77,8 @@ class PatientRegisterViewModel
 @Inject
 constructor(
   savedStateHandle: SavedStateHandle,
+  val registerRepository: AppRegisterRepository,
   val syncBroadcaster: SyncBroadcaster,
-  val patientRegisterRepository: PatientRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val registerViewDataMapper: RegisterViewDataMapper,
   val appFeatureManager: AppFeatureManager,
@@ -148,7 +148,7 @@ constructor(
     viewModelScope.launch {
       combine(searchFlow, pageFlow, refreshCounterFlow) { s, p, r -> Triple(s, p, r) }
         .filter { it.first.isBlank() }
-        .mapLatest { patientRegisterRepository.countRegisterData(appFeatureName, healthModule) }
+        .mapLatest { registerRepository.countRegisterData(appFeatureName, healthModule) }
         .collect { _totalRecordsCount.postValue(it) }
     }
 
@@ -223,7 +223,7 @@ constructor(
           enablePlaceholders = false
         ),
       pagingSourceFactory = {
-        PatientRegisterPagingSource(patientRegisterRepository, registerViewDataMapper).apply {
+        RegisterPagingSource(registerRepository, registerViewDataMapper).apply {
           setPatientPagingSourceState(
             PatientPagingSourceState(
               appFeatureName = appFeatureName,
@@ -270,7 +270,7 @@ constructor(
         val urlParams =
           NavigationArg.bindArgumentsOf(
             Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-            Pair(NavigationArg.HEALTH_MODULE, healthModule.name),
+            Pair(NavigationArg.HEALTH_MODULE, healthModule),
             Pair(NavigationArg.PATIENT_ID, event.patientId)
           )
         if (healthModule == HealthModule.FAMILY)
