@@ -16,11 +16,9 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
-import androidx.compose.ui.graphics.Color
 import java.util.LinkedList
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
-import org.smartregister.fhircore.engine.util.extension.interpolate
 
 /**
  * An abstract for view properties. This is needed so we can serialize/deserialize view properties
@@ -39,15 +37,8 @@ abstract class ViewProperties {
   abstract val fillMaxHeight: Boolean
   abstract val clickable: String
   abstract val visible: String
-  open fun interpolateVisible(computedValuesMap: Map<String, Any>): String {
-    return this.visible.interpolate(computedValuesMap)
-  }
-  open fun interpolateBackgroundColor(computedValuesMap: Map<String, Any>): String {
-    val interpolated = this.backgroundColor?.interpolate(computedValuesMap)
-    return if (!interpolated.isNullOrEmpty()) {
-      return interpolated
-    } else Color.Unspecified.toString()
-  }
+
+  abstract fun interpolate(computedValuesMap: Map<String, Any>): ViewProperties
 }
 
 /**

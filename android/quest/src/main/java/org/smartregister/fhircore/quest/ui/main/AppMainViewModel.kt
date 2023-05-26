@@ -284,10 +284,10 @@ constructor(
 
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
-    // Schedule job that updates the status of the tasks periodically
     workManager.run {
       schedulePeriodically<FhirTaskPlanWorker>(
         workId = FhirTaskPlanWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskStatusUpdateJobDuration),
         requiresNetwork = false
       )
 
