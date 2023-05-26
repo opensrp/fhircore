@@ -179,7 +179,7 @@ constructor(
     clearCache: Boolean
   ) {
     if (registerId.isNotEmpty()) {
-      val paramsMap: Map<String, String> = params.toParamDataMap<String, String>()
+      val paramsMap: Map<String, String> = params.toParamDataMap()
       viewModelScope.launch(dispatcherProvider.io()) {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
         // Count register data then paginate the data
