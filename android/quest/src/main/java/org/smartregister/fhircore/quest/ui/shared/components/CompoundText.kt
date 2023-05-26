@@ -80,32 +80,20 @@ fun CompoundText(
             .parseColor()
         )
   ) {
-    val interpolatedPrimaryText =
-      compoundTextProperties.primaryText?.interpolate(resourceData.computedValuesMap)
-    val interpolatedSecondaryText =
-      compoundTextProperties.secondaryText?.interpolate(resourceData.computedValuesMap)
-    val interpolatedPrimaryTextColor =
-      compoundTextProperties.primaryTextColor?.interpolate(resourceData.computedValuesMap)
-    val interpolatedPrimaryTextBackgroundColor =
-      compoundTextProperties.primaryTextBackgroundColor?.interpolate(resourceData.computedValuesMap)
-    val interpolatedSecondaryTextColor =
-      compoundTextProperties.secondaryTextColor?.interpolate(resourceData.computedValuesMap)
-    val interpolatedSecondaryTextBackgroundColor =
-      compoundTextProperties.secondaryTextBackgroundColor?.interpolate(
-        resourceData.computedValuesMap
-      )
+    val interpolatedCompoundTextProperty =
+      compoundTextProperties.interpolate(resourceData.computedValuesMap)
     val interpolatedSeparator =
       compoundTextProperties.separator?.interpolate(resourceData.computedValuesMap)
 
-    if (!interpolatedPrimaryText.isNullOrEmpty()) {
+    if (!interpolatedCompoundTextProperty.primaryText.isNullOrEmpty()) {
       CompoundTextPart(
         modifier = modifier,
         viewAlignment = compoundTextProperties.alignment,
-        text = interpolatedPrimaryText,
+        text = interpolatedCompoundTextProperty.primaryText!!,
         textCase = compoundTextProperties.textCase,
         maxLines = compoundTextProperties.maxLines,
-        textColor = interpolatedPrimaryTextColor,
-        backgroundColor = interpolatedPrimaryTextBackgroundColor,
+        textColor = interpolatedCompoundTextProperty.primaryTextColor,
+        backgroundColor = interpolatedCompoundTextProperty.primaryTextBackgroundColor,
         borderRadius = compoundTextProperties.borderRadius,
         fontSize = compoundTextProperties.fontSize,
         textFontWeight = compoundTextProperties.primaryTextFontWeight,
@@ -127,15 +115,15 @@ fun CompoundText(
         )
       }
     }
-    if (!interpolatedSecondaryText.isNullOrEmpty()) {
+    if (!interpolatedCompoundTextProperty.secondaryText.isNullOrEmpty()) {
       CompoundTextPart(
         modifier = modifier,
         viewAlignment = compoundTextProperties.alignment,
-        text = interpolatedSecondaryText,
+        text = interpolatedCompoundTextProperty.secondaryText!!,
         textCase = compoundTextProperties.textCase,
         maxLines = compoundTextProperties.maxLines,
-        textColor = interpolatedSecondaryTextColor,
-        backgroundColor = interpolatedSecondaryTextBackgroundColor,
+        textColor = interpolatedCompoundTextProperty.secondaryTextColor,
+        backgroundColor = interpolatedCompoundTextProperty.secondaryTextBackgroundColor,
         borderRadius = compoundTextProperties.borderRadius,
         fontSize = compoundTextProperties.fontSize,
         textFontWeight = compoundTextProperties.secondaryTextFontWeight,

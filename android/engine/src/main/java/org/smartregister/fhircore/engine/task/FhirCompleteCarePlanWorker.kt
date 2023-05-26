@@ -24,10 +24,18 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.search
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.lastOffset
+import org.smartregister.fhircore.engine.util.getLastOffset
 
 @HiltWorker
 class FhirCompleteCarePlanWorker
@@ -36,21 +44,25 @@ constructor(
   @Assisted val context: Context,
   @Assisted workerParams: WorkerParameters,
   val fhirEngine: FhirEngine,
-  val fhirCarePlanGenerator: FhirCarePlanGenerator
+  val fhirCarePlanGenerator: FhirCarePlanGenerator,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val configurationRegistry: ConfigurationRegistry,
+  val dispatcherProvider: DispatcherProvider
 ) : CoroutineWorker(context, workerParams) {
   override suspend fun doWork(): Result {
-    fhirEngine
-      .search<CarePlan> {
-        filter(
-          CarePlan.STATUS,
-          { value = of(CarePlan.CarePlanStatus.DRAFT.toCode()) },
-          { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) },
-          { value = of(CarePlan.CarePlanStatus.ONHOLD.toCode()) },
-          { value = of(CarePlan.CarePlanStatus.ENTEREDINERROR.toCode()) },
-          { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) }
+    return withContext(dispatcherProvider.io()) {
+      val applicationConfiguration =
+        configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+          ConfigType.Application
         )
-      }
-      .forEach carePlanLoop@{ carePlan ->
+      val batchSize = applicationConfiguration.taskBackgroundWorkerBatchSize.div(BATCH_SIZE_FACTOR)
+
+      val lastOffset =
+        sharedPreferencesHelper.read(key = WORK_ID.lastOffset(), defaultValue = "0")!!.toInt()
+
+      val carePlans = getCarePlans(batchSize = batchSize, lastOffset = lastOffset)
+
+      carePlans.forEach carePlanLoop@{ carePlan ->
         carePlan
           .activity
           .flatMap { it.outcomeReference }
@@ -65,10 +77,34 @@ constructor(
         carePlan.status = CarePlan.CarePlanStatus.COMPLETED
         fhirEngine.update(carePlan)
       }
-    return Result.success()
+
+      val updatedLastOffset =
+        getLastOffset(items = carePlans, lastOffset = lastOffset, batchSize = batchSize)
+
+      sharedPreferencesHelper.write(
+        key = WORK_ID.lastOffset(),
+        value = updatedLastOffset.toString()
+      )
+      Result.success()
+    }
   }
+
+  suspend fun getCarePlans(batchSize: Int, lastOffset: Int) =
+    fhirEngine.search<CarePlan> {
+      filter(
+        CarePlan.STATUS,
+        { value = of(CarePlan.CarePlanStatus.DRAFT.toCode()) },
+        { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) },
+        { value = of(CarePlan.CarePlanStatus.ONHOLD.toCode()) },
+        { value = of(CarePlan.CarePlanStatus.ENTEREDINERROR.toCode()) },
+        { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) }
+      )
+      count = batchSize
+      from = if (lastOffset > 0) lastOffset + 1 else 0
+    }
 
   companion object {
     const val WORK_ID = "FhirCompleteCarePlanWorker"
+    const val BATCH_SIZE_FACTOR = 10
   }
 }

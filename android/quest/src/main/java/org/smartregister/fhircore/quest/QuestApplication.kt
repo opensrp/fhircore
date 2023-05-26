@@ -21,10 +21,14 @@ import android.content.Intent
 import android.database.CursorWindow
 import android.os.Looper
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import dagger.hilt.android.HiltAndroidApp
+import io.sentry.android.core.SentryAndroid
+import io.sentry.android.core.SentryAndroidOptions
+import io.sentry.android.fragment.FragmentLifecycleIntegration
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -35,13 +39,9 @@ import timber.log.Timber
 
 @HiltAndroidApp
 class QuestApplication : Application(), DataCaptureConfig.Provider, Configuration.Provider {
-
   @Inject lateinit var workerFactory: HiltWorkerFactory
-
   @Inject lateinit var referenceUrlResolver: ReferenceUrlResolver
-
   @Inject lateinit var xFhirQueryResolver: QuestXFhirQueryResolver
-
   private var configuration: DataCaptureConfig? = null
 
   override fun onCreate() {
@@ -52,6 +52,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
 
     if (BuildConfig.DEBUG.not()) {
       Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
+      initSentryMonitoring()
     }
 
     // TODO Fix this workaround for cursor size issue. Currently size set to 10 MB
@@ -63,6 +64,27 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
       }
     } catch (e: Exception) {
       Timber.e(e)
+    }
+  }
+
+  @VisibleForTesting
+  fun initSentryMonitoring(dsn: String = BuildConfig.SENTRY_DSN) {
+    if (dsn.isNotBlank()) {
+      val sentryConfiguration = { options: SentryAndroidOptions ->
+        options.dsn = dsn.trim { it <= ' ' }
+        // To set a uniform sample rate
+        options.tracesSampleRate = 1.0
+        options.isEnableUserInteractionTracing = true
+        options.isEnableUserInteractionBreadcrumbs = true
+        options.addIntegration(
+          FragmentLifecycleIntegration(
+            this,
+            enableFragmentLifecycleBreadcrumbs = true,
+            enableAutoFragmentLifecycleTracing = true
+          )
+        )
+      }
+      SentryAndroid.init(this, sentryConfiguration)
     }
   }
 

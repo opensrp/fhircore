@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.configuration.view
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
 data class ServiceCardProperties(
@@ -38,4 +39,11 @@ data class ServiceCardProperties(
   val serviceButton: ButtonProperties? = null,
   val services: List<ButtonProperties>? = null,
   val actions: List<ActionConfig> = emptyList()
-) : ViewProperties()
+) : ViewProperties() {
+  override fun interpolate(computedValuesMap: Map<String, Any>): ServiceCardProperties {
+    return this.copy(
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap)
+    )
+  }
+}
