@@ -21,7 +21,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 
-class ViewPropertiesKtTest {
+class ViewPropertiesTest {
 
   @Test
   fun tesRetrieveListPropertiesShouldReturnNestedLists() {
