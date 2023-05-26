@@ -77,7 +77,6 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
-import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -164,7 +163,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         type = QuestionnaireType.READ_ONLY,
         setPractitionerDetails = false,
         setOrganizationDetails = false,
-        resourceIdentifier = "2"
+        resourceIdentifier = "2",
+        resourceType = ResourceType.Patient
       )
 
     questionnaireViewModel =
@@ -1363,7 +1363,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       deactivateMembers = deactivateMembers
     )
 
-    coVerify { defaultRepo.removeGroup(groupId, deactivateMembers) }
+    coVerify { defaultRepo.removeGroup(groupId, deactivateMembers, emptyMap()) }
     assertTrue(questionnaireViewModel.removeOperation.value!!)
   }
 
@@ -1386,7 +1386,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       defaultRepo.removeGroupMember(
         memberId = memberId,
         groupId = groupIdentifier,
-        groupMemberResourceType = memberResourceType
+        groupMemberResourceType = memberResourceType,
+        emptyMap()
       )
     }
     assertTrue(questionnaireViewModel.removeOperation.value!!)
@@ -1394,7 +1395,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testDeleteResourceCallsDefaultRepositoryDelete() {
-    val resourceType = "Patient"
+    val resourceType = ResourceType.Patient
     val resourceIdentifier = "rdsfjkdfh-dfdf-dfsd"
     questionnaireViewModel.deleteResource(
       resourceType = resourceType,
@@ -1716,7 +1717,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
         questionnaire,
         patient.id,
-        patient.resourceType
+        patient.resourceType,
+        questionnaireConfig = questionnaireConfig
       )
     }
 
@@ -1808,7 +1810,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
         questionnaire,
         patient.id,
-        patient.resourceType
+        patient.resourceType,
+        questionnaireConfig = questionnaireConfig
       )
     }
 
@@ -1821,12 +1824,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         filter(RelatedPerson.PATIENT, { value = "${patient.resourceType.name}/${patient.id}" })
       }
     }
-
-    val slotPopulationResources = slot<ArrayList<Resource>>()
-    coVerify {
-      questionnaireViewModel.populateQuestionnaireResponse(any(), capture(slotPopulationResources))
-    }
-    assertTrue(slotPopulationResources.captured.isEmpty())
   }
 
   @Test
@@ -1892,7 +1889,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
         questionnaire,
         group.id,
-        group.resourceType
+        group.resourceType,
+        questionnaireConfig = questionnaireConfig
       )
     }
 
@@ -1972,7 +1970,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
         questionnaire,
         group.id,
-        group.resourceType
+        group.resourceType,
+        questionnaireConfig = questionnaireConfig
       )
     }
 
@@ -1988,7 +1987,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testQRFromPopulationWithTaskBaseResourceTypeIsNotSupported() {
+  fun testInitialExpressionBeingPopulated() {
     val questionnaire =
       Questionnaire().apply {
         id = "12345"
@@ -2030,35 +2029,48 @@ class QuestionnaireViewModelTest : RobolectricTest() {
                       )
                   }
                 )
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-birthDate"
+              addExtension(
+                "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                Expression().apply {
+                  language = "text/fhirpath"
+                  expression = "Patient.birthDate"
+                }
+              )
             }
           )
       }
-    val task = Task().apply { id = "112233" }
+    val group = Group().apply { id = "112233" }
 
-    // ensures QR from DB returns null, so it will trigger the QR from population
     coEvery {
       fhirEngine.search<QuestionnaireResponse> {
-        filter(QuestionnaireResponse.SUBJECT, { value = task.id })
+        filter(QuestionnaireResponse.SUBJECT, { value = group.id })
         filter(QuestionnaireResponse.QUESTIONNAIRE, { value = questionnaire.id })
       }
     } returns listOf()
 
+    // gets population resources
+    coEvery { fhirEngine.get(group.resourceType, group.id) } returns group
+
     val result = runBlocking {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
         questionnaire,
-        task.id,
-        task.resourceType
+        group.id,
+        group.resourceType,
+        questionnaireConfig = questionnaireConfig
       )
     }
 
     assertTrue("Questionnaire Response has no item", result.hasItem())
 
-    coVerify(inverse = true) { fhirEngine.get(task.resourceType, task.id) }
+    coVerify { fhirEngine.get(group.resourceType, group.id) }
 
     val slotPopulationResources = slot<ArrayList<Resource>>()
     coVerify {
       questionnaireViewModel.populateQuestionnaireResponse(any(), capture(slotPopulationResources))
     }
-    assertTrue(slotPopulationResources.captured.isEmpty())
+    assertTrue(slotPopulationResources.captured.isNotEmpty())
   }
 }

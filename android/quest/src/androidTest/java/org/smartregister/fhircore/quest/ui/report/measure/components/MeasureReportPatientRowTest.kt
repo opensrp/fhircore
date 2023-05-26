@@ -23,66 +23,59 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import io.mockk.spyk
 import io.mockk.verify
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
-class MeasureReportPatientRowTest {
+class MeasureReportSubjectRowTest {
 
-  private val mockListener: (MeasureReportPatientViewData) -> Unit = spyk({})
+  private val mockListener: (MeasureReportSubjectViewData) -> Unit = spyk({})
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  private val measureReportPatientViewData =
-    MeasureReportPatientViewData(
+  private val measureReportSubjectViewData =
+    MeasureReportSubjectViewData(
+      type = ResourceType.Patient,
       logicalId = "10101",
-      name = "John Test",
-      gender = "M",
-      age = "45",
+      display = "John Test, M, 45",
       family = "Test Family"
     )
 
   @Before
   fun setup() {
     composeTestRule.setContent {
-      MeasureReportPatientRow(
-        measureReportPatientViewData = measureReportPatientViewData,
+      MeasureReportSubjectRow(
+        measureReportSubjectViewData = measureReportSubjectViewData,
         onRowClick = mockListener
       )
     }
   }
 
   @Test
-  fun testPatientRowRendersPatientDetailsCorrectly() {
-    composeTestRule.onNodeWithTag(PATIENT_DETAILS_TEST_TAG, useUnmergedTree = true).assertExists()
+  fun testSubjectRowRendersSubjectDetailsCorrectly() {
+    composeTestRule.onNodeWithTag(SUBJECT_DETAILS_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule
-      .onNodeWithText(
-        listOf(
-            measureReportPatientViewData.name,
-            measureReportPatientViewData.gender,
-            measureReportPatientViewData.age
-          )
-          .joinToString(", ")
-      )
+      .onNodeWithText(measureReportSubjectViewData.display)
       .assertExists()
       .assertIsDisplayed()
   }
 
   @Test
-  fun testPatientRowRendersFamilyNameCorrectly() {
+  fun testSubjectRowRendersFamilyNameCorrectly() {
     composeTestRule.onNodeWithTag(FAMILY_NAME_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule
-      .onNodeWithText(text = measureReportPatientViewData.family.toString())
+      .onNodeWithText(text = measureReportSubjectViewData.family.toString())
       .assertExists()
       .assertIsDisplayed()
   }
 
   @Test
   fun testThatRowClickCallsTheListener() {
-    val patientRow = composeTestRule.onNodeWithTag(PATIENT_ROW_TEST_TAG)
-    patientRow.assertExists()
-    patientRow.performClick()
+    val subjectRow = composeTestRule.onNodeWithTag(SUBJECT_ROW_TEST_TAG)
+    subjectRow.assertExists()
+    subjectRow.performClick()
     verify { mockListener(any()) }
   }
 }

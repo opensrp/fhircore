@@ -72,8 +72,8 @@ import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
-import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
+import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDataMapper
 
 @HiltAndroidTest
 class MeasureReportViewModelTest : RobolectricTest() {
@@ -83,7 +83,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   @get:Rule(order = 1)
   val coroutinesTestRule = CoroutineTestRule()
   @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
-  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
+  @Inject lateinit var measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
   @Inject lateinit var registerRepository: RegisterRepository
   @Inject lateinit var defaultRepository: DefaultRepository
   @Inject lateinit var rulesExecutor: RulesExecutor
@@ -101,7 +101,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    coEvery { measureReportRepository.retrievePatients(0) } returns
+    coEvery { measureReportRepository.retrieveSubjects(0) } returns
       listOf(
         ResourceData(
           baseResourceId = Faker.buildPatient().id,
@@ -117,7 +117,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
           fhirOperator = fhirOperator,
           sharedPreferencesHelper = sharedPreferencesHelper,
           dispatcherProvider = mockk(),
-          measureReportPatientViewDataMapper = measureReportPatientViewDataMapper,
+          measureReportSubjectViewDataMapper = measureReportSubjectViewDataMapper,
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
           defaultRepository = defaultRepository,
@@ -186,18 +186,19 @@ class MeasureReportViewModelTest : RobolectricTest() {
         url = "http://nourl.com",
         module = "Module1"
       )
-    val samplePatientViewData =
-      MeasureReportPatientViewData(
-        logicalId = "member1",
-        name = "Willy Mark",
-        gender = "M",
-        age = "28",
-        family = "Orion"
+    val sampleSubjectViewData =
+      mutableSetOf(
+        MeasureReportSubjectViewData(
+          type = ResourceType.Patient,
+          logicalId = "member1",
+          display = "Willy Mark, M, 28",
+          family = "Orion"
+        )
       )
 
     measureReportViewModel.measureReportConfigList.add(measureReportConfig)
     measureReportViewModel.reportTypeSelectorUiState.value =
-      ReportTypeSelectorUiState("21 Jan, 2022", "21 Feb, 2022", false, samplePatientViewData)
+      ReportTypeSelectorUiState("21 Jan, 2022", "21 Feb, 2022", false, sampleSubjectViewData)
 
     measureReportViewModel.onEvent(
       MeasureReportEvent.GenerateReport(context = application, navController = navController),
@@ -238,32 +239,33 @@ class MeasureReportViewModelTest : RobolectricTest() {
     Assert.assertEquals(MeasureReportType.INDIVIDUAL, measureReportViewModel.reportTypeState.value)
     val routeSlot = slot<String>()
     verify { navController.navigate(capture(routeSlot)) }
-    Assert.assertEquals(MeasureReportNavigationScreen.PatientsList.route, routeSlot.captured)
+    Assert.assertEquals(MeasureReportNavigationScreen.SubjectsList.route, routeSlot.captured)
 
     // Test with report type other than INDIVIDUAL
     measureReportViewModel.onEvent(
       MeasureReportEvent.OnReportTypeChanged(MeasureReportType.SUMMARY, navController)
     )
-    Assert.assertNull(measureReportViewModel.reportTypeSelectorUiState.value.patientViewData)
+    Assert.assertEquals(
+      0,
+      measureReportViewModel.reportTypeSelectorUiState.value.subjectViewData.size
+    )
   }
 
   @Test
-  fun testOnEventOnPatientSelected() {
-    val samplePatientViewData =
-      MeasureReportPatientViewData(
+  fun testOnEventOnSubjectSelected() {
+    val sampleSubjectViewData =
+      MeasureReportSubjectViewData(
+        type = ResourceType.Patient,
         logicalId = "member1",
-        name = "Willy Mark",
-        gender = "M",
-        age = "28",
+        display = "Willy Mark, M, 28",
         family = "Orion"
       )
-    measureReportViewModel.onEvent(MeasureReportEvent.OnPatientSelected(samplePatientViewData))
-    val patientViewData = measureReportViewModel.reportTypeSelectorUiState.value.patientViewData
-    Assert.assertNotNull(samplePatientViewData.logicalId, patientViewData?.logicalId)
-    Assert.assertNotNull(samplePatientViewData.name, patientViewData?.name)
-    Assert.assertNotNull(samplePatientViewData.gender, patientViewData?.gender)
-    Assert.assertNotNull(samplePatientViewData.age, patientViewData?.age)
-    Assert.assertNotNull(samplePatientViewData.family, patientViewData?.family)
+    measureReportViewModel.onEvent(MeasureReportEvent.OnSubjectSelected(sampleSubjectViewData))
+    val subjectViewData =
+      measureReportViewModel.reportTypeSelectorUiState.value.subjectViewData.firstOrNull()
+    Assert.assertNotNull(sampleSubjectViewData.logicalId, subjectViewData?.logicalId)
+    Assert.assertNotNull(sampleSubjectViewData.display, subjectViewData?.display)
+    Assert.assertNotNull(sampleSubjectViewData.family, subjectViewData?.family)
   }
 
   @Test
@@ -325,7 +327,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun testFormatMeasureReportsForPatient() = runTest {
+  fun testFormatMeasureReportsForSubject() = runTest {
     measureReport.type = MeasureReportType.SUMMARY
     measureReport.contained.clear()
     measureReport.contained.add(
@@ -416,7 +418,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun reportMeasuresListThrowsExceptionIfPatientRegisterMissing() {
+  fun reportMeasuresListThrowsExceptionIfSubjectRegisterMissing() {
     assertFailsWith<java.util.NoSuchElementException> {
       measureReportViewModel.reportMeasuresList(invalidReportId)
     }

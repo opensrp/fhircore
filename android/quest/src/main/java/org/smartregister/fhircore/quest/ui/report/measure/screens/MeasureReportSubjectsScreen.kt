@@ -45,21 +45,21 @@ import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportEvent
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
-import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportPatientRow
+import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportSubjectRow
 import org.smartregister.fhircore.quest.ui.shared.components.SearchBar
 import timber.log.Timber
 
 @Composable
-fun MeasureReportPatientsScreen(
+fun MeasureReportSubjectsScreen(
   reportId: String,
   navController: NavController,
   measureReportViewModel: MeasureReportViewModel,
   modifier: Modifier = Modifier
 ) {
-  LaunchedEffect(Unit) { measureReportViewModel.retrievePatients(reportId) }
+  LaunchedEffect(Unit) { measureReportViewModel.retrieveSubjects(reportId) }
 
   val pagingItems =
-    measureReportViewModel.patientsData.collectAsState(emptyFlow()).value.collectAsLazyPagingItems()
+    measureReportViewModel.subjectData.collectAsState(emptyFlow()).value.collectAsLazyPagingItems()
 
   Scaffold(
     topBar = {
@@ -75,7 +75,7 @@ fun MeasureReportPatientsScreen(
         )
         Text(
           color = SubtitleTextColor,
-          text = stringResource(id = R.string.select_patient),
+          text = stringResource(id = R.string.select_subject),
           fontSize = 14.sp,
           modifier = modifier.wrapContentWidth().padding(16.dp)
         )
@@ -86,10 +86,10 @@ fun MeasureReportPatientsScreen(
     Box(modifier = modifier.padding(innerPadding)) {
       LazyColumn {
         items(pagingItems, key = { it.logicalId }) {
-          MeasureReportPatientRow(
-            measureReportPatientViewData = it!!,
-            onRowClick = { patientViewData ->
-              measureReportViewModel.onEvent(MeasureReportEvent.OnPatientSelected(patientViewData))
+          MeasureReportSubjectRow(
+            measureReportSubjectViewData = it!!,
+            onRowClick = { subjectViewData ->
+              measureReportViewModel.onEvent(MeasureReportEvent.OnSubjectSelected(subjectViewData))
               navController.popBackStack()
             }
           )
