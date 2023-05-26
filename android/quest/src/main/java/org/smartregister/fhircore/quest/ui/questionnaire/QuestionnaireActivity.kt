@@ -146,11 +146,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             }
           }
         questionnaireResponse =
-          if ((baseResourceId.isNullOrEmpty() || baseResourceType == null) &&
-              questionnaireConfig.type.isDefault()
-          ) {
-            QuestionnaireResponse()
-          } else {
+          if (questionnaireConfig.type.isDefault()) QuestionnaireResponse()
+          else {
             questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
                 questionnaire = questionnaire,
                 subjectId = baseResourceId!!.extractLogicalIdUuid(),
