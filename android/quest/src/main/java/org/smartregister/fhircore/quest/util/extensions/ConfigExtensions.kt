@@ -22,7 +22,6 @@ import androidx.navigation.NavOptions
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
-import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
@@ -154,9 +153,6 @@ fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: Resou
  */
 fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = true) =
   NavOptions.Builder().setPopUpTo(resId, inclusive, true).setLaunchSingleTop(singleOnTop).build()
-
-fun ViewProperties.clickable(ResourceData: ResourceData) =
-  this.clickable.interpolate(ResourceData.computedValuesMap).toBoolean()
 
 /**
  * Function to convert the elements of an array that have paramType [ActionParameterType.PARAMDATA]

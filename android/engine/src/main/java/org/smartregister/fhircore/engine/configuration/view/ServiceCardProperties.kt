@@ -45,7 +45,10 @@ data class ServiceCardProperties(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),
       visible = visible.interpolate(computedValuesMap),
       serviceMemberIcons = serviceMemberIcons?.interpolate(computedValuesMap),
-      clickable = clickable.interpolate(computedValuesMap)
+      clickable = clickable.interpolate(computedValuesMap),
+      details = details.map { it.interpolate(computedValuesMap) },
+      serviceButton = serviceButton?.interpolate(computedValuesMap),
+      services = services?.map { it.interpolate(computedValuesMap) }
     )
   }
 }
