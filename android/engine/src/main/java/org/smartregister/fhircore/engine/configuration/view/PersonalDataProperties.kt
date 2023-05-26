@@ -37,7 +37,14 @@ data class PersonalDataProperties(
   override fun interpolate(computedValuesMap: Map<String, Any>): PersonalDataProperties {
     return this.copy(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),
-      visible = visible.interpolate(computedValuesMap)
+      visible = visible.interpolate(computedValuesMap),
+      personalDataItems =
+        personalDataItems.map {
+          PersonalDataItem(
+            label = it.label.interpolate(computedValuesMap),
+            displayValue = it.displayValue.interpolate(computedValuesMap)
+          )
+        }
     )
   }
 }

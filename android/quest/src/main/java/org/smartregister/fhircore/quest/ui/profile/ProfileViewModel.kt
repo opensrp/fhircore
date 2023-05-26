@@ -87,7 +87,7 @@ constructor(
     if (resourceId.isNotEmpty()) {
       val repositoryResourceData =
         registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
-      val paramsMap: Map<String, String> = paramsList.toParamDataMap<String, String>()
+      val paramsMap: Map<String, String> = paramsList.toParamDataMap()
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
       val resourceData =
         resourceDataRulesExecutor
@@ -143,7 +143,7 @@ constructor(
               changeManagingEntity(
                 event = event,
                 managingEntity =
-                  it.interpolateManagingEntity(event.resourceData?.computedValuesMap ?: emptyMap())
+                  it.interpolate(event.resourceData?.computedValuesMap ?: emptyMap()).managingEntity
               )
             }
             handleClickEvent(navController = event.navController, resourceData = event.resourceData)

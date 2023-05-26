@@ -68,7 +68,8 @@ data class ButtonProperties(
       visible = visible.interpolate(computedValuesMap),
       status = interpolateStatus(computedValuesMap).name,
       text = text?.interpolate(computedValuesMap),
-      enabled = enabled.interpolate(computedValuesMap)
+      enabled = enabled.interpolate(computedValuesMap),
+      clickable = clickable.interpolate(computedValuesMap)
     )
   }
 
