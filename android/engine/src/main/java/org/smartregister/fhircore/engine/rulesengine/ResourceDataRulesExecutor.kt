@@ -20,22 +20,26 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import com.google.android.fhir.logicalId
-import java.util.LinkedList
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
-import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
+import org.jeasy.rules.api.Facts
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.ListResource
-import org.smartregister.fhircore.engine.configuration.view.RowProperties
-import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
-class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
+/**
+ * This class is used to to fire rules used to extract and manipulate data from FHIR resources.
+ *
+ * NOTE: that the [Facts] object is not thread safe, each thread should have its own set of data to
+ * work on. When used in multi-threaded environment may exhibit unexpected behavior and return wrong
+ * results when rules are fired. Use the [ResourceDataRulesExecutor] in the same coroutine context
+ * of the caller.
+ */
+class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
   fun processResourceData(
     repositoryResourceData: RepositoryResourceData,
@@ -62,7 +66,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
    * [SnapshotStateList] to ensure the items are rendered (incrementally) as they are added to the
    * list
    */
-  suspend fun processListResourceData(
+  fun processListResourceData(
     listProperties: ListProperties,
     relatedResourcesMap: Map<String, List<Resource>>,
     computedValuesMap: Map<String, Any>,
@@ -100,7 +104,7 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
     )
   }
 
-  private suspend fun List<Resource>.mapToResourceData(
+  private fun List<Resource>.mapToResourceData(
     listResource: ListResource,
     relatedResourcesMap: Map<String, List<Resource>>,
     ruleConfigs: List<RuleConfig>,
@@ -165,28 +169,4 @@ class RulesExecutor @Inject constructor(val rulesFactory: RulesFactory) {
 
     return newListRelatedResources ?: listOf()
   }
-}
-
-/**
- * This function obtains all [ListProperties] from the [ViewProperties] list; including the nested
- * LISTs
- */
-fun List<ViewProperties>.retrieveListProperties(): List<ListProperties> {
-  val listProperties = mutableListOf<ListProperties>()
-  val viewPropertiesLinkedList: LinkedList<ViewProperties> = LinkedList(this)
-  while (viewPropertiesLinkedList.isNotEmpty()) {
-    val properties = viewPropertiesLinkedList.removeFirst()
-    if (properties.viewType == ViewType.LIST) {
-      listProperties.add(properties as ListProperties)
-    }
-    when (properties.viewType) {
-      ViewType.COLUMN -> viewPropertiesLinkedList.addAll((properties as ColumnProperties).children)
-      ViewType.ROW -> viewPropertiesLinkedList.addAll((properties as RowProperties).children)
-      ViewType.CARD -> viewPropertiesLinkedList.addAll((properties as CardViewProperties).content)
-      ViewType.LIST ->
-        viewPropertiesLinkedList.addAll((properties as ListProperties).registerCard.views)
-      else -> {}
-    }
-  }
-  return listProperties
 }

@@ -49,7 +49,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.domain.repository.Repository
-import org.smartregister.fhircore.engine.rulesengine.DataQueryRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -65,7 +65,7 @@ constructor(
   override val sharedPreferencesHelper: SharedPreferencesHelper,
   override val configurationRegistry: ConfigurationRegistry,
   override val configService: ConfigService,
-  val dataQueryRulesExecutor: DataQueryRulesExecutor
+  val configRulesExecutor: ConfigRulesExecutor
 ) :
   Repository,
   DefaultRepository(
@@ -102,14 +102,14 @@ constructor(
   ): List<RepositoryResourceData> {
     val baseResourceConfig = fhirResourceConfig.baseResource
     val relatedResourcesConfig = fhirResourceConfig.relatedResources
-
+    val configComputedRuleValues = configRules.configRulesComputedValues()
     val search =
       Search(type = baseResourceConfig.resource).apply {
         applyConfiguredSortAndFilters(
           resourceConfig = baseResourceConfig,
           filterActiveResources = filterActiveResources,
           sortData = true,
-          configComputedRuleValues = configRules.configRulesComputedValues()
+          configComputedRuleValues = configComputedRuleValues
         )
         if (currentPage != null && pageSize != null) {
           count = pageSize
@@ -127,7 +127,7 @@ constructor(
             resources = listOf(baseFhirResource),
             relatedResourcesConfigs = relatedResourcesConfig,
             relatedResourceWrapper = RelatedResourceWrapper(),
-            configRules = configRules
+            configComputedRuleValues = configComputedRuleValues
           )
         }
       RepositoryResourceData(
@@ -165,7 +165,7 @@ constructor(
     resources: List<Resource>,
     relatedResourcesConfigs: List<ResourceConfig>?,
     relatedResourceWrapper: RelatedResourceWrapper,
-    configRules: List<RuleConfig>?
+    configComputedRuleValues: Map<String, Any>
   ): RelatedResourceWrapper {
 
     // Forward include related resources e.g. Members (Patient) referenced in Group resource
@@ -177,7 +177,7 @@ constructor(
         relatedResourcesConfigs = forwardIncludeResourceConfigs,
         resources = resources,
         relatedResourceWrapper = relatedResourceWrapper,
-        configRules = null
+        configComputedRuleValues = configComputedRuleValues
       )
     }
 
@@ -203,7 +203,7 @@ constructor(
               applyConfiguredSortAndFilters(
                 resourceConfig = resourceConfig,
                 sortData = false,
-                configComputedRuleValues = configRules.configRulesComputedValues()
+                configComputedRuleValues = configComputedRuleValues
               )
             }
           val count = fhirEngine.count(search)
@@ -212,10 +212,10 @@ constructor(
             LinkedList<RelatedResourceCount>().apply { add(RelatedResourceCount(count = count)) }
         } else {
           computeCountForEachRelatedResource(
-            resources,
-            resourceConfig,
-            relatedResourceWrapper,
-            resourceConfig.configRules
+            resources = resources,
+            resourceConfig = resourceConfig,
+            relatedResourceWrapper = relatedResourceWrapper,
+            configComputedRuleValues = configComputedRuleValues
           )
         }
       }
@@ -230,7 +230,7 @@ constructor(
         relatedResourcesConfigs = reverseIncludeResourceConfigs,
         resources = resources,
         relatedResourceWrapper = relatedResourceWrapper,
-        configRules = configRules
+        configComputedRuleValues = configComputedRuleValues
       )
     }
 
@@ -241,7 +241,7 @@ constructor(
     resources: List<Resource>,
     resourceConfig: ResourceConfig,
     relatedResourceWrapper: RelatedResourceWrapper,
-    configRules: List<RuleConfig>?
+    configComputedRuleValues: Map<String, Any>
   ) {
     val relatedResourceCountLinkedList = LinkedList<RelatedResourceCount>()
     resources.forEach { baseResource ->
@@ -254,7 +254,7 @@ constructor(
           applyConfiguredSortAndFilters(
             resourceConfig = resourceConfig,
             sortData = false,
-            configComputedRuleValues = configRules.configRulesComputedValues()
+            configComputedRuleValues = configComputedRuleValues
           )
         }
       val count = fhirEngine.count(search)
@@ -309,7 +309,7 @@ constructor(
     relatedResourcesConfigs: List<ResourceConfig>?,
     resources: List<Resource>,
     relatedResourceWrapper: RelatedResourceWrapper,
-    configRules: List<RuleConfig>?
+    configComputedRuleValues: Map<String, Any>
   ) {
     val relatedResourcesConfigsMap = relatedResourcesConfigs?.groupBy { it.resource }
 
@@ -332,7 +332,7 @@ constructor(
           applyConfiguredSortAndFilters(
             resourceConfig = resourceConfig,
             sortData = true,
-            configComputedRuleValues = configRules.configRulesComputedValues()
+            configComputedRuleValues = configComputedRuleValues
           )
           if (isRevInclude) {
             revInclude(
@@ -370,7 +370,7 @@ constructor(
                 resources = entry.value,
                 relatedResourcesConfigs = resourceConfig.relatedResources,
                 relatedResourceWrapper = relatedResourceWrapper,
-                configRules = resourceConfig.configRules
+                configComputedRuleValues = configComputedRuleValues
               )
           }
         }
@@ -402,16 +402,17 @@ constructor(
   ): Long {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     val baseResourceConfig = registerConfiguration.fhirResource.baseResource
+    val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
     val search =
       Search(baseResourceConfig.resource).apply {
         applyConfiguredSortAndFilters(
           resourceConfig = baseResourceConfig,
           sortData = false,
           filterActiveResources = registerConfiguration.activeResourceFilters,
-          configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
+          configComputedRuleValues = configComputedRuleValues
         )
       }
-    return fhirEngine.count(search)
+    return withContext(dispatcherProvider.io()) { fhirEngine.count(search) }
   }
 
   override suspend fun loadProfileData(
@@ -439,13 +440,15 @@ constructor(
         fhirEngine.get(baseResourceConfig.resource, resourceId.extractLogicalIdUuid())
       }
 
+    val configComputedRuleValues = profileConfiguration.configRules.configRulesComputedValues()
+
     val retrievedRelatedResources =
       withContext(dispatcherProvider.io()) {
         retrieveRelatedResources(
           resources = listOf(baseResource),
           relatedResourcesConfigs = resourceConfig.relatedResources,
           relatedResourceWrapper = RelatedResourceWrapper(),
-          configRules = baseResourceConfig.configRules
+          configComputedRuleValues = configComputedRuleValues
         )
       }
     return RepositoryResourceData(
@@ -477,8 +480,8 @@ constructor(
 
   private fun List<RuleConfig>?.configRulesComputedValues(): Map<String, Any> {
     if (this == null) return emptyMap()
-    val configRules = dataQueryRulesExecutor.generateRules(this)
-    return dataQueryRulesExecutor.fireRules(configRules)
+    val configRules = configRulesExecutor.generateRules(this)
+    return configRulesExecutor.fireRules(configRules)
   }
   /**
    * A wrapper data class to hold search results. All related resources are flattened into one Map

@@ -25,8 +25,18 @@ import org.smartregister.fhircore.engine.rulesengine.services.DateService
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
-class DataQueryRulesExecutor @Inject constructor(val fhirPathDataExtractor: FhirPathDataExtractor) :
+/**
+ * This file execute rules to be used by configs.
+ *
+ * NOTE: that the [Facts] object is not thread safe, each thread should have its own set of data to
+ * work on. When used in multi-threaded environment may exhibit unexpected behavior and return wrong
+ * results when rules are fired. Use the [ResourceDataRulesExecutor] in the same coroutine context
+ * of the caller.
+ */
+class ConfigRulesExecutor @Inject constructor(val fhirPathDataExtractor: FhirPathDataExtractor) :
   RulesListener() {
+
+  private var facts: Facts = Facts()
 
   fun fireRules(rules: Rules): Map<String, Any> {
     facts =

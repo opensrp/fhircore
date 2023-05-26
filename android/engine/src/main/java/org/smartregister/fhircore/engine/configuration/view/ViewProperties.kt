@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration.view
 
 import androidx.compose.ui.graphics.Color
+import java.util.LinkedList
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.interpolate
@@ -47,6 +48,30 @@ abstract class ViewProperties {
       return interpolated
     } else Color.Unspecified.toString()
   }
+}
+
+/**
+ * This function obtains all [ListProperties] from the [ViewProperties] list; including the nested
+ * LISTs
+ */
+fun List<ViewProperties>.retrieveListProperties(): List<ListProperties> {
+  val listProperties = mutableListOf<ListProperties>()
+  val viewPropertiesLinkedList: LinkedList<ViewProperties> = LinkedList(this)
+  while (viewPropertiesLinkedList.isNotEmpty()) {
+    val properties = viewPropertiesLinkedList.removeFirst()
+    if (properties.viewType == ViewType.LIST) {
+      listProperties.add(properties as ListProperties)
+    }
+    when (properties.viewType) {
+      ViewType.COLUMN -> viewPropertiesLinkedList.addAll((properties as ColumnProperties).children)
+      ViewType.ROW -> viewPropertiesLinkedList.addAll((properties as RowProperties).children)
+      ViewType.CARD -> viewPropertiesLinkedList.addAll((properties as CardViewProperties).content)
+      ViewType.LIST ->
+        viewPropertiesLinkedList.addAll((properties as ListProperties).registerCard.views)
+      else -> {}
+    }
+  }
+  return listProperties
 }
 
 enum class ViewAlignment {
