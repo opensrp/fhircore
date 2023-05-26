@@ -65,18 +65,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
   @Inject lateinit var fhirEngine: FhirEngine
   @Inject lateinit var eventBus: EventBus
-
-  val appMainViewModel by viewModels<AppMainViewModel>()
-
-  private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
-
   lateinit var navHostFragment: NavHostFragment
-
+  val appMainViewModel by viewModels<AppMainViewModel>()
+  private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
   private val sentryNavListener =
-    SentryNavigationListener(
-      enableNavigationBreadcrumbs = true, // enabled by default
-      enableNavigationTracing = true // enabled by default
-    )
+    SentryNavigationListener(enableNavigationBreadcrumbs = true, enableNavigationTracing = true)
 
   override val startForResult =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
@@ -126,7 +119,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
     // Setup the drawer and schedule jobs
     appMainViewModel.run {
-      retrieveAppMainUiState()
+      lifecycleScope.launch { retrieveAppMainUiState() }
       schedulePeriodicJobs()
     }
 

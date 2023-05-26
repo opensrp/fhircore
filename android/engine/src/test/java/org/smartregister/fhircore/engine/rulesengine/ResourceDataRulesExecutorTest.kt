@@ -47,7 +47,7 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
-class RulesExecutorTest : RobolectricTest() {
+class ResourceDataRulesExecutorTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   @get:Rule(order = 1)
@@ -55,7 +55,7 @@ class RulesExecutorTest : RobolectricTest() {
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var rulesFactory: RulesFactory
-  private lateinit var rulesExecutor: RulesExecutor
+  private lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -70,7 +70,7 @@ class RulesExecutorTest : RobolectricTest() {
           dispatcherProvider = coroutineRule.testDispatcherProvider
         )
       )
-    rulesExecutor = RulesExecutor(rulesFactory)
+    resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)
   }
 
   @Test
@@ -89,7 +89,7 @@ class RulesExecutorTest : RobolectricTest() {
 
     runBlocking(Dispatchers.Default) {
       val resourceData =
-        rulesExecutor.processResourceData(
+        resourceDataRulesExecutor.processResourceData(
           repositoryResourceData =
             RepositoryResourceData(
               resourceRulesEngineFactId = null,
@@ -116,7 +116,7 @@ class RulesExecutorTest : RobolectricTest() {
       val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
       val computedValuesMap: Map<String, List<Resource>> = emptyMap()
       val listResourceDataStateMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
-      rulesExecutor.processListResourceData(
+      resourceDataRulesExecutor.processListResourceData(
         listProperties = listProperties,
         relatedResourcesMap = relatedRepositoryResourceData,
         computedValuesMap = computedValuesMap,
@@ -143,7 +143,7 @@ class RulesExecutorTest : RobolectricTest() {
       relatedRepositoryResourceData[ResourceType.Patient.name] =
         LinkedList<Resource>().apply { add(patient) }
       val listResourceDataStateMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
-      rulesExecutor.processListResourceData(
+      resourceDataRulesExecutor.processListResourceData(
         listProperties = listProperties,
         relatedResourcesMap = relatedRepositoryResourceData,
         computedValuesMap = computedValuesMap,
@@ -182,7 +182,7 @@ class RulesExecutorTest : RobolectricTest() {
 
       val listResourceDataStateMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
 
-      rulesExecutor.processListResourceData(
+      resourceDataRulesExecutor.processListResourceData(
         listProperties = listProperties,
         relatedResourcesMap = relatedRepositoryResourceData,
         computedValuesMap = computedValuesMap,
@@ -199,6 +199,6 @@ class RulesExecutorTest : RobolectricTest() {
 
   @Test
   fun getRulesFactory() {
-    Assert.assertEquals(rulesExecutor.rulesFactory, rulesFactory)
+    Assert.assertEquals(resourceDataRulesExecutor.rulesFactory, rulesFactory)
   }
 }
