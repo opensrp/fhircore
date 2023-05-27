@@ -92,7 +92,7 @@ class RegisterRepositoryTest : RobolectricTest() {
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
-          dataQueryRulesExecutor = mockk()
+          configRulesExecutor = mockk()
         )
       )
 

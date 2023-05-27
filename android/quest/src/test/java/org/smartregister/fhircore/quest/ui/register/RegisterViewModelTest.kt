@@ -38,7 +38,7 @@ import org.smartregister.fhircore.engine.configuration.register.RegisterConfigur
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -47,7 +47,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 @HiltAndroidTest
 class RegisterViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @Inject lateinit var rulesExecutor: RulesExecutor
+  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var registerViewModel: RegisterViewModel
   private lateinit var registerRepository: RegisterRepository
@@ -68,7 +68,7 @@ class RegisterViewModelTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           sharedPreferencesHelper = sharedPreferencesHelper,
           dispatcherProvider = coroutineTestRule.testDispatcherProvider,
-          rulesExecutor = rulesExecutor
+          resourceDataRulesExecutor = resourceDataRulesExecutor
         )
       )
 

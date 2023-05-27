@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.configuration.view
 
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
 data class SpacerProperties(
@@ -33,4 +34,11 @@ data class SpacerProperties(
   override val visible: String = "true",
   val height: Float? = null,
   val width: Float? = null,
-) : ViewProperties()
+) : ViewProperties() {
+  override fun interpolate(computedValuesMap: Map<String, Any>): SpacerProperties {
+    return this.copy(
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap)
+    )
+  }
+}
