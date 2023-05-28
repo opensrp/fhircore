@@ -156,7 +156,7 @@
       "name": "patientDOB",
       "condition": "true",
       "actions": [
-        "data.put('patientDOB', service.extractDOB(Patient, 'dd MM'))"
+        "data.put('patientDOB', service.extractDOB(Patient, 'dd MM yyyy'))"
       ]
     },
     {
@@ -170,14 +170,14 @@
       "name": "canBearChild",
       "condition": "true",
       "actions": [
-        "data.put('canBearChild',  fhirPath.extractValue(Patient, \"Patient.active and Patient.gender = 'female' and ((Patient.birthDate <= today() - 15 'years') and (Patient.birthDate >= today() - 49 'years'))\"))"
+        "data.put('canBearChild',  fhirPath.extractValue(Patient, \"Patient.active and Patient.gender = 'female' and ((Patient.birthDate <= today() - 14 'years') and (Patient.birthDate >= today() - 49 'years'))\"))"
       ]
     },
     {
       "name": "isEligibleForFP",
       "condition": "true",
       "actions": [
-        "data.put('isEligibleForFP',  fhirPath.extractValue(Patient, \"Patient.active and ((Patient.birthDate <= today() - 15 'years') and (Patient.birthDate >= today() - 49 'years'))\"))"
+        "data.put('isEligibleForFP',  fhirPath.extractValue(Patient, \"Patient.active and ((Patient.birthDate <= today() - 14 'years') and (Patient.birthDate >= today() - 49 'years'))\"))"
       ]
     },
     {
@@ -1003,6 +1003,13 @@
                     ]
                   },
                   {
+                    "name": "taskScheduleDate",
+                    "condition": "true",
+                    "actions": [
+                      "data.put('taskScheduleDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"yyyy-MM-dd\"))"
+                    ]
+                  },
+                  {
                     "name": "taskPeriodDueDate",
                     "condition": "true",
                     "actions": [
@@ -1212,6 +1219,13 @@
                             "dataType": "STRING",
                             "key": "sayanaPressStockOutFlagId",
                             "value": "@{sayanaPressStockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "ae2f17cb-deff-48a6-8ece-27e6bd475f30",
+                            "dataType": "DATE",
+                            "key": "taskScheduleDate",
+                            "value": "@{taskScheduleDate}"
                           }
                         ]
                       }
@@ -2218,6 +2232,33 @@
                 "dataType": "INTEGER",
                 "key": "isFamilyHeadExists",
                 "value": "@{isFamilyHeadExists}"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Register Pregnancy",
+      "titleColor": "@{patientTextColor}",
+      "visible": "@{canBearChild}",
+      "enabled": "@{patientActive}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "343",
+            "title": "Record to ANC",
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "346"
+            ],
+            "params": [
+              {
+                "key": "familyLogicalId",
+                "value": "@{familyLogicalId}",
+                "paramType": "UPDATE_DATE_ON_EDIT"
               }
             ]
           }

@@ -1,0 +1,1576 @@
+{
+    "resourceType": "Questionnaire",
+    "id": "253",
+    "name": "mPower Family Registration",
+    "title": "mPower Family Registration",
+    "description": "mPower Family Registration",
+    "version": "0.0.2",
+    "publisher": "mPower",
+    "meta": {
+      "versionId": "5",
+      "lastUpdated": "2023-05-11T06:40:51.651+00:00",
+      "source": "#kgdgoiu5tBoz2PCL",
+      "profile": [
+        "http://ehelse.no/fhir/StructureDefinition/sdf-Questionnaire"
+      ],
+      "tag": [
+        {
+          "system": "urn:ietf:bcp:47",
+          "code": "bn-BD",
+          "display": "বাংলা"
+        },
+        {
+          "system": "urn:ietf:bcp:47",
+          "code": "en-GB",
+          "display": "English"
+        }
+      ],
+      "security": [
+        {
+          "code": "3",
+          "display": "Helsehjelp",
+          "system": "urn:oid:2.16.578.1.12.4.1.1.7618"
+        }
+      ]
+    },
+    "useContext": [
+      {
+        "code": {
+          "system": "http://hl7.org/fhir/ValueSet/usage-context-type",
+          "code": "focus",
+          "display": "Clinical Focus"
+        },
+        "valueCodeableConcept": {
+          "coding": [
+            {
+              "system": "urn:oid:2.16.578.1.12.4.1.1.8655"
+            }
+          ]
+        }
+      }
+    ],
+    "contact": [
+      {
+        "name": "https://www.smartregister.org/"
+      }
+    ],
+    "subjectType": [
+      "Group"
+    ],
+    "language": "en-GB",
+    "extension": [
+      {
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+        "valueCanonical": "http://fhir.mpower-social.com:7070/fhir/StructureMap/254"
+      }
+    ],
+    "purpose": "mPower Family Registration",
+    "date": "2022-02-14T00:00:00.000Z",
+    "item": [
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+            "valueExpression": {
+              "language": "text/fhirpath",
+              "expression": "Group.name"
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+            "valueExpression": {
+              "language": "text/fhirpath",
+              "expression": "%resource.descendants().where(linkId='aaafd263-5e5b-4b78-bbc6-e01be0eb72ec').answer.value.toString() + ' ' + %resource.descendants().where(linkId='b8eb1ef1-c838-4ed8-eda8-fb306e956fff').answer.value.toString()"
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+            "valueBoolean": true
+          }
+        ],
+        "linkId": "64712707-d6eb-4166-8d6e-06fa2b9fcf3e",
+        "definition": "http://hl7.org/fhir/StructureDefinition/Group#Group.name",
+        "text": "Family Name *",
+        "type": "string",
+        "required": true
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+            "valueExpression": {
+              "language": "text/fhirpath",
+              "expression": "Group.name.split(' ').first"
+            }
+          }
+        ],
+        "linkId": "aaafd263-5e5b-4b78-bbc6-e01be0eb72ec",
+        "text": "Family Head First Name *",
+        "type": "string",
+        "required": true
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+            "valueExpression": {
+              "language": "text/fhirpath",
+              "expression": "Group.name.split(' ').last"
+            }
+          }
+        ],
+        "linkId": "b8eb1ef1-c838-4ed8-eda8-fb306e956fff",
+        "text": "Family Head Last Name *",
+        "type": "string",
+        "required": true
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+            "valueExpression": {
+              "language": "text/fhirpath",
+              "expression": "Group.identifier[0].value"
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+            "valueExpression": {
+              "language": "text/fhirpath",
+              "expression": "%resource.descendants().where(linkId='f47e2688-0cdf-4853-eb80-6d207210cf41').answer.value.code.toString() + %resource.descendants().where(linkId='bc86ee04-415d-4323-987f-219f4d7e5327').answer.value.code.toString() + %resource.descendants().where(linkId='f5d0dc93-8e83-4a14-cf85-da6bbb3b97d1').answer.value.code.toString() + %resource.descendants().where(linkId='12c54480-2dfb-46ad-85f6-b39ca3a21f76').answer.value.code.toString() + %resource.descendants().where(linkId='7e6a8799-4805-42b1-89fb-453103e3a2cc').answer.value.code.toString() + %resource.descendants().where(linkId='bfffcbca-4c16-405d-8d06-91e47855bbf5').answer.value.code.toString() +%resource.descendants().where(linkId='7974869b-540f-43a2-cf31-ca099c63f69c').answer.value.code.toString() + %resource.descendants().where(linkId='e76f862b-863f-49cf-9104-e5c5b9742a3c').answer.value.code.toString() + %resource.descendants().where(linkId='9d047897-a4de-44dc-8b86-938c21bf347d').answer.value.code.toString() + iif(%resource.descendants().where(linkId='9c7480bc-e662-4b6c-ba14-44616e030dc1').answer.value > 9, %resource.descendants().where(linkId='9c7480bc-e662-4b6c-ba14-44616e030dc1').answer.value.toString(), ('0' + %resource.descendants().where(linkId='9c7480bc-e662-4b6c-ba14-44616e030dc1').answer.value.toString()))"
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+            "valueInteger": 12
+          }
+        ],
+        "linkId": "ce49bde4-6ef9-423e-c747-efab250cd770",
+        "definition": "http://hl7.org/fhir/StructureDefinition/Group#Group.identifier.value",
+        "text": "Household ID *",
+        "type": "string",
+        "required": true,
+        "readOnly": true,
+        "maxLength": 12
+      },
+      {
+        "linkId": "d3c83379-5cc9-4f67-8851-03c444a425d3",
+        "type": "group",
+        "item": [
+          {
+            "linkId": "0679a0d5-ea68-4b70-8d26-7301b7d3b062",
+            "type": "choice",
+            "text": "Division *",
+            "required": true,
+            "answerOption": [
+              {
+                "valueCoding": {
+                  "id": "9c6ebcb6-3dd1-4ecd-953e-7ca473986be5",
+                  "code": "10",
+                  "system": "urn:uuid:4f310a7a-0b84-468a-a23b-9e62b5dd1d20",
+                  "display": "Barisal"
+                }
+              },
+              {
+                "valueCoding": {
+                  "id": "935944f5-fb96-44d3-80e9-0957705074ba",
+                  "code": "20",
+                  "system": "urn:uuid:4f310a7a-0b84-468a-a23b-9e62b5dd1d20",
+                  "display": "Chittagong"
+                }
+              },
+              {
+                "valueCoding": {
+                  "id": "5aa2e6f9-cdf3-41e8-f837-578b542dafb3",
+                  "code": "30",
+                  "system": "urn:uuid:4f310a7a-0b84-468a-a23b-9e62b5dd1d20",
+                  "display": "Dhaka"
+                }
+              },
+              {
+                "valueCoding": {
+                  "id": "b6c33aca-d02b-40dd-d0c4-b88b0b7cfcf2",
+                  "code": "40",
+                  "system": "urn:uuid:4f310a7a-0b84-468a-a23b-9e62b5dd1d20",
+                  "display": "Khulna"
+                }
+              },
+              {
+                "valueCoding": {
+                  "id": "c2c1cbd2-cb5f-445c-8c13-b853f21c67b8",
+                  "code": "50",
+                  "system": "urn:uuid:4f310a7a-0b84-468a-a23b-9e62b5dd1d20",
+                  "display": "Rajshahi"
+                }
+              },
+              {
+                "valueCoding": {
+                  "id": "0978fc2b-3301-44c4-ddd7-91a38d2623c7",
+                  "code": "60",
+                  "system": "urn:uuid:4f310a7a-0b84-468a-a23b-9e62b5dd1d20",
+                  "display": "Sylhet"
+                }
+              },
+              {
+                "valueCoding": {
+                  "id": "d6edb2ba-782d-445b-9c3d-41836c131e44",
+                  "code": "45",
+                  "system": "urn:uuid:4f310a7a-0b84-468a-a23b-9e62b5dd1d20",
+                  "display": "Mymensingh"
+                }
+              },
+              {
+                "valueCoding": {
+                  "id": "6d0e135f-db3d-4bde-8086-36bf7093f22a",
+                  "code": "55",
+                  "system": "urn:uuid:4f310a7a-0b84-468a-a23b-9e62b5dd1d20",
+                  "display": "Rangpur"
+                }
+              }
+            ],
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                "valueCodeableConcept": {
+                  "coding": [
+                    {
+                      "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                      "code": "drop-down"
+                    }
+                  ]
+                }
+              },
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "Group.identifier[0].value.toString().substring(0, 2)"
+                }
+              }
+            ]
+          },
+          {
+            "linkId": "7680ff7c-c142-4965-97c0-5cb4ee3633dd",
+            "type": "group",
+            "item": [
+              {
+                "linkId": "92658f38-74d2-4ec3-8667-7a7614b9e92d",
+                "type": "choice",
+                "text": "District *",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "691d173d-965a-4796-884f-6c7e95937ee0",
+                      "code": "1006",
+                      "system": "urn:uuid:3e115490-b7c3-49dd-f74f-3f6c055f06e7",
+                      "display": "Barisal"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(2, 2)"
+                    }
+                  }
+                ],
+                "enableWhen": [
+                  {
+                    "question": "0679a0d5-ea68-4b70-8d26-7301b7d3b062",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:4f310a7a-0b84-468a-a23b-9e62b5dd1d20",
+                      "code": "10"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "d79b1bf7-cfc9-4d15-8695-053ee86cb54d",
+                "type": "choice",
+                "text": "District *",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "691d173d-965a-4796-884f-6c7e95937ee0",
+                      "code": "2015",
+                      "system": "urn:uuid:3e115490-b7c3-49dd-f74f-3f6c055f06e7",
+                      "display": "Chittagong"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(2, 2)"
+                    }
+                  }
+                ],
+                "enableWhen": [
+                  {
+                    "question": "0679a0d5-ea68-4b70-8d26-7301b7d3b062",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:4f310a7a-0b84-468a-a23b-9e62b5dd1d20",
+                      "code": "20"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "5cbbd0d0-6bc6-44c7-8336-d83983d4384d",
+                "type": "choice",
+                "text": "District *",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "691d173d-965a-4796-884f-6c7e95937ee0",
+                      "code": "3026",
+                      "system": "urn:uuid:3e115490-b7c3-49dd-f74f-3f6c055f06e7",
+                      "display": "Dhaka"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(2, 2)"
+                    }
+                  }
+                ],
+                "enableWhen": [
+                  {
+                    "question": "0679a0d5-ea68-4b70-8d26-7301b7d3b062",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:4f310a7a-0b84-468a-a23b-9e62b5dd1d20",
+                      "code": "30"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "2fc7a989-8e44-4982-dc84-534fd4cf2ff7",
+                "type": "choice",
+                "text": "District *",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "691d173d-965a-4796-884f-6c7e95937ee0",
+                      "code": "4047",
+                      "system": "urn:uuid:3e115490-b7c3-49dd-f74f-3f6c055f06e7",
+                      "display": "Khulna"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(2, 2)"
+                    }
+                  }
+                ],
+                "enableWhen": [
+                  {
+                    "question": "0679a0d5-ea68-4b70-8d26-7301b7d3b062",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:4f310a7a-0b84-468a-a23b-9e62b5dd1d20",
+                      "code": "40"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "fe659306-7609-4f15-c12f-6cd324417c3c",
+                "type": "choice",
+                "text": "District *",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "691d173d-965a-4796-884f-6c7e95937ee0",
+                      "code": "5081",
+                      "system": "urn:uuid:3e115490-b7c3-49dd-f74f-3f6c055f06e7",
+                      "display": "Rajshahi"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(2, 2)"
+                    }
+                  }
+                ],
+                "enableWhen": [
+                  {
+                    "question": "0679a0d5-ea68-4b70-8d26-7301b7d3b062",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:4f310a7a-0b84-468a-a23b-9e62b5dd1d20",
+                      "code": "50"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "76beb3ec-a516-4288-8193-cc4de3e07328",
+                "type": "choice",
+                "text": "District *",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "691d173d-965a-4796-884f-6c7e95937ee0",
+                      "code": "4561",
+                      "system": "urn:uuid:3e115490-b7c3-49dd-f74f-3f6c055f06e7",
+                      "display": "Mymensingh"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(2, 2)"
+                    }
+                  }
+                ],
+                "enableWhen": [
+                  {
+                    "question": "0679a0d5-ea68-4b70-8d26-7301b7d3b062",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:4f310a7a-0b84-468a-a23b-9e62b5dd1d20",
+                      "code": "45"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "920be171-5612-4fb0-92a6-9df41996a4ea",
+                "type": "choice",
+                "text": "District *",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "691d173d-965a-4796-884f-6c7e95937ee0",
+                      "code": "5585",
+                      "system": "urn:uuid:3e115490-b7c3-49dd-f74f-3f6c055f06e7",
+                      "display": "Rangpur"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(2, 2)"
+                    }
+                  }
+                ],
+                "enableWhen": [
+                  {
+                    "question": "0679a0d5-ea68-4b70-8d26-7301b7d3b062",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:4f310a7a-0b84-468a-a23b-9e62b5dd1d20",
+                      "code": "55"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "5b673c6a-c18d-46ac-ce95-8734293066d1",
+                "type": "choice",
+                "text": "District *",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "691d173d-965a-4796-884f-6c7e95937ee0",
+                      "code": "6091",
+                      "system": "urn:uuid:3e115490-b7c3-49dd-f74f-3f6c055f06e7",
+                      "display": "Sylhet"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(2, 2)"
+                    }
+                  }
+                ],
+                "enableWhen": [
+                  {
+                    "question": "0679a0d5-ea68-4b70-8d26-7301b7d3b062",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:4f310a7a-0b84-468a-a23b-9e62b5dd1d20",
+                      "code": "60"
+                    }
+                  }
+                ]
+              }
+            ],
+            "required": false
+          },
+          {
+            "linkId": "455ac8c1-ea0a-487d-fd51-588c2257ef5f",
+            "type": "group",
+            "item": [
+              {
+                "linkId": "cc5bbb2b-ed08-4950-9274-cd71e7902c3b",
+                "type": "choice",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "3b99d119-90c3-4bfa-b2d8-3b5c6f24908f",
+                      "code": "100602",
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "display": "Agailjhara"
+                    }
+                  }
+                ],
+                "text": "Upazila *",
+                "enableWhen": [
+                  {
+                    "question": "92658f38-74d2-4ec3-8667-7a7614b9e92d",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:3e115490-b7c3-49dd-f74f-3f6c055f06e7",
+                      "code": "1006"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(4, 2)"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "1d0cfccd-a8a1-466f-8def-20fa9f2381e8",
+                "type": "choice",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "3b99d119-90c3-4bfa-b2d8-3b5c6f24908f",
+                      "code": "201504",
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "display": "Anowara"
+                    }
+                  }
+                ],
+                "text": "Upazila *",
+                "enableWhen": [
+                  {
+                    "question": "d79b1bf7-cfc9-4d15-8695-053ee86cb54d",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:3e115490-b7c3-49dd-f74f-3f6c055f06e7",
+                      "code": "2015"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(4, 2)"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "ae9d8030-659a-496a-812e-2ec1d70f2ce5",
+                "type": "choice",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "3b99d119-90c3-4bfa-b2d8-3b5c6f24908f",
+                      "code": "302604",
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "display": "Badda"
+                    }
+                  }
+                ],
+                "text": "Upazila *",
+                "enableWhen": [
+                  {
+                    "question": "5cbbd0d0-6bc6-44c7-8336-d83983d4384d",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:3e115490-b7c3-49dd-f74f-3f6c055f06e7",
+                      "code": "3026"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(4, 2)"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "1ecd616a-137a-4a7d-89e0-8ae2b019ea5b",
+                "type": "choice",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "3b99d119-90c3-4bfa-b2d8-3b5c6f24908f",
+                      "code": "404712",
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "display": "Batiaghata"
+                    }
+                  }
+                ],
+                "text": "Upazila *",
+                "enableWhen": [
+                  {
+                    "question": "2fc7a989-8e44-4982-dc84-534fd4cf2ff7",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:3e115490-b7c3-49dd-f74f-3f6c055f06e7",
+                      "code": "4047"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(4, 2)"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "59fa8354-a791-433e-970f-37fe4f98d63b",
+                "type": "choice",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "3b99d119-90c3-4bfa-b2d8-3b5c6f24908f",
+                      "code": "508110",
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "display": "Bagha"
+                    }
+                  }
+                ],
+                "text": "Upazila *",
+                "enableWhen": [
+                  {
+                    "question": "fe659306-7609-4f15-c12f-6cd324417c3c",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:3e115490-b7c3-49dd-f74f-3f6c055f06e7",
+                      "code": "5081"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(4, 2)"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "8a1ed48a-4c99-4b7d-8f69-a3a1e7764047",
+                "type": "choice",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "3b99d119-90c3-4bfa-b2d8-3b5c6f24908f",
+                      "code": "456113",
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "display": "Bhaluka"
+                    }
+                  }
+                ],
+                "text": "Upazila *",
+                "enableWhen": [
+                  {
+                    "question": "76beb3ec-a516-4288-8193-cc4de3e07328",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:3e115490-b7c3-49dd-f74f-3f6c055f06e7",
+                      "code": "4561"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(4, 2)"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "2ead9c35-dfb9-4bd4-804a-52dabaa9840b",
+                "type": "choice",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "3b99d119-90c3-4bfa-b2d8-3b5c6f24908f",
+                      "code": "558503",
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "display": "Badarganj"
+                    }
+                  }
+                ],
+                "text": "Upazila *",
+                "enableWhen": [
+                  {
+                    "question": "920be171-5612-4fb0-92a6-9df41996a4ea",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:3e115490-b7c3-49dd-f74f-3f6c055f06e7",
+                      "code": "5585"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(4, 2)"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "44a083d1-cde5-4305-c83f-2eaa95abb2c3",
+                "type": "choice",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "3b99d119-90c3-4bfa-b2d8-3b5c6f24908f",
+                      "code": "609108",
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "display": "Balaganj"
+                    }
+                  }
+                ],
+                "text": "Upazila *",
+                "enableWhen": [
+                  {
+                    "question": "5b673c6a-c18d-46ac-ce95-8734293066d1",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:3e115490-b7c3-49dd-f74f-3f6c055f06e7",
+                      "code": "6091"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(4, 2)"
+                    }
+                  }
+                ]
+              }
+            ],
+            "required": false
+          },
+          {
+            "linkId": "eaf75e4f-0696-444f-acd4-18c4eeb26592",
+            "type": "group",
+            "item": [
+              {
+                "linkId": "f47e2688-0cdf-4853-eb80-6d207210cf41",
+                "type": "choice",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "3b99d119-90c3-4bfa-b2d8-3b5c6f24908f",
+                      "code": "10060213",
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "display": "Bagdha"
+                    }
+                  }
+                ],
+                "text": "Union *",
+                "enableWhen": [
+                  {
+                    "question": "cc5bbb2b-ed08-4950-9274-cd71e7902c3b",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "code": "100602"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(6, 2)"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "bc86ee04-415d-4323-987f-219f4d7e5327",
+                "type": "choice",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "3b99d119-90c3-4bfa-b2d8-3b5c6f24908f",
+                      "code": "20150409",
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "display": "Anowara"
+                    }
+                  }
+                ],
+                "text": "Union *",
+                "enableWhen": [
+                  {
+                    "question": "1d0cfccd-a8a1-466f-8def-20fa9f2381e8",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "code": "201504"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(6, 2)"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "f5d0dc93-8e83-4a14-cf85-da6bbb3b97d1",
+                "type": "choice",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "3b99d119-90c3-4bfa-b2d8-3b5c6f24908f",
+                      "code": "30260413",
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "display": "Badda"
+                    }
+                  }
+                ],
+                "text": "Union *",
+                "enableWhen": [
+                  {
+                    "question": "ae9d8030-659a-496a-812e-2ec1d70f2ce5",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "code": "302604"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(6, 2)"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "12c54480-2dfb-46ad-85f6-b39ca3a21f76",
+                "type": "choice",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "3b99d119-90c3-4bfa-b2d8-3b5c6f24908f",
+                      "code": "40471211",
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "display": "Amirpur"
+                    }
+                  }
+                ],
+                "text": "Union *",
+                "enableWhen": [
+                  {
+                    "question": "1ecd616a-137a-4a7d-89e0-8ae2b019ea5b",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "code": "404712"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(6, 2)"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "7e6a8799-4805-42b1-89fb-453103e3a2cc",
+                "type": "choice",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "3b99d119-90c3-4bfa-b2d8-3b5c6f24908f",
+                      "code": "50811021",
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "display": "Arani"
+                    }
+                  }
+                ],
+                "text": "Union *",
+                "enableWhen": [
+                  {
+                    "question": "59fa8354-a791-433e-970f-37fe4f98d63b",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "code": "508110"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(6, 2)"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "bfffcbca-4c16-405d-8d06-91e47855bbf5",
+                "type": "choice",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "3b99d119-90c3-4bfa-b2d8-3b5c6f24908f",
+                      "code": "45611314",
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "display": "Bhaluka"
+                    }
+                  }
+                ],
+                "text": "Union *",
+                "enableWhen": [
+                  {
+                    "question": "8a1ed48a-4c99-4b7d-8f69-a3a1e7764047",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "code": "456113"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(6, 2)"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "7974869b-540f-43a2-cf31-ca099c63f69c",
+                "type": "choice",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "3b99d119-90c3-4bfa-b2d8-3b5c6f24908f",
+                      "code": "55850316",
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "display": "Kalupara"
+                    }
+                  }
+                ],
+                "text": "Union *",
+                "enableWhen": [
+                  {
+                    "question": "2ead9c35-dfb9-4bd4-804a-52dabaa9840b",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "code": "558503"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(6, 2)"
+                    }
+                  }
+                ]
+              },
+              {
+                "linkId": "e76f862b-863f-49cf-9104-e5c5b9742a3c",
+                "type": "choice",
+                "required": true,
+                "answerOption": [
+                  {
+                    "valueCoding": {
+                      "id": "3b99d119-90c3-4bfa-b2d8-3b5c6f24908f",
+                      "code": "60910811",
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "display": "Balaganj"
+                    }
+                  }
+                ],
+                "text": "Union *",
+                "enableWhen": [
+                  {
+                    "question": "44a083d1-cde5-4305-c83f-2eaa95abb2c3",
+                    "operator": "=",
+                    "answerCoding": {
+                      "system": "urn:uuid:11734412-c885-4623-8a27-bff3eac636f5",
+                      "code": "609108"
+                    }
+                  }
+                ],
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                    "valueCodeableConcept": {
+                      "coding": [
+                        {
+                          "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                          "code": "drop-down"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "Group.identifier[0].value.toString().substring(6, 2)"
+                    }
+                  }
+                ]
+              }
+            ],
+            "required": false
+          },
+          {
+            "linkId": "9d047897-a4de-44dc-8b86-938c21bf347d",
+            "type": "choice",
+            "text": "Ward *",
+            "required": false,
+            "answerOption": [
+              {
+                "valueCoding": {
+                  "id": "bc9247f1-23e7-4be5-8e3a-a7f0f2fb5e55",
+                  "code": "01",
+                  "system": "urn:uuid:417c47fa-1778-480f-9729-2f66d26d7a0c",
+                  "display": "Ward - 1"
+                }
+              },
+              {
+                "valueCoding": {
+                  "id": "5b7f6556-bcef-470a-8a16-dd5ea04aeb06",
+                  "code": "02",
+                  "system": "urn:uuid:417c47fa-1778-480f-9729-2f66d26d7a0c",
+                  "display": "Ward - 2"
+                }
+              },
+              {
+                "valueCoding": {
+                  "id": "05c9cf8c-c318-4ba6-b4e1-33ede02a9531",
+                  "code": "03",
+                  "system": "urn:uuid:417c47fa-1778-480f-9729-2f66d26d7a0c",
+                  "display": "Ward - 3"
+                }
+              },
+              {
+                "valueCoding": {
+                  "id": "c2c14b1c-2134-47d2-8869-770f8b4eb903",
+                  "code": "04",
+                  "system": "urn:uuid:417c47fa-1778-480f-9729-2f66d26d7a0c",
+                  "display": "Ward - 4"
+                }
+              },
+              {
+                "valueCoding": {
+                  "id": "78e048d6-cf6d-43c0-86c5-f7af724230d5",
+                  "code": "05",
+                  "system": "urn:uuid:417c47fa-1778-480f-9729-2f66d26d7a0c",
+                  "display": "Ward - 5"
+                }
+              },
+              {
+                "valueCoding": {
+                  "id": "82105e99-651f-498a-88bb-989d4f2b0f47",
+                  "code": "06",
+                  "system": "urn:uuid:417c47fa-1778-480f-9729-2f66d26d7a0c",
+                  "display": "Ward - 6"
+                }
+              },
+              {
+                "valueCoding": {
+                  "id": "24359467-f319-49d1-8756-5b083ec718f9",
+                  "code": "07",
+                  "system": "urn:uuid:417c47fa-1778-480f-9729-2f66d26d7a0c",
+                  "display": "Ward - 7"
+                }
+              },
+              {
+                "valueCoding": {
+                  "id": "a1379bf4-a1a9-4bf2-8ab1-b8a2756c6ba7",
+                  "code": "08",
+                  "system": "urn:uuid:417c47fa-1778-480f-9729-2f66d26d7a0c",
+                  "display": "Ward - 8"
+                }
+              },
+              {
+                "valueCoding": {
+                  "id": "96a9e02d-26ad-4a30-83aa-c4d493e999f6",
+                  "code": "09",
+                  "system": "urn:uuid:417c47fa-1778-480f-9729-2f66d26d7a0c",
+                  "display": "Ward - 9"
+                }
+              }
+            ],
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "Group.identifier[0].value.toString().substring(8, 2)"
+                }
+              },
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                "valueCodeableConcept": {
+                  "coding": [
+                    {
+                      "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                      "code": "drop-down"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "Group.characteristic[0].code.text"
+                }
+              }
+            ],
+            "linkId": "7d9dba4c-7407-4eb2-d791-2d1834b6afcc",
+            "definition": "http://hl7.org/fhir/StructureDefinition/Group#Group.characteristic.code.text",
+            "text": "Village or Town *",
+            "type": "string",
+            "required": true
+          },
+          {
+            "linkId": "b686728b-72eb-4719-81e7-ac343ebb044f",
+            "type": "string",
+            "text": "House / GR / Holding No *",
+            "required": true
+          },
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                "valueInteger": 99
+              },
+              {
+                "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+                "valueString": "Enter the correct number between 1 and 99"
+              },
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                "valueInteger": 1
+              },
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "Group.identifier[0].value.toString().substring(10, 2)"
+                }
+              }
+            ],
+            "linkId": "9c7480bc-e662-4b6c-ba14-44616e030dc1",
+            "type": "integer",
+            "text": "HH No *",
+            "required": true
+          },
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+                "valueInteger": 11
+              },
+              {
+                "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+                "valueString": "11 ডিজিটের মোবাইল নম্বর লিখুন"
+              },
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/regex",
+                "valueString": "0|(01[1-9][0-9]{8})|\\s*"
+              }
+            ],
+            "linkId": "3193ad83-4864-419f-851f-4f5d82948bb8",
+            "type": "string",
+            "text": "HH Mobile Number *",
+            "required": true,
+            "maxLength": 11
+          },
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                "valueInteger": 1
+              },
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                "valueInteger": 50
+              },
+              {
+                "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+                "valueString": "Enter the correct value between 1 and 50. "
+              },
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/regex",
+                "valueString": "(5[0]|[1-4][0-9]|[1-9])|\\s*"
+              }
+            ],
+            "linkId": "29b9289c-be48-49c0-81e4-e93cde1c33c2",
+            "type": "integer",
+            "text": "Total HH Member *",
+            "required": true
+          }
+        ],
+        "required": false,
+        "text": "Address"
+      }
+    ]
+  }
