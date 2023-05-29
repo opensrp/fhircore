@@ -157,14 +157,14 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     buildActivity(buildQuestionnaireWithConstraints(), questionnaireConfig)
   }
 
-  private fun buildActivity(questionnaire: Questionnaire, questionnaireConfig: QuestionnaireConfig){
+  private fun buildActivity(
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig
+  ) {
     questionnaireFragment = spyk()
 
     questionnaireFragment.apply {
-      arguments =
-        bundleOf(
-          Pair("questionnaire", questionnaire.encodeResourceToString())
-        )
+      arguments = bundleOf(Pair("questionnaire", questionnaire.encodeResourceToString()))
     }
 
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
@@ -940,7 +940,17 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun `test covid 19 vaccines questionnaire on followup`() {
-    val questionnaire = "covid-19-followup-questionnaire.json".readFile().decodeResourceFromString<Questionnaire>()
+    // SARS-CoV-2 vaccination - 840534001 - snomed
+    // initial multiple does not work
+    // initialSelected property does not work
+    // context in answer expression
+    // Caused by: java.lang.NullPointerException: null cannot be cast to non-null type
+    // org.hl7.fhir.r4.model.Base
+    // 2023-05-26 20:12:47.157 AndroidRuntime          com.google.android.fhir.catalog      E  	at
+    // com.google.android.fhir.datacapture.fhirpath.FHIRPathEngineHostServices.resolveConstant(FHIRPathEngineHostServices.kt:29)
+    //
+    val questionnaire =
+      "covid-19-followup-questionnaire.json".readFile().decodeResourceFromString<Questionnaire>()
     buildActivity(questionnaire, questionnaireConfig)
 
     ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)

@@ -759,7 +759,7 @@ constructor(
   }
 
   /** Loads a Patient resource with the given ID. */
-  private suspend fun loadPatient(patientId: String): Patient? {
+  suspend fun loadPatient(patientId: String): Patient? {
     return defaultRepository.loadResource(patientId)
   }
 

@@ -31,6 +31,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.extensions.flattened
 import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
@@ -46,6 +47,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -58,6 +60,7 @@ import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.FieldType
+import org.smartregister.fhircore.engine.util.extension.ITEM_INITIAL_EXPRESSION_URL
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
@@ -76,6 +79,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
   @Inject lateinit var parser: IParser
+  @Inject lateinit var fhirPathEngine: FHIRPathEngine
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
   private lateinit var questionnaire: Questionnaire
   private var questionnaireResponse: QuestionnaireResponse = QuestionnaireResponse()
@@ -172,6 +176,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
         withContext(dispatcherProvider.main()) {
           updateViews()
+          setInitialExpression(questionnaire)
           fragment.whenStarted { loadProgress.dismiss() }
         }
       }
@@ -206,7 +211,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  private fun renderFragment() {
+  private suspend fun renderFragment() {
     // Pass questionnaire and questionnaire-response to fragment
     val questionnaireString = parser.encodeResourceToString(questionnaire)
     val fragmentBuilder =
@@ -214,6 +219,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         setQuestionnaire(questionnaireString)
         if (!questionnaireConfig.type.isDefault()) {
           setQuestionnaireResponse(questionnaireResponse.encodeResourceToString())
+        }
+        questionnaireConfig.resourceIdentifier?.let {
+          setQuestionnaireLaunchContext(
+            questionnaireViewModel.loadPatient(it)!!.encodeResourceToString()
+          )
         }
       }
     fragment = fragmentBuilder.build()
@@ -237,6 +247,33 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       initial =
         mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
       readOnly = true
+    }
+  }
+
+  private fun setInitialExpression(questionnaire: Questionnaire) {
+    questionnaire.item.flattened().forEach { item ->
+      item.extension
+        .find {
+          it.url == ITEM_INITIAL_EXPRESSION_URL &&
+            it.value.castToExpression(it).language == "text/fhirpath"
+        }
+        ?.let {
+          fhirPathEngine.evaluate(
+              null,
+              getQuestionnaireResponse(),
+              null,
+              item,
+              it.value.castToExpression(it).expression
+            )
+            .let {
+              item.initial =
+                it.map {
+                  Questionnaire.QuestionnaireItemInitialComponent().apply {
+                    value = it.castToType(it)
+                  }
+                }
+            }
+        }
     }
   }
 

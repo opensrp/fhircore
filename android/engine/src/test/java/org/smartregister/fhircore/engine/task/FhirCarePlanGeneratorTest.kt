@@ -1146,6 +1146,80 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Test
   @ExperimentalCoroutinesApi
+  fun `Generate CarePlan should generate covid immunization schedule`() = runTest {
+    val planDefinitionResources =
+      loadPlanDefinitionResources("covid-19-immunization", listOf("register-temp"))
+    val planDefinition = planDefinitionResources.planDefinition
+    val patient = planDefinitionResources.patient
+    val questionnaireResponses = planDefinitionResources.questionnaireResponses
+    val resourcesSlot = planDefinitionResources.resourcesSlot
+
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        planDefinition,
+        patient,
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
+          )
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also { carePlan ->
+        assertCarePlan(
+          carePlan,
+          planDefinition,
+          patient,
+          patient.birthDate,
+          patient.birthDate.plusYears(18),
+          1
+        )
+
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map {
+            println(it.encodeResourceToString())
+            it as Task
+          }
+          .also { tasks ->
+            assertTrue(tasks.all { it.status == TaskStatus.REQUESTED })
+            assertTrue(
+              tasks.all {
+                it.reasonReference.reference == "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82"
+              }
+            )
+            assertTrue(
+              tasks.all {
+                it.code.codingFirstRep.display ==
+                  "Administration of vaccine to produce active immunity (procedure)" &&
+                  it.code.codingFirstRep.code == "33879002"
+              }
+            )
+            assertTrue(tasks.all { it.description.contains(it.reasonCode.text, true) })
+            assertTrue(
+              tasks.all { it.`for`.reference == questionnaireResponses.first().subject.reference }
+            )
+            assertTrue(
+              tasks.all { it.basedOnFirstRep.reference == carePlan.asReference().reference }
+            )
+          }
+          .also { tasks ->
+            val vaccines =
+              mutableMapOf<String, Date>(
+                // TODO add vaccine list to validate based on condition
+                )
+            vaccines.forEach { vaccine ->
+              println(vaccine)
+
+              val task = tasks.find { it.description.startsWith(vaccine.key) }
+              assertNotNull(task)
+              assertTrue(task!!.executionPeriod.start.asYyyyMmDd() == vaccine.value.asYyyyMmDd())
+            }
+          }
+      }
+  }
+
+  @Test
+  @ExperimentalCoroutinesApi
   fun `test generateOrUpdateCarePlan returns success even when evaluatedValue is null`() =
       runBlocking {
     val planDefinitionResources =

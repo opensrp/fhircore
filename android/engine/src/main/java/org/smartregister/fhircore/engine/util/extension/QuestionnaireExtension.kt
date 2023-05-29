@@ -136,7 +136,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.find(
   }
 }
 
-internal const val ITEM_INITIAL_EXPRESSION_URL: String =
+const val ITEM_INITIAL_EXPRESSION_URL: String =
   "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
 
 /** Pre-Populate Questionnaire items with initial values */
