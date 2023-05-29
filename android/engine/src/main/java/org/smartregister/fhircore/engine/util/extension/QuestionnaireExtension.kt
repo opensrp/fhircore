@@ -159,10 +159,9 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
         // (opensrpID) but we also need to use initialExpression
         // when using the same questionnaire to edit the family member details (update registration
         // info)
-        if (type == QuestionnaireType.CREATED) {
-          if (item.hasExtension(ITEM_INITIAL_EXPRESSION_URL)) {
-            item.removeExtension(ITEM_INITIAL_EXPRESSION_URL)
-          }
+
+        if (item.hasExtension(ITEM_INITIAL_EXPRESSION_URL)) {
+          item.removeExtension(ITEM_INITIAL_EXPRESSION_URL)
         }
 
         item.initial =

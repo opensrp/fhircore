@@ -15,15 +15,13 @@
  */
 
 package org.smartregister.fhircore.engine.domain.model
-/** Type [CREATED] will remove initialExpression from linkId if PRE-POPULATE is used */
+
 enum class QuestionnaireType {
   DEFAULT,
   EDIT,
-  READ_ONLY,
-  CREATED; // we can also change name to REGISTER
+  READ_ONLY;
 
   fun isDefault() = this == DEFAULT
   fun isEditMode() = this == EDIT
   fun isReadOnly() = this == READ_ONLY
-  fun isCreated() = this == CREATED
 }
