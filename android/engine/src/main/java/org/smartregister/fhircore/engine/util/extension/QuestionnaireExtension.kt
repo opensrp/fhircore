@@ -37,6 +37,7 @@ import org.hl7.fhir.r4.model.TimeType
 import org.hl7.fhir.r4.model.Type
 import org.hl7.fhir.r4.model.UriType
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 
 fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asLabel() =
   if (this.linkId != null) {
@@ -143,7 +144,8 @@ internal const val ITEM_INITIAL_EXPRESSION_URL: String =
 // TODO: handle interpolation for null values on rules engine and not where the values are used
 fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
   interpolationPrefix: String,
-  prePopulationParams: List<ActionParameter>
+  prePopulationParams: List<ActionParameter>,
+  type: QuestionnaireType
 ) {
   forEach { item ->
     prePopulationParams
@@ -153,6 +155,14 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
           !it.value.contains(interpolationPrefix)
       }
       ?.let { actionParam ->
+        //case : where we need to use prepopulate values when adding a new household member (opensrpID) but we also need to use initialExpression
+        //when using the same questionnaire to edit the family member details (update registration info)
+        if (type == QuestionnaireType.CREATED) {
+          if (item.hasExtension(ITEM_INITIAL_EXPRESSION_URL)) {
+            item.removeExtension(ITEM_INITIAL_EXPRESSION_URL)
+          }
+        }
+
         item.initial =
           arrayListOf(
             Questionnaire.QuestionnaireItemInitialComponent().apply {
@@ -161,7 +171,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
           )
       }
     if (item.item.isNotEmpty()) {
-      item.item.prePopulateInitialValues(interpolationPrefix, prePopulationParams)
+      item.item.prePopulateInitialValues(interpolationPrefix, prePopulationParams, type)
     }
   }
 }

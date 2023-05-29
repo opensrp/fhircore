@@ -129,11 +129,18 @@ constructor(
           readOnlyLinkIds
         )
       }
+      //FIXME: For testing purpose only
+      this.item.forEach {
+        it.removeExtension("http://hl7.org/fhir/StructureDefinition/questionnaire-hidden")
+        it.item.forEach {
+          it.removeExtension("http://hl7.org/fhir/StructureDefinition/questionnaire-hidden")
+        }
+      }
       // prepopulate questionnaireItems with initial values
       prePopulationParams?.takeIf { it.isNotEmpty() }?.let { nonEmptyParams ->
         editQuestionnaireResourceParams =
           nonEmptyParams.filter { it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT }
-        item.prePopulateInitialValues(STRING_INTERPOLATION_PREFIX, nonEmptyParams)
+        item.prePopulateInitialValues(STRING_INTERPOLATION_PREFIX, nonEmptyParams, type)
       }
 
       // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
@@ -677,7 +684,11 @@ constructor(
         }
       }
       populationResources.addAll(loadPopulationResources(subjectId, subjectType))
-      questionnaireResponse = populateQuestionnaireResponse(questionnaire, populationResources)
+      questionnaireResponse = if (populationResources.isNotEmpty()) {
+        populateQuestionnaireResponse(questionnaire, populationResources)
+      } else {
+        QuestionnaireResponse()
+      }
     }
 
     return questionnaireResponse

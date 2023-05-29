@@ -231,7 +231,7 @@ class QuestionnaireExtensionTest {
     val theLinkId = "linkId"
     val questionnaireItemComponent =
       Questionnaire.QuestionnaireItemComponent().apply { linkId = theLinkId }
-    listOf(questionnaireItemComponent).prePopulateInitialValues("", emptyList())
+    listOf(questionnaireItemComponent).prePopulateInitialValues("", emptyList(), type)
     Assert.assertEquals(
       emptyList<Questionnaire.QuestionnaireItemInitialComponent>(),
       questionnaireItemComponent.initial
@@ -244,7 +244,7 @@ class QuestionnaireExtensionTest {
     val prePopulationParams = listOf(ActionParameter("key", linkId = theLinkId, value = "value"))
     val questionnaireItemComponent =
       Questionnaire.QuestionnaireItemComponent().apply { linkId = theLinkId }
-    listOf(questionnaireItemComponent).prePopulateInitialValues("!", prePopulationParams)
+    listOf(questionnaireItemComponent).prePopulateInitialValues("!", prePopulationParams, type)
     Assert.assertNotEquals(
       emptyList<Questionnaire.QuestionnaireItemInitialComponent>(),
       questionnaireItemComponent.initial
@@ -261,7 +261,7 @@ class QuestionnaireExtensionTest {
       Questionnaire.QuestionnaireItemComponent().apply {
         item = listOf(innerQuestionnaireItemComponent)
       }
-    listOf(questionnaireItemComponent).prePopulateInitialValues("!", prePopulationParams)
+    listOf(questionnaireItemComponent).prePopulateInitialValues("!", prePopulationParams, type)
     Assert.assertEquals(
       emptyList<Questionnaire.QuestionnaireItemInitialComponent>(),
       questionnaireItemComponent.initial
@@ -286,7 +286,7 @@ class QuestionnaireExtensionTest {
           }
         )
       }
-    listOf(questionnaireItemComponent).prePopulateInitialValues("", emptyList())
+    listOf(questionnaireItemComponent).prePopulateInitialValues("", emptyList(), type)
     Assert.assertTrue(questionnaireItemComponent.hasExtension(ITEM_INITIAL_EXPRESSION_URL))
   }
 
