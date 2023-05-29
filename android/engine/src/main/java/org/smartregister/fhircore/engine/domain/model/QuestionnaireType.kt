@@ -20,7 +20,7 @@ enum class QuestionnaireType {
   DEFAULT,
   EDIT,
   READ_ONLY,
-  CREATED; //we can also change name to REGISTER
+  CREATED; // we can also change name to REGISTER
 
   fun isDefault() = this == DEFAULT
   fun isEditMode() = this == EDIT

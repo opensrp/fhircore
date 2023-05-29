@@ -129,7 +129,7 @@ constructor(
           readOnlyLinkIds
         )
       }
-      //FIXME: For testing purpose only
+      // FIXME: For testing purpose only
       this.item.forEach {
         it.removeExtension("http://hl7.org/fhir/StructureDefinition/questionnaire-hidden")
         it.item.forEach {
@@ -684,11 +684,12 @@ constructor(
         }
       }
       populationResources.addAll(loadPopulationResources(subjectId, subjectType))
-      questionnaireResponse = if (populationResources.isNotEmpty()) {
-        populateQuestionnaireResponse(questionnaire, populationResources)
-      } else {
-        QuestionnaireResponse()
-      }
+      questionnaireResponse =
+        if (populationResources.isNotEmpty()) {
+          populateQuestionnaireResponse(questionnaire, populationResources)
+        } else {
+          QuestionnaireResponse()
+        }
     }
 
     return questionnaireResponse

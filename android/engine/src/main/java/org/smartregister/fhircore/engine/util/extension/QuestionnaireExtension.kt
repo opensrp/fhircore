@@ -155,8 +155,10 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
           !it.value.contains(interpolationPrefix)
       }
       ?.let { actionParam ->
-        //case : where we need to use prepopulate values when adding a new household member (opensrpID) but we also need to use initialExpression
-        //when using the same questionnaire to edit the family member details (update registration info)
+        // case : where we need to use prepopulate values when adding a new household member
+        // (opensrpID) but we also need to use initialExpression
+        // when using the same questionnaire to edit the family member details (update registration
+        // info)
         if (type == QuestionnaireType.CREATED) {
           if (item.hasExtension(ITEM_INITIAL_EXPRESSION_URL)) {
             item.removeExtension(ITEM_INITIAL_EXPRESSION_URL)

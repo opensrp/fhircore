@@ -112,9 +112,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       }
 
     baseResourceId = intent.getStringExtra(BASE_RESOURCE_ID) ?: ""
-    baseResourceType = intent.getStringExtra(BASE_RESOURCE_TYPE)?.let {
-      ResourceType.fromCode(it)
-    } ?: ResourceType.Group
+    baseResourceType =
+      intent.getStringExtra(BASE_RESOURCE_TYPE)?.let { ResourceType.fromCode(it) }
+        ?: ResourceType.Group
 
     val questionnaireActivity = this@QuestionnaireActivity
     questionnaireViewModel.removeOperation.observe(questionnaireActivity) {
