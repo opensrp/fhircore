@@ -91,7 +91,7 @@
                 "id": "c18a76f4-3fa6-4164-8c8a-a509acbf37df223334",
                 "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
                 "code": "1st",
-                "display": "1st Degree Relative"
+                "display": "1st degree relative"
               }
             }
           ]
@@ -110,10 +110,10 @@
           "answer": [
             {
               "valueCoding": {
-                "id": "abf3ab40-b326-4141-9c69-e09315f21dba113338",
+                "id": "c18a76f4-3fa6-4164-8c8a-a509acbf37df223338",
                 "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
-                "code": "yes",
-                "display": "Yes"
+                "code": "no",
+                "display": "No"
               }
             }
           ]
@@ -145,7 +145,7 @@
           "text": "Enter Weight (kgs)",
           "answer": [
             {
-              "valueDecimal": 80.0
+              "valueDecimal": 90.0
             }
           ]
         },
@@ -154,7 +154,7 @@
           "text": "Enter Height (cms)",
           "answer": [
             {
-              "valueDecimal": 150.0
+              "valueDecimal": 120.0
             }
           ]
         },
@@ -163,7 +163,7 @@
           "text": "* BMI",
           "answer": [
             {
-              "valueDecimal": 35.6
+              "valueDecimal": 62.5
             }
           ]
         }
@@ -178,7 +178,7 @@
         },
         {
           "linkId": "results-text",
-          "text": "Very High Risk  > 50% 10 year risk of developing Type II Diabetes We recommend seeing a doctor for further screening"
+          "text": "High Risk \n> 50% \n10 year risk of developing Type II Diabetes\n\n\nWe recommend seeing a doctor for further screening\n"
         },
         {
           "linkId": "score-calculations",
@@ -186,6 +186,15 @@
           "answer": [
             {
               "valueDecimal": 25.0
+            }
+          ]
+        },
+        {
+          "linkId": "hlc-referred",
+          "text": "HLC to refer to",
+          "answer": [
+            {
+              "valueString": "Sunvalley Clinic"
             }
           ]
         }

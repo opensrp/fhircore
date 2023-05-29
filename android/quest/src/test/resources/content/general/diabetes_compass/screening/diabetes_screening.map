@@ -5,6 +5,7 @@ uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
 uses "http://hl7.org/fhir/StructureDefinition/Encounter" as target
 uses "http://hl7.org/fhir/StructureDefinition/Observation" as target
 uses "http://hl7.org/fhir/StructureDefinition/RiskAssessment" as target
+uses "http://hl7.org/fhir/StructureDefinition/ServiceRequest" as target
 
 group DiabetesScreening(source src: QuestionnaireResponse, target bundle: Bundle) {
     src->bundle.id = uuid(),
@@ -41,7 +42,8 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle: Bun
     ExtractWeight(src, bundle, encounter),
     ExtractHeight(src, bundle, encounter),
     ExtractBMI(src, bundle, encounter),
-    ExtractRiskScore(src, bundle, encounter)
+    ExtractRiskScore(src, bundle, encounter),
+    ExtractReferralServiceRequest(src,bundle,encounter)
     "r_enc_obs";
 }
 
@@ -288,5 +290,26 @@ group ExtractRiskScore(source src : QuestionnaireResponse, target bundle: Bundle
                     } "r_rsk_prediction";
                 } "r_rsk_assessment";
         } "r_rsk_score_item";
+    } "r_rsk_pg";
+}
+
+group ExtractReferralServiceRequest(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src.item as page where(linkId = "page-8") then {
+        page.item as item where(linkId="hlc-referred" and answer.count() > 0) then {
+            src -> bundle.entry as entry, entry.resource = create("ServiceRequest") as sRequest then {
+                src -> sRequest.id = uuid() "r_sRequest_id";
+                src ->sRequest.status = 'active' "r_sRequest_status";
+                src -> sRequest.intent = "order" "r_sRequest_onset_date_val";
+                src -> sRequest.priority= "urgent" "r_sRequest_onset_date_val";
+                src -> sRequest.encounter = reference(encounter) "r_sRequest_enc";
+                src -> sRequest.category = cc("http://snomed.info/sct", "44383000", "Patient referral for consultation") "r_sRequest_category";
+                src -> sRequest.subject = evaluate(src, $this.subject) "r_obs_subject";
+                src -> sRequest.code = create("CodeableConcept") as ccProc then {
+                    src -> ccProc.coding = c("http://snomed.info/sct", "44383000", "Patient referral for consultation") as coding,
+                    coding.display = 'Patient referral for consultation' "r_sRequest_code_coding";
+                    src -> ccProc.text = "Patient referral for consultation" "r_sRequest_code_text";
+                } "r_sRequest_code";
+            } "r_sRequest";
+        } "r_filter";
     } "r_rsk_pg";
 }
