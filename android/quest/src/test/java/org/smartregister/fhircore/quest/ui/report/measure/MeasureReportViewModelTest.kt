@@ -60,7 +60,7 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
@@ -86,7 +86,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   @Inject lateinit var measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
   @Inject lateinit var registerRepository: RegisterRepository
   @Inject lateinit var defaultRepository: DefaultRepository
-  @Inject lateinit var rulesExecutor: RulesExecutor
+  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
   var fhirEngine: FhirEngine = mockk()
   var fhirOperator: FhirOperator = mockk()
   val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
@@ -121,7 +121,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
           defaultRepository = defaultRepository,
-          rulesExecutor = rulesExecutor
+          resourceDataRulesExecutor = resourceDataRulesExecutor
         )
       )
   }

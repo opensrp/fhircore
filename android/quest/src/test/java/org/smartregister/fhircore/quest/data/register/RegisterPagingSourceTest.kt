@@ -30,7 +30,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -39,7 +39,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 class RegisterPagingSourceTest : RobolectricTest() {
 
   @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
-  @Inject lateinit var rulesExecutor: RulesExecutor
+  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
   private val registerRepository = mockk<RegisterRepository>()
   private lateinit var registerPagingSource: RegisterPagingSource
   private val registerId = "registerId"
@@ -47,7 +47,8 @@ class RegisterPagingSourceTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-    registerPagingSource = RegisterPagingSource(registerRepository, rulesExecutor, listOf())
+    registerPagingSource =
+      RegisterPagingSource(registerRepository, resourceDataRulesExecutor, listOf())
   }
 
   @Test

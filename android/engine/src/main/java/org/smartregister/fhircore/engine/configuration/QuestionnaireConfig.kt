@@ -44,7 +44,30 @@ data class QuestionnaireConfig(
   val carePlanConfigs: List<CarePlanConfig> = emptyList(),
   val refreshContent: Boolean = false,
   val readOnlyLinkIds: List<String>? = emptyList(),
-) : java.io.Serializable
+) : java.io.Serializable {
+
+  fun interpolate(computedValuesMap: Map<String, Any>) =
+    this.copy(
+      id = id.interpolate(computedValuesMap).extractLogicalIdUuid(),
+      taskId = taskId?.interpolate(computedValuesMap),
+      title = title?.interpolate(computedValuesMap),
+      resourceIdentifier =
+        resourceIdentifier?.interpolate(computedValuesMap)?.extractLogicalIdUuid(),
+      groupResource =
+        groupResource?.copy(
+          groupIdentifier =
+            groupResource.groupIdentifier.interpolate(computedValuesMap).extractLogicalIdUuid()
+        ),
+      confirmationDialog =
+        confirmationDialog?.copy(
+          title = confirmationDialog.title.interpolate(computedValuesMap),
+          message = confirmationDialog.message.interpolate(computedValuesMap),
+          actionButtonText = confirmationDialog.actionButtonText.interpolate(computedValuesMap)
+        ),
+      planDefinitions = planDefinitions?.map { it.interpolate(computedValuesMap) },
+      readOnlyLinkIds = readOnlyLinkIds?.map { it.interpolate(computedValuesMap) }
+    )
+}
 
 @Serializable
 data class ConfirmationDialog(
@@ -61,24 +84,3 @@ data class GroupResourceConfig(
   val removeGroup: Boolean = false,
   val deactivateMembers: Boolean = true
 ) : java.io.Serializable
-
-fun QuestionnaireConfig.interpolate(computedValuesMap: Map<String, Any>) =
-  this.copy(
-    id = id.interpolate(computedValuesMap).extractLogicalIdUuid(),
-    taskId = taskId?.interpolate(computedValuesMap),
-    title = title?.interpolate(computedValuesMap),
-    resourceIdentifier = resourceIdentifier?.interpolate(computedValuesMap)?.extractLogicalIdUuid(),
-    groupResource =
-      groupResource?.copy(
-        groupIdentifier =
-          groupResource.groupIdentifier.interpolate(computedValuesMap).extractLogicalIdUuid()
-      ),
-    confirmationDialog =
-      confirmationDialog?.copy(
-        title = confirmationDialog.title.interpolate(computedValuesMap),
-        message = confirmationDialog.message.interpolate(computedValuesMap),
-        actionButtonText = confirmationDialog.actionButtonText.interpolate(computedValuesMap)
-      ),
-    planDefinitions = planDefinitions?.map { it.interpolate(computedValuesMap) },
-    readOnlyLinkIds = readOnlyLinkIds?.map { it.interpolate(computedValuesMap) }
-  )

@@ -81,7 +81,7 @@ class RegisterFragmentTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         sharedPreferencesHelper = mockk(relaxed = true),
         dispatcherProvider = coroutineTestRule.testDispatcherProvider,
-        rulesExecutor = mockk()
+        resourceDataRulesExecutor = mockk()
       )
     )
 
