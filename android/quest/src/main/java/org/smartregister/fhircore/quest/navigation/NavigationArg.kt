@@ -20,7 +20,6 @@ object NavigationArg {
 
   const val REGISTER_ID = "registerId"
   const val PROFILE_ID = "profileId"
-  const val FEATURE = "feature"
   const val SCREEN_TITLE = "screenTitle"
   const val RESOURCE_ID = "resourceId"
   const val RESOURCE_CONFIG = "resourceConfig"

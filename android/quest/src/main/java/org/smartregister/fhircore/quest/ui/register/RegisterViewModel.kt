@@ -42,7 +42,7 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -58,7 +58,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val dispatcherProvider: DispatcherProvider,
-  val rulesExecutor: RulesExecutor
+  val resourceDataRulesExecutor: ResourceDataRulesExecutor
 ) : ViewModel() {
 
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
@@ -103,7 +103,7 @@ constructor(
     return Pager(
       config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
       pagingSourceFactory = {
-        RegisterPagingSource(registerRepository, rulesExecutor, ruleConfigs).apply {
+        RegisterPagingSource(registerRepository, resourceDataRulesExecutor, ruleConfigs).apply {
           setPatientPagingSourceState(
             RegisterPagingSourceState(
               registerId = registerId,
@@ -179,7 +179,7 @@ constructor(
     clearCache: Boolean
   ) {
     if (registerId.isNotEmpty()) {
-      val paramsMap: Map<String, String> = params.toParamDataMap<String, String>()
+      val paramsMap: Map<String, String> = params.toParamDataMap()
       viewModelScope.launch(dispatcherProvider.io()) {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
         // Count register data then paginate the data

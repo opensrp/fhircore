@@ -24,12 +24,14 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.search
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.lastOffset
@@ -44,39 +46,47 @@ constructor(
   val fhirEngine: FhirEngine,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val configurationRegistry: ConfigurationRegistry
+  val configurationRegistry: ConfigurationRegistry,
+  val dispatcherProvider: DispatcherProvider
 ) : CoroutineWorker(context, workerParams) {
   override suspend fun doWork(): Result {
-    val applicationConfiguration =
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
-    val batchSize = applicationConfiguration.taskBackgroundWorkerBatchSize.div(BATCH_SIZE_FACTOR)
+    return withContext(dispatcherProvider.io()) {
+      val applicationConfiguration =
+        configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+          ConfigType.Application
+        )
+      val batchSize = applicationConfiguration.taskBackgroundWorkerBatchSize.div(BATCH_SIZE_FACTOR)
 
-    val lastOffset =
-      sharedPreferencesHelper.read(key = WORK_ID.lastOffset(), defaultValue = "0")!!.toInt()
+      val lastOffset =
+        sharedPreferencesHelper.read(key = WORK_ID.lastOffset(), defaultValue = "0")!!.toInt()
 
-    val carePlans = getCarePlans(batchSize = batchSize, lastOffset = lastOffset)
+      val carePlans = getCarePlans(batchSize = batchSize, lastOffset = lastOffset)
 
-    carePlans.forEach carePlanLoop@{ carePlan ->
-      carePlan
-        .activity
-        .flatMap { it.outcomeReference }
-        .filter { it.reference.startsWith(ResourceType.Task.name) }
-        .mapNotNull { fhirCarePlanGenerator.getTask(it.extractId()) }
-        .forEach { task ->
-          if (task.status !in listOf(Task.TaskStatus.CANCELLED, Task.TaskStatus.COMPLETED))
-            return@carePlanLoop
-        }
+      carePlans.forEach carePlanLoop@{ carePlan ->
+        carePlan
+          .activity
+          .flatMap { it.outcomeReference }
+          .filter { it.reference.startsWith(ResourceType.Task.name) }
+          .mapNotNull { fhirCarePlanGenerator.getTask(it.extractId()) }
+          .forEach { task ->
+            if (task.status !in listOf(Task.TaskStatus.CANCELLED, Task.TaskStatus.COMPLETED))
+              return@carePlanLoop
+          }
 
-      // complete CarePlan
-      carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-      fhirEngine.update(carePlan)
+        // complete CarePlan
+        carePlan.status = CarePlan.CarePlanStatus.COMPLETED
+        fhirEngine.update(carePlan)
+      }
+
+      val updatedLastOffset =
+        getLastOffset(items = carePlans, lastOffset = lastOffset, batchSize = batchSize)
+
+      sharedPreferencesHelper.write(
+        key = WORK_ID.lastOffset(),
+        value = updatedLastOffset.toString()
+      )
+      Result.success()
     }
-
-    val updatedLastOffset =
-      getLastOffset(items = carePlans, lastOffset = lastOffset, batchSize = batchSize)
-
-    sharedPreferencesHelper.write(key = WORK_ID.lastOffset(), value = updatedLastOffset.toString())
-    return Result.success()
   }
 
   suspend fun getCarePlans(batchSize: Int, lastOffset: Int) =

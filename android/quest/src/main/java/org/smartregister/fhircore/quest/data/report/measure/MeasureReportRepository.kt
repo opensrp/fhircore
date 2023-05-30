@@ -26,13 +26,13 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 
 class MeasureReportRepository(
   private val measureReportConfiguration: MeasureReportConfiguration,
   private val registerConfiguration: RegisterConfiguration,
   private val registerRepository: RegisterRepository,
-  private val rulesExecutor: RulesExecutor
+  private val resourceDataRulesExecutor: ResourceDataRulesExecutor
 ) : PagingSource<Int, MeasureReportConfig>() {
 
   override fun getRefreshKey(state: PagingState<Int, MeasureReportConfig>): Int? {
@@ -52,7 +52,7 @@ class MeasureReportRepository(
       measureReportConfiguration.reports.firstOrNull()?.subjectXFhirQuery
         ?: ResourceType.Patient.name
     return registerRepository.fhirEngine.search(xFhirQuery).map {
-      rulesExecutor.processResourceData(
+      resourceDataRulesExecutor.processResourceData(
         repositoryResourceData =
           RepositoryResourceData(resourceRulesEngineFactId = it.resourceType.name, resource = it),
         ruleConfigs = registerConfiguration.registerCard.rules,

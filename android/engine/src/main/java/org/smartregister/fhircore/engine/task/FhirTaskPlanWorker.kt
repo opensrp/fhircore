@@ -26,12 +26,14 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
@@ -39,8 +41,8 @@ import org.smartregister.fhircore.engine.util.extension.isReady
 import org.smartregister.fhircore.engine.util.extension.lastOffset
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import org.smartregister.fhircore.engine.util.getLastOffset
-import timber.log.Timber
 
+/** This job runs periodically to update the statuses of Task resources. */
 @HiltWorker
 class FhirTaskPlanWorker
 @AssistedInject
@@ -49,58 +51,64 @@ constructor(
   @Assisted workerParams: WorkerParameters,
   val fhirEngine: FhirEngine,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val configurationRegistry: ConfigurationRegistry
+  val configurationRegistry: ConfigurationRegistry,
+  val dispatcherProvider: DispatcherProvider
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
-
-    val appConfig =
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
-    val batchSize = appConfig.taskBackgroundWorkerBatchSize
-    val lastOffset =
-      sharedPreferencesHelper.read(key = WORK_ID.lastOffset(), defaultValue = "0")!!.toInt()
-
-    Timber.e("Done task scheduling")
-    val tasks =
-      fhirEngine.search<Task> {
-        filter(
-          Task.STATUS,
-          { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
-          { value = of(Task.TaskStatus.READY.toCoding()) },
-          { value = of(Task.TaskStatus.ACCEPTED.toCoding()) },
-          { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
-          { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
+    return withContext(dispatcherProvider.io()) {
+      val appConfig =
+        configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+          ConfigType.Application
         )
-        from = if (lastOffset > 0) lastOffset + 1 else 0
-        count = batchSize
-      }
+      val batchSize = appConfig.taskBackgroundWorkerBatchSize
+      val lastOffset =
+        sharedPreferencesHelper.read(key = WORK_ID.lastOffset(), defaultValue = "0")!!.toInt()
 
-    tasks.forEach { task ->
-      if (task.hasPastEnd()) {
-        task.status = Task.TaskStatus.FAILED
-        fhirEngine.update(task)
-        task
-          .basedOn
-          .find { it.reference.startsWith(ResourceType.CarePlan.name) }
-          ?.extractId()
-          ?.takeIf { it.isNotBlank() }
-          ?.let {
-            val carePlan = fhirEngine.get<CarePlan>(it)
-            if (carePlan.isLastTask(task)) {
-              carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-              fhirEngine.update(carePlan)
+      val tasks =
+        fhirEngine.search<Task> {
+          filter(
+            Task.STATUS,
+            { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
+            { value = of(Task.TaskStatus.READY.toCoding()) },
+            { value = of(Task.TaskStatus.ACCEPTED.toCoding()) },
+            { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
+            { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
+          )
+          from = if (lastOffset > 0) lastOffset + 1 else 0
+          count = batchSize
+        }
+
+      tasks.forEach { task ->
+        if (task.hasPastEnd()) {
+          task.status = Task.TaskStatus.FAILED
+          fhirEngine.update(task)
+          task
+            .basedOn
+            .find { it.reference.startsWith(ResourceType.CarePlan.name) }
+            ?.extractId()
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+              val carePlan = fhirEngine.get<CarePlan>(it)
+              if (carePlan.isLastTask(task)) {
+                carePlan.status = CarePlan.CarePlanStatus.COMPLETED
+                fhirEngine.update(carePlan)
+              }
             }
-          }
-      } else if (task.isReady() && task.status == Task.TaskStatus.REQUESTED) {
-        task.status = Task.TaskStatus.READY
-        fhirEngine.update(task)
+        } else if (task.isReady() && task.status == Task.TaskStatus.REQUESTED) {
+          task.status = Task.TaskStatus.READY
+          fhirEngine.update(task)
+        }
       }
-    }
 
-    val updatedLastOffset =
-      getLastOffset(items = tasks, lastOffset = lastOffset, batchSize = batchSize)
-    sharedPreferencesHelper.write(key = WORK_ID.lastOffset(), value = updatedLastOffset.toString())
-    return Result.success()
+      val updatedLastOffset =
+        getLastOffset(items = tasks, lastOffset = lastOffset, batchSize = batchSize)
+      sharedPreferencesHelper.write(
+        key = WORK_ID.lastOffset(),
+        value = updatedLastOffset.toString()
+      )
+      Result.success()
+    }
   }
 
   private fun CarePlan.isLastTask(task: Task) =

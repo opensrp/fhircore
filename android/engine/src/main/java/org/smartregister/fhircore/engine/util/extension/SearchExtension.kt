@@ -113,6 +113,19 @@ fun Search.filterBy(dataQuery: DataQuery, configComputedRuleValues: Map<String, 
   }
 }
 
+@Suppress("UNCHECKED_CAST")
+private fun <V : Any> retrieveComputedRuleValue(
+  key: String?,
+  configComputedRuleValues: Map<String, Any>
+): V? {
+  return if (key.isNullOrEmpty()) {
+    Timber.e("Key not provided")
+    null
+  } else {
+    configComputedRuleValues[key] as V?
+  }
+}
+
 private fun Search.filterByReference(
   referenceFilterCriterionConfigs: List<FilterCriterionConfig.ReferenceFilterCriterionConfig>,
   dataQuery: DataQuery,
@@ -122,11 +135,11 @@ private fun Search.filterByReference(
     referenceFilterCriterionConfigs.map { referenceFilterCriterionConfig ->
       val apply: ReferenceParamFilterCriterion.() -> Unit = {
         this.value =
-          retrieveComputedRuleValue(
-            key = referenceFilterCriterionConfig.computedRule,
-            configComputedRuleValues = configComputedRuleValues
-          )
-            ?: referenceFilterCriterionConfig.value
+          referenceFilterCriterionConfig.value
+            ?: retrieveComputedRuleValue(
+              key = referenceFilterCriterionConfig.computedRule,
+              configComputedRuleValues = configComputedRuleValues
+            )
       }
       apply
     }
@@ -137,12 +150,6 @@ private fun Search.filterByReference(
   )
 }
 
-@Suppress("UNCHECKED_CAST")
-private fun <V : Any> retrieveComputedRuleValue(
-  key: String?,
-  configComputedRuleValues: Map<String, Any>
-): V? = if (key.isNullOrEmpty()) null else configComputedRuleValues[key] as V?
-
 private fun Search.filterByUri(
   uriFilterCriterionConfigs: List<UriFilterCriterionConfig>,
   dataQuery: DataQuery,
@@ -152,11 +159,11 @@ private fun Search.filterByUri(
     uriFilterCriterionConfigs.map { uriFilterCriterionConfig ->
       val apply: UriParamFilterCriterion.() -> Unit = {
         this.value =
-          retrieveComputedRuleValue(
-            key = uriFilterCriterionConfig.computedRule,
-            configComputedRuleValues = configComputedRuleValues
-          )
-            ?: uriFilterCriterionConfig.value
+          uriFilterCriterionConfig.value
+            ?: retrieveComputedRuleValue(
+              key = uriFilterCriterionConfig.computedRule,
+              configComputedRuleValues = configComputedRuleValues
+            )
       }
       apply
     }
@@ -176,11 +183,12 @@ private fun Search.filterByString(
     stringFilterCriterionConfigs.map { stringFilterCriterionConfig ->
       val apply: StringParamFilterCriterion.() -> Unit = {
         this.value =
-          retrieveComputedRuleValue(
-            key = stringFilterCriterionConfig.computedRule,
-            configComputedRuleValues = configComputedRuleValues
-          )
-            ?: stringFilterCriterionConfig.value
+          stringFilterCriterionConfig.value
+            ?: retrieveComputedRuleValue(
+              key = stringFilterCriterionConfig.computedRule,
+              configComputedRuleValues = configComputedRuleValues
+            )
+
         this.modifier = stringFilterCriterionConfig.modifier
       }
       apply
@@ -202,11 +210,11 @@ private fun Search.filterByNumber(
       val apply: NumberParamFilterCriterion.() -> Unit = {
         this.prefix = numberFilterCriterionConfig.prefix
         this.value =
-          retrieveComputedRuleValue(
-            key = numberFilterCriterionConfig.computedRule,
-            configComputedRuleValues = configComputedRuleValues
-          )
-            ?: numberFilterCriterionConfig.value
+          numberFilterCriterionConfig.value
+            ?: retrieveComputedRuleValue(
+              key = numberFilterCriterionConfig.computedRule,
+              configComputedRuleValues = configComputedRuleValues
+            )
       }
       apply
     }
@@ -227,11 +235,11 @@ private fun Search.filterByDateTime(
       val apply: DateParamFilterCriterion.() -> Unit = {
         this.prefix = dateFilterCriterionConfig.prefix
         val computedRuleValue =
-          retrieveComputedRuleValue(
-            key = dateFilterCriterionConfig.computedRule,
-            configComputedRuleValues = configComputedRuleValues
-          )
-            ?: dateFilterCriterionConfig.value
+          dateFilterCriterionConfig.value
+            ?: retrieveComputedRuleValue(
+              key = dateFilterCriterionConfig.computedRule,
+              configComputedRuleValues = configComputedRuleValues
+            )
 
         this.value =
           if (dateFilterCriterionConfig.valueAsDateTime) of(DateTimeType(computedRuleValue))
@@ -256,11 +264,12 @@ private fun Search.filterByQuantity(
       val apply: QuantityParamFilterCriterion.() -> Unit = {
         this.prefix = quantityFilterCriterionConfig.prefix
         this.value =
-          retrieveComputedRuleValue(
-            quantityFilterCriterionConfig.computedRule,
-            configComputedRuleValues,
-          )
-            ?: quantityFilterCriterionConfig.value
+          quantityFilterCriterionConfig.value
+            ?: retrieveComputedRuleValue(
+              quantityFilterCriterionConfig.computedRule,
+              configComputedRuleValues,
+            )
+
         this.system = quantityFilterCriterionConfig.system
         this.unit = quantityFilterCriterionConfig.unit
       }
@@ -282,15 +291,15 @@ private fun Search.filterByToken(
     tokenFilterCriterionConfigs.map { tokenFilterCriterionConfig ->
       val configuredCode = tokenFilterCriterionConfig.value
       val apply: TokenParamFilterCriterion.() -> Unit = {
-        if (configuredCode?.code != null) {
-          val coding =
+        val coding =
+          if (configuredCode?.code != null)
+            Coding(configuredCode.system, configuredCode.code, configuredCode.display)
+          else
             retrieveComputedRuleValue(
               tokenFilterCriterionConfig.computedRule,
               configComputedRuleValues
             )
-              ?: Coding(configuredCode.system, configuredCode.code, configuredCode.display)
-          value = of(coding)
-        }
+        value = coding?.let { of(it) }
       }
       apply
     }
