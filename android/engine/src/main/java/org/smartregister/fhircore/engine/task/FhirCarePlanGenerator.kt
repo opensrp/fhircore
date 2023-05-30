@@ -327,41 +327,49 @@ constructor(
     subject: Resource,
     bundle: Bundle
   ) {
-    questionnaireConfig.planDefinitions?.forEach { planDefinition ->
-      val carePlans =
-        fhirEngine.search<CarePlan> {
-          filter(
-            CarePlan.INSTANTIATES_CANONICAL,
-            { value = "${PlanDefinition().fhirType()}/$planDefinition" }
-          )
-          filter(CarePlan.SUBJECT, { value = subject.referenceValue() })
-        }
+    questionnaireConfig.eventWorkflows.forEach { eventWorkFlow ->
+      eventWorkFlow.eventResources.forEach() { eventResource ->
+        eventResource.planDefinitions?.forEach { planDefinition ->
+          val carePlans =
+            fhirEngine.search<CarePlan> {
+              filter(
+                CarePlan.INSTANTIATES_CANONICAL,
+                { value = "${PlanDefinition().fhirType()}/$planDefinition" }
+              )
+              filter(CarePlan.SUBJECT, { value = subject.referenceValue() })
+            }
 
-      if (carePlans.isEmpty()) return@forEach
+          if (carePlans.isEmpty()) return@forEach
 
-      questionnaireConfig.eventWorkflows.forEach { eventWorkflow ->
-        val conditionsMet =
-          evaluateToBoolean(
-            subject = subject,
-            bundle = bundle,
-            triggerConditions = eventWorkflow.triggerConditions[0].conditionalFhirPathExpression,
-            matchAll = eventWorkflow.triggerConditions[0].matchAll!!
-          )
-        if (conditionsMet) {
-          carePlans.forEach { carePlan ->
-            carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-            fhirEngine.update(carePlan)
+          questionnaireConfig.eventWorkflows.forEach { eventWorkflow ->
+            val conditionsMet =
+              evaluateToBoolean(
+                subject = subject,
+                bundle = bundle,
+                triggerConditions =
+                  eventWorkflow.triggerConditions[0].conditionalFhirPathExpression,
+                matchAll = eventWorkflow.triggerConditions[0].matchAll!!
+              )
+            if (conditionsMet) {
+              carePlans.forEach { carePlan ->
+                carePlan.status = CarePlan.CarePlanStatus.COMPLETED
+                fhirEngine.update(carePlan)
 
-            carePlan
-              .activity
-              .flatMap { it.outcomeReference }
-              .filter { it.reference.startsWith(ResourceType.Task.name) }
-              .mapNotNull { getTask(it.extractId()) }
-              .forEach { task ->
-                if (task.status != TaskStatus.COMPLETED) {
-                  cancelTaskByTaskId(task.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
-                }
+                carePlan
+                  .activity
+                  .flatMap { it.outcomeReference }
+                  .filter { it.reference.startsWith(ResourceType.Task.name) }
+                  .mapNotNull { getTask(it.extractId()) }
+                  .forEach { task ->
+                    if (task.status != TaskStatus.COMPLETED) {
+                      cancelTaskByTaskId(
+                        task.logicalId,
+                        "${carePlan.fhirType()} ${carePlan.status}"
+                      )
+                    }
+                  }
               }
+            }
           }
         }
       }
