@@ -55,7 +55,7 @@ android {
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
         buildConfigField("boolean", 'GEOWIDGET_ENABLED', "$geowidgetEnabled")
         buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", "\"100\"")
-        buildConfigField("String", "SENTRY_DSN", "\"" + getProps("sentry.dsn") + "\"")
+        buildConfigField("String", "SENTRY_DSN", "\"${SENTRY_DSN}\"")
 
         testInstrumentationRunner "org.smartregister.fhircore.quest.QuestTestRunner"
     }
