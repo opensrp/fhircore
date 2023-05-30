@@ -1444,7 +1444,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        carePlanConfigs = listOf(carePlanConfig)
+        eventWorkflows = listOf(carePlanConfig)
       )
     val patient =
       Patient().apply {
@@ -1486,7 +1486,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        carePlanConfigs = listOf(carePlanConfig)
+        eventWorkflows = listOf(carePlanConfig)
       )
     val patient =
       Patient().apply {
@@ -1544,7 +1544,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        carePlanConfigs = listOf(carePlanConfig)
+        eventWorkflows = listOf(carePlanConfig)
       )
     val patient =
       Patient().apply {
@@ -1587,7 +1587,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        carePlanConfigs = listOf(carePlanConfig)
+        eventWorkflows = listOf(carePlanConfig)
       )
     val patient =
       Patient().apply {
@@ -1651,7 +1651,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        carePlanConfigs = listOf(carePlanConfig)
+        eventWorkflows = listOf(carePlanConfig)
       )
     val patient =
       Patient().apply {

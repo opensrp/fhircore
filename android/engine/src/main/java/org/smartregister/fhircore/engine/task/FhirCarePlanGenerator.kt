@@ -339,14 +339,15 @@ constructor(
 
       if (carePlans.isEmpty()) return@forEach
 
-      questionnaireConfig.carePlanConfigs.forEach { carePlanConfig ->
-        if (fhirPathEngine.evaluateToBoolean(
-            bundle,
-            null,
-            subject,
-            carePlanConfig.fhirPathExpression
+      questionnaireConfig.eventWorkflows.forEach { eventWorkflow ->
+        val conditionsMet =
+          evaluateToBoolean(
+            subject = subject,
+            bundle = bundle,
+            triggerConditions = eventWorkflow.triggerConditions[0].conditionalFhirPathExpression,
+            matchAll = eventWorkflow.triggerConditions[0].matchAll!!
           )
-        ) {
+        if (conditionsMet) {
           carePlans.forEach { carePlan ->
             carePlan.status = CarePlan.CarePlanStatus.COMPLETED
             fhirEngine.update(carePlan)
@@ -364,6 +365,23 @@ constructor(
           }
         }
       }
+    }
+  }
+
+  fun evaluateToBoolean(
+    subject: Resource,
+    bundle: Bundle,
+    triggerConditions: List<String>?,
+    matchAll: Boolean = false
+  ): Boolean {
+    return if (matchAll) {
+      triggerConditions?.all { triggerCondition ->
+        fhirPathEngine.evaluateToBoolean(bundle, null, subject, triggerCondition)
+      } == true
+    } else {
+      triggerConditions?.any { triggerCondition ->
+        fhirPathEngine.evaluateToBoolean(bundle, null, subject, triggerCondition)
+      } == true
     }
   }
 }

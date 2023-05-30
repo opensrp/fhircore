@@ -87,7 +87,8 @@ data class ResourceConfig(
   val resultAsCount: Boolean = false,
   val countResultConfig: CountResultConfig? = CountResultConfig(),
   val nestedSearchResources: List<NestedSearchConfig>? = null,
-  val configRules: @RawValue List<RuleConfig>? = null
+  val configRules: @RawValue List<RuleConfig>? = null,
+  val planDefinitions: List<String>? = null
 ) : Parcelable
 
 @Serializable @Parcelize data class CountResultConfig(val sumCounts: Boolean = true) : Parcelable

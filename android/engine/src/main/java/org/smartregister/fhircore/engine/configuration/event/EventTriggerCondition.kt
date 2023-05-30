@@ -16,10 +16,11 @@
 
 package org.smartregister.fhircore.engine.configuration.event
 
-import org.smartregister.fhircore.engine.domain.model.KeyValueConfig
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class EventTriggerCondition(
   val eventResourceId: String,
   val matchAll: Boolean? = true,
-  val conditionalFhirPathExpression: List<KeyValueConfig>? = emptyList()
+  val conditionalFhirPathExpression: List<String>? = emptyList()
 )

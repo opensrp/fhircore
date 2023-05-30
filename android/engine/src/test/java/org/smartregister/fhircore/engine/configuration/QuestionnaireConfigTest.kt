@@ -69,7 +69,7 @@ class QuestionnaireConfigTest : RobolectricTest() {
           ),
         taskId = "@{taskId}",
         saveDraft = true,
-        carePlanConfigs = listOf(CarePlanConfig()),
+        eventWorkflows = listOf(CarePlanConfig()),
         planDefinitions = listOf("@{planDef1}"),
         readOnlyLinkIds = listOf("@{linkId1}", "@{linkId2}")
       )

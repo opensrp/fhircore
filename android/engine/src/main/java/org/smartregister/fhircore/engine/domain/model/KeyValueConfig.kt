@@ -16,4 +16,6 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
-data class KeyValueConfig(val key: String, val value: String)
+import kotlinx.serialization.Serializable
+
+@Serializable data class KeyValueConfig(val key: String, val value: String)
