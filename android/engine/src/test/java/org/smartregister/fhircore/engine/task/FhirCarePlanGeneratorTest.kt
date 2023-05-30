@@ -84,8 +84,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.event.EventTriggerCondition
+import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.domain.model.CarePlanConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.REFERENCE
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
@@ -1439,12 +1440,21 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testConditionallyUpdateCarePlanStatusTerminatesWhenNoCarePlanIsFound() {
     val planDefinitions = listOf("plandef-1")
-    val carePlanConfig = CarePlanConfig(fhirPathExpression = "Patient.active")
+    val eventWorkflow =
+      EventWorkflow(
+        triggerConditions =
+          listOf(
+            EventTriggerCondition(
+              eventResourceId = "carePlan1",
+              conditionalFhirPathExpression = listOf("Patient.active")
+            )
+          )
+      )
     val questionnaireConfig: QuestionnaireConfig =
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        eventWorkflows = listOf(carePlanConfig)
+        eventWorkflows = listOf(eventWorkflow)
       )
     val patient =
       Patient().apply {
@@ -1477,16 +1487,24 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testConditionallyUpdateCarePlanStatusRevokesCarePlanWhenCarePlanStatusIsActive() {
     val planDefinitions = listOf("plandef-1")
-    val carePlanConfig =
-      CarePlanConfig(
-        fhirPathExpression =
-          "Patient.active and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/450cb100-0c5b-47c6-9f33-2830a79be726').exists()"
+    val eventWorkflow =
+      EventWorkflow(
+        triggerConditions =
+          listOf(
+            EventTriggerCondition(
+              eventResourceId = "carePlan1",
+              conditionalFhirPathExpression =
+                listOf(
+                  "Patient.active and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/450cb100-0c5b-47c6-9f33-2830a79be726').exists()"
+                )
+            )
+          )
       )
     val questionnaireConfig: QuestionnaireConfig =
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        eventWorkflows = listOf(carePlanConfig)
+        eventWorkflows = listOf(eventWorkflow)
       )
     val patient =
       Patient().apply {
@@ -1539,12 +1557,21 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testConditionallyUpdateCarePlanStatusDoesNotUpdateCarePlanWhenFhirPathResourceExpressionFails() {
     val planDefinitions = listOf("plandef-1")
-    val carePlanConfig = CarePlanConfig(fhirPathExpression = "Patient.active")
+    val eventWorkflow =
+      EventWorkflow(
+        triggerConditions =
+          listOf(
+            EventTriggerCondition(
+              eventResourceId = "carePlan1",
+              conditionalFhirPathExpression = listOf("Patient.active")
+            )
+          )
+      )
     val questionnaireConfig: QuestionnaireConfig =
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        eventWorkflows = listOf(carePlanConfig)
+        eventWorkflows = listOf(eventWorkflow)
       )
     val patient =
       Patient().apply {
@@ -1582,12 +1609,21 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testConditionallyUpdateCarePlanStatusCancelsTasks() {
     val planDefinitions = listOf("plandef-1")
-    val carePlanConfig = CarePlanConfig(fhirPathExpression = "Patient.active")
+    val eventWorkflow =
+      EventWorkflow(
+        triggerConditions =
+          listOf(
+            EventTriggerCondition(
+              eventResourceId = "carePlan1",
+              conditionalFhirPathExpression = listOf("Patient.active")
+            )
+          )
+      )
     val questionnaireConfig: QuestionnaireConfig =
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        eventWorkflows = listOf(carePlanConfig)
+        eventWorkflows = listOf(eventWorkflow)
       )
     val patient =
       Patient().apply {
@@ -1646,12 +1682,21 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testConditionallyUpdateCarePlanStatusDoesNotCancelTasksWhenStatusIsCompleted() {
     val planDefinitions = listOf("plandef-1")
-    val carePlanConfig = CarePlanConfig(fhirPathExpression = "Patient.active")
-    val questionnaireConfig: QuestionnaireConfig =
+    val eventWorkflow =
+      EventWorkflow(
+        triggerConditions =
+          listOf(
+            EventTriggerCondition(
+              eventResourceId = "carePlan1",
+              conditionalFhirPathExpression = listOf("Patient.active")
+            )
+          )
+      )
+    val questionnaireConfig =
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        eventWorkflows = listOf(carePlanConfig)
+        eventWorkflows = listOf(eventWorkflow)
       )
     val patient =
       Patient().apply {
