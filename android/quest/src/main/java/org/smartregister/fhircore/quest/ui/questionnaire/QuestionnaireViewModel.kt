@@ -672,14 +672,12 @@ constructor(
       questionnaireResponse =
         runCatching {
             val populationResources = loadPopulationResources(subjectId, subjectType)
-            if (populationResources.isNotEmpty()) {
-              populateQuestionnaireResponse(
-                questionnaire = questionnaire,
-                populationResources = populationResources
-              )
-            } else questionnaireResponse
+            populateQuestionnaireResponse(
+              questionnaire = questionnaire,
+              populationResources = populationResources
+            )
           }
-          .onFailure { Timber.e(it, "Error encountered while population Questionnaire response") }
+          .onFailure { Timber.e(it, "Error encountered while populating QuestionnaireResponse") }
           .getOrDefault(questionnaireResponse)
     }
 
