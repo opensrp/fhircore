@@ -59,4 +59,22 @@ internal class SecurityUtilKtTest {
     clearPasswordInMemory(password)
     Assert.assertArrayEquals(charArrayOf('*', '*', '*', '*', '*', '*'), password)
   }
+
+  @Test
+  fun testCharSafePlus() {
+    var originalArray = charArrayOf('1', '2', '3')
+    val extendedArray = originalArray.safePlus('a')
+
+    Assert.assertEquals(4, extendedArray.size)
+    Assert.assertArrayEquals(charArrayOf('1', '2', '3', 'a'), extendedArray)
+  }
+
+  @Test
+  fun testCharRemoveLast() {
+    var originalArray = charArrayOf('1', '2', '3')
+    val reductedArray = originalArray.safeRemoveLast()
+
+    Assert.assertEquals(2, reductedArray.size)
+    Assert.assertArrayEquals(charArrayOf('1', '2'), reductedArray)
+  }
 }
