@@ -218,7 +218,7 @@ constructor(
           }
 
           if (questionnaireConfig.setAppVersion) {
-            appendAppVersion(bundleEntry.resource)
+            appendAppVersion(context, bundleEntry.resource)
           }
           if (bundleEntry.hasResource()) bundleEntry.resource.updateLastUpdated()
           if (questionnaireConfig.type != QuestionnaireType.EDIT &&
@@ -338,14 +338,11 @@ constructor(
    *
    * @property resource The resource to add the meta tag to.
    */
-  fun appendAppVersion(resource: Resource) {
+  fun appendAppVersion(context: Context, resource: Resource) {
     // Create a tag with the app version
     val metaTag = resource.meta.addTag()
-    metaTag.setSystem("https://smartregister.org/").setCode(BuildConfig.VERSION_NAME).display =
-      "Application Version"
-
-    // Update resource with metaTag
-    resource.meta.apply { addTag(metaTag) }
+    metaTag.setSystem(context.getString(R.string.app_version_tag_url)).setCode(BuildConfig.VERSION_NAME).display =
+      context.getString(R.string.application_version)
   }
 
   suspend fun extractCarePlan(
