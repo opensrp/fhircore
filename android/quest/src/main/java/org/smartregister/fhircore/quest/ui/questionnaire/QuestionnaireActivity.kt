@@ -73,9 +73,9 @@ import timber.log.Timber
 @AndroidEntryPoint
 open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener {
 
-  open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
   @Inject lateinit var parser: IParser
+  open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
   private lateinit var questionnaire: Questionnaire
   private lateinit var fragment: QuestionnaireFragment
   private lateinit var saveProcessingAlertDialog: AlertDialog
@@ -110,9 +110,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           !it.value.contains(STRING_INTERPOLATION_PREFIX)
       }
 
-    baseResourceId = intent.getStringExtra(BASE_RESOURCE_ID) ?: ""
-    val strBaseResourceType = intent.getStringExtra(BASE_RESOURCE_TYPE) ?: ""
-    if (strBaseResourceType.isNotEmpty())
+    baseResourceId = intent.getStringExtra(BASE_RESOURCE_ID)
+    val strBaseResourceType = intent.getStringExtra(BASE_RESOURCE_TYPE)
+    if (!strBaseResourceType.isNullOrEmpty())
       baseResourceType = ResourceType.fromCode(strBaseResourceType)
 
     val questionnaireActivity = this@QuestionnaireActivity
@@ -148,7 +148,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         questionnaireResponse =
           questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
               questionnaire = questionnaire,
-              subjectId = baseResourceId!!.extractLogicalIdUuid(),
+              subjectId = baseResourceId?.extractLogicalIdUuid(),
               subjectType = baseResourceType,
               questionnaireConfig = questionnaireConfig
             )
