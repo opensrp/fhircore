@@ -47,7 +47,7 @@
       "showCount": true,
       "menuIconConfig": {
         "type": "local",
-        "reference": "ic_baby_mother"
+        "reference": "ic_childs"
       },
       "actions": [
         {
@@ -78,6 +78,46 @@
         {
           "trigger": "ON_COUNT",
           "id": "sickChildRegister"
+        }
+      ]
+    },
+    {
+      "id": "ancRegister",
+      "display": "ANC",
+      "showCount": true,
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_pregnant"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "ancRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "ancRegister"
+        }
+      ]
+    },
+    {
+      "id": "pncRegister",
+      "display": "PNC",
+      "showCount": true,
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_baby_mother"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "pncRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "pncRegister"
         }
       ]
     }
