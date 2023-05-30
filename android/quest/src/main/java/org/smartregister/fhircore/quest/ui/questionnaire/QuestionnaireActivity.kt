@@ -146,16 +146,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             }
           }
         questionnaireResponse =
-          if (questionnaireConfig.type.isDefault()) QuestionnaireResponse()
-          else {
-            questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
-                questionnaire = questionnaire,
-                subjectId = baseResourceId!!.extractLogicalIdUuid(),
-                subjectType = baseResourceType,
-                questionnaireConfig = questionnaireConfig
-              )
-              .apply { generateMissingItems(questionnaire) }
-          }
+          questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
+              questionnaire = questionnaire,
+              subjectId = baseResourceId!!.extractLogicalIdUuid(),
+              subjectType = baseResourceType,
+              questionnaireConfig = questionnaireConfig
+            )
+            .apply { generateMissingItems(questionnaire) }
 
         val questionnaireResponseValid =
           questionnaireViewModel.isQuestionnaireResponseValid(

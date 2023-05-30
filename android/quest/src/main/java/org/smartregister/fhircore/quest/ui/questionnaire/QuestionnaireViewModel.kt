@@ -657,7 +657,6 @@ constructor(
     var questionnaireResponse = QuestionnaireResponse()
 
     if (!subjectId.isNullOrEmpty() && subjectType != null) {
-
       // Load questionnaire response from DB for Questionnaires opened in EDIT/READONLY mode
       if (!questionnaireConfig.type.isDefault()) {
         questionnaireResponse =
@@ -670,17 +669,18 @@ constructor(
             ?: QuestionnaireResponse()
       }
 
-      if (!subjectType.isIn(ResourceType.Group, ResourceType.Patient)) {
-        questionnaireResponse =
-          runCatching {
+      questionnaireResponse =
+        runCatching {
+            val populationResources = loadPopulationResources(subjectId, subjectType)
+            if (populationResources.isNotEmpty()) {
               populateQuestionnaireResponse(
                 questionnaire = questionnaire,
-                populationResources = loadPopulationResources(subjectId, subjectType)
+                populationResources = populationResources
               )
-            }
-            .onFailure { Timber.e(it, "Error encountered while population Questionnaire response") }
-            .getOrDefault(questionnaireResponse)
-      }
+            } else questionnaireResponse
+          }
+          .onFailure { Timber.e(it, "Error encountered while population Questionnaire response") }
+          .getOrDefault(questionnaireResponse)
     }
 
     return questionnaireResponse
