@@ -17,12 +17,17 @@
 package org.smartregister.fhircore.engine.trace
 
 import com.google.firebase.perf.metrics.Trace
+import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 
 class FakePerformanceReporter : PerformanceReporter {
   override fun startTrace(traceName: String) {}
 
   override fun putMetric(traceName: String, metricName: String, value: Long) {}
+
+  override fun incrementMetric(traceName: String, metricName: String, incrementBy: Long) {}
 
   override fun putAttribute(traceName: String, attribute: String, value: String) {}
 
@@ -33,14 +38,16 @@ class FakePerformanceReporter : PerformanceReporter {
   override fun setEnabled(enabled: Boolean) {}
 
   override fun <E> trace(name: String, block: (Trace) -> E): E {
+    val trace = mockk<Trace>() { every { putAttribute(any(), any()) } just runs }
     return try {
-      block(mockk())
+      block(trace)
     } finally {}
   }
 
   override suspend fun <E> traceSuspend(name: String, block: suspend (Trace) -> E): E {
+    val trace = mockk<Trace>() { every { putAttribute(any(), any()) } just runs }
     return try {
-      block(mockk())
+      block(trace)
     } finally {}
   }
 }

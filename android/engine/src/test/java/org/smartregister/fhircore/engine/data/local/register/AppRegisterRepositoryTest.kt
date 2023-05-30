@@ -24,17 +24,24 @@ import io.mockk.mockk
 import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
+import java.util.Date
 import kotlin.test.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Patient
 import org.junit.After
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.data.local.AppointmentRegisterFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.local.TracingRegisterFilter
+import org.smartregister.fhircore.engine.data.local.register.dao.AppointmentRegisterDao
 import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao
+import org.smartregister.fhircore.engine.data.local.register.dao.HomeTracingRegisterDao
+import org.smartregister.fhircore.engine.data.local.register.dao.PhoneTracingRegisterDao
 import org.smartregister.fhircore.engine.data.local.register.dao.RegisterDaoFactory
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
@@ -69,7 +76,7 @@ class AppRegisterRepositoryTest {
 
   @Test
   fun `loadRegisterData should call appropriate dao method and return result`() = runTest {
-    val healthModule: HealthModule = mockk()
+    val healthModule: HealthModule = HealthModule.HIV
     val currentPage = 1
     val appFeatureName: String? = null
     val registerDataList: List<RegisterData> = listOf(mockk())
@@ -89,7 +96,7 @@ class AppRegisterRepositoryTest {
 
   @Test
   fun `searchByName should call appropriate dao method and return result`() = runTest {
-    val healthModule: HealthModule = mockk()
+    val healthModule: HealthModule = HealthModule.HIV
     val nameQuery = "John"
     val currentPage = 1
     val appFeatureName: String? = null
@@ -110,7 +117,7 @@ class AppRegisterRepositoryTest {
 
   @Test
   fun `countRegisterData should call appropriate dao method and return result`() = runTest {
-    val healthModule: HealthModule = mockk()
+    val healthModule: HealthModule = HealthModule.HIV
     val appFeatureName: String? = null
     val count: Long = 10
     val registerDao: RegisterDao = mockk(relaxed = true)
@@ -128,7 +135,7 @@ class AppRegisterRepositoryTest {
 
   @Test
   fun `loadPatientProfileData should call appropriate dao method and return result`() = runTest {
-    val healthModule: HealthModule = mockk()
+    val healthModule: HealthModule = HealthModule.HIV
     val appFeatureName: String? = null
     val patientId = "123"
     val profileData: ProfileData = mockk()
@@ -147,7 +154,7 @@ class AppRegisterRepositoryTest {
 
   @Test
   fun `loadChildrenRegisterData should call appropriate dao method and return result`() = runTest {
-    val healthModule: HealthModule = mockk()
+    val healthModule: HealthModule = HealthModule.HIV
     val otherPatientResource: List<Patient> = listOf(mockk())
     val registerDataList: List<RegisterData> = listOf(mockk())
     val hivRegisterDao: HivRegisterDao = mockk(relaxed = true)
@@ -162,5 +169,137 @@ class AppRegisterRepositoryTest {
 
     coVerify { hivRegisterDao.transformChildrenPatientToRegisterData(otherPatientResource) }
     assertEquals(registerDataList, result)
+  }
+
+  @Test
+  fun `loadRegisterFiltered should call correct appointment dao method`() = runTest {
+    val healthModule = HealthModule.APPOINTMENT
+    val appointmentRegisterDao =
+      mockk<AppointmentRegisterDao>(relaxed = true) {
+        coEvery { loadRegisterFiltered(any(), any(), any(), any()) } returns
+          listOf(mockk<RegisterData.AppointmentRegisterData>())
+      }
+
+    every { registerDaoFactory.registerDaoMap } returns
+      mapOf(healthModule to appointmentRegisterDao)
+    val today = Date()
+    repository.loadRegisterFiltered(
+      1,
+      false,
+      null,
+      healthModule,
+      AppointmentRegisterFilter(today, true, null, null)
+    )
+    coVerify {
+      appointmentRegisterDao.loadRegisterFiltered(
+        1,
+        false,
+        null,
+        AppointmentRegisterFilter(today, true, null, null)
+      )
+    }
+  }
+
+  @Test
+  fun `loadRegisterFiltered should call correct tracing dao method`() = runTest {
+    val healthModule = HealthModule.PHONE_TRACING
+    val phoneTracingRegisterDao =
+      mockk<PhoneTracingRegisterDao>(relaxed = true) {
+        coEvery { loadRegisterFiltered(any(), any(), any(), any()) } returns
+          listOf(mockk<RegisterData.TracingRegisterData>())
+      }
+
+    every { registerDaoFactory.registerDaoMap } returns
+      mapOf(healthModule to phoneTracingRegisterDao)
+    repository.loadRegisterFiltered(
+      1,
+      false,
+      null,
+      healthModule,
+      TracingRegisterFilter(true, null, null, null)
+    )
+    coVerify {
+      phoneTracingRegisterDao.loadRegisterFiltered(
+        1,
+        false,
+        null,
+        TracingRegisterFilter(true, null, null, null)
+      )
+    }
+  }
+
+  @Test
+  fun `loadRegisterFiltered returns empty for dao not in registerDaoMap`() = runTest {
+    val healthModule = HealthModule.APPOINTMENT
+    val appointmentRegisterDao =
+      mockk<AppointmentRegisterDao>(relaxed = true) {
+        coEvery { loadRegisterFiltered(any(), any(), any(), any()) } returns
+          listOf(mockk<RegisterData.AppointmentRegisterData>())
+      }
+
+    every { registerDaoFactory.registerDaoMap } returns mapOf()
+    val today = Date()
+    val data =
+      repository.loadRegisterFiltered(
+        0,
+        healthModule = healthModule,
+        filters = AppointmentRegisterFilter(today, true, null, null)
+      )
+    Assert.assertTrue(data.isEmpty())
+    coVerify(exactly = 0) {
+      appointmentRegisterDao.loadRegisterFiltered(
+        1,
+        false,
+        null,
+        AppointmentRegisterFilter(today, true, null, null)
+      )
+    }
+  }
+
+  @Test
+  fun `countRegisterFiltered should call correct tracing dao method`() = runTest {
+    val healthModule = HealthModule.HOME_TRACING
+    val homeTracingRegisterDao =
+      mockk<HomeTracingRegisterDao>(relaxed = true) {
+        coEvery { countRegisterFiltered(any(), any()) } returns 0
+      }
+
+    every { registerDaoFactory.registerDaoMap } returns
+      mapOf(healthModule to homeTracingRegisterDao)
+    repository.countRegisterFiltered(
+      null,
+      healthModule,
+      TracingRegisterFilter(true, null, null, null)
+    )
+    coVerify {
+      homeTracingRegisterDao.countRegisterFiltered(
+        null,
+        TracingRegisterFilter(true, null, null, null)
+      )
+    }
+  }
+
+  @Test
+  fun `countRegisterFiltered should call correct appointment dao method`() = runTest {
+    val healthModule = HealthModule.APPOINTMENT
+    val appointmentRegisterDao =
+      mockk<AppointmentRegisterDao>(relaxed = true) {
+        coEvery { countRegisterFiltered(any(), any()) } returns 0
+      }
+
+    every { registerDaoFactory.registerDaoMap } returns
+      mapOf(healthModule to appointmentRegisterDao)
+    val today = Date()
+    repository.countRegisterFiltered(
+      null,
+      healthModule,
+      AppointmentRegisterFilter(today, true, null, null)
+    )
+    coVerify {
+      appointmentRegisterDao.countRegisterFiltered(
+        null,
+        AppointmentRegisterFilter(today, true, null, null)
+      )
+    }
   }
 }
