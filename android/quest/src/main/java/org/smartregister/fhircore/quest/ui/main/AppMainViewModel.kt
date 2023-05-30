@@ -119,7 +119,11 @@ constructor(
     navigationConfiguration
       .clientRegisters
       .asSequence()
-      .filter { it.menuIconConfig != null && it.menuIconConfig?.type == ICON_TYPE_REMOTE }
+      .filter {
+        it.menuIconConfig != null &&
+          it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
+          !it.menuIconConfig!!.reference.isNullOrEmpty()
+      }
       .forEach {
         val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
         viewModelScope.launch(dispatcherProvider.io()) {

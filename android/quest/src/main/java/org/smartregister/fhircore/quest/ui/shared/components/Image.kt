@@ -30,7 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
-import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.util.extension.retrieveResourceId
 import org.smartregister.fhircore.quest.ui.main.components.SIDE_MENU_ICON
 
@@ -38,16 +38,16 @@ const val SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG = "sideMenuItemLocalIconTestTag"
 const val SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG = "sideMenuItemBinaryIconTestTag"
 
 @Composable
-fun MenuIcon(
+fun Image(
   modifier: Modifier = Modifier,
-  menuIconConfig: MenuIconConfig?,
+  imageConfig: ImageConfig?,
   color: Color,
   paddingEnd: Int = 8
 ) {
-  if (menuIconConfig != null) {
-    when (menuIconConfig.type) {
+  if (imageConfig != null) {
+    when (imageConfig.type) {
       ICON_TYPE_LOCAL -> {
-        LocalContext.current.retrieveResourceId(menuIconConfig.reference)?.let { drawableId ->
+        LocalContext.current.retrieveResourceId(imageConfig.reference)?.let { drawableId ->
           Icon(
             modifier =
               modifier
@@ -61,14 +61,14 @@ fun MenuIcon(
         }
       }
       ICON_TYPE_REMOTE ->
-        if (menuIconConfig.decodedBitmap != null) {
+        if (imageConfig.decodedBitmap != null) {
           Image(
             modifier =
               modifier
                 .testTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
                 .padding(end = paddingEnd.dp)
                 .size(24.dp),
-            bitmap = menuIconConfig.decodedBitmap!!.asImageBitmap(),
+            bitmap = imageConfig.decodedBitmap!!.asImageBitmap(),
             contentDescription = null
           )
         }

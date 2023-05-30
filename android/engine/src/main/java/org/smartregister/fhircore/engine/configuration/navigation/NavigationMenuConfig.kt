@@ -26,14 +26,14 @@ data class NavigationMenuConfig(
   val id: String,
   val visible: Boolean = true,
   val enabled: String = "true",
-  val menuIconConfig: MenuIconConfig? = null,
+  val menuIconConfig: ImageConfig? = null,
   val display: String,
   val showCount: Boolean = false,
   val actions: List<ActionConfig>? = null,
 )
 
 @Serializable
-data class MenuIconConfig(
+data class ImageConfig(
   val type: String? = null,
   val reference: String? = null,
   @Contextual var decodedBitmap: Bitmap? = null

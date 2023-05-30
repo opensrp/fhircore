@@ -55,7 +55,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
-import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.Language
@@ -72,7 +72,7 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
-import org.smartregister.fhircore.quest.ui.shared.components.MenuIcon
+import org.smartregister.fhircore.quest.ui.shared.components.Image
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
@@ -185,7 +185,7 @@ private fun NavBottomSection(
   ) {
     SideMenuItem(
       modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
-      menuIconConfig = MenuIconConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
+      imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
       title = stringResource(R.string.sync),
       endText = appUiState.lastSyncTime,
       showEndText = true,
@@ -205,7 +205,7 @@ private fun OtherPatientsItem(
   navController: NavController
 ) {
   SideMenuItem(
-    menuIconConfig = navigationConfiguration.bottomSheetRegisters?.menuIconConfig,
+    imageConfig = navigationConfiguration.bottomSheetRegisters?.menuIconConfig,
     title = stringResource(R.string.other_patients),
     endText = "",
     showEndText = false,
@@ -267,7 +267,7 @@ private fun ClientRegisterMenus(
   LazyColumn(modifier = Modifier.testTag(NAV_CLIENT_REGISTER_MENUS_LIST)) {
     items(appUiState.navigationConfiguration.clientRegisters, { it.id }) { navigationMenu ->
       SideMenuItem(
-        menuIconConfig = navigationMenu.menuIconConfig,
+        imageConfig = navigationMenu.menuIconConfig,
         title = navigationMenu.display,
         endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
         showEndText = navigationMenu.showCount
@@ -293,7 +293,7 @@ private fun StaticMenus(
   LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
     items(navigationConfiguration.staticMenu, { it.id }) { navigationMenu ->
       SideMenuItem(
-        menuIconConfig = navigationMenu.menuIconConfig,
+        imageConfig = navigationMenu.menuIconConfig,
         title = navigationMenu.display,
         endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
         showEndText = navigationMenu.showCount
@@ -352,7 +352,7 @@ private fun MenuActionButton(
 @Composable
 private fun SideMenuItem(
   modifier: Modifier = Modifier,
-  menuIconConfig: MenuIconConfig? = null,
+  imageConfig: ImageConfig? = null,
   title: String,
   endText: String = "",
   endTextColor: Color = Color.White,
@@ -370,7 +370,7 @@ private fun SideMenuItem(
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).padding(vertical = 16.dp)) {
-      MenuIcon(menuIconConfig = menuIconConfig, color = MenuItemColor, paddingEnd = 10)
+      Image(imageConfig = imageConfig, color = MenuItemColor, paddingEnd = 10)
       SideMenuItemText(title = title, textColor = Color.White)
     }
     if (showEndText) {
