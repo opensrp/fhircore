@@ -195,18 +195,16 @@ fun PinLoginPage(
                 ),
               elevation = null
             ) {
-              if (pinUiState.showProgressBar) {
-
-                CircularProgressIndicator(
-                  modifier = modifier.size(18.dp).testTag(CIRCULAR_PROGRESS_INDICATOR),
-                  strokeWidth = 1.6.dp,
-                  color = Color.White
-                )
-              } else {
-                Text(
-                  text = stringResource(id = R.string.set_pin).uppercase(),
-                  modifier = modifier.padding(8.dp)
-                )
+              Box(modifier = Modifier.padding(8.dp), contentAlignment = Alignment.Center) {
+                if (pinUiState.showProgressBar) {
+                  CircularProgressIndicator(
+                    modifier = modifier.size(18.dp).testTag(CIRCULAR_PROGRESS_INDICATOR),
+                    strokeWidth = 1.6.dp,
+                    color = Color.White
+                  )
+                } else {
+                  Text(text = stringResource(id = R.string.set_pin).uppercase())
+                }
               }
             }
           }
@@ -320,6 +318,28 @@ private fun PinSetupPreview() {
         setupPin = true,
         pinLength = 4,
         showLogo = true
+      ),
+    onSetPin = {},
+    onMenuLoginClicked = {},
+    onShowPinError = {},
+    forgotPin = {},
+    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
+  )
+}
+
+@Composable
+@PreviewWithBackgroundExcludeGenerated
+private fun PinSetupPreviewWithProgress() {
+  PinLoginPage(
+    showError = false,
+    pinUiState =
+      PinUiState(
+        message = "CHA will use this PIN to login",
+        appName = "MOH eCBIS",
+        setupPin = true,
+        pinLength = 4,
+        showLogo = true,
+        showProgressBar = true
       ),
     onSetPin = {},
     onMenuLoginClicked = {},
