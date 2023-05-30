@@ -1,0 +1,360 @@
+{
+  "resourceType": "PlanDefinition",
+  "language": "en-GB",
+  "id": "dc-diabetes-screening-intervention",
+  "name": "DiabetesScreeningIntervention",
+  "title": "Schedule of follow-ups for patients screened for diabetes",
+  "description": "Schedule of follow-ups for patients screened for diabetes",
+  "version": "0.0.1",
+  "status": "active",
+  "publisher": "ONA",
+  "meta": {
+    "versionId": "1"
+  },
+  "contained": [
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "dc-init-care-plan-activity",
+      "title": "Diabetes Screening Handler Activity",
+      "description": "This will initialize CarePlan on Diabetes Screening",
+      "status": "active",
+      "kind": "CarePlan",
+      "dynamicValue": [
+        {
+          "path": "title",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.title"
+          }
+        },
+        {
+          "path": "description",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.description"
+          }
+        },
+        {
+          "path": "instantiatesCanonical",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.id.replaceMatches('/_history/.*', '')"
+          }
+        },
+        {
+          "path": "status",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'active'"
+          }
+        },
+        {
+          "path": "intent",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'plan'"
+          }
+        },
+        {
+          "path": "created",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "now()"
+          }
+        },
+        {
+          "path": "subject",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.subject"
+          }
+        },
+        {
+          "path": "author",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.generalPractitioner.first()"
+          }
+        },
+        {
+          "path": "period.start",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "now()"
+          }
+        },
+        {
+          "path": "period.end",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "now() + 36 'months'"
+          }
+        },
+        {
+          "path": "activity.detail.kind",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'Task'"
+          }
+        },
+        {
+          "path": "activity.detail.status",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'in-progress'"
+          }
+        },
+        {
+          "path": "activity.detail.description",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'This will initialize CarePlan on Diabetes Screening'"
+          }
+        },
+        {
+          "path": "activity.detail.performer",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.generalPractitioner.first()"
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "three-year-routine-screening-task",
+      "title": "Three-year Screening Task Activity",
+      "status": "active",
+      "description": "Generate a three-year screening task when the patient has low risk of diabetes from initial screening",
+      "kind": "Task",
+      "timingTiming": {
+        "repeat": {
+          "frequency": 1,
+          "duration": 30,
+          "durationUnit": "d",
+          "period": 3,
+          "periodUnit": "a"
+        }
+      }
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "phone-call-follow-up-task",
+      "title": "Phone call follow-up Task Activity",
+      "status": "active",
+      "description": "Generate a phone call follow-up task when the patient is at high risk of diabetes from initial screening and has been referred to a HLC",
+      "kind": "Task",
+      "timingTiming": {
+        "repeat": {
+          "frequency": 1,
+          "duration": 30,
+          "durationUnit": "d",
+          "period": 14,
+          "periodUnit": "d"
+        }
+      }
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "home-visit-follow-up-task",
+      "title": "Home visit follow-up Task Activity",
+      "status": "active",
+      "description": "Generate a home visit follow-up task when the patient is unreachable after being referred to a HLC",
+      "kind": "Task",
+      "timingTiming": {
+        "repeat": {
+          "frequency": 1,
+          "duration": 30,
+          "durationUnit": "d",
+          "period": 30,
+          "periodUnit": "d"
+        }
+      }
+    }
+  ],
+  "goal": [
+    {
+      "category": {
+        "coding": [
+          {
+            "system": "https://www.hl7.org/fhir/codesystem-goal-category.html",
+            "code": "nursing",
+            "display": "Nursing"
+          }
+        ]
+      },
+      "priority": {
+        "coding": [
+          {
+            "system": "https://www.hl7.org/fhir/codesystem-goal-priority.html",
+            "code": "high-priority",
+            "display": "High Priority"
+          }
+        ]
+      },
+      "start": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "171183004",
+            "display": "Diabetes mellitus screening"
+          }
+        ]
+      }
+    }
+  ],
+  "action": [
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "description": "This will initialize CarePlan on Diabetes Screening",
+      "reason": [
+        {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/action-reason-code",
+              "code": "risk-assessment",
+              "display": "Risk assessment"
+            }
+          ]
+        }
+      ],
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/dc-patient-registration').exists()"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/action-type",
+            "code": "create",
+            "display": "Create"
+          }
+        ]
+      },
+      "definitionCanonical": "#dc-init-care-plan-activity"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "description": "Generate a three-year follow-up when the patient has low risk of diabetes from initial screening",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/dc-diabetes-screening').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='score-calculations') and answer.value < 16.0).exists()"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/action-participant-type",
+                "code": "practitioner",
+                "display": "Practitioner"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/action-type",
+            "code": "create",
+            "display": "Create"
+          }
+        ]
+      },
+      "definitionCanonical": "#three-year-routine-screening-task",
+      "transform": "http://hl7.org/fhir/StructureMap/dc-3-year-routine-screening-sm"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "description": "Generate a phone call follow-up when the patient is at high risk of diabetes from initial screening and has been referred to a HLC",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/dc-diabetes-screening').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='hlc-referred') and answer.value.exists()).exists()"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/action-participant-type",
+                "code": "practitioner",
+                "display": "Practitioner"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/action-type",
+            "code": "create",
+            "display": "Create"
+          }
+        ]
+      },
+      "definitionCanonical": "#phone-call-follow-up-task",
+      "transform": "http://hl7.org/fhir/StructureMap/dc-phone-call-follow-up-sm"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "description": "Generate a home visit follow-up when the patient is unreachable after being referred to a HLC",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/dc-phone-call-follow-up').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='trigger-home-visit') and answer.value = true).exists()"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/action-participant-type",
+                "code": "practitioner",
+                "display": "Practitioner"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/action-type",
+            "code": "create",
+            "display": "Create"
+          }
+        ]
+      },
+      "definitionCanonical": "#home-visit-follow-up-task",
+      "transform": "http://hl7.org/fhir/StructureMap/dc-home-visit-follow-up-sm"
+    }
+  ]
+}

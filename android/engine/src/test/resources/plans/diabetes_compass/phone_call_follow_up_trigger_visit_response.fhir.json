@@ -1,0 +1,42 @@
+{
+    "resourceType": "QuestionnaireResponse",
+    "questionnaire": "Questionnaire/dc-phone-call-follow-up",
+    "item": [
+        {
+            "linkId": "able-to-reach-client-choice",
+            "text": "Were you able to reach the client by phone",
+            "answer": [
+                {
+                    "valueCoding": {
+                        "id": "42c80737-61e9-4070-b93f-c7aad7c386db",
+                        "system": "urn:uuid:0d125d7e-9b47-4769-8174-6065cb9263d6",
+                        "code": "no",
+                        "display": "No"
+                    }
+                }
+            ]
+        },
+        {
+            "linkId": "reason-not-able-choice",
+            "text": "Reason you were not able to reach the client",
+            "answer": [
+                {
+                    "valueCoding": {
+                        "id": "971a5886-d049-4ab8-a133-131082c0e1d1",
+                        "system": "urn:uuid:f28b535d-79e9-416b-8b4a-495797901c6d",
+                        "code": "wrong-phone-number",
+                        "display": "Wrong phone number"
+                    }
+                }
+            ]
+        },
+        {
+            "linkId": "trigger-home-visit",
+            "answer": [
+                {
+                    "valueBoolean": true
+                }
+            ]
+        }
+    ]
+}

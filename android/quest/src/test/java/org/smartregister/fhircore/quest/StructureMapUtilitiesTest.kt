@@ -227,14 +227,15 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   fun `convert StructureMap to JSON`() {
     /*val patientRegistrationStructureMap =
             "patient-registration-questionnaire/structure-map.txt".readFile()*/
-    val carePlanMap = "content/general/diabetes_compass/plandef/patient_follow_up/three-year-routine-screening-follow-up.map".readFile()
+    //val sMap = "content/general/diabetes_compass/screening/diabetes_screening.map".readFile()
+    val sMap = "content/general/diabetes_compass/patient_follow_up/three-year-routine-screening-follow-up.map".readFile()
     val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     val contextR4 =
             SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
                     .apply { isCanRunWithoutTerminology = true }
     val structureMapUtilities = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
     val structureMap =
-            structureMapUtilities.parse(carePlanMap, "CarePlan")
+            structureMapUtilities.parse(sMap, "FollowUp")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(structureMap)
 
