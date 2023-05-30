@@ -95,13 +95,9 @@ constructor(
 ) : ViewModel() {
 
   val extractionProgress = MutableLiveData<Boolean>()
-
   val extractionProgressMessage = MutableLiveData<String>()
-
   val removeOperation = MutableLiveData(false)
-
   var editQuestionnaireResponse: QuestionnaireResponse? = null
-
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
   private val authenticatedOrganizationIds by lazy {
@@ -113,6 +109,7 @@ constructor(
       .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
       ?.extractLogicalIdUuid()
   }
+
   private var editQuestionnaireResourceParams: List<ActionParameter>? = emptyList()
 
   suspend fun loadQuestionnaire(
@@ -588,6 +585,7 @@ constructor(
       defaultRepository.delete(resourceType = resourceType, resourceId = resourceIdentifier)
     }
   }
+
   suspend fun updateResourceLastUpdatedLinkedAsSubject(
     questionnaireResponse: QuestionnaireResponse
   ) {
@@ -652,32 +650,35 @@ constructor(
    */
   suspend fun getQuestionnaireResponseFromDbOrPopulation(
     questionnaire: Questionnaire,
-    subjectId: String,
-    subjectType: ResourceType,
-    configComputedRuleValues: Map<String, Any> = emptyMap(),
+    subjectId: String?,
+    subjectType: ResourceType?,
     questionnaireConfig: QuestionnaireConfig,
   ): QuestionnaireResponse {
-    var questionnaireResponse: QuestionnaireResponse? = null
-    // if questionnaireType is Default that means we don't have to load response from DB
-    if (!questionnaireConfig.type.isDefault()) {
-      questionnaireResponse =
-        loadQuestionnaireResponse(subjectId, subjectType, questionnaire.logicalId)
-    }
-    var populationResources = ArrayList<Resource>()
-    if (questionnaireResponse == null) {
-      if (!subjectType.isIn(ResourceType.Group, ResourceType.Patient)) {
-        if (questionnaireConfig.resourceIdentifier != null &&
-            questionnaireConfig.resourceType != null
-        ) {
-          populationResources =
-            loadPopulationResources(
-              questionnaireConfig.resourceIdentifier!!,
-              questionnaireConfig.resourceType!!
-            )
-        }
+    var questionnaireResponse = QuestionnaireResponse()
+
+    if (!subjectId.isNullOrEmpty() && subjectType != null) {
+      // Load questionnaire response from DB for Questionnaires opened in EDIT/READONLY mode
+      if (!questionnaireConfig.type.isDefault()) {
+        questionnaireResponse =
+          searchQuestionnaireResponses(
+            subjectId = subjectId,
+            subjectType = subjectType,
+            questionnaireId = questionnaire.logicalId
+          )
+            .maxByOrNull { it.meta.lastUpdated }
+            ?: QuestionnaireResponse()
       }
-      populationResources.addAll(loadPopulationResources(subjectId, subjectType))
-      questionnaireResponse = populateQuestionnaireResponse(questionnaire, populationResources)
+
+      questionnaireResponse =
+        runCatching {
+            val populationResources = loadPopulationResources(subjectId, subjectType)
+            populateQuestionnaireResponse(
+              questionnaire = questionnaire,
+              populationResources = populationResources
+            )
+          }
+          .onFailure { Timber.e(it, "Error encountered while populating QuestionnaireResponse") }
+          .getOrDefault(questionnaireResponse)
     }
 
     return questionnaireResponse
@@ -692,7 +693,7 @@ constructor(
   @VisibleForTesting
   suspend fun populateQuestionnaireResponse(
     questionnaire: Questionnaire,
-    populationResources: ArrayList<Resource>
+    populationResources: List<Resource>
   ): QuestionnaireResponse {
     return ResourceMapper.populate(questionnaire, *populationResources.toTypedArray()).also {
       questionnaireResponse ->
@@ -701,33 +702,6 @@ constructor(
           .d("Questionnaire response has no populated answers")
       }
     }
-  }
-
-  /**
-   * Loads the latest Questionnaire Response resource that is associated with the given subject ID
-   * and Questionnaire ID.
-   *
-   * @param subjectId ID of the resource that submitted the Questionnaire Response
-   * @param subjectType resource type of the resource that submitted the Questionnaire Response
-   * @param questionnaireId ID of the Questionnaire that owns the Questionnaire Response
-   */
-  private suspend fun loadQuestionnaireResponse(
-    subjectId: String,
-    subjectType: ResourceType,
-    questionnaireId: String
-  ): QuestionnaireResponse? {
-    return searchQuestionnaireResponses(
-      subjectId = subjectId,
-      subjectType = subjectType,
-      questionnaireId = questionnaireId
-    )
-      .maxByOrNull { it.meta.lastUpdated }
-      .also { questionnaireResponse ->
-        if (questionnaireResponse == null) {
-          Timber.tag("QuestionnaireViewModel.loadQuestionnaireResponse")
-            .d("Questionnaire response is not found in database")
-        }
-      }
   }
 
   /**
@@ -762,7 +736,7 @@ constructor(
   private suspend fun loadPopulationResources(
     subjectId: String,
     subjectType: ResourceType
-  ): ArrayList<Resource> {
+  ): List<Resource> {
     val populationResources = arrayListOf<Resource>()
     try {
       populationResources.add(defaultRepository.loadResource(subjectId, subjectType))
