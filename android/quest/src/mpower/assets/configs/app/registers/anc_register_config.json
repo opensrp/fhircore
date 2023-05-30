@@ -144,6 +144,21 @@
         ]
       },
       {
+        "name": "taskExecutionStartDate",
+        "condition": "true",
+        "actions": [
+          "data.put('taskExecutionStartDate', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.executionPeriod.start'))"
+        ]
+      },
+      {
+        "name": "taskScheduleDate",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('taskScheduleDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"yyyy-MM-dd\"))"
+        ]
+      },
+      {
         "name": "taskFor",
         "condition": "true",
         "actions": [
@@ -193,7 +208,16 @@
                     "saveButtonText": "Save",
                     "taskId": "@{taskId}",
                     "resourceIdentifier": "@{taskFor}"
-                  }
+                  },
+                  "params": [
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "ae2f17cb-deff-48a6-8ece-27e6bd475f30",
+                      "dataType": "DATE",
+                      "key": "taskScheduleDate",
+                      "value": "@{taskScheduleDate}"
+                    }
+                  ]
                 }
               ]
             },

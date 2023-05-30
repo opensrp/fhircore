@@ -1,0 +1,524 @@
+{
+    "resourceType": "StructureMap",
+    "id": "1153",
+    "meta": {
+      "versionId": "3",
+      "lastUpdated": "2023-03-21T12:45:20.963+00:00",
+      "source": "#9e1052b2e3c21151"
+    },
+    "url": "http://fhir.mpower-social.com:7070/fhir/StructureMap/1153",
+    "name": "mPower PNC Routine Visit",
+    "structure": [
+      {
+        "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+        "mode": "source"
+      },
+      {
+        "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+        "mode": "target"
+      }
+    ],
+    "group": [
+      {
+        "name": "PNCRoutineVisit",
+        "typeMode": "none",
+        "input": [
+          {
+            "name": "src",
+            "type": "QuestionnaireResponse",
+            "mode": "source"
+          },
+          {
+            "name": "bundle",
+            "type": "Bundle",
+            "mode": "target"
+          }
+        ],
+        "rule": [
+          {
+            "name": "r_bundle_type",
+            "source": [
+              {
+                "context": "src"
+              }
+            ],
+            "target": [
+              {
+                "context": "bundle",
+                "contextType": "variable",
+                "element": "type",
+                "transform": "copy",
+                "parameter": [
+                  {
+                    "valueString": "collection"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "ExtractEncounter",
+        "typeMode": "none",
+        "input": [
+          {
+            "name": "src",
+            "type": "QuestionnaireResponse",
+            "mode": "source"
+          },
+          {
+            "name": "bundle",
+            "type": "Bundle",
+            "mode": "target"
+          }
+        ],
+        "rule": [
+          {
+            "name": "r_en",
+            "source": [
+              {
+                "context": "src"
+              }
+            ],
+            "target": [
+              {
+                "context": "bundle",
+                "contextType": "variable",
+                "element": "entry",
+                "variable": "entry"
+              },
+              {
+                "context": "entry",
+                "contextType": "variable",
+                "element": "resource",
+                "variable": "encounter",
+                "transform": "create",
+                "parameter": [
+                  {
+                    "valueString": "Encounter"
+                  }
+                ]
+              }
+            ],
+            "rule": [
+              {
+                "name": "r_en_id",
+                "source": [
+                  {
+                    "context": "src"
+                  }
+                ],
+                "target": [
+                  {
+                    "context": "encounter",
+                    "contextType": "variable",
+                    "element": "id",
+                    "transform": "uuid"
+                  }
+                ]
+              },
+              {
+                "name": "r_en_st",
+                "source": [
+                  {
+                    "context": "src"
+                  }
+                ],
+                "target": [
+                  {
+                    "context": "encounter",
+                    "contextType": "variable",
+                    "element": "status",
+                    "transform": "copy",
+                    "parameter": [
+                      {
+                        "valueString": "finished"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "r_en_cls",
+                "source": [
+                  {
+                    "context": "src"
+                  }
+                ],
+                "target": [
+                  {
+                    "context": "encounter",
+                    "contextType": "variable",
+                    "element": "class",
+                    "transform": "c",
+                    "parameter": [
+                      {
+                        "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+                      },
+                      {
+                        "valueString": "HH"
+                      },
+                      {
+                        "valueString": "home health"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "r_en_typ",
+                "source": [
+                  {
+                    "context": "src"
+                  }
+                ],
+                "target": [
+                  {
+                    "context": "encounter",
+                    "contextType": "variable",
+                    "element": "type",
+                    "variable": "concept",
+                    "transform": "create",
+                    "parameter": [
+                      {
+                        "valueString": "CodeableConcept"
+                      }
+                    ]
+                  }
+                ],
+                "rule": [
+                  {
+                    "name": "r_en_cc_cod",
+                    "source": [
+                      {
+                        "context": "src"
+                      }
+                    ],
+                    "target": [
+                      {
+                        "context": "concept",
+                        "contextType": "variable",
+                        "element": "coding",
+                        "variable": "coding",
+                        "transform": "c",
+                        "parameter": [
+                          {
+                            "valueString": "https://smartregister.org/"
+                          },
+                          {
+                            "valueString": "pnc_visit"
+                          }
+                        ]
+                      }
+                    ],
+                    "rule": [
+                      {
+                        "name": "r_en_cod_disp",
+                        "source": [
+                          {
+                            "context": "src"
+                          }
+                        ],
+                        "target": [
+                          {
+                            "context": "coding",
+                            "contextType": "variable",
+                            "element": "display",
+                            "transform": "copy",
+                            "parameter": [
+                              {
+                                "valueString": "PNC visit"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "r_en_typ_text",
+                    "source": [
+                      {
+                        "context": "src"
+                      }
+                    ],
+                    "target": [
+                      {
+                        "context": "concept",
+                        "contextType": "variable",
+                        "element": "text",
+                        "transform": "copy",
+                        "parameter": [
+                          {
+                            "valueString": "PNC visit"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "r_en_prio",
+                "source": [
+                  {
+                    "context": "src"
+                  }
+                ],
+                "target": [
+                  {
+                    "context": "encounter",
+                    "contextType": "variable",
+                    "element": "priority",
+                    "variable": "concept",
+                    "transform": "create",
+                    "parameter": [
+                      {
+                        "valueString": "CodeableConcept"
+                      }
+                    ]
+                  }
+                ],
+                "rule": [
+                  {
+                    "name": "r_en_cc_cod",
+                    "source": [
+                      {
+                        "context": "src"
+                      }
+                    ],
+                    "target": [
+                      {
+                        "context": "concept",
+                        "contextType": "variable",
+                        "element": "coding",
+                        "variable": "coding",
+                        "transform": "c",
+                        "parameter": [
+                          {
+                            "valueString": "http://terminology.hl7.org/ValueSet/v3-ActPriority"
+                          },
+                          {
+                            "valueString": "EL"
+                          }
+                        ]
+                      }
+                    ],
+                    "rule": [
+                      {
+                        "name": "r_en_cod_disp",
+                        "source": [
+                          {
+                            "context": "src"
+                          }
+                        ],
+                        "target": [
+                          {
+                            "context": "coding",
+                            "contextType": "variable",
+                            "element": "display",
+                            "transform": "copy",
+                            "parameter": [
+                              {
+                                "valueString": "elective"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "r_en_prio_text",
+                    "source": [
+                      {
+                        "context": "src"
+                      }
+                    ],
+                    "target": [
+                      {
+                        "context": "concept",
+                        "contextType": "variable",
+                        "element": "text",
+                        "transform": "copy",
+                        "parameter": [
+                          {
+                            "valueString": "elective"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "r_en_sub",
+                "source": [
+                  {
+                    "context": "src",
+                    "element": "subject",
+                    "variable": "subject"
+                  }
+                ],
+                "target": [
+                  {
+                    "context": "encounter",
+                    "contextType": "variable",
+                    "element": "subject",
+                    "transform": "copy",
+                    "parameter": [
+                      {
+                        "valueId": "subject"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "r_en_per",
+                "source": [
+                  {
+                    "context": "src"
+                  }
+                ],
+                "target": [
+                  {
+                    "context": "encounter",
+                    "contextType": "variable",
+                    "element": "period",
+                    "variable": "enPeriod",
+                    "transform": "create",
+                    "parameter": [
+                      {
+                        "valueString": "Period"
+                      }
+                    ]
+                  }
+                ],
+                "rule": [
+                  {
+                    "name": "r_en_per_start",
+                    "source": [
+                      {
+                        "context": "src"
+                      }
+                    ],
+                    "target": [
+                      {
+                        "context": "enPeriod",
+                        "contextType": "variable",
+                        "element": "start",
+                        "transform": "evaluate",
+                        "parameter": [
+                          {
+                            "valueId": "src"
+                          },
+                          {
+                            "valueString": "now()"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "r_en_per_end",
+                    "source": [
+                      {
+                        "context": "src"
+                      }
+                    ],
+                    "target": [
+                      {
+                        "context": "enPeriod",
+                        "contextType": "variable",
+                        "element": "end",
+                        "transform": "evaluate",
+                        "parameter": [
+                          {
+                            "valueId": "src"
+                          },
+                          {
+                            "valueString": "now()"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "r_en_reason",
+                "source": [
+                  {
+                    "context": "src"
+                  }
+                ],
+                "target": [
+                  {
+                    "context": "encounter",
+                    "contextType": "variable",
+                    "element": "reasonCode",
+                    "variable": "concept",
+                    "transform": "create",
+                    "parameter": [
+                      {
+                        "valueString": "CodeableConcept"
+                      }
+                    ]
+                  }
+                ],
+                "rule": [
+                  {
+                    "name": "r_en_text",
+                    "source": [
+                      {
+                        "context": "src"
+                      }
+                    ],
+                    "target": [
+                      {
+                        "context": "concept",
+                        "contextType": "variable",
+                        "element": "text",
+                        "transform": "copy",
+                        "parameter": [
+                          {
+                            "valueString": "PNC visit"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "r_obs_code_2_length",
+                    "source": [
+                      {
+                        "context": "src"
+                      }
+                    ],
+                    "target": [
+                      {
+                        "context": "concept",
+                        "contextType": "variable",
+                        "element": "coding",
+                        "transform": "c",
+                        "parameter": [
+                          {
+                            "valueString": "https://smartregister.org/"
+                          },
+                          {
+                            "valueString": "pnc_visit"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
