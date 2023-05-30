@@ -131,12 +131,14 @@ constructor(
               }
             },
             onFetchPractitioner = { bundleResult ->
-              _showProgressBar.postValue(false)
               if (bundleResult.isSuccess) {
-                updateNavigateHome(true)
                 val bundle = bundleResult.getOrDefault(FhirR4ModelBundle())
-                savePractitionerDetails(bundle)
+                savePractitionerDetails(bundle) {
+                  _showProgressBar.postValue(false)
+                  updateNavigateHome(true)
+                }
               } else {
+                _showProgressBar.postValue(false)
                 Timber.e(bundleResult.exceptionOrNull())
                 Timber.e(bundleResult.getOrNull().valueToString())
                 _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
@@ -232,7 +234,7 @@ constructor(
     }
   }
 
-  fun savePractitionerDetails(bundle: FhirR4ModelBundle) {
+  fun savePractitionerDetails(bundle: FhirR4ModelBundle, postProcess: () -> Unit) {
     if (bundle.entry.isNullOrEmpty()) return
     viewModelScope.launch {
       val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
@@ -275,6 +277,8 @@ constructor(
         SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
         locationHierarchies
       )
+
+      postProcess()
     }
   }
 
