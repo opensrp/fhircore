@@ -146,14 +146,18 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
             }
           }
-        questionnaireResponse =
-          questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
-              questionnaire = questionnaire,
-              subjectId = baseResourceId.extractLogicalIdUuid(),
-              subjectType = baseResourceType,
-              questionnaireConfig = questionnaireConfig
-            )
-            .apply { generateMissingItems(questionnaire) }
+        if (::baseResourceType.isInitialized) {
+          questionnaireResponse =
+            questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
+                questionnaire = questionnaire,
+                subjectId = baseResourceId.extractLogicalIdUuid(),
+                subjectType = baseResourceType,
+                questionnaireConfig = questionnaireConfig
+              )
+              .apply { generateMissingItems(questionnaire) }
+        } else {
+          questionnaireResponse = QuestionnaireResponse()
+        }
 
         if (!questionnaireViewModel.isQuestionnaireResponseValid(
             questionnaire,
