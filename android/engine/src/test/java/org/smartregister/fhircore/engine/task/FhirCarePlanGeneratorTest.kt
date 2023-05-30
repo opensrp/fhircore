@@ -925,7 +925,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
     // anc registered late so skip the tasks which passed due date
-    val lmp = DateType(Date()).apply { add(Calendar.MONTH, -4) }
+
+    // NOTE : UCUM days per month as used by FHIR Standard are 30
+    // Invoking this twice to work around February edge case
+    // TO DO : Implement Permanent fix for test class - Tracked under
+    // https://github.com/opensrp/fhircore/issues/2402
+
+    var lmp = fhirCarePlanGenerator.evaluateToDate(DateTimeType(Date()), "\$this - 3 'month'")
+    lmp = fhirCarePlanGenerator.evaluateToDate(lmp, "\$this - 1 'month'")
 
     questionnaireResponses.first().find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first()
       .value = lmp
@@ -945,8 +952,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           carePlan,
           planDefinition,
           patient,
-          lmp.value,
-          lmp.value.plusMonths(9),
+          lmp!!.value,
+          fhirCarePlanGenerator.evaluateToDate(DateTimeType(lmp!!.value), "\$this + 9 'month'")!!
+            .value,
           5
         ) // 5 visits for each month of ANC
 
@@ -955,8 +963,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .map { it as Task }
           .also { assertEquals(6, it.size) } // 5 for visit, 1 for referral
           .also {
-            assertTrue(it.all { it.status == TaskStatus.READY })
-            assertTrue(it.all { it.`for`.reference == patient.asReference().reference })
+            assertTrue(it.all { task -> task.status == TaskStatus.READY })
+            assertTrue(it.all { task -> task.`for`.reference == patient.asReference().reference })
           }
           // first 5 tasks are anc visit for each month of pregnancy
           .take(5)
@@ -970,10 +978,18 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             // that until
             // delivery
             // skip tasks for past 3 months of late registration
-            val ancStart = lmp.value.plusMonths(3).clone() as Date
+
+            val ancStart =
+              fhirCarePlanGenerator.evaluateToDate(DateTimeType(lmp.value), "\$this + 3 'month'")!!
+                .value
             this.forEachIndexed { index, task ->
               assertEquals(
-                ancStart.plusMonths(index + 1).asYyyyMmDd(),
+                (fhirCarePlanGenerator.evaluateToDate(
+                      DateTimeType(ancStart),
+                      "\$this + ${index + 1} 'month'"
+                    )!!
+                    .value)
+                  .asYyyyMmDd(),
                 task.executionPeriod.start.asYyyyMmDd()
               )
             }

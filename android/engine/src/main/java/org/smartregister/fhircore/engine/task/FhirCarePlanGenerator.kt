@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.task
 
+import androidx.annotation.VisibleForTesting
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import ca.uhn.fhir.context.FhirContext
@@ -223,7 +224,8 @@ constructor(
   suspend fun getTask(id: String) =
     kotlin.runCatching { fhirEngine.get<Task>(id) }.onFailure { Timber.e(it) }.getOrNull()
 
-  private fun evaluateToDate(base: Base?, expression: String): BaseDateTimeType? =
+  @VisibleForTesting
+  fun evaluateToDate(base: Base?, expression: String): BaseDateTimeType? =
     base?.let { fhirPathEngine.evaluate(it, expression).firstOrNull()?.dateTimeValue() }
 
   private fun PlanDefinition.PlanDefinitionActionComponent.passesConditions(
