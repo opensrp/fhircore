@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import java.net.URL
 import java.util.Locale
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -26,3 +27,5 @@ fun ConfigurationRegistry.fetchLanguages() =
   this.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
     .run { this.languages }
     .map { Language(it, Locale.forLanguageTag(it).displayName) }
+
+fun URL.getSubDomain() = this.host.substringBeforeLast('.').substringBeforeLast('.')

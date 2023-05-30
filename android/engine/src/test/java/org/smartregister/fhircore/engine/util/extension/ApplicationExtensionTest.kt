@@ -21,6 +21,7 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import java.net.URL
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
@@ -70,5 +71,17 @@ class ApplicationExtensionTest : RobolectricTest() {
       arrayListOf(Language("en", "English"), Language("sw", "Swahili")),
       languages
     )
+  }
+
+  @Test
+  fun testURLGetSubDomain() {
+    val urlA = "https://fhircore.mydomain.org"
+    Assert.assertEquals("fhircore", URL(urlA).getSubDomain())
+
+    val urlB = "https://fhircore.preview.mydomain.org"
+    Assert.assertEquals("fhircore.preview", URL(urlB).getSubDomain())
+
+    val urlC = "https://ehis-staging.mydomain.org"
+    Assert.assertEquals("ehis-staging", URL(urlC).getSubDomain())
   }
 }

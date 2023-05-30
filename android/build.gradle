@@ -84,14 +84,4 @@ subprojects {
             outputDirectory.set(file("${project.rootProject.projectDir}/docs"))
         }
     }
-
-    ext.getProps = { propName ->
-        def propsFile = rootProject.file('local.properties')
-        if (propsFile.exists()) {
-            def props = new Properties()
-            props.load(new FileInputStream(propsFile))
-            return props[propName]
-        }
-        return ""
-    }
 }
