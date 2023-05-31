@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.configuration.view
 
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
 data class TabViewProperties(
@@ -36,4 +37,11 @@ data class TabViewProperties(
   val tabBackgroundColor: String = "#F2F4F7",
   val tabIndicatorColor: String = "#FFFFFF",
   val selectedTabIndex: Int = 0
-) : ViewProperties()
+) : ViewProperties() {
+  override fun interpolate(computedValuesMap: Map<String, Any>): TabViewProperties {
+    return this.copy(
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap)
+    )
+  }
+}
