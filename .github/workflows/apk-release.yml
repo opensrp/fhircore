@@ -25,9 +25,9 @@ jobs:
       - id: product-flavor
         name: Generate Product Flavor identifier
         run: |
-          id=$(echo ${{ github.ref }} | cut -d- -f2)
+          id=$(echo ${{ github.ref }} | cut -d- -f1)
           echo "::set-output name=id::$id"
-          idCapitalized=$(echo ${{ github.ref }} | cut -d- -f2 | sed 's/.*/\u&/')
+          idCapitalized=$(echo ${{ github.ref }} | cut -d- -f1 | sed 's/.*/\u&/')
           echo "::set-output name=idCapitalized::$idCapitalized"
           
       - name: Decode & Generate Keystore file
