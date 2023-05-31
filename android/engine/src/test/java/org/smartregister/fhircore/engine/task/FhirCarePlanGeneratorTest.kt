@@ -1521,7 +1521,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           listOf(
             FhirResourceConfig(
               baseResource =
-                ResourceConfig(resource = ResourceType.CarePlan, planDefinitions = planDefinitions)
+                ResourceConfig(
+                  resource = ResourceType.CarePlan,
+                  planDefinitions = planDefinitions,
+                  id = "carePlan1"
+                )
             )
           )
       )
@@ -1647,7 +1651,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           listOf(
             FhirResourceConfig(
               baseResource =
-                ResourceConfig(resource = ResourceType.CarePlan, planDefinitions = planDefinitions)
+                ResourceConfig(
+                  resource = ResourceType.CarePlan,
+                  planDefinitions = planDefinitions,
+                  id = "carePlan1"
+                )
             )
           )
       )
@@ -1727,7 +1735,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           listOf(
             FhirResourceConfig(
               baseResource =
-                ResourceConfig(resource = ResourceType.CarePlan, planDefinitions = planDefinitions)
+                ResourceConfig(
+                  resource = ResourceType.CarePlan,
+                  planDefinitions = planDefinitions,
+                  id = "carePlan1"
+                )
             )
           )
       )
