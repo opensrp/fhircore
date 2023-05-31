@@ -64,38 +64,37 @@ import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.interpolateActionParamsValue
 
+@OptIn(ExperimentalMaterialApi::class)
 @HiltAndroidTest
 class RegisterFragmentTest : RobolectricTest() {
-  @get:Rule var hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+  @Inject lateinit var eventBus: EventBus
 
-  @OptIn(ExperimentalMaterialApi::class) lateinit var registerFragmentMock: RegisterFragment
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
   @BindValue
   val registerViewModel =
     spyk(
       RegisterViewModel(
-        mockk(),
+        registerRepository = mockk(relaxed = true),
         configurationRegistry = configurationRegistry,
-        mockk(),
-        mockk(),
-        mockk()
+        sharedPreferencesHelper = mockk(relaxed = true),
+        dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+        resourceDataRulesExecutor = mockk()
       )
     )
-  @Inject lateinit var eventBus: EventBus
 
-  @OptIn(ExperimentalMaterialApi::class) lateinit var registerFragment: RegisterFragment
-  @OptIn(ExperimentalMaterialApi::class) private lateinit var mainActivity: AppMainActivity
-  @OptIn(ExperimentalMaterialApi::class)
-  private val activityController = Robolectric.buildActivity(AppMainActivity::class.java)
   private lateinit var navController: TestNavHostController
+  private lateinit var registerFragment: RegisterFragment
+  private lateinit var mainActivity: AppMainActivity
+  private lateinit var registerFragmentMock: RegisterFragment
+  private val activityController = Robolectric.buildActivity(AppMainActivity::class.java)
 
-  @OptIn(ExperimentalMaterialApi::class)
   @Before
   fun setUp() {
     hiltRule.inject()
     registerFragmentMock = mockk()
-
     registerFragment =
       RegisterFragment().apply {
         arguments =
@@ -128,7 +127,6 @@ class RegisterFragmentTest : RobolectricTest() {
     }
   }
 
-  @OptIn(ExperimentalMaterialApi::class)
   @Test
   fun testOnStopClearsSearchText() {
     coEvery { registerFragmentMock.onStop() } just runs
@@ -137,7 +135,6 @@ class RegisterFragmentTest : RobolectricTest() {
     Assert.assertEquals(registerViewModel.searchText.value, "")
   }
 
-  @OptIn(ExperimentalMaterialApi::class)
   @Test
   fun testOnSyncState() {
     val syncJobStatus = SyncJobStatus.Finished()
@@ -147,7 +144,7 @@ class RegisterFragmentTest : RobolectricTest() {
   }
 
   @Test
-  @OptIn(ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class)
+  @OptIn(ExperimentalCoroutinesApi::class)
   fun `test On changed emits a snack bar message`() {
     val snackBarMessageConfig =
       SnackBarMessageConfig(
@@ -156,19 +153,7 @@ class RegisterFragmentTest : RobolectricTest() {
         duration = SnackbarDuration.Short,
         snackBarActions = emptyList()
       )
-    val questionnaireResponse = QuestionnaireResponse()
-    val questionnaireConfig = mockk<QuestionnaireConfig>()
-    val questionnaireSubmission =
-      QuestionnaireSubmission(
-        questionnaireConfig = questionnaireConfig,
-        questionnaireResponse = questionnaireResponse
-      )
     val registerViewModel = mockk<RegisterViewModel>()
-    coEvery {
-      registerFragmentMock.onChanged(questionnaireSubmission = questionnaireSubmission)
-    } just runs
-    registerFragmentMock.onChanged(questionnaireSubmission = questionnaireSubmission)
-    verify { registerFragmentMock.onChanged(questionnaireSubmission = questionnaireSubmission) }
     coroutineTestRule.launch {
       registerViewModel.emitSnackBarState(snackBarMessageConfig = snackBarMessageConfig)
     }
@@ -199,7 +184,6 @@ class RegisterFragmentTest : RobolectricTest() {
   }
 
   @Test
-  @OptIn(ExperimentalMaterialApi::class)
   fun testHandleRefreshLiveDataCallsRetrieveRegisterUiState() {
     val registerFragmentSpy = spyk(registerFragment)
     val registerViewModel = mockk<RegisterViewModel>()
@@ -218,20 +202,13 @@ class RegisterFragmentTest : RobolectricTest() {
     }
   }
 
-  @OptIn(ExperimentalMaterialApi::class)
   @Test
-  fun testOnViewCreatedCallsHandleRefreshLiveData() {
-    val registerFragmentSpy = spyk(registerFragment)
-    registerFragmentSpy.onViewCreated(mockk(), mockk())
-
-    runBlocking {
-      eventBus.triggerEvent(AppEvent.RefreshCache(QuestionnaireConfig(id = "refresh")))
-    }
-
-    coVerify { registerFragmentSpy.handleRefreshLiveData() }
+  fun testOnViewCreatedCallsHandleRefreshLiveData() = runTest {
+    registerFragment.onViewCreated(mockk(), mockk())
+    eventBus.triggerEvent(AppEvent.RefreshCache(QuestionnaireConfig(id = "refresh")))
+    verify { registerViewModel.retrieveRegisterUiState(any(), any(), any(), any()) }
   }
 
-  @OptIn(ExperimentalMaterialApi::class)
   @Test
   fun testHandleQuestionnaireSubmissionCallsRegisterViewModelPaginateRegisterDataAndEmitSnackBarState() {
     val snackBarMessageConfig = SnackBarMessageConfig(message = "Family member added")
@@ -246,9 +223,7 @@ class RegisterFragmentTest : RobolectricTest() {
     val registerFragmentSpy = spyk(registerFragment)
 
     coEvery { registerViewModel.emitSnackBarState(any()) } just runs
-
     runBlocking { registerFragmentSpy.handleQuestionnaireSubmission(questionnaireSubmission) }
-
     coVerify {
       registerViewModel.paginateRegisterData(
         registerId = "householdRegister",

@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -24,6 +26,7 @@ import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -36,6 +39,7 @@ import org.smartregister.fhircore.engine.configuration.register.RegisterCardConf
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.ListResource
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -43,7 +47,7 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
-class RulesExecutorTest : RobolectricTest() {
+class ResourceDataRulesExecutorTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   @get:Rule(order = 1)
@@ -51,7 +55,7 @@ class RulesExecutorTest : RobolectricTest() {
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var rulesFactory: RulesFactory
-  private lateinit var rulesExecutor: RulesExecutor
+  private lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -66,7 +70,7 @@ class RulesExecutorTest : RobolectricTest() {
           dispatcherProvider = coroutineRule.testDispatcherProvider
         )
       )
-    rulesExecutor = RulesExecutor(rulesFactory)
+    resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)
   }
 
   @Test
@@ -85,7 +89,7 @@ class RulesExecutorTest : RobolectricTest() {
 
     runBlocking(Dispatchers.Default) {
       val resourceData =
-        rulesExecutor.processResourceData(
+        resourceDataRulesExecutor.processResourceData(
           repositoryResourceData =
             RepositoryResourceData(
               resourceRulesEngineFactId = null,
@@ -105,91 +109,96 @@ class RulesExecutorTest : RobolectricTest() {
 
   @Test
   fun processListResourceData() {
-    val registerCard = RegisterCardConfig()
-    val viewType = ViewType.CARD
-    val listProperties = ListProperties(registerCard = registerCard, viewType = viewType)
-    val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
-    val computedValuesMap: Map<String, List<Resource>> = emptyMap()
-
-    runBlocking(Dispatchers.Default) {
-      val resourceData =
-        rulesExecutor.processListResourceData(
-          listProperties = listProperties,
-          relatedResourcesMap = relatedRepositoryResourceData,
-          computedValuesMap = computedValuesMap
-        )
-
-      Assert.assertEquals(0, resourceData.size)
+    runTest {
+      val registerCard = RegisterCardConfig()
+      val viewType = ViewType.CARD
+      val listProperties = ListProperties(registerCard = registerCard, viewType = viewType)
+      val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
+      val computedValuesMap: Map<String, List<Resource>> = emptyMap()
+      val listResourceDataStateMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
+      resourceDataRulesExecutor.processListResourceData(
+        listProperties = listProperties,
+        relatedResourcesMap = relatedRepositoryResourceData,
+        computedValuesMap = computedValuesMap,
+        listResourceDataStateMap = listResourceDataStateMap
+      )
+      Assert.assertEquals(0, listResourceDataStateMap.size)
     }
   }
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun processListResourceDataWithDataAndNoExpression() {
-    val registerCard = RegisterCardConfig()
-    val viewType = ViewType.CARD
-    val patient = Faker.buildPatient()
-    val listResource = ListResource("id", resourceType = ResourceType.Patient)
-    val resources = listOf(listResource)
-    val listProperties =
-      ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
-    val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
-    val computedValuesMap: Map<String, List<Resource>> = emptyMap()
+    runTest {
+      val registerCard = RegisterCardConfig()
+      val viewType = ViewType.CARD
+      val patient = Faker.buildPatient()
+      val listResource = ListResource("id", resourceType = ResourceType.Patient)
+      val resources = listOf(listResource)
+      val listProperties =
+        ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
+      val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
+      val computedValuesMap: Map<String, List<Resource>> = emptyMap()
 
-    relatedRepositoryResourceData[ResourceType.Patient.name] =
-      LinkedList<Resource>().apply { add(patient) }
-
-    runBlocking(Dispatchers.Default) {
-      val resourceData =
-        rulesExecutor.processListResourceData(
-          listProperties,
-          relatedRepositoryResourceData,
-          computedValuesMap
-        )
-
-      Assert.assertEquals(1, resourceData.size)
-      Assert.assertEquals(patient.id, resourceData.first().baseResourceId)
-      Assert.assertEquals(patient.resourceType, resourceData.first().baseResourceType)
+      relatedRepositoryResourceData[ResourceType.Patient.name] =
+        LinkedList<Resource>().apply { add(patient) }
+      val listResourceDataStateMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
+      resourceDataRulesExecutor.processListResourceData(
+        listProperties = listProperties,
+        relatedResourcesMap = relatedRepositoryResourceData,
+        computedValuesMap = computedValuesMap,
+        listResourceDataStateMap = listResourceDataStateMap
+      )
+      val snapshotStateList = listResourceDataStateMap[listProperties.id]
+      Assert.assertNotNull(snapshotStateList)
+      Assert.assertEquals(1, snapshotStateList?.size)
+      Assert.assertEquals(patient.id, snapshotStateList?.first()?.baseResourceId)
+      Assert.assertEquals(patient.resourceType, snapshotStateList?.first()?.baseResourceType)
     }
   }
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun processListResourceDataWithDataAndExpression() {
-    val registerCard = RegisterCardConfig()
-    val viewType = ViewType.CARD
-    val patient = Faker.buildPatient()
-    val listResource =
-      ListResource(
-        "id",
-        resourceType = ResourceType.Patient,
-        conditionalFhirPathExpression = "Patient.active"
-      )
-    val resources = listOf(listResource)
-    val listProperties =
-      ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
-
-    val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
-    val computedValuesMap: Map<String, List<Resource>> = emptyMap()
-
-    relatedRepositoryResourceData[ResourceType.Patient.name] =
-      LinkedList<Resource>().apply { add(patient) }
-
-    runBlocking(Dispatchers.Default) {
-      val resourceData =
-        rulesExecutor.processListResourceData(
-          listProperties,
-          relatedRepositoryResourceData,
-          computedValuesMap
+    runTest {
+      val registerCard = RegisterCardConfig()
+      val viewType = ViewType.CARD
+      val patient = Faker.buildPatient()
+      val listResource =
+        ListResource(
+          "id",
+          resourceType = ResourceType.Patient,
+          conditionalFhirPathExpression = "Patient.active"
         )
+      val resources = listOf(listResource)
+      val listProperties =
+        ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
 
-      Assert.assertEquals(resourceData.size, 1)
-      Assert.assertEquals(patient.id, resourceData.first().baseResourceId)
-      Assert.assertEquals(patient.resourceType, resourceData.first().baseResourceType)
+      val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
+      val computedValuesMap: Map<String, List<Resource>> = emptyMap()
+
+      relatedRepositoryResourceData[ResourceType.Patient.name] =
+        LinkedList<Resource>().apply { add(patient) }
+
+      val listResourceDataStateMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
+
+      resourceDataRulesExecutor.processListResourceData(
+        listProperties = listProperties,
+        relatedResourcesMap = relatedRepositoryResourceData,
+        computedValuesMap = computedValuesMap,
+        listResourceDataStateMap = listResourceDataStateMap
+      )
+
+      val snapshotStateList = listResourceDataStateMap[listProperties.id]
+      Assert.assertNotNull(snapshotStateList)
+      Assert.assertEquals(snapshotStateList?.size, 1)
+      Assert.assertEquals(patient.id, snapshotStateList?.first()?.baseResourceId)
+      Assert.assertEquals(patient.resourceType, snapshotStateList?.first()?.baseResourceType)
     }
   }
+
   @Test
   fun getRulesFactory() {
-    Assert.assertEquals(rulesExecutor.rulesFactory, rulesFactory)
+    Assert.assertEquals(resourceDataRulesExecutor.rulesFactory, rulesFactory)
   }
 }

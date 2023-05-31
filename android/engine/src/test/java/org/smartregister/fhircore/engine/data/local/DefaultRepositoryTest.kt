@@ -176,7 +176,8 @@ class DefaultRepositoryTest : RobolectricTest() {
           token = Patient.RES_ID,
           subjectId = samplePatientId,
           subjectType = ResourceType.Patient,
-          filters = emptyList()
+          filters = emptyList(),
+          configComputedRuleValues = emptyMap()
         )
       Assert.assertEquals(1, actualPatients.size)
     }
@@ -312,7 +313,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Patient> {} } returns listOf(patient)
 
     runBlocking {
-      val managingEntity = defaultRepository.loadManagingEntity(group)
+      val managingEntity = defaultRepository.loadManagingEntity(group, emptyMap())
       Assert.assertEquals("12345", managingEntity?.logicalId)
     }
   }
@@ -402,7 +403,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.loadResource<Group>("73847") } returns group
 
     Assert.assertThrows(IllegalStateException::class.java) {
-      runBlocking { defaultRepository.removeGroup(group.logicalId, false) }
+      runBlocking { defaultRepository.removeGroup(group.logicalId, false, emptyMap()) }
     }
   }
 
@@ -431,7 +432,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       }
     coEvery { fhirEngine.loadResource<Group>(group.id) } returns group
 
-    defaultRepositorySpy.removeGroup(group.id, isDeactivateMembers = false)
+    defaultRepositorySpy.removeGroup(group.id, isDeactivateMembers = false, emptyMap())
     coVerify { defaultRepositorySpy.delete(managingEntityRelatedPerson) }
     Assert.assertFalse(group.active)
   }
@@ -448,7 +449,12 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { defaultRepositorySpy.addOrUpdate(resource = any()) } just runs
     coEvery { fhirEngine.get(patientMemberRep.resourceType, memberId) } returns patientMemberRep
 
-    defaultRepositorySpy.removeGroupMember(memberId, null, patientMemberRep.resourceType.name)
+    defaultRepositorySpy.removeGroupMember(
+      memberId,
+      null,
+      patientMemberRep.resourceType.name,
+      emptyMap()
+    )
     Assert.assertFalse(patientMemberRep.active)
     coVerify { defaultRepositorySpy.addOrUpdate(resource = patientMemberRep) }
   }
@@ -466,7 +472,12 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.get(patientMemberRep.resourceType, memberId) }
       .throws(ResourceNotFoundException("type", "id"))
 
-    defaultRepositorySpy.removeGroupMember(memberId, null, patientMemberRep.resourceType.name)
+    defaultRepositorySpy.removeGroupMember(
+      memberId,
+      null,
+      patientMemberRep.resourceType.name,
+      emptyMap()
+    )
     Assert.assertTrue(patientMemberRep.active)
   }
 
@@ -484,7 +495,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         )
       )
 
-    defaultRepository.delete(resourceType = "Patient", resourceId = "123")
+    defaultRepository.delete(resourceType = ResourceType.Patient, resourceId = "123")
 
     coVerify { fhirEngine.delete(any<ResourceType>(), any<String>()) }
   }
@@ -513,7 +524,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { defaultRepository.delete(any()) } just runs
     coEvery { defaultRepository.addOrUpdate(resource = any()) } just runs
 
-    runBlocking { defaultRepository.removeGroup(groupId, true) }
+    runBlocking { defaultRepository.removeGroup(groupId, true, emptyMap()) }
 
     coVerify { defaultRepository.delete(relatedPerson) }
     coVerify { defaultRepository.addOrUpdate(resource = patient) }
@@ -553,7 +564,8 @@ class DefaultRepositoryTest : RobolectricTest() {
       defaultRepository.removeGroupMember(
         memberId = memberId,
         groupId = groupId,
-        groupMemberResourceType = groupMemberResourceType
+        groupMemberResourceType = groupMemberResourceType,
+        emptyMap()
       )
     }
 

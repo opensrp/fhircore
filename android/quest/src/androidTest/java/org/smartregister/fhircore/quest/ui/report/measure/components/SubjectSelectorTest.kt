@@ -23,11 +23,13 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import io.mockk.spyk
 import io.mockk.verify
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
-class PatientSelectorTest {
+class SubjectSelectorTest {
 
   private val mockListener: () -> Unit = spyk({})
 
@@ -36,18 +38,22 @@ class PatientSelectorTest {
   @Before
   fun setup() {
     composeTestRule.setContent {
-      PatientSelector(patientName = "Mary Magdalene", onChangePatient = mockListener)
+      SubjectSelector(
+        subjects = setOf(MeasureReportSubjectViewData(ResourceType.Patient, "1", "Mary Magdalene")),
+        onAddSubject = mockListener,
+        onRemoveSubject = {}
+      )
     }
   }
 
   @Test
-  fun testPatientSelectorRendersPatientNameCorrectly() {
-    composeTestRule.onNodeWithTag(PATIENT_NAME_TEST_TAG, useUnmergedTree = true).assertExists()
+  fun testSubjectSelectorRendersSubjectNameCorrectly() {
+    composeTestRule.onNodeWithTag(SUBJECT_NAME_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule.onNodeWithText("Mary Magdalene").assertExists().assertIsDisplayed()
   }
 
   @Test
-  fun testPatientSelectorRendersCloseIconCorrectly() {
+  fun testSubjectSelectorRendersCloseIconBackgroundCorrectly() {
     composeTestRule
       .onNodeWithTag(CLOSE_ICON_TEST_TAG, useUnmergedTree = true)
       .assertExists()
@@ -55,22 +61,14 @@ class PatientSelectorTest {
   }
 
   @Test
-  fun testPatientSelectorRendersCloseIconBackgroundCorrectly() {
-    composeTestRule
-      .onNodeWithTag(CLOSE_ICON_BACKGROUND_TEST_TAG, useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
-  }
-
-  @Test
-  fun testPatientSelectorRendersChangeTextCorrectly() {
+  fun testSubjectSelectorRendersChangeTextCorrectly() {
     composeTestRule.onNodeWithTag(CHANGE_TEXT_TEST_TAG, useUnmergedTree = true).assertExists()
-    composeTestRule.onNodeWithText("Change").assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText("ADD").assertExists().assertIsDisplayed()
   }
 
   @Test
   fun testThatChangeRowClickCallsTheListener() {
-    val changeRow = composeTestRule.onNodeWithTag(CHANGE_ROW_TEST_TAG)
+    val changeRow = composeTestRule.onNodeWithTag(CHANGE_TEXT_TEST_TAG)
     changeRow.assertExists()
     changeRow.performClick()
     verify { mockListener() }

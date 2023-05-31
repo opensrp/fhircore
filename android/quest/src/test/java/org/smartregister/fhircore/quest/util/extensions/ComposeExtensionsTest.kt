@@ -28,9 +28,9 @@ class ComposeExtensionsTest {
   @Test
   fun testConditionalModifier() {
     val modifier = spyk(Modifier)
-    modifier.conditional(true, { fillMaxWidth() }, { fillMaxHeight() })
+    modifier.conditional(true, { fillMaxWidth() }) { fillMaxHeight() }
     verify { modifier.fillMaxWidth() }
-    modifier.conditional(false, { fillMaxWidth() }, { fillMaxHeight() })
+    modifier.conditional(false, { fillMaxWidth() }) { fillMaxHeight() }
     verify { modifier.fillMaxHeight() }
   }
 }

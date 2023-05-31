@@ -229,11 +229,12 @@ class MeasureExtensionTest : RobolectricTest() {
     coEvery { fhirEngine.search<MeasureReport>(any<Search>()) } returns emptyList()
     runBlocking {
       val result =
-        retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
+        retrievePreviouslyGeneratedMeasureReports(
           fhirEngine = fhirEngine,
           "2022-02-02",
           "2022-04-04",
-          "http://nourl.com"
+          "http://nourl.com",
+          emptyList()
         )
       assertTrue(result.isNullOrEmpty())
     }

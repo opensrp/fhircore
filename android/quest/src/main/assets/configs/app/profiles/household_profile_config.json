@@ -110,6 +110,7 @@
             "id": "e5155788-8831-4916-a3f5-486915ce34b2",
             "title": "Add household member",
             "saveButtonText": "Add Member",
+            "resourceType": "Patient",
             "groupResource": {
               "groupIdentifier": "@{familyLogicalId}",
               "memberResourceType": "Patient"
@@ -570,7 +571,12 @@
                 "value": "@{familyLogicalId}",
                 "paramType": "UPDATE_DATE_ON_EDIT"
               }
-            ]
+            ],
+            "snackBarMessage": {
+              "message": "Household details have been updated",
+              "actionLabel": "",
+              "duration": "Short"
+            }
           }
         }
       ]

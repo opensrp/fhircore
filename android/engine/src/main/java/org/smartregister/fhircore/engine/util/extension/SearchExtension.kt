@@ -50,31 +50,62 @@ import timber.log.Timber
  * This extension function is used to configure [DataQuery] s against the [Search] DSL. This
  * extension covers all queries for for the supported [DataType] s. Filters of the same [DataType]
  * are grouped together in a query and a configured [DataQuery.operation] is used to determine
- * either to use either 'AND' or 'OR' in the where clause of the Query.
+ * either to use either 'AND' or 'OR' in the where clause of the Query. Optional
+ * [configComputedRuleValues] is provided to substitute [FilterCriterionConfig.computedRule]
+ * placeholders with actual values.
  */
 @Suppress("UNCHECKED_CAST")
-fun Search.filterBy(dataQuery: DataQuery) {
+fun Search.filterBy(dataQuery: DataQuery, configComputedRuleValues: Map<String, Any>) {
   val filterQueriesMap: Map<DataType, List<FilterCriterionConfig>> =
     dataQuery.filterCriteria.groupBy { it.dataType }
   filterQueriesMap.forEach { dataTypeListEntry ->
     when (dataTypeListEntry.key) {
       DataType.QUANTITY ->
-        filterByQuantity(dataTypeListEntry.value as List<QuantityFilterCriterionConfig>, dataQuery)
+        filterByQuantity(
+          quantityFilterCriterionConfigs =
+            dataTypeListEntry.value as List<QuantityFilterCriterionConfig>,
+          dataQuery = dataQuery,
+          configComputedRuleValues = configComputedRuleValues
+        )
       DataType.DATETIME, DataType.DATE, DataType.TIME ->
-        filterByDateTime(dataTypeListEntry.value as List<DateFilterCriterionConfig>, dataQuery)
+        filterByDateTime(
+          dateFilterCriterionConfigs = dataTypeListEntry.value as List<DateFilterCriterionConfig>,
+          dataQuery = dataQuery,
+          configComputedRuleValues = configComputedRuleValues
+        )
       DataType.DECIMAL, DataType.INTEGER ->
-        filterByNumber(dataTypeListEntry.value as List<NumberFilterCriterionConfig>, dataQuery)
+        filterByNumber(
+          numberFilterCriterionConfigs =
+            dataTypeListEntry.value as List<NumberFilterCriterionConfig>,
+          dataQuery = dataQuery,
+          configComputedRuleValues = configComputedRuleValues
+        )
       DataType.STRING ->
-        filterByString(dataTypeListEntry.value as List<StringFilterCriterionConfig>, dataQuery)
+        filterByString(
+          stringFilterCriterionConfigs =
+            dataTypeListEntry.value as List<StringFilterCriterionConfig>,
+          dataQuery = dataQuery,
+          configComputedRuleValues = configComputedRuleValues
+        )
       DataType.URI, DataType.URL ->
-        filterByUri(dataTypeListEntry.value as List<UriFilterCriterionConfig>, dataQuery)
+        filterByUri(
+          uriFilterCriterionConfigs = dataTypeListEntry.value as List<UriFilterCriterionConfig>,
+          dataQuery = dataQuery,
+          configComputedRuleValues = configComputedRuleValues
+        )
       DataType.REFERENCE ->
         filterByReference(
-          dataTypeListEntry.value as List<FilterCriterionConfig.ReferenceFilterCriterionConfig>,
-          dataQuery
+          referenceFilterCriterionConfigs =
+            dataTypeListEntry.value as List<FilterCriterionConfig.ReferenceFilterCriterionConfig>,
+          dataQuery = dataQuery,
+          configComputedRuleValues = configComputedRuleValues
         )
       DataType.CODING, DataType.CODEABLECONCEPT, DataType.CODE ->
-        filterByToken(dataTypeListEntry.value as List<TokenFilterCriterionConfig>, dataQuery)
+        filterByToken(
+          tokenFilterCriterionConfigs = dataTypeListEntry.value as List<TokenFilterCriterionConfig>,
+          dataQuery = dataQuery,
+          configComputedRuleValues = configComputedRuleValues
+        )
       else -> {
         Timber.e("Search operation not supported for the given data type: ${dataTypeListEntry.key}")
       }
@@ -82,14 +113,33 @@ fun Search.filterBy(dataQuery: DataQuery) {
   }
 }
 
+@Suppress("UNCHECKED_CAST")
+private fun <V : Any> retrieveComputedRuleValue(
+  key: String?,
+  configComputedRuleValues: Map<String, Any>
+): V? {
+  return if (key.isNullOrEmpty()) {
+    Timber.e("Key not provided")
+    null
+  } else {
+    configComputedRuleValues[key] as V?
+  }
+}
+
 private fun Search.filterByReference(
   referenceFilterCriterionConfigs: List<FilterCriterionConfig.ReferenceFilterCriterionConfig>,
-  dataQuery: DataQuery
+  dataQuery: DataQuery,
+  configComputedRuleValues: Map<String, Any>
 ) {
   val filters =
     referenceFilterCriterionConfigs.map { referenceFilterCriterionConfig ->
       val apply: ReferenceParamFilterCriterion.() -> Unit = {
-        this.value = referenceFilterCriterionConfig.value
+        this.value =
+          referenceFilterCriterionConfig.value
+            ?: retrieveComputedRuleValue(
+              key = referenceFilterCriterionConfig.computedRule,
+              configComputedRuleValues = configComputedRuleValues
+            )
       }
       apply
     }
@@ -102,12 +152,18 @@ private fun Search.filterByReference(
 
 private fun Search.filterByUri(
   uriFilterCriterionConfigs: List<UriFilterCriterionConfig>,
-  dataQuery: DataQuery
+  dataQuery: DataQuery,
+  configComputedRuleValues: Map<String, Any>
 ) {
   val filters =
     uriFilterCriterionConfigs.map { uriFilterCriterionConfig ->
       val apply: UriParamFilterCriterion.() -> Unit = {
-        this.value = uriFilterCriterionConfig.value
+        this.value =
+          uriFilterCriterionConfig.value
+            ?: retrieveComputedRuleValue(
+              key = uriFilterCriterionConfig.computedRule,
+              configComputedRuleValues = configComputedRuleValues
+            )
       }
       apply
     }
@@ -120,12 +176,19 @@ private fun Search.filterByUri(
 
 private fun Search.filterByString(
   stringFilterCriterionConfigs: List<StringFilterCriterionConfig>,
-  dataQuery: DataQuery
+  dataQuery: DataQuery,
+  configComputedRuleValues: Map<String, Any>
 ) {
   val filters =
     stringFilterCriterionConfigs.map { stringFilterCriterionConfig ->
       val apply: StringParamFilterCriterion.() -> Unit = {
-        this.value = stringFilterCriterionConfig.value
+        this.value =
+          stringFilterCriterionConfig.value
+            ?: retrieveComputedRuleValue(
+              key = stringFilterCriterionConfig.computedRule,
+              configComputedRuleValues = configComputedRuleValues
+            )
+
         this.modifier = stringFilterCriterionConfig.modifier
       }
       apply
@@ -139,13 +202,19 @@ private fun Search.filterByString(
 
 private fun Search.filterByNumber(
   numberFilterCriterionConfigs: List<NumberFilterCriterionConfig>,
-  dataQuery: DataQuery
+  dataQuery: DataQuery,
+  configComputedRuleValues: Map<String, Any>
 ) {
   val filters =
     numberFilterCriterionConfigs.map { numberFilterCriterionConfig ->
       val apply: NumberParamFilterCriterion.() -> Unit = {
         this.prefix = numberFilterCriterionConfig.prefix
-        this.value = numberFilterCriterionConfig.value
+        this.value =
+          numberFilterCriterionConfig.value
+            ?: retrieveComputedRuleValue(
+              key = numberFilterCriterionConfig.computedRule,
+              configComputedRuleValues = configComputedRuleValues
+            )
       }
       apply
     }
@@ -158,20 +227,23 @@ private fun Search.filterByNumber(
 
 private fun Search.filterByDateTime(
   dateFilterCriterionConfigs: List<DateFilterCriterionConfig>,
-  dataQuery: DataQuery
+  dataQuery: DataQuery,
+  configComputedRuleValues: Map<String, Any>
 ) {
   val filters =
     dateFilterCriterionConfigs.map { dateFilterCriterionConfig ->
       val apply: DateParamFilterCriterion.() -> Unit = {
         this.prefix = dateFilterCriterionConfig.prefix
+        val computedRuleValue =
+          dateFilterCriterionConfig.value
+            ?: retrieveComputedRuleValue(
+              key = dateFilterCriterionConfig.computedRule,
+              configComputedRuleValues = configComputedRuleValues
+            )
+
         this.value =
-          when {
-            dateFilterCriterionConfig.valueDate != null ->
-              of(DateType(dateFilterCriterionConfig.valueDate))
-            dateFilterCriterionConfig.valueDateTime != null ->
-              of(DateTimeType(dateFilterCriterionConfig.valueDateTime))
-            else -> null
-          }
+          if (dateFilterCriterionConfig.valueAsDateTime) of(DateTimeType(computedRuleValue))
+          else of(DateType(computedRuleValue))
       }
       apply
     }
@@ -184,13 +256,20 @@ private fun Search.filterByDateTime(
 
 private fun Search.filterByQuantity(
   quantityFilterCriterionConfigs: List<QuantityFilterCriterionConfig>,
-  dataQuery: DataQuery
+  dataQuery: DataQuery,
+  configComputedRuleValues: Map<String, Any>
 ) {
   val filters =
     quantityFilterCriterionConfigs.map { quantityFilterCriterionConfig ->
       val apply: QuantityParamFilterCriterion.() -> Unit = {
         this.prefix = quantityFilterCriterionConfig.prefix
-        this.value = quantityFilterCriterionConfig.value
+        this.value =
+          quantityFilterCriterionConfig.value
+            ?: retrieveComputedRuleValue(
+              quantityFilterCriterionConfig.computedRule,
+              configComputedRuleValues,
+            )
+
         this.system = quantityFilterCriterionConfig.system
         this.unit = quantityFilterCriterionConfig.unit
       }
@@ -205,15 +284,22 @@ private fun Search.filterByQuantity(
 
 private fun Search.filterByToken(
   tokenFilterCriterionConfigs: List<TokenFilterCriterionConfig>,
-  dataQuery: DataQuery
+  dataQuery: DataQuery,
+  configComputedRuleValues: Map<String, Any>
 ) {
   val filters =
     tokenFilterCriterionConfigs.map { tokenFilterCriterionConfig ->
       val configuredCode = tokenFilterCriterionConfig.value
       val apply: TokenParamFilterCriterion.() -> Unit = {
-        if (configuredCode?.code != null) {
-          value = of(Coding(configuredCode.system, configuredCode.code, configuredCode.display))
-        }
+        val coding =
+          if (configuredCode?.code != null)
+            Coding(configuredCode.system, configuredCode.code, configuredCode.display)
+          else
+            retrieveComputedRuleValue(
+              tokenFilterCriterionConfig.computedRule,
+              configComputedRuleValues
+            )
+        value = coding?.let { of(it) }
       }
       apply
     }
