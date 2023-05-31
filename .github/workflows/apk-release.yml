@@ -72,7 +72,7 @@ jobs:
     #    with:
     #      repo_token: ${{ secrets.GITHUB_TOKEN }}
     #      file: android/quest/build/outputs/bundle/${{steps.product-flavor.outputs.id}}/release/quest-${{steps.product-flavor.outputs.id}}-release.aab
-    #      asset_name: "quest-$tag.aab"
+    #      asset_name: "$tag.aab"
     #      tag: ${{ github.ref }}
     #      overwrite: true
       
@@ -85,7 +85,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: android/quest/build/outputs/apk/${{steps.product-flavor.outputs.id}}/release/quest-${{steps.product-flavor.outputs.id}}-release.apk
-          asset_name: "quest-$tag.apk"
+          asset_name: "$tag.apk"
           tag: ${{ github.ref }}
           prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
           overwrite: true
