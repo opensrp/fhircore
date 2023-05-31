@@ -39,7 +39,7 @@ Release notes can be viewed in the [changelog](https://github.com/opensrp/fhirco
 To conduct a code release follow the below steps:
 
 1. Open and merge a PR to update the project version to the current release version
-    * e.g. change the `versionName` in the Quest [build.gradle](https://github.com/opensrp/fhircore/blob/main/android/quest/build.gradle#L28) file to `v0.2.0`
+    * e.g. change the `versionName` in the Quest [build.gradle](https://github.com/opensrp/fhircore/blob/main/android/opensrp/build.gradle#L28) file to `v0.2.0`
 1. Code freeze: create a branch for the code release version as well as the first code release candidate (labeled RC1).
     * For example, for code release version `v0.2.0`, create a branch `opensrp-0.2.0`, a pre-release `opensrp-0.2.0-rc1`, and a tag `opensrp-0.2.0-rc1`
 1. Candidate progression: This is followed by 1-2 weeks of QA and error fixing
@@ -57,7 +57,7 @@ Once a final code release is created, attach a generic flavor APK release e.g. `
 
 Flavors define custom names, icons, and default local properties (such as server versions). We use flavors when a particular project or use-cases requires this customization, such as a branded icon and name. When creating flavors do NOT include version numbers. The version of the flavor is defined by the code version.
 
-To add a flavor, add an entry to the `productFlavors` map in [`android/quest/build.gradle`](https://github.com/opensrp/fhircore/blob/main/android/quest/build.gradle). For example, to add a flavor called `new-flavor` add the map:
+To add a flavor, add an entry to the `productFlavors` map in [`android/opensrp/build.gradle`](https://github.com/opensrp/fhircore/blob/main/android/opensrp/build.gradle). For example, to add a flavor called `new-flavor` add the map:
 
 ```
 new-flavor  {
@@ -71,8 +71,8 @@ You can add the follow resources:
 
 Description|Location
 ---|---
-App icon|`android/quest/src/new-flavor/res/drawable/ic_app_logo.png`
-App name|`android/quest/src/new-flavor/res/values/strings.xml`
+App icon|`android/opensrp/src/new-flavor/res/drawable/ic_app_logo.png`
+App name|`android/opensrp/src/new-flavor/res/values/strings.xml`
 
 Where the app icon is an image of the appropriate size and the app name is an XML file with the following content:
 
@@ -87,21 +87,21 @@ Where the app icon is an image of the appropriate size and the app name is an XM
 
 As part of integrating Continuous Delivery(CD) into the development lifecycle, CI is set up to generate an APK.
 
-The configuration requires the tag to:
-* The product name: _opensrp_
+The configuration requires the tag to have the following parts/sections in order:
+* The prefix `opensrp-`
 * Followed by the _version_ in the format `[0-9]+.[0-9]+.[0-9]+[0-9a-zA-Z.-]+`
 * Followed by an optional _suffix_ depending on the release e.g. `-alpha`, `-rc`, `-beta` e.t.c
 
-The following are all valid tags that will trigger the generation of a release APK
+The following are all valid tags that will trigger the generation of the Quest release APK
 > - opensrp-1.2.0
 > - opensrp-1.2.0-alpha
 > - opensrp-1.2.0-beta
 > - opensrp-1.2.0-rc1
 
-**Note:** e.g. when creating a tag for the _OpenSRP Version 1.2.0_, use the command:
+**Note:** When creating a tag for the _Quest OpenSRP Version 1.2.0 RC 5 release variant_, use the command:
 
 ```
-git tag -a opensrp-1.2.0 -s  && git push origin opensrp-1.2.0
+git tag -a opensrp-1.2.0-rc5 -s && git push origin opensrp-1.2.0-rc5
 ```
 
 When you run the command, you will be prompted to _add a message_. The message should be of the format:
@@ -115,8 +115,8 @@ When you run the command, you will be prompted to _add a message_. The message s
 ### Deleting a tag
 Sometimes you may want to delete a tag, e.g. if you push an incorrect tag, need to update the tag message etc.
 
-For example, to delete the opensrp-1.2.0 tag run the command:
+For example, to delete the opensrp-1.2.0-rc1 tag run the command:
 
 ```
-git push --delete origin opensrp-1.2.0 && git tag --delete opensrp-1.2.0
+git push --delete origin opensrp-1.2.0-rc1 && git tag --delete opensrp-1.2.0-rc1
 ```

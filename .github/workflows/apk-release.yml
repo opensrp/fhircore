@@ -6,9 +6,8 @@ name: Quest APK Release
 on:
   push:
     tags:
-      - v[0-9]+.[0-9]+.[0-9]+
-      - v[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+
-      - v[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+-[0-9a-zA-Z]+
+      - opensrp-[0-9]+.[0-9]+.[0-9]+
+      - opensrp-[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+
 env:
  FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
  FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
@@ -60,11 +59,7 @@ jobs:
         run: echo $KEYSTORE_PROPERTIES | base64 -di > keystore.properties
         working-directory: android
         env:
-          KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }} 
- 
-      - name: Spotless check quest application
-        run: ./gradlew :quest:spotlessCheck
-        working-directory: android
+          KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }}
 
     #  - name: Generate AAB (Android App Bundle) file
     #    if: ${{ false }}
