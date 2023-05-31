@@ -89,7 +89,6 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.event.EventTriggerCondition
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.REFERENCE
@@ -1466,7 +1465,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           listOf(
             EventTriggerCondition(
               eventResourceId = "carePlan1",
-              conditionalFhirPathExpression = listOf("Patient.active")
+              conditionalFhirPathExpressions = listOf("Patient.active")
             )
           )
       )
@@ -1513,7 +1512,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           listOf(
             EventTriggerCondition(
               eventResourceId = "carePlan1",
-              conditionalFhirPathExpression =
+              conditionalFhirPathExpressions =
                 listOf(
                   "Patient.active and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/450cb100-0c5b-47c6-9f33-2830a79be726').exists()"
                 )
@@ -1521,13 +1520,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           ),
         eventResources =
           listOf(
-            FhirResourceConfig(
-              baseResource =
-                ResourceConfig(
-                  resource = ResourceType.CarePlan,
-                  planDefinitions = planDefinitions,
-                  id = "carePlan1"
-                )
+            ResourceConfig(
+              resource = ResourceType.CarePlan,
+              planDefinitions = planDefinitions,
+              id = "carePlan1"
             )
           )
       )
@@ -1594,7 +1590,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           listOf(
             EventTriggerCondition(
               eventResourceId = "carePlan1",
-              conditionalFhirPathExpression = listOf("Patient.active")
+              conditionalFhirPathExpressions = listOf("Patient.active")
             )
           )
       )
@@ -1646,18 +1642,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           listOf(
             EventTriggerCondition(
               eventResourceId = "carePlan1",
-              conditionalFhirPathExpression = listOf("Patient.active")
+              conditionalFhirPathExpressions = listOf("Patient.active")
             )
           ),
         eventResources =
           listOf(
-            FhirResourceConfig(
-              baseResource =
-                ResourceConfig(
-                  resource = ResourceType.CarePlan,
-                  planDefinitions = planDefinitions,
-                  id = "carePlan1"
-                )
+            ResourceConfig(
+              resource = ResourceType.CarePlan,
+              planDefinitions = planDefinitions,
+              id = "carePlan1"
             )
           )
       )
@@ -1730,18 +1723,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           listOf(
             EventTriggerCondition(
               eventResourceId = "carePlan1",
-              conditionalFhirPathExpression = listOf("Patient.active")
+              conditionalFhirPathExpressions = listOf("Patient.active")
             )
           ),
         eventResources =
           listOf(
-            FhirResourceConfig(
-              baseResource =
-                ResourceConfig(
-                  resource = ResourceType.CarePlan,
-                  planDefinitions = planDefinitions,
-                  id = "carePlan1"
-                )
+            ResourceConfig(
+              resource = ResourceType.CarePlan,
+              planDefinitions = planDefinitions,
+              id = "carePlan1"
             )
           )
       )
