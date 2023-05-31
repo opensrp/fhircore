@@ -138,6 +138,8 @@ fun List<Questionnaire.QuestionnaireItemComponent>.find(
 
 const val ITEM_INITIAL_EXPRESSION_URL: String =
   "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
+const val ITEM_POPULATION_CONTEXT_EXPRESSION_URL: String =
+  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemPopulationContext"
 
 /** Pre-Populate Questionnaire items with initial values */
 // TODO: handle interpolation for null values on rules engine and not where the values are used

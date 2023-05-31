@@ -19,6 +19,14 @@
       "url" : "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-launchContext"
     },
     {
+      "url" : "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemPopulationContext",
+      "valueExpression" : {
+        "name" : "previousVaccines",
+        "language" : "application/x-fhir-query",
+        "expression": "Immunization?patient={{%patient.id}}&reason-code=840534001&_sort=date"
+      }
+    },
+    {
       "url": "http://hl7.org/fhir/StructureDefinition/variable",
       "valueExpression": {
         "name": "LAST-VACCINE",
@@ -37,9 +45,9 @@
     {
       "url": "http://hl7.org/fhir/StructureDefinition/variable",
       "valueExpression": {
-        "name": "CURRENT-VACCINE-DOSE",
+        "name": "CURRENT-DOSE",
         "language": "text/fhirpath",
-        "expression": "iif(%LAST-VACCINE.display.contains('Johnson & Johnson'), %resource.descendants().where(linkId='dose_number_selector_list').answer.value.where(code='999'), %resource.descendants().where(linkId='dose_number_selector_list').answer.value.where(code='2'))"
+        "expression": "%resource.descendants().where(linkId='dose_number_selector_list').answer.select( iif(%LAST-VACCINE.display.empty(), value.where(code='1'), iif(%LAST-VACCINE.display.contains('Johnson & Johnson') or %resource.descendants().where(linkId='previous_vaccine').answer.length() >= 2, value.where(code='9999'), value.where(code='2') ) ))"
       }
     }
   ],
@@ -51,24 +59,11 @@
       "linkId": "previous_vaccine",
       "extension": [
         {
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
           "valueExpression": {
-            "expression": "Immunization?patient={{%patient.id}}&reason-code=840534001&_sort=date",
-            "language": "application/x-fhir-query"
+            "expression": "%previousVaccines.select(reasonCode.coding.first())",
+            "language": "text/fhirpath"
           }
-        },
-        {
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
-          "extension": [
-            {
-              "url": "path",
-              "valueString": "vaccineCode.text"
-            },
-            {
-              "url": "forDisplay",
-              "valueBoolean": true
-            }
-          ]
         }
       ]
     },
@@ -127,7 +122,7 @@
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
           "valueExpression": {
-            "expression": "%resource.descendants().where(linkId='previous_vaccine').answer.empty()",
+            "expression": "%resource.descendants().where(linkId='previous_vaccine').answer.empty() or %resource.descendants().where(linkId='dose_number').answer.value.code='9999'",
             "language": "text/fhirpath"
           }
         },
@@ -159,7 +154,7 @@
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
           "valueExpression": {
-            "expression": "iif(%LAST-VACCINE.reference.empty().not(), %LAST-VACCINE-CODE, %resource.item.where(linkId='vaccine_selector').answer.value)"
+            "expression": "iif(%LAST-VACCINE.reference.empty().not() and %CURRENT-DOSE.code != '9999', %LAST-VACCINE-CODE, %resource.item.where(linkId='vaccine_selector').answer.value)"
           }
         }
       ],
@@ -186,12 +181,14 @@
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
           "valueExpression": {
-            "expression": "%CURRENT-VACCINE-DOSE"
+            "language": "text/fhirpath",
+            "expression": "%CURRENT-DOSE"
           }
         }
       ],
       "linkId": "dose_number",
       "required": true,
+      "readOnly": true,
       "text": "Dose Number",
       "type": "choice",
       "answerOption": [

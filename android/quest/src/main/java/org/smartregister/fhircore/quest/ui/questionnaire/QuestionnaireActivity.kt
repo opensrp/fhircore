@@ -36,12 +36,14 @@ import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.search
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Bundle.BundleEntryComponent
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
@@ -61,12 +63,14 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.FieldType
 import org.smartregister.fhircore.engine.util.extension.ITEM_INITIAL_EXPRESSION_URL
+import org.smartregister.fhircore.engine.util.extension.ITEM_POPULATION_CONTEXT_EXPRESSION_URL
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.util.FhirpathConstantResolver
 import timber.log.Timber
 
 /**
@@ -221,8 +225,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           setQuestionnaireResponse(questionnaireResponse.encodeResourceToString())
         }
         questionnaireConfig.resourceIdentifier?.let {
-          setQuestionnaireLaunchContext(
-            questionnaireViewModel.loadPatient(it)!!.encodeResourceToString()
+          setQuestionnaireLaunchContexts(
+            listOf( questionnaireViewModel.loadPatient(it)!!.encodeResourceToString() )
           )
         }
       }
@@ -250,7 +254,17 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  private fun setInitialExpression(questionnaire: Questionnaire) {
+  private suspend fun setInitialExpression(questionnaire: Questionnaire) {
+    // TODO handle hierarchy and scope
+    val itemPopulationContexts = (questionnaire.extension + questionnaire.item.flattened().flatMap { it.extension })
+      .filter { it.url == ITEM_POPULATION_CONTEXT_EXPRESSION_URL && it.castToExpression(it.value).language == "application/x-fhir-query" }
+
+    val populationResources = itemPopulationContexts.map {
+      it.castToExpression(it.value).let {
+        it.name to questionnaireViewModel.defaultRepository.fhirEngine.search(it.expression)
+          .map { BundleEntryComponent().setResource(it) }.let { org.hl7.fhir.r4.model.Bundle().apply { entry = it } }
+      }
+    }.toMap()
     questionnaire.item.flattened().forEach { item ->
       item.extension
         .find {
@@ -258,8 +272,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             it.value.castToExpression(it).language == "text/fhirpath"
         }
         ?.let {
+          fhirPathEngine.hostServices = FhirpathConstantResolver()
           fhirPathEngine.evaluate(
-              null,
+            populationResources,
               getQuestionnaireResponse(),
               null,
               item,

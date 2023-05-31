@@ -31,7 +31,9 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -51,6 +53,7 @@ import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -68,6 +71,7 @@ import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
@@ -103,13 +107,17 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
 
+  private val fhirEngine: FhirEngine = mockk()
+
+  private val defaultRepository: DefaultRepository = DefaultRepository(fhirEngine, dispatcherProvider, mockk(), mockk(), mockk())
+
   private lateinit var questionnaireConfig: QuestionnaireConfig
 
   @BindValue
   val questionnaireViewModel: QuestionnaireViewModel =
     spyk(
       QuestionnaireViewModel(
-        defaultRepository = mockk(),
+        defaultRepository = defaultRepository,
         configurationRegistry = mockk(),
         transformSupportServices = mockk(),
         dispatcherProvider = dispatcherProvider,
@@ -948,9 +956,15 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     // org.hl7.fhir.r4.model.Base
     // 2023-05-26 20:12:47.157 AndroidRuntime          com.google.android.fhir.catalog      E  	at
     // com.google.android.fhir.datacapture.fhirpath.FHIRPathEngineHostServices.resolveConstant(FHIRPathEngineHostServices.kt:29)
-    //
+    // enablewhen does not handle variables
+
     val questionnaire =
-      "covid-19-followup-questionnaire.json".readFile().decodeResourceFromString<Questionnaire>()
+      "covid-19/covid-19-followup-questionnaire.json".readFile().decodeResourceFromString<Questionnaire>()
+    val data =
+      "covid-19/resource_data_bundle.json".readFile().decodeResourceFromString<org.hl7.fhir.r4.model.Bundle>()
+
+    coEvery { fhirEngine.search<Resource>(any<Search>()) } returns data.entry.map { it.resource as Immunization }
+
     buildActivity(questionnaire, questionnaireConfig)
 
     ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
