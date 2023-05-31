@@ -331,7 +331,7 @@ constructor(
   ) {
     questionnaireConfig.eventWorkflows.forEach { eventWorkFlow ->
       eventWorkFlow.eventResources.forEach() { eventResource ->
-        eventResource.planDefinitions?.forEach { planDefinition ->
+        eventResource.baseResource.planDefinitions?.forEach { planDefinition ->
           val carePlans =
             fhirEngine.search<CarePlan> {
               filter(

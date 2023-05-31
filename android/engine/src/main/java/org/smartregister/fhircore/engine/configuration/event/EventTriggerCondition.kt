@@ -23,4 +23,4 @@ data class EventTriggerCondition(
   val eventResourceId: String,
   val matchAll: Boolean? = true,
   val conditionalFhirPathExpression: List<String>? = emptyList()
-)
+) : java.io.Serializable

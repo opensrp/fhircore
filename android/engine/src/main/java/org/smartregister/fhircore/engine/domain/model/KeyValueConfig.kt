@@ -16,6 +16,10 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
-@Serializable data class KeyValueConfig(val key: String, val value: String)
+@Parcelize
+@Serializable
+data class KeyValueConfig(val key: String, val value: String) : Parcelable, java.io.Serializable
