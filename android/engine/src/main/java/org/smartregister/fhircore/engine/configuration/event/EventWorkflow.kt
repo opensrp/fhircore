@@ -17,11 +17,11 @@
 package org.smartregister.fhircore.engine.configuration.event
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 
 @Serializable
 data class EventWorkflow(
   val eventType: EventType = EventType.RESOURCE_CLOSURE,
   val triggerConditions: List<EventTriggerCondition> = emptyList(),
-  val eventResources: List<FhirResourceConfig> = emptyList()
+  val eventResources: List<ResourceConfig> = emptyList()
 ) : java.io.Serializable

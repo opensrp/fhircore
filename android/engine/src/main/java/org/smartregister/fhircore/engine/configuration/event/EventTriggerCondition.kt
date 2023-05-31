@@ -22,5 +22,5 @@ import kotlinx.serialization.Serializable
 data class EventTriggerCondition(
   val eventResourceId: String,
   val matchAll: Boolean? = true,
-  val conditionalFhirPathExpression: List<String>? = emptyList()
+  val conditionalFhirPathExpressions: List<String>? = emptyList()
 ) : java.io.Serializable

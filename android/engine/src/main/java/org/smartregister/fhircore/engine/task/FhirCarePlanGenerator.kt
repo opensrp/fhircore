@@ -333,8 +333,8 @@ constructor(
     questionnaireConfig.eventWorkflows
       .filter { it.eventType == EventType.RESOURCE_CLOSURE }
       .forEach { eventWorkFlow ->
-        eventWorkFlow.eventResources.forEach() { eventResource ->
-          eventResource.baseResource.planDefinitions?.forEach { planDefinition ->
+        eventWorkFlow.eventResources.forEach { eventResource ->
+          eventResource.planDefinitions?.forEach { planDefinition ->
             val carePlans =
               fhirEngine.search<CarePlan> {
                 filter(
@@ -347,14 +347,13 @@ constructor(
             if (carePlans.isEmpty()) return@forEach
 
             val currentResourceTriggerConditions =
-              eventWorkFlow.triggerConditions.firstOrNull {
-                it.eventResourceId == eventResource.baseResource.id
-              }
+              eventWorkFlow.triggerConditions.firstOrNull { it.eventResourceId == eventResource.id }
             val conditionsMet =
               evaluateToBoolean(
                 subject = subject,
                 bundle = bundle,
-                triggerConditions = currentResourceTriggerConditions?.conditionalFhirPathExpression,
+                triggerConditions =
+                  currentResourceTriggerConditions?.conditionalFhirPathExpressions,
                 matchAll = currentResourceTriggerConditions?.matchAll!!
               )
 
