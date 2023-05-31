@@ -22,10 +22,13 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.data.local.AppointmentRegisterFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.RegisterFilter
+import org.smartregister.fhircore.engine.data.local.TracingRegisterFilter
 import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao
 import org.smartregister.fhircore.engine.data.local.register.dao.RegisterDaoFactory
+import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterRepository
@@ -50,7 +53,9 @@ constructor(
     healthModule: HealthModule
   ): List<RegisterData> =
     withContext(dispatcherProvider.io()) {
-      tracer.traceSuspend("AppRegisterRepository.loadRegisterData") {
+      tracer.traceSuspend("${healthModule.name.camelCase()}.loadRegisterData") {
+        if (currentPage != 0) it.putAttribute("Page", "${currentPage + 1}")
+
         registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterData(
           currentPage = currentPage,
           appFeatureName = appFeatureName
@@ -66,7 +71,9 @@ constructor(
     healthModule: HealthModule
   ): List<RegisterData> =
     withContext(dispatcherProvider.io()) {
-      tracer.traceSuspend("AppRegisterRepository.searchByName") {
+      tracer.traceSuspend("${healthModule.name.camelCase()}.searchByName") {
+        if (currentPage != 0) it.putAttribute("Page", "${currentPage + 1}")
+
         registerDaoFactory.registerDaoMap[healthModule]?.searchByName(
           currentPage = currentPage,
           appFeatureName = appFeatureName,
@@ -84,13 +91,31 @@ constructor(
     filters: RegisterFilter
   ): List<RegisterData> {
     return withContext(dispatcherProvider.io()) {
-      registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterFiltered(
-        currentPage,
-        loadAll,
-        appFeatureName,
-        filters
-      )
-        ?: emptyList()
+      tracer.traceSuspend("${healthModule.name.camelCase()}.loadRegisterFiltered") {
+        when (filters) {
+          is AppointmentRegisterFilter -> {
+            it.putAttribute(
+              "SelectedFilters",
+              "${filters.dateOfAppointment}, ${if (filters.myPatients) "Assigned patients" else "All patients"}, ${if (filters.patientCategory?.any() == true) filters.patientCategory.map(HealthStatus::name).joinToString(prefix = "(", postfix = ")") else "All"}, ${filters.reasonCode ?: "All reason codes"}"
+            )
+          }
+          is TracingRegisterFilter -> {
+            it.putAttribute(
+              "SelectedFilters",
+              " ${if (filters.isAssignedToMe) "Assigned patients" else "All patients"}, ${if (filters.patientCategory?.any() == true) filters.patientCategory.map(HealthStatus::name).joinToString(prefix = "(", postfix = ")") else "All"}, ${filters.reasonCode ?: "All reason codes"}, ${filters.age?.name ?: "All Ages"}"
+            )
+          }
+        }
+        if (currentPage != 0) it.putAttribute("Page", "${currentPage + 1}")
+
+        registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterFiltered(
+          currentPage,
+          loadAll,
+          appFeatureName,
+          filters
+        )
+          ?: emptyList()
+      }
     }
   }
 
@@ -100,11 +125,28 @@ constructor(
     filters: RegisterFilter
   ): Long {
     return withContext(dispatcherProvider.io()) {
-      registerDaoFactory.registerDaoMap[healthModule]?.countRegisterFiltered(
-        appFeatureName,
-        filters
-      )
-        ?: 0
+      tracer.traceSuspend("${healthModule.name.camelCase()}.countRegisterFiltered") {
+        when (filters) {
+          is AppointmentRegisterFilter -> {
+            it.putAttribute(
+              "SelectedFilters",
+              "${filters.dateOfAppointment}, ${if (filters.myPatients) "Assigned patients" else "All patients"}, ${if (filters.patientCategory?.any() == true) filters.patientCategory.map(HealthStatus::name).joinToString(prefix = "(", postfix = ")") else "All"}, ${filters.reasonCode ?: "All reason codes"}"
+            )
+          }
+          is TracingRegisterFilter -> {
+            it.putAttribute(
+              "SelectedFilters",
+              " ${if (filters.isAssignedToMe) "Assigned patients" else "All patients"}, ${if (filters.patientCategory?.any() == true) filters.patientCategory.map(HealthStatus::name).joinToString(prefix = "(", postfix = ")") else "All"}, ${filters.reasonCode ?: "All reason codes"}, ${filters.age?.name ?: "All Ages"}"
+            )
+          }
+        }
+
+        registerDaoFactory.registerDaoMap[healthModule]?.countRegisterFiltered(
+          appFeatureName,
+          filters
+        )
+          ?: 0
+      }
     }
   }
 
@@ -113,7 +155,7 @@ constructor(
     healthModule: HealthModule
   ): Long =
     withContext(dispatcherProvider.io()) {
-      tracer.traceSuspend("AppRegisterRepository.countRegisterData") {
+      tracer.traceSuspend("${healthModule.name.camelCase()}.countRegisterData") {
         registerDaoFactory.registerDaoMap[healthModule]?.countRegisterData(appFeatureName) ?: 0
       }
     }
@@ -124,7 +166,7 @@ constructor(
     patientId: String
   ): ProfileData? =
     withContext(dispatcherProvider.io()) {
-      tracer.traceSuspend("AppRegisterRepository.loadPatientProfileData") {
+      tracer.traceSuspend("${healthModule.name.camelCase()}.loadPatientProfileData") {
         registerDaoFactory.registerDaoMap[healthModule]?.loadProfileData(
           appFeatureName = appFeatureName,
           resourceId = patientId
@@ -137,7 +179,7 @@ constructor(
     otherPatientResource: List<Resource>
   ): List<RegisterData> =
     withContext(dispatcherProvider.io()) {
-      tracer.traceSuspend("AppRegisterRepository.loadChildrenRegisterData") {
+      tracer.traceSuspend("${healthModule.name.camelCase()}}.loadChildrenRegisterData") {
         val dataList: ArrayList<Patient> = arrayListOf()
         val hivRegisterDao = registerDaoFactory.registerDaoMap[healthModule] as HivRegisterDao
 
@@ -147,5 +189,14 @@ constructor(
         }
         hivRegisterDao.transformChildrenPatientToRegisterData(dataList)
       }
+    }
+
+  private fun String.camelCase() =
+    this.let {
+      val u = indexOf('_')
+      val newString = lowercase().replaceFirstChar { it.uppercase() }
+      return@let if (u != -1)
+        newString.replaceRange(u until u + 2, this.elementAt(u + 1).uppercase())
+      else newString
     }
 }

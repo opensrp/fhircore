@@ -34,7 +34,7 @@ constructor(
   val phoneTracingRegisterDao: PhoneTracingRegisterDao
 ) {
 
-  val registerDaoMap: MutableMap<HealthModule, RegisterDao> by lazy {
+  val registerDaoMap: Map<HealthModule, RegisterDao> by lazy {
     mutableMapOf(
       Pair(HealthModule.ANC, ancPatientRegisterDao),
       Pair(HealthModule.FAMILY, familyRegisterDao),
