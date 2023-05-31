@@ -39,7 +39,7 @@ Release notes can be viewed in the [changelog](https://github.com/opensrp/fhirco
 To conduct a code release follow the below steps:
 
 1. Open and merge a PR to update the project version to the current release version
-    * e.g. change the `versionName` in the Quest [build.gradle](https://github.com/opensrp/fhircore/blob/main/android/opensrp/build.gradle#L28) file to `v0.2.0`
+    * e.g. change the `versionName` in the `opensrp` module [build.gradle](https://github.com/opensrp/fhircore/blob/main/android/opensrp/build.gradle#L28) file to `v0.2.0`
 1. Code freeze: create a branch for the code release version as well as the first code release candidate (labeled RC1).
     * For example, for code release version `v0.2.0`, create a branch `opensrp-0.2.0`, a pre-release `opensrp-0.2.0-rc1`, and a tag `opensrp-0.2.0-rc1`
 1. Candidate progression: This is followed by 1-2 weeks of QA and error fixing
@@ -92,13 +92,13 @@ The configuration requires the tag to have the following parts/sections in order
 * Followed by the _version_ in the format `[0-9]+.[0-9]+.[0-9]+[0-9a-zA-Z.-]+`
 * Followed by an optional _suffix_ depending on the release e.g. `-alpha`, `-rc`, `-beta` e.t.c
 
-The following are all valid tags that will trigger the generation of the Quest release APK
+The following are all valid tags that will trigger the generation of the OpenSRP release APK
 > - opensrp-1.2.0
 > - opensrp-1.2.0-alpha
 > - opensrp-1.2.0-beta
 > - opensrp-1.2.0-rc1
 
-**Note:** When creating a tag for the _Quest OpenSRP Version 1.2.0 RC 5 release variant_, use the command:
+**Note:** When creating a tag for the _OpenSRP Version 1.2.0 RC 5 release variant_, use the command:
 
 ```
 git tag -a opensrp-1.2.0-rc5 -s && git push origin opensrp-1.2.0-rc5

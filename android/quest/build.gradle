@@ -146,9 +146,8 @@ android {
     flavorDimensions "apps"
 
     productFlavors {
-        quest {
+        opensrp {
             dimension "apps"
-            applicationIdSuffix ".quest"
             getIsDefault().set(true)
         }
 
