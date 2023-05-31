@@ -53,6 +53,7 @@ import org.hl7.fhir.r4.model.Timing.UnitsOfTime
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.event.EventType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.addResourceParameter
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -329,53 +330,55 @@ constructor(
     subject: Resource,
     bundle: Bundle
   ) {
-    questionnaireConfig.eventWorkflows.forEach { eventWorkFlow ->
-      eventWorkFlow.eventResources.forEach() { eventResource ->
-        eventResource.baseResource.planDefinitions?.forEach { planDefinition ->
-          val carePlans =
-            fhirEngine.search<CarePlan> {
-              filter(
-                CarePlan.INSTANTIATES_CANONICAL,
-                { value = "${PlanDefinition().fhirType()}/$planDefinition" }
-              )
-              filter(CarePlan.SUBJECT, { value = subject.referenceValue() })
-            }
+    questionnaireConfig.eventWorkflows
+      .filter { it.eventType == EventType.RESOURCE_CLOSURE }
+      .forEach { eventWorkFlow ->
+        eventWorkFlow.eventResources.forEach() { eventResource ->
+          eventResource.baseResource.planDefinitions?.forEach { planDefinition ->
+            val carePlans =
+              fhirEngine.search<CarePlan> {
+                filter(
+                  CarePlan.INSTANTIATES_CANONICAL,
+                  { value = "${PlanDefinition().fhirType()}/$planDefinition" }
+                )
+                filter(CarePlan.SUBJECT, { value = subject.referenceValue() })
+              }
 
-          if (carePlans.isEmpty()) return@forEach
+            if (carePlans.isEmpty()) return@forEach
 
-          questionnaireConfig.eventWorkflows.forEach { eventWorkflow ->
-            val conditionsMet =
-              evaluateToBoolean(
-                subject = subject,
-                bundle = bundle,
-                triggerConditions =
-                  eventWorkflow.triggerConditions[0].conditionalFhirPathExpression,
-                matchAll = eventWorkflow.triggerConditions[0].matchAll!!
-              )
-            if (conditionsMet) {
-              carePlans.forEach { carePlan ->
-                carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-                fhirEngine.update(carePlan)
+            questionnaireConfig.eventWorkflows.forEach { eventWorkflow ->
+              val conditionsMet =
+                evaluateToBoolean(
+                  subject = subject,
+                  bundle = bundle,
+                  triggerConditions =
+                    eventWorkflow.triggerConditions[0].conditionalFhirPathExpression,
+                  matchAll = eventWorkflow.triggerConditions[0].matchAll!!
+                )
+              if (conditionsMet) {
+                carePlans.forEach { carePlan ->
+                  carePlan.status = CarePlan.CarePlanStatus.COMPLETED
+                  fhirEngine.update(carePlan)
 
-                carePlan
-                  .activity
-                  .flatMap { it.outcomeReference }
-                  .filter { it.reference.startsWith(ResourceType.Task.name) }
-                  .mapNotNull { getTask(it.extractId()) }
-                  .forEach { task ->
-                    if (task.status != TaskStatus.COMPLETED) {
-                      cancelTaskByTaskId(
-                        task.logicalId,
-                        "${carePlan.fhirType()} ${carePlan.status}"
-                      )
+                  carePlan
+                    .activity
+                    .flatMap { it.outcomeReference }
+                    .filter { it.reference.startsWith(ResourceType.Task.name) }
+                    .mapNotNull { getTask(it.extractId()) }
+                    .forEach { task ->
+                      if (task.status != TaskStatus.COMPLETED) {
+                        cancelTaskByTaskId(
+                          task.logicalId,
+                          "${carePlan.fhirType()} ${carePlan.status}"
+                        )
+                      }
                     }
-                  }
+                }
               }
             }
           }
         }
       }
-    }
   }
 
   fun evaluateToBoolean(

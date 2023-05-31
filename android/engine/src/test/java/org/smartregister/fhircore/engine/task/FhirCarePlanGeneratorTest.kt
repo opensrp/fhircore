@@ -87,6 +87,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.event.EventTriggerCondition
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.REFERENCE
@@ -1518,7 +1519,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           ),
         eventResources =
           listOf(
-            ResourceConfig(resource = ResourceType.CarePlan, planDefinitions = planDefinitions)
+            FhirResourceConfig(
+              baseResource =
+                ResourceConfig(resource = ResourceType.CarePlan, planDefinitions = planDefinitions)
+            )
           )
       )
     val questionnaireConfig: QuestionnaireConfig =
@@ -1641,7 +1645,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           ),
         eventResources =
           listOf(
-            ResourceConfig(resource = ResourceType.CarePlan, planDefinitions = planDefinitions)
+            FhirResourceConfig(
+              baseResource =
+                ResourceConfig(resource = ResourceType.CarePlan, planDefinitions = planDefinitions)
+            )
           )
       )
     val questionnaireConfig: QuestionnaireConfig =
@@ -1718,7 +1725,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           ),
         eventResources =
           listOf(
-            ResourceConfig(resource = ResourceType.CarePlan, planDefinitions = planDefinitions)
+            FhirResourceConfig(
+              baseResource =
+                ResourceConfig(resource = ResourceType.CarePlan, planDefinitions = planDefinitions)
+            )
           )
       )
     val questionnaireConfig =
