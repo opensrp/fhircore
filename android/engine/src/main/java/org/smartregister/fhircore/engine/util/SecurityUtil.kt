@@ -45,3 +45,18 @@ fun Int.getRandomBytesOfSize(): ByteArray {
 }
 
 fun clearPasswordInMemory(charArray: CharArray) = Arrays.fill(charArray, '*')
+
+fun CharArray.safePlus(element: Char): CharArray {
+  val index = size
+  val result = this.copyOf(index + 1)
+  result[index] = element
+  clearPasswordInMemory(this)
+  return result
+}
+
+fun CharArray.safeRemoveLast(): CharArray {
+  val index = size
+  val result = this.copyOf(index - 1)
+  clearPasswordInMemory(this)
+  return result
+}
