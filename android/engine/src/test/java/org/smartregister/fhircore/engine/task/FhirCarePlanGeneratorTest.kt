@@ -79,10 +79,12 @@ import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.junit.Assert
+import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.event.EventTriggerCondition
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
@@ -2093,6 +2095,92 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       dependentTask.executionPeriod.start
     )
     coVerify { defaultRepository.addOrUpdate(addMandatoryTags = true, dependentTask) }
+  }
+
+  @Test
+  fun testEvaluateToBooleanReturnsTrueWhenAllConditionsAreMetIfMatchAllIsSetToTrue() {
+    val conditionalFhirPathExpression = listOf("Patient.active", "Patient.id = 'patient-1'")
+    val patient = Faker.buildPatient()
+    patient.apply {
+      id = "patient-1"
+      active = true
+    }
+    val bundle = Bundle().apply { addEntry().resource = patient }
+
+    val conditionsMet =
+      fhirCarePlanGenerator.evaluateToBoolean(
+        subject = patient,
+        bundle = bundle,
+        triggerConditions = conditionalFhirPathExpression,
+        matchAll = true
+      )
+
+    assertTrue(conditionsMet)
+  }
+
+  @Test
+  fun testEvaluateToBooleanReturnsFalseWhenSomeConditionsAreNotMetIfMatchAllIsSetToTrue() {
+    val conditionalFhirPathExpression =
+      listOf("Patient.active", "Patient.id = 'another-patient-id'")
+    val patient = Faker.buildPatient()
+    patient.apply {
+      id = "patient-1"
+      active = true
+    }
+    val bundle = Bundle().apply { addEntry().resource = patient }
+
+    val conditionsMet =
+      fhirCarePlanGenerator.evaluateToBoolean(
+        subject = patient,
+        bundle = bundle,
+        triggerConditions = conditionalFhirPathExpression,
+        matchAll = true
+      )
+
+    assertFalse(conditionsMet)
+  }
+  @Test
+  fun testEvaluateToBooleanReturnsTrueWhenSomeConditionsAreNotMetIfMatchAllIsSetToFalse() {
+    val conditionalFhirPathExpression =
+      listOf("Patient.active", "Patient.id = 'another-patient-id'")
+    val patient = Faker.buildPatient()
+    patient.apply {
+      id = "patient-1"
+      active = true
+    }
+    val bundle = Bundle().apply { addEntry().resource = patient }
+
+    val conditionsMet =
+      fhirCarePlanGenerator.evaluateToBoolean(
+        subject = patient,
+        bundle = bundle,
+        triggerConditions = conditionalFhirPathExpression,
+        matchAll = false
+      )
+
+    assertTrue(conditionsMet)
+  }
+
+  @Test
+  fun testEvaluateToBooleanReturnsFalseWhenNoneOfTheConditionsAreNotMetIfMatchAllIsSetToFalse() {
+    val conditionalFhirPathExpression =
+      listOf("Patient.active = 'false'", "Patient.id = 'another-patient-id'")
+    val patient = Faker.buildPatient()
+    patient.apply {
+      id = "patient-1"
+      active = true
+    }
+    val bundle = Bundle().apply { addEntry().resource = patient }
+
+    val conditionsMet =
+      fhirCarePlanGenerator.evaluateToBoolean(
+        subject = patient,
+        bundle = bundle,
+        triggerConditions = conditionalFhirPathExpression,
+        matchAll = false
+      )
+
+    assertFalse(conditionsMet)
   }
 }
 
