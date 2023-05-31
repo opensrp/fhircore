@@ -6,8 +6,8 @@ name: OpenSRP APK Release
 on:
   push:
     tags:
-      - opensrp-[0-9]+.[0-9]+.[0-9]+
-      - opensrp-[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+
+      - v[0-9]+.[0-9]+.[0-9]+-opensrp
+      - v[0-9]+.[0-9]+.[0-9]+-opensrp-[0-9a-zA-Z]+
 env:
  FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
  FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
@@ -25,9 +25,9 @@ jobs:
       - id: product-flavor
         name: Generate Product Flavor identifier
         run: |
-          id=$(echo ${{ github.ref }} | cut -d- -f1)
+          id=$(echo ${{ github.ref }} | cut -d- -f2)
           echo "::set-output name=id::$id"
-          idCapitalized=$(echo ${{ github.ref }} | cut -d- -f1 | sed 's/.*/\u&/')
+          idCapitalized=$(echo ${{ github.ref }} | cut -d- -f2 | sed 's/.*/\u&/')
           echo "::set-output name=idCapitalized::$idCapitalized"
           
       - name: Decode & Generate Keystore file

@@ -41,12 +41,12 @@ To conduct a code release follow the below steps:
 1. Open and merge a PR to update the project version to the current release version
     * e.g. change the `versionName` in the `opensrp` module [build.gradle](https://github.com/opensrp/fhircore/blob/main/android/opensrp/build.gradle#L28) file to `v0.2.0`
 1. Code freeze: create a branch for the code release version as well as the first code release candidate (labeled RC1).
-    * For example, for code release version `v0.2.0`, create a branch `opensrp-0.2.0`, a pre-release `opensrp-0.2.0-rc1`, and a tag `opensrp-0.2.0-rc1`
+    * For example, for code release version `v0.2.0`, create a branch `opensrp-0.2.0`, a pre-release `opensrp-0.2.0-rc1`, and a tag `v0.2.0-opensrp-rc1`
 1. Candidate progression: This is followed by 1-2 weeks of QA and error fixing
     * Whenever we find an error in the candidate, open a pull request with a fix for the error against the code release branch (e.g.  `v0.2.0`)
-    * Once the error is fixed and merged into the code release branch (multiple errors can be batched), create a new tag, e.g. `opensrp-0.2.0-rc2`, the update the pre-release to point to this tag and reflect the RC2 name.
+    * Once the error is fixed and merged into the code release branch (multiple errors can be batched), create a new tag, e.g. `v0.2.0-opensrp-rc2`, the update the pre-release to point to this tag and reflect the RC2 name.
     > You must also either a) open a PR with the same fix against the `main` branch, b) open a PR from the release branch into the `main` branch after merging the fix into the release branch.
-1. Repeat step (2.) until QA passes, e.g. with more tags, e.g. `opensrp-0.2.0-rc3` ..., and updated pre-releases.
+1. Repeat step (2.) until QA passes, e.g. with more tags, e.g. `v0.2.0-opensrp-rc3` ..., and updated pre-releases.
 1. Final code release: when the release passes QA, create a final release tag `v0.2.0` and update the release to point to this tag and reflect the `opensrp-0.2.0` name.
 
 ## APK releases
@@ -88,20 +88,21 @@ Where the app icon is an image of the appropriate size and the app name is an XM
 As part of integrating Continuous Delivery(CD) into the development lifecycle, CI is set up to generate an APK.
 
 The configuration requires the tag to have the following parts/sections in order:
-* The prefix `opensrp-`
+* The prefix `v`
 * Followed by the _version_ in the format `[0-9]+.[0-9]+.[0-9]+[0-9a-zA-Z.-]+`
+* Followed by the product name: `-opensrp`
 * Followed by an optional _suffix_ depending on the release e.g. `-alpha`, `-rc`, `-beta` e.t.c
 
 The following are all valid tags that will trigger the generation of the OpenSRP release APK
-> - opensrp-1.2.0
-> - opensrp-1.2.0-alpha
-> - opensrp-1.2.0-beta
-> - opensrp-1.2.0-rc1
+> - v1.2.0-opensrp
+> - v1.2.0-opensrp-alpha
+> - v1.2.0-opensrp-beta
+> - v1.2.0-opensrp-rc1
 
 **Note:** When creating a tag for the _OpenSRP Version 1.2.0 RC 5 release variant_, use the command:
 
 ```
-git tag -a opensrp-1.2.0-rc5 -s && git push origin opensrp-1.2.0-rc5
+git tag -a v1.2.0-opensrp-rc5 -s && git push origin v1.2.0-opensrp-rc5
 ```
 
 When you run the command, you will be prompted to _add a message_. The message should be of the format:
@@ -115,8 +116,8 @@ When you run the command, you will be prompted to _add a message_. The message s
 ### Deleting a tag
 Sometimes you may want to delete a tag, e.g. if you push an incorrect tag, need to update the tag message etc.
 
-For example, to delete the opensrp-1.2.0-rc1 tag run the command:
+For example, to delete the v1.2.0-opensrp-rc1 tag run the command:
 
 ```
-git push --delete origin opensrp-1.2.0-rc1 && git tag --delete opensrp-1.2.0-rc1
+git push --delete origin v1.2.0-opensrp-rc1 && git tag --delete v1.2.0-opensrp-rc1
 ```
