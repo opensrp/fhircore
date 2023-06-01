@@ -629,6 +629,16 @@
                 }
               }
             ],
+            "enableWhen": [
+              {
+                "question": "cb050fda-0616-4ee4-8a33-4e1d6bfda3ba",
+                "operator": "=",
+                "answerCoding": {
+                  "system": "urn:uuid:571417c5-dae8-48b3-8b52-dafdbc76fac1",
+                  "code": "yes"
+                }
+              }
+            ],
             "extension": [
               {
                 "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",

@@ -51,6 +51,9 @@ enum class ViewType {
   /** View component used to render a space between views */
   @JsonNames("spacer", "Spacer") SPACER,
 
+  /** View component used to render a image */
+  @JsonNames("image_view", "ImageView") IMAGE_VIEW,
+
   /** A type of view component used to render items in a list */
   @JsonNames("list", "List") LIST,
 }

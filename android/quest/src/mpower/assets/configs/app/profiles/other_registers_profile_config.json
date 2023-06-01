@@ -134,11 +134,33 @@
       ]
     },
     {
+      "name": "pregnancyOutcomeDateCompleted",
+      "condition": "true",
+      "actions": [
+        "data.put('pregnancyOutcomeDateCompleted', fhirPath.extractValue(service.filterResources(Condition, 'Condition.code.coding.code=\"234234234\"').get(0), \"Condition.onset <= (today() - 45 'days')\"))"
+      ]
+    },
+    {
+      "name": "isActivePnc",
+      "condition": "true",
+      "actions": [
+        "data.put('isActivePnc', service.evaluateToBoolean(Condition, \"Condition.code.text = 'PNC' \", false))"
+      ]
+    },
+    {
       "name": "canRegisterPregnancy",
       "condition": "true",
       "priority": 2,
       "actions": [
-        "data.put('canRegisterPregnancy', data.get('canBearChild') && !data.get('isPregnant'))"
+        "data.put('canRegisterPregnancy', data.get('canBearChild') && (!data.get('isPregnant') || !data.get('isActivePnc') || data.get('pregnancyOutcomeDateCompleted')))"
+      ]
+    },
+    {
+      "name": "canOutcomePregnancy",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('canOutcomePregnancy', data.get('isPregnant') && !data.get('isActivePnc'))"
       ]
     },
     {
@@ -583,7 +605,7 @@
     {
       "title": "Pregnancy Outcome",
       "titleColor": "@{patientTextColor}",
-      "visible": "@{isPregnant}",
+      "visible": "@{canOutcomePregnancy}",
       "enabled": "@{patientActive}",
       "actions": [
         {

@@ -87,13 +87,6 @@
           {
             "url": "http://hl7.org/fhir/StructureDefinition/minValue",
             "valueInteger": 1
-          },
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-            "valueExpression": {
-              "language": "text/fhirpath",
-              "expression": "Patient.identifier.value[0].toInteger()"
-            }
           }
         ],
         "linkId": "ed77104e-c279-4030-ab20-8cd99ca99ca9",
