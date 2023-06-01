@@ -927,12 +927,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     // anc registered late so skip the tasks which passed due date
 
     // NOTE : UCUM days per month as used by FHIR Standard are 30
-    // Invoking this twice to work around February edge case
     // TO DO : Implement Permanent fix for test class - Tracked under
     // https://github.com/opensrp/fhircore/issues/2402
 
-    var lmp = fhirCarePlanGenerator.evaluateToDate(DateTimeType(Date()), "\$this - 3 'month'")
-    lmp = fhirCarePlanGenerator.evaluateToDate(lmp, "\$this - 1 'month'")
+    val lmp = DateType(Date()).apply { add(Calendar.MONTH, -4) }
 
     questionnaireResponses.first().find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first()
       .value = lmp

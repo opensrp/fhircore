@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/registerFragment">
+
+    <include app:graph="@navigation/geowidget_nav_graph" />
+
+    <fragment
+        android:id="@+id/geoWidgetFragment"
+        android:name="org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment">
+
+        <action
+            android:id="@+id/action_fragment_to_second_graph"
+            app:destination="@id/geo_widget_nav_graph" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="org.smartregister.fhircore.opensrp.ui.register.RegisterFragment">
+        <argument
+            android:name="screenTitle"
+            android:defaultValue=""
+            app:argType="string"
+            app:nullable="false" />
+        <argument
+            android:name="registerId"
+            android:defaultValue=""
+            app:argType="string"
+            app:nullable="false" />
+        <argument
+            android:name="toolBarHomeNavigation"
+            android:defaultValue="OPEN_DRAWER"
+            app:argType="org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation"
+            app:nullable="false" />
+        <argument
+            android:name="params"
+            android:defaultValue="@null"
+            app:argType="org.smartregister.fhircore.engine.domain.model.ActionParameter[]"
+            app:nullable="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="org.smartregister.fhircore.opensrp.ui.profile.ProfileFragment">
+        <argument
+            android:name="profileId"
+            android:defaultValue=""
+            app:argType="string"
+            app:nullable="false" />
+        <argument
+            android:name="resourceId"
+            android:defaultValue=""
+            app:argType="string"
+            app:nullable="false" />
+        <argument
+            android:name="params"
+            app:argType="org.smartregister.fhircore.engine.domain.model.ActionParameter[]"
+            app:nullable="true" />
+        <argument
+            android:name="resourceConfig"
+            app:argType="org.smartregister.fhircore.engine.domain.model.FhirResourceConfig"
+            app:nullable="true" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/userSettingFragment"
+        android:name="org.smartregister.fhircore.opensrp.ui.usersetting.UserSettingFragment" />
+
+    <fragment
+        android:id="@+id/measureReportFragment"
+        android:name="org.smartregister.fhircore.opensrp.ui.report.measure.MeasureReportFragment">
+        <argument
+            android:name="reportId"
+            android:defaultValue=""
+            app:argType="string"
+            app:nullable="false" />
+    </fragment>
+</navigation>

@@ -159,7 +159,7 @@ jobs:
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F geowidget -f "geowidget/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
 
-  quest-tests:
+  opensrp-tests:
     runs-on: macos-latest
     strategy:
       matrix:
@@ -185,8 +185,8 @@ jobs:
       - name: Setup Gradle cache
         uses: gradle/gradle-build-action@v2
  
-      - name: Spotless check quest application
-        run: ./gradlew :quest:spotlessCheck
+      - name: Spotless check opensrp application
+        run: ./gradlew :opensrp:spotlessCheck
         working-directory: android 
       
       - name: Load AVD cache
@@ -219,9 +219,9 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew :quest:clean && ./gradlew :quest:fhircoreJacocoReport --stacktrace
+          script: ./gradlew :opensrp:clean && ./gradlew :opensrp:fhircoreJacocoReport --stacktrace
 
       - name: Upload Quest module test coverage report to Codecov
         if: matrix.api-level == 30 # Only upload coverage on API level 30
         working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
+        run:  bash <(curl -s https://codecov.io/bash) -F opensrp -f "opensrp/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"

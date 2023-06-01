@@ -63,7 +63,7 @@ jobs:
 
     #  - name: Generate AAB (Android App Bundle) file
     #    if: ${{ false }}
-    #    run: ./gradlew :quest:bundle${{steps.product-flavor.outputs.idCapitalized}} -x :quest:test${{steps.product-flavor.outputs.idCapitalized}}DebugUnitTest --stacktrace
+    #    run: ./gradlew :opensrp:bundle${{steps.product-flavor.outputs.idCapitalized}} -x :opensrp:test${{steps.product-flavor.outputs.idCapitalized}}DebugUnitTest --stacktrace
     #    working-directory: android
         
     #  - name: Upload AAB file to tag assets
@@ -71,21 +71,21 @@ jobs:
     #    uses: svenstaro/upload-release-action@v2
     #    with:
     #      repo_token: ${{ secrets.GITHUB_TOKEN }}
-    #      file: android/quest/build/outputs/bundle/${{steps.product-flavor.outputs.id}}/release/quest-${{steps.product-flavor.outputs.id}}-release.aab
+    #      file: android/opensrp/build/outputs/bundle/${{steps.product-flavor.outputs.id}}/release/opensrp-${{steps.product-flavor.outputs.id}}-release.aab
     #      asset_name: "$tag.aab"
     #      tag: ${{ github.ref }}
     #      overwrite: true
       
       - name: Generate APK (Android App PacKage) file
-        run: ./gradlew :quest:assemble${{steps.product-flavor.outputs.idCapitalized}} -x :quest:test${{steps.product-flavor.outputs.idCapitalized}}DebugUnitTest --stacktrace
+        run: ./gradlew :opensrp:assemble${{steps.product-flavor.outputs.idCapitalized}} -x :opensrp:test${{steps.product-flavor.outputs.idCapitalized}}DebugUnitTest --stacktrace
         working-directory: android
         
       - name: Upload APK file to tag assets
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: android/quest/build/outputs/apk/${{steps.product-flavor.outputs.id}}/release/quest-${{steps.product-flavor.outputs.id}}-release.apk
+          file: android/opensrp/build/outputs/apk/${{steps.product-flavor.outputs.id}}/release/opensrp-${{steps.product-flavor.outputs.id}}-release.apk
           asset_name: "$tag.apk"
           tag: ${{ github.ref }}
-          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
+          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') || contains(github.ref, '-rc') }}
           overwrite: true

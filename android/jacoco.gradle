@@ -1,8 +1,8 @@
-def module = project.name == "quest" ? "Opensrp" : ""
+def isApplication = plugins.hasPlugin("com.android.application")
 
 task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
-        "test${module}DebugUnitTest",
-        "connected${module}DebugAndroidTest"
+        "test${isApplication ? project.name.capitalize() : ""}DebugUnitTest",
+        "connected${isApplication ? project.name.capitalize() : ""}DebugAndroidTest"
 ]) {
 
     reports {
@@ -79,7 +79,7 @@ task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
 
     ]
 
-    def moduleVariant = project.name == "quest" ? "questDebug" : "debug"
+    def moduleVariant = isApplication ? "${project.name}Debug" : "debug"
     def javaDebugTree = fileTree(dir: "$project.buildDir/intermediates/javac/${moduleVariant}/classes/", excludes: excludes)
     def kotlinDebugTree = fileTree(dir: "${project.buildDir}/tmp/kotlin-classes/${moduleVariant}", excludes: excludes)
     def mainSrc = "$project.projectDir/src/main/java"
@@ -90,7 +90,7 @@ task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
 
     executionData.setFrom(
             fileTree(dir: project.buildDir, includes: [
-                    "outputs/unit_test_code_coverage/${moduleVariant}UnitTest/test${module}DebugUnitTest.exec",
+                    "outputs/unit_test_code_coverage/${moduleVariant}UnitTest/test${isApplication ? project.name.capitalize() : ""}DebugUnitTest.exec",
                     "outputs/code_coverage/${moduleVariant}AndroidTest/connected/**/*.ec"
             ])
     )
