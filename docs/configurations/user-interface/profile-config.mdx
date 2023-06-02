@@ -10,9 +10,48 @@ These configurations are used to control the content of the profile screen as we
 For every register in the application there should at least be one profile configuration. Similar registers can re-use the same profile configuration.
 :::
 
-## Sample JSON
+### Working with dynamic data queries
+Assume you would like to filter resource data based on a criteria that needs computation before application. e.g show patients who are under 5 years or over 18 below, then this is the config to use.
+Before you use this rule on a dataQuery, you need  to execute it first. The rules are executed within a `configRules` block which follows rules engine standard and default priority of 1 which can be change based on requirement.
+Below is a JSON config that shows how to execute rules.Refer to working with rules section.
+``` json
+{
+ "appId": "appId",
+  "configType": "register",
+  "id": "childRegister",
+  "configRules": [
+    {
+      "name": "under5",
+      "condition": "true",
+      "actions": [
+        "data.put('under5', dateService.addOrSubtractYearFromCurrentDate(5,'-'))"
+      ]
+    }
+  ]
+}
+```
 
-{}
+Below is a sample dataQuery config to filter register data by configRules
+
+``` json
+"fhirResource": {
+    "baseResource": {
+      "resource": "Patient",
+      "dataQueries": [
+        {
+          "paramName": "birthdate",
+          "filterCriteria": [
+            {
+              "dataType": "DATE",
+              "computedRule": "under5",
+              "prefix": "GREATERTHAN_OR_EQUALS"
+            }
+          ]
+        }
+      ]
+    }
+    }
+```
 
 ## Config properties
 
@@ -20,6 +59,13 @@ For every register in the application there should at least be one profile confi
 |--|--|:--:|:--:|
 appId | Unique identifier for the application | Yes | |
 configType | Type of configuration | Yes |  `profile` |
+computedRules | A block that defines the rules to execute | no |  null |
+baseResource | base resource to load data from | Yes | |
+paramName | dataQuery unique identifier | Yes |   |
+filterCriteria | a list of logic to be executed | Yes | |
+filterCriteria: dataType | dataType of the filter param | Yes |   |
+filterCriteria: computedRule | key that will hold dynamic value after computation | No but recommended |  app defaults to using value/valueDate/valueDateTime |
+filterCriteria: prefix | criteria to use  | No | null  |
 
 
 ## Dynamic data pass between Profiles and registers
