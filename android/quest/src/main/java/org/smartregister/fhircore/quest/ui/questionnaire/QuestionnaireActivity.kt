@@ -27,14 +27,20 @@ import android.widget.Button
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
+import androidx.lifecycle.withStateAtLeast
 import ca.uhn.fhir.parser.IParser
+import ca.uhn.fhir.util.ReflectionUtil
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.extensions.flattened
+import com.google.android.fhir.datacapture.fhirpath.ExpressionEvaluator
 import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.search
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Date
 import java.util.UUID
@@ -43,7 +49,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.Questionnaire.QuestionnaireItemInitialComponent
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
@@ -58,14 +66,21 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.callFunction
+import org.smartregister.fhircore.engine.util.callSuspendFunctionOnField
 import org.smartregister.fhircore.engine.util.extension.FieldType
+import org.smartregister.fhircore.engine.util.extension.choiceColumn
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
+import org.smartregister.fhircore.engine.util.extension.initialExpression
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
+import kotlin.reflect.full.declaredMemberFunctions
+import kotlin.reflect.jvm.isAccessible
 
 /**
  * Launches Questionnaire/ Implement a subclass of this [QuestionnaireActivity] to provide
@@ -229,9 +244,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             )
           )
         }
-        setInitialExpression(questionnaire, launchContexts.map { it.resourceType.name.lowercase() to it }.toMap())
       }
     fragment = fragmentBuilder.build()
+    fragment.lifecycleScope.launchWhenCreated {
+      // setInitialExpression(questionnaire)
+    }
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
     supportFragmentManager.setFragmentResultListener(
       QuestionnaireFragment.SUBMIT_REQUEST_KEY,
@@ -255,30 +272,21 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  private suspend fun setInitialExpression(questionnaire: Questionnaire, launchContexts: Map<String, Resource>) {
+  private suspend fun setInitialExpression(questionnaire: Questionnaire) {
     // TODO handle hierarchy and scope
     // Immunization?code=1234
     // %immunization.reference/code
     questionnaire.item.flattened().forEach { item ->
-      item.extension
-        .find {
-          it.url == ITEM_INITIAL_EXPRESSION_URL &&
-            it.castToExpression(it.value).language == "application/x-fhir-query"
-        }?.let { it.castToExpression(it.value) }
-        ?.let {
-          questionnaireViewModel.defaultRepository.fhirEngine.search(it.expression.replace("{{", "").replace("}}", ""))
+      item.initialExpression?.takeIf { it.language == "application/x-fhir-query" }
+        ?.let {expression->
+          // val resolvedExpression: String = ExpressionEvaluator::class
+            //.callFunction("createXFhirQueryFromExpression", expression, launchContexts) as String
+          val answerOptions: List<QuestionnaireItemInitialComponent> = QuestionnaireFragment::class
+            .callSuspendFunctionOnField(fragment, "viewModel", "loadAnswerExpressionOptions", item, expression) as List<QuestionnaireItemInitialComponent>
+          answerOptions
         }
         ?.let {
-          it.map { resource ->
-            Reference().apply {
-              reference = resource.referenceValue()
-              item.choiceColumn
-                ?.filter { it.forDisplay }
-                ?.map { it.path }
-                ?.let { it.joinToString(" ") { fhirPathEngine.evaluateToString(resource, it) } }
-                ?.also { display = it }
-            }
-          }
+          it
             .let {
               item.initial =
                 it.map {

@@ -1149,7 +1149,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
               val task = tasks.find { it.description.startsWith(vaccine.key) }
               assertNotNull(task)
-              assertTrue(task!!.executionPeriod.start.asYyyyMmDd() == vaccine.value.asYyyyMmDd())
+              assertEquals(task!!.executionPeriod.start.asYyyyMmDd(), vaccine.value.asYyyyMmDd())
             }
           }
       }
@@ -1336,8 +1336,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
                 "MEASLES 2" to patient.birthDate.plusMonths(15),
                 "YELLOW FEVER" to patient.birthDate.plusMonths(9),
                 "TYPHOID" to patient.birthDate.plusMonths(9),
-                "HPV 1" to patient.birthDate.plusDays(3285),
-                "HPV 2" to patient.birthDate.plusDays(3467),
+                "HPV 1" to patient.birthDate.plusMonths(108),
+                "HPV 2" to patient.birthDate.plusMonths(114),
               )
             vaccines.forEach { vaccine ->
               println(vaccine)

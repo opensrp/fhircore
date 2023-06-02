@@ -27,6 +27,7 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.DecimalType
 import org.hl7.fhir.r4.model.Enumerations.DataType
+import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.Quantity
@@ -136,6 +137,11 @@ fun List<Questionnaire.QuestionnaireItemComponent>.find(
     }
   }
 }
+ val Questionnaire.QuestionnaireItemComponent.initialExpression: Expression?
+  get() =
+    this.getExtensionByUrl(EXTENSION_INITIAL_EXPRESSION_URL)?.let {
+      it.castToExpression(it.value)
+    }
 
 val Questionnaire.QuestionnaireItemComponent.choiceColumn: List<ChoiceColumn>?
   get() =
@@ -155,7 +161,7 @@ val Questionnaire.QuestionnaireItemComponent.choiceColumn: List<ChoiceColumn>?
     }
 data class ChoiceColumn(val path: String, val label: String?, val forDisplay: Boolean)
 
-const val ITEM_INITIAL_EXPRESSION_URL: String =
+const val EXTENSION_INITIAL_EXPRESSION_URL: String =
   "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
 const val ITEM_POPULATION_CONTEXT_EXPRESSION_URL: String =
   "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemPopulationContext"
