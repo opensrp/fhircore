@@ -35,6 +35,8 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -54,6 +56,7 @@ import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -164,14 +167,54 @@ class RulesFactoryTest : RobolectricTest() {
       val rules = rulesFactory.generateRules(ruleConfigs)
       rulesFactory.fireRules(
         rules = rules,
-        repositoryResourceData = RepositoryResourceData(resource = baseResource)
+        repositoryResourceData =
+          RepositoryResourceData(
+            resource = baseResource,
+            secondaryRepositoryResourceData =
+              listOf(
+                RepositoryResourceData(
+                  resourceRulesEngineFactId = "commodities",
+                  resource = Group().apply { id = "Commodity1" },
+                  relatedResourcesMap =
+                    mapOf(
+                      "stockObservations" to
+                        listOf(
+                          Observation().apply { id = "Obsv1" },
+                          Observation().apply { id = "Obsv2" }
+                        ),
+                      "latestObservations" to
+                        listOf(
+                          Observation().apply { id = "Obsv3" },
+                          Observation().apply { id = "Obsv4" }
+                        )
+                    ),
+                  relatedResourcesCountMap =
+                    mapOf("stockCount" to listOf(RelatedResourceCount(count = 20)))
+                ),
+                RepositoryResourceData(
+                  resourceRulesEngineFactId = "commodities",
+                  resource = Group().apply { id = "Commodity2" },
+                  relatedResourcesMap =
+                    mapOf(
+                      "stockObservations" to
+                        listOf(
+                          Observation().apply { id = "Obsv6" },
+                          Observation().apply { id = "Obsv7" }
+                        )
+                    ),
+                  relatedResourcesCountMap =
+                    mapOf("stockCount" to listOf(RelatedResourceCount(count = 10)))
+                )
+              )
+          )
       )
 
       val factsSlot = slot<Facts>()
       val rulesSlot = slot<Rules>()
       verify { rulesEngine.fire(capture(rulesSlot), capture(factsSlot)) }
 
-      val capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
+      val facts = factsSlot.captured
+      val capturedBaseResource = facts.get<Patient>(baseResource.resourceType.name)
       Assert.assertEquals(baseResource.logicalId, capturedBaseResource.logicalId)
       Assert.assertTrue(capturedBaseResource.active)
       Assert.assertEquals(baseResource.birthDate, capturedBaseResource.birthDate)
@@ -184,6 +227,33 @@ class RulesFactoryTest : RobolectricTest() {
       val capturedRule = rulesSlot.captured.first()
       Assert.assertEquals(ruleConfig.name, capturedRule.name)
       Assert.assertEquals(ruleConfig.description, capturedRule.description)
+
+      // Assertions for secondary resources
+      val factsMap = facts.asMap()
+      val commodities: List<Resource> = factsMap["commodities"] as List<Resource>
+      Assert.assertNotNull(commodities)
+      Assert.assertEquals(2, commodities.size)
+      Assert.assertEquals("Commodity1", commodities.first().id)
+      Assert.assertEquals("Commodity2", commodities.last().id)
+
+      val latestObservations: List<Resource> = factsMap["latestObservations"] as List<Resource>
+      Assert.assertNotNull(latestObservations)
+      Assert.assertEquals(2, latestObservations.size)
+      Assert.assertEquals("Obsv3", latestObservations.first().id)
+      Assert.assertEquals("Obsv4", latestObservations.last().id)
+
+      val stockObservations: List<Resource> = factsMap["stockObservations"] as List<Resource>
+      Assert.assertNotNull(stockObservations)
+      Assert.assertEquals(4, stockObservations.size)
+      Assert.assertEquals("Obsv1", stockObservations.first().id)
+      Assert.assertEquals("Obsv7", stockObservations.last().id)
+
+      val stockCount: List<RelatedResourceCount> =
+        factsMap["stockCount"] as List<RelatedResourceCount>
+      Assert.assertNotNull(stockCount)
+      Assert.assertEquals(2, stockCount.size)
+      Assert.assertEquals(20, stockCount.first().count)
+      Assert.assertEquals(10, stockCount.last().count)
     }
   }
 
