@@ -63,8 +63,11 @@ data class ButtonProperties(
     }
   }
   override fun interpolate(computedValuesMap: Map<String, Any>): ButtonProperties {
+    val interpolatedBackgroundColor = backgroundColor?.interpolate(computedValuesMap)
     return this.copy(
-      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      backgroundColor = if (!interpolatedBackgroundColor.isNullOrEmpty()) {
+        interpolatedBackgroundColor
+      } else Color.Unspecified.toString(),
       visible = visible.interpolate(computedValuesMap),
       status = interpolateStatus(computedValuesMap).name,
       text = text?.interpolate(computedValuesMap),

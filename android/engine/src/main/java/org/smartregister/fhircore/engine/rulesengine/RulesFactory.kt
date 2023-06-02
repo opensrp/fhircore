@@ -219,7 +219,7 @@ constructor(
           )
             label
           else null
-        }
+        }?.distinctBy { it }
         ?.joinToString(",")
         ?: ""
 
