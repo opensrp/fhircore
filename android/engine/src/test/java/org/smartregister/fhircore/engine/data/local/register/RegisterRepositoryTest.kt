@@ -91,7 +91,8 @@ class RegisterRepositoryTest : RobolectricTest() {
           dispatcherProvider = coroutineTestRule.testDispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
-          configService = mockk()
+          configService = mockk(),
+          configRulesExecutor = mockk()
         )
       )
 

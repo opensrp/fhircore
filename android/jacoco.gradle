@@ -1,4 +1,4 @@
-def module = project.name == "quest" ? "Quest" : ""
+def module = project.name == "quest" ? "Opensrp" : ""
 
 task fhircoreJacocoReport(type: JacocoReport, dependsOn: [
         "test${module}DebugUnitTest",

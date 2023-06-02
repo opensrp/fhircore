@@ -37,14 +37,14 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
+import org.smartregister.fhircore.engine.configuration.view.retrieveListProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
-import org.smartregister.fhircore.engine.rulesengine.retrieveListProperties
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -65,7 +65,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
   val fhirPathDataExtractor: FhirPathDataExtractor,
-  val rulesExecutor: RulesExecutor
+  val resourceDataRulesExecutor: ResourceDataRulesExecutor
 ) : ViewModel() {
 
   val profileUiState = mutableStateOf(ProfileUiState())
@@ -87,10 +87,10 @@ constructor(
     if (resourceId.isNotEmpty()) {
       val repositoryResourceData =
         registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
-      val paramsMap: Map<String, String> = paramsList.toParamDataMap<String, String>()
+      val paramsMap: Map<String, String> = paramsList.toParamDataMap()
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
       val resourceData =
-        rulesExecutor
+        resourceDataRulesExecutor
           .processResourceData(
             repositoryResourceData = repositoryResourceData,
             ruleConfigs = profileConfigs.rules,
@@ -107,7 +107,7 @@ constructor(
         )
 
       profileConfigs.views.retrieveListProperties().forEach { listProperties ->
-        rulesExecutor.processListResourceData(
+        resourceDataRulesExecutor.processListResourceData(
           listProperties = listProperties,
           relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
           computedValuesMap = resourceData.computedValuesMap.plus(paramsMap),
@@ -143,7 +143,7 @@ constructor(
               changeManagingEntity(
                 event = event,
                 managingEntity =
-                  it.interpolateManagingEntity(event.resourceData?.computedValuesMap ?: emptyMap())
+                  it.interpolate(event.resourceData?.computedValuesMap ?: emptyMap()).managingEntity
               )
             }
             handleClickEvent(navController = event.navController, resourceData = event.resourceData)

@@ -37,6 +37,7 @@ import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import java.time.OffsetDateTime
 import javax.inject.Inject
@@ -138,6 +139,8 @@ class AppMainViewModelTest : RobolectricTest() {
     appMainViewModel.onEvent(appMainEvent)
 
     Assert.assertEquals("en", sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, ""))
+
+    unmockkStatic(Activity::class)
   }
 
   @Test
@@ -176,7 +179,7 @@ class AppMainViewModelTest : RobolectricTest() {
       appMainViewModel.formatLastSyncTimestamp(timestamp),
       sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
     )
-    verify { appMainViewModel.retrieveAppMainUiState() }
+    coVerify { appMainViewModel.retrieveAppMainUiState() }
   }
 
   @Test

@@ -31,25 +31,22 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import com.google.android.fhir.datacapture.extensions.flattened
 import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.search
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
-import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -62,13 +59,10 @@ import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.FieldType
-import org.smartregister.fhircore.engine.util.extension.ITEM_INITIAL_EXPRESSION_URL
-import org.smartregister.fhircore.engine.util.extension.choiceColumn
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
-import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
@@ -81,19 +75,17 @@ import timber.log.Timber
 open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener {
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
-
   @Inject lateinit var parser: IParser
-  @Inject lateinit var fhirPathEngine: FHIRPathEngine
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
   private lateinit var questionnaire: Questionnaire
-  private var questionnaireResponse: QuestionnaireResponse = QuestionnaireResponse()
   private lateinit var fragment: QuestionnaireFragment
   private lateinit var saveProcessingAlertDialog: AlertDialog
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var actionParams: List<ActionParameter>
   private lateinit var prePopulationParams: List<ActionParameter>
-  private lateinit var baseResourceId: String
-  private lateinit var baseResourceType: ResourceType
+  private var questionnaireResponse: QuestionnaireResponse = QuestionnaireResponse()
+  private var baseResourceId: String? = null
+  private var baseResourceType: ResourceType? = null
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
@@ -115,13 +107,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       actionParams.filter {
         (it.paramType == ActionParameterType.PREPOPULATE ||
           it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) &&
-          !it.value.isNullOrEmpty() &&
+          it.value.isNotEmpty() &&
           !it.value.contains(STRING_INTERPOLATION_PREFIX)
       }
 
-    baseResourceId = intent.getStringExtra(BASE_RESOURCE_ID) ?: ""
-    val strBaseResourceType = intent.getStringExtra(BASE_RESOURCE_TYPE) ?: ""
-    if (strBaseResourceType.isNotEmpty())
+    baseResourceId = intent.getStringExtra(BASE_RESOURCE_ID)
+    val strBaseResourceType = intent.getStringExtra(BASE_RESOURCE_TYPE)
+    if (!strBaseResourceType.isNullOrEmpty())
       baseResourceType = ResourceType.fromCode(strBaseResourceType)
 
     val questionnaireActivity = this@QuestionnaireActivity
@@ -154,25 +146,24 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
             }
           }
-
-        if (questionnaireConfig.type.isEditMode() || questionnaireConfig.type.isReadOnly()) {
-          questionnaireResponse =
-            questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
-                questionnaire = questionnaire,
-                subjectId = baseResourceId.extractLogicalIdUuid(),
-                subjectType = baseResourceType
-              )
-              .apply { generateMissingItems(questionnaire) }
-
-          if (!questionnaireViewModel.isQuestionnaireResponseValid(
-              questionnaire,
-              questionnaireResponse,
-              this@QuestionnaireActivity
+        questionnaireResponse =
+          questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
+              questionnaire = questionnaire,
+              subjectId = baseResourceId?.extractLogicalIdUuid(),
+              subjectType = baseResourceType,
+              questionnaireConfig = questionnaireConfig
             )
-          ) {
-            showToast(getString(R.string.questionnaire_response_broken))
-            finish()
-          }
+            .apply { generateMissingItems(questionnaire) }
+
+        val questionnaireResponseValid =
+          questionnaireViewModel.isQuestionnaireResponseValid(
+            questionnaire = questionnaire,
+            questionnaireResponse = questionnaireResponse,
+            context = questionnaireActivity
+          )
+        if (!questionnaireResponseValid) {
+          showToast(getString(R.string.questionnaire_response_broken))
+          finish()
         }
 
         // Only add the fragment once, when the activity is first created.
@@ -223,10 +214,19 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         if (!questionnaireConfig.type.isDefault()) {
           setQuestionnaireResponse(questionnaireResponse.encodeResourceToString())
         }
-        val launchContexts = mutableListOf<Resource>()
-        questionnaireConfig.resourceIdentifier?.let {
+        questionnaireConfig.resourceIdentifier?.takeIf { it.isNotBlank() }?.let {
+          val resourceId = IdType(it)
+          val resourceType =
+            resourceId.resourceType?.let { ResourceType.fromCode(it) }
+              ?: questionnaireConfig.resourceType ?: ResourceType.Patient
+
           setQuestionnaireLaunchContexts(
-            listOf( questionnaireViewModel.loadPatient(it)!!.also { launchContexts.add(it) }.encodeResourceToString() )
+            listOf(
+              questionnaireViewModel
+                .defaultRepository
+                .loadResource(resourceId.idPart, resourceType)
+                .encodeResourceToString()
+            )
           )
         }
         setInitialExpression(questionnaire, launchContexts.map { it.resourceType.name.lowercase() to it }.toMap())
@@ -365,7 +365,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     val questionnaireResponse = getQuestionnaireResponse()
     if (!validQuestionnaireResponse(questionnaireResponse)) {
       saveProcessingAlertDialog.dismiss()
-      saveProcessingAlertDialog.dismiss()
 
       AlertDialogue.showErrorAlert(
         this,
@@ -406,7 +405,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     else finishActivity(questionnaireResponse)
   }
 
-  fun finishActivity(questionnaireResponse: QuestionnaireResponse) {
+  private fun finishActivity(questionnaireResponse: QuestionnaireResponse) {
     val parcelResponse = questionnaireResponse.copy()
     questionnaire.find(FieldType.TYPE, Questionnaire.QuestionnaireItemType.ATTACHMENT.name)
       .forEach { parcelResponse.find(it.linkId)?.answer?.clear() }
@@ -535,7 +534,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
     const val QUESTIONNAIRE_ARG_BARCODE = "patient-barcode"
-    const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
     const val QUESTIONNAIRE_CONFIG = "questionnaire-config"
     const val BASE_RESOURCE_ID = "base-resource-id"
@@ -544,8 +542,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val STRING_INTERPOLATION_PREFIX = "@{"
 
     fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
-    fun Intent.populationResources() =
-      this.getStringArrayListExtra(QUESTIONNAIRE_POPULATION_RESOURCES)
 
     fun intentArgs(
       questionnaireResponse: QuestionnaireResponse? = null,

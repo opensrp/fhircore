@@ -173,7 +173,10 @@ fun CustomProfileTopAppBar(
       modifier = modifier,
       navController = navController,
       elevation = 0,
-      titleTextProperties = topBarConfig.title,
+      titleTextProperties =
+        topBarConfig.title?.interpolate(
+          profileUiState.resourceData?.computedValuesMap ?: emptyMap()
+        ),
       profileUiState = profileUiState,
       collapsible = topBarConfig.collapsible,
       onEvent = onEvent,

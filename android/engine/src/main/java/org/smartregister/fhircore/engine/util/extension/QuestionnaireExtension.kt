@@ -169,9 +169,6 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
   prePopulationParams: List<ActionParameter>
 ) {
   forEach { item ->
-    if (item.hasExtension(ITEM_INITIAL_EXPRESSION_URL)) {
-      item.removeExtension(ITEM_INITIAL_EXPRESSION_URL)
-    }
     prePopulationParams
       .firstOrNull {
         it.linkId == item.linkId &&
