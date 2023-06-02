@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.util.extension.isReady
 import org.smartregister.fhircore.engine.util.extension.lastOffset
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import org.smartregister.fhircore.engine.util.getLastOffset
+import timber.log.Timber
 
 /** This job runs periodically to update the statuses of Task resources. */
 @HiltWorker
@@ -65,6 +66,8 @@ constructor(
       val lastOffset =
         sharedPreferencesHelper.read(key = WORK_ID.lastOffset(), defaultValue = "0")!!.toInt()
 
+      Timber.i("Running Task status updater worker")
+
       val tasks =
         fhirEngine.search<Task> {
           filter(
@@ -75,12 +78,14 @@ constructor(
             { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
             { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
           )
-          from = if (lastOffset > 0) lastOffset + 1 else 0
-          count = batchSize
         }
+
+      Timber.i("Found ${tasks.size} tasks to be updated")
 
       tasks.forEach { task ->
         if (task.hasPastEnd()) {
+          Timber.i("${task.id} failed its successful completion")
+
           task.status = Task.TaskStatus.FAILED
           fhirEngine.update(task)
           task
@@ -96,6 +101,8 @@ constructor(
               }
             }
         } else if (task.isReady() && task.status == Task.TaskStatus.REQUESTED) {
+          Timber.i("${task.id} marked ready")
+
           task.status = Task.TaskStatus.READY
           fhirEngine.update(task)
         }
