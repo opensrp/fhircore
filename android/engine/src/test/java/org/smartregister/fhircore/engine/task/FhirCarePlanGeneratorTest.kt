@@ -1139,8 +1139,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
                 "MEASLES 2" to patient.birthDate.plusMonths(15),
                 "YELLOW FEVER" to patient.birthDate.plusMonths(9),
                 "TYPHOID" to patient.birthDate.plusMonths(9),
-                "HPV 1" to patient.birthDate.plusDays(3285),
-                "HPV 2" to patient.birthDate.plusDays(3467),
+                "HPV 1" to patient.birthDate.plusMonths(108),
+                "HPV 2" to patient.birthDate.plusMonths(114),
               )
             vaccines.forEach { vaccine ->
               println(vaccine)
@@ -1148,6 +1148,22 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
               val task = tasks.find { it.description.startsWith(vaccine.key) }
               assertNotNull(task)
               assertTrue(task!!.executionPeriod.start.asYyyyMmDd() == vaccine.value.asYyyyMmDd())
+
+              if (vaccine.key.endsWith("2") || vaccine.key.endsWith("3")) {
+                assertTrue(task.partOf.isNotEmpty())
+
+                val preReq = task.partOf.find { it.reference.startsWith(ResourceType.Task.name) }
+                println("PRE-REQ: ${preReq?.reference}")
+
+                assertNotNull(preReq)
+                assertTrue(
+                  tasks.find { it.idElement.idPart == preReq!!.extractId() }!!.description
+                    .startsWith(vaccine.key.dropLast(1))
+                )
+              } else
+                assertTrue(
+                  task.partOf.isEmpty() || task.description.contains("OPV 1")
+                ) // only OPV 1 is not dependent on pre-req
             }
           }
       }

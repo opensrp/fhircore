@@ -117,18 +117,18 @@ constructor(
       if (action.passesConditions(input, planDefinition, subject)) {
         val definition = action.activityDefinition(planDefinition)
 
-        val source =
-          Parameters().apply {
-            addResourceParameter(CarePlan.SP_SUBJECT, subject)
-            addResourceParameter(PlanDefinition.SP_DEFINITION, definition)
-            // TODO find some other way (activity definition based) to pass additional data
-            addResourceParameter(PlanDefinition.SP_DEPENDS_ON, data)
-          }
-
         if (action.hasTransform()) {
+
           val taskPeriods = action.taskPeriods(definition, output)
 
           taskPeriods.forEachIndexed { index, period ->
+            val source =
+              Parameters().apply {
+                addResourceParameter(CarePlan.SP_SUBJECT, subject)
+                addResourceParameter(PlanDefinition.SP_DEFINITION, definition)
+                // TODO find some other way (activity definition based) to pass additional data
+                addResourceParameter(PlanDefinition.SP_DEPENDS_ON, data)
+              }
             source.setParameter(Task.SP_PERIOD, period)
             source.setParameter(ActivityDefinition.SP_VERSION, IntegerType(index))
 
