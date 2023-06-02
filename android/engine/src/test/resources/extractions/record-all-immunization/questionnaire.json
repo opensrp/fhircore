@@ -1,22 +1,91 @@
 {
   "resourceType": "Questionnaire",
-  "extension": [ {
-    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
-    "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/followup-structuremap"
-  }],
+  "id": "97c1535a-646b-45a0-8586-2087ae2516a8",
+  "meta": {
+    "versionId": "10",
+    "lastUpdated": "2023-05-27T15:43:22.784+00:00",
+    "source": "#7a8ac8fc933828b1",
+    "security": [
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.7618",
+        "code": "3",
+        "display": "Helsehjelp"
+      }
+    ]
+  },
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/e4fcfd38-2f6b-4b58-af23-b1700f822b57"
+    },
+    {
+      "extension":[
+        {
+          "url":"name",
+          "valueCoding":{
+            "system":"http://hl7.org/fhir/uv/sdc/CodeSystem/launchContext",
+            "code":"patient",
+            "display":"Patient"
+          }
+        },
+        {
+          "url":"type",
+          "valueCode":"Patient"
+        }
+      ],
+      "url":"http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-launchContext"
+    }
+  ],
+  "version": "0.0.1",
+  "title": "eCBIS Child Immunization Record All",
+  "status": "active",
+  "subjectType": [
+    "Patient"
+  ],
+  "date": "2023-05-24T00:00:00Z",
+  "publisher": "ONA",
+  "contact": [
+    {
+      "name": "https://www.smartregister.org"
+    }
+  ],
   "item": [
     {
-      "text": "Which vaccines were given?",
-      "type": "reference",
-      "linkId": "vaccines",
-      "required": true,
-      "repeats": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "17bbf0b5-0fcb-4140-971a-248e595c020e",
+      "text": "Patient Id",
+      "type": "string",
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.id"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "patient-id",
+      "type": "string"
+    },
+    {
       "extension": [
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
           "valueExpression": {
-            "expression": "Task?subject=Patient/3e3d698a-4edb-48f9-9330-2f1adc0635d1&code=33879002&status=ready&_sort=period",
-            "language": "application/x-fhir-query"
+            "language": "application/x-fhir-query",
+            "expression": "Task?subject={{%patient.id}}&code=33879002&status=ready&_sort=period"
           }
         },
         {
@@ -24,7 +93,7 @@
           "extension": [
             {
               "url": "path",
-              "valueString": "reasonCode.text + ' - ' + reasonCode.coding.where(system='http://snomed.info/sct').display"
+              "valueString": "description + ' - ' + reasonCode.coding.where(system='http://snomed.info/sct').display"
             },
             {
               "url": "forDisplay",
@@ -32,17 +101,22 @@
             }
           ]
         }
-      ]
+      ],
+      "linkId": "vaccines",
+      "text": "Which vaccines were given?",
+      "type": "reference",
+      "required": false,
+      "repeats": true
     },
     {
-      "linkId": "vaccines codes group",
-      "text": "Vaccine codes",
       "extension": [
         {
           "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
           "valueBoolean": true
         }
       ],
+      "linkId": "vaccines codes group",
+      "text": "Vaccine codes",
       "type": "group",
       "item": [
         {
@@ -50,8 +124,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('bcg')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('bcg')).exists()"
               }
             }
           ],
@@ -61,9 +135,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "42284007",
-                "display": "BCG vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "BCG vaccine"
               }
             }
           ]
@@ -73,8 +147,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('opv 0')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('opv 0')).exists()"
               }
             }
           ],
@@ -84,9 +158,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "111164008",
-                "display": "Poliovirus vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Poliovirus vaccine"
               }
             }
           ]
@@ -96,8 +170,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('opv 1')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('opv 1')).exists()"
               }
             }
           ],
@@ -107,9 +181,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "111164008",
-                "display": "Poliovirus vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Poliovirus vaccine"
               }
             }
           ]
@@ -119,8 +193,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('opv 2')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('opv 2')).exists()"
               }
             }
           ],
@@ -130,9 +204,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "111164008",
-                "display": "Poliovirus vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Poliovirus vaccine"
               }
             }
           ]
@@ -142,8 +216,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('opv 3')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('opv 3')).exists()"
               }
             }
           ],
@@ -153,9 +227,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "111164008",
-                "display": "Poliovirus vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Poliovirus vaccine"
               }
             }
           ]
@@ -165,8 +239,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('penta 1')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('penta 1')).exists()"
               }
             }
           ],
@@ -176,9 +250,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "429511000124109",
-                "display": "Tetanus + diphtheria + acellular pertussis vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Tetanus + diphtheria + acellular pertussis vaccine"
               }
             }
           ]
@@ -188,8 +262,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('penta 2')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('penta 2')).exists()"
               }
             }
           ],
@@ -199,9 +273,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "429511000124109",
-                "display": "Tetanus + diphtheria + acellular pertussis vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Tetanus + diphtheria + acellular pertussis vaccine"
               }
             }
           ]
@@ -211,8 +285,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('penta 3')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('penta 3')).exists()"
               }
             }
           ],
@@ -222,9 +296,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "429511000124109",
-                "display": "Tetanus + diphtheria + acellular pertussis vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Tetanus + diphtheria + acellular pertussis vaccine"
               }
             }
           ]
@@ -234,8 +308,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('pcv 1')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('pcv 1')).exists()"
               }
             }
           ],
@@ -245,9 +319,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "12866006",
-                "display": "Pneumococcal vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Pneumococcal vaccine"
               }
             }
           ]
@@ -257,8 +331,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('pcv 2')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('pcv 2')).exists()"
               }
             }
           ],
@@ -268,9 +342,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "12866006",
-                "display": "Pneumococcal vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Pneumococcal vaccine"
               }
             }
           ]
@@ -280,8 +354,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('pcv 3')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('pcv 3')).exists()"
               }
             }
           ],
@@ -291,9 +365,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "12866006",
-                "display": "Pneumococcal vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Pneumococcal vaccine"
               }
             }
           ]
@@ -303,8 +377,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('rota 1')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('rota 1')).exists()"
               }
             }
           ],
@@ -314,9 +388,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "415354003",
-                "display": "Rotavirus vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Rotavirus vaccine"
               }
             }
           ]
@@ -326,8 +400,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('rota 2')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('rota 2')).exists()"
               }
             }
           ],
@@ -337,9 +411,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "415354003",
-                "display": "Rotavirus vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Rotavirus vaccine"
               }
             }
           ]
@@ -349,8 +423,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('ipv')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('ipv')).exists()"
               }
             }
           ],
@@ -360,9 +434,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "396435000",
-                "display": "Inactivated Poliovirus vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Inactivated Poliovirus vaccine"
               }
             }
           ]
@@ -372,8 +446,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('measles 1')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('measles 1')).exists()"
               }
             }
           ],
@@ -383,9 +457,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "38598009",
-                "display": "Measles-mumps-rubella vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Measles-mumps-rubella vaccine"
               }
             }
           ]
@@ -395,8 +469,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('measles 2')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('measles 2')).exists()"
               }
             }
           ],
@@ -406,9 +480,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "38598009",
-                "display": "Measles-mumps-rubella vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Measles-mumps-rubella vaccine"
               }
             }
           ]
@@ -418,8 +492,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('typhoid')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('typhoid')).exists()"
               }
             }
           ],
@@ -429,9 +503,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "15483003",
-                "display": "Typhoid vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Typhoid vaccine"
               }
             }
           ]
@@ -441,8 +515,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('yellow fever')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('yellow fever')).exists()"
               }
             }
           ],
@@ -452,9 +526,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "67308009",
-                "display": "Yellow fever vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Yellow fever vaccine"
               }
             }
           ]
@@ -464,8 +538,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('hpv 1')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('hpv 1')).exists()"
               }
             }
           ],
@@ -475,9 +549,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "761841000",
-                "display": "Human papillomavirus vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Human papillomavirus vaccine"
               }
             }
           ]
@@ -487,8 +561,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('hpv 2')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('hpv 2')).exists()"
               }
             }
           ],
@@ -498,9 +572,9 @@
           "initial": [
             {
               "valueCoding": {
+                "system": "http://snomed.info/sct",
                 "code": "761841000",
-                "display": "Human papillomavirus vaccine",
-                "system": "http://snomed.info/sct"
+                "display": "Human papillomavirus vaccine"
               }
             }
           ]
@@ -511,20 +585,20 @@
       "linkId": "vaccines same date",
       "text": "Were all the vaccines given on the same date?",
       "type": "boolean",
-      "required": true
+      "required": false
     },
     {
       "linkId": "vaccines date",
       "text": "When were the vaccines given?",
       "type": "date",
-      "required": true,
       "enableWhen": [
         {
           "question": "vaccines same date",
           "operator": "=",
           "answerBoolean": true
         }
-      ]
+      ],
+      "required": true
     },
     {
       "linkId": "vaccines dates group",
@@ -539,304 +613,304 @@
       ],
       "item": [
         {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('bcg')).exists()"
+              }
+            }
+          ],
           "linkId": "bcg date",
-          "required": true,
           "text": "When was BCG given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('bcg')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('opv 0')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "opv 0 date",
-          "required": true,
           "text": "When was OPV 0 given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('opv 0')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('opv 1')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "opv 1 date",
-          "required": true,
           "text": "When was OPV 1 given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('opv 1')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('opv 2')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "opv 2 date",
-          "required": true,
           "text": "When was OPV 2 given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('opv 2')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('opv 3')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "opv 3 date",
-          "required": true,
           "text": "When was OPV 3 given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('opv 3')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('penta 1')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "penta 1 date",
-          "required": true,
           "text": "When was Penta 1 given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('penta 1')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('penta 2')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "penta 2 date",
-          "required": true,
           "text": "When was Penta 2 given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('penta 2')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('penta 3')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "penta 3 date",
-          "required": true,
           "text": "When was Penta 3 given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('penta 3')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('pcv 1')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "pcv 1 date",
-          "required": true,
           "text": "When was PCV 1 given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('pcv 1')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('pcv 2')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "pcv 2 date",
-          "required": true,
           "text": "When was PCV 2 given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('pcv 2')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('pcv 3')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "pcv 3 date",
-          "required": true,
           "text": "When was PCV 3 given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('pcv 3')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('rota 1')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "rota 1 date",
-          "required": true,
           "text": "When was Rota 1 given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('rota 1')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('rota 2')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "rota 2 date",
-          "required": true,
           "text": "When was Rota 2 given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('rota 2')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('ipv')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "ipv date",
-          "required": true,
           "text": "When was IPV given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('ipv')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('measles 1')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "measles 1 date",
-          "required": true,
           "text": "When was Measles 1 given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('measles 1')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('measles 2')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "measles 2 date",
-          "required": true,
           "text": "When was Measles 2 given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('measles 2')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('typhoid')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "typhoid date",
-          "required": true,
           "text": "When was Typhoid given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('typhoid')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('yellow fever')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "yellow fever date",
-          "required": true,
           "text": "When was Yellow Fever given",
           "type": "date",
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('yellow fever')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('hpv 1')).exists()"
               }
             }
-          ]
-        },
-        {
+          ],
           "linkId": "hpv 1 date",
-          "required": true,
           "text": "When was HPV 1 given",
           "type": "date",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
-              "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('hpv 1')).exists()",
-                "language": "text/fhirpath"
-              }
-            }
-          ]
+          "required": true
         },
         {
-          "linkId": "hpv 2 date",
-          "required": true,
-          "text": "When was HPV 2 given",
-          "type": "date",
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
               "valueExpression": {
-                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('hpv 2')).exists()",
-                "language": "text/fhirpath"
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='vaccines').answer.value.where(display.lower().contains('hpv 2')).exists()"
               }
             }
-          ]
+          ],
+          "linkId": "hpv 2 date",
+          "text": "When was HPV 2 given",
+          "type": "date",
+          "required": true
         }
       ]
     }
