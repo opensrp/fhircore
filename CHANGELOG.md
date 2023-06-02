@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add functionality to allow usage of computed rules on DataQuery values
 - Allow configs to pass multiple subjects to measure evaluate interface so we can create reports per another resource (e.g. a MeasureReport per Practitioner)
 - Introduce an open function on ViewProperties#interpolate to retrieve values from computed values map
+- Update the CarePlan Closure configs to define the PlanDefs to closure separately.
 
 ### Fixed
 - Member icons display wrapping; hiding some texts
