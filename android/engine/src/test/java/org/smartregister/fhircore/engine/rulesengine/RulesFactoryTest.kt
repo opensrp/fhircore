@@ -378,7 +378,7 @@ class RulesFactoryTest : RobolectricTest() {
       )
 
     val result = rulesEngineService.mapResourcesToLabeledCSV(resources, fhirPathExpression, "CHILD")
-    Assert.assertEquals("CHILD,CHILD", result)
+    Assert.assertEquals("CHILD", result)
   }
 
   @Test
