@@ -19,14 +19,6 @@
       "url" : "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-launchContext"
     },
     {
-      "url" : "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemPopulationContext",
-      "valueExpression" : {
-        "name" : "previousVaccines",
-        "language" : "application/x-fhir-query",
-        "expression": "Immunization?patient={{%patient.id}}&reason-code=840534001&_sort=date"
-      }
-    },
-    {
       "url": "http://hl7.org/fhir/StructureDefinition/variable",
       "valueExpression": {
         "name": "LAST-VACCINE",
@@ -61,9 +53,22 @@
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
           "valueExpression": {
-            "expression": "%previousVaccines.select(reasonCode.coding.first())",
-            "language": "text/fhirpath"
+            "language" : "application/x-fhir-query",
+            "expression": "Immunization?patient={{%patient.id}}&reason-code=840534001&_sort=date"
           }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+          "extension": [
+            {
+              "url": "path",
+              "valueString": "vaccineCode.text"
+            },
+            {
+              "url": "forDisplay",
+              "valueBoolean": true
+            }
+          ]
         }
       ]
     },

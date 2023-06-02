@@ -43,9 +43,9 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.Bundle.BundleEntryComponent
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
@@ -63,14 +63,14 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.FieldType
 import org.smartregister.fhircore.engine.util.extension.ITEM_INITIAL_EXPRESSION_URL
-import org.smartregister.fhircore.engine.util.extension.ITEM_POPULATION_CONTEXT_EXPRESSION_URL
+import org.smartregister.fhircore.engine.util.extension.choiceColumn
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.util.FhirpathConstantResolver
 import timber.log.Timber
 
 /**
@@ -180,7 +180,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
         withContext(dispatcherProvider.main()) {
           updateViews()
-          setInitialExpression(questionnaire)
           fragment.whenStarted { loadProgress.dismiss() }
         }
       }
@@ -224,11 +223,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         if (!questionnaireConfig.type.isDefault()) {
           setQuestionnaireResponse(questionnaireResponse.encodeResourceToString())
         }
+        val launchContexts = mutableListOf<Resource>()
         questionnaireConfig.resourceIdentifier?.let {
           setQuestionnaireLaunchContexts(
-            listOf( questionnaireViewModel.loadPatient(it)!!.encodeResourceToString() )
+            listOf( questionnaireViewModel.loadPatient(it)!!.also { launchContexts.add(it) }.encodeResourceToString() )
           )
         }
+        setInitialExpression(questionnaire, launchContexts.map { it.resourceType.name.lowercase() to it }.toMap())
       }
     fragment = fragmentBuilder.build()
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
@@ -254,32 +255,30 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  private suspend fun setInitialExpression(questionnaire: Questionnaire) {
+  private suspend fun setInitialExpression(questionnaire: Questionnaire, launchContexts: Map<String, Resource>) {
     // TODO handle hierarchy and scope
-    val itemPopulationContexts = (questionnaire.extension + questionnaire.item.flattened().flatMap { it.extension })
-      .filter { it.url == ITEM_POPULATION_CONTEXT_EXPRESSION_URL && it.castToExpression(it.value).language == "application/x-fhir-query" }
-
-    val populationResources = itemPopulationContexts.map {
-      it.castToExpression(it.value).let {
-        it.name to questionnaireViewModel.defaultRepository.fhirEngine.search(it.expression)
-          .map { BundleEntryComponent().setResource(it) }.let { org.hl7.fhir.r4.model.Bundle().apply { entry = it } }
-      }
-    }.toMap()
+    // Immunization?code=1234
+    // %immunization.reference/code
     questionnaire.item.flattened().forEach { item ->
       item.extension
         .find {
           it.url == ITEM_INITIAL_EXPRESSION_URL &&
-            it.value.castToExpression(it).language == "text/fhirpath"
+            it.castToExpression(it.value).language == "application/x-fhir-query"
+        }?.let { it.castToExpression(it.value) }
+        ?.let {
+          questionnaireViewModel.defaultRepository.fhirEngine.search(it.expression.replace("{{", "").replace("}}", ""))
         }
         ?.let {
-          fhirPathEngine.hostServices = FhirpathConstantResolver()
-          fhirPathEngine.evaluate(
-            populationResources,
-              getQuestionnaireResponse(),
-              null,
-              item,
-              it.value.castToExpression(it).expression
-            )
+          it.map { resource ->
+            Reference().apply {
+              reference = resource.referenceValue()
+              item.choiceColumn
+                ?.filter { it.forDisplay }
+                ?.map { it.path }
+                ?.let { it.joinToString(" ") { fhirPathEngine.evaluateToString(resource, it) } }
+                ?.also { display = it }
+            }
+          }
             .let {
               item.initial =
                 it.map {
