@@ -39,6 +39,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -46,6 +47,7 @@ import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
@@ -53,6 +55,8 @@ import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.event.AppEvent
+import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
@@ -66,11 +70,9 @@ import timber.log.Timber
 @ExperimentalMaterialApi
 @AndroidEntryPoint
 class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmission?> {
-
   @Inject lateinit var syncListenerManager: SyncListenerManager
-
+  @Inject lateinit var eventBus: EventBus
   @VisibleForTesting val appMainViewModel by activityViewModels<AppMainViewModel>()
-
   private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
 
   private val registerViewModel by viewModels<RegisterViewModel>()
@@ -250,24 +252,47 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    appMainViewModel.questionnaireSubmissionLiveData.observe(viewLifecycleOwner, this)
-    handleRefreshLiveData()
+    viewLifecycleOwner.lifecycleScope.launch {
+      viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+        eventBus.events.collectLatest { appEvent ->
+          when (appEvent) {
+            is AppEvent.OnSubmitQuestionnaire ->
+              handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+            is AppEvent.RefreshCache -> handleRefreshLiveData()
+          }
+        }
+      }
+    }
+  }
+
+  @VisibleForTesting
+  suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
+    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+
+    // Always refresh data when registration happens
+    registerViewModel.paginateRegisterData(
+      registerId = registerFragmentArgs.registerId,
+      loadAll = false,
+      clearCache = true
+    )
+    // Update side menu counts
+    appMainViewModel.retrieveAppMainUiState()
+
+    // Display SnackBar message
+    val (questionnaireConfig, _) = questionnaireSubmission
+    questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
+      registerViewModel.emitSnackBarState(snackBarMessageConfig)
+    }
   }
 
   fun handleRefreshLiveData() {
-    appMainViewModel.dataRefreshLivedata.observe(viewLifecycleOwner) {
-      if (it == true) {
-        with(registerFragmentArgs) {
-          registerViewModel.retrieveRegisterUiState(
-            registerId = registerId,
-            screenTitle = screenTitle,
-            params = params,
-            clearCache = true
-          )
-        }
-        // reset value
-        appMainViewModel.dataRefreshLivedata.value = false
-      }
+    with(registerFragmentArgs) {
+      registerViewModel.retrieveRegisterUiState(
+        registerId = registerId,
+        screenTitle = screenTitle,
+        params = params,
+        clearCache = true
+      )
     }
   }
 
@@ -289,6 +314,7 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
           loadAll = false,
           clearCache = true
         )
+        // Update side menu counts
         appMainViewModel.retrieveAppMainUiState()
 
         // Display SnackBar message
@@ -296,9 +322,6 @@ class RegisterFragment : Fragment(), OnSyncListener, Observer<QuestionnaireSubmi
         questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
           registerViewModel.emitSnackBarState(snackBarMessageConfig)
         }
-
-        // Reset activity livedata
-        appMainViewModel.questionnaireSubmissionLiveData.postValue(null)
       }
     }
   }

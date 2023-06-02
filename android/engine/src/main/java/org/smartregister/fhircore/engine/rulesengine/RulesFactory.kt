@@ -121,11 +121,12 @@ constructor(
    * [RuleConfig] against the [Facts] populated by the provided FHIR [Resource] s available in the
    * [relatedResourcesMap] and the [baseResource].
    */
-  @Suppress("UNCHECKED_CAST")
   fun fireRules(
     rules: Rules,
-    baseResource: Resource? = null,
-    relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap(),
+    baseResourceRulesId: String?,
+    baseResource: Resource?,
+    relatedResourcesMap: Map<String, List<RepositoryResourceData>> = emptyMap(),
+    secondaryRepositoryResourceData: List<RepositoryResourceData>?
   ): Map<String, Any> {
 
     // Initialize new facts and fire rules in background
@@ -135,17 +136,18 @@ constructor(
         put(DATA, mutableMapOf<String, Any>())
         put(SERVICE, rulesEngineService)
         if (baseResource != null) {
-          put(baseResource.resourceType.name, baseResource)
+          put(baseResourceRulesId ?: baseResource.resourceType.name, baseResource)
         }
-        relatedResourcesMap.forEach {
-          val actualValue =
-            it.value.map { queryResult ->
-              when (queryResult) {
-                is RepositoryResourceData.QueryResult.Count -> queryResult.relatedResourceCount
-                is RepositoryResourceData.QueryResult.Search -> queryResult.resource
-              }
+        populateRelatedResourcesRecursively(relatedResourcesMap)
+
+        // Populate the facts map with secondary resource data
+        secondaryRepositoryResourceData?.forEach {
+          if (it is RepositoryResourceData.Search) {
+            put(it.baseResourceRulesId ?: it.resource.resourceType.name, it.resource)
+            if (it.relatedResources.isNotEmpty()) {
+              populateRelatedResourcesRecursively(it.relatedResources)
             }
-          put(it.key, actualValue)
+          }
         }
       }
 
@@ -155,6 +157,26 @@ constructor(
     } else rulesEngine.fire(rules, facts)
 
     return facts.get(DATA) as Map<String, Any>
+  }
+
+  private fun Facts.populateRelatedResourcesRecursively(
+    relatedResourcesMap: Map<String, List<RepositoryResourceData>>?
+  ) {
+    relatedResourcesMap?.forEach {
+      val actualValue: List<Any> =
+        it.value.map { repositoryResourceData ->
+          when (repositoryResourceData) {
+            is RepositoryResourceData.Count -> repositoryResourceData.relatedResourceCount
+            is RepositoryResourceData.Search -> {
+              if (repositoryResourceData.relatedResources.isNotEmpty()) {
+                populateRelatedResourcesRecursively(repositoryResourceData.relatedResources)
+              }
+              repositoryResourceData.resource
+            }
+          }
+        }
+      put(it.key, actualValue)
+    }
   }
 
   suspend fun generateRules(ruleConfigs: List<RuleConfig>): Rules =

@@ -32,6 +32,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -82,6 +83,30 @@ class PinViewModelTest : RobolectricTest() {
     Assert.assertTrue(pinLoginState.value.setupPin)
   }
 
+
+  @Test
+  fun testSetPinUiStateDisplaysConfiguredPinLoginMessage() {
+    val context = ApplicationProvider.getApplicationContext<Application>()
+    every { secureSharedPreference.retrieveSessionPin() } returns null
+    every { secureSharedPreference.retrieveSessionUsername() } returns null
+    configurationRegistry.configsJsonMap[ConfigType.Application.name] =
+      "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{\"showLogo\":true,\"enablePin\":true,\"pinLoginMessage\":\"Test Message\"}}"
+    pinViewModel.setPinUiState(true, context)
+    val pinUiState = pinViewModel.pinUiState.value
+    Assert.assertEquals("Test Message", pinUiState.message)
+  }
+
+  @Test
+  fun testSetPinUiStateDisplaysDefaultMessageWhenPinLoginMessageIsNotDefined() {
+    val context = ApplicationProvider.getApplicationContext<Application>()
+    configurationRegistry.configsJsonMap[ConfigType.Application.name] =
+      "{\"appId\":\"app\",\"configType\":\"application\",\"loginConfig\":{\"showLogo\":true,\"enablePin\":true}}"
+    every { secureSharedPreference.retrieveSessionPin() } returns null
+    every { secureSharedPreference.retrieveSessionUsername() } returns null
+    pinViewModel.setPinUiState(true, context)
+    val pinUiState = pinViewModel.pinUiState.value
+    Assert.assertEquals("CHA will use this PIN to login", pinUiState.message)
+  }
 
   @Test
   fun testOnPinVerified() {

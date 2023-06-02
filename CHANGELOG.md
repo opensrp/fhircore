@@ -5,16 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.3] - 2023-xx-xx
+## [0.2.4] - 2023-xx-xx
 ### Added
-- Allow completion of Overdue Tasks
+- Add "Record all" feature in card view
 
 ### Fixed
-- Invalidation/refresh cache after form completion
-- Logout while offline causes flicker(multiple render) of Login Page
 
 ### Changed
 - 
+
+## [0.2.3] - 2023-05-11
+### Added
+- Allow completion of Overdue Tasks
+- Allow ordering of registers by related resources last updated
+- Invalidation/refresh cache after form completion
+- Button background color app configurability
+- Use _revinclude when fetching related resources to improve performance
+- Refactor handling of questionnaire submission to use generic event bus
+- Refactor register search to support configurable forward or reverse include
+
+### Fixed
+- Logout while offline causes flicker(multiple render) of Login Page
+- Allow user to complete overdue task
+- Allow launching of overflow menu items (Questionnaire/Profile) 
+- Invalidation/refresh cache after form completion
+- Successful subsequent login even when PractitionerDetails is not saved 
+- Account for dependencies when generating activity schedules
+- Add title to Profile pages
+- Catch exception when defaultRepository.loadResource tries to load a non-existent resource
+- Fix navigate back from Household registers to practitioner profile
+- Harmonize launching Questionnaires
+- Supply Chain Report Generation fails for some months
 
 ## [0.2.2] - 2023-04-17
 ### Added

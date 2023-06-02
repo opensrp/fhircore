@@ -16,9 +16,16 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import androidx.compose.ui.graphics.Color
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.ui.theme.DangerColor
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
+import org.smartregister.fhircore.engine.ui.theme.InfoColor
+import org.smartregister.fhircore.engine.ui.theme.WarningColor
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
 data class ButtonProperties(
@@ -39,7 +46,37 @@ data class ButtonProperties(
   val fontSize: Float = 14.0f,
   val actions: List<ActionConfig> = emptyList(),
   val buttonType: ButtonType = ButtonType.MEDIUM,
-) : ViewProperties()
+) : ViewProperties() {
+  /**
+   * This function determines the status color to display depending on the value of the service
+   * status
+   *
+   * @property computedValuesMap Contains data extracted from the resources to be used on the UI
+   */
+  fun statusColor(computedValuesMap: Map<String, Any>): Color {
+    return when (interpolateStatus(computedValuesMap)) {
+      ServiceStatus.DUE -> InfoColor
+      ServiceStatus.OVERDUE -> DangerColor
+      ServiceStatus.UPCOMING -> DefaultColor
+      ServiceStatus.COMPLETED -> DefaultColor
+      ServiceStatus.IN_PROGRESS -> WarningColor
+    }
+  }
+  fun interpolate(computedValuesMap: Map<String, Any>) =
+    this.copy(
+      status = interpolateStatus(computedValuesMap).name,
+      backgroundColor = interpolateBackgroundColor(computedValuesMap),
+      enabled = enabled.interpolate(computedValuesMap),
+      text = text?.interpolate(computedValuesMap)
+    )
+
+  private fun interpolateStatus(computedValuesMap: Map<String, Any>): ServiceStatus {
+    val interpolated = this.status.interpolate(computedValuesMap)
+    return if (ServiceStatus.values().map { it.name }.contains(interpolated))
+      ServiceStatus.valueOf(interpolated)
+    else ServiceStatus.UPCOMING
+  }
+}
 
 enum class ButtonType {
   TINY,
