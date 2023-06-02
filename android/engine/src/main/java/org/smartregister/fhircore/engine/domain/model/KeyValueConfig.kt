@@ -16,14 +16,10 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
-/*
- * This class is used to configure the conditions under which a CarePlan and its associated Tasks
- * have their statuses updated.
- *
- * @param fhirPathExpression: A FHIRPath expression that is evaluated against the
- *   QuestionnaireResponse or resource referenced by [fhirPathResourceId] to return a boolean value.
- */
+@Parcelize
 @Serializable
-data class CarePlanConfig(val fhirPathExpression: String? = null) : java.io.Serializable
+data class KeyValueConfig(val key: String, val value: String) : Parcelable, java.io.Serializable
