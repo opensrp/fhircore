@@ -79,14 +79,18 @@ import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.junit.Assert
+import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.event.EventTriggerCondition
+import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.domain.model.CarePlanConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.REFERENCE
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
@@ -1457,12 +1461,21 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testConditionallyUpdateCarePlanStatusTerminatesWhenNoCarePlanIsFound() {
     val planDefinitions = listOf("plandef-1")
-    val carePlanConfig = CarePlanConfig(fhirPathExpression = "Patient.active")
+    val eventWorkflow =
+      EventWorkflow(
+        triggerConditions =
+          listOf(
+            EventTriggerCondition(
+              eventResourceId = "carePlan1",
+              conditionalFhirPathExpressions = listOf("Patient.active")
+            )
+          )
+      )
     val questionnaireConfig: QuestionnaireConfig =
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        carePlanConfigs = listOf(carePlanConfig)
+        eventWorkflows = listOf(eventWorkflow)
       )
     val patient =
       Patient().apply {
@@ -1495,16 +1508,32 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testConditionallyUpdateCarePlanStatusRevokesCarePlanWhenCarePlanStatusIsActive() {
     val planDefinitions = listOf("plandef-1")
-    val carePlanConfig =
-      CarePlanConfig(
-        fhirPathExpression =
-          "Patient.active and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/450cb100-0c5b-47c6-9f33-2830a79be726').exists()"
+    val eventWorkflow =
+      EventWorkflow(
+        triggerConditions =
+          listOf(
+            EventTriggerCondition(
+              eventResourceId = "carePlan1",
+              conditionalFhirPathExpressions =
+                listOf(
+                  "Patient.active and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/450cb100-0c5b-47c6-9f33-2830a79be726').exists()"
+                )
+            )
+          ),
+        eventResources =
+          listOf(
+            ResourceConfig(
+              resource = ResourceType.CarePlan,
+              planDefinitions = planDefinitions,
+              id = "carePlan1"
+            )
+          )
       )
     val questionnaireConfig: QuestionnaireConfig =
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        carePlanConfigs = listOf(carePlanConfig)
+        eventWorkflows = listOf(eventWorkflow)
       )
     val patient =
       Patient().apply {
@@ -1557,12 +1586,21 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testConditionallyUpdateCarePlanStatusDoesNotUpdateCarePlanWhenFhirPathResourceExpressionFails() {
     val planDefinitions = listOf("plandef-1")
-    val carePlanConfig = CarePlanConfig(fhirPathExpression = "Patient.active")
+    val eventWorkflow =
+      EventWorkflow(
+        triggerConditions =
+          listOf(
+            EventTriggerCondition(
+              eventResourceId = "carePlan1",
+              conditionalFhirPathExpressions = listOf("Patient.active")
+            )
+          )
+      )
     val questionnaireConfig: QuestionnaireConfig =
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        carePlanConfigs = listOf(carePlanConfig)
+        eventWorkflows = listOf(eventWorkflow)
       )
     val patient =
       Patient().apply {
@@ -1600,12 +1638,29 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testConditionallyUpdateCarePlanStatusCancelsTasks() {
     val planDefinitions = listOf("plandef-1")
-    val carePlanConfig = CarePlanConfig(fhirPathExpression = "Patient.active")
+    val eventWorkflow =
+      EventWorkflow(
+        triggerConditions =
+          listOf(
+            EventTriggerCondition(
+              eventResourceId = "carePlan1",
+              conditionalFhirPathExpressions = listOf("Patient.active")
+            )
+          ),
+        eventResources =
+          listOf(
+            ResourceConfig(
+              resource = ResourceType.CarePlan,
+              planDefinitions = planDefinitions,
+              id = "carePlan1"
+            )
+          )
+      )
     val questionnaireConfig: QuestionnaireConfig =
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        carePlanConfigs = listOf(carePlanConfig)
+        eventWorkflows = listOf(eventWorkflow)
       )
     val patient =
       Patient().apply {
@@ -1664,12 +1719,29 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun testConditionallyUpdateCarePlanStatusDoesNotCancelTasksWhenStatusIsCompleted() {
     val planDefinitions = listOf("plandef-1")
-    val carePlanConfig = CarePlanConfig(fhirPathExpression = "Patient.active")
-    val questionnaireConfig: QuestionnaireConfig =
+    val eventWorkflow =
+      EventWorkflow(
+        triggerConditions =
+          listOf(
+            EventTriggerCondition(
+              eventResourceId = "carePlan1",
+              conditionalFhirPathExpressions = listOf("Patient.active")
+            )
+          ),
+        eventResources =
+          listOf(
+            ResourceConfig(
+              resource = ResourceType.CarePlan,
+              planDefinitions = planDefinitions,
+              id = "carePlan1"
+            )
+          )
+      )
+    val questionnaireConfig =
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        carePlanConfigs = listOf(carePlanConfig)
+        eventWorkflows = listOf(eventWorkflow)
       )
     val patient =
       Patient().apply {
@@ -2015,6 +2087,92 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       dependentTask.executionPeriod.start
     )
     coVerify { defaultRepository.addOrUpdate(addMandatoryTags = true, dependentTask) }
+  }
+
+  @Test
+  fun testEvaluateToBooleanReturnsTrueWhenAllConditionsAreMetIfMatchAllIsSetToTrue() {
+    val conditionalFhirPathExpression = listOf("Patient.active", "Patient.id = 'patient-1'")
+    val patient = Faker.buildPatient()
+    patient.apply {
+      id = "patient-1"
+      active = true
+    }
+    val bundle = Bundle().apply { addEntry().resource = patient }
+
+    val conditionsMet =
+      fhirCarePlanGenerator.evaluateToBoolean(
+        subject = patient,
+        bundle = bundle,
+        triggerConditions = conditionalFhirPathExpression,
+        matchAll = true
+      )
+
+    assertTrue(conditionsMet)
+  }
+
+  @Test
+  fun testEvaluateToBooleanReturnsFalseWhenSomeConditionsAreNotMetIfMatchAllIsSetToTrue() {
+    val conditionalFhirPathExpression =
+      listOf("Patient.active", "Patient.id = 'another-patient-id'")
+    val patient = Faker.buildPatient()
+    patient.apply {
+      id = "patient-1"
+      active = true
+    }
+    val bundle = Bundle().apply { addEntry().resource = patient }
+
+    val conditionsMet =
+      fhirCarePlanGenerator.evaluateToBoolean(
+        subject = patient,
+        bundle = bundle,
+        triggerConditions = conditionalFhirPathExpression,
+        matchAll = true
+      )
+
+    assertFalse(conditionsMet)
+  }
+  @Test
+  fun testEvaluateToBooleanReturnsTrueWhenSomeConditionsAreNotMetIfMatchAllIsSetToFalse() {
+    val conditionalFhirPathExpression =
+      listOf("Patient.active", "Patient.id = 'another-patient-id'")
+    val patient = Faker.buildPatient()
+    patient.apply {
+      id = "patient-1"
+      active = true
+    }
+    val bundle = Bundle().apply { addEntry().resource = patient }
+
+    val conditionsMet =
+      fhirCarePlanGenerator.evaluateToBoolean(
+        subject = patient,
+        bundle = bundle,
+        triggerConditions = conditionalFhirPathExpression,
+        matchAll = false
+      )
+
+    assertTrue(conditionsMet)
+  }
+
+  @Test
+  fun testEvaluateToBooleanReturnsFalseWhenNoneOfTheConditionsAreNotMetIfMatchAllIsSetToFalse() {
+    val conditionalFhirPathExpression =
+      listOf("Patient.active = 'false'", "Patient.id = 'another-patient-id'")
+    val patient = Faker.buildPatient()
+    patient.apply {
+      id = "patient-1"
+      active = true
+    }
+    val bundle = Bundle().apply { addEntry().resource = patient }
+
+    val conditionsMet =
+      fhirCarePlanGenerator.evaluateToBoolean(
+        subject = patient,
+        bundle = bundle,
+        triggerConditions = conditionalFhirPathExpression,
+        matchAll = false
+      )
+
+    assertFalse(conditionsMet)
   }
 }
 
