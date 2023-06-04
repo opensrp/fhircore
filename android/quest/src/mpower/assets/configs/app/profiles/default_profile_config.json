@@ -84,6 +84,10 @@
             "reference": "@{patientProfileIcon}"
           },
           {
+            "viewType": "SPACER",
+            "width": 10
+          },
+          {
             "viewType": "COLUMN",
             "backgroundColor": "primaryColor",
             "children": [

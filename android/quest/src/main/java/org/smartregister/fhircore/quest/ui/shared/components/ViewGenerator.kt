@@ -41,7 +41,7 @@ import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.TabViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
-import org.smartregister.fhircore.engine.configuration.view.ImageViewProperties
+import org.smartregister.fhircore.engine.configuration.view.ProfileImageViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
@@ -190,7 +190,7 @@ fun GenerateView(
       ViewType.IMAGE_VIEW ->
         ImageView(
           modifier = modifier,
-          imageViewProperties = properties as ImageViewProperties
+          profileImageViewProperties = properties as ProfileImageViewProperties
         )
       ViewType.LIST ->
         List(

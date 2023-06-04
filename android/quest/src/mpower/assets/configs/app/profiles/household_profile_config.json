@@ -222,29 +222,45 @@
       "viewType": "COMPOUND_TEXT",
       "primaryText": "@{familyName} Family",
       "primaryTextColor": "#FFFFFF",
-      "fontSize": 20.0,
+      "fontSize": 16.0,
       "maxLines": 1,
       "primaryTextFontWeight": "BOLD"
     },
     "content": [
       {
-        "viewType": "COMPOUND_TEXT",
-        "primaryText": "@{familyName} Family",
-        "primaryTextColor": "#FFFFFF",
-        "fontSize": 16.0,
-        "maxLines": 1,
-        "primaryTextFontWeight": "BOLD"
-      },
-      {
-        "viewType": "COLUMN",
-        "backgroundColor": "primaryColor",
+        "viewType": "ROW",
+        "alignment": "START",
         "children": [
           {
-            "viewType": "COMPOUND_TEXT",
-            "primaryText": "HH No: @{familyId}",
-            "primaryTextColor": "#FFFFFF",
-            "colorOpacity": 0.76,
-            "fontSize": 14.0
+            "viewType": "IMAGE_VIEW",
+            "width": 80,
+            "height": 80,
+            "reference": "ic_households"
+          },
+          {
+            "viewType": "SPACER",
+            "width": 10
+          },
+          {
+            "viewType": "COLUMN",
+            "backgroundColor": "primaryColor",
+            "children": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{familyName} Family",
+                "primaryTextColor": "#FFFFFF",
+                "fontSize": 16.0,
+                "maxLines": 1,
+                "primaryTextFontWeight": "BOLD"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "HH No: @{familyId}",
+                "primaryTextColor": "#FFFFFF",
+                "colorOpacity": 0.76,
+                "fontSize": 14.0
+              }
+            ]
           }
         ]
       }

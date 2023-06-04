@@ -48,7 +48,7 @@ object ViewPropertiesSerializer :
       ViewType.PERSONAL_DATA -> PersonalDataProperties.serializer()
       ViewType.BUTTON -> ButtonProperties.serializer()
       ViewType.SPACER -> SpacerProperties.serializer()
-      ViewType.IMAGE_VIEW -> ImageViewProperties.serializer()
+      ViewType.IMAGE_VIEW -> ProfileImageViewProperties.serializer()
       ViewType.LIST -> ListProperties.serializer()
     }
   }

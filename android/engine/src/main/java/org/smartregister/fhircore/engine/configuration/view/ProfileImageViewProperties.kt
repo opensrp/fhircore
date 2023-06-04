@@ -23,7 +23,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
-data class ImageViewProperties(
+data class ProfileImageViewProperties(
   override val viewType: ViewType = ViewType.IMAGE_VIEW,
   override val weight: Float = 0f,
   override val backgroundColor: String? = null,
@@ -41,7 +41,7 @@ data class ImageViewProperties(
   val width: Float = 100f,
   val color: String = "#FFFFFF",
 ) : ViewProperties() {
-  override fun interpolate(computedValuesMap: Map<String, Any>): ImageViewProperties {
+  override fun interpolate(computedValuesMap: Map<String, Any>): ProfileImageViewProperties {
     return this.copy(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),
       visible = visible.interpolate(computedValuesMap),
