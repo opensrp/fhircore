@@ -146,12 +146,19 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
             }
           }
+
+        val resourceMap = actionParams.filter {
+          it.paramType ==
+                  ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE
+        }.associate { it.resourceType to it.value }
+
         questionnaireResponse =
           questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
               questionnaire = questionnaire,
               subjectId = baseResourceId?.extractLogicalIdUuid(),
               subjectType = baseResourceType,
-              questionnaireConfig = questionnaireConfig
+              questionnaireConfig = questionnaireConfig,
+              resourceMap = resourceMap
             )
             .apply { generateMissingItems(questionnaire) }
 

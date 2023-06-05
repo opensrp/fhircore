@@ -1718,7 +1718,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         questionnaire,
         patient.id,
         patient.resourceType,
-        questionnaireConfig = questionnaireConfig
+        questionnaireConfig = questionnaireConfig,
+        resourceMap
       )
     }
 
@@ -1811,7 +1812,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         questionnaire,
         patient.id,
         patient.resourceType,
-        questionnaireConfig = questionnaireConfig
+        questionnaireConfig = questionnaireConfig,
+        resourceMap
       )
     }
 
@@ -1890,7 +1892,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         questionnaire,
         group.id,
         group.resourceType,
-        questionnaireConfig = questionnaireConfig
+        questionnaireConfig = questionnaireConfig,
+        resourceMap
       )
     }
 
@@ -1971,7 +1974,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         questionnaire,
         group.id,
         group.resourceType,
-        questionnaireConfig = questionnaireConfig
+        questionnaireConfig = questionnaireConfig,
+        resourceMap
       )
     }
 
@@ -2059,7 +2063,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         questionnaire,
         group.id,
         group.resourceType,
-        questionnaireConfig = questionnaireConfig
+        questionnaireConfig = questionnaireConfig,
+        resourceMap
       )
     }
 

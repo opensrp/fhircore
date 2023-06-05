@@ -654,6 +654,7 @@ constructor(
     subjectId: String?,
     subjectType: ResourceType?,
     questionnaireConfig: QuestionnaireConfig,
+    resourceMap: Map<ResourceType?, String>,
   ): QuestionnaireResponse {
     var questionnaireResponse = QuestionnaireResponse()
 
@@ -672,7 +673,16 @@ constructor(
 
       questionnaireResponse =
         runCatching {
-            val populationResources = loadPopulationResources(subjectId, subjectType)
+           //load required resources sent through Param for questionnaire Response expressions
+            val populationResources = arrayListOf<Resource>()
+            if (resourceMap.isEmpty()) {
+              populationResources.addAll(loadPopulationResources(subjectId, subjectType))
+            } else {
+              resourceMap.forEach {
+                populationResources.addAll(loadPopulationResources(it.value, it.key!!))
+              }
+            }
+
             populateQuestionnaireResponse(
               questionnaire = questionnaire,
               populationResources = populationResources
