@@ -74,7 +74,7 @@ subprojects {
     resolutionStrategy {
       eachDependency {
         when (requested.group) {
-          "org.jacoco" -> useVersion("0.8.8")
+          "org.jacoco" -> useVersion("0.8.7")
         }
       }
     }
