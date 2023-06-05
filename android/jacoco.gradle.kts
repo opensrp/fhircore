@@ -1,6 +1,6 @@
 import org.gradle.testing.jacoco.tasks.JacocoReport
 
-val module = if (project.name == "opensrp") "Opensrp" else ""
+val module = if (project.name == "quest") "Opensrp" else ""
 
 tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
   dependsOn(
@@ -83,7 +83,7 @@ tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
       "org/hl7/fhir/*"
     )
 
-  val moduleVariant = if (project.name == "opensrp") "opensrpDebug" else "debug"
+  val moduleVariant = if (project.name == "quest") "opensrpDebug" else "debug"
   val javaDebugTree =
     fileTree(baseDir = "${project.buildDir}/intermediates/javac/${moduleVariant}/classes/")
       .exclude(excludes)
