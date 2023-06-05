@@ -124,7 +124,6 @@ constructor(
    * flattened in a map for ease of usage in the rule engine.
    */
   fun fireRules(rules: Rules, repositoryResourceData: RepositoryResourceData): Map<String, Any> {
-
     with(repositoryResourceData) {
       // Initialize new facts and fire rules in background
       facts =
@@ -137,11 +136,28 @@ constructor(
           relatedResourcesMap.addToFacts(this)
           relatedResourcesCountMap.addToFacts(this)
 
-          // Populate the facts map with secondary resource data
-          secondaryRepositoryResourceData?.forEach {
-            put(it.resourceRulesEngineFactId ?: it.resource.resourceType.name, it.resource)
-            relatedResourcesMap.addToFacts(this)
-            relatedResourcesCountMap.addToFacts(this)
+          // Populate the facts map with secondary resource data flatten base and related resources
+          secondaryRepositoryResourceData
+            ?.groupBy { it.resourceRulesEngineFactId ?: it.resource.resourceType.name }
+            ?.forEach { entry -> put(entry.key, entry.value.map { it.resource }) }
+
+          secondaryRepositoryResourceData?.forEach { repoResourceData ->
+            repoResourceData.relatedResourcesMap.forEach { entry ->
+              val existingRelatedResourceList = get<MutableList<Resource>>(entry.key)
+              if (existingRelatedResourceList == null) {
+                put(entry.key, mutableListOf<Resource>())
+              }
+              get<MutableList<Resource>>(entry.key).addAll(entry.value)
+            }
+
+            repoResourceData.relatedResourcesCountMap.forEach { entry ->
+              val existingRelatedResourceCountList =
+                get<MutableList<RelatedResourceCount>>(entry.key)
+              if (existingRelatedResourceCountList == null) {
+                put(entry.key, mutableListOf<RelatedResourceCount>())
+              }
+              get<MutableList<RelatedResourceCount>>(entry.key).addAll(entry.value)
+            }
           }
         }
 
