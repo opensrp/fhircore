@@ -140,4 +140,12 @@
     <string name="next_appointment_date">Next Appointment Date</string>
     <string name="new_visit_created_title">New Visit Created</string>
     <string name="new_visit_created_message">A new visit for the patient has been successfully created.</string>
+    <string name="sync_strategy_careteam_system" translatable="false">https://smartregister.org/</string>
+    <string name="sync_strategy_location_system" translatable="false">https://smartregister.org/</string>
+    <string name="sync_strategy_organization_system" translatable="false">https://smartregister.org/</string>
+    <string name="sync_strategy_practitioner_system" translatable="false">https://smartregister.org/</string>
+    <string name="sync_strategy_careteam_display" translatable="false">Practitioner CareTeam</string>
+    <string name="sync_strategy_location_display" translatable="false">Practitioner Location</string>
+    <string name="sync_strategy_organization_display" translatable="false">Practitioner Organization</string>
+    <string name="sync_strategy_practitioner_display" translatable="false">Practitioner</string>
 </resources>

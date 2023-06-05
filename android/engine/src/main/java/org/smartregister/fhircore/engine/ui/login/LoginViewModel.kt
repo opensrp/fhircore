@@ -22,6 +22,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.ResourceType
@@ -47,7 +48,6 @@ import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
 import timber.log.Timber
-import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel
@@ -230,6 +230,7 @@ constructor(
   }
 
   fun savePractitionerDetails(bundle: org.hl7.fhir.r4.model.Bundle) {
+    Timber.e("Crashing here 2")
     if (bundle.entry.isNullOrEmpty()) return
     viewModelScope.launch {
       val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
@@ -239,9 +240,10 @@ constructor(
       val locations = practitionerDetails.fhirPractitionerDetails?.locations ?: listOf()
       val locationHierarchies =
         practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
-
+      Timber.e("Crashing here 1")
       val careTeamIds =
         withContext(dispatcherProvider.io()) {
+          Timber.e("Crashing here")
           defaultRepository.create(true, *careTeams.toTypedArray()).map {
             it.extractLogicalIdUuid()
           }
@@ -259,6 +261,7 @@ constructor(
           }
         }
 
+      Timber.e("Practitioner ID: ${practitionerDetails.fhirPractitionerDetails?.practitionerId}")
       sharedPreferences.write(
         key = SharedPreferenceKey.PRACTITIONER_ID.name,
         value = practitionerDetails.fhirPractitionerDetails?.practitionerId.valueToString()

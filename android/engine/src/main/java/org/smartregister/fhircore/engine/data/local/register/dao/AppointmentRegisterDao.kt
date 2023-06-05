@@ -65,10 +65,7 @@ constructor(
 ) : RegisterDao {
 
   private val currentPractitioner by lazy {
-    sharedPreferencesHelper.read<Practitioner>(
-      key = LOGGED_IN_PRACTITIONER,
-      decodeFhirResource = true
-    )
+    sharedPreferencesHelper.read<Practitioner>(key = LOGGED_IN_PRACTITIONER, decodeWithGson = true)
   }
 
   private fun Appointment.patientRef() =

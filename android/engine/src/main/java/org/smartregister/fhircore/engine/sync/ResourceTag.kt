@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util.extension
+package org.smartregister.fhircore.engine.sync
 
-/**
- * Get the practitioner endpoint url and append the keycloak-uuid. The original String is assumed to
- * be a keycloak-uuid.
- */
-fun String.practitionerEndpointUrl(): String = "practitioner-details?keycloak-uuid=$this"
+import org.hl7.fhir.r4.model.Coding
+
+data class ResourceTag(val type: String, var tag: Coding)

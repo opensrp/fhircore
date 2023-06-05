@@ -21,6 +21,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
@@ -29,8 +30,12 @@ import org.smartregister.fhircore.engine.appointment.ProposedWelcomeServiceAppoi
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.FhirConfiguration
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.sync.ResourceTag
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.task.WelcomeServiceBackToCarePlanWorker
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import timber.log.Timber
 
 /** An interface that provides the application configurations. */
@@ -46,6 +51,41 @@ interface ConfigService {
         ExistingPeriodicWorkPolicy.UPDATE,
         PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
       )
+  }
+
+  fun defineResourceTags(): List<ResourceTag>
+
+  /**
+   * Provide a list of [Coding] that represents [ResourceTag]. [Coding] can be directly appended to
+   * a FHIR resource.
+   */
+  fun provideResourceTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
+    val tags = mutableListOf<Coding>()
+    defineResourceTags().forEach { strategy ->
+      if (strategy.type == ResourceType.Practitioner.name) {
+        val id = sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+        if (id.isNullOrBlank()) {
+          strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+        } else {
+          strategy.tag.let { tag ->
+            tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
+          }
+        }
+      } else {
+        val ids = sharedPreferencesHelper.read<List<String>>(strategy.type)
+        if (ids.isNullOrEmpty()) {
+          strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+        } else {
+          ids.forEach { id ->
+            strategy.tag.let { tag ->
+              tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
+            }
+          }
+        }
+      }
+    }
+
+    return tags
   }
 
   fun unschedulePlan(context: Context) {

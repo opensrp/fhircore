@@ -42,9 +42,12 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
@@ -58,7 +61,12 @@ import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 @Singleton
 open class DefaultRepository
 @Inject
-constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: DispatcherProvider) {
+constructor(
+  open val fhirEngine: FhirEngine,
+  open val dispatcherProvider: DispatcherProvider,
+  open val sharedPreferencesHelper: SharedPreferencesHelper,
+  open val configService: ConfigService
+) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
@@ -175,10 +183,10 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     return withContext(dispatcherProvider.io()) {
       resource.onEach {
         it.generateMissingId()
-        // TODO: Migrate to using this instead of save
-        //        if (addResourceTags) {
-        //          it.addTags(configService.provideResourceTags(sharedPreferencesHelper))
-        //        }
+        it.generateMissingVersionId()
+        if (addResourceTags) {
+          it.addTags(configService.provideResourceTags(sharedPreferencesHelper))
+        }
       }
 
       fhirEngine.create(*resource)
@@ -189,7 +197,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
     return withContext(dispatcherProvider.io()) { fhirEngine.delete<Resource>(resource.logicalId) }
   }
 
-  suspend fun <R : Resource> addOrUpdate(resource: R) {
+  suspend fun <R : Resource> addOrUpdate(addMandatoryTags: Boolean = true, resource: R) {
     return withContext(dispatcherProvider.io()) {
       resource.updateLastUpdated()
       try {
@@ -197,9 +205,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
           fhirEngine.update(updateFrom(resource))
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
-        resource.generateMissingId()
-        resource.generateMissingVersionId()
-        fhirEngine.create(resource)
+        create(addMandatoryTags, resource)
       }
     }
   }

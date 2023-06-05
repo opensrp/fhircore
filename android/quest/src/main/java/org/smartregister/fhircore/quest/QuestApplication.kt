@@ -29,6 +29,8 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
 import com.github.anrwatchdog.ANRWatchDog
 import com.google.android.fhir.datacapture.DataCaptureConfig
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.perf.ktx.performance
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -82,10 +84,12 @@ class QuestApplication :
 
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
+      Firebase.performance.isPerformanceCollectionEnabled =false
     }
 
     if (BuildConfig.DEBUG.not()) {
       Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
+      Firebase.performance.isPerformanceCollectionEnabled =true
     }
 
     appInActivityListener =
@@ -146,12 +150,12 @@ class QuestApplication :
 //        }
 //      )
     }
-    mForegroundActivityContext
-      ?.takeIf {
-        val name = it::class.java.name
-        name !in activitiesAccessWithoutAuth
-      }
-      ?.let { accountAuthenticator.confirmActiveAccount { intent -> it.startActivity(intent) } }
+//    mForegroundActivityContext
+//      ?.takeIf {
+//        val name = it::class.java.name
+//        name !in activitiesAccessWithoutAuth
+//      }
+//      ?.let { accountAuthenticator.confirmActiveAccount { intent -> it.startActivity(intent) } }
   }
 
   private fun initANRWatcher() {
