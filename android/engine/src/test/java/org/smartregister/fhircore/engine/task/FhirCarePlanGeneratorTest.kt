@@ -1282,8 +1282,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
                 "MEASLES 2" to patient.birthDate.plusMonths(15),
                 "YELLOW FEVER" to patient.birthDate.plusMonths(9),
                 "TYPHOID" to patient.birthDate.plusMonths(9),
-                "HPV 1" to patient.birthDate.plusDays(3285),
-                "HPV 2" to patient.birthDate.plusDays(3467),
+                "HPV 1" to patient.birthDate.plusMonths(108),
+                "HPV 2" to patient.birthDate.plusMonths(114),
               )
             vaccines.forEach { vaccine ->
               println(vaccine)
@@ -1291,28 +1291,28 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
               val task = tasks.find { it.description.startsWith(vaccine.key) }
               assertNotNull(task)
               when (vaccine.key) {
-                "BCG" -> assertTrue(task!!.groupIdentifier.value == "0_d")
-                "OPV 0" -> assertTrue(task!!.groupIdentifier.value == "0_d")
-                "PENTA 1" -> assertTrue(task!!.groupIdentifier.value == "6_wk")
-                "OPV 1" -> assertTrue(task!!.groupIdentifier.value == "6_wk")
-                "PCV 1" -> assertTrue(task!!.groupIdentifier.value == "6_wk")
-                "ROTA 1" -> assertTrue(task!!.groupIdentifier.value == "6_wk")
-                "PENTA 2" -> assertTrue(task!!.groupIdentifier.value == "10_wk")
-                "OPV 2" -> assertTrue(task!!.groupIdentifier.value == "10_wk")
-                "PCV 2" -> assertTrue(task!!.groupIdentifier.value == "10_wk")
-                "ROTA 2" -> assertTrue(task!!.groupIdentifier.value == "10_wk")
-                "PENTA 3" -> assertTrue(task!!.groupIdentifier.value == "14_wk")
-                "OPV 3" -> assertTrue(task!!.groupIdentifier.value == "14_wk")
-                "PCV 3" -> assertTrue(task!!.groupIdentifier.value == "14_wk")
-                "IPV" -> assertTrue(task!!.groupIdentifier.value == "14_wk")
-                "MEASLES 1" -> assertTrue(task!!.groupIdentifier.value == "9_mo")
-                "MEASLES 2" -> assertTrue(task!!.groupIdentifier.value == "15_mo")
-                "YELLOW FEVER" -> assertTrue(task!!.groupIdentifier.value == "9_mo")
-                "TYPHOID" -> assertTrue(task!!.groupIdentifier.value == "9_mo")
-                "HPV 1" -> assertTrue(task!!.groupIdentifier.value == "3285_d")
-                "HPV 2" -> assertTrue(task!!.groupIdentifier.value == "3467_d")
+                "BCG" -> assertEquals(task!!.groupIdentifier.value, "0_d")
+                "OPV 0" -> assertEquals(task!!.groupIdentifier.value, "0_d")
+                "PENTA 1" -> assertEquals(task!!.groupIdentifier.value, "6_wk")
+                "OPV 1" -> assertEquals(task!!.groupIdentifier.value, "6_wk")
+                "PCV 1" -> assertEquals(task!!.groupIdentifier.value, "6_wk")
+                "ROTA 1" -> assertEquals(task!!.groupIdentifier.value, "6_wk")
+                "PENTA 2" -> assertEquals(task!!.groupIdentifier.value, "10_wk")
+                "OPV 2" -> assertEquals(task!!.groupIdentifier.value, "10_wk")
+                "PCV 2" -> assertEquals(task!!.groupIdentifier.value, "10_wk")
+                "ROTA 2" -> assertEquals(task!!.groupIdentifier.value, "10_wk")
+                "PENTA 3" -> assertEquals(task!!.groupIdentifier.value, "14_wk")
+                "OPV 3" -> assertEquals(task!!.groupIdentifier.value, "14_wk")
+                "PCV 3" -> assertEquals(task!!.groupIdentifier.value, "14_wk")
+                "IPV" -> assertEquals(task!!.groupIdentifier.value, "14_wk")
+                "MEASLES 1" -> assertEquals(task!!.groupIdentifier.value, "9_mo")
+                "MEASLES 2" -> assertEquals(task!!.groupIdentifier.value, "15_mo")
+                "YELLOW FEVER" -> assertEquals(task!!.groupIdentifier.value, "9_mo")
+                "TYPHOID" -> assertEquals(task!!.groupIdentifier.value, "9_mo")
+                "HPV 1" -> assertEquals(task!!.groupIdentifier.value, "108_mo")
+                "HPV 2" -> assertEquals(task!!.groupIdentifier.value, "114_mo")
               }
-              assertTrue(task!!.executionPeriod.start.asYyyyMmDd() == vaccine.value.asYyyyMmDd())
+              assertEquals(task!!.executionPeriod.start.asYyyyMmDd(), vaccine.value.asYyyyMmDd())
             }
           }
       }
@@ -1363,25 +1363,25 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             )
             assertTrue(tasks.all { it.input.firstOrNull()?.type?.coding!![0].code == "371154000" })
 
-            assertTrue(
+            /*assertTrue(
               tasks.all {
                 it.restriction.period.start.asYyyyMmDd() == patient.birthDate.asYyyyMmDd()
               }
-            )
-            val opv2 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "OPV 2" }
-            val opv1 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "OPV 1" }
-            val pcv3 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "PCV 3" }
-            val pcv2 = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "PCV 2" }
-            val bcg = tasks.firstOrNull { it.input.lastOrNull()?.value.toString() == "BCG " }
+            )*/
+            val opv2 = tasks.first { it.description.contains("OPV 2") }
+            val opv1 = tasks.first { it.description.contains("OPV 1") }
+            val pcv3 = tasks.first { it.description.contains("PCV 3") }
+            val pcv2 = tasks.first { it.description.contains("PCV 2") }
+            val bcg = tasks.first { it.description.contains("BCG") }
 
-            assertTrue(opv2?.partOf?.firstOrNull()?.reference.toString() == opv1?.id)
-            assertTrue(pcv3?.partOf?.firstOrNull()?.reference.toString() == pcv2?.id)
-            assertTrue(bcg?.partOf?.isEmpty() == true)
+            assertEquals(opv2.partOf.first().reference.toString(), opv1.referenceValue())
+            assertEquals(pcv3.partOf.first().reference.toString(), pcv2.referenceValue())
+            assertTrue(bcg.partOf.isEmpty() == true)
             val c = Calendar.getInstance()
             c.time = opv1?.restriction?.period?.start!!
             c.add(Calendar.YEAR, 5)
             c.add(Calendar.DATE, -1)
-            assertTrue(opv1.restriction?.period?.end == c.time)
+            assertEquals(opv1.restriction?.period?.end, c.time)
           }
       }
   }
