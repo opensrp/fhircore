@@ -60,7 +60,7 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 @HiltAndroidTest
 class AppMainActivityTest : ActivityRobolectricTest() {
 
-  @get:Rule val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()

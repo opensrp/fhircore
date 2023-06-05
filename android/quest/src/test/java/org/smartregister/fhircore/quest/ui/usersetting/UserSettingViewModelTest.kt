@@ -67,7 +67,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   lateinit var accountAuthenticator: AccountAuthenticator
   lateinit var secureSharedPreference: SecureSharedPreference
   lateinit var fhirEngine: FhirEngine
-  var sharedPreferencesHelper: SharedPreferencesHelper
+  private var sharedPreferencesHelper: SharedPreferencesHelper
   private var configService: ConfigService
   private lateinit var syncBroadcaster: SyncBroadcaster
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
@@ -94,7 +94,7 @@ class UserSettingViewModelTest : RobolectricTest() {
         SyncBroadcaster(
           configurationRegistry,
           fhirEngine = mockk(),
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
           syncListenerManager = mockk(relaxed = true),
           context = context
         )
@@ -110,7 +110,7 @@ class UserSettingViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           workManager = workManager,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider
+          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider
         )
       )
   }

@@ -102,7 +102,7 @@ internal class LoginViewModelTest : RobolectricTest() {
           fhirResourceService = fhirResourceService,
           tokenAuthenticator = tokenAuthenticator,
           secureSharedPreference = secureSharedPreference,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
           workManager = workManager
         )
       )
