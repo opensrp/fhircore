@@ -147,18 +147,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             }
           }
 
-        val resourceMap = actionParams.filter {
-          it.paramType ==
-                  ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE
-        }.associate { it.resourceType to it.value }
-
         questionnaireResponse =
           questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
               questionnaire = questionnaire,
               subjectId = baseResourceId?.extractLogicalIdUuid(),
               subjectType = baseResourceType,
               questionnaireConfig = questionnaireConfig,
-              resourceMap = resourceMap
+              resourceMap = getResourcesFromParamsForQR()
             )
             .apply { generateMissingItems(questionnaire) }
 
@@ -182,6 +177,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         }
       }
     }
+  }
+
+  private fun getResourcesFromParamsForQR(): Map<ResourceType?, String> {
+    val resourceMap =
+      actionParams
+        .filter { it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE }
+        .associate { it.resourceType to it.value }
+    return resourceMap
   }
 
   fun updateViews() {

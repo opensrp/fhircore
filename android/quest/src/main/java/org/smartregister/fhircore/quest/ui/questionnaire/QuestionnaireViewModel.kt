@@ -673,7 +673,7 @@ constructor(
 
       questionnaireResponse =
         runCatching {
-           //load required resources sent through Param for questionnaire Response expressions
+            // load required resources sent through Param for questionnaire Response expressions
             val populationResources = arrayListOf<Resource>()
             if (resourceMap.isEmpty()) {
               populationResources.addAll(loadPopulationResources(subjectId, subjectType))
