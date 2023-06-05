@@ -37,12 +37,14 @@ import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
@@ -137,6 +139,8 @@ class AppMainViewModelTest : RobolectricTest() {
     appMainViewModel.onEvent(appMainEvent)
 
     Assert.assertEquals("en", sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, ""))
+
+    unmockkStatic(Activity::class)
   }
 
   @Test
@@ -175,12 +179,12 @@ class AppMainViewModelTest : RobolectricTest() {
       appMainViewModel.formatLastSyncTimestamp(timestamp),
       sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
     )
-    verify { appMainViewModel.retrieveAppMainUiState() }
+    coVerify { appMainViewModel.retrieveAppMainUiState() }
   }
 
   @Test
   fun testOnEventOpenProfile() {
-    val resourceConfig = FhirResourceConfig(ResourceConfig(resource = "Patient"))
+    val resourceConfig = FhirResourceConfig(ResourceConfig(resource = ResourceType.Patient))
     appMainViewModel.onEvent(
       AppMainEvent.OpenProfile(
         navController = navController,

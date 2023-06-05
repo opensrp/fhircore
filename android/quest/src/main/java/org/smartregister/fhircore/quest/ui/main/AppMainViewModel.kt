@@ -22,7 +22,6 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -95,9 +94,6 @@ constructor(
 ) : ViewModel() {
 
   val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
-
-  val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
-
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
       appMainUiStateOf(
@@ -109,6 +105,7 @@ constructor(
     )
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
+  private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
@@ -133,7 +130,7 @@ constructor(
       }
   }
 
-  fun retrieveAppMainUiState() {
+  suspend fun retrieveAppMainUiState() {
     appMainUiState.value =
       appMainUiStateOf(
         appTitle = applicationConfiguration.appTitle,
@@ -142,8 +139,16 @@ constructor(
         lastSyncTime = retrieveLastSyncTimestamp() ?: "",
         languages = configurationRegistry.fetchLanguages(),
         navigationConfiguration = navigationConfiguration,
-        registerCountMap = retrieveRegisterCountMap()
+        registerCountMap = registerCountMap
       )
+
+    // Count data for configured registers by populating the register count map
+    viewModelScope.launch {
+      navigationConfiguration.run {
+        clientRegisters.countRegisterData()
+        bottomSheetRegisters?.registers?.countRegisterData()
+      }
+    }
   }
 
   fun onEvent(event: AppMainEvent) {
@@ -170,7 +175,7 @@ constructor(
                 formatLastSyncTimestamp(event.state.timestamp)
               )
             }
-            retrieveAppMainUiState()
+            viewModelScope.launch { retrieveAppMainUiState() }
           }
           else ->
             appMainUiState.value =
@@ -209,17 +214,6 @@ constructor(
     }
   }
 
-  private fun retrieveRegisterCountMap(): Map<String, Long> {
-    val countsMap = mutableStateMapOf<String, Long>()
-    viewModelScope.launch(dispatcherProvider.io()) {
-      with(navigationConfiguration) {
-        clientRegisters.setRegisterCount(countsMap)
-        bottomSheetRegisters?.registers?.setRegisterCount(countsMap)
-      }
-    }
-    return countsMap
-  }
-
   fun launchFamilyRegistrationWithLocationId(
     context: Context,
     locationId: String,
@@ -239,17 +233,13 @@ constructor(
     }
   }
 
-  private suspend fun List<NavigationMenuConfig>.setRegisterCount(
-    countsMap: SnapshotStateMap<String, Long>
-  ) {
+  private suspend fun List<NavigationMenuConfig>.countRegisterData() {
     // Set count for registerId against its value. Use action Id; otherwise default to menu id
-    this.asSequence().filter { it.showCount }.forEach { menuConfig ->
+    return this.filter { it.showCount }.forEach { menuConfig ->
       val countAction =
         menuConfig.actions?.find { actionConfig -> actionConfig.trigger == ActionTrigger.ON_COUNT }
-      if (countAction != null) {
-        countsMap[countAction.id ?: menuConfig.id] =
-          registerRepository.countRegisterData(menuConfig.id)
-      }
+      registerCountMap[countAction?.id ?: menuConfig.id] =
+        registerRepository.countRegisterData(menuConfig.id)
     }
   }
 
@@ -294,10 +284,10 @@ constructor(
 
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
-    // Schedule job that updates the status of the tasks periodically
     workManager.run {
       schedulePeriodically<FhirTaskPlanWorker>(
         workId = FhirTaskPlanWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskStatusUpdateJobDuration),
         requiresNetwork = false
       )
 

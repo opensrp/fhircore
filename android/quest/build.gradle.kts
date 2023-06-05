@@ -20,6 +20,7 @@ plugins {
   id("dagger.hilt.android.plugin")
   id("androidx.navigation.safeargs")
   id("org.sonarqube") version "3.5.0.2730"
+  id("io.sentry.android.gradle") version "3.5.0"
 }
 
 sonar { properties { property("sonar.projectKey", "fhircore") } }
@@ -46,6 +47,7 @@ android {
     )
     buildConfigField("String", "OAUTH_SCOPE", """"${project.extra["OAUTH_SCOPE"]}"""")
     buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """"100"""")
+    buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
 
     testInstrumentationRunner = "org.smartregister.fhircore.quest.QuestTestRunner"
   }
@@ -135,10 +137,9 @@ android {
   flavorDimensions += "apps"
 
   productFlavors {
-    create("quest") {
+    create("opensrp") {
       dimension = "apps"
-      applicationIdSuffix = ".quest"
-      versionNameSuffix = "-quest"
+      applicationIdSuffix = ".opensrp"
       isDefault = true
     }
 

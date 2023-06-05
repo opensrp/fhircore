@@ -21,6 +21,6 @@ sealed class MeasureReportNavigationScreen(
 ) {
   object MeasureReportList : MeasureReportNavigationScreen("reportMeasuresList")
   object ReportTypeSelector : MeasureReportNavigationScreen("reportTypeSelector")
-  object PatientsList : MeasureReportNavigationScreen("patientsList")
+  object SubjectsList : MeasureReportNavigationScreen("subjectsList")
   object MeasureReportResult : MeasureReportNavigationScreen("measureReportResult")
 }

@@ -28,6 +28,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class ActionConfigTest : RobolectricTest() {
+
   @Test
   fun testActionConfigParamsBundleCreatesBundleAndFiltersOutPrepopulationParams() {
     val computedValuesMap =
@@ -73,23 +74,7 @@ class ActionConfigTest : RobolectricTest() {
     Assert.assertEquals("Test Name", result.getString("patientName"))
   }
 
-  @Test
-  fun testDisplayStringIsInterpolatedCorrectly() {
-    val computedValuesMap = mapOf<String, Any>("testDisplay" to "This is a test Display")
-    val actionConfig =
-      ActionConfig(
-        trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444"),
-        display = "@{testDisplay}"
-      )
-
-    val result = actionConfig.display(computedValuesMap)
-
-    Assert.assertEquals("This is a test Display", result)
-  }
-
-  fun testManagingEntityStringIsInterpolatedCorrectly() {
+  fun testActionConfigInterpolation() {
     val computedValuesMap =
       mapOf<String, Any>(
         "dialogTitle" to "Change household head",
@@ -97,6 +82,7 @@ class ActionConfigTest : RobolectricTest() {
         "dialogContentMessage" to "Changing head",
         "noMembersErrorMessage" to "No members found",
         "managingEntityReassignedMessage" to "Head reassigned successfully",
+        "testDisplay" to "This is a test Display"
       )
     val actionConfig =
       ActionConfig(
@@ -114,7 +100,10 @@ class ActionConfigTest : RobolectricTest() {
           )
       )
 
-    val result = actionConfig.interpolateManagingEntity(computedValuesMap)
+    val interpolatedActionConfig = actionConfig.interpolate(computedValuesMap)
+    Assert.assertEquals("This is a test Display", interpolatedActionConfig.display)
+
+    val result = interpolatedActionConfig.managingEntity
     Assert.assertEquals("Change household head", result?.dialogTitle)
     Assert.assertEquals("Are you sure", result?.dialogWarningMessage)
     Assert.assertEquals("Changing head", result?.dialogContentMessage)
@@ -123,7 +112,7 @@ class ActionConfigTest : RobolectricTest() {
   }
 
   @Test
-  fun testInterpolateManagingEntityNoChangeIfNoValuesArePassed() {
+  fun testInterpolateManagingEntityHandlesNulls() {
     val actionConfig =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
@@ -140,35 +129,9 @@ class ActionConfigTest : RobolectricTest() {
           )
       )
     val oldActionConfig = actionConfig.copy()
-    actionConfig.interpolateManagingEntity(emptyMap())
 
-    Assert.assertEquals(oldActionConfig, actionConfig)
-  }
-
-  @Test
-  fun testInterpolateManagingEntityHandlesNulls() {
-    var actionConfig =
-      ActionConfig(
-        trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444"),
-        display = "Display"
-      )
-    var oldActionConfig = actionConfig.copy()
-    actionConfig.interpolateManagingEntity(emptyMap())
-
-    Assert.assertEquals(oldActionConfig, actionConfig)
-
-    actionConfig =
-      ActionConfig(
-        trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "444"),
-        display = "Display",
-        managingEntity = ManagingEntityConfig()
-      )
-    oldActionConfig = actionConfig.copy()
-    actionConfig.interpolateManagingEntity(emptyMap())
+    // No change effected on the properties; no values existing on the map for swap to happen
+    actionConfig.interpolate(emptyMap())
 
     Assert.assertEquals(oldActionConfig, actionConfig)
   }

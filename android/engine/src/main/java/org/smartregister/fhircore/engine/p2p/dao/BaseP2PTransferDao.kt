@@ -134,7 +134,7 @@ constructor(
         DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
         {
           value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-          prefix = ParamPrefixEnum.GREATERTHAN
+          prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
         }
       )
     }

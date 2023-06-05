@@ -141,6 +141,7 @@ dependencies {
 
   // Shared dependencies
   api(libs.glide)
+  api(libs.knowledger)
   api(libs.p2p.lib)
   api(libs.jjwt)
   api(libs.fhir.common.utils)

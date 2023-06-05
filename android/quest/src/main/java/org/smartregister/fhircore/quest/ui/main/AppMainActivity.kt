@@ -30,6 +30,7 @@ import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
+import io.sentry.android.navigation.SentryNavigationListener
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -64,12 +65,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
   @Inject lateinit var fhirEngine: FhirEngine
   @Inject lateinit var eventBus: EventBus
-
-  val appMainViewModel by viewModels<AppMainViewModel>()
-
-  private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
-
   lateinit var navHostFragment: NavHostFragment
+  val appMainViewModel by viewModels<AppMainViewModel>()
+  private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
+  private val sentryNavListener =
+    SentryNavigationListener(enableNavigationBreadcrumbs = true, enableNavigationTracing = true)
 
   override val startForResult =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
@@ -119,7 +119,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
     // Setup the drawer and schedule jobs
     appMainViewModel.run {
-      retrieveAppMainUiState()
+      lifecycleScope.launch { retrieveAppMainUiState() }
       schedulePeriodicJobs()
     }
 
@@ -128,11 +128,17 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override fun onResume() {
     super.onResume()
+    navHostFragment.navController.addOnDestinationChangedListener(sentryNavListener)
     syncListenerManager.registerSyncListener(this, lifecycle)
 
     appMainViewModel.viewModelScope.launch(dispatcherProvider.io()) {
       fhirEngine.addDateTimeIndex()
     }
+  }
+
+  override fun onPause() {
+    super.onPause()
+    navHostFragment.navController.removeOnDestinationChangedListener(sentryNavListener)
   }
 
   override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
@@ -144,13 +150,15 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as
           QuestionnaireConfig?
 
-      if (questionnaireConfig != null && questionnaireResponse != null) {
-        appMainViewModel.questionnaireSubmissionLiveData.postValue(
-          QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
-        )
-      }
-      if (questionnaireConfig != null && questionnaireConfig.refreshContent) {
-        lifecycleScope.launch {
+      lifecycleScope.launch {
+        if (questionnaireConfig != null && questionnaireResponse != null) {
+          eventBus.triggerEvent(
+            AppEvent.OnSubmitQuestionnaire(
+              QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
+            )
+          )
+        }
+        if (questionnaireConfig != null && questionnaireConfig.refreshContent) {
           eventBus.triggerEvent(AppEvent.RefreshCache(questionnaireConfig = questionnaireConfig))
         }
       }

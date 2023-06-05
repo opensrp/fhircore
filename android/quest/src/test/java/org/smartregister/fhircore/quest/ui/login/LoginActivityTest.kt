@@ -103,7 +103,7 @@ class LoginActivityTest : RobolectricTest() {
   @Ignore("Weird: Cannot set session pin")
   fun testNavigateToScreenShouldLaunchPinLoginWithoutSetup() {
     // Return a session pin, login with pin is enabled by default
-    secureSharedPreference.saveSessionPin("1234")
+    secureSharedPreference.saveSessionPin("1234".toCharArray())
     every { secureSharedPreference.retrieveSessionPin() } returns "1234"
 
     loginActivity.loginViewModel.updateNavigateHome(true)

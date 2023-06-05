@@ -23,7 +23,8 @@ val requiredFhirProperties =
     "OAUTH_CIENT_ID",
     "OAUTH_CLIENT_SECRET",
     "OAUTH_SCOPE",
-    "MAPBOX_SDK_TOKEN"
+    "MAPBOX_SDK_TOKEN",
+    "SENTRY_DSN"
   )
 
 val localProperties = readProperties("local.properties")

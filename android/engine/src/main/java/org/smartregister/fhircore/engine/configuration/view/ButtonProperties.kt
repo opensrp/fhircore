@@ -62,26 +62,26 @@ data class ButtonProperties(
       ServiceStatus.IN_PROGRESS -> WarningColor
     }
   }
-  fun interpolate(computedValuesMap: Map<String, Any>) =
-    this.copy(
+  override fun interpolate(computedValuesMap: Map<String, Any>): ButtonProperties {
+    val interpolatedBackgroundColor = backgroundColor?.interpolate(computedValuesMap)
+    return this.copy(
+      backgroundColor =
+        if (!interpolatedBackgroundColor.isNullOrEmpty()) {
+          interpolatedBackgroundColor
+        } else Color.Unspecified.toString(),
+      visible = visible.interpolate(computedValuesMap),
       status = interpolateStatus(computedValuesMap).name,
-      backgroundColor = interpolateBackgroundColor(computedValuesMap),
+      text = text?.interpolate(computedValuesMap),
       enabled = enabled.interpolate(computedValuesMap),
-      text = text?.interpolate(computedValuesMap)
+      clickable = clickable.interpolate(computedValuesMap)
     )
+  }
 
   private fun interpolateStatus(computedValuesMap: Map<String, Any>): ServiceStatus {
     val interpolated = this.status.interpolate(computedValuesMap)
     return if (ServiceStatus.values().map { it.name }.contains(interpolated))
       ServiceStatus.valueOf(interpolated)
     else ServiceStatus.UPCOMING
-  }
-
-  private fun interpolateBackgroundColor(computedValuesMap: Map<String, Any>): String {
-    val interpolated = this.backgroundColor?.interpolate(computedValuesMap)
-    return if (!interpolated.isNullOrEmpty()) {
-      return interpolated
-    } else Color.Unspecified.toString()
   }
 }
 

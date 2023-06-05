@@ -37,6 +37,7 @@ import io.mockk.slot
 import java.util.Date
 import javax.inject.Inject
 import junit.framework.Assert.assertEquals
+import junit.framework.Assert.assertNotNull
 import junit.framework.Assert.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -46,8 +47,11 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
+import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.junit.Before
 import org.junit.Rule
@@ -56,6 +60,8 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
@@ -100,6 +106,42 @@ class FhirExtractionTest : RobolectricTest() {
         )
         .also { println(it.encodeResourceToString()) }
     val encounter = result.entry.find { it.resource is Encounter }!!.resource as Encounter
+    result.entry.filter { it.resource is Task }.also { taskList ->
+      assertTrue(taskList.size == 3)
+
+      questionnaireResponse.item.find { it.linkId == "vaccines" }!!.answer
+        .map { it.value as Reference }
+        .forEach { taskReference ->
+          val outputTask =
+            taskList
+              .find { (it.resource as Task).id.extractLogicalIdUuid() == taskReference.extractId() }
+              ?.resource as?
+              Task
+          assertNotNull(outputTask)
+          assertTrue(outputTask!!.output.size == 3)
+          assertNotNull(
+            outputTask.output.find {
+              it.castToReference(it.value).reference.startsWith(ResourceType.Immunization.name)
+            }
+          )
+          assertNotNull(
+            outputTask.output.find {
+              it.castToReference(it.value).reference.startsWith(ResourceType.Encounter.name)
+            }
+          )
+        }
+
+      val firstTask = taskList.first().resource as Task
+      assertTrue(
+        firstTask.output.first().type.coding.first().code ==
+          encounter.type.first().coding.first().code
+      )
+      assertTrue(!firstTask.output.first().value.isEmpty)
+
+      val administrationEncounter =
+        result.entry.filter { it.resource is Encounter }.last().resource as Encounter
+      assertTrue(administrationEncounter.partOf.reference == encounter.id)
+    }
     result.entry.filter { it.resource is Immunization }.map { it.resource as Immunization }.also {
       assertEquals(3, it.size)
       assertTrue(it.all { it.encounter.reference == encounter.referenceValue() })

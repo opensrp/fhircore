@@ -67,9 +67,7 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
-import org.smartregister.fhircore.quest.util.extensions.clickable
 import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.p2p.utils.capitalize
@@ -83,7 +81,7 @@ fun ServiceCard(
   resourceData: ResourceData,
   navController: NavController,
 ) {
-  val serviceCardClickable = serviceCardProperties.clickable(resourceData)
+  val serviceCardClickable = serviceCardProperties.clickable.toBoolean()
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
@@ -133,8 +131,7 @@ fun ServiceCard(
       if (serviceCardProperties.showVerticalDivider) {
         ServiceMemberIcons(
           modifier = modifier.wrapContentWidth(Alignment.End).weight(0.3f),
-          serviceMemberIcons =
-            serviceCardProperties.serviceMemberIcons?.interpolate(resourceData.computedValuesMap)
+          serviceMemberIcons = serviceCardProperties.serviceMemberIcons
         )
       }
     }
@@ -148,11 +145,7 @@ fun ServiceCard(
       )
     } else {
       ServiceMemberIcons(
-        serviceMemberIcons =
-          serviceCardProperties
-            .serviceMemberIcons
-            ?.replace("\\s+".toRegex(), "")
-            ?.interpolate(resourceData.computedValuesMap)
+        serviceMemberIcons = serviceCardProperties.serviceMemberIcons?.replace("\\s+".toRegex(), "")
       )
     }
 
@@ -167,10 +160,7 @@ fun ServiceCard(
       // Service card visibility can be determined dynamically e.g. only display when task is due
       if ((serviceCardProperties.serviceButton != null || serviceCardProperties.services != null)) {
         if (serviceCardProperties.serviceButton != null &&
-            serviceCardProperties.serviceButton!!
-              .visible
-              .interpolate(resourceData.computedValuesMap)
-              .toBoolean()
+            serviceCardProperties.serviceButton!!.visible.toBoolean()
         ) {
           if (serviceCardProperties.serviceButton!!.smallSized) {
             Column {
@@ -211,7 +201,7 @@ private fun ServiceMemberIcons(modifier: Modifier = Modifier, serviceMemberIcons
   val iconsSplit = serviceMemberIcons?.split(",") ?: listOf()
   val twoMemberIcons = iconsSplit.map { it.capitalize().trim() }.take(2)
   if (twoMemberIcons.isNotEmpty()) {
-    Row(modifier.padding(horizontal = 8.dp)) {
+    Row(modifier.padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
       twoMemberIcons.forEach {
         if (it.isNotEmpty() && ServiceMemberIcon.values().map { icon -> icon.name }.contains(it))
           Icon(
@@ -224,8 +214,18 @@ private fun ServiceMemberIcons(modifier: Modifier = Modifier, serviceMemberIcons
       if (twoMemberIcons.size == 2 && iconsSplit.size > 2) {
         Box(
           contentAlignment = Alignment.Center,
-          modifier = modifier.clip(CircleShape).size(24.dp).background(DefaultColor.copy(0.1f))
-        ) { Text(text = "+${iconsSplit.size - 2}", fontSize = 12.sp, color = Color.DarkGray) }
+          modifier = Modifier.clip(CircleShape).size(24.dp).background(DefaultColor.copy(0.1f))
+        ) {
+          Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "+${iconsSplit.size - 2}",
+            fontSize = 12.sp,
+            color = Color.DarkGray,
+            softWrap = false,
+            maxLines = 1,
+            textAlign = TextAlign.Center
+          )
+        }
       }
     }
   }
@@ -238,13 +238,12 @@ private fun BigServiceButton(
   navController: NavController,
   resourceData: ResourceData
 ) {
-  val interpolatedButtonProperties = buttonProperties.interpolate(resourceData.computedValuesMap)
-  val status = interpolatedButtonProperties.status
-  val isButtonEnabled = interpolatedButtonProperties.enabled.toBoolean()
-  val backgroundColor = interpolatedButtonProperties.backgroundColor
+  val status = buttonProperties.status
+  val isButtonEnabled = buttonProperties.enabled.toBoolean()
+  val backgroundColor = buttonProperties.backgroundColor
   val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
-  val buttonClickable = buttonProperties.clickable(resourceData)
+  val buttonClickable = buttonProperties.clickable.toBoolean()
 
   Column(
     modifier =
@@ -286,7 +285,7 @@ private fun BigServiceButton(
           }
       )
     Text(
-      text = interpolatedButtonProperties.text ?: "",
+      text = buttonProperties.text ?: "",
       color = if (status == ServiceStatus.OVERDUE.name) Color.White else contentColor,
       textAlign = TextAlign.Center,
       fontSize = buttonProperties.fontSize.sp,
@@ -380,7 +379,8 @@ private fun ServiceCardServiceDuePreview() {
                     primaryTextColor = "#5A5A5A",
                   )
                 ),
-              serviceMemberIcons = "CHILD,PREGNANT_WOMAN,CHILD,CHILD",
+              serviceMemberIcons =
+                "CHILD,PREGNANT_WOMAN,CHILD,CHILD,PREGNANT_WOMAN,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD",
               showVerticalDivider = true,
               serviceButton =
                 ButtonProperties(

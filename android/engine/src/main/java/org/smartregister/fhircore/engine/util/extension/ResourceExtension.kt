@@ -40,10 +40,12 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.PrimitiveType
 import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Questionnaire
@@ -66,7 +68,7 @@ fun Base?.valueToString(): String {
     this == null -> return ""
     this.isDateTime -> (this as BaseDateTimeType).value.makeItReadable()
     this.isPrimitive -> (this as PrimitiveType<*>).asStringValue()
-    this is Coding -> this.display ?: code
+    this is Coding -> display ?: code
     this is CodeableConcept -> this.stringValue()
     this is Quantity -> this.value.toPlainString()
     this is Timing ->
@@ -81,7 +83,18 @@ fun Base?.valueToString(): String {
           )
           .plus(" (s)")
       }
-    this is HumanName -> "${this.given.firstOrNull().valueToString()} ${this.family}"
+    this is HumanName ->
+      this.given.firstOrNull().let {
+        (if (it != null) "${it.valueToString()} " else "").plus(this.family)
+      }
+    this is Patient ->
+      this.nameFirstRep.nameAsSingleString +
+        ", " +
+        this.gender.name.first() +
+        ", " +
+        this.birthDate.yearsPassed()
+    this is Practitioner -> this.nameFirstRep.nameAsSingleString
+    this is Group -> this.name
     else -> this.toString()
   }
 }
@@ -180,10 +193,11 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
 fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrEditing(
   path: String,
   readOnly: Boolean = false,
+  readOnlyLinkIds: List<String>? = emptyList()
 ) {
   forEach { item ->
     if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
-      item.readOnly = readOnly || item.readOnly
+      item.readOnly = readOnly || item.readOnly || readOnlyLinkIds?.contains(item.linkId) == true
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').answer.item",
         readOnly
