@@ -213,7 +213,7 @@ constructor(
           family.member.map { member ->
             defaultRepository.loadResource<Patient>(member.entity.extractId())?.let { patient ->
               patient.active = false
-              defaultRepository.addOrUpdate(patient)
+              defaultRepository.addOrUpdate(true,patient)
             }
           }
         }
@@ -221,7 +221,7 @@ constructor(
       family.member.clear()
       family.active = false
 
-      defaultRepository.addOrUpdate(family)
+      defaultRepository.addOrUpdate(true,family)
     }
   }
 
@@ -253,7 +253,7 @@ constructor(
             }
         }
       }
-      defaultRepository.addOrUpdate(patient)
+      defaultRepository.addOrUpdate(true,patient)
     }
   }
 

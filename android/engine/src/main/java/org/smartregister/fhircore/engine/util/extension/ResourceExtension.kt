@@ -29,6 +29,7 @@ import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
@@ -47,6 +48,7 @@ import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
+import java.util.LinkedList
 
 private val fhirR4JsonParser = FhirContext.forR4Cached().newJsonParser()
 
@@ -290,4 +292,28 @@ fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/"
 
 fun Resource.addTags(tags: List<Coding>) {
   tags.forEach { this.meta.addTag(it) }
+}
+
+/**
+ * Composition sections can be nested. This function retrieves all the nested composition sections
+ * and returns a flattened list of all [Composition.SectionComponent] for the given [Composition]
+ * resource
+ */
+fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent> {
+  val sections = mutableListOf<Composition.SectionComponent>()
+  val sectionsQueue = LinkedList<Composition.SectionComponent>()
+  this.section.forEach {
+    if (!it.section.isNullOrEmpty()) {
+      it.section.forEach { sectionComponent -> sectionsQueue.addLast(sectionComponent) }
+    }
+    sections.add(it)
+  }
+  while (sectionsQueue.isNotEmpty()) {
+    val sectionComponent = sectionsQueue.removeFirst()
+    if (!sectionComponent.section.isNullOrEmpty()) {
+      sectionComponent.section.forEach { sectionsQueue.addLast(it) }
+    }
+    sections.add(sectionComponent)
+  }
+  return sections
 }

@@ -222,7 +222,7 @@ constructor(
               }
             val searchPath = resourceGroup.key + "?${Composition.SP_RES_ID}=$resourceIds"
             fhirResourceDataSource.loadData(searchPath).entry.forEach {
-              repository.addOrUpdate(it.resource)
+              repository.addOrUpdate(false, it.resource)
             }
           }
       } catch (exception: Exception) {

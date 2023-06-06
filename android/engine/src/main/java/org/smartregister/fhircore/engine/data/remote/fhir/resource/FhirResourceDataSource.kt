@@ -26,6 +26,10 @@ import org.hl7.fhir.r4.model.Resource
 /** Interact with HAPI FHIR server */
 class FhirResourceDataSource @Inject constructor(private val resourceService: FhirResourceService) {
 
+  suspend fun getResource(path: String): Bundle {
+    return resourceService.getResource(path)
+  }
+
   suspend fun loadData(path: String): Bundle {
     return resourceService.getResource(path)
   }

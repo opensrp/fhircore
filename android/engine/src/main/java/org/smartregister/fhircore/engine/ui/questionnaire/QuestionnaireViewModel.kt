@@ -257,7 +257,7 @@ constructor(
             reference = "${ResourceType.RelatedPerson.name}/${resource.logicalId}"
           }
       }
-      defaultRepository.addOrUpdate(this)
+      defaultRepository.addOrUpdate(true,this)
     }
   }
 
@@ -467,7 +467,7 @@ constructor(
       it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
     }
 
-    defaultRepository.addOrUpdate(questionnaireResponse)
+    defaultRepository.addOrUpdate(true,questionnaireResponse)
   }
 
   suspend fun performExtraction(
@@ -489,7 +489,7 @@ constructor(
 
   suspend fun saveBundleResources(bundle: Bundle) {
     if (!bundle.isEmpty) {
-      bundle.entry.forEach { defaultRepository.addOrUpdate(it.resource) }
+      bundle.entry.forEach { defaultRepository.addOrUpdate(true,it.resource) }
     }
   }
 
