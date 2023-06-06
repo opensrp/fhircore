@@ -38,22 +38,22 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 class AppRegisterRepository
 @Inject
 constructor(
-        override val fhirEngine: FhirEngine,
-        override val dispatcherProvider: DefaultDispatcherProvider,
-        override val sharedPreferencesHelper: SharedPreferencesHelper,
-        override val configurationRegistry: ConfigurationRegistry,
-        val registerDaoFactory: RegisterDaoFactory,
-        override val configService: ConfigService,
-        val tracer: PerformanceReporter
+  override val fhirEngine: FhirEngine,
+  override val dispatcherProvider: DefaultDispatcherProvider,
+  override val sharedPreferencesHelper: SharedPreferencesHelper,
+  override val configurationRegistry: ConfigurationRegistry,
+  val registerDaoFactory: RegisterDaoFactory,
+  override val configService: ConfigService,
+  val tracer: PerformanceReporter
 ) :
   RegisterRepository,
-        DefaultRepository(
-                fhirEngine = fhirEngine,
-                dispatcherProvider = dispatcherProvider,
-                sharedPreferencesHelper = sharedPreferencesHelper,
-                configurationRegistry = configurationRegistry,
-                configService = configService
-        ) {
+  DefaultRepository(
+    fhirEngine = fhirEngine,
+    dispatcherProvider = dispatcherProvider,
+    sharedPreferencesHelper = sharedPreferencesHelper,
+    configurationRegistry = configurationRegistry,
+    configService = configService
+  ) {
 
   override suspend fun loadRegisterData(
     currentPage: Int,

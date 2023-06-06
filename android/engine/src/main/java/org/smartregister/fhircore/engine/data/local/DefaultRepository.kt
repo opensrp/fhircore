@@ -63,11 +63,11 @@ import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 open class DefaultRepository
 @Inject
 constructor(
-        open val fhirEngine: FhirEngine,
-        open val dispatcherProvider: DispatcherProvider,
-        open val sharedPreferencesHelper: SharedPreferencesHelper,
-        open val configurationRegistry: ConfigurationRegistry,
-        open val configService: ConfigService
+  open val fhirEngine: FhirEngine,
+  open val dispatcherProvider: DispatcherProvider,
+  open val sharedPreferencesHelper: SharedPreferencesHelper,
+  open val configurationRegistry: ConfigurationRegistry,
+  open val configService: ConfigService
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {

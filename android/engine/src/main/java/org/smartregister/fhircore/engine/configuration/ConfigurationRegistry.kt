@@ -17,25 +17,35 @@
 package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.get
+import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.DataFiltersConfiguration
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.generateMissingId
+import org.smartregister.fhircore.engine.util.extension.updateFrom
+import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import timber.log.Timber
 
 /**
@@ -50,10 +60,10 @@ class ConfigurationRegistry
 @Inject
 constructor(
   @ApplicationContext val context: Context,
+  val fhirEngine: FhirEngine,
   val fhirResourceDataSource: FhirResourceDataSource,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val dispatcherProvider: DispatcherProvider,
-  val repository: DefaultRepository
+  val dispatcherProvider: DispatcherProvider
 ) {
 
   val configurationsMap = mutableMapOf<String, Configuration>()
@@ -124,8 +134,7 @@ constructor(
   suspend fun loadConfigurations(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
     this.appId = appId
 
-    repository
-      .searchCompositionByIdentifier(appId)
+    searchCompositionByIdentifier(appId)
       .also { if (it == null) configsLoadedCallback(false) }
       ?.section
       ?.filter { isWorkflowPoint(it) }
@@ -135,7 +144,7 @@ constructor(
           WorkflowPoint(
             classification = it.focus.identifier.value,
             description = it.title,
-            resource = repository.getBinary(it.focus.extractId()),
+            resource = getBinary(it.focus.extractId()),
             workflowPoint = it.focus.identifier.value
           )
         workflowPointsMap[workflowPointName] = workflowPoint
@@ -207,8 +216,8 @@ constructor(
     CoroutineScope(ioDispatcher).launch {
       try {
         Timber.i("Fetching non-workflow resources for app $appId")
-        repository
-          .searchCompositionByIdentifier(appId)
+
+        searchCompositionByIdentifier(appId)
           ?.section
           ?.groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.get(0) ?: "" }
           ?.entries
@@ -221,9 +230,7 @@ constructor(
                 sectionComponent.focus.extractId()
               }
             val searchPath = resourceGroup.key + "?${Composition.SP_RES_ID}=$resourceIds"
-            fhirResourceDataSource.loadData(searchPath).entry.forEach {
-              repository.addOrUpdate(false, it.resource)
-            }
+            fhirResourceDataSource.loadData(searchPath).entry.forEach { addOrUpdate(it.resource) }
           }
       } catch (exception: Exception) {
         Timber.e("Error fetching non-workflow resources for app $appId")
@@ -239,6 +246,45 @@ constructor(
   fun isWorkflowPoint(sectionComponent: Composition.SectionComponent): Boolean {
     sectionComponent.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.get(0).let { resourceType ->
       return resourceType in arrayOf(ResourceType.Parameters.name, ResourceType.Binary.name)
+    }
+  }
+
+  suspend fun searchCompositionByIdentifier(identifier: String): Composition? =
+    fhirEngine
+      .search<Composition> {
+        filter(Composition.IDENTIFIER, { value = of(Identifier().apply { value = identifier }) })
+      }
+      .firstOrNull()
+
+  suspend fun getBinary(id: String): Binary = fhirEngine.get(id)
+
+  /**
+   * Using this [FhirEngine] and [DispatcherProvider], update this stored resources with the passed
+   * resource, or create it if not found.
+   */
+  suspend fun <R : Resource> addOrUpdate(resource: R) {
+    withContext(dispatcherProvider.io()) {
+      resource.updateLastUpdated()
+      try {
+        fhirEngine.get(resource.resourceType, resource.logicalId).run {
+          fhirEngine.update(updateFrom(resource))
+        }
+      } catch (resourceNotFoundException: ResourceNotFoundException) {
+        create(resource)
+      }
+    }
+  }
+
+  /**
+   * Using this [FhirEngine] and [DispatcherProvider], for all passed resources, make sure they all
+   * have IDs or generate if they don't, then pass them to create.
+   *
+   * @param resources vararg of resources
+   */
+  suspend fun create(vararg resources: Resource): List<String> {
+    return withContext(dispatcherProvider.io()) {
+      resources.onEach { it.generateMissingId() }
+      fhirEngine.create(*resources)
     }
   }
 

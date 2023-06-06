@@ -22,6 +22,7 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
 import java.util.Date
+import java.util.LinkedList
 import java.util.UUID
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
@@ -48,7 +49,6 @@ import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
-import java.util.LinkedList
 
 private val fhirR4JsonParser = FhirContext.forR4Cached().newJsonParser()
 
