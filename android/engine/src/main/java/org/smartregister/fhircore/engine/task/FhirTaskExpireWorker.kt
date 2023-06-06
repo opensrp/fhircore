@@ -25,11 +25,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
-import org.smartregister.fhircore.engine.util.extension.formatDate
-import org.smartregister.fhircore.engine.util.extension.parseDate
 
 /** This job runs periodically to mark overdue Tasks as Expired */
 @HiltWorker
@@ -40,30 +35,12 @@ constructor(
   @Assisted workerParams: WorkerParameters,
   val fhirEngine: FhirEngine,
   val fhirTaskExpireUtil: FhirTaskExpireUtil,
-  val sharedPreferences: SharedPreferencesHelper,
   val dispatcherProvider: DispatcherProvider
 ) : CoroutineWorker(context, workerParams) {
 
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
-      val lastAuthoredOnDate =
-        sharedPreferences
-          .read(SharedPreferenceKey.OVERDUE_TASK_LAST_AUTHORED_ON_DATE.name, null)
-          ?.parseDate(SDF_YYYY_MM_DD)
-
-      var (maxDate, tasks) =
-        fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = lastAuthoredOnDate)
-
-      while (tasks.isNotEmpty()) {
-        val resultPair = fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = maxDate)
-        maxDate = resultPair.first
-        tasks = resultPair.second
-      }
-
-      sharedPreferences.write(
-        SharedPreferenceKey.OVERDUE_TASK_LAST_AUTHORED_ON_DATE.name,
-        maxDate?.formatDate(SDF_YYYY_MM_DD)
-      )
+      fhirTaskExpireUtil.expireOverdueTasks()
       Result.success()
     }
   }

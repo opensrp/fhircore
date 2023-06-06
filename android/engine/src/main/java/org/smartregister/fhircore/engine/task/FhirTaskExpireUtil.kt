@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.task
 import android.content.Context
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
@@ -27,6 +26,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.isPastExpiry
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
@@ -42,10 +42,7 @@ constructor(@ApplicationContext val appContext: Context, val fhirEngine: FhirEng
    * The size of the tasks is between 0 to (tasksCount * 2). It is not guaranteed that the list of
    * tasks returned will be of size [tasksCount].
    */
-  suspend fun expireOverdueTasks(
-    lastAuthoredOnDate: Date?,
-    tasksCount: Int = 40
-  ): Pair<Date?, List<Task>> {
+  suspend fun expireOverdueTasks(): List<Task> {
     Timber.i("Fetch and expire overdue tasks")
     val tasksResult =
       fhirEngine
@@ -58,28 +55,22 @@ constructor(@ApplicationContext val appContext: Context, val fhirEngine: FhirEng
             { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
             { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
           )
-          if (lastAuthoredOnDate != null) {
-            filter(
-              Task.AUTHORED_ON,
-              {
-                prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-                value = of(DateTimeType(lastAuthoredOnDate))
-              }
-            )
-          }
-          count = tasksCount
-          sort(Task.AUTHORED_ON, Order.ASCENDING)
+
+          filter(
+            Task.PERIOD,
+            {
+              prefix = ParamPrefixEnum.ENDS_BEFORE
+              value = of(DateTimeType(Date()))
+            }
+          )
         }
-        .filter { it.isPastExpiry() }
+        .filter { it.isPastExpiry() || it.hasPastEnd() }
         .onEach { task ->
           task.status = Task.TaskStatus.CANCELLED
           fhirEngine.update(task)
         }
 
-    // Tasks are ordered obtain the authoredOn date of the last
-    val maxDate = tasksResult.lastOrNull()?.authoredOn
-
     Timber.i("${tasksResult.size} FHIR Tasks status updated to CANCELLED (expired)")
-    return Pair(maxDate, tasksResult)
+    return tasksResult
   }
 }

@@ -34,7 +34,6 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import java.util.Date
 import java.util.UUID
-import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Task
@@ -45,8 +44,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.plusDays
+import org.smartregister.fhircore.engine.util.extension.plusMonths
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 24-11-2022. */
 @HiltAndroidTest
@@ -55,7 +54,6 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   @BindValue var fhirTaskExpireUtil: FhirTaskExpireUtil = mockk()
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   private val fhirEngine: FhirEngine = mockk(relaxed = true)
   private lateinit var fhirTaskExpireWorker: FhirTaskExpireWorker
 
@@ -73,25 +71,22 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
   fun doWorkShouldFetchTasksAndMarkAsExpired() {
     val taskDate = Date()
 
-    coEvery { fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = null) } returns
-      Pair(
-        taskDate,
-        listOf(
-          Task().apply {
-            id = UUID.randomUUID().toString()
-            status = Task.TaskStatus.CANCELLED
-            authoredOn = taskDate
-            restriction =
-              Task.TaskRestrictionComponent().apply {
-                period = Period().apply { end = DateTime().plusDays(2).toDate() }
-              }
-          }
-        )
+    coEvery { fhirTaskExpireUtil.expireOverdueTasks() } returns
+      listOf(
+        Task().apply {
+          id = UUID.randomUUID().toString()
+          status = Task.TaskStatus.CANCELLED
+          executionPeriod =
+            Period().apply {
+              start = Date().plusMonths(-1)
+              end = Date()
+            }
+          restriction =
+            Task.TaskRestrictionComponent().apply {
+              period = Period().apply { end = DateTime().plusDays(2).toDate() }
+            }
+        }
       )
-
-    // End the job successfully when an empty list is returned
-    coEvery { fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = taskDate) } returns
-      Pair(taskDate.plusDays(3), emptyList())
 
     val result = runBlocking { fhirTaskExpireWorker.doWork() }
 
@@ -123,7 +118,6 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
         workerParams = workerParameters,
         fhirEngine = fhirEngine,
         fhirTaskExpireUtil = fhirTaskExpireUtil,
-        sharedPreferences = sharedPreferencesHelper,
         dispatcherProvider = coroutineTestRule.testDispatcherProvider
       )
     }

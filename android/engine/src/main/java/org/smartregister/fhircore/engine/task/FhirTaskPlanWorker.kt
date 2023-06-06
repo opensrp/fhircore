@@ -20,27 +20,27 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import java.util.Date
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.isReady
-import org.smartregister.fhircore.engine.util.extension.lastOffset
+import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.toCoding
-import org.smartregister.fhircore.engine.util.getLastOffset
 import timber.log.Timber
 
 /** This job runs periodically to update the statuses of Task resources. */
@@ -58,14 +58,6 @@ constructor(
 
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
-      val appConfig =
-        configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-          ConfigType.Application
-        )
-      val batchSize = appConfig.taskBackgroundWorkerBatchSize
-      val lastOffset =
-        sharedPreferencesHelper.read(key = WORK_ID.lastOffset(), defaultValue = "0")!!.toInt()
-
       Timber.i("Running Task status updater worker")
 
       val tasks =
@@ -77,6 +69,13 @@ constructor(
             { value = of(Task.TaskStatus.ACCEPTED.toCoding()) },
             { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
             { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
+          )
+          filter(
+            Task.PERIOD,
+            {
+              prefix = ParamPrefixEnum.STARTS_AFTER
+              value = of(DateTimeType(Date().plusDays(-1)))
+            }
           )
         }
 
@@ -107,13 +106,6 @@ constructor(
           fhirEngine.update(task)
         }
       }
-
-      val updatedLastOffset =
-        getLastOffset(items = tasks, lastOffset = lastOffset, batchSize = batchSize)
-      sharedPreferencesHelper.write(
-        key = WORK_ID.lastOffset(),
-        value = updatedLastOffset.toString()
-      )
       Result.success()
     }
   }
