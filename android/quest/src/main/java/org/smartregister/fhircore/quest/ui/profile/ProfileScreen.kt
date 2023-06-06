@@ -57,6 +57,7 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.flow.SharedFlow
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.TabViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.TopBarConfig
@@ -67,6 +68,7 @@ import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.shared.components.CompoundText
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
+import org.smartregister.fhircore.quest.ui.shared.components.TabView
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.isScrollingDown
@@ -144,6 +146,17 @@ fun ProfileScreen(
           color = MaterialTheme.colors.primary
         )
       }
+
+      if(profileUiState.profileConfiguration?.tabBar != null) {
+        TabView(
+          modifier = modifier,
+          viewProperties = profileUiState.profileConfiguration.tabBar as TabViewProperties,
+          resourceData = profileUiState.resourceData
+            ?: ResourceData("", ResourceType.Patient, emptyMap()),
+          navController = navController
+        )
+      }
+
       LazyColumn(state = lazyListState) {
         item(key = profileUiState.resourceData?.baseResourceId) {
           ViewRenderer(

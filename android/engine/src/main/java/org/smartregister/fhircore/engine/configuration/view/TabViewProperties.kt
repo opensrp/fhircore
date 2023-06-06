@@ -34,6 +34,7 @@ data class TabViewProperties(
   override val visible: String = "true",
   val tabs: List<String> = emptyList(),
   val tabContents: List<ViewProperties> = emptyList(),
+  val contentScrollable: Boolean = false,
   val tabBackgroundColor: String = "#F2F4F7",
   val tabIndicatorColor: String = "#FFFFFF",
   val selectedTabIndex: Int = 0

@@ -114,6 +114,15 @@ constructor(
           listResourceDataStateMap = listResourceDataStateMap
         )
       }
+
+      profileConfigs.tabBar?.tabContents?.retrieveListProperties()?.forEach { listProperties ->
+        resourceDataRulesExecutor.processListResourceData(
+          listProperties = listProperties,
+          relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
+          computedValuesMap = resourceData.computedValuesMap.plus(paramsMap),
+          listResourceDataStateMap = listResourceDataStateMap
+        )
+      }
     }
   }
 

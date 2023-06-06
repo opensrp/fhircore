@@ -40,6 +40,7 @@ data class ProfileImageViewProperties(
   val height: Float = 100f,
   val width: Float = 100f,
   val color: String = "#FFFFFF",
+  val borderColor: String = "#FFFFFF",
 ) : ViewProperties() {
   override fun interpolate(computedValuesMap: Map<String, Any>): ProfileImageViewProperties {
     return this.copy(

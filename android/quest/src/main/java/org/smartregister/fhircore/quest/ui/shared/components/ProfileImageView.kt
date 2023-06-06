@@ -59,7 +59,7 @@ fun ImageView(
             .width(Dp(profileImageViewProperties.width))
             .height(Dp(profileImageViewProperties.height))
             .border(
-              BorderStroke(1.dp, Color.Yellow),
+              BorderStroke(1.dp, profileImageViewProperties.borderColor.parseColor()),
               CircleShape
             )
             .clip(CircleShape)

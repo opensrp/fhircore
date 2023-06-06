@@ -20,9 +20,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -51,7 +55,8 @@ fun TabView(
   )
 
   Column(
-    modifier = modifier.fillMaxSize()
+    modifier = modifier
+      .fillMaxSize()
       .background(viewProperties.tabBackgroundColor.parseColor())) {
 
     //tabs header
@@ -117,15 +122,28 @@ fun TabContents(
   navController: NavController
 ) {
   HorizontalPager(
+    verticalAlignment = Alignment.Top,
     count = viewProperties.tabs.size,
     state = pagerState,
-    userScrollEnabled = false,
+    userScrollEnabled = false
   ) { pageIndex ->
-    ViewRenderer(
-      viewProperties = listOf(viewProperties.tabContents[pageIndex]),
-      resourceData = resourceData,
-      navController = navController
-    )
+    if(viewProperties.contentScrollable) {
+      LazyColumn(state = rememberLazyListState()) {
+        item(key = resourceData.baseResourceId) {
+          ViewRenderer(
+            viewProperties = listOf(viewProperties.tabContents[pageIndex]),
+            resourceData = resourceData,
+            navController = navController
+          )
+        }
+      }
+    } else {
+      ViewRenderer(
+        viewProperties = listOf(viewProperties.tabContents[pageIndex]),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
   }
 }
 
