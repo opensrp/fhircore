@@ -29,10 +29,14 @@ import dagger.assisted.AssistedInject
 import java.util.Date
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.isReady
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.toCoding
@@ -77,7 +81,8 @@ constructor(
       Timber.i("Found ${tasks.size} tasks to be updated")
 
       tasks.forEach { task ->
-        if (task.isReady() && task.status == Task.TaskStatus.REQUESTED) {
+        if (task.isReady() && task.status == TaskStatus.REQUESTED && task.preReqConditionSatisfied()
+        ) {
           Timber.i("${task.id} marked ready")
 
           task.status = Task.TaskStatus.READY
@@ -87,6 +92,20 @@ constructor(
       Result.success()
     }
   }
+
+  private suspend fun Task.preReqConditionSatisfied() =
+    this.partOf.find { it.reference.startsWith(ResourceType.Task.name + "/") }?.let {
+      fhirEngine
+        .get<Task>(it.extractId())
+        .status
+        .isIn(
+          TaskStatus.CANCELLED,
+          TaskStatus.COMPLETED,
+          TaskStatus.FAILED,
+          TaskStatus.ENTEREDINERROR
+        )
+    }
+      ?: true
 
   companion object {
     const val WORK_ID = "FhirTaskPlanWorker"
