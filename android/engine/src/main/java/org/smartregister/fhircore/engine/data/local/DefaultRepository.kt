@@ -30,6 +30,7 @@ import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.has
 import com.google.android.fhir.search.search
+import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
