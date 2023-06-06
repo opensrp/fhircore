@@ -35,7 +35,6 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Dosage
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.IdType
@@ -58,8 +57,6 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.addResourceParameter
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
-import org.smartregister.fhircore.engine.util.extension.extractFhirpathDuration
-import org.smartregister.fhircore.engine.util.extension.extractFhirpathPeriod
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.referenceValue
@@ -94,6 +91,7 @@ constructor(
     subject: Resource,
     data: Bundle = Bundle()
   ): CarePlan? {
+
     // Only one CarePlan per plan, update or init a new one if not exists
     val output =
       fhirEngine
@@ -280,28 +278,30 @@ constructor(
         timing.repeat.hasCountMax() ||
         timing.repeat.durationUnit?.equals(UnitsOfTime.H) == true)
     val count = if (isLegacyPlanDefinition || !timing.repeat.hasCount()) 1 else timing.repeat.count
-    val periodExpression = timing.extractFhirpathPeriod()
-    val durationExpression = timing.extractFhirpathDuration()
+    /*
+        val periodExpression = timing.extractFhirpathPeriod()
+        val durationExpression = timing.extractFhirpathDuration()
 
-    // Offset date for current task period; CarePlan start if all tasks generated at once
-    // otherwise today means that tasks are generated on demand
-    var offsetDate: BaseDateTimeType =
-      DateTimeType(if (timing.repeat.hasCount()) carePlan.period.start else Date())
+        // Offset date for current task period; CarePlan start if all tasks generated at once
+        // otherwise today means that tasks are generated on demand
+        var offsetDate: BaseDateTimeType =
+          DateTimeType(if (timing.repeat.hasCount()) carePlan.period.start else Date())
 
-    for (i in 1..count) {
-      if (periodExpression.isNotBlank() && offsetDate.hasValue())
-        evaluateToDate(offsetDate, "\$this + $periodExpression")?.let { offsetDate = it }
+        for (i in 1..count) {
+          if (periodExpression.isNotBlank() && offsetDate.hasValue())
+            evaluateToDate(offsetDate, "\$this + $periodExpression")?.let { offsetDate = it }
 
-      Period()
-        .apply {
-          start = offsetDate.value
-          end =
-            if (durationExpression.isNotBlank() && offsetDate.hasValue())
-              evaluateToDate(offsetDate, "\$this + $durationExpression")?.value
-            else carePlan.period.end
+          Period()
+            .apply {
+              start = offsetDate.value
+              end =
+                if (durationExpression.isNotBlank() && offsetDate.hasValue())
+                  evaluateToDate(offsetDate, "\$this + $durationExpression")?.value
+                else carePlan.period.end
+            }
+            .also { taskPeriods.add(it) }
         }
-        .also { taskPeriods.add(it) }
-    }
+    */
 
     return taskPeriods
   }
@@ -334,54 +334,45 @@ constructor(
       .filter { it.eventType == EventType.RESOURCE_CLOSURE }
       .forEach { eventWorkFlow ->
         eventWorkFlow.eventResources.forEach { eventResource ->
-          eventResource.planDefinitions?.forEach { planDefinition ->
-            val carePlans =
-              fhirEngine.search<CarePlan> {
-                filter(
-                  CarePlan.INSTANTIATES_CANONICAL,
-                  { value = "${PlanDefinition().fhirType()}/$planDefinition" }
-                )
-                filter(CarePlan.SUBJECT, { value = subject.referenceValue() })
-              }
-
-            if (carePlans.isEmpty()) return@forEach
-
-            val currentResourceTriggerConditions =
-              eventWorkFlow.triggerConditions.firstOrNull { it.eventResourceId == eventResource.id }
-            val conditionsMet =
-              evaluateToBoolean(
-                subject = subject,
-                bundle = bundle,
-                triggerConditions =
-                  currentResourceTriggerConditions?.conditionalFhirPathExpressions,
-                matchAll = currentResourceTriggerConditions?.matchAll!!
+          /*val carePlans =
+            fhirEngine.search<CarePlan> {
+              filter(
+                CarePlan.INSTANTIATES_CANONICAL,
+                { value = "${PlanDefinition().fhirType()}/$planDefinition" }
               )
-
-            if (conditionsMet) {
-              carePlans.forEach { carePlan ->
-                carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-                fhirEngine.update(carePlan)
-
-                carePlan
-                  .activity
-                  .flatMap { it.outcomeReference }
-                  .filter { it.reference.startsWith(ResourceType.Task.name) }
-                  .mapNotNull { getTask(it.extractId()) }
-                  .forEach { task ->
-                    if (task.status != TaskStatus.COMPLETED) {
-                      cancelTaskByTaskId(
-                        task.logicalId,
-                        "${carePlan.fhirType()} ${carePlan.status}"
-                      )
-                    }
-                  }
-              }
+              filter(CarePlan.SUBJECT, { value = subject.referenceValue() })
             }
+
+          if (carePlans.isEmpty()) return@forEach*/
+
+          val currentResourceTriggerConditions =
+            eventWorkFlow.triggerConditions.firstOrNull { it.eventResourceId == eventResource.id }
+          val conditionsMet =
+            evaluateToBoolean(
+              subject = subject,
+              bundle = bundle,
+              triggerConditions = currentResourceTriggerConditions?.conditionalFhirPathExpressions,
+              matchAll = currentResourceTriggerConditions?.matchAll!!
+            )
+
+          if (conditionsMet) {
+            defaultRepository.updateResourcesRecursively(eventResource)
           }
         }
       }
   }
 
+  fun closeResource(resource: Resource) {
+    when (resource) {
+      is Task -> {
+        resource.status = TaskStatus.CANCELLED
+        resource.lastModified = Date()
+      }
+      is CarePlan -> {
+        resource.status = CarePlan.CarePlanStatus.COMPLETED
+      }
+    }
+  }
   fun evaluateToBoolean(
     subject: Resource,
     bundle: Bundle,

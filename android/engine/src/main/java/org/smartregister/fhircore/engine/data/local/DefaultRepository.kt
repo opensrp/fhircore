@@ -30,10 +30,12 @@ import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.has
 import com.google.android.fhir.search.search
+import java.util.Date
 import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Enumerations
@@ -44,6 +46,7 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
@@ -619,6 +622,7 @@ constructor(
       }
     val resources = fhirEngine.search<Resource>(search)
     Timber.e("Fetched careplans = ${resources.size} ++++")
+    resources.forEach { closeResource(it) }
 
     // recursive related resources
     val retrievedRelatedResources =
@@ -631,6 +635,26 @@ constructor(
         )
       }
     Timber.e("Fetched tasks = ${retrievedRelatedResources.relatedResourceMap.size} ++++")
+
+    retrievedRelatedResources.relatedResourceMap.forEach { resourcesMap ->
+      resourcesMap.value.forEach { resource ->
+        closeResource(resource)
+        Timber.e("Related Resource type ${resource.resourceType.name} and id ${resource.id} ++++")
+      }
+    }
+  }
+
+  suspend fun closeResource(resource: Resource) {
+    when (resource) {
+      is Task -> {
+        resource.status = Task.TaskStatus.CANCELLED
+        resource.lastModified = Date()
+      }
+      is CarePlan -> {
+        resource.status = CarePlan.CarePlanStatus.COMPLETED
+      }
+    }
+    fhirEngine.update(resource)
   }
 
   /**
