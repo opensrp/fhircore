@@ -130,13 +130,13 @@ dependencies {
     implementation(group: "com.github.java-json-tools", name: "msg-simple", version: "1.2");
     implementation 'org.codehaus.woodstox:woodstox-core-asl:4.4.1'
     implementation "ca.uhn.hapi.fhir:hapi-fhir-android:5.4.0"
-    implementation 'org.opencds.cqf.cql:engine:1.5.4-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:engine.fhir:1.5.4-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator:1.4.2-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.builder:1.4.2-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.activitydefinition:1.4.2-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.plandefinition:1.4.2-SNAPSHOT'
-    implementation ('org.opencds.cqf.cql:evaluator.dagger:1.4.2-SNAPSHOT'){}
+    implementation 'org.opencds.cqf.cql:engine:1.5.4'
+    implementation 'org.opencds.cqf.cql:engine.fhir:1.5.4'
+    implementation 'org.opencds.cqf.cql:evaluator:1.4.2'
+    implementation 'org.opencds.cqf.cql:evaluator.builder:1.4.2'
+    implementation 'org.opencds.cqf.cql:evaluator.activitydefinition:1.4.2'
+    implementation 'org.opencds.cqf.cql:evaluator.plandefinition:1.4.2'
+    implementation ('org.opencds.cqf.cql:evaluator.dagger:1.4.2'){}
     api('org.smartregister:workflow:0.1.0-alpha01-preview6-SNAPSHOT') {
         transitive = true
         exclude group: 'xerces'
@@ -226,6 +226,7 @@ dependencies {
     api "com.squareup.retrofit2:retrofit:$retrofitVersion"
     api "com.squareup.retrofit2:converter-gson:$retrofitVersion"
     api "com.squareup.retrofit2:retrofit-mock:$retrofitVersion"
+    api "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0"
 
     def okhttpVersion = '4.9.1'
     api "com.squareup.okhttp3:okhttp:$okhttpVersion"
