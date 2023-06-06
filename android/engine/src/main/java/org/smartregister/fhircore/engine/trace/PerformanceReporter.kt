@@ -24,6 +24,8 @@ interface PerformanceReporter {
 
   fun putMetric(traceName: String, metricName: String, value: Long)
 
+  fun incrementMetric(traceName: String, metricName: String, incrementBy: Long)
+
   fun putAttribute(traceName: String, attribute: String, value: String)
 
   fun stopTrace(traceName: String)

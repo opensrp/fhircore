@@ -37,6 +37,7 @@ import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao
 import org.smartregister.fhircore.engine.domain.repository.PatientDao
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @InstallIn(SingletonComponent::class)
 @Module(includes = [NetworkModule::class, DispatcherModule::class])
@@ -49,14 +50,16 @@ class CoreModule {
     configurationRegistry: ConfigurationRegistry,
     configService: ConfigService,
     fhirEngine: FhirEngine,
-    tracer: PerformanceReporter
+    tracer: PerformanceReporter,
+    sharedPreferencesHelper: SharedPreferencesHelper
   ) =
     SyncBroadcaster(
       configurationRegistry = configurationRegistry,
       configService = configService,
       fhirEngine = fhirEngine,
       appContext = context,
-      tracer = tracer
+      tracer = tracer,
+      sharedPreferencesHelper = sharedPreferencesHelper
     )
 
   @Singleton
