@@ -19,15 +19,19 @@ package org.smartregister.fhircore.engine.task
 import android.content.Context
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.engine.util.extension.hasPastEnd
-import org.smartregister.fhircore.engine.util.extension.isPastExpiry
+import org.smartregister.fhircore.engine.util.extension.expiredConcept
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
@@ -64,13 +68,41 @@ constructor(@ApplicationContext val appContext: Context, val fhirEngine: FhirEng
             }
           )
         }
-        .filter { it.isPastExpiry() || it.hasPastEnd() }
+        .also { Timber.i("Going to expire ${it.size} tasks") }
         .onEach { task ->
           task.status = Task.TaskStatus.CANCELLED
+          task.statusReason = expiredConcept()
+
+          task
+            .basedOn
+            .find { it.reference.startsWith(ResourceType.CarePlan.name) }
+            ?.extractId()
+            ?.takeIf { it.isNotBlank() }
+            ?.let { basedOn ->
+              kotlin
+                .runCatching {
+                  val carePlan = fhirEngine.get<CarePlan>(basedOn)
+                  if (carePlan.isLastTask(task)) {
+                    carePlan.status = CarePlan.CarePlanStatus.COMPLETED
+                    fhirEngine.update(carePlan)
+                  }
+                }
+                .onFailure {
+                  Timber.e("$basedOn CarePlan was not found. In consistent data ${it.message}")
+                }
+            }
+
           fhirEngine.update(task)
         }
 
     Timber.i("${tasksResult.size} FHIR Tasks status updated to CANCELLED (expired)")
     return tasksResult
   }
+
+  private fun CarePlan.isLastTask(task: Task) =
+    this.activity
+      .find { !it.hasDetail() || it.detail.kind == CarePlan.CarePlanActivityKind.TASK }
+      ?.outcomeReference
+      ?.lastOrNull()
+      ?.extractId() == task.logicalId
 }

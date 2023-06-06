@@ -23,21 +23,16 @@ import androidx.work.WorkerParameters
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.Date
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.isReady
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.toCoding
@@ -65,9 +60,9 @@ constructor(
           filter(
             Task.STATUS,
             { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
-            { value = of(Task.TaskStatus.READY.toCoding()) },
+            // { value = of(Task.TaskStatus.READY.toCoding()) }, this would be handled by expiry job
+            // { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
             { value = of(Task.TaskStatus.ACCEPTED.toCoding()) },
-            { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
             { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
           )
           filter(
@@ -82,24 +77,7 @@ constructor(
       Timber.i("Found ${tasks.size} tasks to be updated")
 
       tasks.forEach { task ->
-        if (task.hasPastEnd()) {
-          Timber.i("${task.id} failed its successful completion")
-
-          task.status = Task.TaskStatus.FAILED
-          fhirEngine.update(task)
-          task
-            .basedOn
-            .find { it.reference.startsWith(ResourceType.CarePlan.name) }
-            ?.extractId()
-            ?.takeIf { it.isNotBlank() }
-            ?.let {
-              val carePlan = fhirEngine.get<CarePlan>(it)
-              if (carePlan.isLastTask(task)) {
-                carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-                fhirEngine.update(carePlan)
-              }
-            }
-        } else if (task.isReady() && task.status == Task.TaskStatus.REQUESTED) {
+        if (task.isReady() && task.status == Task.TaskStatus.REQUESTED) {
           Timber.i("${task.id} marked ready")
 
           task.status = Task.TaskStatus.READY
@@ -109,9 +87,6 @@ constructor(
       Result.success()
     }
   }
-
-  private fun CarePlan.isLastTask(task: Task) =
-    this.activity.lastOrNull()?.outcomeReference?.lastOrNull()?.extractId() == task.logicalId
 
   companion object {
     const val WORK_ID = "FhirTaskPlanWorker"

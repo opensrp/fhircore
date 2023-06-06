@@ -19,6 +19,8 @@ package org.smartregister.fhircore.engine.task
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
+import com.google.android.fhir.datacapture.extensions.logicalId
+import com.google.android.fhir.get
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -31,7 +33,9 @@ import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Period
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.junit.Assert.assertEquals
@@ -91,6 +95,56 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
       assertEquals(TaskStatus.CANCELLED, it.status)
       coVerify { fhirEngine.update(it) }
     }
+  }
+
+  @Test
+  fun fetchOverdueTasksAndCompleteCarePlan() {
+    val taskList = mutableListOf<Task>()
+
+    for (i in 1..4) {
+      taskList.add(
+        spyk(
+          Task().apply {
+            id = UUID.randomUUID().toString()
+            status = TaskStatus.INPROGRESS
+            executionPeriod =
+              Period().apply {
+                start = Date().plusDays(-10)
+                end = Date().plusDays(-1)
+              }
+            restriction =
+              Task.TaskRestrictionComponent().apply { period = Period().apply { end = today() } }
+            basedOn.add(Reference().apply { reference = "CarePlan/123" })
+          }
+        )
+      )
+    }
+
+    val carePlan =
+      CarePlan().apply {
+        id = "123"
+        status = CarePlan.CarePlanStatus.ACTIVE
+        activityFirstRep.detail.kind = CarePlan.CarePlanActivityKind.TASK
+        activityFirstRep.outcomeReference.add(
+          Reference().apply { reference = "Task/${taskList.first().logicalId}" }
+        )
+      }
+
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns taskList
+    coEvery { fhirEngine.get<CarePlan>(any()) } returns carePlan
+
+    coEvery { fhirEngine.update(any()) } just runs
+
+    val tasks = runBlocking { fhirTaskExpireUtil.expireOverdueTasks() }
+
+    assertEquals(4, tasks.size)
+
+    tasks.forEach {
+      assertEquals(TaskStatus.CANCELLED, it.status)
+      coVerify { fhirEngine.update(it) }
+    }
+
+    assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
   }
 
   @Test
