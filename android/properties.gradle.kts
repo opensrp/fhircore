@@ -31,7 +31,7 @@ val requiredFhirProperties =
 val localProperties = readProperties("local.properties")
 
 requiredFhirProperties.forEach { property ->
-  project.extra.set(property, localProperties.getProperty(property)?: (if(property == "URL") "https://sample.url/fhir/" else "sample_" + property))
+  project.extra.set(property, localProperties.getProperty(property)?: (if(property.contains("URL")) "https://sample.url/fhir/" else "sample_" + property))
 }
 
 // Set required keystore properties
