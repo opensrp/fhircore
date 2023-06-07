@@ -29,11 +29,8 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
 import com.github.anrwatchdog.ANRWatchDog
 import com.google.android.fhir.datacapture.DataCaptureConfig
-import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.crashlytics.ktx.crashlytics
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.perf.ktx.performance
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirXFhirQueryResolver
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
@@ -42,8 +39,6 @@ import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
-import javax.inject.Inject
-
 
 @HiltAndroidApp
 class QuestApplication :
@@ -79,20 +74,18 @@ class QuestApplication :
   private var mForegroundActivityContext: Context? = null
 
   private var configuration: DataCaptureConfig? = null
-  private var defaultExceptionHandler: Thread.UncaughtExceptionHandler? = null
 
   override fun onCreate() {
     super<Application>.onCreate()
 
     initANRWatcher()
 
+    if (BuildConfig.DEBUG) {
+      Timber.plant(Timber.DebugTree())
+    }
+
     if (BuildConfig.DEBUG.not()) {
-        defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
-        Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
-    } else {
-        Firebase.performance.isPerformanceCollectionEnabled = false
-        Firebase.crashlytics.setCrashlyticsCollectionEnabled(false)
-        Timber.plant(Timber.DebugTree())
+      Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
     }
 
     appInActivityListener =
@@ -163,9 +156,9 @@ class QuestApplication :
       .build()
 
   private val globalExceptionHandler =
-    Thread.UncaughtExceptionHandler { t: Thread, e: Throwable -> handleUncaughtException(t, e) }
+    Thread.UncaughtExceptionHandler { _: Thread, e: Throwable -> handleUncaughtException(e) }
 
-  private fun handleUncaughtException(t: Thread, e: Throwable) {
+  private fun handleUncaughtException(e: Throwable) {
     showToast(this.getString(R.string.error_occurred))
     Timber.e(e)
 
@@ -175,7 +168,5 @@ class QuestApplication :
       intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
       startActivity(intent)
     }
-
-    Firebase.crashlytics.recordException(e)
   }
 }
