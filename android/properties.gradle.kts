@@ -18,6 +18,7 @@ fun Project.readProperties(file: String): Properties {
 // Set required FHIR core properties
 val requiredFhirProperties =
   listOf(
+    "URL",
     "FHIR_BASE_URL",
     "OAUTH_BASE_URL",
     "OAUTH_CIENT_ID",
@@ -30,7 +31,7 @@ val requiredFhirProperties =
 val localProperties = readProperties("local.properties")
 
 requiredFhirProperties.forEach { property ->
-  project.extra.set(property, localProperties.getProperty(property))
+  project.extra.set(property, localProperties.getProperty(property)?: "sample_" + property)
 }
 
 // Set required keystore properties
