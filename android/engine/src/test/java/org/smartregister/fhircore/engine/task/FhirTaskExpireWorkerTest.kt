@@ -44,6 +44,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.plusDays
 
@@ -52,6 +53,7 @@ import org.smartregister.fhircore.engine.util.extension.plusDays
 class FhirTaskExpireWorkerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   @BindValue var fhirTaskExpireUtil: FhirTaskExpireUtil = mockk()
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   private val fhirEngine: FhirEngine = mockk(relaxed = true)
@@ -121,7 +123,8 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
         workerParams = workerParameters,
         fhirEngine = fhirEngine,
         fhirTaskExpireUtil = fhirTaskExpireUtil,
-        sharedPreferences = sharedPreferencesHelper
+        sharedPreferences = sharedPreferencesHelper,
+        dispatcherProvider = coroutineTestRule.testDispatcherProvider
       )
     }
   }

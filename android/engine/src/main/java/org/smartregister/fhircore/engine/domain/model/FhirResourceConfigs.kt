@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.domain.model
 import android.os.Parcelable
 import com.google.android.fhir.search.Order
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.RawValue
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
@@ -32,7 +33,7 @@ import org.hl7.fhir.r4.model.ResourceType
 data class FhirResourceConfig(
   val baseResource: ResourceConfig,
   val relatedResources: List<ResourceConfig> = emptyList()
-) : Parcelable
+) : Parcelable, java.io.Serializable
 
 /**
  * This is the data class used to hold configurations for FHIR resources used in Profile and
@@ -67,20 +68,33 @@ data class FhirResourceConfig(
  *
  * A [ResourceConfig] can have nested list of other [ResourceConfig] configured via
  * [relatedResources] property.
+ *
+ * [CountResultConfig] is used to configure how to compute the total counts returned. If
+ * [CountResultConfig.sumCounts] is set to true, all the related resources counts are computed once
+ * via one query. However there may be scenarios to return count for each related resource e.g. for
+ * every Patient in a Group, return their Tasks count.
  */
 @Serializable
 @Parcelize
 data class ResourceConfig(
   val id: String? = null,
-  val resource: String,
+  val resource: ResourceType,
   val searchParameter: String? = null,
   val isRevInclude: Boolean = true,
   val dataQueries: List<DataQuery>? = null,
   val relatedResources: List<ResourceConfig> = emptyList(),
   val sortConfigs: List<SortConfig> = emptyList(),
   val resultAsCount: Boolean = false,
-  val nestedSearchResources: List<NestedSearchConfig>? = null
-) : Parcelable
+  val countResultConfig: CountResultConfig? = CountResultConfig(),
+  val nestedSearchResources: List<NestedSearchConfig>? = null,
+  val configRules: @RawValue List<RuleConfig>? = null,
+  val planDefinitions: List<String>? = null,
+  val attributesToUpdate: List<KeyValueConfig>? = emptyList()
+) : Parcelable, java.io.Serializable
+
+@Serializable
+@Parcelize
+data class CountResultConfig(val sumCounts: Boolean = true) : Parcelable, java.io.Serializable
 
 @Serializable
 @Parcelize

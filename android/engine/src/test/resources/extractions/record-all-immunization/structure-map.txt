@@ -1,51 +1,44 @@
-map "http://fhir.labs.smartregister.org/fhir/StructureMap/followup-structuremap" = 'ImmunizationCarePlan'
+map "http://fhir.labs.smartregister.org/fhir/StructureMap/e4fcfd38-2f6b-4b58-af23-b1700f822b57" = 'ImmunizationCarePlan'
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
 
 group ImmunizationCarePlan(source src : QuestionnaireResponse, target tgt: Bundle) {
         src -> create('Encounter') as encounter,
-               create('Encounter') as adminEncounter
+               create('Encounter') as administrationEncounter
         then ExtractRecordEncounter(src,encounter,tgt),
-             ExtractAdministrationEncounter(src, adminEncounter,encounter, tgt),
-             ExtractImmunization(src, encounter, tgt) "r_careplan";
+             ExtractAdministrationEncounter(src, administrationEncounter,encounter, tgt),
+             ExtractImmunization(src, administrationEncounter, encounter, tgt) "r_careplan";
 }
 
-group ExtractImmunization(source src : QuestionnaireResponse, source encounter: Encounter, target bundle : Bundle) {
-        src.item as vaccinesItem where(linkId='vaccines codes group') then {
-            vaccinesItem.item as vaccine -> bundle.entry as entry, entry.resource = create('Immunization') as immunization,
-            create('dateTime') as vaccineDate then {
-              src.item where(linkId = 'vaccines same date' and answer.value = true) -> vaccineDate.value = evaluate(src, item.where(linkId='vaccines date').answer.value.value) "r_vaccine_date_is_same";
-              src.item where(linkId = 'vaccines same date' and answer.value = false) ->
-                     vaccineDate.value = evaluate(vaccine, src.item.descendants().where(linkId=vaccine.linkId+' date').answer.value.value) "r_vaccine_date_is_same";
-              src -> immunization.id = uuid(),
-                     immunization.recorded = evaluate(src, now()),
-                     immunization.status = "completed",
-                     immunization.occurrence = vaccineDate,
-                     immunization.patient = evaluate(src, subject),
-                     immunization.encounter = reference(encounter) "rule_ei_11";
-              src -> immunization.vaccineCode = create('CodeableConcept') as concept then {
-                     src -> concept.text = evaluate(vaccine,$this.linkId.upper()),
-                            concept.coding = evaluate(vaccine,$this.answer.value) "rule_ei_4_2";
-              } "rule_ei_4";
-            } "rule_ei_13";
-        } "r2";
+group ExtractImmunization(source src : QuestionnaireResponse, source encounterPartOf : Encounter, source encounter: Encounter, target bundle : Bundle) {
+    src.item as vaccinesItem where(linkId='vaccines codes group') then {
+        vaccinesItem.item as vaccine -> bundle.entry as entry, entry.resource = create('Immunization') as immunization,
+        create('dateTime') as vaccineDate then {
+          src.item where(linkId = 'vaccines same date' and answer.value = true) -> vaccineDate.value = evaluate(src, item.where(linkId='vaccines date').answer.value.value) "r_vaccine_date_is_same";
+          src.item where(linkId = 'vaccines same date' and answer.value = false) ->
+                 vaccineDate.value = evaluate(vaccine, src.item.descendants().where(linkId=vaccine.linkId+' date').answer.value.value) "r_vaccine_date_is_same";
+          src -> immunization.id = uuid(),
+                 immunization.recorded = evaluate(src, now()),
+                 immunization.status = "completed",
+                 immunization.occurrence = vaccineDate,
+                 immunization.patient = evaluate(src, subject),
+                 immunization.encounter = reference(encounter) "rule_ei_11";
+          src -> immunization.vaccineCode = create('CodeableConcept') as concept then {
+                 src -> concept.text = evaluate(vaccine,$this.linkId.upper()),
+                        concept.coding = evaluate(vaccine,$this.answer.value) "rule_ei_4_2";
+          } "rule_ei_4";
 
-        // adding record encounter as task.output
-        src.item as vaccinesItemAnswer where(linkId='vaccines') then {
-            vaccinesItemAnswer.answer as answerItem -> bundle.entry as entry, entry.resource = create('Task') as task then {
-              src->create("id") as task_id then {
-                   src->task_id.value = evaluate(answerItem,$this.value.reference) "r_set_task_id_value";
-                   src->task.id = task_id "r_set_task_id";
-                   src -> task.output = create('Task_Output') as output then {
-                          src -> output.type = cc("http://snomed.info/sct", "41000179103", "Immunization record (record artifact)") ,
-                          output.value = create("Reference") as ref then {
-                              src -> ref.reference =  evaluate(encounter,'Encounter/'+$this.id) "r_output_ref";
-                          } "r_reference";
-                   } "r_task";
-              } "r_taskId";
-            } "r_reference";
-        } "r_task_output";
+
+            // adding record encounter as task.output
+            src.item as vaccinesItemAnswer where(linkId='vaccines') then {
+                vaccinesItemAnswer.answer as answerItem where(value.display.lower().contains(vaccine.linkId.lower())) then {
+               src -> evaluate(answerItem,$this.value.reference) as taskId then
+                    extractTaskOutput(src, bundle, taskId, encounterPartOf, encounter, immunization) "r_set_task_id_value";
+                } "r_reference";
+            } "r_task_output";
+        } "rule_ei_13";
+    } "r2";
 }
 
 // Immunization Record Encounter Sample
@@ -64,18 +57,59 @@ group ExtractRecordEncounter(source src : QuestionnaireResponse, target encounte
 }
 
 // Immunization Administration Encounter
-group ExtractAdministrationEncounter(source src : QuestionnaireResponse,target adminEncounter: Encounter,target encounter: Encounter, target bundle : Bundle) {
-        src -> adminEncounter.id = uuid(),
-               adminEncounter.status = "finished",
-               adminEncounter.type = cc("http://snomed.info/sct", "33879002", "Administration of vaccine to produce active immunity (procedure)") "r_type";
-        src -> adminEncounter.subject = create('Reference') as reference then {
+group ExtractAdministrationEncounter(source src : QuestionnaireResponse,target administrationEncounter: Encounter,target encounter: Encounter, target bundle : Bundle) {
+        src -> administrationEncounter.id = uuid(),
+               administrationEncounter.status = "finished",
+               administrationEncounter.type = cc("http://snomed.info/sct", "33879002", "Administration of vaccine to produce active immunity (procedure)") "r_type";
+        src -> administrationEncounter.subject = create('Reference') as reference then {
                src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ee_6_1";
         } "rule_ee_6"; // TODO add patient id in questionnaireResponse
-        src -> adminEncounter.period = create("Period") as period then {
+        src -> administrationEncounter.period = create("Period") as period then {
                src -> period.end = evaluate(src, now()) "r_end";
         } "r_period";
-        src -> adminEncounter.partOf = create('Reference') as ref then {
+        src -> administrationEncounter.partOf = create('Reference') as ref then {
                src -> ref.reference = evaluate(encounter,$this.id) "r_ref";
         } "r_partof";
-        src -> bundle.entry as entry, entry.resource = adminEncounter "r_enc_cp";
+        src -> bundle.entry as entry, entry.resource = administrationEncounter "r_enc_cp";
+}
+
+group extractTaskOutput(source questionnaireResponse : QuestionnaireResponse, target bundle: Bundle, source taskId: String, source encounterPartOf : Encounter, source encounter : Encounter, source immunization : Immunization) {
+    questionnaireResponse -> bundle.entry as entry, entry.resource = create('Task') as task then {
+        questionnaireResponse -> task.id = create('id') as id then {
+            questionnaireResponse -> id.value = taskId "rule_task_id";
+        } "rule_update_task";
+
+        // mark task completed
+        questionnaireResponse -> task.status = 'completed' "r_task_status";
+
+        // Task Encounter Output one
+        questionnaireResponse -> task.output = create('Task_Output') as outputTask then {
+            questionnaireResponse -> outputTask.type = create("CodeableConcept") as concept then {
+                questionnaireResponse-> concept.coding = c("http://snomed.info/sct","41000179103") as coding then {
+                    questionnaireResponse -> coding.display = "Immunization record (record artifact)" "rule_coding_display";
+                } "rule_task_concept_coding";
+            } "rule_codeable_concept";
+            questionnaireResponse -> outputTask.value = reference(encounterPartOf) "rule_task_output_reference";
+        } "rule_task_output";
+
+        // Task Encounter Output two
+        questionnaireResponse -> task.output = create('Task_Output') as outputTask then {
+            questionnaireResponse -> outputTask.type = create("CodeableConcept") as concept then {
+                questionnaireResponse-> concept.coding = c("http://snomed.info/sct","41000179103") as coding then {
+                    questionnaireResponse -> coding.display = "Immunization record (record artifact)" "rule_coding_display";
+                } "rule_task_concept_coding";
+            } "rule_codeable_concept";
+            questionnaireResponse -> outputTask.value = reference(encounter) "rule_task_output_reference";
+        } "rule_task_output";
+
+        // Task Immunization Output
+        questionnaireResponse -> task.output = create('Task_Output') as outputTask then {
+            questionnaireResponse -> outputTask.type = create("CodeableConcept") as concept then {
+                questionnaireResponse-> concept.coding = c("http://snomed.info/sct","41000179103") as coding then {
+                    questionnaireResponse -> coding.display = "Immunization record (record artifact)" "rule_coding_display";
+                } "rule_task_concept_coding";
+            } "rule_codeable_concept";
+            questionnaireResponse -> outputTask.value = reference(immunization) "rule_task_output_reference";
+        } "rule_task_output";
+    } "rule_task";
 }

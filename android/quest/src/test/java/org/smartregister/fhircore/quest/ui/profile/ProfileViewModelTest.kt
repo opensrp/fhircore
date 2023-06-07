@@ -39,7 +39,7 @@ import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityCon
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -56,7 +56,7 @@ class ProfileViewModelTest : RobolectricTest() {
   val coroutineRule = CoroutineTestRule()
   private lateinit var registerRepository: RegisterRepository
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
-  @Inject lateinit var rulesExecutor: RulesExecutor
+  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var profileViewModel: ProfileViewModel
   private lateinit var resourceData: ResourceData
@@ -80,11 +80,12 @@ class ProfileViewModelTest : RobolectricTest() {
           dispatcherProvider = DefaultDispatcherProvider(),
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
-          configService = mockk()
+          configService = mockk(),
+          configRulesExecutor = mockk()
         )
       )
     coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns
-      RepositoryResourceData.Search(resource = Faker.buildPatient())
+      RepositoryResourceData(resource = Faker.buildPatient())
 
     runBlocking {
       configurationRegistry.loadConfigurations(
@@ -99,7 +100,7 @@ class ProfileViewModelTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         dispatcherProvider = coroutineRule.testDispatcherProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
-        rulesExecutor = rulesExecutor
+        resourceDataRulesExecutor = resourceDataRulesExecutor
       )
   }
 

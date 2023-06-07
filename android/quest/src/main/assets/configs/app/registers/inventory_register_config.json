@@ -1,8 +1,8 @@
 {
-  "appId": "chss",
+  "appId": "app",
   "configType": "register",
   "id": "inventoryRegister",
-  "pageSize": 10,
+  "pageSize": 20,
   "fhirResource": {
     "baseResource": {
       "resource": "Group",

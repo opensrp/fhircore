@@ -18,32 +18,33 @@ package org.smartregister.fhircore.quest.data.report.measure
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
-import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
+import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDataMapper
 
-class MeasureReportPatientsPagingSource(
+class MeasureReportSubjectsPagingSource(
   private val measureReportRepository: MeasureReportRepository,
-  val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
-) : PagingSource<Int, MeasureReportPatientViewData>() {
+  val measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
+) : PagingSource<Int, MeasureReportSubjectViewData>() {
 
   override suspend fun load(
     params: LoadParams<Int>
-  ): LoadResult<Int, MeasureReportPatientViewData> {
+  ): LoadResult<Int, MeasureReportSubjectViewData> {
     return try {
       val currentPage = params.key ?: 0
+      val pageSize = params.loadSize
       val data =
-        measureReportRepository.retrievePatients(currentPage).map { resourceData ->
-          measureReportPatientViewDataMapper.transformInputToOutputModel(resourceData)
+        measureReportRepository.retrieveSubjects(currentPage).map { resourceData ->
+          measureReportSubjectViewDataMapper.transformInputToOutputModel(resourceData)
         }
       val prevKey = if (currentPage == 0) null else currentPage - 1
-      val nextKey = if (data.isNotEmpty()) currentPage + 1 else null
+      val nextKey = if (data.isNotEmpty() && data.size > pageSize) currentPage + 1 else null
       LoadResult.Page(data = data, prevKey = prevKey, nextKey = nextKey)
     } catch (exception: Exception) {
       LoadResult.Error(exception)
     }
   }
 
-  override fun getRefreshKey(state: PagingState<Int, MeasureReportPatientViewData>): Int? {
+  override fun getRefreshKey(state: PagingState<Int, MeasureReportSubjectViewData>): Int? {
     return state.anchorPosition
   }
 }
