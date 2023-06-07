@@ -84,11 +84,11 @@ class QuestApplication :
     initANRWatcher()
 
     if (BuildConfig.DEBUG.not()) {
-        Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
+      Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
     } else {
-        Firebase.performance.isPerformanceCollectionEnabled = false
-        Firebase.crashlytics.setCrashlyticsCollectionEnabled(false)
-        Timber.plant(Timber.DebugTree())
+      Firebase.performance.isPerformanceCollectionEnabled = false
+      Firebase.crashlytics.setCrashlyticsCollectionEnabled(false)
+      Timber.plant(Timber.DebugTree())
     }
 
     appInActivityListener =
