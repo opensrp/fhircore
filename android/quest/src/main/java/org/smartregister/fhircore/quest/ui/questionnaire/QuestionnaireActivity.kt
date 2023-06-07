@@ -146,6 +146,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
             }
           }
+
         questionnaireResponse =
           questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
               questionnaire = questionnaire,

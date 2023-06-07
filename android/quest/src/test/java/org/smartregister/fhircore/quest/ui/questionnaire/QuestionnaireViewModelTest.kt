@@ -1315,10 +1315,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // For Patient
     val patient = samplePatient()
-    questionnaireViewModel.appendAppVersion(resource = patient)
+    questionnaireViewModel.appendAppVersion(context, resource = patient)
     val tag = patient.meta.tag
     val appVersionTag = tag[0]
-    Assert.assertEquals("https://smartregister.org/", appVersionTag.system)
+    Assert.assertEquals("https://smartregister.org/app-version", appVersionTag.system)
     Assert.assertEquals(versionName, appVersionTag.code)
     Assert.assertEquals("Application Version", appVersionTag.display)
   }
