@@ -304,4 +304,6 @@ constructor(
         .build()
     workManager.enqueue(oneTimeWorkRequest)
   }
+
+  fun isCurrentRefreshTokenExpired() = !tokenAuthenticator.isCurrentRefreshTokenActive()
 }

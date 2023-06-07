@@ -21,6 +21,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.annotation.VisibleForTesting
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
 import androidx.work.WorkManager
@@ -32,17 +33,16 @@ import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
 import org.smartregister.fhircore.engine.sync.AppSyncWorker
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.fhircore.quest.ui.pin.PinLoginActivity
 import org.smartregister.p2p.P2PLibrary
 
 @AndroidEntryPoint
-class LoginActivity : BaseMultiLanguageActivity() {
+open class LoginActivity : BaseMultiLanguageActivity() {
 
-  @Inject lateinit var secureSharedPreference: SecureSharedPreference
   @Inject lateinit var p2pSenderTransferDao: P2PSenderTransferDao
   @Inject lateinit var p2pReceiverTransferDao: P2PReceiverTransferDao
   @Inject lateinit var workManager: WorkManager
@@ -61,20 +61,27 @@ class LoginActivity : BaseMultiLanguageActivity() {
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
   }
 
-  private fun navigateToScreen() {
+  @VisibleForTesting
+  fun navigateToScreen() {
     loginViewModel.apply {
       val loginActivity = this@LoginActivity
-      val isPinEnabled = isPinEnabled()
-      val hasActivePin = !secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
+      val isPinEnabled = pinEnabled()
+      val hasActivePin = pinActive()
 
       if (isPinEnabled && hasActivePin) {
-        navigateToPinLogin(launchSetup = false)
+
+        if ((loginActivity.deviceOnline() && loginActivity.isRefreshTokenActive()) ||
+            !loginActivity.deviceOnline()
+        ) {
+
+          navigateToPinLogin(launchSetup = false)
+        }
       }
 
       navigateToHome.observe(loginActivity) { launchHomeScreen ->
         if (launchHomeScreen) {
           if (!hasActivePin) downloadNowWorkflowConfigs()
-          if (isPinEnabled) navigateToPinLogin(launchSetup = !hasActivePin)
+          if (isPinEnabled && !hasActivePin) navigateToPinLogin(launchSetup = true)
           else loginActivity.navigateToHome()
         }
       }
@@ -82,11 +89,17 @@ class LoginActivity : BaseMultiLanguageActivity() {
     }
   }
 
+  @VisibleForTesting open fun pinEnabled() = loginViewModel.isPinEnabled()
+  @VisibleForTesting
+  open fun pinActive() = !loginViewModel.secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
+  @VisibleForTesting
+  open fun isRefreshTokenActive() = !loginViewModel.isCurrentRefreshTokenExpired()
+  @VisibleForTesting open fun deviceOnline() = isDeviceOnline()
   @OptIn(ExperimentalMaterialApi::class)
   fun navigateToHome() {
     startActivity(Intent(this, AppMainActivity::class.java))
     // Initialize P2P after login only when username is provided then finish activity
-    val username = secureSharedPreference.retrieveSessionUsername()
+    val username = loginViewModel.secureSharedPreference.retrieveSessionUsername()
     if (!username.isNullOrEmpty()) {
       P2PLibrary.init(
         P2PLibrary.Options(
