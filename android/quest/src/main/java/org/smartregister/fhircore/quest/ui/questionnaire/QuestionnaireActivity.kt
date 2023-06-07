@@ -41,6 +41,7 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
@@ -145,6 +146,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
             }
           }
+
         questionnaireResponse =
           questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
               questionnaire = questionnaire,
@@ -204,7 +206,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  private fun renderFragment() {
+  private suspend fun renderFragment() {
     // Pass questionnaire and questionnaire-response to fragment
     val questionnaireString = parser.encodeResourceToString(questionnaire)
     val fragmentBuilder =
@@ -212,6 +214,21 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         setQuestionnaire(questionnaireString)
         if (!questionnaireConfig.type.isDefault()) {
           setQuestionnaireResponse(questionnaireResponse.encodeResourceToString())
+        }
+        questionnaireConfig.resourceIdentifier?.takeIf { it.isNotBlank() }?.let {
+          val resourceId = IdType(it)
+          val resourceType =
+            resourceId.resourceType?.let { ResourceType.fromCode(it) }
+              ?: questionnaireConfig.resourceType ?: ResourceType.Patient
+
+          setQuestionnaireLaunchContexts(
+            listOf(
+              questionnaireViewModel
+                .defaultRepository
+                .loadResource(resourceId.idPart, resourceType)
+                .encodeResourceToString()
+            )
+          )
         }
       }
     fragment = fragmentBuilder.build()

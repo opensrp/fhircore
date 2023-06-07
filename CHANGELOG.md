@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The ability to define a regex and separator on the `RulesFactory.RulesEngineService#joinToString(java.util.List<java.lang.String>, java.lang.String, java.lang.String)`
 - Use Sentry to track and monitor performance bottlenecks on quest and FHIR Core release app variants
 - Add functionality to allow usage of computed rules on DataQuery values
+- Allow configs to pass multiple subjects to measure evaluate interface so we can create reports per another resource (e.g. a MeasureReport per Practitioner)
+- Introduce an open function on ViewProperties#interpolate to retrieve values from computed values map
+- Update the CarePlan Closure configs to define the PlanDefs to closure separately.
 
 ### Fixed
 - Member icons display wrapping; hiding some texts

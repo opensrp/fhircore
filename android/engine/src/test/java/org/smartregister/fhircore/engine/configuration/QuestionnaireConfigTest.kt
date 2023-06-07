@@ -19,7 +19,7 @@ package org.smartregister.fhircore.engine.configuration
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Assert
 import org.junit.Test
-import org.smartregister.fhircore.engine.domain.model.CarePlanConfig
+import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
@@ -69,7 +69,7 @@ class QuestionnaireConfigTest : RobolectricTest() {
           ),
         taskId = "@{taskId}",
         saveDraft = true,
-        carePlanConfigs = listOf(CarePlanConfig()),
+        eventWorkflows = listOf(EventWorkflow()),
         planDefinitions = listOf("@{planDef1}"),
         readOnlyLinkIds = listOf("@{linkId1}", "@{linkId2}")
       )
