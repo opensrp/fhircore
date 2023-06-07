@@ -29,6 +29,9 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
 import com.github.anrwatchdog.ANRWatchDog
 import com.google.android.fhir.datacapture.DataCaptureConfig
+import com.google.firebase.crashlytics.ktx.crashlytics
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.perf.ktx.performance
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -80,12 +83,12 @@ class QuestApplication :
 
     initANRWatcher()
 
-    if (BuildConfig.DEBUG) {
-      Timber.plant(Timber.DebugTree())
-    }
-
     if (BuildConfig.DEBUG.not()) {
-      Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
+        Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
+    } else {
+        Firebase.performance.isPerformanceCollectionEnabled = false
+        Firebase.crashlytics.setCrashlyticsCollectionEnabled(false)
+        Timber.plant(Timber.DebugTree())
     }
 
     appInActivityListener =
@@ -159,6 +162,7 @@ class QuestApplication :
     Thread.UncaughtExceptionHandler { _: Thread, e: Throwable -> handleUncaughtException(e) }
 
   private fun handleUncaughtException(e: Throwable) {
+    Firebase.crashlytics.recordException(e)
     showToast(this.getString(R.string.error_occurred))
     Timber.e(e)
 
