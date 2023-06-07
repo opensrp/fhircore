@@ -23,6 +23,7 @@ import kotlinx.parcelize.RawValue
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 /**
  * Represents FHIR resources used on the register. The [baseResource] is the main resource used
@@ -90,7 +91,33 @@ data class ResourceConfig(
   val configRules: @RawValue List<RuleConfig>? = null,
   val planDefinitions: List<String>? = null,
   val attributesToUpdate: List<KeyValueConfig>? = emptyList()
-) : Parcelable, java.io.Serializable
+) : Parcelable, java.io.Serializable {
+  fun interpolate(computedValuesMap: Map<String, Any>) =
+    this.copy(
+      dataQueries =
+        dataQueries?.map { dataQuery ->
+          dataQuery.copy(
+            filterCriteria =
+              dataQuery.filterCriteria.map { filterCriterionConfig ->
+                when (filterCriterionConfig.dataType) {
+                  Enumerations.DataType.REFERENCE ->
+                    (filterCriterionConfig as FilterCriterionConfig.ReferenceFilterCriterionConfig)
+                      .copy(value = filterCriterionConfig.value?.interpolate(computedValuesMap))
+                  Enumerations.DataType.CODE ->
+                    (filterCriterionConfig as FilterCriterionConfig.TokenFilterCriterionConfig)
+                      .copy(
+                        computedRule =
+                          filterCriterionConfig.value?.code?.interpolate(computedValuesMap)
+                      )
+                  else ->
+                    (filterCriterionConfig as FilterCriterionConfig.StringFilterCriterionConfig)
+                      .copy(value = filterCriterionConfig.value?.interpolate(computedValuesMap))
+                }
+              }
+          )
+        }
+    )
+}
 
 @Serializable
 @Parcelize

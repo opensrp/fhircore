@@ -334,17 +334,6 @@ constructor(
       .filter { it.eventType == EventType.RESOURCE_CLOSURE }
       .forEach { eventWorkFlow ->
         eventWorkFlow.eventResources.forEach { eventResource ->
-          /*val carePlans =
-            fhirEngine.search<CarePlan> {
-              filter(
-                CarePlan.INSTANTIATES_CANONICAL,
-                { value = "${PlanDefinition().fhirType()}/$planDefinition" }
-              )
-              filter(CarePlan.SUBJECT, { value = subject.referenceValue() })
-            }
-
-          if (carePlans.isEmpty()) return@forEach*/
-
           val currentResourceTriggerConditions =
             eventWorkFlow.triggerConditions.firstOrNull { it.eventResourceId == eventResource.id }
           val conditionsMet =
@@ -356,7 +345,7 @@ constructor(
             )
 
           if (conditionsMet) {
-            defaultRepository.updateResourcesRecursively(eventResource)
+            defaultRepository.updateResourcesRecursively(eventResource, subject)
           }
         }
       }

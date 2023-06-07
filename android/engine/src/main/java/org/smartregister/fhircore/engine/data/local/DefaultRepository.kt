@@ -55,8 +55,10 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SortConfig
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.addTags
@@ -79,7 +81,8 @@ constructor(
   open val dispatcherProvider: DispatcherProvider,
   open val sharedPreferencesHelper: SharedPreferencesHelper,
   open val configurationRegistry: ConfigurationRegistry,
-  open val configService: ConfigService
+  open val configService: ConfigService,
+  open val resourceDataRulesExecutor: ResourceDataRulesExecutor
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
@@ -610,14 +613,23 @@ constructor(
     if (isRevInclude) this.filter { it.isRevInclude && !it.resultAsCount }
     else this.filter { !it.isRevInclude && !it.resultAsCount }
 
-  suspend fun updateResourcesRecursively(resourceConfig: ResourceConfig) {
+  suspend fun updateResourcesRecursively(resourceConfig: ResourceConfig, subject: Resource) {
+    val resourceData =
+      resourceDataRulesExecutor.processResourceData(
+        repositoryResourceData = RepositoryResourceData(resource = subject),
+        ruleConfigs = resourceConfig.configRules!!,
+        params = null
+      )
+    Timber.e("Computed values map = ${resourceData.computedValuesMap.values} ++++")
+    val resourceConfigLocal =
+      resourceConfig.interpolate(computedValuesMap = resourceData.computedValuesMap)
     val search =
       Search(resourceConfig.resource).apply {
         applyConfiguredSortAndFilters(
-          resourceConfig = resourceConfig,
+          resourceConfig = resourceConfigLocal,
           sortData = false,
           filterActiveResources = null,
-          configComputedRuleValues = emptyMap()
+          configComputedRuleValues = resourceData.computedValuesMap
         )
       }
     val resources = fhirEngine.search<Resource>(search)

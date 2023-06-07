@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -49,6 +50,7 @@ constructor(
   override val sharedPreferencesHelper: SharedPreferencesHelper,
   override val configurationRegistry: ConfigurationRegistry,
   override val configService: ConfigService,
+  override val resourceDataRulesExecutor: ResourceDataRulesExecutor,
   val configRulesExecutor: ConfigRulesExecutor
 ) :
   Repository,
@@ -57,7 +59,8 @@ constructor(
     dispatcherProvider = dispatcherProvider,
     sharedPreferencesHelper = sharedPreferencesHelper,
     configurationRegistry = configurationRegistry,
-    configService = configService
+    configService = configService,
+    resourceDataRulesExecutor = resourceDataRulesExecutor
   ) {
 
   override suspend fun loadRegisterData(

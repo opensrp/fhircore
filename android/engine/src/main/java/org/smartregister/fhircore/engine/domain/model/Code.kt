@@ -25,4 +25,4 @@ import kotlinx.serialization.Serializable
 @Serializable
 @Parcelize
 data class Code(var system: String? = null, var code: String? = null, var display: String? = null) :
-  Parcelable
+  Parcelable, java.io.Serializable
