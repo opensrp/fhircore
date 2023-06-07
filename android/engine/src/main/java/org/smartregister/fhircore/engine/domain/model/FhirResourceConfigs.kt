@@ -103,15 +103,24 @@ data class ResourceConfig(
                   Enumerations.DataType.REFERENCE ->
                     (filterCriterionConfig as FilterCriterionConfig.ReferenceFilterCriterionConfig)
                       .copy(value = filterCriterionConfig.value?.interpolate(computedValuesMap))
+                  Enumerations.DataType.STRING ->
+                    (filterCriterionConfig as FilterCriterionConfig.StringFilterCriterionConfig)
+                      .copy(value = filterCriterionConfig.value?.interpolate(computedValuesMap))
+                  Enumerations.DataType.URI ->
+                    (filterCriterionConfig as FilterCriterionConfig.UriFilterCriterionConfig).copy(
+                      value = filterCriterionConfig.value?.interpolate(computedValuesMap)
+                    )
                   Enumerations.DataType.CODE ->
                     (filterCriterionConfig as FilterCriterionConfig.TokenFilterCriterionConfig)
                       .copy(
-                        computedRule =
-                          filterCriterionConfig.value?.code?.interpolate(computedValuesMap)
+                        value =
+                          filterCriterionConfig.value?.copy(
+                            code = filterCriterionConfig.value?.code?.interpolate(computedValuesMap)
+                          )
                       )
-                  else ->
-                    (filterCriterionConfig as FilterCriterionConfig.StringFilterCriterionConfig)
-                      .copy(value = filterCriterionConfig.value?.interpolate(computedValuesMap))
+                  else -> {
+                    return this
+                  }
                 }
               }
           )

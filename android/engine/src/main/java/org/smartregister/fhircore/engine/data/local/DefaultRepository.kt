@@ -620,7 +620,7 @@ constructor(
         ruleConfigs = resourceConfig.configRules!!,
         params = null
       )
-    Timber.e("Computed values map = ${resourceData.computedValuesMap.values} ++++")
+    Timber.i("Computed values map = ${resourceData.computedValuesMap.values}")
     val resourceConfigLocal =
       resourceConfig.interpolate(computedValuesMap = resourceData.computedValuesMap)
     val search =
@@ -633,7 +633,6 @@ constructor(
         )
       }
     val resources = fhirEngine.search<Resource>(search)
-    Timber.e("Fetched careplans = ${resources.size} ++++")
     resources.forEach { closeResource(it) }
 
     // recursive related resources
@@ -646,12 +645,11 @@ constructor(
           configComputedRuleValues = emptyMap()
         )
       }
-    Timber.e("Fetched tasks = ${retrievedRelatedResources.relatedResourceMap.size} ++++")
 
     retrievedRelatedResources.relatedResourceMap.forEach { resourcesMap ->
       resourcesMap.value.forEach { resource ->
         closeResource(resource)
-        Timber.e("Related Resource type ${resource.resourceType.name} and id ${resource.id} ++++")
+        Timber.i("Related Resource type ${resource.resourceType.name} and id ${resource.id}")
       }
     }
   }
@@ -659,8 +657,10 @@ constructor(
   suspend fun closeResource(resource: Resource) {
     when (resource) {
       is Task -> {
-        resource.status = Task.TaskStatus.CANCELLED
-        resource.lastModified = Date()
+        if (resource.status != Task.TaskStatus.COMPLETED) {
+          resource.status = Task.TaskStatus.CANCELLED
+          resource.lastModified = Date()
+        }
       }
       is CarePlan -> {
         resource.status = CarePlan.CarePlanStatus.COMPLETED
