@@ -633,7 +633,10 @@ constructor(
         )
       }
     val resources = fhirEngine.search<Resource>(search)
-    resources.forEach { closeResource(it) }
+    resources.forEach {
+      Timber.i("Closing Resource type ${it.resourceType.name} and id ${it.id}")
+      closeResource(it)
+    }
 
     // recursive related resources
     val retrievedRelatedResources =
@@ -648,8 +651,10 @@ constructor(
 
     retrievedRelatedResources.relatedResourceMap.forEach { resourcesMap ->
       resourcesMap.value.forEach { resource ->
+        Timber.i(
+          "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}"
+        )
         closeResource(resource)
-        Timber.i("Related Resource type ${resource.resourceType.name} and id ${resource.id}")
       }
     }
   }

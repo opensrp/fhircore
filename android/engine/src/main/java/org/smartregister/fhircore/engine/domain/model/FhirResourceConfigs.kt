@@ -94,38 +94,50 @@ data class ResourceConfig(
 ) : Parcelable, java.io.Serializable {
   fun interpolate(computedValuesMap: Map<String, Any>) =
     this.copy(
-      dataQueries =
-        dataQueries?.map { dataQuery ->
-          dataQuery.copy(
-            filterCriteria =
-              dataQuery.filterCriteria.map { filterCriterionConfig ->
-                when (filterCriterionConfig.dataType) {
-                  Enumerations.DataType.REFERENCE ->
-                    (filterCriterionConfig as FilterCriterionConfig.ReferenceFilterCriterionConfig)
-                      .copy(value = filterCriterionConfig.value?.interpolate(computedValuesMap))
-                  Enumerations.DataType.STRING ->
-                    (filterCriterionConfig as FilterCriterionConfig.StringFilterCriterionConfig)
-                      .copy(value = filterCriterionConfig.value?.interpolate(computedValuesMap))
-                  Enumerations.DataType.URI ->
-                    (filterCriterionConfig as FilterCriterionConfig.UriFilterCriterionConfig).copy(
-                      value = filterCriterionConfig.value?.interpolate(computedValuesMap)
-                    )
-                  Enumerations.DataType.CODE ->
-                    (filterCriterionConfig as FilterCriterionConfig.TokenFilterCriterionConfig)
-                      .copy(
-                        value =
-                          filterCriterionConfig.value?.copy(
-                            code = filterCriterionConfig.value?.code?.interpolate(computedValuesMap)
-                          )
-                      )
-                  else -> {
-                    return this
-                  }
-                }
-              }
+      dataQueries = interpolateDataQueries(dataQueries = dataQueries, computedValuesMap),
+      relatedResources =
+        relatedResources.map {
+          it.copy(
+            dataQueries = interpolateDataQueries(dataQueries = dataQueries, computedValuesMap)
           )
         }
     )
+
+  private fun interpolateDataQueries(
+    dataQueries: List<DataQuery>?,
+    computedValuesMap: Map<String, Any>
+  ): List<DataQuery>? {
+    return dataQueries?.map { dataQuery ->
+      dataQuery.copy(
+        filterCriteria =
+          dataQuery.filterCriteria.map { filterCriterionConfig ->
+            when (filterCriterionConfig.dataType) {
+              Enumerations.DataType.REFERENCE ->
+                (filterCriterionConfig as FilterCriterionConfig.ReferenceFilterCriterionConfig)
+                  .copy(value = filterCriterionConfig.value?.interpolate(computedValuesMap))
+              Enumerations.DataType.STRING ->
+                (filterCriterionConfig as FilterCriterionConfig.StringFilterCriterionConfig).copy(
+                  value = filterCriterionConfig.value?.interpolate(computedValuesMap)
+                )
+              Enumerations.DataType.URI ->
+                (filterCriterionConfig as FilterCriterionConfig.UriFilterCriterionConfig).copy(
+                  value = filterCriterionConfig.value?.interpolate(computedValuesMap)
+                )
+              Enumerations.DataType.CODE ->
+                (filterCriterionConfig as FilterCriterionConfig.TokenFilterCriterionConfig).copy(
+                  value =
+                    filterCriterionConfig.value?.copy(
+                      code = filterCriterionConfig.value?.code?.interpolate(computedValuesMap)
+                    )
+                )
+              else -> {
+                return this.dataQueries
+              }
+            }
+          }
+      )
+    }
+  }
 }
 
 @Serializable
