@@ -35,6 +35,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Dosage
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.IdType
@@ -57,6 +58,8 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.addResourceParameter
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.extractFhirpathDuration
+import org.smartregister.fhircore.engine.util.extension.extractFhirpathPeriod
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.referenceValue
@@ -278,30 +281,29 @@ constructor(
         timing.repeat.hasCountMax() ||
         timing.repeat.durationUnit?.equals(UnitsOfTime.H) == true)
     val count = if (isLegacyPlanDefinition || !timing.repeat.hasCount()) 1 else timing.repeat.count
-    /*
-        val periodExpression = timing.extractFhirpathPeriod()
-        val durationExpression = timing.extractFhirpathDuration()
 
-        // Offset date for current task period; CarePlan start if all tasks generated at once
-        // otherwise today means that tasks are generated on demand
-        var offsetDate: BaseDateTimeType =
-          DateTimeType(if (timing.repeat.hasCount()) carePlan.period.start else Date())
+    val periodExpression = timing.extractFhirpathPeriod()
+    val durationExpression = timing.extractFhirpathDuration()
 
-        for (i in 1..count) {
-          if (periodExpression.isNotBlank() && offsetDate.hasValue())
-            evaluateToDate(offsetDate, "\$this + $periodExpression")?.let { offsetDate = it }
+    // Offset date for current task period; CarePlan start if all tasks generated at once
+    // otherwise today means that tasks are generated on demand
+    var offsetDate: BaseDateTimeType =
+      DateTimeType(if (timing.repeat.hasCount()) carePlan.period.start else Date())
 
-          Period()
-            .apply {
-              start = offsetDate.value
-              end =
-                if (durationExpression.isNotBlank() && offsetDate.hasValue())
-                  evaluateToDate(offsetDate, "\$this + $durationExpression")?.value
-                else carePlan.period.end
-            }
-            .also { taskPeriods.add(it) }
+    for (i in 1..count) {
+      if (periodExpression.isNotBlank() && offsetDate.hasValue())
+        evaluateToDate(offsetDate, "\$this + $periodExpression")?.let { offsetDate = it }
+
+      Period()
+        .apply {
+          start = offsetDate.value
+          end =
+            if (durationExpression.isNotBlank() && offsetDate.hasValue())
+              evaluateToDate(offsetDate, "\$this + $durationExpression")?.value
+            else carePlan.period.end
         }
-    */
+        .also { taskPeriods.add(it) }
+    }
 
     return taskPeriods
   }
