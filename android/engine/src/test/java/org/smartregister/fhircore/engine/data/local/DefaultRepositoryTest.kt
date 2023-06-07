@@ -67,6 +67,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -89,6 +90,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   private lateinit var fhirEngine: FhirEngine
   private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var defaultRepository: DefaultRepository
+  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
 
   @Before
   fun setUp() {
@@ -104,7 +106,8 @@ class DefaultRepositoryTest : RobolectricTest() {
         dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferenceHelper,
         configurationRegistry = configurationRegistry,
-        configService = configService
+        configService = configService,
+        resourceDataRulesExecutor = resourceDataRulesExecutor
       )
   }
 
@@ -417,7 +420,8 @@ class DefaultRepositoryTest : RobolectricTest() {
           dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = mockk(),
-          configService = mockk()
+          configService = mockk(),
+          resourceDataRulesExecutor = mockk()
         )
       )
     coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
@@ -491,7 +495,8 @@ class DefaultRepositoryTest : RobolectricTest() {
           dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = mockk(),
-          configService = mockk()
+          configService = mockk(),
+          resourceDataRulesExecutor = mockk()
         )
       )
 

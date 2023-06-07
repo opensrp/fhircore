@@ -150,7 +150,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           dispatcherProvider = coroutineRule.testDispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
-          configService = configService
+          configService = configService,
+          resourceDataRulesExecutor = mockk()
         )
       )
 

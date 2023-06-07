@@ -44,6 +44,7 @@ import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.geowidget.rule.CoroutineTestRule
@@ -73,6 +74,8 @@ class GeoWidgetViewModelTest {
 
   private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
+  private val resourceDataRulesExecutor: ResourceDataRulesExecutor = mockk()
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -85,7 +88,8 @@ class GeoWidgetViewModelTest {
           coroutinesTestRule.testDispatcherProvider,
           sharedPreferencesHelper,
           configurationRegistry,
-          configService
+          configService,
+          resourceDataRulesExecutor
         )
       )
     geoWidgetViewModel =
