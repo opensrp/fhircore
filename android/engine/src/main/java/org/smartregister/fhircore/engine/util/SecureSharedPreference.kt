@@ -20,6 +20,7 @@ import android.content.Context
 import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.google.android.datatransport.BuildConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -30,7 +31,7 @@ import org.smartregister.fhircore.engine.util.extension.encodeJson
 @Singleton
 class SecureSharedPreference @Inject constructor(@ApplicationContext val context: Context) {
 
-  val secureSharedPreferences =
+  private val secureSharedPreferences =
     EncryptedSharedPreferences.create(
       context,
       SECURE_STORAGE_FILE_NAME,
@@ -82,7 +83,7 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
   }
 
   companion object {
-    const val SECURE_STORAGE_FILE_NAME = "fhircore_secure_preferences"
+    const val SECURE_STORAGE_FILE_NAME = "fhircore_secure_preferences_${BuildConfig.FLAVOR}"
     const val KEY_LATEST_CREDENTIALS_PREFERENCE = "LATEST_SUCCESSFUL_SESSION_CREDENTIALS"
     const val KEY_SESSION_PIN = "KEY_SESSION_PIN"
   }
