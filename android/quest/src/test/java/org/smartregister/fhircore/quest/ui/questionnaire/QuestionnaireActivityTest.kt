@@ -934,8 +934,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     Assert.assertNotNull("Questionnaire Response is null", questionnaireResponse)
   }
 
-
-
   @Test
   fun testGetResourcesFromParamsForQR_shouldFilterQuestionnaireResponsePopulationParam() {
     val questionnaireConfig =

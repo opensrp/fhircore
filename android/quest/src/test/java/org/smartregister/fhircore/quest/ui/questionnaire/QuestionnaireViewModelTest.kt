@@ -49,6 +49,7 @@ import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
@@ -112,7 +113,6 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.KeycloakUserDetails
 import org.smartregister.model.practitioner.PractitionerDetails
-import kotlin.test.assertIs
 
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
@@ -1650,7 +1650,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testGetQuestionnaireResponseFromDbOrPopulation_whenResourceMapIsNotEmpty_retrievePatientPlusRelatedPersonScenario_returnQuestionnaireResponseFromPopulation() {
-    val questionnaire = Questionnaire().apply {
+    val questionnaire =
+      Questionnaire().apply {
         id = "12345"
         item =
           listOf(
@@ -1697,7 +1698,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val relatedPerson = RelatedPerson().apply { id = "related-person-1" }
     val resourceMap: Map<ResourceType?, String> = mapOf(patient.resourceType to patient.id)
 
-    // Mandatory get QR from DB, but only used when there's no population resource which triggers an exception
+    // Mandatory get QR from DB, but only used when there's no population resource which triggers an
+    // exception
     coEvery {
       fhirEngine.search<QuestionnaireResponse> {
         filter(QuestionnaireResponse.SUBJECT, { value = patient.id })
@@ -1743,7 +1745,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testGetQuestionnaireResponseFromDbOrPopulation_whenResourceMapIsNotEmpty_retrieveThatResourceOnlyScenario_returnQuestionnaireResponseFromPopulation() {
-    val questionnaire = Questionnaire().apply {
+    val questionnaire =
+      Questionnaire().apply {
         id = "12345"
         item =
           listOf(
@@ -1789,7 +1792,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val group = Group().apply { id = "group-1" }
     val resourceMap: Map<ResourceType?, String> = mapOf(group.resourceType to group.id)
 
-    // Mandatory get QR from DB, but only used when there's no population resource which triggers an exception
+    // Mandatory get QR from DB, but only used when there's no population resource which triggers an
+    // exception
     coEvery {
       fhirEngine.search<QuestionnaireResponse> {
         filter(QuestionnaireResponse.SUBJECT, { value = group.id })
@@ -1822,7 +1826,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testGetQuestionnaireResponseFromDbOrPopulation_whenResourceMapIsEmpty_returnQuestionnaireResponseFromPopulation() {
-    val questionnaire = Questionnaire().apply {
+    val questionnaire =
+      Questionnaire().apply {
         id = "12345"
         item =
           listOf(
@@ -1868,7 +1873,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val group = Group().apply { id = "group-1" }
     val resourceMap: Map<ResourceType?, String> = mapOf()
 
-    // Mandatory get QR from DB, but only used when there's no population resource which triggers an exception
+    // Mandatory get QR from DB, but only used when there's no population resource which triggers an
+    // exception
     coEvery {
       fhirEngine.search<QuestionnaireResponse> {
         filter(QuestionnaireResponse.SUBJECT, { value = group.id })
@@ -1901,7 +1907,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testGetQuestionnaireResponseFromDbOrPopulation_whenPopulationResourceIsEmpty_returnQuestionnaireResponseFromDB() {
-    val questionnaire = Questionnaire().apply {
+    val questionnaire =
+      Questionnaire().apply {
         id = "12345"
         item =
           listOf(
@@ -1947,7 +1954,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val group = Group().apply { id = "group-1" }
     val resourceMap: Map<ResourceType?, String> = mapOf()
 
-    // Mandatory get QR from DB, to be used when there's no population resource which triggers an exception
+    // Mandatory get QR from DB, to be used when there's no population resource which triggers an
+    // exception
     coEvery {
       fhirEngine.search<QuestionnaireResponse> {
         filter(QuestionnaireResponse.SUBJECT, { value = group.id })
@@ -1956,7 +1964,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     } returns listOf(QuestionnaireResponse().apply { generateMissingItems(questionnaire) })
 
     // Population resource not found
-    coEvery { fhirEngine.get(group.resourceType, group.id) } throws ResourceNotFoundException(group.resourceType.name, group.id)
+    coEvery { fhirEngine.get(group.resourceType, group.id) } throws
+      ResourceNotFoundException(group.resourceType.name, group.id)
 
     val result = runBlocking {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(

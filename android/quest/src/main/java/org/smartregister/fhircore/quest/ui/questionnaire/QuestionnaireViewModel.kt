@@ -672,8 +672,9 @@ constructor(
       }
 
       /**
-       * This will catch an exception and return QR from DB when population resource is empty, ResourceMapper.selectPopulateContext() will return
-       * null, then that null will get evaluated and gives an exception as a result.
+       * This will catch an exception and return QR from DB when population resource is empty,
+       * ResourceMapper.selectPopulateContext() will return null, then that null will get evaluated
+       * and gives an exception as a result.
        */
       questionnaireResponse =
         runCatching {
