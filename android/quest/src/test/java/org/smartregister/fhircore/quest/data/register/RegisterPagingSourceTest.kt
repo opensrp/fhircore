@@ -38,7 +38,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 @HiltAndroidTest
 class RegisterPagingSourceTest : RobolectricTest() {
 
-  @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
   private val registerRepository = mockk<RegisterRepository>()
   private lateinit var registerPagingSource: RegisterPagingSource

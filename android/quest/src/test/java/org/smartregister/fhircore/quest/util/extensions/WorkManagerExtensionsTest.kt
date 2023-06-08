@@ -99,7 +99,7 @@ class WorkManagerExtensionsTest : RobolectricTest() {
         fhirEngine = fhirEngine,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider
+        dispatcherProvider = this@WorkManagerExtensionsTest.coroutineTestRule.testDispatcherProvider
       )
     }
   }
