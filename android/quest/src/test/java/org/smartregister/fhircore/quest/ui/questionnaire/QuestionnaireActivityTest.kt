@@ -77,7 +77,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
-import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
@@ -86,22 +85,12 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.C
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
-
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  @get:Rule(order = 1)
-  var coroutinesTestRule = CoroutineTestRule()
-
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
-
   @Inject lateinit var jsonParser: IParser
-
+  private val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
   private lateinit var questionnaireActivity: QuestionnaireActivity
   private lateinit var questionnaireFragment: QuestionnaireFragment
-
   private lateinit var intent: Intent
-
-  val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
-
   private lateinit var questionnaireConfig: QuestionnaireConfig
 
   @BindValue

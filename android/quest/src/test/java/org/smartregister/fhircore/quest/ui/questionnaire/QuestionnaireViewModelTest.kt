@@ -51,7 +51,6 @@ import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Age
@@ -107,7 +106,6 @@ import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.KeycloakUserDetails
@@ -116,7 +114,6 @@ import org.smartregister.model.practitioner.PractitionerDetails
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @ExperimentalCoroutinesApi @get:Rule(order = 1) var coroutineRule = CoroutineTestRule()
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
   @Inject lateinit var jsonParser: IParser
@@ -147,7 +144,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           configService = configService
@@ -1315,10 +1312,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // For Patient
     val patient = samplePatient()
-    questionnaireViewModel.appendAppVersion(resource = patient)
+    questionnaireViewModel.appendAppVersion(context, resource = patient)
     val tag = patient.meta.tag
     val appVersionTag = tag[0]
-    Assert.assertEquals("https://smartregister.org/", appVersionTag.system)
+    Assert.assertEquals("https://smartregister.org/app-version", appVersionTag.system)
     Assert.assertEquals(versionName, appVersionTag.code)
     Assert.assertEquals("Application Version", appVersionTag.display)
   }
@@ -1333,7 +1330,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   @ExperimentalCoroutinesApi
   fun testAppendPatientsAndRelatedPersonsToGroupsShouldAddMembersToGroup() {
-    coroutineRule.runBlockingTest {
+    runTest {
       val patient = samplePatient()
       val familyGroup =
         Group().apply {

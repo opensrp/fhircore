@@ -202,11 +202,12 @@ constructor(
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
         bundle.entry.forEach { bundleEntry ->
           // add organization to entities representing individuals in registration questionnaire
-          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
-            // if it is new registration set response subject
-            if (questionnaireConfig.resourceIdentifier == null)
-              questionnaireResponse.subject = bundleEntry.resource.asReference()
-          }
+          // if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group,
+          // ResourceType.Encounter)) {
+          // if it is new registration set response subject
+          if (questionnaireConfig.resourceIdentifier == null)
+            questionnaireResponse.subject = bundleEntry.resource.asReference()
+          // }
           if (questionnaireConfig.setPractitionerDetails) {
             appendPractitionerInfo(bundleEntry.resource)
           }
@@ -215,7 +216,7 @@ constructor(
           }
 
           if (questionnaireConfig.setAppVersion) {
-            appendAppVersion(bundleEntry.resource)
+            appendAppVersion(context, bundleEntry.resource)
           }
           if (bundleEntry.hasResource()) bundleEntry.resource.updateLastUpdated()
           if (questionnaireConfig.type != QuestionnaireType.EDIT &&
@@ -335,14 +336,13 @@ constructor(
    *
    * @property resource The resource to add the meta tag to.
    */
-  fun appendAppVersion(resource: Resource) {
+  fun appendAppVersion(context: Context, resource: Resource) {
     // Create a tag with the app version
     val metaTag = resource.meta.addTag()
-    metaTag.setSystem("https://smartregister.org/").setCode(BuildConfig.VERSION_NAME).display =
-      "Application Version"
-
-    // Update resource with metaTag
-    resource.meta.apply { addTag(metaTag) }
+    metaTag
+      .setSystem(context.getString(R.string.app_version_tag_url))
+      .setCode(BuildConfig.VERSION_NAME)
+      .display = context.getString(R.string.application_version)
   }
 
   suspend fun extractCarePlan(
