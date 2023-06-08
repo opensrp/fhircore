@@ -23,7 +23,6 @@ import kotlinx.parcelize.RawValue
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.util.extension.interpolate
 
 /**
  * Represents FHIR resources used on the register. The [baseResource] is the main resource used
@@ -88,58 +87,10 @@ data class ResourceConfig(
   val resultAsCount: Boolean = false,
   val countResultConfig: CountResultConfig? = CountResultConfig(),
   val nestedSearchResources: List<NestedSearchConfig>? = null,
-  val configRules: @RawValue List<RuleConfig>? = null,
+  val configRules: @RawValue List<RuleConfig>? = emptyList(),
   val planDefinitions: List<String>? = null,
   val attributesToUpdate: List<KeyValueConfig>? = emptyList()
-) : Parcelable, java.io.Serializable {
-  fun interpolate(computedValuesMap: Map<String, Any>) =
-    this.copy(
-      dataQueries = interpolateDataQueries(dataQueries = dataQueries, computedValuesMap),
-      relatedResources =
-        relatedResources.map {
-          it.copy(
-            dataQueries = interpolateDataQueries(dataQueries = dataQueries, computedValuesMap)
-          )
-        }
-    )
-
-  private fun interpolateDataQueries(
-    dataQueries: List<DataQuery>?,
-    computedValuesMap: Map<String, Any>
-  ): List<DataQuery>? {
-    return dataQueries?.map { dataQuery ->
-      dataQuery.copy(
-        filterCriteria =
-          dataQuery.filterCriteria.map { filterCriterionConfig ->
-            when (filterCriterionConfig) {
-              is FilterCriterionConfig.ReferenceFilterCriterionConfig ->
-                (filterCriterionConfig).copy(
-                  value = filterCriterionConfig.value?.interpolate(computedValuesMap)
-                )
-              is FilterCriterionConfig.StringFilterCriterionConfig ->
-                (filterCriterionConfig).copy(
-                  value = filterCriterionConfig.value?.interpolate(computedValuesMap)
-                )
-              is FilterCriterionConfig.UriFilterCriterionConfig ->
-                (filterCriterionConfig).copy(
-                  value = filterCriterionConfig.value?.interpolate(computedValuesMap)
-                )
-              is FilterCriterionConfig.TokenFilterCriterionConfig ->
-                (filterCriterionConfig).copy(
-                  value =
-                    filterCriterionConfig.value?.copy(
-                      code = filterCriterionConfig.value?.code?.interpolate(computedValuesMap)
-                    )
-                )
-              else -> {
-                return this.dataQueries
-              }
-            }
-          }
-      )
-    }
-  }
-}
+) : Parcelable, java.io.Serializable
 
 @Serializable
 @Parcelize

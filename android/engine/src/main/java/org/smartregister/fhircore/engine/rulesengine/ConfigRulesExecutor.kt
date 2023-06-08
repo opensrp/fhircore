@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.rulesengine
 
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
+import org.hl7.fhir.r4.model.Resource
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rules
 import org.smartregister.fhircore.engine.BuildConfig
@@ -38,12 +39,15 @@ class ConfigRulesExecutor @Inject constructor(val fhirPathDataExtractor: FhirPat
 
   private var facts: Facts = Facts()
 
-  fun fireRules(rules: Rules): Map<String, Any> {
+  fun fireRules(rules: Rules, baseResource: Resource? = null): Map<String, Any> {
     facts =
       Facts().apply {
         put(FHIR_PATH, fhirPathDataExtractor)
         put(DATA, mutableMapOf<String, Any>())
         put(DATE_SERVICE, DateService)
+        if (baseResource != null) {
+          put(baseResource.resourceType.name, baseResource)
+        }
       }
     if (BuildConfig.DEBUG) {
       val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
