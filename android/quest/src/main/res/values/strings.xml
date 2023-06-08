@@ -104,5 +104,7 @@
     <string name="questionnaire_not_found">Questionnaire not found.  Sync all questionnaires to fix</string>
     <string name="no_visits">No visits</string>
     <string name="questionnaire_response_broken">Questionnaire response broken</string>
+    <string name="app_version_tag_url" translatable="false">https://smartregister.org/app-version</string>
+    <string name="application_version" translatable="false">Application Version</string>
 
 </resources>

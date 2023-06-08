@@ -79,29 +79,21 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 class AppMainViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @Inject lateinit var gson: Gson
+  @Inject lateinit var workManager: WorkManager
 
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
-  @Inject lateinit var gson: Gson
-
-  @Inject lateinit var workManager: WorkManager
-
   @BindValue val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk()
 
   private val secureSharedPreference: SecureSharedPreference = mockk()
-
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-
-  private val registerRepository: RegisterRepository = mockk()
-
-  private val application: Context = ApplicationProvider.getApplicationContext()
-
-  private val syncBroadcaster: SyncBroadcaster = mockk(relaxed = true)
-
-  private lateinit var appMainViewModel: AppMainViewModel
-
   private val navController = mockk<NavController>(relaxUnitFun = true)
+  private val registerRepository: RegisterRepository = mockk()
+  private val application: Context = ApplicationProvider.getApplicationContext()
+  private val syncBroadcaster: SyncBroadcaster = mockk(relaxed = true)
+  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  private lateinit var appMainViewModel: AppMainViewModel
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -120,7 +112,7 @@ class AppMainViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
           workManager = workManager,
           fhirCarePlanGenerator = fhirCarePlanGenerator,
         )
