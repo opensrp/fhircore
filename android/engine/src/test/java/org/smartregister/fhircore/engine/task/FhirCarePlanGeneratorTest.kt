@@ -1510,7 +1510,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     } returns listOf()
 
     runBlocking {
-      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
+      fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
         questionnaireConfig = questionnaireConfig,
         subject = patient,
         bundle = bundle
@@ -1563,7 +1563,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
 
     runBlocking {
-      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
+      fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
         questionnaireConfig = questionnaireConfig,
         subject = patient,
         bundle = bundle
@@ -1620,7 +1620,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { defaultRepository.updateResourcesRecursively(any(), any()) } just runs
 
     runBlocking {
-      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(
+      fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
         questionnaireConfig = questionnaireConfig,
         subject = patient,
         bundle = bundle

@@ -338,7 +338,7 @@ constructor(
         eventWorkFlow.eventResources.forEach { eventResource ->
           val currentResourceTriggerConditions =
             eventWorkFlow.triggerConditions.firstOrNull { it.eventResourceId == eventResource.id }
-          val conditionsMet =
+          val resourceClosureConditionsMet =
             evaluateToBoolean(
               subject = subject,
               bundle = bundle,
@@ -346,7 +346,7 @@ constructor(
               matchAll = currentResourceTriggerConditions?.matchAll!!
             )
 
-          if (conditionsMet) {
+          if (resourceClosureConditionsMet) {
             defaultRepository.updateResourcesRecursively(eventResource, subject)
           }
         }
