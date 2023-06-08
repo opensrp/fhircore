@@ -46,7 +46,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -60,7 +60,7 @@ class CqlContentTest : RobolectricTest() {
   private val evaluator = LibraryEvaluator().apply { initialize() }
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private val configService: ConfigService = mockk()
-  private val resourceDataRulesExecutor: ResourceDataRulesExecutor = mockk()
+  private val configRulesExecutor: ConfigRulesExecutor = mockk()
 
   @Before
   fun setUp() {
@@ -109,7 +109,7 @@ class CqlContentTest : RobolectricTest() {
           mockk(),
           configurationRegistry,
           configService,
-          resourceDataRulesExecutor
+          configRulesExecutor
         )
       )
 
@@ -177,7 +177,7 @@ class CqlContentTest : RobolectricTest() {
           mockk(),
           configurationRegistry,
           configService,
-          resourceDataRulesExecutor
+          configRulesExecutor
         )
       )
 
@@ -250,7 +250,7 @@ class CqlContentTest : RobolectricTest() {
           mockk(),
           configurationRegistry,
           configService,
-          resourceDataRulesExecutor
+          configRulesExecutor
         )
       )
 

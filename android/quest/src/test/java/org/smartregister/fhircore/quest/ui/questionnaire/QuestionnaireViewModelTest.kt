@@ -92,6 +92,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -126,6 +127,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private val libraryEvaluator: LibraryEvaluator = mockk()
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
   private lateinit var questionnaireConfig: QuestionnaireConfig
+  private val configRulesExecutor: ConfigRulesExecutor = mockk()
 
   @Before
   @ExperimentalCoroutinesApi
@@ -148,7 +150,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           configService = configService,
-          resourceDataRulesExecutor = mockk()
+          configRulesExecutor = configRulesExecutor
         )
       )
 

@@ -77,8 +77,7 @@ class ProfileViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
-          configRulesExecutor = mockk(),
-          resourceDataRulesExecutor = mockk()
+          configRulesExecutor = mockk()
         )
       )
     coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns

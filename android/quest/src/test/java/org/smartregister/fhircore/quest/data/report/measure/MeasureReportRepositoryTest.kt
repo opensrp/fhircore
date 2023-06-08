@@ -92,8 +92,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
-          configRulesExecutor = mockk(),
-          resourceDataRulesExecutor = mockk()
+          configRulesExecutor = mockk()
         )
       )
 

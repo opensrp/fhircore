@@ -67,7 +67,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -90,7 +90,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   private lateinit var fhirEngine: FhirEngine
   private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var defaultRepository: DefaultRepository
-  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  @Inject lateinit var configRulesExecutor: ConfigRulesExecutor
 
   @Before
   fun setUp() {
@@ -107,7 +107,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         sharedPreferencesHelper = sharedPreferenceHelper,
         configurationRegistry = configurationRegistry,
         configService = configService,
-        resourceDataRulesExecutor = resourceDataRulesExecutor
+        configRulesExecutor = configRulesExecutor
       )
   }
 
@@ -421,7 +421,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           sharedPreferencesHelper = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
-          resourceDataRulesExecutor = mockk()
+          configRulesExecutor = mockk()
         )
       )
     coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
@@ -496,7 +496,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           sharedPreferencesHelper = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
-          resourceDataRulesExecutor = mockk()
+          configRulesExecutor = mockk()
         )
       )
 
