@@ -1115,7 +1115,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           // first 5 tasks are anc visit for each month of pregnancy
           .take(1)
           .run {
-            assertTrue(this.all { it.reasonReference.reference == "Questionnaire/f7004382-ba3d-4f62-a687-6e9d18c09d3a" })
+            assertTrue(
+              this.all {
+                it.reasonReference.reference == "Questionnaire/f7004382-ba3d-4f62-a687-6e9d18c09d3a"
+              }
+            )
             assertTrue(
               this.all { it.basedOn.first().reference == carePlan.asReference().reference }
             )
