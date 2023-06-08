@@ -672,10 +672,7 @@ constructor(
       }
 
       /**
-       * This will catch the exception from 2 use cases:
-       * 1. If questionnaire use both config pre-populate and initial expression on the same link
-       * id.
-       * 2. If population resource is empty, ResourceMapper.selectPopulateContext() will return
+       * This will catch an exception and return QR from DB when population resource is empty, ResourceMapper.selectPopulateContext() will return
        * null, then that null will get evaluated and gives an exception as a result.
        */
       questionnaireResponse =
