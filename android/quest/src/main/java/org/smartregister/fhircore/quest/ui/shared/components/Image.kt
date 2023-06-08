@@ -28,11 +28,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
+import org.smartregister.fhircore.engine.configuration.view.ListProperties
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.extension.retrieveResourceId
 import org.smartregister.fhircore.quest.ui.main.components.SIDE_MENU_ICON
+import org.smartregister.fhircore.quest.util.extensions.conditional
 
 const val SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG = "sideMenuItemLocalIconTestTag"
 const val SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG = "sideMenuItemBinaryIconTestTag"
@@ -42,7 +46,8 @@ fun Image(
   modifier: Modifier = Modifier,
   imageConfig: ImageConfig?,
   color: Color,
-  paddingEnd: Int = 8
+  paddingEnd: Int = 8,
+  size: Int?
 ) {
   if (imageConfig != null) {
     when (imageConfig.type) {
@@ -52,8 +57,8 @@ fun Image(
             modifier =
               modifier
                 .testTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG)
-                .padding(end = paddingEnd.dp)
-                .size(24.dp),
+                .conditional(size != null, {modifier.size(size!!.dp)}, {modifier.size(24.dp)})
+                .padding(end = paddingEnd.dp),
             painter = painterResource(id = drawableId),
             contentDescription = SIDE_MENU_ICON,
             tint = color
