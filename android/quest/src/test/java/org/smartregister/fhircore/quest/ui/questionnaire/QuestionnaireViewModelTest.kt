@@ -936,7 +936,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     runBlocking {
       questionnaireViewModel.performExtraction(context, questionnaire, questionnaireResponse)
     }
-    coEvery { questionnaireViewModel.performExtraction(any(), any(), any()) } returns
+    coEvery { questionnaireViewModel.performExtraction(any<Context>(), any(), any()) } returns
       Bundle().apply { addEntry().resource = samplePatient() }
     runBlocking {
       questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
@@ -960,7 +960,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @ExperimentalCoroutinesApi
   fun testPerformExtractionOnNullBundle() {
     runTest {
-      val bundle = null
+      val bundle = Bundle()
       val questionnaire = Questionnaire()
       val questionnaireResponse = QuestionnaireResponse()
       val questionnaireConfig = questionnaireConfig
@@ -1079,7 +1079,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Patient, "2") } returns patient
     coEvery { fhirEngine.get<Patient>(any()) } returns patient
     coEvery { questionnaireViewModel.saveBundleResources(any()) } just runs
-    coEvery { questionnaireViewModel.performExtraction(any(), any(), any()) } returns
+    coEvery { questionnaireViewModel.performExtraction(any<Context>(), any(), any()) } returns
       Bundle().apply { addEntry().resource = patient }
 
     coEvery {
