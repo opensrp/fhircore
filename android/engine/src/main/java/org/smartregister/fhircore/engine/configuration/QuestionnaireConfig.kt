@@ -66,7 +66,7 @@ data class QuestionnaireConfig(
         ),
       planDefinitions = planDefinitions?.map { it.interpolate(computedValuesMap) },
       readOnlyLinkIds = readOnlyLinkIds?.map { it.interpolate(computedValuesMap) }
-      )
+    )
 }
 
 @Serializable

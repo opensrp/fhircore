@@ -327,7 +327,7 @@ constructor(
    * @param subject The subject to evaluate CarePlanConfig FHIR path expressions against if the
    * CarePlanConfig does not reference a resource.
    */
-  suspend fun conditionallyUpdateCarePlanStatus(
+  suspend fun conditionallyUpdateResourceStatus(
     questionnaireConfig: QuestionnaireConfig,
     subject: Resource,
     bundle: Bundle
