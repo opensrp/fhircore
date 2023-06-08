@@ -93,7 +93,7 @@ open class LoginActivity : BaseMultiLanguageActivity() {
   @VisibleForTesting
   open fun pinActive() = !loginViewModel.secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
   @VisibleForTesting
-  open fun isRefreshTokenActive() = !loginViewModel.isCurrentRefreshTokenExpired()
+  open fun isRefreshTokenActive() = loginViewModel.tokenAuthenticator.isCurrentRefreshTokenActive()
   @VisibleForTesting open fun deviceOnline() = isDeviceOnline()
   @OptIn(ExperimentalMaterialApi::class)
   fun navigateToHome() {
