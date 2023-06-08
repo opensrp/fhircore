@@ -686,7 +686,9 @@ constructor(
               populationResources.addAll(loadPopulationResources(subjectId, subjectType))
             } else {
               resourceMap.forEach {
-                populationResources.addAll(loadPopulationResources(it.value.extractLogicalIdUuid(), it.key!!))
+                populationResources.addAll(
+                  loadPopulationResources(it.value.extractLogicalIdUuid(), it.key!!)
+                )
               }
             }
 
