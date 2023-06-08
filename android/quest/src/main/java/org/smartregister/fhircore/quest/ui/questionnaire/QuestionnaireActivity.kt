@@ -181,13 +181,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   @VisibleForTesting
-  internal fun getResourcesFromParamsForQR(): Map<ResourceType?, String> {
-    val resourceMap =
-      actionParams
-        .filter { it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE }
-        .associate { it.resourceType to it.value }
-    return resourceMap
-  }
+  internal fun getResourcesFromParamsForQR(): Map<ResourceType?, String> =
+    actionParams
+      .filter { it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE }
+      .associate { it.resourceType to it.value }
+
 
   fun updateViews() {
     findViewById<Button>(R.id.btn_edit_qr).apply {
