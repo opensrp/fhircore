@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.components
 
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -38,15 +39,16 @@ internal class PinTest {
         onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
       )
     }
-    composeRule.onNodeWithTag(PIN_TEXT_FIELD_TEST_TAG).performTextInput("1234")
+    composeRule.onNodeWithTag(PIN_TEXT_FIELD_TEST_TAG).performTextInput("1")
+    composeRule.onNodeWithTag(PIN_TEXT_FIELD_TEST_TAG).performTextInput("2")
+    composeRule.onNodeWithTag(PIN_TEXT_FIELD_TEST_TAG).performTextInput("3")
+    composeRule.onNodeWithTag(PIN_TEXT_FIELD_TEST_TAG).performTextInput("4")
 
     composeRule.onAllNodesWithTag(PIN_CELL_TEST_TAG).assertCountEquals(4)
 
-    // Weird issue: Automated test fails but passes manually
-    // TO DO Investigate/Fix : Tracker issue - https://github.com/opensrp/fhircore/issues/2385
-    //    composeRule.onAllNodesWithTag(PIN_CELL_TEXT_TEST_TAG, true)[0].assertTextEquals("1")
-    //    composeRule.onAllNodesWithTag(PIN_CELL_TEXT_TEST_TAG, true)[1].assertTextEquals("2")
-    //    composeRule.onAllNodesWithTag(PIN_CELL_TEXT_TEST_TAG, true)[2].assertTextEquals("3")
-    //    composeRule.onAllNodesWithTag(PIN_CELL_TEXT_TEST_TAG, true)[3].assertTextEquals("4")
+    composeRule.onAllNodesWithTag(PIN_CELL_TEXT_TEST_TAG, true)[0].assertTextEquals("1")
+    composeRule.onAllNodesWithTag(PIN_CELL_TEXT_TEST_TAG, true)[1].assertTextEquals("2")
+    composeRule.onAllNodesWithTag(PIN_CELL_TEXT_TEST_TAG, true)[2].assertTextEquals("3")
+    composeRule.onAllNodesWithTag(PIN_CELL_TEXT_TEST_TAG, true)[3].assertTextEquals("4")
   }
 }
