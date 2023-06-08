@@ -25,6 +25,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.activity.viewModels
+import androidx.annotation.VisibleForTesting
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
@@ -179,7 +180,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  private fun getResourcesFromParamsForQR(): Map<ResourceType?, String> {
+  @VisibleForTesting
+  internal fun getResourcesFromParamsForQR(): Map<ResourceType?, String> {
     val resourceMap =
       actionParams
         .filter { it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE }

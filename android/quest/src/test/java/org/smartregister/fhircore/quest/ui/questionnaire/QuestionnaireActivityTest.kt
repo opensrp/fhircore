@@ -55,6 +55,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.junit.After
 import org.junit.Assert
@@ -931,6 +932,60 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         "questionnaireResponse"
       )
     Assert.assertNotNull("Questionnaire Response is null", questionnaireResponse)
+  }
+
+
+
+  @Test
+  fun testGetResourcesFromParamsForQR_shouldFilterQuestionnaireResponsePopulationParam() {
+    val questionnaireConfig =
+      QuestionnaireConfig(
+        id = "patient-registration",
+        title = "Patient registration",
+        type = QuestionnaireType.EDIT
+      )
+    val actionParams =
+      listOf(
+        ActionParameter(
+          paramType = ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE,
+          resourceType = ResourceType.Patient,
+          key = "resourcePatient",
+          value = "patient-1",
+          dataType = DataType.STRING
+        ),
+        ActionParameter(
+          key = "paramName",
+          paramType = ActionParameterType.PARAMDATA,
+          value = "testing",
+          dataType = DataType.STRING,
+          linkId = null
+        ),
+        ActionParameter(
+          key = "paramName2",
+          paramType = ActionParameterType.PREPOPULATE,
+          value = "testing2",
+          dataType = DataType.STRING,
+          linkId = null
+        )
+      )
+    intent =
+      Intent()
+        .putExtras(
+          bundleOf(
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, questionnaireConfig),
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_ACTION_PARAMETERS, actionParams)
+          )
+        )
+
+    val questionnaireFragment = spyk<QuestionnaireFragment>()
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+
+    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    questionnaireActivity = controller.create().resume().get()
+
+    val resourceMap = questionnaireActivity.getResourcesFromParamsForQR()
+
+    Assert.assertEquals(1, resourceMap.size)
   }
 
   override fun getActivity(): Activity {
