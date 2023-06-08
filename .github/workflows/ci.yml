@@ -181,13 +181,7 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-        working-directory: android
-
-      - name: Decode & Generate local.properties file
-        run: echo $LOCAL_PROPERTIES | base64 -di > local.properties
-        working-directory: android
-        env:
-          LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
+        working-directory: android 
 
       - name: Copy CI gradle.properties
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
