@@ -973,6 +973,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val resourceMap = questionnaireActivity.getResourcesFromParamsForQR()
 
     Assert.assertEquals(1, resourceMap.size)
+    Assert.assertTrue(resourceMap.containsKey(ResourceType.Patient))
   }
 
   override fun getActivity(): Activity {
