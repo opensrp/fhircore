@@ -1,2 +1,0 @@
-def geowidgetEnabled = true
-ext.geowidgetEnabled = geowidgetEnabled
