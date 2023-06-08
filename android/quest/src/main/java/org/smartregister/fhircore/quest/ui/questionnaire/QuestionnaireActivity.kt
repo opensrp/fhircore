@@ -186,7 +186,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       .filter { it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE }
       .associate { it.resourceType to it.value }
 
-
   fun updateViews() {
     findViewById<Button>(R.id.btn_edit_qr).apply {
       visibility = if (questionnaireConfig.type.isReadOnly()) View.VISIBLE else View.GONE
