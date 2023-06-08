@@ -111,20 +111,21 @@ data class ResourceConfig(
       dataQuery.copy(
         filterCriteria =
           dataQuery.filterCriteria.map { filterCriterionConfig ->
-            when (filterCriterionConfig.dataType) {
-              Enumerations.DataType.REFERENCE ->
-                (filterCriterionConfig as FilterCriterionConfig.ReferenceFilterCriterionConfig)
-                  .copy(value = filterCriterionConfig.value?.interpolate(computedValuesMap))
-              Enumerations.DataType.STRING ->
-                (filterCriterionConfig as FilterCriterionConfig.StringFilterCriterionConfig).copy(
+            when (filterCriterionConfig) {
+              is FilterCriterionConfig.ReferenceFilterCriterionConfig ->
+                (filterCriterionConfig).copy(
                   value = filterCriterionConfig.value?.interpolate(computedValuesMap)
                 )
-              Enumerations.DataType.URI ->
-                (filterCriterionConfig as FilterCriterionConfig.UriFilterCriterionConfig).copy(
+              is FilterCriterionConfig.StringFilterCriterionConfig ->
+                (filterCriterionConfig).copy(
                   value = filterCriterionConfig.value?.interpolate(computedValuesMap)
                 )
-              Enumerations.DataType.CODE ->
-                (filterCriterionConfig as FilterCriterionConfig.TokenFilterCriterionConfig).copy(
+              is FilterCriterionConfig.UriFilterCriterionConfig ->
+                (filterCriterionConfig).copy(
+                  value = filterCriterionConfig.value?.interpolate(computedValuesMap)
+                )
+              is FilterCriterionConfig.TokenFilterCriterionConfig ->
+                (filterCriterionConfig).copy(
                   value =
                     filterCriterionConfig.value?.copy(
                       code = filterCriterionConfig.value?.code?.interpolate(computedValuesMap)
