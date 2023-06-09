@@ -33,6 +33,7 @@ import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.quest.ui.login.LoginActivity
 
 object Faker {
 
@@ -98,5 +99,18 @@ object Faker {
         city = "City 1"
       }
     }
+  }
+
+  open class TestLoginActivity : LoginActivity() {
+    override fun pinActive() = true
+    override fun pinEnabled() = true
+    override fun deviceOnline() = false
+    override fun isRefreshTokenActive() = true
+  }
+
+  open class TestLoginActivityInActivePin : LoginActivity() {
+    override fun pinActive() = false
+    override fun pinEnabled() = true
+    override fun deviceOnline() = true
   }
 }

@@ -33,6 +33,7 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.spyk
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
@@ -137,6 +138,8 @@ class UserSettingViewModelTest : RobolectricTest() {
 
     val errorMessage = context.getString(R.string.sync_failed)
     coVerify { context.showToast(errorMessage, Toast.LENGTH_LONG) }
+
+    unmockkStatic(Context::isDeviceOnline)
   }
 
   @Test
