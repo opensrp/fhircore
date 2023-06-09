@@ -170,7 +170,7 @@
       "name": "isAdult",
       "condition": "true",
       "actions": [
-        "data.put('isAdult', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate <= today() - 18 'years')\"))"
+        "data.put('isAdult', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate <= today() - 12 'years')\"))"
       ]
     },
     {

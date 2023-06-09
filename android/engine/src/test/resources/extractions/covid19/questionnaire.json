@@ -56,6 +56,38 @@
     {
       "extension": [
         {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": false
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.birthDate"
+          }
+        }
+      ],
+      "linkId": "patient_birthdate",
+      "type": "date"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='previous_vaccine').answer.empty() and %resource.descendants().where(linkId='patient_birthdate').answer.value >= today()-17 'years'"
+          }
+        }
+      ],
+      "linkId": "parent_consent",
+      "text": "Has the parent or caregiver consented to this patient receiving the COVID-19 vaccination?",
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "extension": [
+        {
           "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
           "valueCodeableConcept": {
             "coding": [
@@ -321,6 +353,12 @@
       ]
     },
     {
+      "linkId": "education_material_used",
+      "text": "IEC materials were used for this patient",
+      "type": "boolean",
+      "required": true
+    },
+    {
       "linkId": "vaccine_date",
       "text": "Date Vaccine is Given",
       "type": "date",
@@ -331,6 +369,35 @@
       "text": "Batch Number",
       "type": "string",
       "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='previous_vaccine').answer.empty().not()"
+          }
+        }
+      ],
+      "linkId": "place",
+      "text": "Place of Vaccination",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "within_district",
+            "display": "Within district"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "outside_district",
+            "display": "Outside district"
+          }
+        }
+      ]
     }
   ]
 }
