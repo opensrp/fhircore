@@ -47,16 +47,12 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  @get:Rule(order = 1)
-  var coroutinesTestRule = CoroutineTestRule()
   @Inject lateinit var gson: Gson
   private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var fhirEngine: FhirEngine
@@ -79,7 +75,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         fhirEngine = fhirEngine,
         fhirResourceDataSource = fhirResourceDataSource,
         sharedPreferencesHelper = sharedPreferencesHelper,
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
         configService = configService,
         json = Faker.json
       )
