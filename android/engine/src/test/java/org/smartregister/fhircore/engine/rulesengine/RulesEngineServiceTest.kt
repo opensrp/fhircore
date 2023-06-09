@@ -16,11 +16,16 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
+import com.google.android.fhir.search.Order
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import java.util.Locale
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
+import org.joda.time.DateTime
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -34,6 +39,24 @@ class RulesEngineServiceTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @Inject lateinit var rulesFactory: RulesFactory
   private lateinit var rulesEngineService: RulesFactory.RulesEngineService
+  private val tasks =
+    listOf(
+      Task().apply {
+        id = "task1"
+        description = "Issue bed net"
+        executionPeriod = Period().apply { start = DateTime.now().minusDays(2).toDate() }
+      },
+      Task().apply {
+        id = "task2"
+        description = "Malaria vaccination"
+        executionPeriod = Period().apply { start = DateTime.now().toDate() }
+      },
+      Task().apply {
+        id = "task3"
+        description = "Covid vaccination"
+        executionPeriod = Period().apply { start = DateTime.now().minusDays(1).toDate() }
+      }
+    )
 
   @Before
   fun setUp() {
@@ -96,5 +119,56 @@ class RulesEngineServiceTest : RobolectricTest() {
     Assert.assertEquals(0, rulesEngineService.retrieveCount("abz", relatedResourceCounts))
     Assert.assertEquals(0, rulesEngineService.retrieveCount("abc", emptyList()))
     Assert.assertEquals(0, rulesEngineService.retrieveCount("abc", null))
+  }
+
+  @Test
+  fun testSortingResourcesShouldReturnListOfSortedResourcesInAscendingOrder() {
+    val sortedResources =
+      rulesEngineService.sortResources(
+        tasks,
+        "Task.description",
+        Enumerations.DataType.STRING,
+        Order.ASCENDING
+      )
+    Assert.assertEquals(3, sortedResources.size)
+    Assert.assertTrue(
+      listOf("Covid vaccination", "Issue bed net", "Malaria vaccination").sorted() ==
+        sortedResources.map { (it as Task).description }
+    )
+    val sortedByDateResources =
+      rulesEngineService.sortResources(
+        tasks,
+        "Task.executionPeriod.start",
+        Enumerations.DataType.DATETIME,
+        Order.ASCENDING
+      )
+    Assert.assertEquals(listOf("task1", "task3", "task2"), sortedByDateResources.map { it.id })
+  }
+
+  @Test
+  fun testSortingResourcesShouldReturnListOfSortedResourcesInDescendingOrder() {
+    val sortedResources =
+      rulesEngineService.sortResources(
+        tasks,
+        "Task.description",
+        Enumerations.DataType.STRING,
+        Order.DESCENDING
+      )
+    Assert.assertEquals(3, sortedResources.size)
+    Assert.assertTrue(
+      listOf("Covid vaccination", "Issue bed net", "Malaria vaccination").reversed() ==
+        sortedResources.map { (it as Task).description }
+    )
+    val sortedByDateResources =
+      rulesEngineService.sortResources(
+        tasks,
+        "Task.executionPeriod.start",
+        Enumerations.DataType.DATETIME,
+        Order.DESCENDING
+      )
+    Assert.assertEquals(
+      listOf("task1", "task3", "task2").reversed(),
+      sortedByDateResources.map { it.id }
+    )
   }
 }
