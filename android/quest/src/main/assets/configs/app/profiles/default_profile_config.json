@@ -844,6 +844,13 @@
       "actions": [
         "data.put('rdtStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/24dcbee9-a665-4b3e-b97d-61b3ff675589'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
+    },
+    {
+      "name": "latestTask",
+      "condition": "true",
+      "actions": [
+        "data.put('latestTask', service.sortResources(availableTasks, 'Task.executionPeriod.start', 'DATETIME', 'DESCENDING').get(0))"
+      ]
     }
   ],
   "views": [
