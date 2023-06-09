@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.usersetting
 
 import android.content.Context
 import android.os.Looper
+import android.widget.Toast
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
@@ -32,6 +33,7 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.spyk
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
@@ -52,6 +54,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -126,12 +129,17 @@ class UserSettingViewModelTest : RobolectricTest() {
   fun testDoNotRunSyncWhenDeviceIsOffline() {
     mockkStatic(Context::isDeviceOnline)
 
-    val context = mockk<Context> { every { isDeviceOnline() } returns false }
+    val context = mockk<Context>(relaxed = true) { every { isDeviceOnline() } returns false }
 
     every { syncBroadcaster.runSync(any()) } returns Unit
 
     userSettingViewModel.onEvent(UserSettingsEvent.SyncData(context))
     verify(exactly = 0) { syncBroadcaster.runSync(any()) }
+
+    val errorMessage = context.getString(R.string.sync_failed)
+    coVerify { context.showToast(errorMessage, Toast.LENGTH_LONG) }
+
+    unmockkStatic(Context::isDeviceOnline)
   }
 
   @Test
