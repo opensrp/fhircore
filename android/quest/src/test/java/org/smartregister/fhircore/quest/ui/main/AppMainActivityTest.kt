@@ -249,6 +249,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
     val syncBroadcaster = mockk<SyncBroadcaster>()
 
+    every { syncBroadcaster.context } returns appMainActivity
+
     ReflectionHelpers.callInstanceMethod<Unit>(
       appMainActivity,
       "runSync",
