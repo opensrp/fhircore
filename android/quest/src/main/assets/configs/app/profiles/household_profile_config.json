@@ -194,15 +194,7 @@
       "actions": [
         "data.put('isFamilyHeadExists', empty(data.get('familyHeadId'))? 0 : 1)"
       ]
-    },
-    {
-      "name": "ascendingTask",
-      "condition": "true",
-      "actions": [
-        "data.put('ascendingTask', Task.stream().sorted().collect(Collectors.toList()))"
-      ]
     }
-
   ],
   "topAppBar": {
     "title": {

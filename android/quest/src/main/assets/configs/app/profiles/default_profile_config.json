@@ -973,7 +973,12 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))"
+                  "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))",
+                  "sortConfig": {
+                    "dataType": "DATETIME",
+                    "fhirPathExpression": "Task.executionPeriod.start",
+                    "order": "ASCENDING"
+                  }
                 }
               ],
               "emptyList": {

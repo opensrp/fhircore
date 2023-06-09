@@ -137,10 +137,10 @@ class RulesEngineServiceTest : RobolectricTest() {
     )
     val sortedByDateResources =
       rulesEngineService.sortResources(
-        tasks,
-        "Task.executionPeriod.start",
-        Enumerations.DataType.DATETIME,
-        Order.ASCENDING
+        resources = tasks,
+        fhirPathExpression = "Task.executionPeriod.start",
+        dataType = Enumerations.DataType.DATETIME,
+        order = Order.ASCENDING
       )
     Assert.assertEquals(listOf("task1", "task3", "task2"), sortedByDateResources.map { it.id })
   }
