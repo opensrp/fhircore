@@ -30,8 +30,10 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.runs
 import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
@@ -55,6 +57,8 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
+import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
 class SyncBroadcasterTest : RobolectricTest() {
@@ -62,6 +66,7 @@ class SyncBroadcasterTest : RobolectricTest() {
   private lateinit var syncBroadcaster: SyncBroadcaster
   private lateinit var workManager: WorkManager
   private val sharedSyncStatus: MutableSharedFlow<SyncJobStatus> = MutableSharedFlow()
+  private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   private lateinit var tracer: PerformanceReporter
 
   @Before
@@ -81,7 +86,11 @@ class SyncBroadcasterTest : RobolectricTest() {
       }
     every { WorkManager.getInstance(any()) } returns workManager
 
+    every { sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null) } returns null
+
     every { tracer.startTrace(any()) } returns Unit
+    every { tracer.putAttribute(any(), any(), any()) } just runs
+    every { tracer.incrementMetric(any(), any(), any()) } just runs
     every { tracer.stopTrace(any()) } returns Unit
 
     syncBroadcaster =
@@ -92,6 +101,7 @@ class SyncBroadcasterTest : RobolectricTest() {
         sharedSyncStatus = sharedSyncStatus,
         dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
         tracer = tracer,
+        sharedPreferencesHelper = sharedPreferencesHelper,
         appContext = mockk(relaxed = true)
       )
   }
@@ -188,7 +198,8 @@ class SyncBroadcasterTest : RobolectricTest() {
         sharedSyncStatus,
         dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
         appContext = context,
-        tracer = FakePerformanceReporter()
+        tracer = FakePerformanceReporter(),
+        sharedPreferencesHelper = sharedPreferencesHelper
       )
     val collectedSyncStatusList = mutableListOf<SyncJobStatus>()
     val job =

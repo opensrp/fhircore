@@ -20,7 +20,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.search.search
 import java.util.Date
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Bundle
@@ -31,7 +30,6 @@ import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.FHIRPathEngine
@@ -135,10 +133,8 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
         get<Task>(id).apply {
           this.status = encounterStatusToTaskStatus(encounterStatus)
           this.lastModified = Date()
-          this.id = UUID.randomUUID().toString()
         }
-      fhirEngine.delete(ResourceType.Task, id)
-      create(task)
+      update(task)
       if (task.status == Task.TaskStatus.COMPLETED) {
         val carePlans =
           search<CarePlan> { filter(CarePlan.SUBJECT, { value = task.`for`.reference }) }

@@ -192,7 +192,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           savedInstanceState: Bundle?
         ) {
           super.onFragmentCreated(fm, f, savedInstanceState)
-          tracer.startTrace(QUESTIONNAIRE_TRACE)
+          tracer.stopTrace(QUESTIONNAIRE_TRACE)
         }
 
         override fun onFragmentViewCreated(

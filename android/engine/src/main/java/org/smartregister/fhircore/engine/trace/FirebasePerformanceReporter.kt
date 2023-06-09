@@ -33,6 +33,10 @@ class FirebasePerformanceReporter(private val firebasePerformance: FirebasePerfo
     traces[traceName]?.putMetric(metricName, value)
   }
 
+  override fun incrementMetric(traceName: String, metricName: String, incrementBy: Long) {
+    traces[traceName]?.incrementMetric(metricName, incrementBy)
+  }
+
   override fun putAttribute(traceName: String, attribute: String, value: String) {
     traces[traceName]?.putAttribute(attribute, value)
   }

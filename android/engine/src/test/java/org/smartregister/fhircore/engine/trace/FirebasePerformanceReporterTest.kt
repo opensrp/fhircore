@@ -42,6 +42,7 @@ class FirebasePerformanceReporterTest {
     every { trace.stop() } returns Unit
     every { trace.putMetric(any(), any()) } returns Unit
     every { trace.putAttribute(any(), any()) } returns Unit
+    every { trace.incrementMetric(any(), any()) } returns Unit
 
     every { firebasePerformance.newTrace(any()) } returns trace
   }
@@ -80,6 +81,19 @@ class FirebasePerformanceReporterTest {
 
     verify { firebasePerformance.newTrace(traceName) }
     verify { trace.putAttribute(attribute, value) }
+  }
+
+  @Test
+  fun incrementMetric_shouldIncrementMetricOnExistingTrace() {
+    val traceName = "TestTrace"
+    val metric = "TestAttribute"
+    val incrementBy = 1L
+
+    performanceReporter.startTrace(traceName)
+    performanceReporter.incrementMetric(traceName, metric, incrementBy)
+
+    verify { firebasePerformance.newTrace(traceName) }
+    verify { trace.incrementMetric(metric, incrementBy) }
   }
 
   @Test

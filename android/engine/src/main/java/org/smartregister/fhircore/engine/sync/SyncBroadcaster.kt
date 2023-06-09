@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
@@ -44,6 +45,8 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
 /**
@@ -60,6 +63,7 @@ constructor(
   val sharedSyncStatus: MutableSharedFlow<SyncJobStatus> = MutableSharedFlow(),
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider(),
   val tracer: PerformanceReporter,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
   @ApplicationContext val appContext: Context
 ) {
   /**
@@ -82,6 +86,26 @@ constructor(
             val stateData = it.getString("State")
             Sync.gson.fromJson(stateData, Class.forName(state)) as SyncJobStatus
           }
+          .onEach {
+            when (it) {
+              is SyncJobStatus.Started -> {
+                tracer.startTrace(SYNC_TRACE)
+                tracer.putAttribute(
+                  SYNC_TRACE,
+                  SYNC_ATTR_TYPE,
+                  if (isInitialSync()) SYNC_ATTR_TYPE_INITIAL else SYNC_ATTR_TYPE_SUBSEQUENT
+                )
+                if (workInfo.runAttemptCount > 0)
+                  tracer.putAttribute(SYNC_TRACE, SYNC_ATTR_RETRY, "${workInfo.runAttemptCount}")
+              }
+              is SyncJobStatus.InProgress -> {}
+              is SyncJobStatus.Glitch -> tracer.incrementMetric(SYNC_TRACE, SYNC_GLITCHES_METRIC, 1)
+              is SyncJobStatus.Failed, is SyncJobStatus.Finished -> {
+                tracer.putAttribute(SYNC_TRACE, SYNC_ATTR_RESULT, it::class.java.simpleName)
+                tracer.stopTrace(SYNC_TRACE)
+              }
+            }
+          }
       }
   }
 
@@ -91,14 +115,7 @@ constructor(
       networkState(appContext).apply {
         if (this) {
           Sync.oneTimeSync<AppSyncWorker>(appContext)
-          getWorkerInfo<AppSyncWorker>().collect {
-            if (it is SyncJobStatus.Started) {
-              tracer.startTrace(SYNC_TRACE)
-            } else if (it !is SyncJobStatus.InProgress) {
-              tracer.stopTrace(SYNC_TRACE)
-            }
-            sharedSyncStatus.emit(it)
-          }
+          getWorkerInfo<AppSyncWorker>().collect { sharedSyncStatus.emit(it) }
         } else {
           val message = appContext.getString(R.string.unable_to_sync)
           val resourceSyncException =
@@ -109,12 +126,20 @@ constructor(
     }
   }
 
+  fun isInitialSync() = sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null).isNullOrBlank()
+
   fun registerSyncListener(onSyncListener: OnSyncListener, scope: CoroutineScope) {
     scope.launch { sharedSyncStatus.collect { onSyncListener.onSync(state = it) } }
   }
 
   companion object {
     const val SYNC_TRACE = "runSync"
+    const val SYNC_GLITCHES_METRIC = "sync_glitches"
+    const val SYNC_ATTR_TYPE = "sync_type"
+    const val SYNC_ATTR_RESULT = "sync_result"
+    const val SYNC_ATTR_RETRY = "sync_retry_count"
+    const val SYNC_ATTR_TYPE_INITIAL = "initial sync"
+    const val SYNC_ATTR_TYPE_SUBSEQUENT = "subsequent sync"
     const val DEFAULT_SYNC_INTERVAL: Long = 15
   }
 }

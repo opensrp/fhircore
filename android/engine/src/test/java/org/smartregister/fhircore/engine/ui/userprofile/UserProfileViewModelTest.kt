@@ -87,7 +87,8 @@ class UserProfileViewModelTest : RobolectricTest() {
         sharedSyncStatus,
         dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
         appContext = context,
-        tracer = mockk()
+        tracer = mockk(),
+        sharedPreferencesHelper = sharedPreferencesHelper
       )
   }
 
