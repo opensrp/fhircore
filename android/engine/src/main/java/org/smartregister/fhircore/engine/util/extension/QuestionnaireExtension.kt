@@ -162,8 +162,8 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
          * Removes the initialExpression when the same linkId will be populated by config
          * pre-populate.
          */
-        if (item.hasExtension(ITEM_INITIAL_EXPRESSION_URL)) {
-          item.removeExtension(ITEM_INITIAL_EXPRESSION_URL)
+        if (item.hasExtension(EXTENSION_INITIAL_EXPRESSION_URL)) {
+          item.removeExtension(EXTENSION_INITIAL_EXPRESSION_URL)
         }
         item.initial =
           arrayListOf(
