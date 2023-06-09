@@ -372,13 +372,13 @@ constructor(
      */
     @JvmOverloads
     fun sortResources(
-      resources: List<Resource>,
+      resources: List<Resource>?,
       fhirPathExpression: String,
       dataType: Enumerations.DataType,
       order: Order = Order.ASCENDING
-    ): List<Resource> {
+    ): List<Resource>? {
       val mappedResources =
-        resources.mapNotNull {
+        resources?.mapNotNull {
           val extractedValue: Base? =
             fhirPathDataExtractor.extractData(it, fhirPathExpression).firstOrNull()
           val sortingValue: Comparable<*>? =
@@ -401,9 +401,9 @@ constructor(
         }
 
       return when (order) {
-        Order.ASCENDING -> mappedResources.sortedWith(compareBy { it.first }).map { it.second }
+        Order.ASCENDING -> mappedResources?.sortedWith(compareBy { it.first })?.map { it.second }
         Order.DESCENDING ->
-          mappedResources.sortedWith(compareByDescending { it.first }).map { it.second }
+          mappedResources?.sortedWith(compareByDescending { it.first })?.map { it.second }
       }
     }
   }

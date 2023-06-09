@@ -130,10 +130,10 @@ class RulesEngineServiceTest : RobolectricTest() {
         Enumerations.DataType.STRING,
         Order.ASCENDING
       )
-    Assert.assertEquals(3, sortedResources.size)
+    Assert.assertEquals(3, sortedResources?.size)
     Assert.assertTrue(
       listOf("Covid vaccination", "Issue bed net", "Malaria vaccination").sorted() ==
-        sortedResources.map { (it as Task).description }
+        sortedResources?.map { (it as Task).description }
     )
     val sortedByDateResources =
       rulesEngineService.sortResources(
@@ -142,7 +142,7 @@ class RulesEngineServiceTest : RobolectricTest() {
         dataType = Enumerations.DataType.DATETIME,
         order = Order.ASCENDING
       )
-    Assert.assertEquals(listOf("task1", "task3", "task2"), sortedByDateResources.map { it.id })
+    Assert.assertEquals(listOf("task1", "task3", "task2"), sortedByDateResources?.map { it.id })
   }
 
   @Test
@@ -154,10 +154,10 @@ class RulesEngineServiceTest : RobolectricTest() {
         Enumerations.DataType.STRING,
         Order.DESCENDING
       )
-    Assert.assertEquals(3, sortedResources.size)
+    Assert.assertEquals(3, sortedResources?.size)
     Assert.assertTrue(
       listOf("Covid vaccination", "Issue bed net", "Malaria vaccination").reversed() ==
-        sortedResources.map { (it as Task).description }
+        sortedResources?.map { (it as Task).description }
     )
     val sortedByDateResources =
       rulesEngineService.sortResources(
@@ -168,7 +168,7 @@ class RulesEngineServiceTest : RobolectricTest() {
       )
     Assert.assertEquals(
       listOf("task1", "task3", "task2").reversed(),
-      sortedByDateResources.map { it.id }
+      sortedByDateResources?.map { it.id }
     )
   }
 }

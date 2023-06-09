@@ -177,6 +177,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
         dataType = sortConfig.dataType,
         order = sortConfig.order
       )
+        ?: resources
     else resources
   }
 }
