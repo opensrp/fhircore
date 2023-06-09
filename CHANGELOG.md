@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Introduce an open function on ViewProperties#interpolate to retrieve values from computed values map
 - Update the CarePlan Closure configs to define the PlanDefs to closure separately.
 - Migrate build script to Kotlin DSL
+- Sorting of resources via rules engine
+- Configuration for sorting LIST widget resources
 
 ### Fixed
 - Member icons display wrapping; hiding some texts
