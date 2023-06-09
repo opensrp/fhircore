@@ -16,7 +16,7 @@ We can group these into 3 categories.fields
 
 Let's take the example below
 
-##A General Questionnaire config
+## A General Questionnaire config
 
 ``` json
     {
@@ -50,7 +50,6 @@ title | Display text shown as on the button | yes |              |
 titleColor | Display text color             |     |              |
 visible    | A string to show if the questionnaire button should be shown | no | true |
 enabled    | A string to show if the questionnaire button should be clickable | no | true |
-
 actions    | A list of actions that you would like to be executed | yes if you are using a questionnaire |  |
 actions (trigger) | Defines when you want to launch the questions | yes |        |
 actions(workflow) | Import to execute logic related to the questionnaire | yes |  |
@@ -65,7 +64,7 @@ actions(workflow) | Import to execute logic related to the questionnaire | yes |
 ```
 
 ## Questionnaire block Config properties
-id| Unique uuid that determines what questionnaire i.e form to launch | yes | |
+id   | Unique uuid that determines what questionnaire i.e form to launch | yes | |
 title| label text of the questionnaire | yes | |
 title| FHIR resource to pull/add or update | yes | |
 
@@ -101,7 +100,7 @@ The questionnaire id inside the questionnaire block
 The above questionnaire JSON config adds planDefinition in an array. For each item in the array, we pull related plan Definitions.
 These are used when generating other tasks, CarePlans and related resources.See [Plan Definitions section] (https://fhircore.smartregister.org/writing-fhir/plan-definiton)
 
-##Extra Config properties
+## Extra Config properties
 
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
