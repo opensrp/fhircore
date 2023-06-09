@@ -65,6 +65,7 @@ actions(workflow) | Import to execute logic related to the questionnaire | yes |
 
 ## Questionnaire block Config properties
 | Property | Description | Required | Default |
+|--|--|:--:|:--:|
 id   | Unique uuid that determines what questionnaire i.e form to launch | yes | |
 title | label text of the questionnaire | yes | |
 resourceIdentifier | FHIR resource to pull/add or update | yes | |
@@ -99,7 +100,7 @@ The questionnaire id inside the questionnaire block
 ```
 
 The above questionnaire JSON config adds planDefinition in an array. For each item in the array, we pull related plan Definitions.
-These are used when generating other tasks, CarePlans and related resources.See [Plan Definitions section] (https://fhircore.smartregister.org/writing-fhir/plan-definiton)
+These are used when generating other tasks, CarePlans and related resources.See https://fhircore.smartregister.org/writing-fhir/plan-definiton
 
 ## Extra Config properties
 
