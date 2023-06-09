@@ -416,6 +416,16 @@ class TokenAuthenticatorTest : RobolectricTest() {
       onSessionInvalidated()
     }
   }
+  @Test
+  fun testsCurrentRefreshTokenActiveWithInActiveToken() {
+    val account = Account(sampleUsername, PROVIDER)
+    val token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ik1hcnRpbiBOZGVnd2EiLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MzMyNDI4OTMyMzF9.sYnHKVkXrku7X4X92zsidrZeKyd6nbOvsM5qgck3kiA"
+    every { tokenAuthenticator.findAccount() } returns account
+    every { accountManager.getPassword(account) } returns token
+
+    Assert.assertTrue(tokenAuthenticator.isCurrentRefreshTokenActive())
+  }
 
   companion object {
     private const val SCOPE = "openid"
