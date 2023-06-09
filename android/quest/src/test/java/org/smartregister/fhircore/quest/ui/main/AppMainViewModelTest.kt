@@ -158,6 +158,7 @@ class AppMainViewModelTest : RobolectricTest() {
 
     val errorMessage = context.getString(R.string.sync_failed)
     coVerify { context.showToast(errorMessage, Toast.LENGTH_LONG) }
+    unmockkStatic(Context::isDeviceOnline)
   }
 
   @Test
