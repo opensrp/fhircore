@@ -654,6 +654,7 @@ constructor(
     subjectId: String?,
     subjectType: ResourceType?,
     questionnaireConfig: QuestionnaireConfig,
+    resourceMap: Map<ResourceType?, String>,
   ): QuestionnaireResponse {
     var questionnaireResponse = QuestionnaireResponse()
 
@@ -670,9 +671,25 @@ constructor(
             ?: QuestionnaireResponse()
       }
 
+      /**
+       * This will catch an exception and return QR from DB when population resource is empty,
+       * ResourceMapper.selectPopulateContext() will return null, then that null will get evaluated
+       * and gives an exception as a result.
+       */
       questionnaireResponse =
         runCatching {
-            val populationResources = loadPopulationResources(subjectId, subjectType)
+            // load required resources sent through Param for questionnaire Response expressions
+            val populationResources = arrayListOf<Resource>()
+            if (resourceMap.isEmpty()) {
+              populationResources.addAll(loadPopulationResources(subjectId, subjectType))
+            } else {
+              resourceMap.forEach {
+                populationResources.addAll(
+                  loadPopulationResources(it.value.extractLogicalIdUuid(), it.key!!)
+                )
+              }
+            }
+
             populateQuestionnaireResponse(
               questionnaire = questionnaire,
               populationResources = populationResources
