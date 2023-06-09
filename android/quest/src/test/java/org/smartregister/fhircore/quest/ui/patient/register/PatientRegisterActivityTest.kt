@@ -43,8 +43,8 @@ import org.smartregister.fhircore.engine.configuration.view.NavigationOption
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
-import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -73,7 +73,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
     every { sharedPreferencesHelper.read(any(), any<String>()) } answers
       {
-        if (firstArg<String>() == LAST_SYNC_TIMESTAMP) {
+        if (firstArg<String>() == SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name) {
           ""
         } else {
           "1234"

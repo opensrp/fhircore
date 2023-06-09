@@ -57,7 +57,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
-import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
@@ -86,7 +86,7 @@ class SyncBroadcasterTest : RobolectricTest() {
       }
     every { WorkManager.getInstance(any()) } returns workManager
 
-    every { sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null) } returns null
+    every { sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null) } returns null
 
     every { tracer.startTrace(any()) } returns Unit
     every { tracer.putAttribute(any(), any(), any()) } just runs
