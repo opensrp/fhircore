@@ -99,9 +99,10 @@ data class CountResultConfig(val sumCounts: Boolean = true) : Parcelable, java.i
 @Serializable
 @Parcelize
 data class SortConfig(
-  val paramName: String,
+  val paramName: String? = null,
   val dataType: Enumerations.DataType,
-  val order: Order = Order.ASCENDING
+  val order: Order = Order.ASCENDING,
+  val fhirPathExpression: String = ""
 ) : Parcelable
 
 @Serializable

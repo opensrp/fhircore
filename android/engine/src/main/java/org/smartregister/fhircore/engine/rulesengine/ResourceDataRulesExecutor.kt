@@ -158,15 +158,25 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
     val newListRelatedResources = relatedResourceMap[relatedResourceKey]
 
     // conditionalFhirPath expression e.g. "Task.status == 'ready'" to filter tasks that are due
-    if (newListRelatedResources != null &&
-        !listResource.conditionalFhirPathExpression.isNullOrEmpty()
-    ) {
-      return rulesFactory.rulesEngineService.filterResources(
-        resources = newListRelatedResources,
-        fhirPathExpression = listResource.conditionalFhirPathExpression
-      )
-    }
+    val resources =
+      if (newListRelatedResources != null &&
+          !listResource.conditionalFhirPathExpression.isNullOrEmpty()
+      ) {
+        return rulesFactory.rulesEngineService.filterResources(
+          resources = newListRelatedResources,
+          fhirPathExpression = listResource.conditionalFhirPathExpression
+        )
+      } else newListRelatedResources ?: listOf()
 
-    return newListRelatedResources ?: listOf()
+    val sortConfig = listResource.sortConfig
+    // Sort resources if sort configuration is provided
+    return if (sortConfig != null && sortConfig.fhirPathExpression.isNotEmpty())
+      rulesFactory.rulesEngineService.sortResources(
+        resources = resources,
+        fhirPathExpression = sortConfig.fhirPathExpression,
+        dataType = sortConfig.dataType,
+        order = sortConfig.order
+      )
+    else resources
   }
 }

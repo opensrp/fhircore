@@ -437,12 +437,14 @@ constructor(
 
   private fun Search.sort(sortConfigs: List<SortConfig>) {
     sortConfigs.forEach { sortConfig ->
-      when (sortConfig.dataType) {
-        DataType.INTEGER -> sort(NumberClientParam(sortConfig.paramName), sortConfig.order)
-        DataType.DATE -> sort(DateClientParam(sortConfig.paramName), sortConfig.order)
-        DataType.STRING -> sort(StringClientParam(sortConfig.paramName), sortConfig.order)
-        else -> {
-          /*Unsupported data type*/
+      if (!sortConfig.paramName.isNullOrEmpty()) {
+        when (sortConfig.dataType) {
+          DataType.INTEGER -> sort(NumberClientParam(sortConfig.paramName), sortConfig.order)
+          DataType.DATE -> sort(DateClientParam(sortConfig.paramName), sortConfig.order)
+          DataType.STRING -> sort(StringClientParam(sortConfig.paramName), sortConfig.order)
+          else -> {
+            /*Unsupported data type*/
+          }
         }
       }
     }
