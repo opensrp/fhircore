@@ -277,7 +277,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  private suspend fun setInitialExpression(questionnaire: Questionnaire) {
+  suspend fun setInitialExpression(questionnaire: Questionnaire) {
     // TODO handle hierarchy and scope for variable items
     // TODO add functionality to SDK instead
     questionnaire.item.flattened().forEach { item ->

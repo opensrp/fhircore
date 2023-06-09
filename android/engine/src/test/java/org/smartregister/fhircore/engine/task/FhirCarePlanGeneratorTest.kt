@@ -1891,7 +1891,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val structureMapRegister =
       structureMapUtilities.parse(
-          "plans/$planName/structure-map.txt".readFile(),
+          "plans/$planName/structure-map-register.txt".readFile(),
           "${planName.uppercase().replace("-", "").replace(" ", "")}CarePlan"
         )
         .also { println(it.encodeResourceToString()) }

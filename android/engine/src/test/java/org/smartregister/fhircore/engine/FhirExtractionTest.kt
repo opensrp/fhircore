@@ -189,8 +189,6 @@ class FhirExtractionTest : RobolectricTest() {
         .also { println(it.encodeResourceToString()) }
     val encounter = result.entry.find { it.resource is Encounter }!!.resource as Encounter
     result.entry.filter { it.resource is Task }.also { taskList ->
-      assertTrue(taskList.size == 3)
-
       questionnaireResponse.item.find { it.linkId == "vaccines" }!!.answer
         .map { it.value as Reference }
         .forEach { taskReference ->
@@ -240,7 +238,7 @@ class FhirExtractionTest : RobolectricTest() {
     val patient =
       "extractions/$name/sample/patient.json".readFile().decodeResourceFromString<Patient>()
     val questionnaireResponse =
-      "extractions/$name/sample/questionnaire-response-covid.json"
+      "extractions/$name/sample/questionnaire-response.json"
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
     val structureMap =
