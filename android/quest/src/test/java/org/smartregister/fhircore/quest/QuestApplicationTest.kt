@@ -33,6 +33,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class QuestApplicationTest : RobolectricTest() {
+
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
   private lateinit var application: QuestApplication
 

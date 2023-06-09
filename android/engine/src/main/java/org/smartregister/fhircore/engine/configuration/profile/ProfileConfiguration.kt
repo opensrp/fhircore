@@ -46,5 +46,6 @@ data class ProfileConfiguration(
     listOf(
       ActiveResourceFilterConfig(resourceType = ResourceType.Patient, active = true),
       ActiveResourceFilterConfig(resourceType = ResourceType.Group, active = true)
-    )
+    ),
+  val configRules: List<RuleConfig>? = null
 ) : Configuration()

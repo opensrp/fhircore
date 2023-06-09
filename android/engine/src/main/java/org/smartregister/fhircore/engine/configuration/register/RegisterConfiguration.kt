@@ -22,6 +22,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
 data class RegisterConfiguration(
@@ -41,5 +42,6 @@ data class RegisterConfiguration(
     listOf(
       ActiveResourceFilterConfig(resourceType = ResourceType.Patient, active = true),
       ActiveResourceFilterConfig(resourceType = ResourceType.Group, active = true)
-    )
+    ),
+  val configRules: List<RuleConfig>? = null
 ) : Configuration()

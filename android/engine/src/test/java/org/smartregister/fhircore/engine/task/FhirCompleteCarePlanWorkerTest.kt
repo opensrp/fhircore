@@ -48,17 +48,19 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.lastOffset
 
 @HiltAndroidTest
 class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   private val fhirEngine: FhirEngine = mockk(relaxed = true)
   private val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk(relaxed = true)
-  private lateinit var fhirCompleteCarePlanWorker: FhirCompleteCarePlanWorker
   private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private lateinit var fhirCompleteCarePlanWorker: FhirCompleteCarePlanWorker
 
   @Before
   fun setUp() {
@@ -242,7 +244,8 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         fhirEngine = fhirEngine,
         fhirCarePlanGenerator = fhirCarePlanGenerator,
         sharedPreferencesHelper = sharedPreferencesHelper,
-        configurationRegistry = configurationRegistry
+        configurationRegistry = configurationRegistry,
+        dispatcherProvider = coroutineTestRule.testDispatcherProvider
       )
     }
   }

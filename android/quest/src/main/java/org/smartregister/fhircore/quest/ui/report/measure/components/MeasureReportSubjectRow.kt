@@ -34,18 +34,19 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
-const val PATIENT_DETAILS_TEST_TAG = "patientDetailsTestTag"
+const val SUBJECT_DETAILS_TEST_TAG = "subjectDetailsTestTag"
 const val FAMILY_NAME_TEST_TAG = "familyNameTestTag"
-const val PATIENT_ROW_TEST_TAG = "patientRowTestTag"
+const val SUBJECT_ROW_TEST_TAG = "subjectRowTestTag"
 
 @Composable
-fun MeasureReportPatientRow(
-  measureReportPatientViewData: MeasureReportPatientViewData,
-  onRowClick: (MeasureReportPatientViewData) -> Unit,
+fun MeasureReportSubjectRow(
+  measureReportSubjectViewData: MeasureReportSubjectViewData,
+  onRowClick: (MeasureReportSubjectViewData) -> Unit,
   modifier: Modifier = Modifier
 ) {
   Row(
@@ -55,31 +56,25 @@ fun MeasureReportPatientRow(
       modifier
         .fillMaxWidth()
         .height(IntrinsicSize.Min)
-        .clickable { onRowClick(measureReportPatientViewData) }
-        .testTag(PATIENT_ROW_TEST_TAG)
+        .clickable { onRowClick(measureReportSubjectViewData) }
+        .testTag(SUBJECT_ROW_TEST_TAG)
   ) {
     Column(
       modifier =
         modifier.wrapContentWidth(Alignment.Start).padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
       Text(
-        text =
-          listOf(
-              measureReportPatientViewData.name,
-              measureReportPatientViewData.gender,
-              measureReportPatientViewData.age
-            )
-            .joinToString(", "),
+        text = measureReportSubjectViewData.display,
         fontSize = 18.sp,
-        modifier = modifier.wrapContentWidth().testTag(PATIENT_DETAILS_TEST_TAG),
+        modifier = modifier.wrapContentWidth().testTag(SUBJECT_DETAILS_TEST_TAG),
         maxLines = 1,
         overflow = TextOverflow.Ellipsis
       )
       Spacer(modifier = modifier.height(8.dp))
-      if (measureReportPatientViewData.family != null) {
+      if (measureReportSubjectViewData.family != null) {
         Text(
           color = SubtitleTextColor,
-          text = measureReportPatientViewData.family,
+          text = measureReportSubjectViewData.family,
           fontSize = 14.sp,
           modifier = modifier.wrapContentWidth().testTag(FAMILY_NAME_TEST_TAG),
           maxLines = 1,
@@ -92,14 +87,13 @@ fun MeasureReportPatientRow(
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
-private fun MeasureReportPatientRowPreview() {
-  MeasureReportPatientRow(
-    measureReportPatientViewData =
-      MeasureReportPatientViewData(
+private fun MeasureReportSubjectRowPreview() {
+  MeasureReportSubjectRow(
+    measureReportSubjectViewData =
+      MeasureReportSubjectViewData(
+        type = ResourceType.Patient,
         logicalId = "1291029",
-        name = "John Jared",
-        gender = "M",
-        age = "56",
+        display = "John Jared, M, 56",
         family = "Oduor"
       ),
     onRowClick = {}

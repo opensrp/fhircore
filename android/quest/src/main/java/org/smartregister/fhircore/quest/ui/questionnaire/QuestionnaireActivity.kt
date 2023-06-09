@@ -25,6 +25,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.activity.viewModels
+import androidx.annotation.VisibleForTesting
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
@@ -41,6 +42,7 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
@@ -74,18 +76,17 @@ import timber.log.Timber
 open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener {
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
-
   @Inject lateinit var parser: IParser
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
   private lateinit var questionnaire: Questionnaire
-  private var questionnaireResponse: QuestionnaireResponse = QuestionnaireResponse()
   private lateinit var fragment: QuestionnaireFragment
   private lateinit var saveProcessingAlertDialog: AlertDialog
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var actionParams: List<ActionParameter>
   private lateinit var prePopulationParams: List<ActionParameter>
-  private lateinit var baseResourceId: String
-  private lateinit var baseResourceType: ResourceType
+  private var questionnaireResponse: QuestionnaireResponse = QuestionnaireResponse()
+  private var baseResourceId: String? = null
+  private var baseResourceType: ResourceType? = null
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
@@ -107,13 +108,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       actionParams.filter {
         (it.paramType == ActionParameterType.PREPOPULATE ||
           it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) &&
-          !it.value.isNullOrEmpty() &&
+          it.value.isNotEmpty() &&
           !it.value.contains(STRING_INTERPOLATION_PREFIX)
       }
 
-    baseResourceId = intent.getStringExtra(BASE_RESOURCE_ID) ?: ""
-    val strBaseResourceType = intent.getStringExtra(BASE_RESOURCE_TYPE) ?: ""
-    if (strBaseResourceType.isNotEmpty())
+    baseResourceId = intent.getStringExtra(BASE_RESOURCE_ID)
+    val strBaseResourceType = intent.getStringExtra(BASE_RESOURCE_TYPE)
+    if (!strBaseResourceType.isNullOrEmpty())
       baseResourceType = ResourceType.fromCode(strBaseResourceType)
 
     val questionnaireActivity = this@QuestionnaireActivity
@@ -147,24 +148,25 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             }
           }
 
-        if (questionnaireConfig.type.isEditMode() || questionnaireConfig.type.isReadOnly()) {
-          questionnaireResponse =
-            questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
-                questionnaire = questionnaire,
-                subjectId = baseResourceId.extractLogicalIdUuid(),
-                subjectType = baseResourceType
-              )
-              .apply { generateMissingItems(questionnaire) }
-
-          if (!questionnaireViewModel.isQuestionnaireResponseValid(
-              questionnaire,
-              questionnaireResponse,
-              this@QuestionnaireActivity
+        questionnaireResponse =
+          questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
+              questionnaire = questionnaire,
+              subjectId = baseResourceId?.extractLogicalIdUuid(),
+              subjectType = baseResourceType,
+              questionnaireConfig = questionnaireConfig,
+              resourceMap = getResourcesFromParamsForQR()
             )
-          ) {
-            showToast(getString(R.string.questionnaire_response_broken))
-            finish()
-          }
+            .apply { generateMissingItems(questionnaire) }
+
+        val questionnaireResponseValid =
+          questionnaireViewModel.isQuestionnaireResponseValid(
+            questionnaire = questionnaire,
+            questionnaireResponse = questionnaireResponse,
+            context = questionnaireActivity
+          )
+        if (!questionnaireResponseValid) {
+          showToast(getString(R.string.questionnaire_response_broken))
+          finish()
         }
 
         // Only add the fragment once, when the activity is first created.
@@ -177,6 +179,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       }
     }
   }
+
+  @VisibleForTesting
+  internal fun getResourcesFromParamsForQR(): Map<ResourceType?, String> =
+    actionParams
+      .filter { it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE }
+      .associate { it.resourceType to it.value }
 
   fun updateViews() {
     findViewById<Button>(R.id.btn_edit_qr).apply {
@@ -206,7 +214,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  private fun renderFragment() {
+  private suspend fun renderFragment() {
     // Pass questionnaire and questionnaire-response to fragment
     val questionnaireString = parser.encodeResourceToString(questionnaire)
     val fragmentBuilder =
@@ -214,6 +222,21 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         setQuestionnaire(questionnaireString)
         if (!questionnaireConfig.type.isDefault()) {
           setQuestionnaireResponse(questionnaireResponse.encodeResourceToString())
+        }
+        questionnaireConfig.resourceIdentifier?.takeIf { it.isNotBlank() }?.let {
+          val resourceId = IdType(it)
+          val resourceType =
+            resourceId.resourceType?.let { ResourceType.fromCode(it) }
+              ?: questionnaireConfig.resourceType ?: ResourceType.Patient
+
+          setQuestionnaireLaunchContexts(
+            listOf(
+              questionnaireViewModel
+                .defaultRepository
+                .loadResource(resourceId.idPart, resourceType)
+                .encodeResourceToString()
+            )
+          )
         }
       }
     fragment = fragmentBuilder.build()
@@ -354,7 +377,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     else finishActivity(questionnaireResponse)
   }
 
-  fun finishActivity(questionnaireResponse: QuestionnaireResponse) {
+  private fun finishActivity(questionnaireResponse: QuestionnaireResponse) {
     val parcelResponse = questionnaireResponse.copy()
     questionnaire.find(FieldType.TYPE, Questionnaire.QuestionnaireItemType.ATTACHMENT.name)
       .forEach { parcelResponse.find(it.linkId)?.answer?.clear() }
@@ -483,7 +506,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
     const val QUESTIONNAIRE_ARG_BARCODE = "patient-barcode"
-    const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
     const val QUESTIONNAIRE_CONFIG = "questionnaire-config"
     const val BASE_RESOURCE_ID = "base-resource-id"
@@ -492,8 +514,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val STRING_INTERPOLATION_PREFIX = "@{"
 
     fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
-    fun Intent.populationResources() =
-      this.getStringArrayListExtra(QUESTIONNAIRE_POPULATION_RESOURCES)
 
     fun intentArgs(
       questionnaireResponse: QuestionnaireResponse? = null,

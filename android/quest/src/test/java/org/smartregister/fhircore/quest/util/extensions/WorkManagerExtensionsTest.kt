@@ -94,11 +94,12 @@ class WorkManagerExtensionsTest : RobolectricTest() {
       workerParameters: WorkerParameters
     ): ListenableWorker {
       return FhirTaskPlanWorker(
-        appContext,
-        workerParameters,
-        fhirEngine,
-        sharedPreferencesHelper,
-        configurationRegistry
+        appContext = appContext,
+        workerParams = workerParameters,
+        fhirEngine = fhirEngine,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configurationRegistry = configurationRegistry,
+        dispatcherProvider = this@WorkManagerExtensionsTest.coroutineTestRule.testDispatcherProvider
       )
     }
   }

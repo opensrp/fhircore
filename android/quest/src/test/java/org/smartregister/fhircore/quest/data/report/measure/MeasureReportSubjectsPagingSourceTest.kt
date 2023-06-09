@@ -31,26 +31,26 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
+import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDataMapper
 
 @HiltAndroidTest
-class MeasureReportPatientsPagingSourceTest : RobolectricTest() {
+class MeasureReportSubjectsPagingSourceTest : RobolectricTest() {
 
-  @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
-  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+  @Inject lateinit var measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
   private val reportRepository = mockk<MeasureReportRepository>()
-  private lateinit var reportPatientsPagingSource: MeasureReportPatientsPagingSource
+  private lateinit var reportSubjectsPagingSource: MeasureReportSubjectsPagingSource
 
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-    reportPatientsPagingSource =
-      MeasureReportPatientsPagingSource(reportRepository, measureReportPatientViewDataMapper)
+    reportSubjectsPagingSource =
+      MeasureReportSubjectsPagingSource(reportRepository, measureReportSubjectViewDataMapper)
   }
 
   @Test
   fun loadShouldReturnResults() {
-    coEvery { reportRepository.retrievePatients(0) } returns
+    coEvery { reportRepository.retrieveSubjects(0) } returns
       listOf(
         ResourceData(
           baseResourceId = "resourceId",
@@ -61,8 +61,9 @@ class MeasureReportPatientsPagingSourceTest : RobolectricTest() {
 
     val loadParams = mockk<PagingSource.LoadParams<Int>>()
     every { loadParams.key } returns null
+    every { loadParams.loadSize } returns 100
     runBlocking {
-      reportPatientsPagingSource.run {
+      reportSubjectsPagingSource.run {
         val result = load(loadParams)
         Assert.assertNotNull(result)
         Assert.assertEquals(1, (result as PagingSource.LoadResult.Page).data.size)

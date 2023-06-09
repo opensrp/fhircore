@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.domain.model
 import android.os.Parcelable
 import com.google.android.fhir.search.Order
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.RawValue
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
@@ -32,7 +33,7 @@ import org.hl7.fhir.r4.model.ResourceType
 data class FhirResourceConfig(
   val baseResource: ResourceConfig,
   val relatedResources: List<ResourceConfig> = emptyList()
-) : Parcelable
+) : Parcelable, java.io.Serializable
 
 /**
  * This is the data class used to hold configurations for FHIR resources used in Profile and
@@ -85,10 +86,15 @@ data class ResourceConfig(
   val sortConfigs: List<SortConfig> = emptyList(),
   val resultAsCount: Boolean = false,
   val countResultConfig: CountResultConfig? = CountResultConfig(),
-  val nestedSearchResources: List<NestedSearchConfig>? = null
-) : Parcelable
+  val nestedSearchResources: List<NestedSearchConfig>? = null,
+  val configRules: @RawValue List<RuleConfig>? = null,
+  val planDefinitions: List<String>? = null,
+  val attributesToUpdate: List<KeyValueConfig>? = emptyList()
+) : Parcelable, java.io.Serializable
 
-@Serializable @Parcelize data class CountResultConfig(val sumCounts: Boolean = true) : Parcelable
+@Serializable
+@Parcelize
+data class CountResultConfig(val sumCounts: Boolean = true) : Parcelable, java.io.Serializable
 
 @Serializable
 @Parcelize

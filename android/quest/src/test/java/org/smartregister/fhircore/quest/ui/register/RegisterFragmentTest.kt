@@ -80,8 +80,8 @@ class RegisterFragmentTest : RobolectricTest() {
         registerRepository = mockk(relaxed = true),
         configurationRegistry = configurationRegistry,
         sharedPreferencesHelper = mockk(relaxed = true),
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider,
-        rulesExecutor = mockk()
+        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+        resourceDataRulesExecutor = mockk()
       )
     )
 
@@ -154,7 +154,7 @@ class RegisterFragmentTest : RobolectricTest() {
         snackBarActions = emptyList()
       )
     val registerViewModel = mockk<RegisterViewModel>()
-    coroutineTestRule.launch {
+    this.coroutineTestRule.launch {
       registerViewModel.emitSnackBarState(snackBarMessageConfig = snackBarMessageConfig)
     }
     coEvery {

@@ -102,7 +102,7 @@ internal class LoginViewModelTest : RobolectricTest() {
           fhirResourceService = fhirResourceService,
           tokenAuthenticator = tokenAuthenticator,
           secureSharedPreference = secureSharedPreference,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
           workManager = workManager
         )
       )
@@ -238,7 +238,7 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     // Login was successful savePractitionerDetails was called
     val bundleSlot = slot<Bundle>()
-    verify { loginViewModel.savePractitionerDetails(capture(bundleSlot)) }
+    verify { loginViewModel.savePractitionerDetails(capture(bundleSlot), any()) }
 
     Assert.assertNotNull(bundleSlot.captured)
     Assert.assertTrue(bundleSlot.captured.entry.isNotEmpty())
@@ -318,7 +318,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     coEvery { defaultRepository.create(true, any()) } returns listOf()
     loginViewModel.savePractitionerDetails(
       Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = practitionerDetails() })
-    )
+    ) {}
     Assert.assertNotNull(
       sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name)
     )
