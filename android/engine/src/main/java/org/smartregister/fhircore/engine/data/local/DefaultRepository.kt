@@ -654,7 +654,7 @@ constructor(
     }
   }
 
-  suspend fun closeResource(resource: Resource) {
+  private suspend fun closeResource(resource: Resource) {
     when (resource) {
       is Task -> {
         if (resource.status != Task.TaskStatus.COMPLETED) {
@@ -662,9 +662,7 @@ constructor(
           resource.lastModified = Date()
         }
       }
-      is CarePlan -> {
-        resource.status = CarePlan.CarePlanStatus.COMPLETED
-      }
+      is CarePlan -> resource.status = CarePlan.CarePlanStatus.COMPLETED
     }
     fhirEngine.update(resource)
   }
