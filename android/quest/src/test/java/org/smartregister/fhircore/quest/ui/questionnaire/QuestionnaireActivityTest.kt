@@ -109,7 +109,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   private val fhirEngine: FhirEngine = mockk()
 
-  private val defaultRepository: DefaultRepository = DefaultRepository(fhirEngine, dispatcherProvider, mockk(), mockk(), mockk())
+  private val defaultRepository: DefaultRepository =
+    DefaultRepository(fhirEngine, dispatcherProvider, mockk(), mockk(), mockk())
 
   private lateinit var questionnaireConfig: QuestionnaireConfig
 
@@ -948,22 +949,17 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun `test covid 19 vaccines questionnaire on followup`() {
-    // SARS-CoV-2 vaccination - 840534001 - snomed
-    // initial multiple does not work
-    // initialSelected property does not work
-    // context in answer expression
-    // Caused by: java.lang.NullPointerException: null cannot be cast to non-null type
-    // org.hl7.fhir.r4.model.Base
-    // 2023-05-26 20:12:47.157 AndroidRuntime          com.google.android.fhir.catalog      E  	at
-    // com.google.android.fhir.datacapture.fhirpath.FHIRPathEngineHostServices.resolveConstant(FHIRPathEngineHostServices.kt:29)
-    // enablewhen does not handle variables
-
     val questionnaire =
-      "covid-19/covid-19-followup-questionnaire.json".readFile().decodeResourceFromString<Questionnaire>()
+      "covid-19/covid-19-followup-questionnaire.json"
+        .readFile()
+        .decodeResourceFromString<Questionnaire>()
     val data =
-      "covid-19/resource_data_bundle.json".readFile().decodeResourceFromString<org.hl7.fhir.r4.model.Bundle>()
+      "covid-19/resource_data_bundle.json"
+        .readFile()
+        .decodeResourceFromString<org.hl7.fhir.r4.model.Bundle>()
 
-    coEvery { fhirEngine.search<Resource>(any<Search>()) } returns data.entry.map { it.resource as Immunization }
+    coEvery { fhirEngine.search<Resource>(any<Search>()) } returns
+      data.entry.map { it.resource as Immunization }
 
     buildActivity(questionnaire, questionnaireConfig)
 

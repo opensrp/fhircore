@@ -88,7 +88,7 @@ class FhirExtractionTest : RobolectricTest() {
 
   @Test
   @ExperimentalCoroutinesApi
-  fun `extract should generate immunization and encounter`() = runTest {
+  fun `record-all-immunization extract should generate immunization and encounter`() = runTest {
     val resources = loadExtractionResources("record-all-immunization")
     val questionnaire = resources.questionnaire
     val patient = resources.patient.apply { birthDate = Date() }
@@ -168,6 +168,64 @@ class FhirExtractionTest : RobolectricTest() {
     }
   }
 
+  @Test
+  @ExperimentalCoroutinesApi
+  fun `covid19 extract should generate immunization and encounter`() = runTest {
+    val resources = loadExtractionResources("covid19")
+    val questionnaire = resources.questionnaire
+    val patient = resources.patient.apply { birthDate = Date() }
+    val questionnaireResponse = resources.questionnaireResponse
+    val result =
+      ResourceMapper.extract(
+          questionnaire = questionnaire,
+          questionnaireResponse = questionnaireResponse,
+          structureMapExtractionContext =
+            StructureMapExtractionContext(
+              context = context,
+              structureMapProvider = { _, _ -> resources.structureMap },
+              transformSupportServices = transformSupportServices
+            )
+        )
+        .also { println(it.encodeResourceToString()) }
+    val encounter = result.entry.find { it.resource is Encounter }!!.resource as Encounter
+    result.entry.filter { it.resource is Task }.also { taskList ->
+      assertTrue(taskList.size == 3)
+
+      questionnaireResponse.item.find { it.linkId == "vaccines" }!!.answer
+        .map { it.value as Reference }
+        .forEach { taskReference ->
+          val outputTask =
+            taskList
+              .find { (it.resource as Task).id.extractLogicalIdUuid() == taskReference.extractId() }
+              ?.resource as?
+              Task
+          assertNotNull(outputTask)
+          assertTrue(outputTask!!.output.size == 3)
+          assertNotNull(
+            outputTask.output.find {
+              it.castToReference(it.value).reference.startsWith(ResourceType.Immunization.name)
+            }
+          )
+          assertNotNull(
+            outputTask.output.find {
+              it.castToReference(it.value).reference.startsWith(ResourceType.Encounter.name)
+            }
+          )
+        }
+
+      val firstTask = taskList.first().resource as Task
+      assertTrue(
+        firstTask.output.first().type.coding.first().code ==
+          encounter.type.first().coding.first().code
+      )
+      assertTrue(!firstTask.output.first().value.isEmpty)
+
+      val administrationEncounter =
+        result.entry.filter { it.resource is Encounter }.last().resource as Encounter
+      assertTrue(administrationEncounter.partOf.reference == encounter.id)
+    }
+  }
+
   data class ExtractionResources(
     val questionnaire: Questionnaire,
     val patient: Patient,
@@ -182,7 +240,7 @@ class FhirExtractionTest : RobolectricTest() {
     val patient =
       "extractions/$name/sample/patient.json".readFile().decodeResourceFromString<Patient>()
     val questionnaireResponse =
-      "extractions/$name/sample/questionnaire-response.json"
+      "extractions/$name/sample/questionnaire-response-covid.json"
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
     val structureMap =

@@ -37,7 +37,6 @@ import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.TimeType
 import org.hl7.fhir.r4.model.Type
 import org.hl7.fhir.r4.model.UriType
-import org.hl7.fhir.r4.utils.ToolingExtensions
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 
 fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asLabel() =
@@ -137,36 +136,13 @@ fun List<Questionnaire.QuestionnaireItemComponent>.find(
     }
   }
 }
- val Questionnaire.QuestionnaireItemComponent.initialExpression: Expression?
-  get() =
-    this.getExtensionByUrl(EXTENSION_INITIAL_EXPRESSION_URL)?.let {
-      it.castToExpression(it.value)
-    }
 
-val Questionnaire.QuestionnaireItemComponent.choiceColumn: List<ChoiceColumn>?
+val Questionnaire.QuestionnaireItemComponent.initialExpression: Expression?
   get() =
-    ToolingExtensions.getExtensions(this,
-      EXTENSION_CHOICE_COLUMN_URL
-    )?.map { extension ->
-      extension.extension.let { nestedExtensions ->
-        ChoiceColumn(
-          path = nestedExtensions.find { it.url == "path" }!!.value.asStringValue(),
-          label = nestedExtensions.find { it.url == "label" }?.value?.asStringValue(),
-          forDisplay =
-          nestedExtensions.any {
-            it.url == "forDisplay" && it.castToBoolean(it.value).booleanValue()
-          }
-        )
-      }
-    }
-data class ChoiceColumn(val path: String, val label: String?, val forDisplay: Boolean)
+    this.getExtensionByUrl(EXTENSION_INITIAL_EXPRESSION_URL)?.let { it.castToExpression(it.value) }
 
 const val EXTENSION_INITIAL_EXPRESSION_URL: String =
   "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
-const val ITEM_POPULATION_CONTEXT_EXPRESSION_URL: String =
-  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemPopulationContext"
-const val EXTENSION_CHOICE_COLUMN_URL: String =
-  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn"
 
 /** Pre-Populate Questionnaire items with initial values */
 // TODO: handle interpolation for null values on rules engine and not where the values are used

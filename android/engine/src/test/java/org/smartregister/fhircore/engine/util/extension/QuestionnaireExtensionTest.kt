@@ -279,7 +279,7 @@ class QuestionnaireExtensionTest {
       Questionnaire.QuestionnaireItemComponent().apply {
         linkId = theLinkId
         addExtension(
-          ITEM_INITIAL_EXPRESSION_URL,
+          EXTENSION_INITIAL_EXPRESSION_URL,
           Expression().apply {
             language = "text/fhirpath"
             expression = "expression"
@@ -287,7 +287,7 @@ class QuestionnaireExtensionTest {
         )
       }
     listOf(questionnaireItemComponent).prePopulateInitialValues("", emptyList())
-    Assert.assertTrue(questionnaireItemComponent.hasExtension(ITEM_INITIAL_EXPRESSION_URL))
+    Assert.assertTrue(questionnaireItemComponent.hasExtension(EXTENSION_INITIAL_EXPRESSION_URL))
   }
 
   @Test

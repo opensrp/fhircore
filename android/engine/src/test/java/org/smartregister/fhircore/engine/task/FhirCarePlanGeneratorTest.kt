@@ -1163,11 +1163,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @ExperimentalCoroutinesApi
   fun `Generate CarePlan should generate covid immunization schedule`() = runTest {
     val planDefinitionResources =
-      loadPlanDefinitionResources("covid-19-immunization", listOf("register-temp"))
+      loadPlanDefinitionResources("covid-19-immunization", listOf("covid"))
     val planDefinition = planDefinitionResources.planDefinition
     val patient = planDefinitionResources.patient
     val questionnaireResponses = planDefinitionResources.questionnaireResponses
     val resourcesSlot = planDefinitionResources.resourcesSlot
+
+    val referenceDate =
+      questionnaireResponses.first().find("vaccine_date")!!.answerFirstRep.valueDateType.value
 
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinition,
@@ -1180,14 +1183,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       )!!
       .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
-        assertCarePlan(
-          carePlan,
-          planDefinition,
-          patient,
-          patient.birthDate,
-          patient.birthDate.plusYears(18),
-          1
-        )
+        assertCarePlan(carePlan, planDefinition, patient, referenceDate, null, 2)
 
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
@@ -1199,14 +1195,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             assertTrue(tasks.all { it.status == TaskStatus.REQUESTED })
             assertTrue(
               tasks.all {
-                it.reasonReference.reference == "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82"
+                it.reasonReference.reference == "Questionnaire/e8572c86-065d-11ee-be56-0242ac120002"
               }
             )
             assertTrue(
               tasks.all {
-                it.code.codingFirstRep.display ==
-                  "Administration of vaccine to produce active immunity (procedure)" &&
-                  it.code.codingFirstRep.code == "33879002"
+                it.code.codingFirstRep.display == "SARS-CoV-2 vaccination" &&
+                  it.code.codingFirstRep.code == "840534001"
               }
             )
             assertTrue(tasks.all { it.description.contains(it.reasonCode.text, true) })
@@ -1220,30 +1215,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .also { tasks ->
             val vaccines =
               mutableMapOf<String, Date>(
-                // TODO add vaccine list to validate based on condition
-                )
+                "AstraZeneca 2" to referenceDate.plusDays(70),
+                "AstraZeneca Booster" to referenceDate.plusDays(180)
+              )
             vaccines.forEach { vaccine ->
               println(vaccine)
 
               val task = tasks.find { it.description.startsWith(vaccine.key) }
               assertNotNull(task)
               assertTrue(task!!.executionPeriod.start.asYyyyMmDd() == vaccine.value.asYyyyMmDd())
-
-              if (vaccine.key.endsWith("2") || vaccine.key.endsWith("3")) {
-                assertTrue(task.partOf.isNotEmpty())
-
-                val preReq = task.partOf.find { it.reference.startsWith(ResourceType.Task.name) }
-                println("PRE-REQ: ${preReq?.reference}")
-
-                assertNotNull(preReq)
-                assertTrue(
-                  tasks.find { it.idElement.idPart == preReq!!.extractId() }!!.description
-                    .startsWith(vaccine.key.dropLast(1))
-                )
-              } else
-                assertTrue(
-                  task.partOf.isEmpty() || task.description.contains("OPV 1")
-                ) // only OPV 1 is not dependent on pre-req
             }
           }
       }
@@ -1911,7 +1891,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val structureMapRegister =
       structureMapUtilities.parse(
-          "plans/$planName/structure-map-register.txt".readFile(),
+          "plans/$planName/structure-map.txt".readFile(),
           "${planName.uppercase().replace("-", "").replace(" ", "")}CarePlan"
         )
         .also { println(it.encodeResourceToString()) }
@@ -1945,7 +1925,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     planDefinition: PlanDefinition,
     patient: Patient,
     referenceDate: Date,
-    endDate: Date,
+    endDate: Date?,
     visitTasks: Int
   ) {
     assertNotNull(UUID.fromString(carePlan.id))

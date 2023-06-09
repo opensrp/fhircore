@@ -30,17 +30,13 @@ import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
-import androidx.lifecycle.withStateAtLeast
 import ca.uhn.fhir.parser.IParser
-import ca.uhn.fhir.util.ReflectionUtil
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.extensions.flattened
-import com.google.android.fhir.datacapture.fhirpath.ExpressionEvaluator
 import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.search
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Date
 import java.util.UUID
@@ -49,9 +45,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.Questionnaire.QuestionnaireItemAnswerOptionComponent
 import org.hl7.fhir.r4.model.Questionnaire.QuestionnaireItemInitialComponent
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
@@ -66,21 +62,16 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.callFunction
 import org.smartregister.fhircore.engine.util.callSuspendFunctionOnField
 import org.smartregister.fhircore.engine.util.extension.FieldType
-import org.smartregister.fhircore.engine.util.extension.choiceColumn
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.initialExpression
-import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
-import kotlin.reflect.full.declaredMemberFunctions
-import kotlin.reflect.jvm.isAccessible
 
 /**
  * Launches Questionnaire/ Implement a subclass of this [QuestionnaireActivity] to provide
@@ -222,33 +213,20 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   private suspend fun renderFragment() {
-    // Pass questionnaire and questionnaire-response to fragment
-    val questionnaireString = parser.encodeResourceToString(questionnaire)
-    val fragmentBuilder =
-      QuestionnaireFragment.builder().apply {
-        setQuestionnaire(questionnaireString)
-        if (!questionnaireConfig.type.isDefault()) {
-          setQuestionnaireResponse(questionnaireResponse.encodeResourceToString())
-        }
-        questionnaireConfig.resourceIdentifier?.takeIf { it.isNotBlank() }?.let {
-          val resourceId = IdType(it)
-          val resourceType =
-            resourceId.resourceType?.let { ResourceType.fromCode(it) }
-              ?: questionnaireConfig.resourceType ?: ResourceType.Patient
-
-          setQuestionnaireLaunchContexts(
-            listOf(
-              questionnaireViewModel
-                .defaultRepository
-                .loadResource(resourceId.idPart, resourceType)
-                .encodeResourceToString()
-            )
-          )
-        }
-      }
-    fragment = fragmentBuilder.build()
+    fragment =
+      fragmentBuilder(
+          Questionnaire().apply { this.extension = questionnaire.extension },
+          QuestionnaireResponse()
+        )
+        .build()
     fragment.lifecycleScope.launchWhenCreated {
-      // setInitialExpression(questionnaire)
+      setInitialExpression(questionnaire)
+
+      fragment = fragmentBuilder(questionnaire, questionnaireResponse).build()
+      supportFragmentManager
+        .beginTransaction()
+        .replace(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG)
+        .commit()
     }
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
     supportFragmentManager.setFragmentResultListener(
@@ -265,6 +243,32 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
+  private suspend fun fragmentBuilder(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse
+  ) =
+    QuestionnaireFragment.builder().apply {
+      setQuestionnaire(questionnaire.encodeResourceToString())
+      if (!questionnaireConfig.type.isDefault()) {
+        setQuestionnaireResponse(questionnaireResponse.encodeResourceToString())
+      }
+      questionnaireConfig.resourceIdentifier?.takeIf { it.isNotBlank() }?.let {
+        val resourceId = IdType(it)
+        val resourceType =
+          resourceId.resourceType?.let { ResourceType.fromCode(it) }
+            ?: questionnaireConfig.resourceType ?: ResourceType.Patient
+
+        setQuestionnaireLaunchContexts(
+          listOf(
+            questionnaireViewModel
+              .defaultRepository
+              .loadResource(resourceId.idPart, resourceType)
+              .encodeResourceToString()
+          )
+        )
+      }
+    }
+
   private fun setBarcode(questionnaire: Questionnaire, code: String) {
     questionnaire.find(QUESTIONNAIRE_ARG_BARCODE)?.apply {
       initial =
@@ -274,28 +278,31 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   private suspend fun setInitialExpression(questionnaire: Questionnaire) {
-    // TODO handle hierarchy and scope
-    // Immunization?code=1234
-    // %immunization.reference/code
+    // TODO handle hierarchy and scope for variable items
+    // TODO add functionality to SDK instead
     questionnaire.item.flattened().forEach { item ->
-      item.initialExpression?.takeIf { it.language == "application/x-fhir-query" }
-        ?.let {expression->
-          // val resolvedExpression: String = ExpressionEvaluator::class
-            //.callFunction("createXFhirQueryFromExpression", expression, launchContexts) as String
-          val answerOptions: List<QuestionnaireItemInitialComponent> = QuestionnaireFragment::class
-            .callSuspendFunctionOnField(fragment, "viewModel", "loadAnswerExpressionOptions", item, expression) as List<QuestionnaireItemInitialComponent>
+      item
+        .initialExpression
+        ?.takeIf { it.language == "application/x-fhir-query" }
+        ?.let { expression ->
+          val answerOptions: List<QuestionnaireItemAnswerOptionComponent> =
+            QuestionnaireFragment::class.callSuspendFunctionOnField(
+              fragment,
+              "viewModel",
+              "loadAnswerExpressionOptions",
+              item,
+              expression
+            ) as
+              List<QuestionnaireItemAnswerOptionComponent>
           answerOptions
         }
         ?.let {
-          it
-            .let {
-              item.initial =
-                it.map {
-                  Questionnaire.QuestionnaireItemInitialComponent().apply {
-                    value = it.castToType(it)
-                  }
-                }
-            }
+          it.let {
+            item.initial =
+              it.map {
+                QuestionnaireItemInitialComponent().apply { value = it.castToType(it.value) }
+              }
+          }
         }
     }
   }
