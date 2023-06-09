@@ -67,7 +67,7 @@ class RegisterViewModelTest : RobolectricTest() {
           registerRepository = registerRepository,
           configurationRegistry = configurationRegistry,
           sharedPreferencesHelper = sharedPreferencesHelper,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
           resourceDataRulesExecutor = resourceDataRulesExecutor
         )
       )

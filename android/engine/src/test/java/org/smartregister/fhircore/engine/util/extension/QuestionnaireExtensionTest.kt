@@ -35,6 +35,7 @@ import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 
 class QuestionnaireExtensionTest {
   private lateinit var questionniare: Questionnaire
@@ -273,7 +274,35 @@ class QuestionnaireExtensionTest {
   }
 
   @Test
-  fun testFindQuestionnaireItemComponentPrepopulateDoesNotRemoveInitialExpression() {
+  fun testFindQuestionnaireItemComponentPrepopulateShallRemoveInitialExpressionWhenHavingTheSameLinkIdBetweenInitialExpressionAndPrePopulateFromConfigs() {
+    val theLinkId = "linkId"
+    val questionnaireItemComponent =
+      Questionnaire.QuestionnaireItemComponent().apply {
+        linkId = theLinkId
+        addExtension(
+          ITEM_INITIAL_EXPRESSION_URL,
+          Expression().apply {
+            language = "text/fhirpath"
+            expression = "expression"
+          }
+        )
+      }
+    val actionParams =
+      listOf(
+        ActionParameter(
+          paramType = ActionParameterType.PREPOPULATE,
+          linkId = theLinkId,
+          dataType = DataType.INTEGER,
+          key = "my-key",
+          value = "100"
+        )
+      )
+    listOf(questionnaireItemComponent).prePopulateInitialValues("@{", actionParams)
+    Assert.assertFalse(questionnaireItemComponent.hasExtension(ITEM_INITIAL_EXPRESSION_URL))
+  }
+
+  @Test
+  fun testFindQuestionnaireItemComponentPrepopulateShallNotRemoveInitialExpressionWhenThatLinkIdHasNoPrePopulateFromConfigs() {
     val theLinkId = "linkId"
     val questionnaireItemComponent =
       Questionnaire.QuestionnaireItemComponent().apply {

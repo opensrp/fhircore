@@ -158,6 +158,13 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
           !it.value.contains(interpolationPrefix)
       }
       ?.let { actionParam ->
+        /**
+         * Removes the initialExpression when the same linkId will be populated by config
+         * pre-populate.
+         */
+        if (item.hasExtension(ITEM_INITIAL_EXPRESSION_URL)) {
+          item.removeExtension(ITEM_INITIAL_EXPRESSION_URL)
+        }
         item.initial =
           arrayListOf(
             Questionnaire.QuestionnaireItemInitialComponent().apply {

@@ -31,6 +31,7 @@ import java.util.Base64
 import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.apache.commons.io.FileUtils
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.context.IWorkerContext
@@ -60,11 +61,9 @@ import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
 abstract class RobolectricTest {
 
-  @get:Rule(order = 1) val workManagerRule = WorkManagerRule()
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  @get:Rule(order = 10)
-  val coroutineTestRule = CoroutineTestRule()
-  @get:Rule(order = 20) val instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule(order = 11) val workManagerRule = WorkManagerRule()
+  @ExperimentalCoroutinesApi @get:Rule(order = 12) val coroutineTestRule = CoroutineTestRule()
+  @get:Rule(order = 13) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
   /** Get the liveData value by observing but wait for 3 seconds if not ready then stop observing */
   @Throws(InterruptedException::class)
