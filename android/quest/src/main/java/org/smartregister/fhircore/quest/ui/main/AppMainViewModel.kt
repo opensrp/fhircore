@@ -24,6 +24,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.text.SimpleDateFormat
+import java.time.OffsetDateTime
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.AppFeature
@@ -46,12 +52,6 @@ import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.SideMenuOptionFactory
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
-import java.text.SimpleDateFormat
-import java.time.OffsetDateTime
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
-import javax.inject.Inject
 
 @HiltViewModel
 class AppMainViewModel
@@ -173,12 +173,13 @@ constructor(
     return if (parse == null) "" else simpleDateFormat.format(parse)
   }
 
-  fun retrieveLastSyncTimestamp(): String? = sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+  fun retrieveLastSyncTimestamp(): String? =
+    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
   fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {
     sharedPreferencesHelper.write(
-            SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-            formatLastSyncTimestamp(timestamp)
+      SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+      formatLastSyncTimestamp(timestamp)
     )
   }
 

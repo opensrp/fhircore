@@ -280,7 +280,8 @@ constructor(
     return appFeatureManager.appFeatureHasSetting(REGISTER_FORM_ID_KEY)
   }
 
-  fun isFirstTimeSync() = sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null).isNullOrBlank()
+  fun isFirstTimeSync() =
+    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null).isNullOrBlank()
 
   override fun progressMessage() =
     if (searchText.value.isEmpty()) {

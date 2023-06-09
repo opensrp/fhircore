@@ -56,6 +56,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val configService: ConfigService,
   val fhirEngine: FhirEngine,
+  // TODO: Move this to the SyncListenerManager
   val sharedSyncStatus: MutableSharedFlow<SyncJobStatus> = MutableSharedFlow(),
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider(),
   val tracer: PerformanceReporter,
