@@ -565,6 +565,7 @@
             "setOrganizationDetails": true,
             "type": "EDIT",
             "resourceIdentifier": "@{familyLogicalId}",
+            "resourceType": "Group",
             "params": [
               {
                 "key": "familyLogicalId",
