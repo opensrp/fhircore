@@ -4,7 +4,7 @@
   "contained": [
     {
       "resourceType": "ActivityDefinition",
-      "id": "disease_careplan_activity",
+      "id": "careplan-init-activity",
       "title": "Disease Follow Up",
       "status": "active",
       "description": "This is a follow up for patient's marked with the following diseases HIV, TB, Mental Health & CM-NTD",
@@ -70,7 +70,21 @@
           "path": "period.start",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='f8fdb1c1-fff2-49f9-8f93-8a4c1f55c9ce')and answer.count() > 0).exists()"
+            "expression": "now()"
+          }
+        },
+        {
+          "path": "period.start",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "now()"
+          }
+        },
+        {
+          "path": "period.end",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "today() + 9 'months'"
           }
         },
         {
@@ -101,7 +115,15 @@
             "expression": "$this.generalPractitioner.first()"
           }
         }
-      ],
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-task-activity",
+      "title": "Disease Follow Up",
+      "status": "active",
+      "description": "This action will performed every month for a pregnant woman",
+      "kind": "Task",
       "timingTiming": {
         "repeat": {
           "duration": 1,
@@ -111,7 +133,6 @@
         }
       }
     },
-
     {
       "resourceType": "ActivityDefinition",
       "id": "fp_careplan_followup_activity",
@@ -208,8 +229,45 @@
           }
         ]
       },
-      "definitionCanonical": "#disease_careplan_activity",
+      "definitionCanonical": "#careplan-init-activity"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/f7004382-ba3d-4f62-a687-6e9d18c09d3a').descendants().where(linkId='f8fdb1c1-fff2-49f9-8f93-8a4c1f55c9ce' and answer.count() > 0).exists()"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                "code": "nurse",
+                "display": "Nurse"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-init-activity",
       "transform": "http://hl7.org/fhir/StructureMap/63752b18-9f0e-48a7-9a21-d3714be6309a"
     }
+
   ]
 }
