@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Migrate build script to Kotlin DSL
 - Sorting of resources via rules engine
 - Configuration for sorting LIST widget resources
+- Closing CarePlans and Related resources configuration update
 
 ### Fixed
 - Member icons display wrapping; hiding some texts
