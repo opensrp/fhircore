@@ -257,6 +257,7 @@ tasks.withType<Test> {
   testLogging { events = setOf(TestLogEvent.FAILED) }
   minHeapSize = "4608m"
   maxHeapSize = "4608m"
+  maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
 }
 
 configurations {
