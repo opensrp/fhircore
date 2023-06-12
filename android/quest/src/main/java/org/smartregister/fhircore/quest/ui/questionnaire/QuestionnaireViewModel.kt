@@ -201,13 +201,12 @@ constructor(
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
         bundle.entry.forEach { bundleEntry ->
-          // add organization to entities representing individuals in registration questionnaire
-          // if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group,
-          // ResourceType.Encounter)) {
-          // if it is new registration set response subject
-          if (questionnaireConfig.resourceIdentifier == null)
+          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group) &&
+              questionnaireResponse.subject?.reference.isNullOrEmpty()
+          ) {
             questionnaireResponse.subject = bundleEntry.resource.asReference()
-          // }
+          }
+
           if (questionnaireConfig.setPractitionerDetails) {
             appendPractitionerInfo(bundleEntry.resource)
           }
@@ -354,21 +353,22 @@ constructor(
       questionnaireResponse.findSubject(bundle)
         ?: defaultRepository.loadResource(questionnaireResponse.subject)
 
-    questionnaireConfig.planDefinitions?.forEach { planId ->
-      val data =
-        Bundle().apply {
-          bundle?.entry?.map { this.addEntry(it) }
-          addEntry().resource = questionnaireResponse
-        }
+    val data =
+      Bundle().apply {
+        bundle?.entry?.map { this.addEntry(it) }
+        addEntry().resource = questionnaireResponse
+      }
 
+    questionnaireConfig.planDefinitions?.forEach { planId ->
       kotlin
         .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
         .onFailure {
           Timber.e(it)
           extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
         }
-      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(questionnaireConfig, subject, data)
     }
+
+    fhirCarePlanGenerator.conditionallyUpdateResourceStatus(questionnaireConfig, subject, data)
   }
 
   suspend fun extractCqlOutput(
@@ -767,7 +767,7 @@ constructor(
   }
 
   /** Loads a Patient resource with the given ID. */
-  suspend fun loadPatient(patientId: String): Patient? {
+  private suspend fun loadPatient(patientId: String): Patient? {
     return defaultRepository.loadResource(patientId)
   }
 

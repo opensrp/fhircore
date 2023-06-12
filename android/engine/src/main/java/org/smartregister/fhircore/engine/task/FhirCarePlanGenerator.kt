@@ -94,6 +94,7 @@ constructor(
     subject: Resource,
     data: Bundle = Bundle()
   ): CarePlan? {
+
     // Only one CarePlan per plan, update or init a new one if not exists
     val output =
       fhirEngine
@@ -280,6 +281,7 @@ constructor(
         timing.repeat.hasCountMax() ||
         timing.repeat.durationUnit?.equals(UnitsOfTime.H) == true)
     val count = if (isLegacyPlanDefinition || !timing.repeat.hasCount()) 1 else timing.repeat.count
+
     val periodExpression = timing.extractFhirpathPeriod()
     val durationExpression = timing.extractFhirpathDuration()
 
@@ -325,7 +327,7 @@ constructor(
    * @param subject The subject to evaluate CarePlanConfig FHIR path expressions against if the
    * CarePlanConfig does not reference a resource.
    */
-  suspend fun conditionallyUpdateCarePlanStatus(
+  suspend fun conditionallyUpdateResourceStatus(
     questionnaireConfig: QuestionnaireConfig,
     subject: Resource,
     bundle: Bundle
@@ -334,54 +336,34 @@ constructor(
       .filter { it.eventType == EventType.RESOURCE_CLOSURE }
       .forEach { eventWorkFlow ->
         eventWorkFlow.eventResources.forEach { eventResource ->
-          eventResource.planDefinitions?.forEach { planDefinition ->
-            val carePlans =
-              fhirEngine.search<CarePlan> {
-                filter(
-                  CarePlan.INSTANTIATES_CANONICAL,
-                  { value = "${PlanDefinition().fhirType()}/$planDefinition" }
-                )
-                filter(CarePlan.SUBJECT, { value = subject.referenceValue() })
-              }
+          val currentResourceTriggerConditions =
+            eventWorkFlow.triggerConditions.firstOrNull { it.eventResourceId == eventResource.id }
+          val resourceClosureConditionsMet =
+            evaluateToBoolean(
+              subject = subject,
+              bundle = bundle,
+              triggerConditions = currentResourceTriggerConditions?.conditionalFhirPathExpressions,
+              matchAll = currentResourceTriggerConditions?.matchAll!!
+            )
 
-            if (carePlans.isEmpty()) return@forEach
-
-            val currentResourceTriggerConditions =
-              eventWorkFlow.triggerConditions.firstOrNull { it.eventResourceId == eventResource.id }
-            val conditionsMet =
-              evaluateToBoolean(
-                subject = subject,
-                bundle = bundle,
-                triggerConditions =
-                  currentResourceTriggerConditions?.conditionalFhirPathExpressions,
-                matchAll = currentResourceTriggerConditions?.matchAll!!
-              )
-
-            if (conditionsMet) {
-              carePlans.forEach { carePlan ->
-                carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-                fhirEngine.update(carePlan)
-
-                carePlan
-                  .activity
-                  .flatMap { it.outcomeReference }
-                  .filter { it.reference.startsWith(ResourceType.Task.name) }
-                  .mapNotNull { getTask(it.extractId()) }
-                  .forEach { task ->
-                    if (task.status != TaskStatus.COMPLETED) {
-                      cancelTaskByTaskId(
-                        task.logicalId,
-                        "${carePlan.fhirType()} ${carePlan.status}"
-                      )
-                    }
-                  }
-              }
-            }
+          if (resourceClosureConditionsMet) {
+            defaultRepository.updateResourcesRecursively(eventResource, subject)
           }
         }
       }
   }
 
+  fun closeResource(resource: Resource) {
+    when (resource) {
+      is Task -> {
+        resource.status = TaskStatus.CANCELLED
+        resource.lastModified = Date()
+      }
+      is CarePlan -> {
+        resource.status = CarePlan.CarePlanStatus.COMPLETED
+      }
+    }
+  }
   fun evaluateToBoolean(
     subject: Resource,
     bundle: Bundle,

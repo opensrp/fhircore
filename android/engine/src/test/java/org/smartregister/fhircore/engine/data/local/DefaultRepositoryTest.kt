@@ -56,6 +56,7 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.Task
 import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Before
@@ -66,7 +67,9 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.domain.model.Code
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -89,6 +92,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   private lateinit var fhirEngine: FhirEngine
   private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var defaultRepository: DefaultRepository
+  @Inject lateinit var configRulesExecutor: ConfigRulesExecutor
 
   @Before
   fun setUp() {
@@ -104,7 +108,8 @@ class DefaultRepositoryTest : RobolectricTest() {
         dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferenceHelper,
         configurationRegistry = configurationRegistry,
-        configService = configService
+        configService = configService,
+        configRulesExecutor = configRulesExecutor
       )
   }
 
@@ -417,7 +422,8 @@ class DefaultRepositoryTest : RobolectricTest() {
           dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = mockk(),
-          configService = mockk()
+          configService = mockk(),
+          configRulesExecutor = mockk()
         )
       )
     coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
@@ -491,7 +497,8 @@ class DefaultRepositoryTest : RobolectricTest() {
           dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = mockk(),
-          configService = mockk()
+          configService = mockk(),
+          configRulesExecutor = mockk()
         )
       )
 
@@ -592,5 +599,65 @@ class DefaultRepositoryTest : RobolectricTest() {
       date.formatDate("mm-dd-yyyy"),
       patient.meta.lastUpdated.formatDate("mm-dd-yyyy")
     )
+  }
+
+  @Test
+  fun testCloseResourceUpdatesCorrectTaskStatus() {
+    val task =
+      Task().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = Task.TaskStatus.READY
+      }
+    coEvery { fhirEngine.update(any()) } just runs
+    val taskSlot = slot<Task>()
+
+    runBlocking { defaultRepository.closeResource(task) }
+    coVerify { fhirEngine.update(capture(taskSlot)) }
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", taskSlot.captured.id)
+    Assert.assertEquals(Task.TaskStatus.CANCELLED, taskSlot.captured.status)
+  }
+
+  @Test
+  fun testCloseResourceUpdatesCorrectCarePlanStatus() {
+    val carePlan =
+      CarePlan().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = CarePlan.CarePlanStatus.DRAFT
+      }
+    coEvery { fhirEngine.update(any()) } just runs
+    val carePlanSlot = slot<CarePlan>()
+
+    runBlocking { defaultRepository.closeResource(carePlan) }
+    coVerify { fhirEngine.update(capture(carePlanSlot)) }
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", carePlanSlot.captured.id)
+    Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
+  }
+
+  @Test
+  fun testUpdateResourcesRecursivelyClosesResource() {
+    val carePlan =
+      CarePlan().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = CarePlan.CarePlanStatus.DRAFT
+      }
+    val patient =
+      Patient().apply {
+        id = "123345677"
+        active = true
+      }
+    val resourceConfig = ResourceConfig(id = "carePlan-id", resource = carePlan.resourceType)
+    coEvery { fhirEngine.search<Resource>(any<Search>()) } returns listOf(carePlan)
+
+    runBlocking {
+      defaultRepository.updateResourcesRecursively(
+        resourceConfig = resourceConfig,
+        subject = patient
+      )
+    }
+
+    val carePlanSlot = slot<CarePlan>()
+    coVerify { fhirEngine.update(capture(carePlanSlot)) }
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", carePlanSlot.captured.id)
+    Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
   }
 }
