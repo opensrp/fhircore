@@ -4,54 +4,24 @@ uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
 group eCBISNewPregnancyRegistrationAndVisit(source src : Parameters, target tgt: CarePlan) {
     src -> evaluate(src, $this.parameter.where(name='subject').resource) as subject,
             evaluate(src, $this.parameter.where(name='definition').resource) as definition,
+            evaluate(definition, $this.timing) as timing,
+            evaluate(timing, $this.repeat) as repeat,
+            evaluate(subject, today()) as dueDate, evaluate(subject, today() + ((repeat.duration.toString().toInteger()).toString() + ' \'months\'').toQuantity()) as maxDate,
             evaluate(src, $this.parameter.where(name='depends-on').resource.entry.where(resource is QuestionnaireResponse).resource) as questionnaireResponse
-            then ExtractCarePlan(subject, definition, questionnaireResponse, tgt), ExtractActivityDetail(subject, definition, questionnaireResponse, tgt) "r_careplan";
-}
-group ExtractCarePlan(source subject: Patient, source definition: ActivityDefinition, source questionnaireResponse: QuestionnaireResponse, target careplan : CarePlan) {
-    subject -> careplan.id = uuid() ,
-            careplan.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
-            careplan.status = 'active',
-            careplan.intent = 'plan',
-            careplan.subject = create('Reference') as ref, ref.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
-            careplan.created = evaluate(subject, now()),
-            careplan.author = evaluate(subject, $this.generalPractitioner.first()) "r_cp_data";
-}
-group ExtractActivityDetail(source subject : Patient, source definition: ActivityDefinition, source src: QuestionnaireResponse, target careplan : CarePlan){
-    subject -> careplan.activity = create('CarePlan_Activity') as activity then {
-        subject -> activity.detail = create('CarePlan_ActivityDetail') as det then {
-            subject -> evaluate(src, src.descendants().where(linkId='f8fdb1c1-fff2-49f9-8f93-8a4c1f55c9ce').answer.value.count()) as answerItems then {
-            subject -> det.kind = 'Task',
-                   det.status = 'in-progress',
-                   det.description = evaluate(definition, $this.title),
-                   det.performer = evaluate(subject, $this.generalPractitioner.first()),
-                   subject then ExtractDiseaseCode(src, det) "r_act_det_data";
-            subject -> det.scheduled = evaluate(definition, $this.timing) as timing,
-                   evaluate(timing, $this.repeat) as repeat then {
-                subject -> evaluate(subject, today()) as dueDate, evaluate(subject, today() + ((repeat.count.toString().toInteger() - 1).toString() + ' \'months\'').toQuantity()) as maxDate
-                   then ExtractTasks(dueDate, maxDate, repeat, subject, careplan, activity, timing) "r_tasks";
-                subject -> repeat.count = create('positiveInt') as c, c.value = evaluate(activity, $this.outcomeReference.count().value) "r_task_rep_count";
-            } "r_tim_repeat";
-            } "r_rrr";
-        } "r_act_det";
-    } "r_cp_acti";
+            then ExtractTasks(dueDate, maxDate, repeat, subject, timing) "r_careplan";
+           // then ExtractCarePlan(subject, definition, questionnaireResponse, tgt), ExtractActivityDetail(subject, definition, questionnaireResponse, tgt) "r_careplan";
 }
 group ExtractTasks(
     source dueDate: DateType,
     source maxDate: DateType,
     source repeat: TimingRepeat,
     source subject : Patient,
-    target careplan: CarePlan,
-    target activity : CarePlan_Activity,
     target timing: Timing){
     // today + total * gap
-    repeat where(dueDate <= maxDate) ->
-                // start of task is today OR first date of every month if future month | end is last day of given month
-                create('date') as startOfMonth, startOfMonth.value = evaluate(dueDate, $this.value.substring(0,7) + '-01'),
-                create('date') as start, start.value = evaluate(dueDate, iif($this = today(), $this, startOfMonth).value ),
-                evaluate(startOfMonth, ($this + '1 \'months\''.toQuantity()) - '1 \'days\''.toQuantity()) as end,
-                create('Period') as period,
-                careplan.contained = create('Task') as task then {
-        subject then ExtractPeriod(start, end, period) "r_task_period_extr";
+
+    subject ->  create('Period') as period,
+                create('Task') as task then {
+        subject then ExtractPeriod(dueDate, maxDate, period) "r_task_period_extr";
         subject -> task.id = uuid(),
                task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
                task.status = 'requested',
@@ -68,7 +38,7 @@ group ExtractTasks(
         subject -> activity.outcomeReference = reference(task) "r_cp_task_ref";
         subject -> timing.event = evaluate(period, $this.start) "r_activity_timing";
         repeat -> evaluate(period, $this.start + (repeat.period.toString() + ' \'months\'').toQuantity()) as nextDueDate
-                          then ExtractTasks(nextDueDate, maxDate, repeat, subject, careplan, activity, timing) "r_task_repeat";
+                          then ExtractTasks(nextDueDate, maxDate, repeat, subject, timing) "r_task_repeat";
     } "r_cp_acti_outcome";
 }
 group ExtractPeriod(source start: DateType, source end: DateType, target period: Period) {

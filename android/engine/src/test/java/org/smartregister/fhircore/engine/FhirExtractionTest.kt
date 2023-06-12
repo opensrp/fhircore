@@ -182,7 +182,7 @@ class FhirExtractionTest : RobolectricTest() {
     val patient =
       "extractions/$name/sample/patient.json".readFile().decodeResourceFromString<Patient>()
     val questionnaireResponse =
-      "extractions/$name/sample/questionnaire-response.json"
+      "extractions/$name/sample/questionnaire-response-register.json"
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
     val structureMap =
