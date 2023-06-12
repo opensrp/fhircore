@@ -36,6 +36,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
@@ -47,6 +48,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 class ProfileFragment : Fragment() {
 
   @Inject lateinit var eventBus: EventBus
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
   val profileFragmentArgs by navArgs<ProfileFragmentArgs>()
   val profileViewModel by viewModels<ProfileViewModel>()
   val appMainViewModel by activityViewModels<AppMainViewModel>()
@@ -56,11 +58,16 @@ class ProfileFragment : Fragment() {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
+
     with(profileFragmentArgs) {
       lifecycleScope.launch {
-        profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
+        profileViewModel.run {
+          decodeBinaryResourceIconsToBitmap(profileId)
+          retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
+        }
       }
     }
+
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {

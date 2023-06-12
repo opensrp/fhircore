@@ -17,16 +17,29 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
 data class OverflowMenuItemConfig(
   val id: Int = 1,
   val title: String = "",
   val confirmAction: Boolean = false,
-  val titleColor: String? = null,
+  val icon: MenuIconConfig? = null,
+  val titleColor: String = "#000000",
   val backgroundColor: String? = null,
   val visible: String,
   val showSeparator: Boolean = false,
   val enabled: String = "true",
   val actions: List<ActionConfig> = emptyList()
-)
+) {
+  fun interpolate(computedValuesMap: Map<String, Any>): OverflowMenuItemConfig {
+    return this.copy(
+      title = title.interpolate(computedValuesMap),
+      enabled = enabled.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap),
+      titleColor = titleColor.interpolate(computedValuesMap),
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap)
+    )
+  }
+}
