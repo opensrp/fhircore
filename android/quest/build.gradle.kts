@@ -1,10 +1,6 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
-val keysStoreAlias: String by project.extra
-val keyPassword: String by project.extra
-val keystorePassword: String by project.extra
-
 buildscript {
   apply(from = "../jacoco.gradle.kts")
   apply(from = "../properties.gradle.kts")
@@ -39,13 +35,13 @@ android {
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
     buildConfigField("String", "FHIR_BASE_URL", """"${project.extra["FHIR_BASE_URL"]}"""")
     buildConfigField("String", "OAUTH_BASE_URL", """"${project.extra["OAUTH_BASE_URL"]}"""")
-    buildConfigField("String", "OAUTH_CIENT_ID", """"${project.extra["OAUTH_CIENT_ID"]}"""")
+    buildConfigField("String", "OAUTH_CLIENT_ID", """"${project.extra["OAUTH_CLIENT_ID"]}"""")
+    buildConfigField("String", "OAUTH_SCOPE", """"${project.extra["OAUTH_SCOPE"]}"""")
     buildConfigField(
       "String",
       "OAUTH_CLIENT_SECRET",
       """"${project.extra["OAUTH_CLIENT_SECRET"]}""""
     )
-    buildConfigField("String", "OAUTH_SCOPE", """"${project.extra["OAUTH_SCOPE"]}"""")
     buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """"100"""")
     buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
 
@@ -56,10 +52,10 @@ android {
     create("release") {
       enableV1Signing = false
       enableV2Signing = true
-      keyAlias = System.getenv("KEYSTORE_ALIAS") ?: """"${project.extra["FHIR_BASE_URL"]}""""
-      keyPassword = System.getenv("KEY_PASSWORD") ?: """"${project.extra["FHIR_BASE_URL"]}""""
+      keyAlias = System.getenv("KEYSTORE_ALIAS") ?: """${project.extra["KEYSTORE_ALIAS"]}"""
+      keyPassword = System.getenv("KEY_PASSWORD") ?: """${project.extra["KEY_PASSWORD"]}"""
       storePassword =
-        System.getenv("KEYSTORE_PASSWORD") ?: """"${project.extra["FHIR_BASE_URL"]}""""
+        System.getenv("KEYSTORE_PASSWORD") ?: """${project.extra["KEYSTORE_PASSWORD"]}"""
       storeFile = file(System.getProperty("user.home") + "/fhircore.keystore.jks")
     }
   }
@@ -132,7 +128,7 @@ android {
 
   testCoverage { jacocoVersion = "0.8.7" }
 
-  lintOptions { isAbortOnError = false }
+  lint { abortOnError = false }
 
   flavorDimensions += "apps"
 

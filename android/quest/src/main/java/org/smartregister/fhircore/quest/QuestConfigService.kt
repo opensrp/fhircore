@@ -34,7 +34,7 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
     AuthConfiguration(
       fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL,
       oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL,
-      clientId = BuildConfig.OAUTH_CIENT_ID,
+      clientId = BuildConfig.OAUTH_CLIENT_ID,
       clientSecret = BuildConfig.OAUTH_CLIENT_SECRET,
       accountType = context.getString(R.string.authenticator_account_type)
     )
