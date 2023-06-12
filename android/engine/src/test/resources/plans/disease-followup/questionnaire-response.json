@@ -1,203 +1,426 @@
 {
   "resourceType": "QuestionnaireResponse",
-  "status": "in-progress",
-  "questionnaire": "Questionnaire/f7004382-ba3d-4f62-a687-6e9d18c09d3a",
-  "subject" : {
-    "reference" : "Patient/ac76cd00-0e67-45ab-bbca-95c03aaf0456"
+  "id": "fca64b6e-154f-45f4-b300-51e6fca59a56",
+  "meta": {
+    "lastUpdated": "2023-06-13T21:49:02.248+00:00",
+    "tag": [
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+        "display": "eCBIS other Diseases Registration form"
+      },
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+        "display": "eCBIS other Diseases Registration form"
+      },
+      {
+        "system": "https://smartregister.org/",
+        "code": "eb47e6cf-6631-4d22-85db-423c109f9717",
+        "display": "Practitioner CareTeam"
+      },
+      {
+        "system": "https://smartregister.org/",
+        "code": "52a6d6e5-e0cd-4239-9950-7c094296128c",
+        "display": "Practitioner Location"
+      },
+      {
+        "system": "https://smartregister.org/",
+        "code": "b284e210-930d-465b-9cf6-4be64b31fd4e",
+        "display": "Practitioner Organization"
+      },
+      {
+        "system": "https://smartregister.org/",
+        "code": "b3c19bc5-838c-4b53-a681-3995765e276f",
+        "display": "Practitioner"
+      }
+    ]
   },
+  "contained": [
+    {
+      "resourceType": "Condition",
+      "id": "f5774ae9-ff9e-4abc-87f7-049ffb6140f5",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.3-ecbis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.3-ecbis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "eb47e6cf-6631-4d22-85db-423c109f9717",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "52a6d6e5-e0cd-4239-9950-7c094296128c",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "b284e210-930d-465b-9cf6-4be64b31fd4e",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "b3c19bc5-838c-4b53-a681-3995765e276f",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "clinicalStatus": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+            "code": "active"
+          }
+        ]
+      },
+      "verificationStatus": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+            "code": "confirmed"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+              "code": "encounter-diagnosis"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "99990003",
+            "display": "HIV"
+          }
+        ],
+        "text": "HIV"
+      },
+      "subject": {
+        "reference": "Patient/TEST_PATIENT"
+      },
+      "onsetString": "2023-06-13",
+      "recordedDate": "2023-06-13T21:49:00+00:00"
+    },
+    {
+      "resourceType": "Condition",
+      "id": "3c24a701-2136-42d9-8ee9-9f65e42a53d7",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.3-ecbis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.3-ecbis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "eb47e6cf-6631-4d22-85db-423c109f9717",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "52a6d6e5-e0cd-4239-9950-7c094296128c",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "b284e210-930d-465b-9cf6-4be64b31fd4e",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "b3c19bc5-838c-4b53-a681-3995765e276f",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "clinicalStatus": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+            "code": "active"
+          }
+        ]
+      },
+      "verificationStatus": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+            "code": "confirmed"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+              "code": "encounter-diagnosis"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "99990001",
+            "display": "CM-NTD Leprosy"
+          }
+        ],
+        "text": "CM-NTD Leprosy"
+      },
+      "subject": {
+        "reference": "Patient/TEST_PATIENT"
+      },
+      "onsetString": "2023-06-13",
+      "recordedDate": "2023-06-13T21:49:00+00:00"
+    },
+    {
+      "resourceType": "Condition",
+      "id": "2077fbd1-68ae-4c5a-9210-ba36c4f4920b",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.3-ecbis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.3-ecbis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "eb47e6cf-6631-4d22-85db-423c109f9717",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "52a6d6e5-e0cd-4239-9950-7c094296128c",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "b284e210-930d-465b-9cf6-4be64b31fd4e",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "b3c19bc5-838c-4b53-a681-3995765e276f",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "clinicalStatus": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+            "code": "active"
+          }
+        ]
+      },
+      "verificationStatus": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+            "code": "confirmed"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+              "code": "encounter-diagnosis"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "99990002",
+            "display": "CM-NTD Lymphatic Filariasis"
+          }
+        ],
+        "text": "CM-NTD Lymphatic Filariasis"
+      },
+      "subject": {
+        "reference": "Patient/TEST_PATIENT"
+      },
+      "onsetString": "2023-06-13",
+      "recordedDate": "2023-06-13T21:49:00+00:00"
+    },
+    {
+      "resourceType": "Encounter",
+      "id": "8eb86bd9-1bff-4e42-a33f-71d687759d12",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.3-ecbis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.3-ecbis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "eb47e6cf-6631-4d22-85db-423c109f9717",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "52a6d6e5-e0cd-4239-9950-7c094296128c",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "b284e210-930d-465b-9cf6-4be64b31fd4e",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "b3c19bc5-838c-4b53-a681-3995765e276f",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "status": "finished",
+      "class": {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        "code": "HH"
+      },
+      "type": [
+        {
+          "coding": [
+            {
+              "system": "https://smartregister.org/",
+              "code": "disease_registration",
+              "display": "Disease Registration"
+            }
+          ],
+          "text": "Disease Registration"
+        }
+      ],
+      "priority": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/ValueSet/v3-ActPriority",
+            "code": "EL",
+            "display": "Elective"
+          }
+        ],
+        "text": "Elective"
+      },
+      "subject": {
+        "reference": "Patient/TEST_PATIENT"
+      },
+      "participant": [
+        {
+          "individual": {
+            "reference": "Practitioner/b3c19bc5-838c-4b53-a681-3995765e276f"
+          }
+        }
+      ],
+      "period": {
+        "start": "2023-06-13T21:49:00+00:00",
+        "end": "2023-06-13T21:49:00+00:00"
+      },
+      "reasonCode": [
+        {
+          "coding": [
+            {
+              "system": "https://smartregister.org/",
+              "code": "disease_registration"
+            }
+          ],
+          "text": "Disease Registration"
+        }
+      ],
+      "serviceProvider": {
+        "reference": "Organization/b284e210-930d-465b-9cf6-4be64b31fd4e"
+      }
+    }
+  ],
+  "questionnaire": "Questionnaire/f7004382-ba3d-4f62-a687-6e9d18c09d3a",
+  "status": "completed",
+  "subject": {
+    "reference": "Patient/TEST_PATIENT"
+  },
+  "authored": "2023-06-13T21:49:00+00:00",
   "item": [
     {
-      "linkId": "f8fdb1c1-fff2-49f9-8f93-8a4c1f55c9ce",
-      "text": "Client disease",
+      "linkId": "dd55485e-322a-434e-d37d-235e37dd235c",
+      "text": "Which disease does the client have?",
       "answer": [
         {
           "valueCoding": {
+            "id": "4791827a-1d7c-4447-82e0-56da044d54b6",
+            "system": "urn:uuid:63d798e7-5cbd-49ec-9870-61f887ba396d",
             "code": "hiv",
-            "display": "HIV",
-            "system": "urn:uuid:36827a8a-0c56-4c01-fc7f-ec4385244b77"
+            "display": "HIV"
           }
         },
         {
           "valueCoding": {
+            "id": "6091827a-1d7c-4447-82e0-56da044d54b6",
+            "system": "urn:uuid:63d798e7-5cbd-49ec-9870-61f887ba396d",
             "code": "tb",
-            "display": "TB",
-            "system": "urn:uuid:36827a8a-0c56-4c01-fc7f-ec4385244b77"
+            "display": "TB"
           }
         },
         {
           "valueCoding": {
-            "code": "mental-health",
-            "display": "Mental health",
-            "system": "urn:uuid:36827a8a-0c56-4c01-fc7f-ec4385244b77"
+            "id": "60a4a288-3b9d-4347-9d4d-14326fcf69eb",
+            "system": "urn:uuid:63d798e7-5cbd-49ec-9870-61f887ba396d",
+            "code": "cm-ntd",
+            "display": "CM-NTD "
           }
         }
       ]
     },
     {
-      "linkId": "8a95f774-5a50-4525-be74-d26d42a964d3",
-      "text": "Client status",
+      "linkId": "605bd5c8-f279-4903-876f-5e7920d80c32",
+      "text": "The CM-NTD diagnosed?",
       "answer": [
         {
           "valueCoding": {
-            "code": "looks-healthy",
-            "display": "Looks healthy",
-            "system": "urn:uuid:63155884-370a-41f6-8153-a716167422c2"
-          }
-        }
-      ]
-    },
-    {
-      "linkId": "c08bb617-4191-4f1f-8961-d962568461cc",
-      "text": "Mark Loss to Follow-up?"
-    },
-    {
-      "linkId": "26398b71-ed02-464f-870c-c4c0a7c2d623",
-      "text": "Services provided"
-    },
-    {
-      "linkId": "1f3d9af1-a274-4678-c2f4-1bd97f27a964",
-      "text": "Client on treatment?",
-      "answer": [
-        {
-          "valueCoding": {
-            "code": "yes",
-            "display": "Yes",
-            "system": "urn:uuid:7dbdfd38-1499-40e8-8ad6-a261c2d138c3"
-          }
-        }
-      ]
-    },
-    {
-      "linkId": "48bb1074-8bec-43e4-8290-ba51cca0a699",
-      "text": "Adherence"
-    },
-    {
-      "linkId": "53191ed5-4e0c-4d41-b0b0-161ef2169a5d",
-      "text": "HIV medication has urgent side effects",
-      "answer": [
-        {
-          "valueCoding": {
-            "code": "vomiting",
-            "display": "Vomiting",
-            "system": "urn:uuid:4a5ecab3-f13c-426f-cf16-9879813f1b83"
+            "id": "80771e6c-4769-4057-9c5d-0ecd5c8e7f3d",
+            "system": "urn:uuid:8caa106d-5b97-433e-fa91-85fa5859fc22",
+            "code": "leprosy",
+            "display": "Leprosy"
           }
         },
         {
           "valueCoding": {
-            "code": "abdominal-pain",
-            "display": "Abdominal pain",
-            "system": "urn:uuid:4a5ecab3-f13c-426f-cf16-9879813f1b83"
-          }
-        },
-        {
-          "valueCoding": {
-            "code": "trouble-swallowing",
-            "display": "Trouble swallowing",
-            "system": "urn:uuid:4a5ecab3-f13c-426f-cf16-9879813f1b83"
-          }
-        },
-        {
-          "valueCoding": {
-            "code": "fever",
-            "display": "Fever",
-            "system": "urn:uuid:4a5ecab3-f13c-426f-cf16-9879813f1b83"
-          }
-        }
-      ]
-    },
-    {
-      "linkId": "74a1a7ac-9612-4850-8483-1ee41efa1b2f",
-      "text": "HIV medication non-urgent side effects",
-      "answer": [
-        {
-          "valueCoding": {
-            "code": "nervousness-or-anxiety",
-            "display": "Nervousness or anxiety",
-            "system": "urn:uuid:e369fb0f-7903-493a-f5be-77447e9ab95f"
-          }
-        },
-        {
-          "valueCoding": {
-            "code": "loss-of-appetite",
-            "display": "Loss of appetite",
-            "system": "urn:uuid:e369fb0f-7903-493a-f5be-77447e9ab95f"
-          }
-        },
-        {
-          "valueCoding": {
-            "code": "headache",
-            "display": "Headache",
-            "system": "urn:uuid:e369fb0f-7903-493a-f5be-77447e9ab95f"
-          }
-        },
-        {
-          "valueCoding": {
-            "code": "weakness-or-fatigue",
-            "display": "Weakness or fatigue",
-            "system": "urn:uuid:e369fb0f-7903-493a-f5be-77447e9ab95f"
-          }
-        }
-      ]
-    },
-    {
-      "linkId": "83d980b5-0c8a-4666-8b7a-63ed0bb44364",
-      "text": "TB medication urgent side effects",
-      "answer": [
-        {
-          "valueCoding": {
-            "code": "chest-pain",
-            "display": "Chest pain",
-            "system": "urn:uuid:2d5ab02b-f9bf-4493-bfef-865534ca07cd"
-          }
-        }
-      ]
-    },
-    {
-      "linkId": "74de574b-47ad-4362-8e6f-b29a553fc67f",
-      "text": "TB medication non-urgent side effects",
-      "answer": [
-        {
-          "valueCoding": {
-            "code": "weakness-or-fatigue",
-            "display": "Weakness or fatigue",
-            "system": "urn:uuid:049bd339-3a3b-4df0-9a5f-0b144df8b190"
-          }
-        }
-      ]
-    },
-    {
-      "linkId": "f7cb6737-381b-4043-8ed5-f9e24d1d8d80",
-      "text": "Leprosy medication urgent side effects"
-    },
-    {
-      "linkId": "a1efbf04-7341-4b46-f8fc-ef4cd35dfdfd",
-      "text": "Leprosy medication non-urgent side effects"
-    },
-    {
-      "linkId": "38323a37-48b3-4990-88c4-865269da838a",
-      "text": "Mental health medication urgent side effects"
-    },
-    {
-      "linkId": "38e79c10-61ca-46d4-8a86-e3fa37980b0c",
-      "text": "Mental health medication nonurgent side effects"
-    },
-    {
-      "linkId": "c9efee08-96ab-4547-8aec-cbb141956269",
-      "text": "Buruli ulcer and lymphatic filariasis medication urgent side effects"
-    },
-    {
-      "linkId": "7a92aeca-84bd-4862-8b29-3077ba966299",
-      "text": "Buruli ulcer and lymphatic filariasis medication non-urgent side effects"
-    },
-    {
-      "linkId": "eb846946-76d9-4d3d-ae2b-d89ca7ef6f1b",
-      "text": "Referred to health facility",
-      "answer": [
-        {
-          "valueCoding": {
-            "code": "yes",
-            "display": "Yes",
-            "system": "urn:uuid:15a535c7-03be-4c6c-e7e7-0b9d8503f97c"
+            "id": "658055a8-a517-496b-838d-44d1db950c99",
+            "system": "urn:uuid:8caa106d-5b97-433e-fa91-85fa5859fc22",
+            "code": "lymphatic-filariasis",
+            "display": "Lymphatic filariasis"
           }
         }
       ]
