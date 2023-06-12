@@ -1,4 +1,0 @@
-<resources>
-    <string name="app_name" translatable="false">Colombia</string>
-    <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.colombia</string>
-</resources>

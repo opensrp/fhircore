@@ -136,6 +136,7 @@ android {
     create("opensrp") {
       dimension = "apps"
       applicationIdSuffix = ".opensrp"
+      manifestPlaceholders["appLabel"] = "OpenS+"
       isDefault = true
     }
 
@@ -143,61 +144,81 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".ecbis"
       versionNameSuffix = "-ecbis"
+      manifestPlaceholders["appLabel"] = "MOH eCBIS"
     }
 
     create("g6pd") {
       dimension = "apps"
       applicationIdSuffix = ".g6pd"
       versionNameSuffix = "-g6pd"
+      manifestPlaceholders["appLabel"] = "G6PD"
     }
 
     create("mwcore") {
       dimension = "apps"
       applicationIdSuffix = ".mwcore"
       versionNameSuffix = "-mwcore"
+      manifestPlaceholders["appLabel"] = "Malawi Core"
     }
 
     create("afyayangu") {
       dimension = "apps"
       applicationIdSuffix = ".afyayangu"
       versionNameSuffix = "-afyayangu"
+      manifestPlaceholders["appLabel"] = "Afya Yangu"
     }
 
     create("map") {
       dimension = "apps"
       applicationIdSuffix = ".map"
       versionNameSuffix = "-map"
+      manifestPlaceholders["appLabel"] = "Geo Widget"
     }
 
     create("echis") {
       dimension = "apps"
       applicationIdSuffix = ".echis"
       versionNameSuffix = "-echis"
+      manifestPlaceholders["appLabel"] = "MOH eCHIS"
     }
 
     create("bunda") {
       dimension = "apps"
       applicationIdSuffix = ".bunda"
       versionNameSuffix = "-bunda"
+      manifestPlaceholders["appLabel"] = "Bunda App"
     }
 
     create("wdf") {
       dimension = "apps"
       applicationIdSuffix = ".wdf"
       versionNameSuffix = "-wdf"
+      manifestPlaceholders["appLabel"] = "Diabetes Compass"
     }
 
     create("zeir") {
       dimension = "apps"
       applicationIdSuffix = ".zeir"
       versionNameSuffix = "-zeir"
+      manifestPlaceholders["appLabel"] = "ZEIR"
     }
 
     create("engage") {
       dimension = "apps"
       applicationIdSuffix = ".engage"
       versionNameSuffix = "-engage"
+      manifestPlaceholders["appLabel"] = "Engage"
     }
+  }
+
+  applicationVariants.all {
+    val variant = this
+    variant.resValue("string", "authenticator_account_type", "\"${applicationId}\"")
+    variant.resValue(
+      "string",
+      "app_name",
+      "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\""
+    )
   }
 
   splits {
