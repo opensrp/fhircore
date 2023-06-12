@@ -40,7 +40,7 @@
       "valueExpression": {
         "name": "LAST-VACCINE-CODE",
         "language": "text/fhirpath",
-        "expression": "%resource.descendants().where(linkId='vaccine_selector_list').answer.value.where(%LAST-VACCINE.display.contains(display))"
+        "expression": "%resource.descendants().where(linkId='vaccine_selector_list').answer.value.where(%LAST-VACCINE.display.contains($this.display))"
       }
     },
     {
@@ -67,6 +67,8 @@
           }
         }
       ],
+      "readOnly": true,
+      "text": "Patient Birthdate",
       "linkId": "patient_birthdate",
       "type": "date"
     },
@@ -269,7 +271,7 @@
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
           "valueExpression": {
-            "expression": "iif(%LAST-VACCINE.reference.empty().not() and %CURRENT-DOSE.code != '9999', %LAST-VACCINE-CODE, %resource.item.where(linkId='vaccine_selector').answer.value)"
+            "expression": "iif(%resource.item.where(linkId='vaccine_selector').answer.value.empty(), %LAST-VACCINE-CODE, %resource.item.where(linkId='vaccine_selector').answer.value)"
           }
         }
       ],
