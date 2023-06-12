@@ -67,6 +67,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.domain.model.Code
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -612,8 +613,8 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     runBlocking { defaultRepository.closeResource(task) }
     coVerify { fhirEngine.update(capture(taskSlot)) }
-    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", task.id)
-    Assert.assertEquals(Task.TaskStatus.CANCELLED, task.status)
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", taskSlot.captured.id)
+    Assert.assertEquals(Task.TaskStatus.CANCELLED, taskSlot.captured.status)
   }
 
   @Test
@@ -628,6 +629,35 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     runBlocking { defaultRepository.closeResource(carePlan) }
     coVerify { fhirEngine.update(capture(carePlanSlot)) }
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", carePlanSlot.captured.id)
+    Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
+  }
+
+  @Test
+  fun testUpdateResourcesRecursivelyClosesResource() {
+    val carePlan =
+      CarePlan().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = CarePlan.CarePlanStatus.DRAFT
+      }
+    val patient =
+      Patient().apply {
+        id = "123345677"
+        active = true
+      }
+    val resourceConfig = ResourceConfig(id = "carePlan-id", resource = carePlan.resourceType)
+    coEvery { fhirEngine.search<Resource>(any<Search>()) } returns listOf(carePlan)
+
+    runBlocking {
+      defaultRepository.updateResourcesRecursively(
+        resourceConfig = resourceConfig,
+        subject = patient
+      )
+    }
+
+    val carePlanSlot = slot<CarePlan>()
+    coVerify { fhirEngine.update(capture(carePlanSlot)) }
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", carePlanSlot.captured.id)
     Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
   }
 }
