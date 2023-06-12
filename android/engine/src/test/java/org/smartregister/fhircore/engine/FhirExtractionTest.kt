@@ -186,7 +186,7 @@ class FhirExtractionTest : RobolectricTest() {
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
     val structureMap =
-      "extractions/$name/structure-map-register.txt"
+      "extractions/$name/structure-map.txt"
         .readFile()
         .let {
           structureMapUtilities.parse(
