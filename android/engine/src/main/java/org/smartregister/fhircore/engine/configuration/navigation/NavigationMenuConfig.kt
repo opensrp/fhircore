@@ -35,7 +35,7 @@ data class NavigationMenuConfig(
 @Serializable
 data class ImageConfig(
   val type: String? = null,
-  val reference: String? = null,
+  var reference: String? = null,
   @Contextual var decodedBitmap: Bitmap? = null
 )
 

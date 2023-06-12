@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import android.annotation.SuppressLint
-import android.view.MenuItem
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,12 +32,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.flowlayout.FlowRow
-import org.smartregister.fhircore.engine.configuration.view.*
+import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
+import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
+import org.smartregister.fhircore.engine.configuration.view.ListProperties
+import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
+import org.smartregister.fhircore.engine.configuration.view.RowProperties
+import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
+import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
+import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
+import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.MenuItemColor
@@ -182,8 +191,8 @@ fun GenerateView(
         Image(
           modifier = modifier,
           color = MenuItemColor,
-          size = null,
-          imageConfig = (properties as ImageProperties).imageConfig
+          imageProperties = properties as ImageProperties,
+          imageConfig = null
         )
       }
     }
