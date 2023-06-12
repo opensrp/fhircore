@@ -102,7 +102,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   private val fhirEngine: FhirEngine = mockk()
 
   private val defaultRepository: DefaultRepository =
-    DefaultRepository(fhirEngine, dispatcherProvider, mockk(), mockk(), mockk())
+    DefaultRepository(fhirEngine, dispatcherProvider, mockk(), mockk(), mockk(), mockk())
 
   private lateinit var questionnaireConfig: QuestionnaireConfig
 
