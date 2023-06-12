@@ -1,0 +1,3150 @@
+{
+  "resourceType": "StructureMap",
+  "id": "305",
+  "meta": {
+    "versionId": "5",
+    "lastUpdated": "2023-05-11T08:07:43.189+00:00",
+    "source": "#5nD4uJCS7nHtTBFm"
+  },
+  "url": "http://fhir.mpower-social.com:7070/fhir/StructureMap/305",
+  "name": "mPower Child Immunization",
+  "structure": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Parameters",
+      "mode": "source"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/careplan",
+      "mode": "target"
+    }
+  ],
+  "group": [
+    {
+      "name": "childImmunizationSchedule",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "Parameters",
+          "mode": "source"
+        },
+        {
+          "name": "careplan",
+          "type": "careplan",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_careplan",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "variable": "subject",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "src"
+                },
+                {
+                  "valueString": "$this.parameter.where(name = 'subject').resource"
+                }
+              ]
+            },
+            {
+              "variable": "definition",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "src"
+                },
+                {
+                  "valueString": "$this.parameter.where(name = 'definition').resource"
+                }
+              ]
+            },
+            {
+              "variable": "questionnaireResponse",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "src"
+                },
+                {
+                  "valueString": "$this.parameter.where(name = 'depends-on').resource.entry.where(resource is QuestionnaireResponse).resource"
+                }
+              ]
+            }
+          ],
+          "dependent": [
+            {
+              "name": "extractcareplan",
+              "variable": [
+                "subject",
+                "definition",
+                "careplan"
+              ]
+            },
+            {
+              "name": "extractActivityDetail",
+              "variable": [
+                "subject",
+                "definition",
+                "careplan"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractcareplan",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "subject",
+          "type": "Patient",
+          "mode": "source"
+        },
+        {
+          "name": "definition",
+          "type": "ActivityDefinition",
+          "mode": "source"
+        },
+        {
+          "name": "careplan",
+          "type": "careplan",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_careplan_data",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "context": "careplan",
+              "contextType": "variable",
+              "element": "id",
+              "transform": "uuid"
+            },
+            {
+              "context": "careplan",
+              "contextType": "variable",
+              "element": "identifier",
+              "variable": "iden",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Identifier"
+                }
+              ]
+            },
+            {
+              "context": "iden",
+              "contextType": "variable",
+              "element": "value",
+              "transform": "uuid"
+            },
+            {
+              "context": "iden",
+              "contextType": "variable",
+              "element": "use",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "official"
+                }
+              ]
+            },
+            {
+              "context": "careplan",
+              "contextType": "variable",
+              "element": "status",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "active"
+                }
+              ]
+            },
+            {
+              "context": "careplan",
+              "contextType": "variable",
+              "element": "intent",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "plan"
+                }
+              ]
+            },
+            {
+              "context": "careplan",
+              "contextType": "variable",
+              "element": "subject",
+              "variable": "ref",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Reference"
+                }
+              ]
+            },
+            {
+              "context": "ref",
+              "contextType": "variable",
+              "element": "reference",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "subject"
+                },
+                {
+                  "valueString": "$this.id.replaceMatches('/_history/.*', '')"
+                }
+              ]
+            },
+            {
+              "context": "careplan",
+              "contextType": "variable",
+              "element": "created",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "subject"
+                },
+                {
+                  "valueString": "now()"
+                }
+              ]
+            },
+            {
+              "context": "careplan",
+              "contextType": "variable",
+              "element": "author",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "subject"
+                },
+                {
+                  "valueString": "$this.generalPractitioner.first()"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "rule_extract_careplan_period",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "variable": "offset",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "subject"
+                },
+                {
+                  "valueString": "$this.birthDate"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_carepla_data_period",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "careplan",
+                  "contextType": "variable",
+                  "element": "period",
+                  "variable": "period",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Period"
+                    }
+                  ]
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "extractImmunizationPeriod",
+                  "variable": [
+                    "offset",
+                    "period"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractActivityDetail",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "subject",
+          "type": "Patient",
+          "mode": "source"
+        },
+        {
+          "name": "definition",
+          "type": "ActivityDefinition",
+          "mode": "source"
+        },
+        {
+          "name": "careplan",
+          "type": "careplan",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_cp_acti",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "context": "careplan",
+              "contextType": "variable",
+              "element": "activity",
+              "variable": "activity",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "CarePlan_Activity"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_act_det",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "activity",
+                  "contextType": "variable",
+                  "element": "detail",
+                  "variable": "det",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CarePlan_ActivityDetail"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_act_det_data",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "det",
+                      "contextType": "variable",
+                      "element": "kind",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "Task"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "det",
+                      "contextType": "variable",
+                      "element": "status",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "in-progress"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "det",
+                      "contextType": "variable",
+                      "element": "description",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "definition"
+                        },
+                        {
+                          "valueString": "$this.title"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "det",
+                      "contextType": "variable",
+                      "element": "performer",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "subject"
+                        },
+                        {
+                          "valueString": "$this.generalPractitioner.first()"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "det",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "concept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "extractTimingCode",
+                      "variable": [
+                        "subject",
+                        "concept"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_tim_repeat",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "det",
+                      "contextType": "variable",
+                      "element": "scheduled",
+                      "variable": "timing",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "definition"
+                        },
+                        {
+                          "valueString": "$this.timing"
+                        }
+                      ]
+                    },
+                    {
+                      "variable": "repeat",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "timing"
+                        },
+                        {
+                          "valueString": "$this.repeat"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_at_birth",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "patientBirthDate",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "subject"
+                            },
+                            {
+                              "valueString": "$this.birthDate"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_opv_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "opvEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "patientBirthDate"
+                                },
+                                {
+                                  "valueString": "$this + '14 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'OPV at Birth Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_birth'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at birth'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "patientBirthDate",
+                                "opvEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_bcg_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "bcgEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "patientBirthDate"
+                                },
+                                {
+                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'BCG at Birth Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_birth'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at birth'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "patientBirthDate",
+                                "bcgEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_at_six_weeks",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "sixWeeksDate",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "subject"
+                            },
+                            {
+                              "valueString": "$this.birthDate + '42 \\'days\\''.toQuantity()"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_opv_one_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "opvOneEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "sixWeeksDate"
+                                },
+                                {
+                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'OPV(2) at 6 weeks Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_6_weeks'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 6 weeks'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "sixWeeksDate",
+                                "opvOneEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_penta_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "pentaEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "sixWeeksDate"
+                                },
+                                {
+                                  "valueString": "$this + '1460 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Penta at 6 weeks Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_6_weeks'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 6 weeks'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "sixWeeksDate",
+                                "pentaEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_rota_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "rotaEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "sixWeeksDate"
+                                },
+                                {
+                                  "valueString": "$this + '105 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'ROTA at 6 weeks Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_6_weeks'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 6 weeks'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "sixWeeksDate",
+                                "rotaEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_pneumo_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "pneumoEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "sixWeeksDate"
+                                },
+                                {
+                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Pneumo at 6 weeks Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_6_weeks'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 6 weeks'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "sixWeeksDate",
+                                "pneumoEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_at_ten_weeks",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "tenWeeksDate",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "subject"
+                            },
+                            {
+                              "valueString": "$this.birthDate + '70 \\'days\\''.toQuantity()"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_opv_two_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "opvTwoEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "tenWeeksDate"
+                                },
+                                {
+                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'OPV(3) at 10 weeks Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_10_weeks'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 10 weeks'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "tenWeeksDate",
+                                "opvTwoEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_penta_one_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "pentaOneEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "tenWeeksDate"
+                                },
+                                {
+                                  "valueString": "$this + '1460 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Penta(2) at 10 weeks Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_10_weeks'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 10 weeks'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "tenWeeksDate",
+                                "pentaOneEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_rota_one_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "rotaOneEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "tenWeeksDate"
+                                },
+                                {
+                                  "valueString": "$this + '105 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'ROTA(2) at 10 weeks Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_10_weeks'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 10 weeks'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "tenWeeksDate",
+                                "rotaOneEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_pneumo_one_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "pneumoOneEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "tenWeeksDate"
+                                },
+                                {
+                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Pneumo(2) at 10 weeks Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_10_weeks'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 10 weeks'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "tenWeeksDate",
+                                "pneumoOneEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_at_fourteen_weeks",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "fourteenWeeksDate",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "subject"
+                            },
+                            {
+                              "valueString": "$this.birthDate + '98 \\'days\\''.toQuantity()"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_opv_three_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "opvThreeEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "fourteenWeeksDate"
+                                },
+                                {
+                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'OPV(4) at 15 weeks Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_14_weeks'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 14 weeks'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "fourteenWeeksDate",
+                                "opvThreeEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_penta_two_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "pentaTwoEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "fourteenWeeksDate"
+                                },
+                                {
+                                  "valueString": "$this + '1460 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Penta(3) at 15 weeks Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_14_weeks'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 14 weeks'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "fourteenWeeksDate",
+                                "pentaTwoEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_ipv_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "ipvEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "fourteenWeeksDate"
+                                },
+                                {
+                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'IPV at 15 weeks Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_14_weeks'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 14 weeks'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "fourteenWeeksDate",
+                                "ipvEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_pneumo_two_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "pneumoTwoEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "fourteenWeeksDate"
+                                },
+                                {
+                                  "valueString": "$this + '365 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Pneumo(3) at 15 weeks Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_14_weeks'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 14 weeks'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "fourteenWeeksDate",
+                                "pneumoTwoEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_at_nine_months",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "nineMonthsDate",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "subject"
+                            },
+                            {
+                              "valueString": "$this.birthDate + '270 \\'days\\''.toQuantity()"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_measles_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "measlesEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "nineMonthsDate"
+                                },
+                                {
+                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Measles at 9 months Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_9_months'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 9 months'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "nineMonthsDate",
+                                "measlesEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_yellow_fever_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "yellowFeverEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "nineMonthsDate"
+                                },
+                                {
+                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Yellow Fever at 9 months Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_9_months'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 9 months'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "nineMonthsDate",
+                                "yellowFeverEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_typhoid_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "typhoidEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "nineMonthsDate"
+                                },
+                                {
+                                  "valueString": "$this + '730 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Typhoid at 9 months Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_9_months'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 9 months'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "nineMonthsDate",
+                                "typhoidEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_at_fifteen_months",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "fifteenMonthsDate",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "subject"
+                            },
+                            {
+                              "valueString": "$this.birthDate + '540 \\'days\\''.toQuantity()"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_measles_one_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "measlesOneEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "fifteenMonthsDate"
+                                },
+                                {
+                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Measles(2) at 15 months Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_15_months'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 15 months'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "fifteenMonthsDate",
+                                "measlesOneEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_at_nine_months",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "nineYearsDate",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "subject"
+                            },
+                            {
+                              "valueString": "$this.birthDate + '3285 \\'days\\''.toQuantity()"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_hpv_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "hpvEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "nineYearsDate"
+                                },
+                                {
+                                  "valueString": "$this + '3653 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'HPV at 9 years Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_9_years'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 9 years'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "nineYearsDate",
+                                "hpvEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_at_nine_and_half_months",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "nineAndHalfYearsDate",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "subject"
+                            },
+                            {
+                              "valueString": "$this.birthDate + '3467 \\'days\\''.toQuantity()"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_hpv_one_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "hpvOneEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "nineAndHalfYearsDate"
+                                },
+                                {
+                                  "valueString": "$this + '4017 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'HPV(2) at 9.5 years Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_9_half_years'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 9.5 years'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "nineAndHalfYearsDate",
+                                "hpvOneEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_task_rep_count",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "repeat",
+                          "contextType": "variable",
+                          "element": "count",
+                          "variable": "c",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "positiveInt"
+                            }
+                          ]
+                        },
+                        {
+                          "context": "c",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "activity"
+                            },
+                            {
+                              "valueString": "$this.outcomeReference.count().value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_care_plan_reason_code",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "det",
+                      "contextType": "variable",
+                      "element": "reasonCode",
+                      "variable": "concept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "extractMainReasonCode",
+                      "variable": [
+                        "subject",
+                        "concept"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractTasks",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "dueDate",
+          "type": "DateType",
+          "mode": "source"
+        },
+        {
+          "name": "maxDate",
+          "type": "DateType",
+          "mode": "source"
+        },
+        {
+          "name": "subject",
+          "type": "Patient",
+          "mode": "source"
+        },
+        {
+          "name": "careplan",
+          "type": "careplan",
+          "mode": "target"
+        },
+        {
+          "name": "activity",
+          "type": "CarePlan_Activity",
+          "mode": "target"
+        },
+        {
+          "name": "timing",
+          "type": "Timing",
+          "mode": "target"
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "mode": "source"
+        },
+        {
+          "name": "reasonConceptCode",
+          "type": "String",
+          "mode": "source"
+        },
+        {
+          "name": "reasonConceptDisplay",
+          "type": "String",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_cp_acti_outcome",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "variable": "period",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Period"
+                }
+              ]
+            },
+            {
+              "context": "careplan",
+              "contextType": "variable",
+              "element": "contained",
+              "variable": "task",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Task"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_task_period_extr",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "extractPeriod",
+                  "variable": [
+                    "dueDate",
+                    "maxDate",
+                    "period"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_task_data",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "identifier",
+                  "variable": "iden",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Identifier"
+                    }
+                  ]
+                },
+                {
+                  "context": "iden",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "uuid"
+                },
+                {
+                  "context": "iden",
+                  "contextType": "variable",
+                  "element": "use",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "official"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "requested"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "intent",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "plan"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "executionPeriod",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "period"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "priority",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "routine"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "description",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "title"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "for",
+                  "variable": "ref",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
+                },
+                {
+                  "context": "ref",
+                  "contextType": "variable",
+                  "element": "reference",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "subject"
+                    },
+                    {
+                      "valueString": "$this.id.replaceMatches('/_history/.*', '')"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "basedOn",
+                  "transform": "reference",
+                  "parameter": [
+                    {
+                      "valueId": "careplan"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "authoredOn",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "subject"
+                    },
+                    {
+                      "valueString": "now()"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "requester",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "subject"
+                    },
+                    {
+                      "valueString": "$this.generalPractitioner.first()"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "owner",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "subject"
+                    },
+                    {
+                      "valueString": "$this.generalPractitioner.first()"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_task_reason_ref",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "reasonReference",
+                  "variable": "ref",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
+                },
+                {
+                  "context": "ref",
+                  "contextType": "variable",
+                  "element": "reference",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "Questionnaire/2370"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_task_code",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "code",
+                  "variable": "codeConcept",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "extractMainReasonCode",
+                  "variable": [
+                    "subject",
+                    "codeConcept"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_task_reason_code",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "reasonCode",
+                  "variable": "reasonConcept",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "extractTaskReasonCode",
+                  "variable": [
+                    "subject",
+                    "reasonConcept",
+                    "reasonConceptCode",
+                    "reasonConceptDisplay"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_cp_task_ref",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "activity",
+                  "contextType": "variable",
+                  "element": "outcomeReference",
+                  "transform": "reference",
+                  "parameter": [
+                    {
+                      "valueId": "task"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_activity_timing",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "timing",
+                  "contextType": "variable",
+                  "element": "event",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "period"
+                    },
+                    {
+                      "valueString": "$this.start"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractMainReasonCode",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "subject",
+          "type": "Patient",
+          "mode": "source"
+        },
+        {
+          "name": "concept",
+          "type": "CodeableConcept",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_task_reason_code",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "context": "concept",
+              "contextType": "variable",
+              "element": "coding",
+              "variable": "coding",
+              "transform": "c",
+              "parameter": [
+                {
+                  "valueString": "http://snomed.info/sct"
+                },
+                {
+                  "valueString": "33879002"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_task_reason_code_display",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "coding",
+                  "contextType": "variable",
+                  "element": "display",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "Administration of vaccine to produce active immunity (procedure)"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "rule_task_reason_code_text",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "context": "concept",
+              "contextType": "variable",
+              "element": "text",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "Administration of vaccine to produce active immunity (procedure)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractTaskReasonCode",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "subject",
+          "type": "Patient",
+          "mode": "source"
+        },
+        {
+          "name": "concept",
+          "type": "CodeableConcept",
+          "mode": "target"
+        },
+        {
+          "name": "reasonConceptCode",
+          "type": "String",
+          "mode": "source"
+        },
+        {
+          "name": "reasonConceptDisplay",
+          "type": "String",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_task_reason_code",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "context": "concept",
+              "contextType": "variable",
+              "element": "coding",
+              "variable": "coding",
+              "transform": "c",
+              "parameter": [
+                {
+                  "valueString": "http://snomed.info/sct"
+                },
+                {
+                  "valueId": "reasonConceptCode"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_task_reason_code_display",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "coding",
+                  "contextType": "variable",
+                  "element": "display",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "reasonConceptDisplay"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "rule_task_reason_code_text",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "context": "concept",
+              "contextType": "variable",
+              "element": "text",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueId": "reasonConceptDisplay"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractTimingCode",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "subject",
+          "type": "Patient",
+          "mode": "source"
+        },
+        {
+          "name": "concept",
+          "type": "CodeableConcept",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_cp_cc_cod",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "context": "concept",
+              "contextType": "variable",
+              "element": "coding",
+              "variable": "coding",
+              "transform": "c",
+              "parameter": [
+                {
+                  "valueString": "http://terminology.hl7.org/CodeSystem/v3-GTSAbbreviation"
+                },
+                {
+                  "valueString": "QD"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_cp_cod_disp",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "coding",
+                  "contextType": "variable",
+                  "element": "display",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "QD"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "rule_cp_cc_txt",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "context": "concept",
+              "contextType": "variable",
+              "element": "text",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "QD"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractImmunizationPeriod",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "offset",
+          "type": "DateType",
+          "mode": "source"
+        },
+        {
+          "name": "period",
+          "type": "Period",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_period",
+          "source": [
+            {
+              "context": "offset"
+            }
+          ],
+          "target": [
+            {
+              "variable": "start",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueId": "offset"
+                }
+              ]
+            },
+            {
+              "variable": "end",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "offset"
+                },
+                {
+                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                }
+              ]
+            }
+          ],
+          "dependent": [
+            {
+              "name": "extractPeriod",
+              "variable": [
+                "start",
+                "end",
+                "period"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractPeriod",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "start",
+          "type": "DateType",
+          "mode": "source"
+        },
+        {
+          "name": "end",
+          "type": "DateType",
+          "mode": "source"
+        },
+        {
+          "name": "period",
+          "type": "Period",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_period_start",
+          "source": [
+            {
+              "context": "start"
+            }
+          ],
+          "target": [
+            {
+              "context": "period",
+              "contextType": "variable",
+              "element": "start",
+              "variable": "dt",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "dateTime"
+                }
+              ]
+            },
+            {
+              "context": "dt",
+              "contextType": "variable",
+              "element": "value",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "start"
+                },
+                {
+                  "valueString": "$this.value.substring(0, 10) + 'T00:00:00.00Z'"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "rule_period_end",
+          "source": [
+            {
+              "context": "end"
+            }
+          ],
+          "target": [
+            {
+              "context": "period",
+              "contextType": "variable",
+              "element": "end",
+              "variable": "dt",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "dateTime"
+                }
+              ]
+            },
+            {
+              "context": "dt",
+              "contextType": "variable",
+              "element": "value",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "end"
+                },
+                {
+                  "valueString": "$this.value.substring(0, 10) + 'T00:00:00.00Z'"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractSubject",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "subject",
+          "type": "Patient",
+          "mode": "source"
+        },
+        {
+          "name": "ref",
+          "type": "Reference",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_patient_ref",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "context": "ref",
+              "contextType": "variable",
+              "element": "reference",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "subject"
+                },
+                {
+                  "valueString": "$this.id.replaceMatches('/_history/.*', '')"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "rule_patient_display",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "context": "ref",
+              "contextType": "variable",
+              "element": "display",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "subject"
+                },
+                {
+                  "valueString": "$this.name.given + ' ' + $this.name.text + ' ' + $this.name.family"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

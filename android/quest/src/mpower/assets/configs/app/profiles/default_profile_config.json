@@ -400,7 +400,7 @@
                 "id": "readyTasksList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "availableReadyTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))"
@@ -533,10 +533,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "atBirthTaskList",
+                "id": "atBirthReadyTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "atBirthReadyTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.reasonCode.coding[0].code = 'immunization_at_birth'))"
@@ -654,10 +654,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at6WeeksTaskList",
+                "id": "at6WeeksReadyTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at6WeeksReadyTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.reasonCode.coding[0].code = 'immunization_at_6_weeks'))"
@@ -775,10 +775,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at10WeeksTaskList",
+                "id": "at10WeeksReadyTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at10WeeksReadyTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.reasonCode.coding[0].code = 'immunization_at_10_weeks'))"
@@ -896,10 +896,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at14WeeksTaskList",
+                "id": "at14WeeksReadyTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at14WeeksReadyTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.reasonCode.coding[0].code = 'immunization_at_14_weeks'))"
@@ -1017,10 +1017,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at9MonthsTaskList",
+                "id": "at9MonthsReadyTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at9MonthsReadyTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.reasonCode.coding[0].code = 'immunization_at_9_months'))"
@@ -1138,10 +1138,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at15MonthsTaskList",
+                "id": "at15MonthsReadyTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at15MonthsReadyTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.reasonCode.coding[0].code = 'immunization_at_15_months'))"
@@ -1259,10 +1259,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at9yearsTaskList",
+                "id": "at9yearsReadyTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at9yearsReadyTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.reasonCode.coding[0].code = 'immunization_at_9_years'))"
@@ -1380,10 +1380,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at9HalfYearsTaskList",
+                "id": "at9HalfYearsReadyTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at9HalfYearsReadyTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.reasonCode.coding[0].code = 'immunization_at_9_half_years'))"
@@ -1633,127 +1633,6 @@
             "padding": 16,
             "header": {
               "viewType": "COMPOUND_TEXT",
-              "primaryText": "Immunizations at Birth",
-              "primaryTextColor": "#6F7274",
-              "fontSize": 18.0,
-              "padding": 16
-            },
-            "content": [
-              {
-                "viewType": "LIST",
-                "id": "atBirthTaskList",
-                "resources": [
-                  {
-                    "id": "availableTasks",
-                    "relatedResourceId": "availableTasks",
-                    "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.reasonCode.coding[0].code = 'immunization_at_birth'))"
-                  }
-                ],
-                "emptyList": {
-                  "message": "No visit tasks available for this patient at the moment"
-                },
-                "registerCard": {
-                  "rules": [
-                    {
-                      "name": "taskStatus",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"
-                      ]
-                    },
-                    {
-                      "name": "taskStatusColorCode",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
-                      ]
-                    },
-                    {
-                      "name": "taskExecutionStartDate",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskExecutionStartDate', fhirPath.extractValue(Task, 'Task.executionPeriod.start'))"
-                      ]
-                    },
-                    {
-                      "name": "taskPeriodDueDate",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
-                      ]
-                    },
-                    {
-                      "name": "taskDescription",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
-                      ]
-                    },
-                    {
-                      "name": "taskDescriptionWithStartDate",
-                      "condition": "true",
-                      "priority": 2,
-                      "actions": [
-                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
-                      ]
-                    },
-                    {
-                      "name": "taskId",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskId', fhirPath.extractValue(Task, 'Task.id'))"
-                      ]
-                    },
-                    {
-                      "name": "taskFor",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskFor', fhirPath.extractValue(Task, 'Task.for.reference'))"
-                      ]
-                    },
-                    {
-                      "name": "taskQuestionnaireId",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskQuestionnaireId', fhirPath.extractValue(Task, 'Task.reasonReference.reference'))"
-                      ]
-                    }
-                  ],
-                  "views": [
-                    {
-                      "viewType": "BUTTON",
-                      "smallSized": "true",
-                      "text": "@{taskDescriptionWithStartDate}",
-                      "status": "@{taskStatusColorCode}",
-                      "visible": "true",
-                      "enabled": "@{patientActive}",
-                      "actions": [
-                        {
-                          "trigger": "ON_CLICK",
-                          "workflow": "LAUNCH_QUESTIONNAIRE",
-                          "questionnaire": {
-                            "id": "@{taskQuestionnaireId}",
-                            "title": "@{taskDescription}",
-
-                            "saveButtonText": "Save",
-                            "taskId": "@{taskId}",
-                            "resourceIdentifier": "@{taskFor}"
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "viewType": "CARD",
-            "visible": "@{isChild}",
-            "padding": 16,
-            "header": {
-              "viewType": "COMPOUND_TEXT",
               "primaryText": "Immunizations at 6 weeks",
               "primaryTextColor": "#6F7274",
               "fontSize": 18.0,
@@ -1762,10 +1641,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at6WeeksTaskList",
+                "id": "at6WeeksUpcomingTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at6WeeksUpcomingTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.reasonCode.coding[0].code = 'immunization_at_6_weeks'))"
@@ -1883,10 +1762,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at10WeeksTaskList",
+                "id": "at10WeeksUpcomingTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at10WeeksUpcomingTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.reasonCode.coding[0].code = 'immunization_at_10_weeks'))"
@@ -2004,10 +1883,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at14WeeksTaskList",
+                "id": "at14WeeksUpcomingTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at14WeeksUpcomingTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.reasonCode.coding[0].code = 'immunization_at_14_weeks'))"
@@ -2125,10 +2004,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at9MonthsTaskList",
+                "id": "at9MonthsUpcomingTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at9MonthsUpcomingTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.reasonCode.coding[0].code = 'immunization_at_9_months'))"
@@ -2246,10 +2125,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at15MonthsTaskList",
+                "id": "at15MonthsUpcomingTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at15MonthsUpcomingTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.reasonCode.coding[0].code = 'immunization_at_15_months'))"
@@ -2367,10 +2246,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at9yearsTaskList",
+                "id": "at9yearsUpcomingTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at9yearsUpcomingTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.reasonCode.coding[0].code = 'immunization_at_9_years'))"
@@ -2488,10 +2367,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at9HalfYearsTaskList",
+                "id": "at9HalfYearsUpcomingTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at9HalfYearsUpcomingTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.reasonCode.coding[0].code = 'immunization_at_9_half_years'))"
@@ -2749,10 +2628,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "atBirthTaskList",
+                "id": "atBirthCompletedTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "atBirthCompletedTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.reasonCode.coding[0].code = 'immunization_at_birth'))"
@@ -2870,10 +2749,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at6WeeksTaskList",
+                "id": "at6WeeksCompletedTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at6WeeksCompletedTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.reasonCode.coding[0].code = 'immunization_at_6_weeks'))"
@@ -2991,10 +2870,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at10WeeksTaskList",
+                "id": "at10WeeksCompletedTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at10WeeksCompletedTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.reasonCode.coding[0].code = 'immunization_at_10_weeks'))"
@@ -3112,10 +2991,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at14WeeksTaskList",
+                "id": "at14WeeksCompletedTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at14WeeksCompletedTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.reasonCode.coding[0].code = 'immunization_at_14_weeks'))"
@@ -3233,10 +3112,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at9MonthsTaskList",
+                "id": "at9MonthsCompletedTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at9MonthsCompletedTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.reasonCode.coding[0].code = 'immunization_at_9_months'))"
@@ -3354,10 +3233,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at15MonthsTaskList",
+                "id": "at15MonthsCompletedTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at15MonthsCompletedTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.reasonCode.coding[0].code = 'immunization_at_15_months'))"
@@ -3475,10 +3354,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at9yearsTaskList",
+                "id": "at9yearsCompletedTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at9yearsCompletedTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.reasonCode.coding[0].code = 'immunization_at_9_years'))"
@@ -3596,10 +3475,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "at9HalfYearsTaskList",
+                "id": "at9HalfYearsCompletedTaskList",
                 "resources": [
                   {
-                    "id": "availableTasks",
+                    "id": "at9HalfYearsCompletedTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.reasonCode.coding[0].code = 'immunization_at_9_half_years'))"
