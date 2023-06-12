@@ -73,7 +73,8 @@ data class ButtonProperties(
       text = text?.interpolate(computedValuesMap),
       enabled = enabled.interpolate(computedValuesMap),
       clickable = clickable.interpolate(computedValuesMap),
-      contentColor = contentColor?.interpolate(computedValuesMap)
+      contentColor = contentColor?.interpolate(computedValuesMap),
+      startIcon = startIcon?.copy(reference = startIcon.reference?.interpolate(computedValuesMap))
     )
   }
 

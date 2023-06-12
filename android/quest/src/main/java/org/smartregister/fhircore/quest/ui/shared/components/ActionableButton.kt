@@ -66,9 +66,14 @@ fun ActionableButton(
   navController: NavController
 ) {
   if (buttonProperties.visible.toBoolean()) {
-    val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
     val status = buttonProperties.status
-    val backgroundColor = buttonProperties.backgroundColor
+    val configuredContentColor = buttonProperties.contentColor.parseColor()
+    val statusColor =
+      if (configuredContentColor == Color.Unspecified)
+        buttonProperties.statusColor(resourceData.computedValuesMap)
+      else if (status == ServiceStatus.COMPLETED.name) DefaultColor else configuredContentColor
+
+    val backgroundColor = buttonProperties.backgroundColor.parseColor()
     val isButtonEnabled = buttonProperties.enabled.toBoolean()
     val clickable = buttonProperties.clickable.toBoolean()
     OutlinedButton(
@@ -85,9 +90,8 @@ fun ActionableButton(
       colors =
         ButtonDefaults.buttonColors(
           backgroundColor =
-            if (backgroundColor.parseColor() != Color.Unspecified) {
-              backgroundColor.parseColor()
-            } else statusColor.copy(alpha = 0.1f),
+            if (backgroundColor != Color.Unspecified) backgroundColor
+            else statusColor.copy(alpha = 0.1f),
           contentColor = statusColor,
           disabledBackgroundColor = DefaultColor.copy(alpha = 0.1f),
           disabledContentColor = DefaultColor,
@@ -103,14 +107,11 @@ fun ActionableButton(
       elevation = null
     ) {
       // Each component here uses a new modifier to avoid inheriting the properties of the parent
-      val configuredContentColor = buttonProperties.contentColor.parseColor()
       val iconTintColor =
         if (isButtonEnabled)
           when (status) {
             ServiceStatus.COMPLETED.name -> SuccessColor
-            else ->
-              if (configuredContentColor == Color.Unspecified) statusColor
-              else configuredContentColor
+            else -> statusColor
           }
         else DefaultColor
       if (buttonProperties.startIcon != null) {
@@ -131,10 +132,7 @@ fun ActionableButton(
           if (isButtonEnabled)
             when (status) {
               ServiceStatus.COMPLETED.name -> DefaultColor.copy(0.9f)
-              else -> {
-                if (configuredContentColor == Color.Unspecified) statusColor
-                else configuredContentColor
-              }
+              else -> statusColor
             }
           else DefaultColor.copy(0.9f),
         textAlign = TextAlign.Start,
@@ -183,7 +181,7 @@ fun DisabledActionableButtonPreview() {
           visible = "true",
           status = ServiceStatus.UPCOMING.name,
           text = "Issue household bed-nets",
-          contentColor = "#700F2B",
+          contentColor = "#700f2b",
           enabled = "true",
           buttonType = ButtonType.BIG,
           startIcon = MenuIconConfig(reference = "ic_walk", type = ICON_TYPE_LOCAL)
