@@ -9,35 +9,6 @@ group eCBISNewPregnancyRegistrationAndVisit(source src : Parameters, target tgt:
             evaluate(subject, today()) as dueDate, evaluate(subject, today() + ((repeat.duration.toString().toInteger()).toString() + ' \'months\'').toQuantity()) as maxDate,
             evaluate(src, $this.parameter.where(name='depends-on').resource.entry.where(resource is QuestionnaireResponse).resource) as questionnaireResponse
             then ExtractTasks(dueDate, maxDate, repeat, subject, timing) "r_careplan";
-           // then ExtractCarePlan(subject, definition, questionnaireResponse, tgt), ExtractActivityDetail(subject, definition, questionnaireResponse, tgt) "r_careplan";
-}
-group ExtractCarePlan(source subject: Patient, source definition: ActivityDefinition, source questionnaireResponse: QuestionnaireResponse, target careplan : CarePlan) {
-    subject -> careplan.id = uuid() ,
-            careplan.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
-            careplan.status = 'active',
-            careplan.intent = 'plan',
-            careplan.subject = create('Reference') as ref, ref.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
-            careplan.created = evaluate(subject, now()),
-            careplan.author = evaluate(subject, $this.generalPractitioner.first()) "r_cp_data";
-}
-group ExtractActivityDetail(source subject : Patient, source definition: ActivityDefinition, source src: QuestionnaireResponse, target careplan : CarePlan){
-    subject -> careplan.activity = create('CarePlan_Activity') as activity then {
-        subject -> activity.detail = create('CarePlan_ActivityDetail') as det then {
-            subject -> evaluate(src, src.descendants().where(linkId='f8fdb1c1-fff2-49f9-8f93-8a4c1f55c9ce').answer.value.count()) as answerItems then {
-            subject -> det.kind = 'Task',
-                   det.status = 'in-progress',
-                   det.description = evaluate(definition, $this.title),
-                   det.performer = evaluate(subject, $this.generalPractitioner.first()),
-                   subject then ExtractDiseaseCode(src, det) "r_act_det_data";
-            subject -> det.scheduled = evaluate(definition, $this.timing) as timing,
-                   evaluate(timing, $this.repeat) as repeat then {
-                subject -> evaluate(subject, today()) as dueDate, evaluate(subject, today() + ((repeat.count.toString().toInteger() - 1).toString() + ' \'months\'').toQuantity()) as maxDate
-                   then ExtractTasks(dueDate, maxDate, repeat, subject, careplan, activity, timing) "r_tasks";
-                subject -> repeat.count = create('positiveInt') as c, c.value = evaluate(activity, $this.outcomeReference.count().value) "r_task_rep_count";
-            } "r_tim_repeat";
-            } "r_rrr";
-        } "r_act_det";
-    } "r_cp_acti";
 }
 group ExtractTasks(
     source dueDate: DateType,
@@ -62,6 +33,10 @@ group ExtractTasks(
                task.authoredOn = evaluate(subject, now()),
                task.requester = evaluate(subject, $this.generalPractitioner.first()),
                task.owner = evaluate(subject, $this.generalPractitioner.first()) "r_task_data";
+         subject -> task.groupIdentifier = create('Identifier') as groupIdentifier then {
+                      subject -> groupIdentifier.value = "anc_follow_visit" "rule_group_identifier_value";
+                      subject -> groupIdentifier.use = "secondary" "rule_group_identifier_use";
+               } "rule_group_identifier";
         subject -> task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/e14b5743-0a06-4ab5-aaee-ac158d4cb64f' "r_task_reason_ref";
         subject -> activity.outcomeReference = reference(task) "r_cp_task_ref";
         subject -> timing.event = evaluate(period, $this.start) "r_activity_timing";
