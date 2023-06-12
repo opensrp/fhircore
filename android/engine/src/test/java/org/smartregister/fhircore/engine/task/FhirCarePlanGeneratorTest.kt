@@ -81,7 +81,6 @@ import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.junit.Assert
 import org.junit.Assert.assertFalse
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers
@@ -968,7 +967,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Fails on certain dates seems related to February edge case")
   fun `generateOrUpdateCarePlan should generate careplan for 5 visits when lmp has passed 3 months`() =
       runTest {
     val planDefinitionResources = loadPlanDefinitionResources("anc-visit", listOf("register"))
@@ -985,8 +983,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     // TO DO : Implement Permanent fix for test class - Tracked under
     // https://github.com/opensrp/fhircore/issues/2402
 
-    var lmp = fhirCarePlanGenerator.evaluateToDate(DateTimeType(Date()), "\$this - 3 'month'")
-    lmp = fhirCarePlanGenerator.evaluateToDate(lmp, "\$this - 1 'month'")
+    val lmp = DateType(Date()).apply { add(Calendar.MONTH, -4) }
 
     questionnaireResponses.first().find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first()
       .value = lmp
