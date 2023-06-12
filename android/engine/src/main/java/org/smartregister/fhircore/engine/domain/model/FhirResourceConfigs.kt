@@ -87,7 +87,7 @@ data class ResourceConfig(
   val resultAsCount: Boolean = false,
   val countResultConfig: CountResultConfig? = CountResultConfig(),
   val nestedSearchResources: List<NestedSearchConfig>? = null,
-  val configRules: @RawValue List<RuleConfig>? = null,
+  val configRules: @RawValue List<RuleConfig>? = emptyList(),
   val planDefinitions: List<String>? = null,
   val attributesToUpdate: List<KeyValueConfig>? = emptyList()
 ) : Parcelable, java.io.Serializable
