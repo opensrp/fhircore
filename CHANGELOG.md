@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update the CarePlan Closure configs to define the PlanDefs to closure separately.
 - Migrate build script to Kotlin DSL
 - Configurable population resource using ActionParameter
+- Configuration for button content color
+- Configuration for button and overflow menu item icons
 
 ### Fixed
 - Member icons display wrapping; hiding some texts
