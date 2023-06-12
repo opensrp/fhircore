@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.data.local
 
+import androidx.annotation.VisibleForTesting
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.gclient.NumberClientParam
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
@@ -653,8 +654,8 @@ constructor(
       }
     }
   }
-
-  private suspend fun closeResource(resource: Resource) {
+  @VisibleForTesting
+  suspend fun closeResource(resource: Resource) {
     when (resource) {
       is Task -> {
         if (resource.status != Task.TaskStatus.COMPLETED) {

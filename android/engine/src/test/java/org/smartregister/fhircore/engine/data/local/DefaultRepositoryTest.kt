@@ -56,6 +56,7 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.Task
 import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Before
@@ -597,5 +598,36 @@ class DefaultRepositoryTest : RobolectricTest() {
       date.formatDate("mm-dd-yyyy"),
       patient.meta.lastUpdated.formatDate("mm-dd-yyyy")
     )
+  }
+
+  @Test
+  fun testCloseResourceUpdatesCorrectTaskStatus() {
+    val task =
+      Task().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = Task.TaskStatus.READY
+      }
+    coEvery { fhirEngine.update(any()) } just runs
+    val taskSlot = slot<Task>()
+
+    runBlocking { defaultRepository.closeResource(task) }
+    coVerify { fhirEngine.update(capture(taskSlot)) }
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", task.id)
+    Assert.assertEquals(Task.TaskStatus.CANCELLED, task.status)
+  }
+
+  @Test
+  fun testCloseResourceUpdatesCorrectCarePlanStatus() {
+    val carePlan =
+      CarePlan().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = CarePlan.CarePlanStatus.DRAFT
+      }
+    coEvery { fhirEngine.update(any()) } just runs
+    val carePlanSlot = slot<CarePlan>()
+
+    runBlocking { defaultRepository.closeResource(carePlan) }
+    coVerify { fhirEngine.update(capture(carePlanSlot)) }
+    Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
   }
 }
