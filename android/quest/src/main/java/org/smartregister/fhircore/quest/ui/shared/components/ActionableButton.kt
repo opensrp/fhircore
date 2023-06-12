@@ -43,6 +43,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
+import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.ButtonType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -101,19 +103,27 @@ fun ActionableButton(
       elevation = null
     ) {
       // Each component here uses a new modifier to avoid inheriting the properties of the parent
-      Icon(
-        imageVector =
-          if (status == ServiceStatus.COMPLETED.name) Icons.Filled.Check else Icons.Filled.Add,
-        contentDescription = null,
-        tint =
-          if (isButtonEnabled)
-            when (status) {
-              ServiceStatus.COMPLETED.name -> SuccessColor
-              else -> statusColor
-            }
-          else DefaultColor,
-        modifier = Modifier.size(16.dp)
-      )
+      val configuredContentColor = buttonProperties.contentColor.parseColor()
+      val iconTintColor =
+        if (isButtonEnabled)
+          when (status) {
+            ServiceStatus.COMPLETED.name -> SuccessColor
+            else ->
+              if (configuredContentColor == Color.Unspecified) statusColor
+              else configuredContentColor
+          }
+        else DefaultColor
+      if (buttonProperties.startIcon != null) {
+        MenuIcon(menuIconConfig = buttonProperties.startIcon, color = iconTintColor, size = 16)
+      } else {
+        Icon(
+          imageVector =
+            if (status == ServiceStatus.COMPLETED.name) Icons.Filled.Check else Icons.Filled.Add,
+          contentDescription = null,
+          tint = iconTintColor,
+          modifier = Modifier.size(16.dp)
+        )
+      }
       Text(
         text = buttonProperties.text ?: "",
         fontWeight = FontWeight.Medium,
@@ -121,7 +131,10 @@ fun ActionableButton(
           if (isButtonEnabled)
             when (status) {
               ServiceStatus.COMPLETED.name -> DefaultColor.copy(0.9f)
-              else -> statusColor
+              else -> {
+                if (configuredContentColor == Color.Unspecified) statusColor
+                else configuredContentColor
+              }
             }
           else DefaultColor.copy(0.9f),
         textAlign = TextAlign.Start,
@@ -168,10 +181,12 @@ fun DisabledActionableButtonPreview() {
       buttonProperties =
         ButtonProperties(
           visible = "true",
-          status = ServiceStatus.COMPLETED.name,
-          text = "Issuing of teenage pads and household due on 23-01-2023",
+          status = ServiceStatus.UPCOMING.name,
+          text = "Issue household bed-nets",
+          contentColor = "#700F2B",
           enabled = "true",
-          buttonType = ButtonType.BIG
+          buttonType = ButtonType.BIG,
+          startIcon = MenuIconConfig(reference = "ic_walk", type = ICON_TYPE_LOCAL)
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()
