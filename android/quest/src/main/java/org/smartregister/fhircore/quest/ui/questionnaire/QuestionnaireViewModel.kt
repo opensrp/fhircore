@@ -353,21 +353,22 @@ constructor(
       questionnaireResponse.findSubject(bundle)
         ?: defaultRepository.loadResource(questionnaireResponse.subject)
 
-    questionnaireConfig.planDefinitions?.forEach { planId ->
-      val data =
-        Bundle().apply {
-          bundle?.entry?.map { this.addEntry(it) }
-          addEntry().resource = questionnaireResponse
-        }
+    val data =
+      Bundle().apply {
+        bundle?.entry?.map { this.addEntry(it) }
+        addEntry().resource = questionnaireResponse
+      }
 
+    questionnaireConfig.planDefinitions?.forEach { planId ->
       kotlin
         .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
         .onFailure {
           Timber.e(it)
           extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
         }
-      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(questionnaireConfig, subject, data)
     }
+
+    fhirCarePlanGenerator.conditionallyUpdateResourceStatus(questionnaireConfig, subject, data)
   }
 
   suspend fun extractCqlOutput(

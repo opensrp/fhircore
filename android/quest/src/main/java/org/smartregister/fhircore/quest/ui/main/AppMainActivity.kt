@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -44,6 +45,7 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.addDateTimeIndex
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
@@ -202,7 +204,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
           runSync(this)
           schedulePeriodicSync(this)
         }
-      }
+      } else context.showToast(context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
     }
   }
 }
