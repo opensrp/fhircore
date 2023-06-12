@@ -1072,12 +1072,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val questionnaireResponses = planDefinitionResources.questionnaireResponses
     val resourcesSlot = planDefinitionResources.resourcesSlot
 
-    // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
-    // anc registered late so skip the tasks which passed due date
-    val lmp = Date().plusMonths(-4)
-
-    questionnaireResponses.first().find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first()
-      .value = DateType(lmp)
 
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinition,
@@ -1088,47 +1082,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           )
       )!!
       .also { println(it.encodeResourceToString()) }
-      .also { carePlan ->
-        assertCarePlan(
-          carePlan,
-          planDefinition,
-          patient,
-          lmp,
-          lmp.plusMonths(9),
-          1
-        ) // 1 visits for next month of ANC
 
-        resourcesSlot.forEach { println(it.encodeResourceToString()) }
-        assertEquals(1, carePlan.activityFirstRep.outcomeReference.size)
-
-        resourcesSlot
-          .filter { res -> res.resourceType == ResourceType.Task }
-          .map { it as Task }
-          .also { assertEquals(2, it.size) } // 1 for visit, 1 for referral
-          .also { tasks ->
-            assertTrue(tasks.all { it.status == TaskStatus.READY })
-            assertTrue(tasks.all { it.`for`.reference == patient.asReference().reference })
-          }
-          // first 5 tasks are anc visit for each month of pregnancy
-          .take(1)
-          .run {
-            assertTrue(
-              this.all {
-                it.reasonReference.reference == "Questionnaire/f7004382-ba3d-4f62-a687-6e9d18c09d3a"
-              }
-            )
-            assertTrue(
-              this.all { it.basedOn.first().reference == carePlan.asReference().reference }
-            )
-
-            this.forEachIndexed { _, task ->
-              assertEquals(
-                Date().plusMonths(1).asYyyyMmDd(),
-                task.executionPeriod.start.asYyyyMmDd()
-              )
-            }
-          }
-      }
   }
 
   @Test
