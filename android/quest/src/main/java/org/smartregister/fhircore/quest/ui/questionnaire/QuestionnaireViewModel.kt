@@ -201,13 +201,12 @@ constructor(
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
         bundle.entry.forEach { bundleEntry ->
-          // add organization to entities representing individuals in registration questionnaire
-          // if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group,
-          // ResourceType.Encounter)) {
-          // if it is new registration set response subject
-          if (questionnaireConfig.resourceIdentifier == null)
+          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group) &&
+            questionnaireResponse.subject?.reference.isNullOrEmpty()
+          ) {
             questionnaireResponse.subject = bundleEntry.resource.asReference()
-          // }
+          }
+
           if (questionnaireConfig.setPractitionerDetails) {
             appendPractitionerInfo(bundleEntry.resource)
           }
@@ -220,10 +219,10 @@ constructor(
           }
           if (bundleEntry.hasResource()) bundleEntry.resource.updateLastUpdated()
           if (questionnaireConfig.type != QuestionnaireType.EDIT &&
-              bundleEntry.resource.resourceType.isIn(
-                ResourceType.Patient,
-                ResourceType.RelatedPerson
-              )
+            bundleEntry.resource.resourceType.isIn(
+              ResourceType.Patient,
+              ResourceType.RelatedPerson
+            )
           ) {
             questionnaireConfig.groupResource?.groupIdentifier?.let {
               addGroupMember(resource = bundleEntry.resource, groupResourceId = it)
@@ -677,23 +676,23 @@ constructor(
        */
       questionnaireResponse =
         runCatching {
-            // load required resources sent through Param for questionnaire Response expressions
-            val populationResources = arrayListOf<Resource>()
-            if (resourceMap.isEmpty()) {
-              populationResources.addAll(loadPopulationResources(subjectId, subjectType))
-            } else {
-              resourceMap.forEach {
-                populationResources.addAll(
-                  loadPopulationResources(it.value.extractLogicalIdUuid(), it.key!!)
-                )
-              }
+          // load required resources sent through Param for questionnaire Response expressions
+          val populationResources = arrayListOf<Resource>()
+          if (resourceMap.isEmpty()) {
+            populationResources.addAll(loadPopulationResources(subjectId, subjectType))
+          } else {
+            resourceMap.forEach {
+              populationResources.addAll(
+                loadPopulationResources(it.value.extractLogicalIdUuid(), it.key!!)
+              )
             }
-
-            populateQuestionnaireResponse(
-              questionnaire = questionnaire,
-              populationResources = populationResources
-            )
           }
+
+          populateQuestionnaireResponse(
+            questionnaire = questionnaire,
+            populationResources = populationResources
+          )
+        }
           .onFailure { Timber.e(it, "Error encountered while populating QuestionnaireResponse") }
           .getOrDefault(questionnaireResponse)
     }
@@ -713,7 +712,7 @@ constructor(
     populationResources: List<Resource>
   ): QuestionnaireResponse {
     return ResourceMapper.populate(questionnaire, *populationResources.toTypedArray()).also {
-      questionnaireResponse ->
+        questionnaireResponse ->
       if (!questionnaireResponse.hasItem()) {
         Timber.tag("QuestionnaireViewModel.populateQuestionnaireResponse")
           .d("Questionnaire response has no populated answers")
@@ -767,7 +766,7 @@ constructor(
   }
 
   /** Loads a Patient resource with the given ID. */
-  suspend fun loadPatient(patientId: String): Patient? {
+  private suspend fun loadPatient(patientId: String): Patient? {
     return defaultRepository.loadResource(patientId)
   }
 
