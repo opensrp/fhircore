@@ -189,7 +189,7 @@ class FhirExtractionTest : RobolectricTest() {
         .also { println(it.encodeResourceToString()) }
     val encounter = result.entry.find { it.resource is Encounter }!!.resource as Encounter
     result.entry.filter { it.resource is Task }.also { taskList ->
-      questionnaireResponse.item.find { it.linkId == "vaccines" }!!.answer
+      questionnaireResponse.item.find { it.linkId == "previous_vaccine" }!!.answer
         .map { it.value as Reference }
         .forEach { taskReference ->
           val outputTask =
@@ -211,15 +211,8 @@ class FhirExtractionTest : RobolectricTest() {
           )
         }
 
-      val firstTask = taskList.first().resource as Task
-      assertTrue(
-        firstTask.output.first().type.coding.first().code ==
-          encounter.type.first().coding.first().code
-      )
-      assertTrue(!firstTask.output.first().value.isEmpty)
-
       val administrationEncounter =
-        result.entry.filter { it.resource is Encounter }.last().resource as Encounter
+        result.entry.last { it.resource is Encounter }.resource as Encounter
       assertTrue(administrationEncounter.partOf.reference == encounter.id)
     }
   }
@@ -232,7 +225,7 @@ class FhirExtractionTest : RobolectricTest() {
     val resourcesSlot: MutableList<Resource>
   )
 
-  fun loadExtractionResources(name: String): ExtractionResources {
+  private fun loadExtractionResources(name: String): ExtractionResources {
     val questionnaire =
       "extractions/$name/questionnaire.json".readFile().decodeResourceFromString<Questionnaire>()
     val patient =

@@ -32,7 +32,9 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.DataCaptureConfig
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.get
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.BindValue
@@ -940,24 +942,40 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun `test covid 19 vaccines questionnaire on followup`() {
+  fun `test covid 19 vaccines questionnaire on followup`() = runTest {
+    ReflectionHelpers.loadClass(
+        QuestionnaireFragment.javaClass.classLoader,
+        "com.google.android.fhir.datacapture.DataCapture"
+      )
+      .let {
+        it.getDeclaredField("configuration")
+          .also { it.isAccessible = true }
+          .set(null, DataCaptureConfig(xFhirQueryResolver = { fhirEngine.search(it) }))
+      }
     val questionnaire =
-      "covid-19/covid-19-followup-questionnaire.json"
-        .readFile()
-        .decodeResourceFromString<Questionnaire>()
+      "covid-19/questionnaire.json".readFile().decodeResourceFromString<Questionnaire>()
     val data =
       "covid-19/resource_data_bundle.json"
         .readFile()
         .decodeResourceFromString<org.hl7.fhir.r4.model.Bundle>()
 
+    coEvery { fhirEngine.get(ResourceType.Patient, "P1") } returns
+      Patient().apply {
+        id = "P1"
+        birthDate = Date()
+      }
     coEvery { fhirEngine.search<Resource>(any<Search>()) } returns
       data.entry.map { it.resource as Immunization }
+    coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns questionnaire
 
     buildActivity(questionnaire, questionnaireConfig)
 
     ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
 
+    questionnaireActivity.fragment = questionnaireFragment
+
     val questionnaireResponse = questionnaireActivity.getQuestionnaireResponse()
+    questionnaireActivity.setInitialExpression(questionnaire)
 
     Assert.assertNotNull(questionnaireResponse.id)
     Assert.assertNotNull(questionnaireResponse.authored)
@@ -965,7 +983,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       "Patient/${questionnaireConfig.resourceIdentifier}",
       questionnaireResponse.subject.reference
     )
-    Assert.assertEquals("Questionnaire/12345", questionnaireResponse.questionnaire)
+    Assert.assertEquals(2, questionnaire.item.elementAt(1).initial.size)
   }
 
   fun testGetResourcesFromParamsForQR_shouldFilterQuestionnaireResponsePopulationParam() {

@@ -85,7 +85,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   @Inject lateinit var parser: IParser
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
   private lateinit var questionnaire: Questionnaire
-  private lateinit var fragment: QuestionnaireFragment
+  internal lateinit var fragment: QuestionnaireFragment
   private lateinit var saveProcessingAlertDialog: AlertDialog
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var actionParams: List<ActionParameter>
@@ -220,7 +220,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  private suspend fun renderFragment() {
+  suspend fun renderFragment() {
     fragment =
       fragmentBuilder(
           Questionnaire().apply { this.extension = questionnaire.extension },
