@@ -24,7 +24,6 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
-import org.smartregister.fhircore.engine.util.logTimeTaken
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 13-06-2023. */
 class FhirCoreDownloadManager(
@@ -41,14 +40,8 @@ class FhirCoreDownloadManager(
     downloadWorkManager.getSummaryRequestUrls()
 
   override suspend fun processResponse(response: Resource): Collection<Resource> {
-    val resourcesList = logTimeTaken { downloadWorkManager.processResponse(response) }
-    resourcesList.forEach { it.updateLastUpdated() }
-
-    // Reduces the amount of time it takes to insert since it's all done in a single transaction
-    // Multiple transactions will be expensive
-    logTimeTaken { defaultRepository.fhirEngine.update(*resourcesList.toTypedArray()) }
-
-    // TODO: Test if this resource list has changed the meta.lastUpdated
-    return resourcesList
+    return downloadWorkManager.processResponse(response).apply {
+      forEach { it.updateLastUpdated() }
+    }
   }
 }
