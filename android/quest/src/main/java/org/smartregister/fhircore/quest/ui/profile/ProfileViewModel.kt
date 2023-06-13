@@ -80,6 +80,12 @@ constructor(
   private val listResourceDataStateMap =
     mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
 
+  /**
+   * This function retrieves an image that was synced from the backend as a [Binary] resource, the
+   * content of the Binary resource is a base64 encoding of the actual image. The encoded imaged is
+   * then transformed into bitmap for use in an Image Composable (returns null if the referenced
+   * resource doesn't exist)
+   */
   fun decodeBinaryResourceIconsToBitmap(profileId: String) {
     val profileConfig =
       configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
