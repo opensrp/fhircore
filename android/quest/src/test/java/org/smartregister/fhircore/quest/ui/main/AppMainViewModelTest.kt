@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.main
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
+import android.widget.Toast
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
@@ -52,6 +53,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.HiltActivityForTest
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
@@ -69,6 +71,7 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -79,29 +82,21 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 class AppMainViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @Inject lateinit var gson: Gson
+  @Inject lateinit var workManager: WorkManager
 
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
-  @Inject lateinit var gson: Gson
-
-  @Inject lateinit var workManager: WorkManager
-
   @BindValue val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk()
 
   private val secureSharedPreference: SecureSharedPreference = mockk()
-
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-
-  private val registerRepository: RegisterRepository = mockk()
-
-  private val application: Context = ApplicationProvider.getApplicationContext()
-
-  private val syncBroadcaster: SyncBroadcaster = mockk(relaxed = true)
-
-  private lateinit var appMainViewModel: AppMainViewModel
-
   private val navController = mockk<NavController>(relaxUnitFun = true)
+  private val registerRepository: RegisterRepository = mockk()
+  private val application: Context = ApplicationProvider.getApplicationContext()
+  private val syncBroadcaster: SyncBroadcaster = mockk(relaxed = true)
+  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  private lateinit var appMainViewModel: AppMainViewModel
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -120,7 +115,7 @@ class AppMainViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
           workManager = workManager,
           fhirCarePlanGenerator = fhirCarePlanGenerator,
         )
@@ -155,11 +150,15 @@ class AppMainViewModelTest : RobolectricTest() {
   fun testOnEventDoNotSyncDataWhenDeviceIsOffline() {
     mockkStatic(Context::isDeviceOnline)
 
-    val context = mockk<Context> { every { isDeviceOnline() } returns false }
+    val context = mockk<Context>(relaxed = true) { every { isDeviceOnline() } returns false }
     val appMainEvent = AppMainEvent.SyncData(context)
     appMainViewModel.onEvent(appMainEvent)
 
     verify(exactly = 0) { syncBroadcaster.runSync(any()) }
+
+    val errorMessage = context.getString(R.string.sync_failed)
+    coVerify { context.showToast(errorMessage, Toast.LENGTH_LONG) }
+    unmockkStatic(Context::isDeviceOnline)
   }
 
   @Test

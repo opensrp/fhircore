@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.quest
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
@@ -55,10 +53,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 @HiltAndroidTest
 class CqlContentTest : RobolectricTest() {
 
-  @get:Rule var hiltRule = HiltAndroidRule(this)
-
-  private var context: Context = ApplicationProvider.getApplicationContext()
-
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
   private val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
   private val parser = fhirContext.newJsonParser()!!
   private val evaluator = LibraryEvaluator().apply { initialize() }

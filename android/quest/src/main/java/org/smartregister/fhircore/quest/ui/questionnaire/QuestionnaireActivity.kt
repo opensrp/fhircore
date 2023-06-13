@@ -25,6 +25,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.activity.viewModels
+import androidx.annotation.VisibleForTesting
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
@@ -146,12 +147,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
             }
           }
+
         questionnaireResponse =
           questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
               questionnaire = questionnaire,
               subjectId = baseResourceId?.extractLogicalIdUuid(),
               subjectType = baseResourceType,
-              questionnaireConfig = questionnaireConfig
+              questionnaireConfig = questionnaireConfig,
+              resourceMap = getResourcesFromParamsForQR()
             )
             .apply { generateMissingItems(questionnaire) }
 
@@ -176,6 +179,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       }
     }
   }
+
+  @VisibleForTesting
+  internal fun getResourcesFromParamsForQR(): Map<ResourceType?, String> =
+    actionParams
+      .filter { it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE }
+      .associate { it.resourceType to it.value }
 
   fun updateViews() {
     findViewById<Button>(R.id.btn_edit_qr).apply {
