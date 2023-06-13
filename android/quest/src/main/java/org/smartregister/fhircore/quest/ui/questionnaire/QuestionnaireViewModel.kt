@@ -201,7 +201,7 @@ constructor(
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
         bundle.entry.forEach { bundleEntry ->
-          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group) &&
+          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group, ResourceType.Encounter) &&
               questionnaireResponse.subject?.reference.isNullOrEmpty()
           ) {
             questionnaireResponse.subject = bundleEntry.resource.asReference()
