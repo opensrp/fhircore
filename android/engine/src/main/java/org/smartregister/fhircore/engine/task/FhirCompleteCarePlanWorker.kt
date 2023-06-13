@@ -90,7 +90,7 @@ constructor(
   }
 
   suspend fun getCarePlans(batchSize: Int, lastOffset: Int) =
-  defaultRepository.fhirEngine.search<CarePlan> {
+    defaultRepository.fhirEngine.search<CarePlan> {
       filter(
         CarePlan.STATUS,
         { value = of(CarePlan.CarePlanStatus.DRAFT.toCode()) },

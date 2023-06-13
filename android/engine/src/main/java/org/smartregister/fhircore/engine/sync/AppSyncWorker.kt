@@ -24,9 +24,9 @@ import com.google.android.fhir.sync.AcceptLocalConflictResolver
 import com.google.android.fhir.sync.ConflictResolver
 import com.google.android.fhir.sync.DownloadWorkManager
 import com.google.android.fhir.sync.FhirSyncWorker
-import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 
 @HiltWorker
 class AppSyncWorker
@@ -35,17 +35,18 @@ constructor(
   @Assisted appContext: Context,
   @Assisted workerParams: WorkerParameters,
   val syncListenerManager: SyncListenerManager,
-  val questFhirEngine: FhirEngine,
+  val defaultRepository: DefaultRepository,
   val appTimeStampContext: AppTimeStampContext,
 ) : FhirSyncWorker(appContext, workerParams) {
 
   override fun getConflictResolver(): ConflictResolver = AcceptLocalConflictResolver
 
   override fun getDownloadWorkManager(): DownloadWorkManager =
-    ResourceParamsBasedDownloadWorkManager(
+    FhirCoreDownloadManager(
       syncParams = syncListenerManager.loadSyncParams(),
-      context = appTimeStampContext
+      context = appTimeStampContext,
+      defaultRepository
     )
 
-  override fun getFhirEngine(): FhirEngine = questFhirEngine
+  override fun getFhirEngine(): FhirEngine = defaultRepository.fhirEngine
 }
