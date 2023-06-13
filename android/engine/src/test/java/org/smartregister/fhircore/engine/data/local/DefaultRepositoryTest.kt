@@ -77,6 +77,7 @@ import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.plusDays
+import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -275,6 +276,37 @@ class DefaultRepositoryTest : RobolectricTest() {
     verify { resource.generateMissingId() }
 
     unmockkStatic(Resource::generateMissingId)
+  }
+
+  @Test
+  fun `create() should add Resource_meta_lastUpdated`() {
+    mockkStatic(Resource::updateLastUpdated)
+    val resource = spyk(Patient())
+
+    coEvery { fhirEngine.create(any()) } returns listOf()
+    Assert.assertNull(resource.meta.lastUpdated)
+
+    runBlocking { defaultRepository.create(true, resource) }
+
+    Assert.assertNotNull(resource.meta.lastUpdated)
+    verify { resource.updateLastUpdated() }
+    unmockkStatic(Resource::updateLastUpdated)
+  }
+
+  @Test
+  fun `update() should call Resource#updateLastUpdated and FhirEngine#update`() {
+    mockkStatic(Resource::updateLastUpdated)
+    val resource = spyk(Patient())
+
+    coEvery { fhirEngine.update(any()) } just runs
+    Assert.assertNull(resource.meta.lastUpdated)
+
+    runBlocking { defaultRepository.update(resource) }
+
+    Assert.assertNotNull(resource.meta.lastUpdated)
+    verify { resource.updateLastUpdated() }
+    coVerify { fhirEngine.update(resource) }
+    unmockkStatic(Resource::updateLastUpdated)
   }
 
   @Test
