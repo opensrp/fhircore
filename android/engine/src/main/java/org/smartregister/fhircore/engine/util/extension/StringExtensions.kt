@@ -28,6 +28,8 @@ import timber.log.Timber
 
 const val DEFAULT_PLACEHOLDER_PREFIX = "@{"
 const val DEFAULT_PLACEHOLDER_SUFFIX = "}"
+const val BLACK_COLOR_HEX_CODE = "#000000"
+const val TRUE = "true"
 
 /**
  * Sample template string: { "saveFamilyButtonText" : {{ family.button.save }} } Sample properties
