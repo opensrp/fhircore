@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sorting of resources via rules engine
 - Configuration for sorting LIST widget resources
 - Closing CarePlans and Related resources configuration update
+- Configuration for button content color
+- Configuration for button and overflow menu item icons
 - [Event Management] Add support for extra resources to close
 
 ### Fixed
