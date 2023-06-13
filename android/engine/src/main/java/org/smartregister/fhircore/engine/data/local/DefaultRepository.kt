@@ -361,14 +361,18 @@ constructor(
 
   private fun Search.sort(sortConfigs: List<SortConfig>) {
     sortConfigs.forEach { sortConfig ->
-      when (sortConfig.dataType) {
-        Enumerations.DataType.INTEGER ->
-          sort(NumberClientParam(sortConfig.paramName), sortConfig.order)
-        Enumerations.DataType.DATE -> sort(DateClientParam(sortConfig.paramName), sortConfig.order)
-        Enumerations.DataType.STRING ->
-          sort(StringClientParam(sortConfig.paramName), sortConfig.order)
-        else -> {
-          /*Unsupported data type*/
+      if (!sortConfig.paramName.isNullOrEmpty()) {
+        when (sortConfig.dataType) {
+          Enumerations.DataType.INTEGER ->
+            sort(NumberClientParam(sortConfig.paramName), sortConfig.order)
+          Enumerations.DataType.DATE ->
+            sort(DateClientParam(sortConfig.paramName), sortConfig.order)
+          Enumerations.DataType.STRING ->
+            sort(StringClientParam(sortConfig.paramName), sortConfig.order)
+          else ->
+            Timber.e(
+              "Unsupported data type: '${sortConfig.dataType}'. Only ${listOf(Enumerations.DataType.INTEGER, Enumerations.DataType.DATE, Enumerations.DataType.STRING)} types are supported for DB level sorting."
+            )
         }
       }
     }
