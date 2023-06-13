@@ -42,6 +42,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -54,6 +55,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   private lateinit var context: Context
   val fhirEngine: FhirEngine = mockk()
+  val defaultRepository: DefaultRepository = mockk()
   val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
@@ -64,6 +66,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
       "100"
     every { sharedPreferencesHelper.write(FhirTaskPlanWorker.WORK_ID.lastOffset(), "101") } just
       runs
+    every { defaultRepository.fhirEngine } returns fhirEngine
   }
 
   @Test
@@ -140,7 +143,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         }
         .apply { isReady() }
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
-    coEvery { fhirEngine.update(task) } just runs
+    coEvery { defaultRepository.update(task) } just runs
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
         .setWorkerFactory(
@@ -148,7 +151,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         )
         .build()
     val result = worker.startWork().get()
-    coVerify { fhirEngine.update(task) }
+    coVerify { defaultRepository.update(task) }
     Assert.assertEquals(result, (ListenableWorker.Result.success()))
     Assert.assertEquals(Task.TaskStatus.FAILED, task.status)
   }
@@ -164,7 +167,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         }
         .apply { isReady() }
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
-    coEvery { fhirEngine.update(task) } just runs
+    coEvery { defaultRepository.update(task) } just runs
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
         .setWorkerFactory(
@@ -172,7 +175,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         )
         .build()
     val result = worker.startWork().get()
-    coVerify { fhirEngine.update(task) }
+    coVerify { defaultRepository.update(task) }
     Assert.assertEquals(result, (ListenableWorker.Result.success()))
     Assert.assertEquals(Task.TaskStatus.FAILED, task.status)
   }
@@ -188,7 +191,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         }
         .apply { isReady() }
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
-    coEvery { fhirEngine.update(task) } just runs
+    coEvery { defaultRepository.update(task) } just runs
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
         .setWorkerFactory(
@@ -196,7 +199,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         )
         .build()
     val result = worker.startWork().get()
-    coVerify { fhirEngine.update(task) }
+    coVerify { defaultRepository.update(task) }
     Assert.assertEquals(result, (ListenableWorker.Result.success()))
     Assert.assertEquals(Task.TaskStatus.FAILED, task.status)
   }
@@ -214,7 +217,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         }
         .apply { isReady() }
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
-    coEvery { fhirEngine.update(task) } just runs
+    coEvery { defaultRepository.update(task) } just runs
     coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
@@ -223,7 +226,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         )
         .build()
     val result = worker.startWork().get()
-    coVerify { fhirEngine.update(task) }
+    coVerify { defaultRepository.update(task) }
     Assert.assertEquals(result, (ListenableWorker.Result.success()))
     Assert.assertEquals(Task.TaskStatus.FAILED, task.status)
     Assert.assertNotEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
@@ -246,7 +249,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         }
         .apply { isReady() }
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
-    coEvery { fhirEngine.update(task) } just runs
+    coEvery { defaultRepository.update(task) } just runs
     coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
@@ -255,7 +258,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         )
         .build()
     val result = worker.startWork().get()
-    coVerify { fhirEngine.update(task) }
+    coVerify { defaultRepository.update(task) }
     Assert.assertEquals(result, (ListenableWorker.Result.success()))
     Assert.assertEquals(Task.TaskStatus.FAILED, task.status)
     Assert.assertNotEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
@@ -283,7 +286,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         }
         .apply { isReady() }
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
-    coEvery { fhirEngine.update(task) } just runs
+    coEvery { defaultRepository.update(task) } just runs
     coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
@@ -292,7 +295,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         )
         .build()
     val result = worker.startWork().get()
-    coVerify { fhirEngine.update(task) }
+    coVerify { defaultRepository.update(task) }
     Assert.assertEquals(result, (ListenableWorker.Result.success()))
     Assert.assertEquals(Task.TaskStatus.FAILED, task.status)
     Assert.assertNotEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
@@ -318,9 +321,9 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
           )
       }
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
-    coEvery { fhirEngine.update(task) } just runs
+    coEvery { defaultRepository.update(task) } just runs
     coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
-    coEvery { fhirEngine.update(carePlan) } just runs
+    coEvery { defaultRepository.update(carePlan) } just runs
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
         .setWorkerFactory(
@@ -328,9 +331,9 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         )
         .build()
     val result = worker.startWork().get()
-    coVerify { fhirEngine.update(task) }
+    coVerify { defaultRepository.update(task) }
     coVerify { fhirEngine.get(ResourceType.CarePlan, carePlanId) }
-    coVerify { fhirEngine.update(carePlan) }
+    coVerify { defaultRepository.update(carePlan) }
     Assert.assertEquals(result, (ListenableWorker.Result.success()))
     Assert.assertEquals(Task.TaskStatus.FAILED, task.status)
     Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
@@ -344,7 +347,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         executionPeriod = Period().apply { start = DateTime.now().minusDays(2).toDate() }
       }
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
-    coEvery { fhirEngine.update(task) } just runs
+    coEvery { defaultRepository.update(task) } just runs
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
         .setWorkerFactory(
@@ -352,7 +355,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         )
         .build()
     val result = worker.startWork().get()
-    coVerify { fhirEngine.update(task) }
+    coVerify { defaultRepository.update(task) }
     Assert.assertEquals(result, (ListenableWorker.Result.success()))
     Assert.assertEquals(Task.TaskStatus.READY, task.status)
   }
@@ -365,7 +368,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         executionPeriod = Period().apply { start = DateTime.now().minusDays(2).toDate() }
       }
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
-    coEvery { fhirEngine.update(task) } just runs
+    coEvery { defaultRepository.update(task) } just runs
     val worker =
       TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
         .setWorkerFactory(
@@ -373,7 +376,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
         )
         .build()
     val result = worker.startWork().get()
-    coVerify(inverse = true) { fhirEngine.update(task) }
+    coVerify(inverse = true) { defaultRepository.update(task) }
     Assert.assertEquals(result, (ListenableWorker.Result.success()))
     Assert.assertEquals(Task.TaskStatus.INPROGRESS, task.status)
   }
@@ -391,7 +394,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
       return FhirTaskPlanWorker(
         appContext = appContext,
         workerParams = workerParameters,
-        fhirEngine = fhirEngine,
+        defaultRepository = defaultRepository,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         dispatcherProvider = coroutineTestRule.testDispatcherProvider
