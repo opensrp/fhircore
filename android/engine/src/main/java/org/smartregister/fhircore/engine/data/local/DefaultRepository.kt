@@ -142,6 +142,7 @@ constructor(
   suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
       resource.onEach {
+        it.updateLastUpdated()
         it.generateMissingId()
         if (addResourceTags) {
           it.addTags(configService.provideResourceTags(sharedPreferencesHelper))
@@ -168,6 +169,13 @@ constructor(
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         create(addMandatoryTags, resource)
       }
+    }
+  }
+
+  suspend fun <R : Resource> update(resource: R) {
+    return withContext(dispatcherProvider.io()) {
+      resource.updateLastUpdated()
+      fhirEngine.update(resource)
     }
   }
 
@@ -211,7 +219,7 @@ constructor(
       addOrUpdate(resource = relatedPerson)
 
       group.managingEntity = relatedPerson.asReference()
-      fhirEngine.update(group)
+      update(group)
     }
   }
 

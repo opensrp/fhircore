@@ -20,7 +20,6 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.search
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -31,6 +30,7 @@ import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -43,7 +43,7 @@ class FhirCompleteCarePlanWorker
 constructor(
   @Assisted val context: Context,
   @Assisted workerParams: WorkerParameters,
-  val fhirEngine: FhirEngine,
+  val defaultRepository: DefaultRepository,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
@@ -75,7 +75,7 @@ constructor(
 
         // complete CarePlan
         carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-        fhirEngine.update(carePlan)
+        defaultRepository.update(carePlan)
       }
 
       val updatedLastOffset =
@@ -90,7 +90,7 @@ constructor(
   }
 
   suspend fun getCarePlans(batchSize: Int, lastOffset: Int) =
-    fhirEngine.search<CarePlan> {
+  defaultRepository.fhirEngine.search<CarePlan> {
       filter(
         CarePlan.STATUS,
         { value = of(CarePlan.CarePlanStatus.DRAFT.toCode()) },
