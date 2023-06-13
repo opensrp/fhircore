@@ -60,10 +60,11 @@ Flavors define custom names, icons, and default local properties (such as server
 To add a flavor, add an entry to the `productFlavors` map in [`android/opensrp/build.gradle`](https://github.com/opensrp/fhircore/blob/main/android/opensrp/build.gradle). For example, to add a flavor called `new-flavor` add the map:
 
 ```
-new-flavor  {
-    dimension "apps"
-    applicationIdSuffix ".new-flavor"
-    versionNameSuffix "new-flavor"
+create("new-flavor") {
+    dimension = "apps"
+    applicationIdSuffix = ".new-flavor"
+    versionNameSuffix = "-new-flavor"
+    manifestPlaceholders["appLabel"] = "New Flavor App Name"
 }
 ```
 
@@ -72,16 +73,8 @@ You can add the follow resources:
 Description|Location
 ---|---
 App icon|`android/opensrp/src/new-flavor/res/drawable/ic_app_logo.png`
-App name|`android/opensrp/src/new-flavor/res/values/strings.xml`
 
-Where the app icon is an image of the appropriate size and the app name is an XML file with the following content:
-
-```
-<resources>
-    <string name="app_name" translatable="false">New Flavor App Name</string>
-    <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.new-flavor</string>
-</resources>
-```
+Where the app icon is an image of the appropriate size
 
 ## Release automation with tags
 
