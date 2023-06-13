@@ -1,12 +1,11 @@
 import org.gradle.testing.jacoco.tasks.JacocoReport
 
-val module = if (project.name == "quest") "Opensrp" else ""
-
+val isApplication = (project.name == "opensrp")
 tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
   dependsOn(
     setOf(
-      "test${module}DebugUnitTest", // Generates unit test coverage report
-      "connected${module}DebugAndroidTest" // Generates instrumentation test coverage report
+      "test${if(isApplication) project.name.capitalize() else ""}DebugUnitTest", // Generates unit test coverage report
+      "connected${if (isApplication)  project.name.capitalize() else ""}DebugAndroidTest" // Generates instrumentation test coverage report
     )
   )
   reports {
@@ -83,7 +82,7 @@ tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
       "org/hl7/fhir/*"
     )
 
-  val moduleVariant = if (project.name == "quest") "opensrpDebug" else "debug"
+  val moduleVariant = if(isApplication) "${project.name}Debug" else "debug"
   val javaDebugTree =
     fileTree(baseDir = "${project.buildDir}/intermediates/javac/${moduleVariant}/classes/")
       .exclude(excludes)
@@ -99,7 +98,7 @@ tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
     fileTree(baseDir = project.buildDir) {
       include(
         listOf(
-          "outputs/unit_test_code_coverage/${moduleVariant}UnitTest/test${module}DebugUnitTest.exec",
+          "outputs/unit_test_code_coverage/${moduleVariant}UnitTest/test${if(isApplication) project.name.capitalize() else ""}DebugUnitTest.exec",
           "outputs/code_coverage/${moduleVariant}AndroidTest/connected/**/*.ec"
         )
       )
