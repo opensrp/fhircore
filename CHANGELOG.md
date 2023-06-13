@@ -16,9 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow configs to pass multiple subjects to measure evaluate interface so we can create reports per another resource (e.g. a MeasureReport per Practitioner)
 - Introduce an open function on ViewProperties#interpolate to retrieve values from computed values map
 - Update the CarePlan Closure configs to define the PlanDefs to closure separately.
-- Migrate build script to Kotlin DSL
 - Configurable population resource using ActionParameter
+- Migrate build script to Kotlin DSL
+- Sorting of resources via rules engine
+- Configuration for sorting LIST widget resources
 - Closing CarePlans and Related resources configuration update
+- Configuration for button content color
+- Configuration for button and overflow menu item icons
 - [Event Management] Add support for extra resources to close
 
 ### Fixed
