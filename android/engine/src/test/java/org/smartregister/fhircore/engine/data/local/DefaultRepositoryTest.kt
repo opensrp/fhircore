@@ -51,10 +51,12 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Procedure
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.ServiceRequest
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Task
 import org.joda.time.LocalDate
@@ -659,5 +661,59 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(carePlanSlot)) }
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", carePlanSlot.captured.id)
     Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
+  }
+
+  @Test
+  fun testCloseResourceUpdatesCorrectProcedureStatus() {
+    val procedure =
+      Procedure().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = Procedure.ProcedureStatus.UNKNOWN
+      }
+    coEvery { fhirEngine.update(any()) } just runs
+    val procedureSlot = slot<Procedure>()
+
+    runBlocking { defaultRepository.closeResource(procedure) }
+    coVerify { fhirEngine.update(capture(procedureSlot)) }
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", procedureSlot.captured.id)
+    Assert.assertEquals(Procedure.ProcedureStatus.STOPPED, procedureSlot.captured.status)
+  }
+
+  @Test
+  fun testCloseResourceUpdatesCorrectServiceRequestStatus() {
+    val serviceRequest =
+      ServiceRequest().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = ServiceRequest.ServiceRequestStatus.ACTIVE
+      }
+    coEvery { fhirEngine.update(any()) } just runs
+    val serviceRequestSlot = slot<ServiceRequest>()
+
+    runBlocking { defaultRepository.closeResource(serviceRequest) }
+    coVerify { fhirEngine.update(capture(serviceRequestSlot)) }
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", serviceRequestSlot.captured.id)
+    Assert.assertEquals(
+      ServiceRequest.ServiceRequestStatus.REVOKED,
+      serviceRequestSlot.captured.status
+    )
+  }
+
+  @Test
+  fun testCloseResourceUpdatesCorrectConditionStatus() {
+    val condition =
+      Condition().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        clinicalStatus = null
+      }
+    coEvery { fhirEngine.update(any()) } just runs
+    val conditionSlot = slot<Condition>()
+
+    runBlocking { defaultRepository.closeResource(condition) }
+    coVerify { fhirEngine.update(capture(conditionSlot)) }
+    val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
+    Assert.assertEquals("370996005", capturedCode.code)
+    Assert.assertEquals("http://www.snomed.org/", capturedCode.system)
+    Assert.assertEquals("resolved", capturedCode.display)
   }
 }
