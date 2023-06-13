@@ -112,17 +112,28 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
     resourceDataSnapshotStateList: SnapshotStateList<ResourceData>,
   ) {
     this.forEach { resource ->
-      val listItemRelatedResources: Map<String, List<Resource>> =
-        listResource.relatedResources.associate { (id, resourceType, fhirPathExpression) ->
-          (id
-            ?: resourceType.name) to
+      val listItemRelatedResources = mutableMapOf<String, List<Resource>>()
+      listResource.relatedResources.forEach { relatedListResource ->
+        val retrieveRelatedResources: List<Resource>? =
+          relatedListResource.fhirPathExpression?.let {
             rulesFactory.rulesEngineService.retrieveRelatedResources(
               resource = resource,
-              relatedResourceKey = id ?: resourceType.name,
-              referenceFhirPathExpression = fhirPathExpression,
+              relatedResourceKey = relatedListResource.id ?: relatedListResource.resourceType.name,
+              referenceFhirPathExpression = it,
               relatedResourcesMap = relatedResourcesMap
             )
+          }
+        if (!retrieveRelatedResources.isNullOrEmpty()) {
+          listItemRelatedResources[
+            relatedListResource.id ?: relatedListResource.resourceType.name] =
+            if (!relatedListResource.conditionalFhirPathExpression.isNullOrEmpty())
+              rulesFactory.rulesEngineService.filterResources(
+                retrieveRelatedResources,
+                relatedListResource.conditionalFhirPathExpression
+              )
+            else retrieveRelatedResources
         }
+      }
 
       val listComputedValuesMap =
         computeResourceDataRules(
@@ -157,7 +168,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
     val relatedResourceKey = listResource.relatedResourceId ?: listResource.resourceType.name
     val newListRelatedResources = relatedResourceMap[relatedResourceKey]
 
-    // conditionalFhirPath expression e.g. "Task.status == 'ready'" to filter tasks that are due
+    // conditionalFhirPath expression e.g. "Task.status = 'ready'" to filter tasks that are due
     if (newListRelatedResources != null &&
         !listResource.conditionalFhirPathExpression.isNullOrEmpty()
     ) {
