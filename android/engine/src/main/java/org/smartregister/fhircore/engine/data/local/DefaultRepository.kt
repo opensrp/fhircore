@@ -37,16 +37,20 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Procedure
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.ServiceRequest
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -357,14 +361,18 @@ constructor(
 
   private fun Search.sort(sortConfigs: List<SortConfig>) {
     sortConfigs.forEach { sortConfig ->
-      when (sortConfig.dataType) {
-        Enumerations.DataType.INTEGER ->
-          sort(NumberClientParam(sortConfig.paramName), sortConfig.order)
-        Enumerations.DataType.DATE -> sort(DateClientParam(sortConfig.paramName), sortConfig.order)
-        Enumerations.DataType.STRING ->
-          sort(StringClientParam(sortConfig.paramName), sortConfig.order)
-        else -> {
-          /*Unsupported data type*/
+      if (!sortConfig.paramName.isNullOrEmpty()) {
+        when (sortConfig.dataType) {
+          Enumerations.DataType.INTEGER ->
+            sort(NumberClientParam(sortConfig.paramName), sortConfig.order)
+          Enumerations.DataType.DATE ->
+            sort(DateClientParam(sortConfig.paramName), sortConfig.order)
+          Enumerations.DataType.STRING ->
+            sort(StringClientParam(sortConfig.paramName), sortConfig.order)
+          else ->
+            Timber.e(
+              "Unsupported data type: '${sortConfig.dataType}'. Only ${listOf(Enumerations.DataType.INTEGER, Enumerations.DataType.DATE, Enumerations.DataType.STRING)} types are supported for DB level sorting."
+            )
         }
       }
     }
@@ -664,6 +672,20 @@ constructor(
         }
       }
       is CarePlan -> resource.status = CarePlan.CarePlanStatus.COMPLETED
+      is Procedure -> resource.status = Procedure.ProcedureStatus.STOPPED
+      is Condition ->
+        resource.clinicalStatus =
+          CodeableConcept().apply {
+            coding =
+              listOf(
+                Coding().apply {
+                  system = SNOMED_SYSTEM
+                  display = PATIENT_CONDITION_RESOLVED_DISPLAY
+                  code = PATIENT_CONDITION_RESOLVED_CODE
+                }
+              )
+          }
+      is ServiceRequest -> resource.status = ServiceRequest.ServiceRequestStatus.REVOKED
     }
     fhirEngine.update(resource)
   }
@@ -676,4 +698,10 @@ constructor(
     val relatedResourceMap: MutableMap<String, List<Resource>> = mutableMapOf(),
     val relatedResourceCountMap: MutableMap<String, List<RelatedResourceCount>> = mutableMapOf()
   )
+
+  companion object {
+    const val SNOMED_SYSTEM = "http://www.snomed.org/"
+    const val PATIENT_CONDITION_RESOLVED_CODE = "370996005"
+    const val PATIENT_CONDITION_RESOLVED_DISPLAY = "resolved"
+  }
 }
