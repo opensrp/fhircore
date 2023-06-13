@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Closing CarePlans and Related resources configuration update
 - Configuration for button content color
 - Configuration for button and overflow menu item icons
+- [Event Management] Add support for extra resources to close
 
 ### Fixed
 - Member icons display wrapping; hiding some texts

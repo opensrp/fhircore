@@ -11,6 +11,7 @@
         android:largeHeap="true"
         android:usesCleartextTraffic="false"
         android:screenOrientation="portrait"
+        android:installLocation="internalOnly"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar"
         android:windowSoftInputMode="adjustResize"
