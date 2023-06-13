@@ -28,6 +28,6 @@ captures/
 # Fleet
 .fleet/
 .docusaurus/
-android/quest/src/main/assets/configs/*
-!android/quest/src/main/assets/configs/app
+android/opensrp/src/main/assets/configs/*
+!android/opensrp/src/main/assets/configs/app
 

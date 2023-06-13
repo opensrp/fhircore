@@ -1,0 +1,137 @@
+{
+  "appId": "app",
+  "configType": "profile",
+  "id": "taskProfile",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Task"
+    },
+    "relatedResources": [
+      {
+        "resource": "Practitioner",
+        "searchParameter": "requester"
+      },
+      {
+        "resource": "Patient",
+        "searchParameter": "for"
+      }
+    ]
+  },
+  "rules": [
+    {
+      "name": "taskName",
+      "condition": "true",
+      "actions": [
+        "data.put('taskName', fhirPath.extractValue(Task, 'Task.description'))"
+      ]
+    },
+    {
+      "name": "startDate",
+      "condition": "true",
+      "actions": [
+        "data.put('startDate', fhirPath.extractValue(Task, 'Task.executionPeriod.start'))"
+      ]
+    },
+    {
+      "name": "endDate",
+      "condition": "true",
+      "actions": [
+        "data.put('endDate', fhirPath.extractValue(Task, 'Task.executionPeriod.end'))"
+      ]
+    },
+    {
+      "name": "patientName",
+      "condition": "true",
+      "actions": [
+        "data.put('patientName', fhirPath.extractValue(Patient.get(0), \"Patient.name.select(given + ' ' + family)\"))"
+      ]
+    },
+    {
+      "name": "practitionerName",
+      "condition": "true",
+      "actions": [
+        "data.put('practitionerName', fhirPath.extractValue(Practitioner.get(0), \"Practitioner.name.select(given + ' ' + family)\"))"
+      ]
+    }
+  ],
+  "views": [
+    {
+      "viewType": "COLUMN",
+      "children": [
+        {
+          "viewType": "CARD",
+          "padding": 0,
+          "content": [
+            {
+              "viewType": "COLUMN",
+              "children": [
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "@{taskName}",
+                  "primaryTextColor": "#000000",
+                  "fontSize": 15.0
+                },
+                {
+                  "viewType": "ROW",
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "@{startDate} - @{endDate}",
+                      "primaryTextColor": "#000000",
+                      "fontSize": 11.0
+                    }
+                  ]
+                },
+                {
+                  "viewType": "ROW",
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Patient: - ",
+                      "primaryTextColor": "#000000",
+                      "fontSize": 11.0
+                    },
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "@{patientName}",
+                      "primaryTextColor": "#000000",
+                      "fontSize": 11.0
+                    }
+                  ]
+                },
+                {
+                  "viewType": "ROW",
+                  "children": [
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "Practitioner -",
+                      "primaryTextColor": "#000000",
+                      "fontSize": 11.0
+                    },
+                    {
+                      "viewType": "COMPOUND_TEXT",
+                      "primaryText": "@{practitionerName}",
+                      "primaryTextColor": "#000000",
+                      "fontSize": 11.0
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "viewType": "SPACER",
+          "height": 16
+        }
+      ]
+    }
+  ],
+  "overFlowMenuItems": [
+    {
+      "title": "Perform task",
+      "titleColor": "#000000",
+      "visible": "true"
+    }
+  ]
+}

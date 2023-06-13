@@ -1,0 +1,42 @@
+{
+  "appId": "app",
+  "configType": "application",
+  "theme": "DEFAULT",
+  "appTitle": "Quest",
+  "registerDate": "2020-10-27",
+  "reportRepeatTime": "23:22",
+  "remoteSyncPageSize": 100,
+  "languages": [
+    "en",
+    "sw",
+    "fr"
+  ],
+  "useDarkTheme": false,
+  "syncInterval": 30,
+  "syncStrategy": [
+    "Location",
+    "Organization",
+    "CareTeam",
+    "Practitioner"
+  ],
+  "loginConfig": {
+    "showLogo": true,
+    "enablePin": true
+  },
+  "deviceToDeviceSync": {
+    "resourcesToSync": [
+      "Group",
+      "Patient",
+      "CarePlan",
+      "Task",
+      "Encounter",
+      "Observation",
+      "Condition",
+      "Questionnaire",
+      "QuestionnaireResponse",
+      "RelatedPerson",
+      "List",
+      "Flag"
+    ]
+  }
+}
