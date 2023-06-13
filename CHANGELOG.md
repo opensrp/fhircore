@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Migrate build script to Kotlin DSL
 - Configurable population resource using ActionParameter
 - Closing CarePlans and Related resources configuration update
-- Add support for extra resources to close
+- [Event Management] Add support for extra resources to close
 
 ### Fixed
 - Member icons display wrapping; hiding some texts
