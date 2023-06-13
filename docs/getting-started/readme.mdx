@@ -52,6 +52,12 @@ KEYSTORE_PASSWORD=xxxxxx
 KEYSTORE_ALIAS=xxxxxx
 KEY_PASSWORD=xxxxxx
 ```
+Lastly, you can also provide the `local.properties` and/or the `keystore.properties` file as a gradle property using via the property names `localPropertiesFile` and `keystorePropertiesFile` respectively. The value of the properties file should be its absolute file path. 
+
+For example, to build the eCHIS release from the terminal you can run the command below:
+```sh
+./gradlew assembleEchisRelease --stacktrace -PlocalPropertiesFile=/Abolute/Path/To/echis.local.properties -PkeystorePropertiesFile=/Absolute/Path/To/echis.keystore.properties 
+```
 
 Refer to the following links for more details:
 

@@ -1,6 +1,6 @@
-import java.util.Properties
 import java.io.FileInputStream
 import java.io.InputStreamReader
+import java.util.Properties
 
 fun Project.readProperties(file: String): Properties {
   val properties = Properties()
@@ -21,22 +21,21 @@ val requiredFhirProperties =
     "URL",
     "FHIR_BASE_URL",
     "OAUTH_BASE_URL",
-    "OAUTH_CIENT_ID",
+    "OAUTH_CLIENT_ID",
     "OAUTH_CLIENT_SECRET",
     "OAUTH_SCOPE",
     "MAPBOX_SDK_TOKEN",
     "SENTRY_DSN"
   )
 
-val localProperties = readProperties("local.properties")
-
+val localProperties = readProperties((project.properties["localPropertiesFile"] ?: "local.properties").toString())
 requiredFhirProperties.forEach { property ->
   project.extra.set(property, localProperties.getProperty(property,if(property.contains("URL")) "https://sample.url/fhir/" else "sample_" + property))
 }
 
 // Set required keystore properties
 val requiredKeystoreProperties = listOf("KEYSTORE_ALIAS", "KEY_PASSWORD", "KEYSTORE_PASSWORD")
-val keystoreProperties = readProperties("keystore.properties")
+val keystoreProperties = readProperties((project.properties["keystorePropertiesFile"] ?: "keystore.properties").toString())
 
 requiredKeystoreProperties.forEach { property ->
   project.extra.set(property, keystoreProperties.getProperty(property,"sample_" + property))
