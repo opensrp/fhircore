@@ -675,27 +675,30 @@ constructor(
        * ResourceMapper.selectPopulateContext() will return null, then that null will get evaluated
        * and gives an exception as a result.
        */
-      questionnaireResponse =
-        runCatching {
-            // load required resources sent through Param for questionnaire Response expressions
-            val populationResources = arrayListOf<Resource>()
-            if (resourceMap.isEmpty()) {
-              populationResources.addAll(loadPopulationResources(subjectId, subjectType))
-            } else {
-              resourceMap.forEach {
-                populationResources.addAll(
-                  loadPopulationResources(it.value.extractLogicalIdUuid(), it.key!!)
-                )
+      if (questionnaireConfig.type.isDefault()) {
+        questionnaireResponse =
+          runCatching {
+              // load required resources sent through Param for questionnaire Response
+              // expressions
+              val populationResources = arrayListOf<Resource>()
+              if (resourceMap.isEmpty()) {
+                populationResources.addAll(loadPopulationResources(subjectId, subjectType))
+              } else {
+                resourceMap.forEach {
+                  populationResources.addAll(
+                    loadPopulationResources(it.value.extractLogicalIdUuid(), it.key!!)
+                  )
+                }
               }
-            }
 
-            populateQuestionnaireResponse(
-              questionnaire = questionnaire,
-              populationResources = populationResources
-            )
-          }
-          .onFailure { Timber.e(it, "Error encountered while populating QuestionnaireResponse") }
-          .getOrDefault(questionnaireResponse)
+              populateQuestionnaireResponse(
+                questionnaire = questionnaire,
+                populationResources = populationResources
+              )
+            }
+            .onFailure { Timber.e(it, "Error encountered while populating QuestionnaireResponse") }
+            .getOrDefault(questionnaireResponse)
+      }
     }
 
     return questionnaireResponse
