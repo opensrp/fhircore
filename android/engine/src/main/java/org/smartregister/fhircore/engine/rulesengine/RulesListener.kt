@@ -75,9 +75,7 @@ abstract class RulesListener : RuleListener {
 
   override fun afterEvaluate(rule: Rule, facts: Facts, evaluationResult: Boolean) = Unit
 
-  fun log(exception: java.lang.Exception, message: String? = null) {
-    Timber.e(exception, message)
-  }
+  fun log(exception: java.lang.Exception, message: String? = null) = Timber.e(exception, message)
 
   fun Map<String, List<*>>.addToFacts(facts: Facts) = this.forEach { facts.put(it.key, it.value) }
 
