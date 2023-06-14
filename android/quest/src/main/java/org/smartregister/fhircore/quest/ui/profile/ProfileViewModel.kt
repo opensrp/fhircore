@@ -71,6 +71,7 @@ constructor(
   val resourceDataRulesExecutor: ResourceDataRulesExecutor
 ) : ViewModel() {
 
+  val refreshProfileDataLiveData = MutableLiveData<Boolean?>(null)
   val profileUiState = mutableStateOf(ProfileUiState())
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
@@ -78,10 +79,9 @@ constructor(
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow: SharedFlow<SnackBarMessageConfig> = _snackBarStateFlow.asSharedFlow()
   private lateinit var profileConfiguration: ProfileConfiguration
+
   private val listResourceDataStateMap =
     mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
-
-  val shouldReloadData = MutableLiveData<Boolean>()
 
   /**
    * This function retrieves an image that was synced from the backend as a [Binary] resource, the
@@ -195,7 +195,7 @@ constructor(
                   actionLabel = event.context.getString(R.string.ok)
                 )
             )
-            shouldReloadData.value = true
+            refreshProfileDataLiveData.value = true
           }
         }
       }

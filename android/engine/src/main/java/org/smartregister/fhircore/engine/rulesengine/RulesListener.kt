@@ -65,7 +65,7 @@ abstract class RulesListener : RuleListener {
             exception,
             "${exception.localizedMessage}, consider checking for null before usage: e.g ${exception.variable} != null"
           )
-        else -> log(exception, "failed to execute rule : ${rule.name} ")
+        else -> log(exception, "Failed to execute rule : ${rule.name} ")
       }
     } else log(exception)
 

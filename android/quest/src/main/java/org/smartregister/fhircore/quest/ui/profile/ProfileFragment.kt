@@ -67,11 +67,12 @@ class ProfileFragment : Fragment() {
         }
       }
     }
-    // this will be called when change managing entity is completed to reload data
-    profileViewModel.shouldReloadData.observe(viewLifecycleOwner) {
+
+    profileViewModel.refreshProfileDataLiveData.observe(viewLifecycleOwner) {
       viewLifecycleOwner.lifecycleScope.launch {
-        if (it) {
+        if (it == true) {
           handleRefreshLiveData()
+          profileViewModel.refreshProfileDataLiveData.value = null
         }
       }
     }
