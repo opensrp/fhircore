@@ -32,15 +32,15 @@ import org.junit.Test
 import org.smartregister.opensrp.robolectric.RobolectricTest
 
 @HiltAndroidTest
-class OpenSRPApplicationTest : RobolectricTest() {
+class OpenSrpApplicationTest : RobolectricTest() {
 
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
-  private lateinit var application: OpenSRPApplication
+  private lateinit var application: OpenSrpApplication
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    application = OpenSRPApplication()
+    application = OpenSrpApplication()
     application.referenceUrlResolver = mockk()
     application.xFhirQueryResolver = mockk()
     application.workerFactory = mockk()

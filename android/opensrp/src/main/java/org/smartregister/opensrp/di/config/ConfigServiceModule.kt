@@ -21,11 +21,11 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.opensrp.OpenSRPConfigService
+import org.smartregister.opensrp.OpenSrpConfigService
 
 @InstallIn(SingletonComponent::class)
 @Module
 abstract class ConfigServiceModule {
   @Binds
-  abstract fun provideConfigService(openSRPConfigService: OpenSRPConfigService): ConfigService
+  abstract fun provideConfigService(openSRPConfigService: OpenSrpConfigService): ConfigService
 }

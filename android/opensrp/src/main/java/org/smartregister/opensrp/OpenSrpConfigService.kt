@@ -27,7 +27,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.sync.ResourceTag
 
 @Singleton
-class OpenSRPConfigService @Inject constructor(@ApplicationContext val context: Context) :
+class OpenSrpConfigService @Inject constructor(@ApplicationContext val context: Context) :
   ConfigService {
 
   override fun provideAuthConfiguration() =

@@ -30,7 +30,7 @@ import org.junit.Assert
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class OpenSRPXFhirQueryResolverTest {
+class OpenSrpFhirQueryResolverTest {
 
   private val fhirEngine = mockk<FhirEngine>()
 
@@ -44,7 +44,7 @@ class OpenSRPXFhirQueryResolverTest {
         val type = firstArg<Search>().type
         resources.filter { it.resourceType == type }
       }
-    val xFhirResolver = OpenSRPXFhirQueryResolver(fhirEngine)
+    val xFhirResolver = OpenSrpFhirQueryResolver(fhirEngine)
     val result = xFhirResolver.resolve("Patient?active=true")
     Assert.assertTrue(result.isNotEmpty())
     Assert.assertTrue(

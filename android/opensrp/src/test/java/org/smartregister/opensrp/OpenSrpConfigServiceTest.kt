@@ -30,11 +30,11 @@ import org.junit.Test
 import org.smartregister.opensrp.robolectric.RobolectricTest
 
 @HiltAndroidTest
-class OpenSRPConfigServiceTest : RobolectricTest() {
+class OpenSrpConfigServiceTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
-  @Inject lateinit var configService: OpenSRPConfigService
+  @Inject lateinit var configService: OpenSrpConfigService
   val context = ApplicationProvider.getApplicationContext<Context>()!!
   @Before
   fun setUp() {

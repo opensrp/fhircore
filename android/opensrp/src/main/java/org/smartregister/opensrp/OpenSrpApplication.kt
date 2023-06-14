@@ -34,16 +34,16 @@ import javax.inject.Inject
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.util.extension.getSubDomain
 import org.smartregister.fhircore.engine.util.extension.showToast
-import org.smartregister.opensrp.data.OpenSRPXFhirQueryResolver
+import org.smartregister.opensrp.data.OpenSrpFhirQueryResolver
 import org.smartregister.opensrp.ui.appsetting.AppSettingActivity
 import org.smartregister.opensrp.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
 import timber.log.Timber
 
 @HiltAndroidApp
-class OpenSRPApplication : Application(), DataCaptureConfig.Provider, Configuration.Provider {
+class OpenSrpApplication : Application(), DataCaptureConfig.Provider, Configuration.Provider {
   @Inject lateinit var workerFactory: HiltWorkerFactory
   @Inject lateinit var referenceUrlResolver: ReferenceUrlResolver
-  @Inject lateinit var xFhirQueryResolver: OpenSRPXFhirQueryResolver
+  @Inject lateinit var xFhirQueryResolver: OpenSrpFhirQueryResolver
   private var configuration: DataCaptureConfig? = null
 
   override fun onCreate() {

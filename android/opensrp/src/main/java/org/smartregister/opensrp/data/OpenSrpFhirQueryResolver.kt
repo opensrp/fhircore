@@ -24,7 +24,7 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Resource
 
 @Singleton
-class OpenSRPXFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) :
+class OpenSrpFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) :
   XFhirQueryResolver {
   override suspend fun resolve(xFhirQuery: String): List<Resource> {
     return fhirEngine.search(xFhirQuery)
