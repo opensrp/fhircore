@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.WarningColor
+import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.engine.util.extension.retrieveResourceId
 import org.smartregister.fhircore.quest.ui.main.components.SIDE_MENU_ICON
 import org.smartregister.fhircore.quest.util.extensions.conditional
@@ -52,7 +53,7 @@ fun Image(
 ) {
 
   val imageConfigFinal: ImageConfig? = imageConfig ?: imageProperties?.imageConfig
-  val colorFinal: Color = (getTintColor(imageProperties?.tint) ?: color) as Color
+  val colorFinal: Color = if (imageProperties?.tint != null) imageProperties.tint.parseColor() else color!!
   val size = imageProperties?.size
 
   if (imageConfigFinal != null) {
@@ -87,13 +88,3 @@ fun Image(
   }
 }
 
-@Composable
-private fun getTintColor(colorString: String?): Color? {
-  var color: Color? = null
-  when (colorString) {
-    "COMPLETED" -> color = SuccessColor
-    "OVERDUE" -> color = DangerColor
-    "DUE" -> color = WarningColor
-  }
-  return color
-}
