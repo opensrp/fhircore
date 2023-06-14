@@ -27,6 +27,7 @@ import io.mockk.verify
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 class AppSyncWorkerTest : RobolectricTest() {
@@ -36,15 +37,17 @@ class AppSyncWorkerTest : RobolectricTest() {
     val syncParams = emptyMap<ResourceType, ParamMap>()
     val syncListenerManager = mockk<SyncListenerManager>()
     val fhirEngine = mockk<FhirEngine>()
+    val defaultRepository = mockk<DefaultRepository>()
     val taskExecutor = mockk<TaskExecutor>()
     val timeContext = mockk<AppTimeStampContext>()
 
+    every { defaultRepository.fhirEngine } returns fhirEngine
     every { taskExecutor.backgroundExecutor } returns mockk()
     every { workerParams.taskExecutor } returns taskExecutor
     every { syncListenerManager.loadSyncParams() } returns syncParams
 
     val appSyncWorker =
-      AppSyncWorker(mockk(), workerParams, syncListenerManager, fhirEngine, timeContext)
+      AppSyncWorker(mockk(), workerParams, syncListenerManager, defaultRepository, timeContext)
 
     appSyncWorker.getDownloadWorkManager()
     verify { syncListenerManager.loadSyncParams() }
