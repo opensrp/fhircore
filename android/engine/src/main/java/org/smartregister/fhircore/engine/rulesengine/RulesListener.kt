@@ -65,7 +65,7 @@ abstract class RulesListener : RuleListener {
             exception,
             "${exception.localizedMessage}, consider checking for null before usage: e.g ${exception.variable} != null"
           )
-        else -> log(exception)
+        else -> log(exception, "failed to execute rule : ${rule.name} ")
       }
     } else log(exception)
 
@@ -75,7 +75,9 @@ abstract class RulesListener : RuleListener {
 
   override fun afterEvaluate(rule: Rule, facts: Facts, evaluationResult: Boolean) = Unit
 
-  fun log(exception: java.lang.Exception, message: String? = null) = Timber.e(exception, message)
+  fun log(exception: java.lang.Exception, message: String? = null) {
+    Timber.e(exception, message)
+  }
 
   fun Map<String, List<*>>.addToFacts(facts: Facts) = this.forEach { facts.put(it.key, it.value) }
 

@@ -67,6 +67,14 @@ class ProfileFragment : Fragment() {
         }
       }
     }
+    // this will be called when change managing entity is completed to reload data
+    profileViewModel.shouldReloadData.observe(viewLifecycleOwner) {
+      viewLifecycleOwner.lifecycleScope.launch {
+        if (it) {
+          handleRefreshLiveData()
+        }
+      }
+    }
 
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -93,11 +101,17 @@ class ProfileFragment : Fragment() {
             when (appEvent) {
               is AppEvent.OnSubmitQuestionnaire ->
                 handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
-              else -> {}
+              is AppEvent.RefreshCache -> {}
             }
           }
           .launchIn(lifecycleScope)
       }
+    }
+  }
+
+  private suspend fun handleRefreshLiveData() {
+    with(profileFragmentArgs) {
+      profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
     }
   }
 
