@@ -220,4 +220,12 @@ matchAll |  Determines whether all conditional fhirpath expressions should evalu
          |  `True` - Close resources only when all fhirpath expressions evaluate to true  |     |               |
          |  `False` - Close resources when one or more fhirpath expressions evaluate to true  |     |               |
 
+### Event Resource Properties
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+id |uniqueId of resource id to be closed  | yes |  |
+resource | The type of resource  | yes |  |
+configRules | Rules to be that are executed to populate dynamic values such as a patient id   | no |  |
+dataQueries | Configs used to represent how resources to be closed are retrieved from the database  | yes |  |
+relatedResources | Configs that represent how to fetch related resources e.g Tasks linked to a CarePlan | no |  |
 
