@@ -26,7 +26,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 13-06-2023. */
-class FhirCoreDownloadManager(
+class OpenSrpDownloadManager(
   syncParams: ResourceSearchParams,
   val context: ResourceParamsBasedDownloadWorkManager.TimestampContext,
   val defaultRepository: DefaultRepository

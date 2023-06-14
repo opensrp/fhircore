@@ -42,7 +42,7 @@ constructor(
   override fun getConflictResolver(): ConflictResolver = AcceptLocalConflictResolver
 
   override fun getDownloadWorkManager(): DownloadWorkManager =
-    FhirCoreDownloadManager(
+    OpenSrpDownloadManager(
       syncParams = syncListenerManager.loadSyncParams(),
       context = appTimeStampContext,
       defaultRepository
