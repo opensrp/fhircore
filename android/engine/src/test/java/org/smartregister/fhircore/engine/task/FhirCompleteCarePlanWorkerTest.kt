@@ -26,7 +26,6 @@ import androidx.work.WorkerParameters
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.testing.WorkManagerTestInitHelper
-import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -47,6 +46,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -56,7 +56,7 @@ import org.smartregister.fhircore.engine.util.extension.lastOffset
 class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
-  private val fhirEngine: FhirEngine = mockk(relaxed = true)
+  private val defaultRepository: DefaultRepository = mockk(relaxed = true)
   private val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk(relaxed = true)
   private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
@@ -121,7 +121,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
     coVerify { fhirCarePlanGenerator.getTask(task2.id) }
 
     val carePlanSlot = slot<CarePlan>()
-    coVerify { fhirEngine.update(capture(carePlanSlot)) }
+    coVerify { defaultRepository.update(capture(carePlanSlot)) }
     Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
   }
 
@@ -165,7 +165,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
     coVerify { fhirCarePlanGenerator.getTask(task2.id) }
 
     val carePlanSlot = slot<CarePlan>()
-    coVerify { fhirEngine.update(capture(carePlanSlot)) }
+    coVerify { defaultRepository.update(capture(carePlanSlot)) }
     Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
   }
 
@@ -215,7 +215,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
     coVerify { fhirCarePlanGenerator.getTask(task2.id) }
     coVerify { fhirCarePlanGenerator.getTask(task3.id) }
 
-    coVerify(exactly = 0) { fhirEngine.update(any()) }
+    coVerify(exactly = 0) { defaultRepository.update(any()) }
   }
 
   private fun initializeWorkManager() {
@@ -241,7 +241,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
       return FhirCompleteCarePlanWorker(
         context = appContext,
         workerParams = workerParameters,
-        fhirEngine = fhirEngine,
+        defaultRepository = defaultRepository,
         fhirCarePlanGenerator = fhirCarePlanGenerator,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,

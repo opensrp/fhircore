@@ -26,7 +26,9 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
+import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import java.util.Date
@@ -42,6 +44,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.plusDays
@@ -53,13 +56,16 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
   @Inject lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var fhirTaskExpireUtil: FhirTaskExpireUtil
   private lateinit var fhirEngine: FhirEngine
+  private lateinit var defaultRepository: DefaultRepository
 
   @Before
   fun setup() {
     hiltAndroidRule.inject()
     fhirEngine = spyk(FhirEngineProvider.getInstance(ApplicationProvider.getApplicationContext()))
+    defaultRepository = mockk()
+    every { defaultRepository.fhirEngine } returns fhirEngine
     fhirTaskExpireUtil =
-      spyk(FhirTaskExpireUtil(ApplicationProvider.getApplicationContext(), fhirEngine))
+      spyk(FhirTaskExpireUtil(ApplicationProvider.getApplicationContext(), defaultRepository))
   }
 
   @Test
@@ -85,15 +91,22 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
     }
 
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns taskList
-    coEvery { fhirEngine.update(any()) } just runs
+    coEvery { defaultRepository.update(any()) } just runs
 
     val tasks = runBlocking { fhirTaskExpireUtil.expireOverdueTasks() }
 
     assertEquals(4, tasks.size)
 
+    assertEquals(authoredOnToday, maxDate)
+
+    taskList.toSet().subtract(tasks.toSet()).forEach {
+      assertEquals(TaskStatus.INPROGRESS, it.status)
+      coVerify(inverse = true) { defaultRepository.update(it) }
+    }
+
     tasks.forEach {
       assertEquals(TaskStatus.CANCELLED, it.status)
-      coVerify { fhirEngine.update(it) }
+      coVerify { defaultRepository.update(it) }
     }
   }
 
@@ -101,7 +114,7 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
   fun fetchOverdueTasksAndCompleteCarePlan() {
     val taskList = mutableListOf<Task>()
 
-    for (i in 1..4) {
+    for (i in 1..8) {
       taskList.add(
         spyk(
           Task().apply {
@@ -112,6 +125,7 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
                 start = Date().plusDays(-10)
                 end = Date().plusDays(-1)
               }
+            authoredOn = twoDaysAgo
             restriction =
               Task.TaskRestrictionComponent().apply { period = Period().apply { end = today() } }
             basedOn.add(Reference().apply { reference = "CarePlan/123" })
@@ -127,21 +141,46 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
         activityFirstRep.detail.kind = CarePlan.CarePlanActivityKind.TASK
         activityFirstRep.outcomeReference.add(
           Reference().apply { reference = "Task/${taskList.first().logicalId}" }
+    for (i in 1..4) {
+      taskList.add(
+        spyk(
+          Task().apply {
+            id = UUID.randomUUID().toString()
+            status = TaskStatus.INPROGRESS
+            authoredOn = twoDaysAhead
+            restriction =
+              Task.TaskRestrictionComponent().apply { period = Period().apply { end = today() } }
+          }
         )
       }
 
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns taskList
     coEvery { fhirEngine.get<CarePlan>(any()) } returns carePlan
 
-    coEvery { fhirEngine.update(any()) } just runs
+    coEvery { defaultRepository.update(any()) } just runs
+    coEvery { defaultRepository.create(true, any()) } returns emptyList()
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns taskList
 
     val tasks = runBlocking { fhirTaskExpireUtil.expireOverdueTasks() }
 
     assertEquals(4, tasks.size)
+    val (maxDate, tasks) =
+      runBlocking {
+        taskList.forEach { defaultRepository.create(true, it) }
+        fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = authoredOnToday)
+      }
+
+    assertEquals(12, tasks.size)
+    assertEquals(twoDaysAhead.toString(), maxDate.toString())
+
+    taskList.toSet().subtract(tasks.toSet()).forEach {
+      assertEquals(TaskStatus.INPROGRESS, it.status)
+      coVerify(inverse = true) { defaultRepository.update(it) }
+    }
 
     tasks.forEach {
       assertEquals(TaskStatus.CANCELLED, it.status)
-      coVerify { fhirEngine.update(it) }
+      coVerify { defaultRepository.update(it) }
     }
 
     assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
@@ -155,6 +194,6 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
 
     assertEquals(0, tasks.size)
 
-    coVerify(inverse = true) { fhirEngine.update(any()) }
+    coVerify(inverse = true) { defaultRepository.update(any()) }
   }
 }

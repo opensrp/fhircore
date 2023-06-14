@@ -33,6 +33,8 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -49,13 +51,14 @@ class FhirTaskPlanWorker
 constructor(
   @Assisted val appContext: Context,
   @Assisted workerParams: WorkerParameters,
-  val fhirEngine: FhirEngine,
+  val defaultRepository: DefaultRepository,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
+    val fhirEngine = defaultRepository.fhirEngine
     return withContext(dispatcherProvider.io()) {
       Timber.i("Running Task status updater worker")
 
@@ -83,10 +86,28 @@ constructor(
       tasks.forEach { task ->
         if (task.isReady() && task.status == TaskStatus.REQUESTED && task.preReqConditionSatisfied()
         ) {
+        if (task.hasPastEnd()) {
+          Timber.i("${task.id} failed its successful completion")
+
+          task.status = Task.TaskStatus.FAILED
+          defaultRepository.update(task)
+          task
+            .basedOn
+            .find { it.reference.startsWith(ResourceType.CarePlan.name) }
+            ?.extractId()
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+              val carePlan = fhirEngine.get<CarePlan>(it)
+              if (carePlan.isLastTask(task)) {
+                carePlan.status = CarePlan.CarePlanStatus.COMPLETED
+                defaultRepository.update(carePlan)
+              }
+            }
+        } else if (task.isReady() && task.status == Task.TaskStatus.REQUESTED) {
           Timber.i("${task.id} marked ready")
 
           task.status = Task.TaskStatus.READY
-          fhirEngine.update(task)
+          defaultRepository.update(task)
         }
       }
       Result.success()

@@ -21,6 +21,7 @@ import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
@@ -32,13 +33,15 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.util.extension.expiredConcept
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.extension.isPastExpiry
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
 @Singleton
 class FhirTaskExpireUtil
 @Inject
-constructor(@ApplicationContext val appContext: Context, val fhirEngine: FhirEngine) {
+constructor(@ApplicationContext val appContext: Context, val defaultRepository: DefaultRepository) {
 
   /**
    * Fetches and returns tasks whose Task.status is either "requested", "ready", "accepted",
@@ -48,6 +51,7 @@ constructor(@ApplicationContext val appContext: Context, val fhirEngine: FhirEng
    */
   suspend fun expireOverdueTasks(): List<Task> {
     Timber.i("Fetch and expire overdue tasks")
+    val fhirEngine = defaultRepository.fhirEngine
     val tasksResult =
       fhirEngine
         .search<Task> {
@@ -92,7 +96,7 @@ constructor(@ApplicationContext val appContext: Context, val fhirEngine: FhirEng
                 }
             }
 
-          fhirEngine.update(task)
+          defaultRepository.update(task)
         }
 
     Timber.i("${tasksResult.size} FHIR Tasks status updated to CANCELLED (expired)")

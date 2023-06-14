@@ -50,6 +50,7 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -68,6 +69,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
   @BindValue
   var fhirTaskExpireUtil: FhirTaskExpireUtil =
     FhirTaskExpireUtil(ApplicationProvider.getApplicationContext(), fhirEngine)
+  private val defaultRepository: DefaultRepository = mockk(relaxed = true)
   private lateinit var fhirTaskExpireWorker: FhirTaskExpireWorker
   private lateinit var tasks: List<Task>
 
@@ -202,7 +204,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
       return FhirTaskExpireWorker(
         context = appContext,
         workerParams = workerParameters,
-        fhirEngine = fhirEngine,
+        defaultRepository = defaultRepository,
         fhirTaskExpireUtil = fhirTaskExpireUtil,
         dispatcherProvider = coroutineTestRule.testDispatcherProvider
       )
