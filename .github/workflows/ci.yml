@@ -214,7 +214,7 @@ jobs:
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
 
-      - name: Run Quest module unit and instrumentation tests and generate coverage report
+      - name: Run OpenSrp module unit and instrumentation tests and generate coverage report
         uses: reactivecircus/android-emulator-runner@v2
         with: 
           working-directory: android
@@ -225,7 +225,7 @@ jobs:
           disable-animations: true
           script: ./gradlew :opensrp:clean && ./gradlew :opensrp:fhircoreJacocoReport --stacktrace
 
-      - name: Upload Quest module test coverage report to Codecov
+      - name: Upload OpenSrp module test coverage report to Codecov
         if: matrix.api-level == 30 # Only upload coverage on API level 30
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F opensrp -f "opensrp/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
