@@ -71,7 +71,9 @@ class ProfileFragment : Fragment() {
     profileViewModel.refreshProfileDataLiveData.observe(viewLifecycleOwner) {
       viewLifecycleOwner.lifecycleScope.launch {
         if (it == true) {
-          handleRefreshLiveData()
+          with(profileFragmentArgs) {
+            profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
+          }
           profileViewModel.refreshProfileDataLiveData.value = null
         }
       }
@@ -107,12 +109,6 @@ class ProfileFragment : Fragment() {
           }
           .launchIn(lifecycleScope)
       }
-    }
-  }
-
-  private suspend fun handleRefreshLiveData() {
-    with(profileFragmentArgs) {
-      profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
     }
   }
 
