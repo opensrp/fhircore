@@ -101,7 +101,7 @@ class ProfileFragment : Fragment() {
             when (appEvent) {
               is AppEvent.OnSubmitQuestionnaire ->
                 handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
-              is AppEvent.RefreshCache -> {}
+              else -> {}
             }
           }
           .launchIn(lifecycleScope)
