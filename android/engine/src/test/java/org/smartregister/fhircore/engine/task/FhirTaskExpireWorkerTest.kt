@@ -66,10 +66,10 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
 
   private val fhirEngine: FhirEngine = mockk(relaxed = true)
+  private val defaultRepository: DefaultRepository = mockk(relaxed = true)
   @BindValue
   var fhirTaskExpireUtil: FhirTaskExpireUtil =
-    FhirTaskExpireUtil(ApplicationProvider.getApplicationContext(), fhirEngine)
-  private val defaultRepository: DefaultRepository = mockk(relaxed = true)
+    FhirTaskExpireUtil(ApplicationProvider.getApplicationContext(), defaultRepository)
   private lateinit var fhirTaskExpireWorker: FhirTaskExpireWorker
   private lateinit var tasks: List<Task>
 
@@ -94,11 +94,12 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
             }
           restriction =
             Task.TaskRestrictionComponent().apply {
-              period = Period().apply { end = DateTime().plusDays(2).toDate() }
+              period = Period().apply { end = DateTime().plusDays(-2).toDate() }
             }
         }
       )
 
+    coEvery { defaultRepository.fhirEngine } returns fhirEngine
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns tasks
   }
 
@@ -111,9 +112,9 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
 
   @Test
   fun `FhirTaskExpireWorker doWork task expires when past end no reference to careplan`() {
-    coEvery { fhirEngine.update(any()) } just runs
+    coEvery { defaultRepository.update(any()) } just runs
     val result = fhirTaskExpireWorker.startWork().get()
-    coVerify { fhirEngine.update(any()) }
+    coVerify { defaultRepository.update(any()) }
     assertEquals(result, (ListenableWorker.Result.success()))
     assertEquals(Task.TaskStatus.CANCELLED, tasks.first().status)
   }
@@ -122,10 +123,10 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
   fun `FhirTaskExpireWorker doWork task expires when past end found CarePlan was not found`() {
     tasks.forEach { it.basedOn = listOf(Reference().apply { reference = "CarePlan/123" }) }
 
-    coEvery { fhirEngine.update(any()) } just runs
+    coEvery { defaultRepository.update(any()) } just runs
     coEvery { fhirEngine.get(ResourceType.CarePlan, any()) } throws IllegalArgumentException()
     val result = fhirTaskExpireWorker.startWork().get()
-    coVerify { fhirEngine.update(any()) }
+    coVerify { defaultRepository.update(any()) }
     assertEquals(result, (ListenableWorker.Result.success()))
     assertEquals(Task.TaskStatus.CANCELLED, tasks.first().status)
   }
@@ -145,10 +146,10 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
         status = CarePlan.CarePlanStatus.ACTIVE
       }
     tasks.forEach { it.addBasedOn(Reference().apply { reference = carePlan.referenceValue() }) }
-    coEvery { fhirEngine.update(any()) } just runs
+    coEvery { defaultRepository.update(any()) } just runs
     coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
     val result = fhirTaskExpireWorker.startWork().get()
-    coVerify { fhirEngine.update(any()) }
+    coVerify { defaultRepository.update(any()) }
     assertEquals(result, (ListenableWorker.Result.success()))
     assertEquals(Task.TaskStatus.CANCELLED, tasks.first().status)
     assertNotEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
@@ -169,13 +170,13 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
           )
       }
     tasks.forEach { it.basedOn = listOf(carePlan.asReference()) }
-    coEvery { fhirEngine.update(any()) } just runs
+    coEvery { defaultRepository.update(tasks.first()) } just runs
     coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
-    coEvery { fhirEngine.update(carePlan) } just runs
+    coEvery { defaultRepository.update(carePlan) } just runs
     val result = fhirTaskExpireWorker.startWork().get()
-    coVerify { fhirEngine.update(tasks.first()) }
     coVerify { fhirEngine.get(ResourceType.CarePlan, carePlanId) }
-    coVerify { fhirEngine.update(carePlan) }
+    coVerify { defaultRepository.update(carePlan) }
+    coVerify { defaultRepository.update(tasks.first()) }
     assertEquals(result, (ListenableWorker.Result.success()))
     assertEquals(Task.TaskStatus.CANCELLED, tasks.first().status)
     assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)

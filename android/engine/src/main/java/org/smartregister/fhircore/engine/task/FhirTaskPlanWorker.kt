@@ -21,7 +21,6 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.search.search
 import dagger.assisted.Assisted
@@ -33,7 +32,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -66,11 +64,11 @@ constructor(
         fhirEngine.search<Task> {
           filter(
             Task.STATUS,
-            { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
+            { value = of(TaskStatus.REQUESTED.toCoding()) },
             // { value = of(Task.TaskStatus.READY.toCoding()) }, this would be handled by expiry job
             // { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
-            { value = of(Task.TaskStatus.ACCEPTED.toCoding()) },
-            { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
+            { value = of(TaskStatus.ACCEPTED.toCoding()) },
+            { value = of(TaskStatus.RECEIVED.toCoding()) },
           )
           filter(
             Task.PERIOD,
@@ -84,29 +82,12 @@ constructor(
       Timber.i("Found ${tasks.size} tasks to be updated")
 
       tasks.forEach { task ->
+        // expired tasks are handled by other service i.e. FhirTaskExpireWorker
         if (task.isReady() && task.status == TaskStatus.REQUESTED && task.preReqConditionSatisfied()
         ) {
-        if (task.hasPastEnd()) {
-          Timber.i("${task.id} failed its successful completion")
-
-          task.status = Task.TaskStatus.FAILED
-          defaultRepository.update(task)
-          task
-            .basedOn
-            .find { it.reference.startsWith(ResourceType.CarePlan.name) }
-            ?.extractId()
-            ?.takeIf { it.isNotBlank() }
-            ?.let {
-              val carePlan = fhirEngine.get<CarePlan>(it)
-              if (carePlan.isLastTask(task)) {
-                carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-                defaultRepository.update(carePlan)
-              }
-            }
-        } else if (task.isReady() && task.status == Task.TaskStatus.REQUESTED) {
           Timber.i("${task.id} marked ready")
 
-          task.status = Task.TaskStatus.READY
+          task.status = TaskStatus.READY
           defaultRepository.update(task)
         }
       }
@@ -116,7 +97,8 @@ constructor(
 
   private suspend fun Task.preReqConditionSatisfied() =
     this.partOf.find { it.reference.startsWith(ResourceType.Task.name + "/") }?.let {
-      fhirEngine
+      defaultRepository
+        .fhirEngine
         .get<Task>(it.extractId())
         .status
         .isIn(
