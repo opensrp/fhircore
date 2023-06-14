@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Configuration for button content color
 - Configuration for button and overflow menu item icons
 - [Event Management] Add support for extra resources to close
+- Rename 'quest' application module to 'opensrp'
 
 ### Fixed
 - Member icons display wrapping; hiding some texts
