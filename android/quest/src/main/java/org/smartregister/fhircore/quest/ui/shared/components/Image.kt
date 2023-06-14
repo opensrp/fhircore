@@ -30,14 +30,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
-import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
-import org.smartregister.fhircore.engine.ui.theme.DangerColor
-import org.smartregister.fhircore.engine.ui.theme.WarningColor
+import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.engine.util.extension.retrieveResourceId
 import org.smartregister.fhircore.quest.ui.main.components.SIDE_MENU_ICON
 import org.smartregister.fhircore.quest.util.extensions.conditional
-import org.smartregister.p2p.search.ui.theme.SuccessColor
 
 const val SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG = "sideMenuItemLocalIconTestTag"
 const val SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG = "sideMenuItemBinaryIconTestTag"
@@ -45,55 +43,41 @@ const val SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG = "sideMenuItemBinaryIconTestTag"
 @Composable
 fun Image(
   modifier: Modifier = Modifier,
-  color: Color?,
   paddingEnd: Int = 8,
-  imageProperties: ImageProperties? = null,
-  imageConfig: ImageConfig?
+  tint: Color? = null,
+  imageProperties: ImageProperties = ImageProperties(viewType = ViewType.IMAGE, size = 24),
 ) {
 
-  val imageConfigFinal: ImageConfig? = imageConfig ?: imageProperties?.imageConfig
-  val colorFinal: Color = (getTintColor(imageProperties?.tint) ?: color) as Color
-  val size = imageProperties?.size
-
-  if (imageConfigFinal != null) {
-    when (imageConfigFinal.type) {
+  val imageConfig = imageProperties.imageConfig
+  if (imageConfig != null) {
+    when (imageConfig.type) {
       ICON_TYPE_LOCAL -> {
-        LocalContext.current.retrieveResourceId(imageConfigFinal.reference)?.let { drawableId ->
+        LocalContext.current.retrieveResourceId(imageConfig.reference)?.let { drawableId ->
           Icon(
             modifier =
               modifier
                 .testTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG)
-                .conditional(size != null, { modifier.size(size!!.dp) }, { modifier.size(24.dp) })
+                .conditional(imageProperties.size != null, { size(imageProperties.size!!.dp) })
+                .conditional(imageProperties.padding >= 0, { padding(imageProperties.padding.dp) })
                 .padding(end = paddingEnd.dp),
             painter = painterResource(id = drawableId),
             contentDescription = SIDE_MENU_ICON,
-            tint = colorFinal
+            tint = tint ?: imageProperties.tint.parseColor()
           )
         }
       }
       ICON_TYPE_REMOTE ->
-        if (imageConfigFinal.decodedBitmap != null) {
+        if (imageConfig.decodedBitmap != null) {
           Image(
             modifier =
               modifier
                 .testTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
-                .conditional(size != null, { modifier.size(size!!.dp) }, { modifier.size(24.dp) })
+                .conditional(imageProperties.size != null, { size(imageProperties.size!!.dp) })
                 .padding(end = paddingEnd.dp),
-            bitmap = imageConfigFinal.decodedBitmap!!.asImageBitmap(),
+            bitmap = imageConfig.decodedBitmap!!.asImageBitmap(),
             contentDescription = null
           )
         }
     }
   }
-}
-
-@Composable
-private fun getTintColor(colorString: String?): Color? {
-  var color: Color? = null
-  when (colorString) {
-    "COMPLETED" -> color = SuccessColor
-    "OVERDUE" -> color = DangerColor
-    "DUE" -> color = WarningColor
-  }
-  return color
 }

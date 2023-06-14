@@ -26,7 +26,7 @@ data class ImageProperties(
   override val viewType: ViewType = ViewType.IMAGE,
   override val weight: Float = 0f,
   override val backgroundColor: String? = null,
-  override val padding: Int = 0,
+  override val padding: Int = -1,
   override val borderRadius: Int = 2,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = false,
@@ -38,8 +38,13 @@ data class ImageProperties(
   val size: Int? = null
 ) : ViewProperties() {
   override fun interpolate(computedValuesMap: Map<String, Any>): ViewProperties {
-    val imageConfigReference = imageConfig?.reference?.interpolate(computedValuesMap)
-    imageConfig?.reference = imageConfigReference
-    return this.copy(imageConfig = imageConfig, tint = this.tint?.interpolate(computedValuesMap))
+    return this.copy(
+      imageConfig =
+        imageConfig?.copy(
+          reference = imageConfig.reference?.interpolate(computedValuesMap),
+          type = imageConfig.type.interpolate(computedValuesMap)
+        ),
+      tint = this.tint?.interpolate(computedValuesMap)
+    )
   }
 }

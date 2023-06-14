@@ -36,6 +36,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -85,9 +86,9 @@ fun ExtendedFab(
       if (firstMenuIconConfig != null) {
         Image(
           modifier = modifier.testTag(FAB_BUTTON_ROW_ICON_TEST_TAG),
-          color = if (firstFabEnabled) Color.White else DefaultColor,
           paddingEnd = 0,
-          imageConfig = firstMenuIconConfig
+          imageProperties = ImageProperties(imageConfig = firstMenuIconConfig),
+          tint = if (firstFabEnabled) Color.White else DefaultColor,
         )
       }
       if (text.isNotEmpty()) {

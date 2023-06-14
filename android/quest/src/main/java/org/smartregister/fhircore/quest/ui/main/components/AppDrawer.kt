@@ -58,6 +58,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCA
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
 import org.smartregister.fhircore.engine.ui.theme.MenuActionButtonTextColor
@@ -76,7 +77,6 @@ import org.smartregister.fhircore.quest.ui.shared.components.Image
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
-private val DividerColor = MenuItemColor.copy(alpha = 0.2f)
 const val NAV_TOP_SECTION_TEST_TAG = "navTopSectionTestTag"
 const val MENU_BUTTON_TEST_TAG = "menuButtonTestTag"
 const val MENU_BUTTON_ICON_TEST_TAG = "menuButtonIconTestTag"
@@ -88,6 +88,7 @@ const val SIDE_MENU_ITEM_TEXT_TEST_TAG = "sideMenuItemTextTestTag"
 const val NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG = "navBottomSectionSideMenuItemTestTag"
 const val NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG = "navBottomSectionMainBoxTestTag"
 const val NAV_CLIENT_REGISTER_MENUS_LIST = "navClientRegisterMenusList"
+private val DividerColor = MenuItemColor.copy(alpha = 0.2f)
 
 @Composable
 fun AppDrawer(
@@ -370,7 +371,11 @@ private fun SideMenuItem(
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).padding(vertical = 16.dp)) {
-      Image(color = MenuItemColor, paddingEnd = 10, imageConfig = imageConfig)
+      Image(
+        paddingEnd = 10,
+        imageProperties = ImageProperties(imageConfig = imageConfig),
+        tint = MenuItemColor
+      )
       SideMenuItemText(title = title, textColor = Color.White)
     }
     if (showEndText) {
