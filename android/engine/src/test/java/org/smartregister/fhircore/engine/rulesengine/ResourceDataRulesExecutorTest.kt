@@ -27,6 +27,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -41,6 +42,7 @@ import org.smartregister.fhircore.engine.configuration.view.ListResource
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -132,16 +134,33 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
     runTest {
       val registerCard = RegisterCardConfig()
       val viewType = ViewType.CARD
-      val patient = Faker.buildPatient()
-      val listResource = ListResource("id", resourceType = ResourceType.Patient)
-      val resources = listOf(listResource)
+      val patient = Faker.buildPatient(id = "patientId", given = "Betty", family = "Jones")
+      val anotherPatient =
+        Faker.buildPatient(id = "anotherPatient", given = "Abel", family = "Mandela")
+      val listResource =
+        ListResource(
+          "id",
+          resourceType = ResourceType.Patient,
+          sortConfig =
+            SortConfig(
+              dataType = Enumerations.DataType.STRING,
+              fhirPathExpression = "Patient.name.given"
+            )
+        )
       val listProperties =
-        ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
+        ListProperties(
+          registerCard = registerCard,
+          viewType = viewType,
+          resources = listOf(listResource)
+        )
       val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
       val computedValuesMap: Map<String, List<Resource>> = emptyMap()
 
       relatedRepositoryResourceData[ResourceType.Patient.name] =
-        LinkedList<Resource>().apply { add(patient) }
+        LinkedList<Resource>().apply {
+          add(patient)
+          add(anotherPatient)
+        }
       val listResourceDataStateMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
       resourceDataRulesExecutor.processListResourceData(
         listProperties = listProperties,
@@ -151,9 +170,16 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
       )
       val snapshotStateList = listResourceDataStateMap[listProperties.id]
       Assert.assertNotNull(snapshotStateList)
-      Assert.assertEquals(1, snapshotStateList?.size)
-      Assert.assertEquals(patient.id, snapshotStateList?.first()?.baseResourceId)
-      Assert.assertEquals(patient.resourceType, snapshotStateList?.first()?.baseResourceType)
+      Assert.assertEquals(2, snapshotStateList?.size)
+
+      // List data sorted by Patient name
+      val firstResourceData = snapshotStateList?.first()
+      Assert.assertEquals(anotherPatient.id, firstResourceData?.baseResourceId)
+      Assert.assertEquals(anotherPatient.resourceType, firstResourceData?.baseResourceType)
+
+      val lastResourceData = snapshotStateList?.last()
+      Assert.assertEquals(patient.id, lastResourceData?.baseResourceId)
+      Assert.assertEquals(patient.resourceType, lastResourceData?.baseResourceType)
     }
   }
 
