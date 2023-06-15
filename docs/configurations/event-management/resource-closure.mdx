@@ -21,7 +21,7 @@ This is achieved by use of the `EventWorkFlow` config.
                     "eventResourceId": "carePlanToBeClosed",
                     "matchAll": false,
                     "conditionalFhirPathExpressions": [
-                      "Patient.active = true"
+                      "condition-to-check"
                     ]
                   }
                 ],
@@ -44,7 +44,7 @@ This is achieved by use of the `EventWorkFlow` config.
                         "filterCriteria": [
                           {
                             "dataType": "REFERENCE",
-                            "value": "PlanDefinition/e994ab6f-30a5-4450-9a90-691c8199f379"
+                            "value": "PlanDefinition/planDefinition-uuid-used-to-generate-the-resources"
                           }
                         ]
                       },
