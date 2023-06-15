@@ -53,6 +53,21 @@ class ServiceCardTest {
       .assertExists()
       .assertIsDisplayed()
   }
+  
+  @Test
+  fun serviceActionButtonIsDisplayedCorrectlyWithButtonParams() {
+    composeRule.setContent {
+      ServiceCard(
+        serviceCardProperties = initTestServiceCardProperties(serviceStatus = ServiceStatus.OVERDUE.name, text = "1"),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule
+      .onNodeWithText("1", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
 
   @Test
   fun serviceActionButtonNotDisplayedWhenVisibleIsFalse() {
@@ -95,6 +110,7 @@ class ServiceCardTest {
   private fun initTestServiceCardProperties(
     showVerticalDivider: Boolean = false,
     serviceStatus: String = ServiceStatus.UPCOMING.name,
+    text: String = "Next visit 09-10-2022",
     smallSized: Boolean = false,
     visible: String = "true"
   ): ServiceCardProperties {
@@ -126,7 +142,7 @@ class ServiceCardTest {
         ButtonProperties(
           visible = visible,
           status = serviceStatus,
-          text = "Next visit 09-10-2022",
+          text = text,
           smallSized = smallSized
         )
     )
