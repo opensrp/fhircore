@@ -213,7 +213,12 @@ constructor(
           menuClickListener = {
             onEvent(AppMainEvent.TriggerWorkflow(navController = event.navController, navMenu = it))
           },
-          title = event.title
+          title =
+            if (event.title.isNullOrEmpty()) {
+              "Other patients"
+            } else {
+              event.title
+            }
         )
         .run { show(activity.supportFragmentManager, RegisterBottomSheetFragment.TAG) }
     }

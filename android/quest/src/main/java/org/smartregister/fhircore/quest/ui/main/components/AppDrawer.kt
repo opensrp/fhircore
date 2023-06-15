@@ -220,7 +220,12 @@ private fun OtherPatientsItem(
       AppMainEvent.OpenRegistersBottomSheet(
         registersList = navigationConfiguration.bottomSheetRegisters?.registers,
         navController = navController,
-        title = navigationConfiguration.bottomSheetRegisters?.display
+        title =
+          if (navigationConfiguration.bottomSheetRegisters?.display.isNullOrEmpty()) {
+            "Other Patients"
+          } else {
+            navigationConfiguration.bottomSheetRegisters?.display
+          }
       )
     )
   }

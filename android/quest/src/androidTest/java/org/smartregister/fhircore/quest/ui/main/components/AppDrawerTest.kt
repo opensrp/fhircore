@@ -147,7 +147,7 @@ class AppDrawerTest {
   @Test
   fun testAppDrawerRendersOtherPatientsItemCorrectly() {
     composeTestRule
-      .onNodeWithText("Other patients", useUnmergedTree = true)
+      .onNodeWithText("My Register", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
     composeTestRule
