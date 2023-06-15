@@ -210,22 +210,3 @@ eventType |The intention of the eventWorkflow. E.g close resources | yes | RESOU
 triggerConditions | This defines an array of condition for to be met for the event to run | no | null |
 eventResourceId |  uniqueId of resource id to be closed |  yes   |               |
 eventResources | A list of resources to close(Type of ResourceConfig) |    yes           |     |      |
-
-### Trigger condition properties
-|Property | Description | Required | Default |
-|--|--|:--:|:--:|
-eventResourceId | UniqueId of resource that the trigger conditions are applied to | yes | RESOURCE_CLOSURE is supported for now |
-conditionalFhirPathExpressions | criteria to ensure we only close the intended resources | yes |     |
-matchAll |  Determines whether all conditional fhirpath expressions should evaluate to true |  no   |          True     |
-         |  `True` - Close resources only when all fhirpath expressions evaluate to true  |     |               |
-         |  `False` - Close resources when one or more fhirpath expressions evaluate to true  |     |               |
-
-### Event Resource Properties
-|Property | Description | Required | Default |
-|--|--|:--:|:--:|
-id |uniqueId of resource id to be closed  | yes |  |
-resource | The type of resource  | yes |  |
-configRules | Rules to be that are executed to populate dynamic values such as a patient id   | no |  |
-dataQueries | Configs used to represent how resources to be closed are retrieved from the database  | yes |  |
-relatedResources | Configs that represent how to fetch related resources e.g Tasks linked to a CarePlan | no |  |
-
