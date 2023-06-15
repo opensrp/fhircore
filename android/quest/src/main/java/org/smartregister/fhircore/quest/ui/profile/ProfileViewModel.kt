@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.profile
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.db.ResourceNotFoundException
@@ -70,6 +71,7 @@ constructor(
   val resourceDataRulesExecutor: ResourceDataRulesExecutor
 ) : ViewModel() {
 
+  val refreshProfileDataLiveData = MutableLiveData<Boolean?>(null)
   val profileUiState = mutableStateOf(ProfileUiState())
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
@@ -77,6 +79,7 @@ constructor(
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow: SharedFlow<SnackBarMessageConfig> = _snackBarStateFlow.asSharedFlow()
   private lateinit var profileConfiguration: ProfileConfiguration
+
   private val listResourceDataStateMap =
     mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
 
@@ -192,6 +195,7 @@ constructor(
                   actionLabel = event.context.getString(R.string.ok)
                 )
             )
+            refreshProfileDataLiveData.value = true
           }
         }
       }
