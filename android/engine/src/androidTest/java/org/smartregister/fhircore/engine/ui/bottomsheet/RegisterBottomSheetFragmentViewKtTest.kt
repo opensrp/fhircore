@@ -43,7 +43,8 @@ class RegisterBottomSheetFragmentViewKtTest {
       RegisterBottomSheetView(
         menuClickListener = mockListener,
         navigationMenuConfigs = navigationMenuConfigs,
-        onDismiss = {}
+        onDismiss = {},
+        title = ""
       )
     }
   }
