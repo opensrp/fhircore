@@ -256,7 +256,6 @@
       "contentPadding": 0,
       "tabs": [
         "Member",
-        "Due",
         "Prev Info"
       ],
       "tabIndicatorColor": "#FFFF00",
@@ -593,23 +592,6 @@
                   }
                 ]
               }
-            }
-          ]
-        },
-        {
-          "viewType": "COLUMN",
-          "backgroundColor": "#FFFFFF",
-          "alignment": "CENTER",
-          "arrangement": "CENTER",
-          "fillMaxWidth": "true",
-          "fillMaxHeight": "true",
-          "children": [
-            {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "Due content",
-              "primaryTextColor": "#6F7274",
-              "fontSize": 18,
-              "padding": 16
             }
           ]
         },
