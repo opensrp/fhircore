@@ -21,6 +21,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.domain.model.ExtractedResource
+import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
@@ -62,5 +63,6 @@ data class ListResource(
   val relatedResourceId: String? = null,
   val resourceType: ResourceType,
   val conditionalFhirPathExpression: String? = null,
-  val relatedResources: List<ExtractedResource> = emptyList()
+  val relatedResources: List<ExtractedResource> = emptyList(),
+  val sortConfig: SortConfig? = null
 )

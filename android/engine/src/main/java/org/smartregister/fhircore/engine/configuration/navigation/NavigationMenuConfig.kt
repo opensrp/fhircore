@@ -34,7 +34,7 @@ data class NavigationMenuConfig(
 
 @Serializable
 data class MenuIconConfig(
-  val type: String? = null,
+  val type: String = ICON_TYPE_LOCAL,
   val reference: String? = null,
   @Contextual var decodedBitmap: Bitmap? = null
 )

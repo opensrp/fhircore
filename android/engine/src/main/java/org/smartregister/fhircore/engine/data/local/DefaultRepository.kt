@@ -146,6 +146,7 @@ constructor(
   suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
       resource.onEach {
+        it.updateLastUpdated()
         it.generateMissingId()
         if (addResourceTags) {
           it.addTags(configService.provideResourceTags(sharedPreferencesHelper))
@@ -172,6 +173,13 @@ constructor(
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         create(addMandatoryTags, resource)
       }
+    }
+  }
+
+  suspend fun <R : Resource> update(resource: R) {
+    return withContext(dispatcherProvider.io()) {
+      resource.updateLastUpdated()
+      fhirEngine.update(resource)
     }
   }
 
@@ -215,7 +223,7 @@ constructor(
       addOrUpdate(resource = relatedPerson)
 
       group.managingEntity = relatedPerson.asReference()
-      fhirEngine.update(group)
+      update(group)
     }
   }
 
@@ -361,14 +369,18 @@ constructor(
 
   private fun Search.sort(sortConfigs: List<SortConfig>) {
     sortConfigs.forEach { sortConfig ->
-      when (sortConfig.dataType) {
-        Enumerations.DataType.INTEGER ->
-          sort(NumberClientParam(sortConfig.paramName), sortConfig.order)
-        Enumerations.DataType.DATE -> sort(DateClientParam(sortConfig.paramName), sortConfig.order)
-        Enumerations.DataType.STRING ->
-          sort(StringClientParam(sortConfig.paramName), sortConfig.order)
-        else -> {
-          /*Unsupported data type*/
+      if (!sortConfig.paramName.isNullOrEmpty()) {
+        when (sortConfig.dataType) {
+          Enumerations.DataType.INTEGER ->
+            sort(NumberClientParam(sortConfig.paramName), sortConfig.order)
+          Enumerations.DataType.DATE ->
+            sort(DateClientParam(sortConfig.paramName), sortConfig.order)
+          Enumerations.DataType.STRING ->
+            sort(StringClientParam(sortConfig.paramName), sortConfig.order)
+          else ->
+            Timber.e(
+              "Unsupported data type: '${sortConfig.dataType}'. Only ${listOf(Enumerations.DataType.INTEGER, Enumerations.DataType.DATE, Enumerations.DataType.STRING)} types are supported for DB level sorting."
+            )
         }
       }
     }

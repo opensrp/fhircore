@@ -42,7 +42,8 @@ fun MenuIcon(
   modifier: Modifier = Modifier,
   menuIconConfig: MenuIconConfig?,
   color: Color,
-  paddingEnd: Int = 8
+  paddingEnd: Int = 8,
+  size: Int = 24
 ) {
   if (menuIconConfig != null) {
     when (menuIconConfig.type) {
@@ -67,7 +68,7 @@ fun MenuIcon(
               modifier
                 .testTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
                 .padding(end = paddingEnd.dp)
-                .size(24.dp),
+                .size(size.dp),
             bitmap = menuIconConfig.decodedBitmap!!.asImageBitmap(),
             contentDescription = null
           )
