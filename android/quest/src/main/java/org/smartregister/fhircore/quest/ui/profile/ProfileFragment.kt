@@ -68,6 +68,17 @@ class ProfileFragment : Fragment() {
       }
     }
 
+    profileViewModel.refreshProfileDataLiveData.observe(viewLifecycleOwner) {
+      viewLifecycleOwner.lifecycleScope.launch {
+        if (it == true) {
+          with(profileFragmentArgs) {
+            profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
+          }
+          profileViewModel.refreshProfileDataLiveData.value = null
+        }
+      }
+    }
+
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
