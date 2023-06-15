@@ -220,7 +220,7 @@ private fun OtherPatientsItem(
       AppMainEvent.OpenRegistersBottomSheet(
         registersList = navigationConfiguration.bottomSheetRegisters?.registers,
         navController = navController,
-        title = navigationConfiguration.bottomSheetRegisters?.display!!
+        title = navigationConfiguration.bottomSheetRegisters?.display
       )
     )
   }

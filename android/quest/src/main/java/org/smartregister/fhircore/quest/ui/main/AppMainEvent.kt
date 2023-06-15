@@ -28,7 +28,7 @@ sealed class AppMainEvent {
   data class SwitchLanguage(val language: Language, val context: Context) : AppMainEvent()
 
   data class OpenRegistersBottomSheet(
-    val title: String = "",
+    val title: String? = "",
     val navController: NavController,
     val registersList: List<NavigationMenuConfig>?
   ) : AppMainEvent()
