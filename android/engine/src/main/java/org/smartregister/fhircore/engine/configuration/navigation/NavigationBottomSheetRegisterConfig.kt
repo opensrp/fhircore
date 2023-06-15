@@ -21,7 +21,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class NavigationBottomSheetRegisterConfig(
   val visible: Boolean = true,
-  val display: String? = "",
+  val display: String = "",
   val registers: List<NavigationMenuConfig> = emptyList(),
   val menuIconConfig: MenuIconConfig? = null
 )

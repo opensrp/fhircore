@@ -204,6 +204,7 @@ private fun OtherPatientsItem(
   openDrawer: (Boolean) -> Unit,
   navController: NavController
 ) {
+  val context = LocalContext.current
   SideMenuItem(
     menuIconConfig = navigationConfiguration.bottomSheetRegisters?.menuIconConfig,
     title =
@@ -222,7 +223,7 @@ private fun OtherPatientsItem(
         navController = navController,
         title =
           if (navigationConfiguration.bottomSheetRegisters?.display.isNullOrEmpty()) {
-            "Other Patients"
+            context.getString(R.string.other_patients)
           } else {
             navigationConfiguration.bottomSheetRegisters?.display
           }

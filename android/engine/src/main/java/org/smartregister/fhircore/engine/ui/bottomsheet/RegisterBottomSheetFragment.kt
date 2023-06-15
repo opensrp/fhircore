@@ -28,7 +28,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 class RegisterBottomSheetFragment(
   val navigationMenuConfigs: List<NavigationMenuConfig>? = emptyList(),
   val registerCountMap: Map<String, Long> = emptyMap(),
-  val title: String = "",
+  val title: String? = null,
   val menuClickListener: (NavigationMenuConfig) -> Unit,
 ) : BottomSheetDialogFragment() {
 
