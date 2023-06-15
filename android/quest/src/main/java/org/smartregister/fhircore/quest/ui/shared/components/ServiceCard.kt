@@ -266,9 +266,11 @@ private fun BigServiceButton(
           shape = RoundedCornerShape(4.dp)
         )
         .background(
-          if (backgroundColor != Color.Unspecified.toString()) {
+          if (status == ServiceStatus.OVERDUE.name) {
+            contentColor
+          } else if (backgroundColor != Color.Unspecified.toString()) {
             backgroundColor.parseColor()
-          } else if (status == ServiceStatus.OVERDUE.name) contentColor else Color.Unspecified
+          } else Color.Unspecified
         ),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
@@ -331,6 +333,116 @@ private fun ServiceCardServiceOverduePreview() {
                 ButtonProperties(
                   visible = "true",
                   status = ServiceStatus.OVERDUE.name,
+                  text = "1",
+                  buttonType = ButtonType.BIG
+                )
+            )
+          )
+      )
+    )
+
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+    ViewRenderer(
+      viewProperties = viewProperties,
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+      navController = rememberNavController()
+    )
+  }
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+private fun ServiceCardServiceOverdueWithBackgroundColorPreview() {
+  val viewProperties =
+    listOf<ViewProperties>(
+      ColumnProperties(
+        viewType = ViewType.COLUMN,
+        children =
+          listOf(
+            ServiceCardProperties(
+              viewType = ViewType.SERVICE_CARD,
+              details =
+                listOf(
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Overdue household service",
+                    primaryTextColor = "#000000",
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Town/Village",
+                    primaryTextColor = "#5A5A5A",
+                    secondaryText = "HH No.",
+                    secondaryTextColor = "#555AAA"
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Last visited yesterday",
+                    primaryTextColor = "#5A5A5A",
+                  )
+                ),
+              serviceMemberIcons = "CHILD",
+              showVerticalDivider = true,
+              serviceButton =
+                ButtonProperties(
+                  visible = "true",
+                  status = "",
+                  backgroundColor = "#000000",
+                  text = "1",
+                  buttonType = ButtonType.BIG
+                )
+            )
+          )
+      )
+    )
+
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+    ViewRenderer(
+      viewProperties = viewProperties,
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+      navController = rememberNavController()
+    )
+  }
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+private fun ServiceCardServiceOverdueWithNoBackgroundColorAndStatusPreview() {
+  val viewProperties =
+    listOf<ViewProperties>(
+      ColumnProperties(
+        viewType = ViewType.COLUMN,
+        children =
+          listOf(
+            ServiceCardProperties(
+              viewType = ViewType.SERVICE_CARD,
+              details =
+                listOf(
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Overdue household service",
+                    primaryTextColor = "#000000",
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Town/Village",
+                    primaryTextColor = "#5A5A5A",
+                    secondaryText = "HH No.",
+                    secondaryTextColor = "#555AAA"
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Last visited yesterday",
+                    primaryTextColor = "#5A5A5A",
+                  )
+                ),
+              serviceMemberIcons = "CHILD",
+              showVerticalDivider = true,
+              serviceButton =
+                ButtonProperties(
+                  visible = "true",
+                  status = "",
+                  backgroundColor = "",
                   text = "1",
                   buttonType = ButtonType.BIG
                 )
