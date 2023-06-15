@@ -69,6 +69,7 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "CarePlan_Activity" -> CarePlan.CarePlanActivityComponent()
       "CarePlan_ActivityDetail" -> CarePlan.CarePlanActivityDetailComponent()
       "Patient_Link" -> Patient.PatientLinkComponent()
+      "Patient_Contact" -> Patient.ContactComponent()
       "Timing_Repeat" -> Timing.TimingRepeatComponent()
       "PlanDefinition_Action" -> PlanDefinition.PlanDefinitionActionComponent()
       "Group_Characteristic" -> Group.GroupCharacteristicComponent()

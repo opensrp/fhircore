@@ -1,1456 +1,1454 @@
 {
-    "resourceType": "Questionnaire",
-    "language": "en-GB",
-    "id": "252",
-    "name": "mPower Add Family Member Registration",
-    "title": "mPower Add Family Member Registration",
-    "description": "mPower Add Family Member Registration",
-    "version": "0.0.3",
-    "status": "active",
-    "publisher": "mPower",
-    "meta": {
-      "versionId": "13",
-      "lastUpdated": "2023-05-10T09:02:58.806+00:00",
-      "source": "#6WAl0CqXPfodSKDB",
-      "profile": [
-        "http://ehelse.no/fhir/StructureDefinition/sdf-Questionnaire"
-      ],
-      "tag": [
+  "resourceType": "Questionnaire",
+  "language": "en-GB",
+  "id": "252",
+  "name": "mPower Add Family Member Registration",
+  "title": "mPower Add Family Member Registration",
+  "description": "mPower Add Family Member Registration",
+  "version": "0.0.3",
+  "status": "active",
+  "publisher": "mPower",
+  "meta": {
+    "versionId": "13",
+    "lastUpdated": "2023-05-10T09:02:58.806+00:00",
+    "source": "#6WAl0CqXPfodSKDB",
+    "profile": [
+      "http://ehelse.no/fhir/StructureDefinition/sdf-Questionnaire"
+    ],
+    "tag": [
+      {
+        "system": "urn:ietf:bcp:47",
+        "code": "bn-BD",
+        "display": "বাংলা"
+      },
+      {
+        "system": "urn:ietf:bcp:47",
+        "code": "en-GB",
+        "display": "English"
+      }
+    ],
+    "security": [
+      {
+        "code": "3",
+        "display": "Helsehjelp",
+        "system": "urn:oid:2.16.578.1.12.4.1.1.7618"
+      }
+    ]
+  },
+  "contact": [
+    {
+      "name": "https://www.smartregister.org/"
+    }
+  ],
+  "subjectType": [
+    "Patient",
+    "RelatedPerson"
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir.labs.smartregister.org/fhir/StructureMap/268"
+    }
+  ],
+  "purpose": "Family Member Registration",
+  "date": "2022-02-14T00:00:00.000Z",
+  "item": [
+    {
+      "extension": [
         {
-          "system": "urn:ietf:bcp:47",
-          "code": "bn-BD",
-          "display": "বাংলা"
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "name": "patientBirthdate",
+            "language": "text/fhirpath",
+            "expression": "iif(%resource.descendants().where(linkId='36d39dbe-00e2-4e29-f079-3ec8f0119aff').answer.value.code = 'date-of-birth-unknown', (%resource.descendants().where(linkId='8460d986-ef71-4997-80ee-7887d8c345e7').answer.value.toString().toDecimal() * 12), (((today().toString().substring(0, 4).toInteger() - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(0, 4).toInteger()) * 12) + (today().toString().substring(5, 2).toInteger() - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(5, 2).toInteger()) + ((today().toString().substring(8, 2).toInteger() - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(8, 2).toInteger()) / 365.25 * 12)))"
+          }
         },
         {
-          "system": "urn:ietf:bcp:47",
-          "code": "en-GB",
-          "display": "English"
+          "url": "http://hl7.org/fhir/StructureDefinition/maxDecimalPlaces",
+          "valueDecimal": 3
         }
       ],
-      "security": [
+      "linkId": "9af686f7-8fc7-4ef8-815b-99bd4ea5bb79",
+      "text": "Patient's Age *",
+      "type": "decimal",
+      "required": true,
+      "readOnly": true
+    },
+    {
+      "extension": [
         {
-          "code": "3",
-          "display": "Helsehjelp",
-          "system": "urn:oid:2.16.578.1.12.4.1.1.7618"
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueInteger": 10000000
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Enter the correct number between 1 and 10,000,000"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueInteger": 1
+        }
+      ],
+      "linkId": "ed77104e-c279-4030-ab20-8cd99ca99ca9",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
+      "text": "শেয়ারড হেলথ রেকর্ড আই ডি *",
+      "type": "integer",
+      "required": true,
+      "readOnly": true
+    },
+    {
+      "linkId": "2588ee71-9699-440d-8364-6ac7c1e63ccd",
+      "type": "string",
+      "text": "সদস্য আই ডি *",
+      "required": true,
+      "readOnly": true,
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+          "valueInteger": 14
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "বৈধ সদস্য আইডি লিখুন"
+        }
+      ],
+      "maxLength": 14
+    },
+    {
+      "linkId": "dcd43da7-3d32-4b86-8e46-fde38a1fcd78",
+      "type": "choice",
+      "text": "আপনার কোন পরিচয় পত্রটি আছে? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "82d29b6e-c0a3-49d7-8f38-9ee4c11d21a9",
+            "code": "chk_national_id",
+            "system": "urn:uuid:d84db2ce-ce1b-4e15-8752-07d20dc9da6e",
+            "display": "জাতীয় পরিচয় পত্র"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3c6d092c-ef6b-4d05-929a-e16b658337f9",
+            "code": "chk_birth_id",
+            "system": "urn:uuid:d84db2ce-ce1b-4e15-8752-07d20dc9da6e",
+            "display": "জন্মনিবন্ধন"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "9007d6a6-0b55-4a4b-cfc1-c2186455540f",
+            "code": "chk_epi_id",
+            "system": "urn:uuid:d84db2ce-ce1b-4e15-8752-07d20dc9da6e",
+            "display": "ইপিআই কার্ড"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "f259871b-dfc9-465b-8a30-ab164368d29e",
+            "code": "chk_none",
+            "system": "urn:uuid:d84db2ce-ce1b-4e15-8752-07d20dc9da6e",
+            "display": "আইডি কার্ড নেই"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
         }
       ]
     },
-    "contact": [
-      {
-        "name": "https://www.smartregister.org/"
-      }
-    ],
-    "subjectType": [
-      "Patient",
-      "RelatedPerson"
-    ],
-    "extension": [
-      {
-        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
-        "valueCanonical": "https://fhir.labs.smartregister.org/fhir/StructureMap/268"
-      }
-    ],
-    "purpose": "Family Member Registration",
-    "date": "2022-02-14T00:00:00.000Z",
-    "item": [
-      {
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
-            "valueExpression": {
-              "name": "patientBirthdate",
-              "language": "text/fhirpath",
-              "expression": "iif(%resource.descendants().where(linkId='36d39dbe-00e2-4e29-f079-3ec8f0119aff').answer.value.code = 'date-of-birth-unknown', (%resource.descendants().where(linkId='8460d986-ef71-4997-80ee-7887d8c345e7').answer.value.toString().toDecimal() * 12), (((today().toString().substring(0, 4).toInteger() - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(0, 4).toInteger()) * 12) + (today().toString().substring(5, 2).toInteger() - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(5, 2).toInteger()) + ((today().toString().substring(8, 2).toInteger() - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(8, 2).toInteger()) / 365.25 * 12)))"
-            }
-          },
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/maxDecimalPlaces",
-            "valueDecimal": 3
+    {
+      "linkId": "7a31ee75-e1eb-4037-8f69-c8fd5a06fc32",
+      "type": "string",
+      "text": "জাতীয় পরিচয় পত্র *",
+      "required": true,
+      "extension": [
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "মোট 10/13/17 সংখ্যা হওয়া আবশ্যক"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "([0-9]{10})|([0-9]{13})|([0-9]{17})|\\\\s*"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+          "valueInteger": 10
+        }
+      ],
+      "maxLength": 17,
+      "enableWhen": [
+        {
+          "question": "dcd43da7-3d32-4b86-8e46-fde38a1fcd78",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d84db2ce-ce1b-4e15-8752-07d20dc9da6e",
+            "code": "chk_national_id"
           }
-        ],
-        "linkId": "9af686f7-8fc7-4ef8-815b-99bd4ea5bb79",
-        "text": "Patient's Age *",
-        "type": "decimal",
-        "required": true,
-        "readOnly": true
-      },
-      {
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-            "valueInteger": 10000000
-          },
-          {
-            "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-            "valueString": "Enter the correct number between 1 and 10,000,000"
-          },
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/minValue",
-            "valueInteger": 1
-          },
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-            "valueExpression": {
-              "language": "text/fhirpath",
-              "expression": "Patient.identifier.value[0].toInteger()"
-            }
+        }
+      ]
+    },
+    {
+      "linkId": "b2bad7a2-9757-423c-8b2a-e2c183d6e076",
+      "type": "string",
+      "text": "জন্মনিবন্ধন নম্বর *",
+      "extension": [
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "মোট 17 সংখ্যা হওয়া আবশ্যক"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+          "valueInteger": 17
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "([0-9]{16})|([0-9]{17})|\\\\s*"
+        }
+      ],
+      "required": true,
+      "enableWhen": [
+        {
+          "question": "dcd43da7-3d32-4b86-8e46-fde38a1fcd78",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d84db2ce-ce1b-4e15-8752-07d20dc9da6e",
+            "code": "chk_birth_id"
           }
-        ],
-        "linkId": "ed77104e-c279-4030-ab20-8cd99ca99ca9",
-        "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
-        "text": "শেয়ারড হেলথ রেকর্ড আই ডি *",
-        "type": "integer",
-        "required": true,
-        "readOnly": true
-      },
-      {
-        "linkId": "2588ee71-9699-440d-8364-6ac7c1e63ccd",
-        "type": "string",
-        "text": "সদস্য আই ডি *",
-        "required": true,
-        "readOnly": true,
-        "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/minLength",
-            "valueInteger": 14
-          },
-          {
-            "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-            "valueString": "বৈধ সদস্য আইডি লিখুন"
+        }
+      ],
+      "maxLength": 17
+    },
+    {
+      "linkId": "bcad728b-3755-4d3a-811d-a1d07066846a",
+      "type": "string",
+      "text": "ইপিআই কার্ড নম্বর *",
+      "extension": [
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "মোট 17 সংখ্যা হওয়া আবশ্যক"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+          "valueInteger": 17
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "([0-9]{17})|\\\\s*"
+        }
+      ],
+      "required": true,
+      "enableWhen": [
+        {
+          "question": "dcd43da7-3d32-4b86-8e46-fde38a1fcd78",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d84db2ce-ce1b-4e15-8752-07d20dc9da6e",
+            "code": "chk_epi_id"
           }
-        ],
-        "maxLength": 14
-      },
-      {
-        "linkId": "dcd43da7-3d32-4b86-8e46-fde38a1fcd78",
-        "type": "choice",
-        "text": "আপনার কোন পরিচয় পত্রটি আছে? *",
-        "required": true,
-        "answerOption": [
-          {
-            "valueCoding": {
-              "id": "82d29b6e-c0a3-49d7-8f38-9ee4c11d21a9",
-              "code": "chk_national_id",
-              "system": "urn:uuid:d84db2ce-ce1b-4e15-8752-07d20dc9da6e",
-              "display": "জাতীয় পরিচয় পত্র"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "3c6d092c-ef6b-4d05-929a-e16b658337f9",
-              "code": "chk_birth_id",
-              "system": "urn:uuid:d84db2ce-ce1b-4e15-8752-07d20dc9da6e",
-              "display": "জন্মনিবন্ধন"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "9007d6a6-0b55-4a4b-cfc1-c2186455540f",
-              "code": "chk_epi_id",
-              "system": "urn:uuid:d84db2ce-ce1b-4e15-8752-07d20dc9da6e",
-              "display": "ইপিআই কার্ড"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "f259871b-dfc9-465b-8a30-ab164368d29e",
-              "code": "chk_none",
-              "system": "urn:uuid:d84db2ce-ce1b-4e15-8752-07d20dc9da6e",
-              "display": "আইডি কার্ড নেই"
-            }
+        }
+      ],
+      "maxLength": 17
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "toggle-is-family-head",
+      "type": "integer"
+    },
+    {
+      "linkId": "c33296ce-1abb-4685-8bd0-e7f7187f2e98",
+      "type": "choice",
+      "text": "খানা প্রধানের সাথে সম্পর্ক *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "89f171d2-8965-4537-9b51-d3c4ab671f23",
+            "code": "খানা-প্রধান",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "খানা প্রধান"
           }
-        ],
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-            "valueCodeableConcept": {
-              "coding": [
-                {
-                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                  "code": "drop-down"
-                }
-              ]
-            }
+        },
+        {
+          "valueCoding": {
+            "id": "ed967456-b409-4934-89cc-d793433f8f6f",
+            "code": "স্বামী",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "স্বামী"
           }
-        ],
-        "item": [
-          {
-            "linkId": "7a31ee75-e1eb-4037-8f69-c8fd5a06fc32",
-            "type": "string",
-            "text": "জাতীয় পরিচয় পত্র *",
-            "required": true,
-            "extension": [
+        },
+        {
+          "valueCoding": {
+            "id": "ca820513-8f28-4cea-8d5e-e495ff0d6c1a",
+            "code": "স্ত্রী",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "স্ত্রী"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "73125bae-a41b-4f4a-87d3-e103e90dcd94",
+            "code": "পুত্র",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "পুত্র"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "c11efe49-61b3-4204-c0f5-dad3be3a65ac",
+            "code": "কন্যা",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "কন্যা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "0a1f271b-f0a8-4fb8-8192-2ed70120ef7a",
+            "code": "পুত্রবধূ",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "পুত্রবধূ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "79c6d01b-dba4-47a9-d153-3d42b65cd210",
+            "code": "নাতি",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "নাতি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "53e3d9c8-13fd-4d0e-fd54-e1ed2da8cdca",
+            "code": "নাতনী",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "নাতনী"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "7d2eedc9-bf5b-4bb4-830f-7794e41224da",
+            "code": "মাতা",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "মাতা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "6eddb1b4-3acc-48d7-86b6-de66d96fb24c",
+            "code": "পিতা",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "পিতা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "337cdc4a-cf0b-460e-86fd-7bb1856fab52",
+            "code": "ভাই",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "ভাই"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "1f073697-fc61-4e8e-f251-93e4f2738064",
+            "code": "বোন",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "বোন"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "6fa67905-8ffd-4694-8dd6-29522ae97288",
+            "code": "ভাইপো",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "ভাইপো"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "9f5c8503-95da-4e67-b9bf-ad369a1e7993",
+            "code": "ভাইঝি",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "ভাইঝি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "a0a3f653-e256-4f10-8fea-82e450b376d5",
+            "code": "ভাগ্নে",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "ভাগ্নে"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "81444cac-e75b-49bc-a0e3-e51ac2e6eddd",
+            "code": "ভাগ্নি",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "ভাগ্নি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "47de0af6-f5c5-4ca9-ce0e-689bb369da9f",
+            "code": "শ্বশুর",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "শ্বশুর"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "9c3eb41c-c8f3-4fb6-d992-9e14b2e9341b",
+            "code": "শাশুড়ি",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "শাশুড়ি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "bfdbbb32-af92-4a91-8fdd-4e725ec60932",
+            "code": "শ্যালক",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "শ্যালক"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "be157e94-8f52-4c93-8d97-22f163e52c0e",
+            "code": "শ্যালিকা",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "শ্যালিকা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "4e4d7f19-b540-4848-85fe-f1fc17985c71",
+            "code": "দেবর",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "দেবর"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "68d812c3-638a-4b8e-d985-31bb7e88171b",
+            "code": "জা",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "জা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b7ad59ac-8af9-4fc7-97f1-8b739f69b6de",
+            "code": "ননদ",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "ননদ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "76534e57-d4e3-4812-ced8-d916b4cdefdc",
+            "code": "ভাইয়ের-স্ত্রী",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "ভাইয়ের স্ত্রী"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "8d0cc96b-9c98-44c1-9645-71ce784e416e",
+            "code": "ভগ্নিপতি",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "ভগ্নিপতি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "26186148-5d00-46d2-9395-a2ce10cf3113",
+            "code": "জামাতা",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "জামাতা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "79a4a6b7-7346-46ca-87a2-e74b7a3b26e6",
+            "code": "অন্যান্য-আত্মীয়",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "অন্যান্য আত্মীয়"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "0f2d9066-6f8e-4e8d-8f14-fbd8aa1a1dba",
+            "code": "অন্যান্য-অনাত্মীয়",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "অন্যান্য অনাত্মীয়"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='toggle-is-family-head').answer.value = 0"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
               {
-                "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-                "valueString": "মোট 10/13/17 সংখ্যা হওয়া আবশ্যক"
-              },
-              {
-                "url": "http://hl7.org/fhir/StructureDefinition/regex",
-                "valueString": "([0-9]{10})|([0-9]{13})|([0-9]{17})|\\\\s*"
-              },
-              {
-                "url": "http://hl7.org/fhir/StructureDefinition/minLength",
-                "valueInteger": 10
-              }
-            ],
-            "maxLength": 17,
-            "enableWhen": [
-              {
-                "question": "dcd43da7-3d32-4b86-8e46-fde38a1fcd78",
-                "operator": "=",
-                "answerCoding": {
-                  "system": "urn:uuid:d84db2ce-ce1b-4e15-8752-07d20dc9da6e",
-                  "code": "chk_national_id"
-                }
-              }
-            ]
-          },
-          {
-            "linkId": "b2bad7a2-9757-423c-8b2a-e2c183d6e076",
-            "type": "string",
-            "text": "জন্মনিবন্ধন নম্বর *",
-            "extension": [
-              {
-                "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-                "valueString": "মোট 17 সংখ্যা হওয়া আবশ্যক"
-              },
-              {
-                "url": "http://hl7.org/fhir/StructureDefinition/minLength",
-                "valueInteger": 17
-              },
-              {
-                "url": "http://hl7.org/fhir/StructureDefinition/regex",
-                "valueString": "([0-9]{16})|([0-9]{17})|\\\\s*"
-              }
-            ],
-            "required": true,
-            "enableWhen": [
-              {
-                "question": "dcd43da7-3d32-4b86-8e46-fde38a1fcd78",
-                "operator": "=",
-                "answerCoding": {
-                  "system": "urn:uuid:d84db2ce-ce1b-4e15-8752-07d20dc9da6e",
-                  "code": "chk_birth_id"
-                }
-              }
-            ],
-            "maxLength": 17
-          },
-          {
-            "linkId": "bcad728b-3755-4d3a-811d-a1d07066846a",
-            "type": "string",
-            "text": "ইপিআই কার্ড নম্বর *",
-            "extension": [
-              {
-                "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-                "valueString": "মোট 17 সংখ্যা হওয়া আবশ্যক"
-              },
-              {
-                "url": "http://hl7.org/fhir/StructureDefinition/minLength",
-                "valueInteger": 17
-              },
-              {
-                "url": "http://hl7.org/fhir/StructureDefinition/regex",
-                "valueString": "([0-9]{17})|\\\\s*"
-              }
-            ],
-            "required": true,
-            "enableWhen": [
-              {
-                "question": "dcd43da7-3d32-4b86-8e46-fde38a1fcd78",
-                "operator": "=",
-                "answerCoding": {
-                  "system": "urn:uuid:d84db2ce-ce1b-4e15-8752-07d20dc9da6e",
-                  "code": "chk_epi_id"
-                }
-              }
-            ],
-            "maxLength": 17
-          }
-        ]
-      },
-      {
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-            "valueBoolean": true
-          }
-        ],
-        "linkId": "toggle-is-family-head",
-        "type": "integer"
-      },
-      {
-        "linkId": "c33296ce-1abb-4685-8bd0-e7f7187f2e98",
-        "type": "choice",
-        "text": "খানা প্রধানের সাথে সম্পর্ক *",
-        "required": true,
-        "answerOption": [
-          {
-            "valueCoding": {
-              "id": "89f171d2-8965-4537-9b51-d3c4ab671f23",
-              "code": "খানা-প্রধান",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "খানা প্রধান"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "ed967456-b409-4934-89cc-d793433f8f6f",
-              "code": "স্বামী",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "স্বামী"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "ca820513-8f28-4cea-8d5e-e495ff0d6c1a",
-              "code": "স্ত্রী",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "স্ত্রী"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "73125bae-a41b-4f4a-87d3-e103e90dcd94",
-              "code": "পুত্র",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "পুত্র"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "c11efe49-61b3-4204-c0f5-dad3be3a65ac",
-              "code": "কন্যা",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "কন্যা"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "0a1f271b-f0a8-4fb8-8192-2ed70120ef7a",
-              "code": "পুত্রবধূ",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "পুত্রবধূ"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "79c6d01b-dba4-47a9-d153-3d42b65cd210",
-              "code": "নাতি",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "নাতি"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "53e3d9c8-13fd-4d0e-fd54-e1ed2da8cdca",
-              "code": "নাতনী",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "নাতনী"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "7d2eedc9-bf5b-4bb4-830f-7794e41224da",
-              "code": "মাতা",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "মাতা"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "6eddb1b4-3acc-48d7-86b6-de66d96fb24c",
-              "code": "পিতা",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "পিতা"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "337cdc4a-cf0b-460e-86fd-7bb1856fab52",
-              "code": "ভাই",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "ভাই"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "1f073697-fc61-4e8e-f251-93e4f2738064",
-              "code": "বোন",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "বোন"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "6fa67905-8ffd-4694-8dd6-29522ae97288",
-              "code": "ভাইপো",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "ভাইপো"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "9f5c8503-95da-4e67-b9bf-ad369a1e7993",
-              "code": "ভাইঝি",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "ভাইঝি"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "a0a3f653-e256-4f10-8fea-82e450b376d5",
-              "code": "ভাগ্নে",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "ভাগ্নে"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "81444cac-e75b-49bc-a0e3-e51ac2e6eddd",
-              "code": "ভাগ্নি",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "ভাগ্নি"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "47de0af6-f5c5-4ca9-ce0e-689bb369da9f",
-              "code": "শ্বশুর",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "শ্বশুর"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "9c3eb41c-c8f3-4fb6-d992-9e14b2e9341b",
-              "code": "শাশুড়ি",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "শাশুড়ি"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "bfdbbb32-af92-4a91-8fdd-4e725ec60932",
-              "code": "শ্যালক",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "শ্যালক"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "be157e94-8f52-4c93-8d97-22f163e52c0e",
-              "code": "শ্যালিকা",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "শ্যালিকা"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "4e4d7f19-b540-4848-85fe-f1fc17985c71",
-              "code": "দেবর",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "দেবর"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "68d812c3-638a-4b8e-d985-31bb7e88171b",
-              "code": "জা",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "জা"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "b7ad59ac-8af9-4fc7-97f1-8b739f69b6de",
-              "code": "ননদ",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "ননদ"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "76534e57-d4e3-4812-ced8-d916b4cdefdc",
-              "code": "ভাইয়ের-স্ত্রী",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "ভাইয়ের স্ত্রী"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "8d0cc96b-9c98-44c1-9645-71ce784e416e",
-              "code": "ভগ্নিপতি",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "ভগ্নিপতি"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "26186148-5d00-46d2-9395-a2ce10cf3113",
-              "code": "জামাতা",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "জামাতা"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "79a4a6b7-7346-46ca-87a2-e74b7a3b26e6",
-              "code": "অন্যান্য-আত্মীয়",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "অন্যান্য আত্মীয়"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "0f2d9066-6f8e-4e8d-8f14-fbd8aa1a1dba",
-              "code": "অন্যান্য-অনাত্মীয়",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "অন্যান্য অনাত্মীয়"
-            }
-          }
-        ],
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
-            "valueExpression": {
-              "language": "text/fhirpath",
-              "expression": "%resource.descendants().where(linkId='toggle-is-family-head').answer.value = 0"
-            }
-          },
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-            "valueCodeableConcept": {
-              "coding": [
-                {
-                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                  "code": "drop-down"
-                }
-              ]
-            }
-          }
-        ]
-      },
-      {
-        "linkId": "ffe83655-d445-471d-8172-c0d3bafb8940",
-        "type": "choice",
-        "text": "খানা প্রধানের সাথে সম্পর্ক *",
-        "required": true,
-        "answerOption": [
-          {
-            "valueCoding": {
-              "id": "ed967456-b409-4934-89cc-d793433f8f6f",
-              "code": "স্বামী",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "স্বামী"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "ca820513-8f28-4cea-8d5e-e495ff0d6c1a",
-              "code": "স্ত্রী",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "স্ত্রী"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "73125bae-a41b-4f4a-87d3-e103e90dcd94",
-              "code": "পুত্র",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "পুত্র"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "c11efe49-61b3-4204-c0f5-dad3be3a65ac",
-              "code": "কন্যা",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "কন্যা"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "0a1f271b-f0a8-4fb8-8192-2ed70120ef7a",
-              "code": "পুত্রবধূ",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "পুত্রবধূ"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "79c6d01b-dba4-47a9-d153-3d42b65cd210",
-              "code": "নাতি",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "নাতি"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "53e3d9c8-13fd-4d0e-fd54-e1ed2da8cdca",
-              "code": "নাতনী",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "নাতনী"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "7d2eedc9-bf5b-4bb4-830f-7794e41224da",
-              "code": "মাতা",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "মাতা"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "6eddb1b4-3acc-48d7-86b6-de66d96fb24c",
-              "code": "পিতা",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "পিতা"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "337cdc4a-cf0b-460e-86fd-7bb1856fab52",
-              "code": "ভাই",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "ভাই"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "1f073697-fc61-4e8e-f251-93e4f2738064",
-              "code": "বোন",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "বোন"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "6fa67905-8ffd-4694-8dd6-29522ae97288",
-              "code": "ভাইপো",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "ভাইপো"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "9f5c8503-95da-4e67-b9bf-ad369a1e7993",
-              "code": "ভাইঝি",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "ভাইঝি"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "a0a3f653-e256-4f10-8fea-82e450b376d5",
-              "code": "ভাগ্নে",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "ভাগ্নে"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "81444cac-e75b-49bc-a0e3-e51ac2e6eddd",
-              "code": "ভাগ্নি",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "ভাগ্নি"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "47de0af6-f5c5-4ca9-ce0e-689bb369da9f",
-              "code": "শ্বশুর",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "শ্বশুর"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "9c3eb41c-c8f3-4fb6-d992-9e14b2e9341b",
-              "code": "শাশুড়ি",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "শাশুড়ি"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "bfdbbb32-af92-4a91-8fdd-4e725ec60932",
-              "code": "শ্যালক",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "শ্যালক"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "be157e94-8f52-4c93-8d97-22f163e52c0e",
-              "code": "শ্যালিকা",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "শ্যালিকা"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "4e4d7f19-b540-4848-85fe-f1fc17985c71",
-              "code": "দেবর",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "দেবর"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "68d812c3-638a-4b8e-d985-31bb7e88171b",
-              "code": "জা",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "জা"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "b7ad59ac-8af9-4fc7-97f1-8b739f69b6de",
-              "code": "ননদ",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "ননদ"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "76534e57-d4e3-4812-ced8-d916b4cdefdc",
-              "code": "ভাইয়ের-স্ত্রী",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "ভাইয়ের স্ত্রী"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "8d0cc96b-9c98-44c1-9645-71ce784e416e",
-              "code": "ভগ্নিপতি",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "ভগ্নিপতি"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "26186148-5d00-46d2-9395-a2ce10cf3113",
-              "code": "জামাতা",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "জামাতা"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "79a4a6b7-7346-46ca-87a2-e74b7a3b26e6",
-              "code": "অন্যান্য-আত্মীয়",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "অন্যান্য আত্মীয়"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "0f2d9066-6f8e-4e8d-8f14-fbd8aa1a1dba",
-              "code": "অন্যান্য-অনাত্মীয়",
-              "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
-              "display": "অন্যান্য অনাত্মীয়"
-            }
-          }
-        ],
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
-            "valueExpression": {
-              "language": "text/fhirpath",
-              "expression": "%resource.descendants().where(linkId='toggle-is-family-head').answer.value = 1"
-            }
-          },
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-            "valueCodeableConcept": {
-              "coding": [
-                {
-                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                  "code": "drop-down"
-                }
-              ]
-            }
-          }
-        ]
-      },
-      {
-        "linkId": "0b0f8e90-5cb5-4123-b7b5-2a397741a7f0",
-        "type": "string",
-        "text": "অন্যান্য আত্মীয় *",
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
-            "valueExpression": {
-              "language": "text/fhirpath",
-              "expression": "%resource.descendants().where(linkId='ffe83655-d445-471d-8172-c0d3bafb8940').answer.value.code = 'অন্যান্য-আত্মীয়' or %resource.descendants().where(linkId='c33296ce-1abb-4685-8bd0-e7f7187f2e98').answer.value.code = 'অন্যান্য-আত্মীয়'"
-            }
-          },
-          {
-            "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-            "valueString": "অন্যান্য আত্মীয় লিখুন"
-          }
-        ],
-        "required": true
-      },
-      {
-        "linkId": "8030fdda-7f97-4606-8353-30a737f51cf6",
-        "type": "string",
-        "text": "অন্যান্য অনাত্মীয় *",
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
-            "valueExpression": {
-              "language": "text/fhirpath",
-              "expression": "%resource.descendants().where(linkId='ffe83655-d445-471d-8172-c0d3bafb8940').answer.value.code = 'অন্যান্য-অনাত্মীয়' or %resource.descendants().where(linkId='c33296ce-1abb-4685-8bd0-e7f7187f2e98').answer.value.code = 'অন্যান্য-অনাত্মীয়'"
-            }
-          },
-          {
-            "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-            "valueString": "অন্যান্য অনাত্মীয় লিখুন"
-          }
-        ],
-        "required": true
-      },
-      {
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-            "valueExpression": {
-              "language": "text/fhirpath",
-              "expression": "Patient.name.given"
-            }
-          },
-          {
-            "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-            "valueString": "একটি বৈধ নাম লিখুন"
-          },
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/regex",
-            "valueString": "^[a-zA-Z][A-Za-z\\\\.\\\\- ]*"
-          }
-        ],
-        "linkId": "e6306275-b989-4375-8527-3a56092081b8",
-        "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given",
-        "text": "নামের প্রথম অংশ (ইংরেজীতে) *",
-        "type": "string",
-        "required": true
-      },
-      {
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-            "valueExpression": {
-              "language": "text/fhirpath",
-              "expression": "Patient.name.family"
-            }
-          },
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/regex",
-            "valueString": "^[a-zA-Z][A-Za-z\\\\.\\\\- ]*"
-          },
-          {
-            "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-            "valueString": "একটি বৈধ নাম লিখুন"
-          }
-        ],
-        "linkId": "8fb87910-d900-4eea-dbba-dcf76ee6806d",
-        "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.family",
-        "text": "নামের শেষ অংশ (ইংরেজীতে)",
-        "type": "string",
-        "required": false
-      },
-      {
-        "linkId": "965b355c-8e93-49cd-c3b8-5ad6d88f1695",
-        "type": "string",
-        "text": "মাতার নাম (ইংরেজীতে)",
-        "required": false,
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/regex",
-            "valueString": "^$|^[a-zA-Z][A-Za-z\\\\.\\\\- ]*"
-          },
-          {
-            "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-            "valueString": "একটি বৈধ নাম লিখুন"
-          }
-        ]
-      },
-      {
-        "linkId": "7e747ed7-81bd-438d-87a9-ca718e9794c0",
-        "type": "string",
-        "text": "পিতার নাম (ইংরেজীতে)",
-        "required": false,
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/regex",
-            "valueString": "[A-Za-z .]*"
-          },
-          {
-            "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-            "valueString": "একটি বৈধ নাম লিখুন"
-          }
-        ]
-      },
-      {
-        "linkId": "3a731d3a-0da1-4f6e-8c18-286108c04300",
-        "type": "string",
-        "text": "মোবাইল নম্বর *",
-        "required": true,
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/regex",
-            "valueString": "0|(01[1-9][0-9]{8})|\\s*"
-          },
-          {
-            "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-            "valueString": "11 অঙ্কের মোবাইল নম্বর লিখুন"
-          },
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/minLength",
-            "valueInteger": 11
-          }
-        ],
-        "maxLength": 11
-      },
-      {
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-            "valueExpression": {
-              "language": "text/fhirpath",
-              "expression": "Patient.birthDate"
-            }
-          },
-          {
-            "url": "http://ehelse.no/fhir/StructureDefinition/sdf-maxvalue",
-            "valueString": "today()"
-          },
-          {
-            "url": "http://ehelse.no/fhir/StructureDefinition/sdf-minvalue",
-            "valueString": "today() - 120 years"
-          }
-        ],
-        "linkId": "cd8e3d6d-e9ff-458d-d122-57070bebffaf",
-        "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
-        "text": "জন্ম তারিখ *",
-        "type": "date",
-        "enableWhen": [
-          {
-            "question": "36d39dbe-00e2-4e29-f079-3ec8f0119aff",
-            "operator": "exists",
-            "answerBoolean": false
-          }
-        ],
-        "required": true
-      },
-      {
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-            "valueCodeableConcept": {
-              "coding": [
-                {
-                  "system": "http://hl7.org/fhir/questionnaire-item-control",
-                  "code": "check-box",
-                  "display": "Check-box"
-                }
-              ],
-              "text": "Check-box"
-            }
-          }
-        ],
-        "linkId": "36d39dbe-00e2-4e29-f079-3ec8f0119aff",
-        "type": "choice",
-        "required": false,
-        "repeats": true,
-        "answerOption": [
-          {
-            "valueCoding": {
-              "system": "urn:uuid:d2f70cf6-9320-4f5c-ce52-02f67f2a99e2",
-              "code": "date-of-birth-unknown",
-              "display": "Date of Birth Unknown"
-            }
-          }
-        ]
-      },
-      {
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-            "valueInteger": 120
-          },
-          {
-            "url": "http://ehelse.no/fhir/StructureDefinition/sdf-fhirpath",
-            "valueString": "Patient.extension.where(url = 'http://helsenorge.no/fhir/StructureDefinition/sdf-age').value"
-          },
-          {
-            "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-            "valueString": "বয়স প্রবেশ করুন"
-          }
-        ],
-        "linkId": "8460d986-ef71-4997-80ee-7887d8c345e7",
-        "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.age",
-        "text": "বয়স লিখুন (বছর) *",
-        "type": "integer",
-        "enableWhen": [
-          {
-            "question": "36d39dbe-00e2-4e29-f079-3ec8f0119aff",
-            "operator": "=",
-            "answerCoding": {
-              "system": "urn:uuid:d2f70cf6-9320-4f5c-ce52-02f67f2a99e2",
-              "code": "date-of-birth-unknown"
-            }
-          }
-        ],
-        "enableBehavior": "all",
-        "required": true
-      },
-      {
-        "linkId": "77e32953-0679-48b5-f004-1ab4a4ac0271",
-        "type": "choice",
-        "text": "লিঙ্গ",
-        "required": true,
-        "answerOption": [
-          {
-            "valueCoding": {
-              "id": "efa1bdd5-7438-4300-8152-19a3d6060ced",
-              "code": "male",
-              "system": "urn:uuid:363292ba-7469-4c29-81b7-77e1971c3257",
-              "display": "পুরুষ"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "f0b32b18-14cf-4778-e829-3a414e50d051",
-              "code": "female",
-              "system": "urn:uuid:363292ba-7469-4c29-81b7-77e1971c3257",
-              "display": "নারী"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "be627cb2-bf4c-4d82-8f60-6e444404e900",
-              "code": "other",
-              "system": "urn:uuid:363292ba-7469-4c29-81b7-77e1971c3257",
-              "display": "তৃতীয় লিঙ্গ"
-            }
-          }
-        ],
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-            "valueCodeableConcept": {
-              "coding": [
-                {
-                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                  "code": "drop-down"
-                }
-              ]
-            }
-          }
-        ],
-        "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender"
-      },
-      {
-        "linkId": "c5cf7fd7-eccd-45b6-8875-10a3183da552",
-        "type": "choice",
-        "text": "বৈবাহিক অবস্থা *",
-        "required": true,
-        "answerOption": [
-          {
-            "valueCoding": {
-              "id": "cabbab6b-41a9-41e5-c9d7-44ab2df7ab88",
-              "code": "U",
-              "system": "urn:uuid:5c5ee819-f537-4fd3-98e8-0482890eada9",
-              "display": "অবিবাহিত"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "44616955-71eb-458c-ca8b-01f4c652405b",
-              "code": "M",
-              "system": "urn:uuid:5c5ee819-f537-4fd3-98e8-0482890eada9",
-              "display": "বিবাহিত"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "4c1bdf7c-6670-495e-8f29-2a797d3653c8",
-              "code": "S",
-              "system": "urn:uuid:5c5ee819-f537-4fd3-98e8-0482890eada9",
-              "display": "দাম্পত্য বিছিন্ন"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "bed21f64-944c-486c-81aa-0b0af1f86909",
-              "code": "D",
-              "system": "urn:uuid:5c5ee819-f537-4fd3-98e8-0482890eada9",
-              "display": "তালাক প্রাপ্ত"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "a5761b0f-1821-49b3-c74f-fd768004f0c5",
-              "code": "W",
-              "system": "urn:uuid:5c5ee819-f537-4fd3-98e8-0482890eada9",
-              "display": "বিধবা"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "12a17290-d12e-480e-dc8e-fd425832e7cb",
-              "code": "WD",
-              "system": "urn:uuid:5c5ee819-f537-4fd3-98e8-0482890eada9",
-              "display": "বিপত্নীক"
-            }
-          }
-        ],
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-            "valueCodeableConcept": {
-              "coding": [
-                {
-                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                  "code": "drop-down"
-                }
-              ]
-            }
-          }
-        ],
-        "definition": "https://hl7.org/fhir/patient-definitions.html#Patient.maritalStatus"
-      },
-      {
-        "linkId": "b69718e1-1140-4e4a-882a-3dd47838c612",
-        "type": "choice",
-        "text": "প্রতিবন্ধী *",
-        "required": true,
-        "answerOption": [
-          {
-            "valueCoding": {
-              "id": "aaa7830f-27af-4da9-826a-da7fe474c4ab",
-              "code": "yes",
-              "system": "urn:uuid:e767b433-24fb-44c6-8e9a-cfa6743805e2",
-              "display": "হ্যাঁ"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "ad55dcf7-c07a-4cde-977c-df3a29c350bf",
-              "code": "no",
-              "system": "urn:uuid:e767b433-24fb-44c6-8e9a-cfa6743805e2",
-              "display": "না"
-            }
-          }
-        ],
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-            "valueCodeableConcept": {
-              "coding": [
-                {
-                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                  "code": "radio-button"
-                }
-              ]
-            }
-          }
-        ],
-        "item": [
-          {
-            "linkId": "cd6f06a5-22e7-48d6-9530-da322b85cba3",
-            "type": "choice",
-            "text": "প্রতিবন্ধীতা ধরন *",
-            "required": true,
-            "answerOption": [
-              {
-                "valueCoding": {
-                  "id": "bcd540af-5023-427b-91f9-95f088140220",
-                  "code": "autism",
-                  "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
-                  "display": "অটিজম বৈশিষ্ট্য সম্পন্ন ব্যাক্তি"
-                }
-              },
-              {
-                "valueCoding": {
-                  "id": "67a54ef8-fb8f-44d0-d3c7-7762cc91f5ac",
-                  "code": "physical-disability",
-                  "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
-                  "display": "শারীরিক প্রতিবন্ধীতা"
-                }
-              },
-              {
-                "valueCoding": {
-                  "id": "23e1e104-9cd2-4b26-ac76-1875f8d485ec",
-                  "code": "auditory-disability",
-                  "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
-                  "display": "দৃষ্টি ও শ্রবণ প্রতিবন্ধীতা"
-                }
-              },
-              {
-                "valueCoding": {
-                  "id": "4295b6a9-c3ff-44af-9ef6-4473f8be0022",
-                  "code": "mute-hearing-disability",
-                  "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
-                  "display": "বাক ও শ্রবণ প্রতিবন্ধীতা"
-                }
-              },
-              {
-                "valueCoding": {
-                  "id": "c731d9f2-0347-4cb5-87a8-45c60a8edb4c",
-                  "code": "mental-disability",
-                  "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
-                  "display": "মানসিক প্রতিবন্ধীতা"
-                }
-              },
-              {
-                "valueCoding": {
-                  "id": "c13a8e24-5f7a-4aad-8af8-dbad0648028a",
-                  "code": "mentally-challenged",
-                  "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
-                  "display": "বুদ্ধি প্রতিবন্ধীতা"
-                }
-              },
-              {
-                "valueCoding": {
-                  "id": "5d0baac1-de8b-448f-8094-cee97879b195",
-                  "code": "cerebral-palsy",
-                  "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
-                  "display": "সেরিব্রাল পালসিজনিত প্রতিবন্ধীতা"
-                }
-              },
-              {
-                "valueCoding": {
-                  "id": "daf700e7-442e-4d62-8d19-c09102c73b1f",
-                  "code": "down-syndrome",
-                  "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
-                  "display": "ডাউন সিনড্রমজনিত প্রতিবন্ধীতা"
-                }
-              },
-              {
-                "valueCoding": {
-                  "id": "888a8625-f447-4d20-82c5-70cc0301cc68",
-                  "code": "multidimensional-disability",
-                  "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
-                  "display": "বহুমুখী প্রতিবন্ধীতা"
-                }
-              }
-            ],
-            "extension": [
-              {
-                "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                "valueCodeableConcept": {
-                  "coding": [
-                    {
-                      "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                      "code": "drop-down"
-                    }
-                  ]
-                }
-              }
-            ],
-            "enableWhen": [
-              {
-                "question": "b69718e1-1140-4e4a-882a-3dd47838c612",
-                "operator": "=",
-                "answerCoding": {
-                  "system": "urn:uuid:e767b433-24fb-44c6-8e9a-cfa6743805e2",
-                  "code": "yes"
-                }
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
               }
             ]
           }
-        ]
-      },
-      {
-        "linkId": "9b62b65c-e8f9-4b4d-9cb2-cc715b73baaa",
-        "type": "choice",
-        "text": "রক্তের গ্রুপ",
-        "answerOption": [
-          {
-            "valueCoding": {
-              "id": "4ecf7430-96e9-44e5-8d76-51e93dd45a62",
-              "code": "a+",
-              "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
-              "display": "A+"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "576558c3-ed3f-4ecd-ff7f-b2b8585a8c21",
-              "code": "a-",
-              "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
-              "display": "A-"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "16ec7574-74f7-47c6-8fb0-65ba177c5095",
-              "code": "b+",
-              "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
-              "display": "B+"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "a2b8eb00-a9f2-4dd3-8a5a-3379c651b807",
-              "code": "b-",
-              "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
-              "display": "B-"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "17e7a6c2-8416-483a-823b-b8b34ea4fafe",
-              "code": "o+",
-              "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
-              "display": "O+"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "36db548c-fd20-46d1-d46f-ad3e7ec8e63b",
-              "code": "o-",
-              "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
-              "display": "O-"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "a465238f-9205-4370-8f21-a669994ed514",
-              "code": "ab+",
-              "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
-              "display": "AB+"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "e65c5d71-c2ec-4c48-8c10-509fcf472fc5",
-              "code": "ab-",
-              "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
-              "display": "AB-"
-            }
-          },
-          {
-            "valueCoding": {
-              "id": "6e365c38-f1a5-4bf0-b065-9276e18ff377",
-              "code": "unknown",
-              "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
-              "display": "রক্তের গ্রুপ জানা নেই"
-            }
+        }
+      ]
+    },
+    {
+      "linkId": "ffe83655-d445-471d-8172-c0d3bafb8940",
+      "type": "choice",
+      "text": "খানা প্রধানের সাথে সম্পর্ক *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "ed967456-b409-4934-89cc-d793433f8f6f",
+            "code": "স্বামী",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "স্বামী"
           }
-        ],
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-            "valueCodeableConcept": {
-              "coding": [
-                {
-                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                  "code": "radio-button"
-                }
-              ]
-            }
+        },
+        {
+          "valueCoding": {
+            "id": "ca820513-8f28-4cea-8d5e-e495ff0d6c1a",
+            "code": "স্ত্রী",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "স্ত্রী"
           }
-        ]
-      },
-      {
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
-            "valueExpression": {
-              "language": "text/fhirpath",
-              "expression": "iif(%resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(5, 2).toInteger() > today().toString().substring(5, 2).toInteger(), ((today().toString().substring(5, 2).toInteger() + 12) - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(5, 2).toInteger() + 1), (today().toString().substring(5, 2).toInteger() - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(5, 2).toInteger()) + 1)"
-            }
-          },
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-            "valueBoolean": true
+        },
+        {
+          "valueCoding": {
+            "id": "73125bae-a41b-4f4a-87d3-e103e90dcd94",
+            "code": "পুত্র",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "পুত্র"
           }
-        ],
-        "linkId": "calculated-month",
-        "text": "calculated month",
-        "type": "integer"
-      },
-      {
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
-            "valueExpression": {
-              "language": "text/fhirpath",
-              "expression": "iif(%resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(5, 2).toInteger() > today().toString().substring(5, 2).toInteger(), (today().toString().substring(0, 4).toInteger() - 1) - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(0, 4).toInteger(), today().toString().substring(0, 4).toInteger() - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(0, 4).toInteger())"
-            }
-          },
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-            "valueBoolean": true
+        },
+        {
+          "valueCoding": {
+            "id": "c11efe49-61b3-4204-c0f5-dad3be3a65ac",
+            "code": "কন্যা",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "কন্যা"
           }
-        ],
-        "linkId": "calculated-year",
-        "text": "calculated year",
-        "type": "integer"
-      },
-      {
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
-            "valueExpression": {
-              "language": "text/fhirpath",
-              "expression": "(((%resource.descendants().where(linkId='calculated-year').answer.value.toString().toInteger() * 365.25) + (%resource.descendants().where(linkId='calculated-month').answer.value.toString().toInteger() * 365.25 / 12)) / 365.25).toString().replaceMatches('[.]+[0-9]+', '').toInteger()"
-            }
-          },
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-            "valueBoolean": true
+        },
+        {
+          "valueCoding": {
+            "id": "0a1f271b-f0a8-4fb8-8192-2ed70120ef7a",
+            "code": "পুত্রবধূ",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "পুত্রবধূ"
           }
-        ],
-        "linkId": "b5bc7f80-4a0c-486c-e5eb-32c750036f94",
-        "text": "Calculated Age",
-        "type": "integer",
-        "readOnly": true
-      },
-      {
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
-            "valueExpression": {
-              "language": "text/fhirpath",
-              "expression": "iif(%resource.descendants().where(linkId='36d39dbe-00e2-4e29-f079-3ec8f0119aff').answer.value.code = 'date-of-birth-unknown', %resource.descendants().where(linkId='8460d986-ef71-4997-80ee-7887d8c345e7').answer.value.toString().toInteger(), %resource.descendants().where(linkId='b5bc7f80-4a0c-486c-e5eb-32c750036f94').answer.value.toString().toInteger())"
-            }
-          },
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-            "valueBoolean": true
+        },
+        {
+          "valueCoding": {
+            "id": "79c6d01b-dba4-47a9-d153-3d42b65cd210",
+            "code": "নাতি",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "নাতি"
           }
-        ],
-        "linkId": "age",
-        "text": "Age",
-        "type": "integer",
-        "readOnly": true
-      },
-      {
-        "linkId": "1e1a206f-1cc2-4e48-8103-b26bf4bd7c3c",
-        "type": "string",
-        "text": "Is family head?",
-        "required": false,
-        "readOnly": true,
-        "extension": [
-          {
-            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
-            "valueExpression": {
-              "language": "text/fhirpath",
-              "expression": "iif(%resource.descendants().where(linkId='c33296ce-1abb-4685-8bd0-e7f7187f2e98').answer.value.code = 'খানা-প্রধান', 'yes', 'no')"
-            }
-          },
-          {
-            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-            "valueBoolean": true
+        },
+        {
+          "valueCoding": {
+            "id": "53e3d9c8-13fd-4d0e-fd54-e1ed2da8cdca",
+            "code": "নাতনী",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "নাতনী"
           }
-        ]
-      }
-    ]
-  }
+        },
+        {
+          "valueCoding": {
+            "id": "7d2eedc9-bf5b-4bb4-830f-7794e41224da",
+            "code": "মাতা",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "মাতা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "6eddb1b4-3acc-48d7-86b6-de66d96fb24c",
+            "code": "পিতা",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "পিতা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "337cdc4a-cf0b-460e-86fd-7bb1856fab52",
+            "code": "ভাই",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "ভাই"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "1f073697-fc61-4e8e-f251-93e4f2738064",
+            "code": "বোন",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "বোন"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "6fa67905-8ffd-4694-8dd6-29522ae97288",
+            "code": "ভাইপো",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "ভাইপো"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "9f5c8503-95da-4e67-b9bf-ad369a1e7993",
+            "code": "ভাইঝি",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "ভাইঝি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "a0a3f653-e256-4f10-8fea-82e450b376d5",
+            "code": "ভাগ্নে",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "ভাগ্নে"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "81444cac-e75b-49bc-a0e3-e51ac2e6eddd",
+            "code": "ভাগ্নি",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "ভাগ্নি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "47de0af6-f5c5-4ca9-ce0e-689bb369da9f",
+            "code": "শ্বশুর",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "শ্বশুর"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "9c3eb41c-c8f3-4fb6-d992-9e14b2e9341b",
+            "code": "শাশুড়ি",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "শাশুড়ি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "bfdbbb32-af92-4a91-8fdd-4e725ec60932",
+            "code": "শ্যালক",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "শ্যালক"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "be157e94-8f52-4c93-8d97-22f163e52c0e",
+            "code": "শ্যালিকা",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "শ্যালিকা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "4e4d7f19-b540-4848-85fe-f1fc17985c71",
+            "code": "দেবর",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "দেবর"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "68d812c3-638a-4b8e-d985-31bb7e88171b",
+            "code": "জা",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "জা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b7ad59ac-8af9-4fc7-97f1-8b739f69b6de",
+            "code": "ননদ",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "ননদ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "76534e57-d4e3-4812-ced8-d916b4cdefdc",
+            "code": "ভাইয়ের-স্ত্রী",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "ভাইয়ের স্ত্রী"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "8d0cc96b-9c98-44c1-9645-71ce784e416e",
+            "code": "ভগ্নিপতি",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "ভগ্নিপতি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "26186148-5d00-46d2-9395-a2ce10cf3113",
+            "code": "জামাতা",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "জামাতা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "79a4a6b7-7346-46ca-87a2-e74b7a3b26e6",
+            "code": "অন্যান্য-আত্মীয়",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "অন্যান্য আত্মীয়"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "0f2d9066-6f8e-4e8d-8f14-fbd8aa1a1dba",
+            "code": "অন্যান্য-অনাত্মীয়",
+            "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
+            "display": "অন্যান্য অনাত্মীয়"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='toggle-is-family-head').answer.value = 1"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "0b0f8e90-5cb5-4123-b7b5-2a397741a7f0",
+      "type": "string",
+      "text": "অন্যান্য আত্মীয় *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='ffe83655-d445-471d-8172-c0d3bafb8940').answer.value.code = 'অন্যান্য-আত্মীয়' or %resource.descendants().where(linkId='c33296ce-1abb-4685-8bd0-e7f7187f2e98').answer.value.code = 'অন্যান্য-আত্মীয়'"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "অন্যান্য আত্মীয় লিখুন"
+        }
+      ],
+      "required": true
+    },
+    {
+      "linkId": "8030fdda-7f97-4606-8353-30a737f51cf6",
+      "type": "string",
+      "text": "অন্যান্য অনাত্মীয় *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='ffe83655-d445-471d-8172-c0d3bafb8940').answer.value.code = 'অন্যান্য-অনাত্মীয়' or %resource.descendants().where(linkId='c33296ce-1abb-4685-8bd0-e7f7187f2e98').answer.value.code = 'অন্যান্য-অনাত্মীয়'"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "অন্যান্য অনাত্মীয় লিখুন"
+        }
+      ],
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.name.given"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "একটি বৈধ নাম লিখুন"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^[a-zA-Z][A-Za-z\\\\.\\\\- ]*"
+        }
+      ],
+      "linkId": "e6306275-b989-4375-8527-3a56092081b8",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given",
+      "text": "নামের প্রথম অংশ (ইংরেজীতে) *",
+      "type": "string",
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.name.family"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^[a-zA-Z][A-Za-z\\\\.\\\\- ]*"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "একটি বৈধ নাম লিখুন"
+        }
+      ],
+      "linkId": "8fb87910-d900-4eea-dbba-dcf76ee6806d",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.family",
+      "text": "নামের শেষ অংশ (ইংরেজীতে)",
+      "type": "string",
+      "required": false
+    },
+    {
+      "linkId": "965b355c-8e93-49cd-c3b8-5ad6d88f1695",
+      "type": "string",
+      "text": "মাতার নাম (ইংরেজীতে)",
+      "required": false,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^$|^[a-zA-Z][A-Za-z\\\\.\\\\- ]*"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "একটি বৈধ নাম লিখুন"
+        }
+      ]
+    },
+    {
+      "linkId": "7e747ed7-81bd-438d-87a9-ca718e9794c0",
+      "type": "string",
+      "text": "পিতার নাম (ইংরেজীতে)",
+      "required": false,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "[A-Za-z .]*"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "একটি বৈধ নাম লিখুন"
+        }
+      ]
+    },
+    {
+      "linkId": "3a731d3a-0da1-4f6e-8c18-286108c04300",
+      "type": "string",
+      "text": "মোবাইল নম্বর *",
+      "required": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "0|(01[1-9][0-9]{8})|\\s*"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "11 অঙ্কের মোবাইল নম্বর লিখুন"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+          "valueInteger": 11
+        }
+      ],
+      "maxLength": 11
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.birthDate"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-maxvalue",
+          "valueString": "today()"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-minvalue",
+          "valueString": "today() - 120 years"
+        }
+      ],
+      "linkId": "cd8e3d6d-e9ff-458d-d122-57070bebffaf",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
+      "text": "জন্ম তারিখ *",
+      "type": "date",
+      "enableWhen": [
+        {
+          "question": "36d39dbe-00e2-4e29-f079-3ec8f0119aff",
+          "operator": "exists",
+          "answerBoolean": false
+        }
+      ],
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "check-box",
+                "display": "Check-box"
+              }
+            ],
+            "text": "Check-box"
+          }
+        }
+      ],
+      "linkId": "36d39dbe-00e2-4e29-f079-3ec8f0119aff",
+      "type": "choice",
+      "required": false,
+      "repeats": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "urn:uuid:d2f70cf6-9320-4f5c-ce52-02f67f2a99e2",
+            "code": "date-of-birth-unknown",
+            "display": "Date of Birth Unknown"
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueInteger": 120
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-fhirpath",
+          "valueString": "Patient.extension.where(url = 'http://helsenorge.no/fhir/StructureDefinition/sdf-age').value"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "বয়স প্রবেশ করুন"
+        }
+      ],
+      "linkId": "8460d986-ef71-4997-80ee-7887d8c345e7",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.age",
+      "text": "বয়স লিখুন (বছর) *",
+      "type": "integer",
+      "enableWhen": [
+        {
+          "question": "36d39dbe-00e2-4e29-f079-3ec8f0119aff",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d2f70cf6-9320-4f5c-ce52-02f67f2a99e2",
+            "code": "date-of-birth-unknown"
+          }
+        }
+      ],
+      "enableBehavior": "all",
+      "required": true
+    },
+    {
+      "linkId": "77e32953-0679-48b5-f004-1ab4a4ac0271",
+      "type": "choice",
+      "text": "লিঙ্গ",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "efa1bdd5-7438-4300-8152-19a3d6060ced",
+            "code": "male",
+            "system": "urn:uuid:363292ba-7469-4c29-81b7-77e1971c3257",
+            "display": "পুরুষ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "f0b32b18-14cf-4778-e829-3a414e50d051",
+            "code": "female",
+            "system": "urn:uuid:363292ba-7469-4c29-81b7-77e1971c3257",
+            "display": "নারী"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "be627cb2-bf4c-4d82-8f60-6e444404e900",
+            "code": "other",
+            "system": "urn:uuid:363292ba-7469-4c29-81b7-77e1971c3257",
+            "display": "তৃতীয় লিঙ্গ"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender"
+    },
+    {
+      "linkId": "c5cf7fd7-eccd-45b6-8875-10a3183da552",
+      "type": "choice",
+      "text": "বৈবাহিক অবস্থা *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "cabbab6b-41a9-41e5-c9d7-44ab2df7ab88",
+            "code": "U",
+            "system": "urn:uuid:5c5ee819-f537-4fd3-98e8-0482890eada9",
+            "display": "অবিবাহিত"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "44616955-71eb-458c-ca8b-01f4c652405b",
+            "code": "M",
+            "system": "urn:uuid:5c5ee819-f537-4fd3-98e8-0482890eada9",
+            "display": "বিবাহিত"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "4c1bdf7c-6670-495e-8f29-2a797d3653c8",
+            "code": "S",
+            "system": "urn:uuid:5c5ee819-f537-4fd3-98e8-0482890eada9",
+            "display": "দাম্পত্য বিছিন্ন"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "bed21f64-944c-486c-81aa-0b0af1f86909",
+            "code": "D",
+            "system": "urn:uuid:5c5ee819-f537-4fd3-98e8-0482890eada9",
+            "display": "তালাক প্রাপ্ত"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "a5761b0f-1821-49b3-c74f-fd768004f0c5",
+            "code": "W",
+            "system": "urn:uuid:5c5ee819-f537-4fd3-98e8-0482890eada9",
+            "display": "বিধবা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "12a17290-d12e-480e-dc8e-fd425832e7cb",
+            "code": "WD",
+            "system": "urn:uuid:5c5ee819-f537-4fd3-98e8-0482890eada9",
+            "display": "বিপত্নীক"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "definition": "https://hl7.org/fhir/patient-definitions.html#Patient.maritalStatus"
+    },
+    {
+      "linkId": "b69718e1-1140-4e4a-882a-3dd47838c612",
+      "type": "choice",
+      "text": "প্রতিবন্ধী *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "aaa7830f-27af-4da9-826a-da7fe474c4ab",
+            "code": "yes",
+            "system": "urn:uuid:e767b433-24fb-44c6-8e9a-cfa6743805e2",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ad55dcf7-c07a-4cde-977c-df3a29c350bf",
+            "code": "no",
+            "system": "urn:uuid:e767b433-24fb-44c6-8e9a-cfa6743805e2",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "cd6f06a5-22e7-48d6-9530-da322b85cba3",
+          "type": "choice",
+          "text": "প্রতিবন্ধীতা ধরন *",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "id": "bcd540af-5023-427b-91f9-95f088140220",
+                "code": "autism",
+                "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
+                "display": "অটিজম বৈশিষ্ট্য সম্পন্ন ব্যাক্তি"
+              }
+            },
+            {
+              "valueCoding": {
+                "id": "67a54ef8-fb8f-44d0-d3c7-7762cc91f5ac",
+                "code": "physical-disability",
+                "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
+                "display": "শারীরিক প্রতিবন্ধীতা"
+              }
+            },
+            {
+              "valueCoding": {
+                "id": "23e1e104-9cd2-4b26-ac76-1875f8d485ec",
+                "code": "auditory-disability",
+                "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
+                "display": "দৃষ্টি ও শ্রবণ প্রতিবন্ধীতা"
+              }
+            },
+            {
+              "valueCoding": {
+                "id": "4295b6a9-c3ff-44af-9ef6-4473f8be0022",
+                "code": "mute-hearing-disability",
+                "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
+                "display": "বাক ও শ্রবণ প্রতিবন্ধীতা"
+              }
+            },
+            {
+              "valueCoding": {
+                "id": "c731d9f2-0347-4cb5-87a8-45c60a8edb4c",
+                "code": "mental-disability",
+                "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
+                "display": "মানসিক প্রতিবন্ধীতা"
+              }
+            },
+            {
+              "valueCoding": {
+                "id": "c13a8e24-5f7a-4aad-8af8-dbad0648028a",
+                "code": "mentally-challenged",
+                "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
+                "display": "বুদ্ধি প্রতিবন্ধীতা"
+              }
+            },
+            {
+              "valueCoding": {
+                "id": "5d0baac1-de8b-448f-8094-cee97879b195",
+                "code": "cerebral-palsy",
+                "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
+                "display": "সেরিব্রাল পালসিজনিত প্রতিবন্ধীতা"
+              }
+            },
+            {
+              "valueCoding": {
+                "id": "daf700e7-442e-4d62-8d19-c09102c73b1f",
+                "code": "down-syndrome",
+                "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
+                "display": "ডাউন সিনড্রমজনিত প্রতিবন্ধীতা"
+              }
+            },
+            {
+              "valueCoding": {
+                "id": "888a8625-f447-4d20-82c5-70cc0301cc68",
+                "code": "multidimensional-disability",
+                "system": "urn:uuid:fefc2980-b862-4f6d-d91f-d1bd15e018ec",
+                "display": "বহুমুখী প্রতিবন্ধীতা"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "drop-down"
+                  }
+                ]
+              }
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "b69718e1-1140-4e4a-882a-3dd47838c612",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:e767b433-24fb-44c6-8e9a-cfa6743805e2",
+                "code": "yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "9b62b65c-e8f9-4b4d-9cb2-cc715b73baaa",
+      "type": "choice",
+      "text": "রক্তের গ্রুপ",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "4ecf7430-96e9-44e5-8d76-51e93dd45a62",
+            "code": "a+",
+            "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
+            "display": "A+"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "576558c3-ed3f-4ecd-ff7f-b2b8585a8c21",
+            "code": "a-",
+            "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
+            "display": "A-"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "16ec7574-74f7-47c6-8fb0-65ba177c5095",
+            "code": "b+",
+            "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
+            "display": "B+"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "a2b8eb00-a9f2-4dd3-8a5a-3379c651b807",
+            "code": "b-",
+            "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
+            "display": "B-"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "17e7a6c2-8416-483a-823b-b8b34ea4fafe",
+            "code": "o+",
+            "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
+            "display": "O+"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "36db548c-fd20-46d1-d46f-ad3e7ec8e63b",
+            "code": "o-",
+            "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
+            "display": "O-"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "a465238f-9205-4370-8f21-a669994ed514",
+            "code": "ab+",
+            "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
+            "display": "AB+"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "e65c5d71-c2ec-4c48-8c10-509fcf472fc5",
+            "code": "ab-",
+            "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
+            "display": "AB-"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "6e365c38-f1a5-4bf0-b065-9276e18ff377",
+            "code": "unknown",
+            "system": "urn:uuid:dfd2a677-adbe-4f9e-8468-507550fdbb05",
+            "display": "রক্তের গ্রুপ জানা নেই"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "iif(%resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(5, 2).toInteger() > today().toString().substring(5, 2).toInteger(), ((today().toString().substring(5, 2).toInteger() + 12) - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(5, 2).toInteger() + 1), (today().toString().substring(5, 2).toInteger() - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(5, 2).toInteger()) + 1)"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "calculated-month",
+      "text": "calculated month",
+      "type": "integer"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "iif(%resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(5, 2).toInteger() > today().toString().substring(5, 2).toInteger(), (today().toString().substring(0, 4).toInteger() - 1) - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(0, 4).toInteger(), today().toString().substring(0, 4).toInteger() - %resource.descendants().where(linkId='cd8e3d6d-e9ff-458d-d122-57070bebffaf').answer.value.toString().substring(0, 4).toInteger())"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "calculated-year",
+      "text": "calculated year",
+      "type": "integer"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "(((%resource.descendants().where(linkId='calculated-year').answer.value.toString().toInteger() * 365.25) + (%resource.descendants().where(linkId='calculated-month').answer.value.toString().toInteger() * 365.25 / 12)) / 365.25).toString().replaceMatches('[.]+[0-9]+', '').toInteger()"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "b5bc7f80-4a0c-486c-e5eb-32c750036f94",
+      "text": "Calculated Age",
+      "type": "integer",
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "iif(%resource.descendants().where(linkId='36d39dbe-00e2-4e29-f079-3ec8f0119aff').answer.value.code = 'date-of-birth-unknown', %resource.descendants().where(linkId='8460d986-ef71-4997-80ee-7887d8c345e7').answer.value.toString().toInteger(), %resource.descendants().where(linkId='b5bc7f80-4a0c-486c-e5eb-32c750036f94').answer.value.toString().toInteger())"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "age",
+      "text": "Age",
+      "type": "integer",
+      "readOnly": true
+    },
+    {
+      "linkId": "1e1a206f-1cc2-4e48-8103-b26bf4bd7c3c",
+      "type": "string",
+      "text": "Is family head?",
+      "required": false,
+      "readOnly": true,
+      "enableWhen": [
+        {
+          "question": "toggle-is-family-head",
+          "operator": "=",
+          "answerInteger": 0
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "iif(%resource.descendants().where(linkId='c33296ce-1abb-4685-8bd0-e7f7187f2e98').answer.value.code = 'খানা-প্রধান', 'yes', 'no')"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ]
+    }
+  ]
+}

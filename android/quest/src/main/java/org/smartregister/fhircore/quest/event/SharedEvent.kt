@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.shared.models
+package org.smartregister.fhircore.quest.event
 
-data class MeasureReportPatientViewData(
-  val logicalId: String,
-  val name: String,
-  val gender: String,
-  val age: String,
-  val family: String? = null
-) {
-  fun personalDetails() = listOf(name, gender, age).joinToString(", ")
+import kotlinx.coroutines.flow.Flow
+
+interface SharedEvent<out T> {
+  fun getFor(consumerId: String): Flow<T>
 }

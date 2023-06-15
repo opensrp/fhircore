@@ -22,6 +22,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFilterConfig
+import org.smartregister.fhircore.engine.configuration.view.TabViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
@@ -39,6 +40,7 @@ data class ProfileConfiguration(
   val profileParams: List<String> = emptyList(),
   val rules: List<RuleConfig> = emptyList(),
   val topAppBar: TopBarConfig? = null,
+  val tabBar: TabViewProperties? = null,
   val views: List<ViewProperties> = emptyList(),
   val fabActions: List<NavigationMenuConfig> = emptyList(),
   val overFlowMenuItems: List<OverflowMenuItemConfig> = emptyList(),
@@ -46,5 +48,6 @@ data class ProfileConfiguration(
     listOf(
       ActiveResourceFilterConfig(resourceType = ResourceType.Patient, active = true),
       ActiveResourceFilterConfig(resourceType = ResourceType.Group, active = true)
-    )
+    ),
+  val configRules: List<RuleConfig>? = null
 ) : Configuration()

@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.TabViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.ProfileImageViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
@@ -52,7 +53,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.util.extensions.conditional
-import org.smartregister.fhircore.quest.util.extensions.isVisible
 
 @Composable
 fun GenerateView(
@@ -61,56 +61,56 @@ fun GenerateView(
   resourceData: ResourceData,
   navController: NavController
 ) {
-  when (properties.viewType) {
-    ViewType.COMPOUND_TEXT -> {
-      CompoundText(
-        modifier = modifier,
-        compoundTextProperties = properties as CompoundTextProperties,
-        resourceData = resourceData,
-        navController = navController
-      )
-    }
-    ViewType.BUTTON -> {
-      ActionableButton(
-        modifier = modifier,
-        buttonProperties = properties as ButtonProperties,
-        navController = navController,
-        resourceData = resourceData
-      )
-    }
-    ViewType.COLUMN -> {
-      val children = (properties as ColumnProperties).children
-      if (properties.wrapContent) {
-        FlowColumn(modifier = modifier.padding(properties.padding.dp)) {
-          properties.children.forEach { properties ->
-            GenerateView(
-              modifier = generateModifier(properties),
-              properties = properties,
-              resourceData = resourceData,
-              navController = navController
-            )
+  if (properties.visible.toBoolean()) {
+    when (properties.viewType) {
+      ViewType.COMPOUND_TEXT -> {
+        CompoundText(
+          modifier = modifier,
+          compoundTextProperties = properties as CompoundTextProperties,
+          resourceData = resourceData,
+          navController = navController
+        )
+      }
+      ViewType.BUTTON -> {
+        ActionableButton(
+          modifier = modifier,
+          buttonProperties = properties as ButtonProperties,
+          navController = navController,
+          resourceData = resourceData
+        )
+      }
+      ViewType.COLUMN -> {
+        val children = (properties as ColumnProperties).children
+        if (properties.wrapContent) {
+          FlowColumn(modifier = modifier.padding(properties.padding.dp)) {
+            properties.children.forEach { properties ->
+              GenerateView(
+                modifier = generateModifier(properties),
+                properties = properties,
+                resourceData = resourceData,
+                navController = navController
+              )
+            }
           }
-        }
-      } else {
-        val isWeighted = remember { children.any { it.weight > 0 } }
-        Column(
-          horizontalAlignment =
-            when (properties.alignment) {
-              ViewAlignment.START -> Alignment.Start
-              ViewAlignment.END -> Alignment.End
-              ViewAlignment.CENTER -> Alignment.CenterHorizontally
-              ViewAlignment.NONE -> Alignment.Start
-            },
-          modifier = modifier.padding(properties.padding.dp),
-          verticalArrangement =
-            if (isWeighted) Arrangement.spacedBy(properties.spacedBy.dp)
-            else properties.arrangement?.position ?: Arrangement.Top
-        ) {
-          for (child in children) {
-            if (child.isVisible(resourceData.computedValuesMap)) {
+        } else {
+          val isWeighted = remember { children.any { it.weight > 0 } }
+          Column(
+            horizontalAlignment =
+              when (properties.alignment) {
+                ViewAlignment.START -> Alignment.Start
+                ViewAlignment.END -> Alignment.End
+                ViewAlignment.CENTER -> Alignment.CenterHorizontally
+                ViewAlignment.NONE -> Alignment.Start
+              },
+            modifier = modifier.padding(properties.padding.dp),
+            verticalArrangement =
+              if (isWeighted) Arrangement.spacedBy(properties.spacedBy.dp)
+              else properties.arrangement?.position ?: Arrangement.Top
+          ) {
+            for (child in children) {
               GenerateView(
                 modifier = generateModifier(child),
-                properties = child,
+                properties = child.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
                 navController = navController
               )
@@ -118,60 +118,59 @@ fun GenerateView(
           }
         }
       }
-    }
-    ViewType.ROW -> {
-      val children = (properties as RowProperties).children
-      if (properties.wrapContent) {
-        FlowRow(modifier = modifier.padding(properties.padding.dp)) {
-          properties.children.forEach { properties ->
-            GenerateView(
-              modifier = generateModifier(properties),
-              properties = properties,
-              resourceData = resourceData,
-              navController = navController
-            )
+      ViewType.ROW -> {
+        val children = (properties as RowProperties).children
+        if (properties.wrapContent) {
+          FlowRow(modifier = modifier.padding(properties.padding.dp)) {
+            properties.children.forEach { properties ->
+              GenerateView(
+                modifier = generateModifier(properties),
+                properties = properties.interpolate(resourceData.computedValuesMap),
+                resourceData = resourceData,
+                navController = navController
+              )
+            }
           }
-        }
-      } else {
-        val isWeighted = remember { children.any { it.weight > 0 } }
-        Row(
-          verticalAlignment =
-            when (properties.alignment) {
-              ViewAlignment.START -> Alignment.Top
-              ViewAlignment.END -> Alignment.Bottom
-              ViewAlignment.CENTER -> Alignment.CenterVertically
-              ViewAlignment.NONE -> Alignment.CenterVertically
-            },
-          modifier = modifier.padding(properties.padding.dp),
-          horizontalArrangement =
-            if (isWeighted) Arrangement.spacedBy(properties.spacedBy.dp)
-            else properties.arrangement?.position ?: Arrangement.Start
-        ) {
-          for (child in children) {
-            GenerateView(
-              modifier = generateModifier(child),
-              properties = child,
-              resourceData = resourceData,
-              navController = navController
-            )
+        } else {
+          val isWeighted = remember { children.any { it.weight > 0 } }
+          Row(
+            verticalAlignment =
+              when (properties.alignment) {
+                ViewAlignment.START -> Alignment.Top
+                ViewAlignment.END -> Alignment.Bottom
+                ViewAlignment.CENTER -> Alignment.CenterVertically
+                ViewAlignment.NONE -> Alignment.CenterVertically
+              },
+            modifier = modifier.padding(properties.padding.dp),
+            horizontalArrangement =
+              if (isWeighted) Arrangement.spacedBy(properties.spacedBy.dp)
+              else properties.arrangement?.position ?: Arrangement.Start
+          ) {
+            for (child in children) {
+              GenerateView(
+                modifier = generateModifier(child),
+                properties = child.interpolate(resourceData.computedValuesMap),
+                resourceData = resourceData,
+                navController = navController
+              )
+            }
           }
         }
       }
-    }
-    ViewType.SERVICE_CARD ->
-      ServiceCard(
-        modifier = modifier,
-        serviceCardProperties = properties as ServiceCardProperties,
-        resourceData = resourceData,
-        navController = navController
-      )
-    ViewType.CARD ->
-      CardView(
-        modifier = modifier,
-        viewProperties = properties as CardViewProperties,
-        resourceData = resourceData,
-        navController = navController
-      )
+      ViewType.SERVICE_CARD ->
+        ServiceCard(
+          modifier = modifier,
+          serviceCardProperties = properties as ServiceCardProperties,
+          resourceData = resourceData,
+          navController = navController
+        )
+      ViewType.CARD ->
+        CardView(
+          modifier = modifier,
+          viewProperties = properties as CardViewProperties,
+          resourceData = resourceData,
+          navController = navController
+        )
     ViewType.TABS ->
       TabView(
         modifier = modifier,
@@ -179,22 +178,28 @@ fun GenerateView(
         resourceData = resourceData,
         navController = navController
       )
-    ViewType.PERSONAL_DATA ->
-      PersonalDataView(
-        modifier = modifier,
-        personalDataCardProperties = properties as PersonalDataProperties,
-        resourceData = resourceData,
-        navController = navController
-      )
-    ViewType.SPACER ->
-      SpacerView(modifier = modifier, spacerProperties = properties as SpacerProperties)
-    ViewType.LIST ->
-      List(
-        modifier = modifier,
-        viewProperties = properties as ListProperties,
-        resourceData = resourceData,
-        navController = navController,
-      )
+      ViewType.PERSONAL_DATA ->
+        PersonalDataView(
+          modifier = modifier,
+          personalDataCardProperties = properties as PersonalDataProperties,
+          resourceData = resourceData,
+          navController = navController
+        )
+      ViewType.SPACER ->
+        SpacerView(modifier = modifier, spacerProperties = properties as SpacerProperties)
+      ViewType.IMAGE_VIEW ->
+        ImageView(
+          modifier = modifier,
+          profileImageViewProperties = properties as ProfileImageViewProperties
+        )
+      ViewType.LIST ->
+        List(
+          modifier = modifier,
+          viewProperties = properties as ListProperties,
+          resourceData = resourceData,
+          navController = navController,
+        )
+    }
   }
 }
 

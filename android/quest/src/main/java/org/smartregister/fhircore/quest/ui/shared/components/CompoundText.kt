@@ -51,7 +51,6 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.camelCase
-import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.engine.util.extension.removeExtraWhiteSpaces
 import org.smartregister.fhircore.quest.util.extensions.conditional
@@ -73,39 +72,17 @@ fun CompoundText(
           horizontal = compoundTextProperties.padding.dp,
           vertical = compoundTextProperties.padding.div(2).dp
         )
-        .background(
-          compoundTextProperties
-            .backgroundColor
-            ?.interpolate(resourceData.computedValuesMap)
-            .parseColor()
-        )
+        .background(compoundTextProperties.backgroundColor.parseColor())
   ) {
-    val interpolatedPrimaryText =
-      compoundTextProperties.primaryText?.interpolate(resourceData.computedValuesMap)
-    val interpolatedSecondaryText =
-      compoundTextProperties.secondaryText?.interpolate(resourceData.computedValuesMap)
-    val interpolatedPrimaryTextColor =
-      compoundTextProperties.primaryTextColor?.interpolate(resourceData.computedValuesMap)
-    val interpolatedPrimaryTextBackgroundColor =
-      compoundTextProperties.primaryTextBackgroundColor?.interpolate(resourceData.computedValuesMap)
-    val interpolatedSecondaryTextColor =
-      compoundTextProperties.secondaryTextColor?.interpolate(resourceData.computedValuesMap)
-    val interpolatedSecondaryTextBackgroundColor =
-      compoundTextProperties.secondaryTextBackgroundColor?.interpolate(
-        resourceData.computedValuesMap
-      )
-    val interpolatedSeparator =
-      compoundTextProperties.separator?.interpolate(resourceData.computedValuesMap)
-
-    if (!interpolatedPrimaryText.isNullOrEmpty()) {
+    if (!compoundTextProperties.primaryText.isNullOrEmpty()) {
       CompoundTextPart(
         modifier = modifier,
         viewAlignment = compoundTextProperties.alignment,
-        text = interpolatedPrimaryText,
+        text = compoundTextProperties.primaryText!!,
         textCase = compoundTextProperties.textCase,
         maxLines = compoundTextProperties.maxLines,
-        textColor = interpolatedPrimaryTextColor,
-        backgroundColor = interpolatedPrimaryTextBackgroundColor,
+        textColor = compoundTextProperties.primaryTextColor,
+        backgroundColor = compoundTextProperties.primaryTextBackgroundColor,
         borderRadius = compoundTextProperties.borderRadius,
         fontSize = compoundTextProperties.fontSize,
         textFontWeight = compoundTextProperties.primaryTextFontWeight,
@@ -117,25 +94,25 @@ fun CompoundText(
       )
     }
     // Separate the primary and secondary text
-    if (!interpolatedSeparator.isNullOrEmpty()) {
+    if (!compoundTextProperties.separator.isNullOrEmpty()) {
       Box(contentAlignment = Alignment.Center, modifier = modifier.padding(horizontal = 6.dp)) {
         Text(
-          text = interpolatedSeparator,
+          text = compoundTextProperties.separator!!,
           fontSize = compoundTextProperties.fontSize.sp,
           color = DefaultColor,
           textAlign = TextAlign.Center
         )
       }
     }
-    if (!interpolatedSecondaryText.isNullOrEmpty()) {
+    if (!compoundTextProperties.secondaryText.isNullOrEmpty()) {
       CompoundTextPart(
         modifier = modifier,
         viewAlignment = compoundTextProperties.alignment,
-        text = interpolatedSecondaryText,
+        text = compoundTextProperties.secondaryText!!,
         textCase = compoundTextProperties.textCase,
         maxLines = compoundTextProperties.maxLines,
-        textColor = interpolatedSecondaryTextColor,
-        backgroundColor = interpolatedSecondaryTextBackgroundColor,
+        textColor = compoundTextProperties.secondaryTextColor,
+        backgroundColor = compoundTextProperties.secondaryTextBackgroundColor,
         borderRadius = compoundTextProperties.borderRadius,
         fontSize = compoundTextProperties.fontSize,
         textFontWeight = compoundTextProperties.secondaryTextFontWeight,
@@ -176,17 +153,13 @@ private fun CompoundTextPart(
         TextCase.CAMEL_CASE -> text.camelCase()
         null -> text
       }.removeExtraWhiteSpaces(),
-    color =
-      textColor
-        ?.interpolate(resourceData.computedValuesMap)
-        ?.parseColor()
-        ?.copy(alpha = colorOpacity)
+    color = textColor?.parseColor()?.copy(alpha = colorOpacity)
         ?: DefaultColor.copy(alpha = colorOpacity),
     modifier =
       modifier
         .wrapContentWidth(Alignment.Start)
         .conditional(
-          clickable.interpolate(resourceData.computedValuesMap).toBoolean(),
+          clickable.toBoolean(),
           { clickable { actions.handleClickEvent(navController, resourceData) } }
         )
         .clip(RoundedCornerShape(borderRadius.dp))

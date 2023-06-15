@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.configuration.view
 
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
 data class PersonalDataProperties(
@@ -32,7 +33,21 @@ data class PersonalDataProperties(
   override val clickable: String = "false",
   override val visible: String = "true",
   val personalDataItems: List<PersonalDataItem> = emptyList()
-) : ViewProperties()
+) : ViewProperties() {
+  override fun interpolate(computedValuesMap: Map<String, Any>): PersonalDataProperties {
+    return this.copy(
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap),
+      personalDataItems =
+        personalDataItems.map {
+          PersonalDataItem(
+            label = it.label.interpolate(computedValuesMap),
+            displayValue = it.displayValue.interpolate(computedValuesMap)
+          )
+        }
+    )
+  }
+}
 
 @Serializable
 data class PersonalDataItem(

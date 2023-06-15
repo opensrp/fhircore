@@ -33,6 +33,16 @@
         "name": "_id",
         "code": "_id",
         "base": [
+          "Practitioner"
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
+        "name": "_id",
+        "code": "_id",
+        "base": [
           "Library"
         ]
       },
