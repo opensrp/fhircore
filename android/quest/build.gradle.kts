@@ -362,9 +362,7 @@ dependencies {
   androidTestImplementation(libs.hilt.android.testing)
   androidTestImplementation(libs.mockk.android)
   ktlint("com.pinterest:ktlint:0.49.1") {
-    attributes {
-      attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))
-    }
+    attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }
   ktlint(project(":linting"))
 }
