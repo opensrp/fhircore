@@ -24,7 +24,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 
-class RegisterBottomSheetFragmentViewKtTest {
+class RegisterBottomSheetFragmentViewTest {
 
   private val mockListener: (NavigationMenuConfig) -> Unit = {}
 
