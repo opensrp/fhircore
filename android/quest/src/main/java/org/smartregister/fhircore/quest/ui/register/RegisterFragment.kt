@@ -188,17 +188,19 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
   override fun onSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.Started ->
+      is SyncJobStatus.Started -> {
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
             SnackBarMessageConfig(message = getString(R.string.syncing))
           )
         }
-      is SyncJobStatus.InProgress ->
+      }
+      is SyncJobStatus.InProgress -> {
         emitPercentageProgress(
           syncJobStatus.completed * 100 / if (syncJobStatus.total > 0) syncJobStatus.total else 1,
           syncJobStatus.syncOperation == SyncOperation.UPLOAD
         )
+      }
       is SyncJobStatus.Finished -> {
         refreshRegisterData()
         lifecycleScope.launch {
@@ -216,12 +218,12 @@ class RegisterFragment : Fragment(), OnSyncListener {
         // Show error message in snackBar message
         // syncJobStatus.exceptions may be null when worker fails; hence the null safety usage
         val hasAuthError =
-          syncJobStatus.exceptions.any {
+          syncJobStatus.exceptions?.any {
             it.exception is HttpException && (it.exception as HttpException).code() == 401
           }
-        Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
+        Timber.e(syncJobStatus?.exceptions?.joinToString { it.exception.message ?: "" })
         val messageResourceId =
-          if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
+          if (hasAuthError == true) R.string.sync_unauthorised else R.string.sync_failed
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
             SnackBarMessageConfig(
