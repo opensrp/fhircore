@@ -73,7 +73,7 @@ constructor(
           filter(
             Task.PERIOD,
             {
-              prefix = ParamPrefixEnum.STARTS_AFTER
+              prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
               value = of(DateTimeType(Date().plusDays(-1)))
             }
           )
