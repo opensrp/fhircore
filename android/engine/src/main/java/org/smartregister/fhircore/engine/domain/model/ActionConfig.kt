@@ -21,6 +21,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -76,5 +77,6 @@ data class ActionParameter(
   val paramType: ActionParameterType? = null,
   val dataType: Enumerations.DataType? = null,
   val value: String,
-  val linkId: String? = null
+  val linkId: String? = null,
+  val resourceType: ResourceType? = null
 ) : Parcelable

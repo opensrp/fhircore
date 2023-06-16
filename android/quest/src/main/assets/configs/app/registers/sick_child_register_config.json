@@ -48,6 +48,27 @@
     },
     "relatedResources": [
       {
+        "id": "patientHousehold",
+        "resource": "Group",
+        "searchParameter": "member",
+        "relatedResources": [
+          {
+            "id": "householdHeadRelatedPerson",
+            "resource": "RelatedPerson",
+            "isRevInclude": false,
+            "searchParameter": "managing-entity",
+            "relatedResources": [
+              {
+                "id": "householdHead",
+                "isRevInclude": false,
+                "resource": "Patient",
+                "searchParameter": "patient"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "resource": "CarePlan",
         "searchParameter": "subject"
       },
@@ -67,6 +88,45 @@
   },
   "registerCard": {
     "rules": [
+      {
+        "name": "household",
+        "condition": "true",
+        "actions": [
+          "data.put('household', patientHousehold.get(0))"
+        ]
+      },
+      {
+        "name": "householdHeadName",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('householdHeadName', householdHead != null && size(householdHead) > 0 ? fhirPath.extractValue(householdHead.get(0), 'Patient.name[0].select(given[0])') + ', ' : '')"
+        ]
+      },
+      {
+        "name": "householdLogicalId",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('householdLogicalId', data.get('household') != null ? fhirPath.extractValue(data.get('household'), 'Group.id') : '')"
+        ]
+      },
+      {
+        "name": "householdNo",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('householdNo', data.get('household') != null ? fhirPath.extractValue(data.get('household'), 'Group.identifier[0].value') : '')"
+        ]
+      },
+      {
+        "name": "householdName",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('householdName', data.get('household') != null ? fhirPath.extractValue(data.get('household'), 'Group.name') : '')"
+        ]
+      },
       {
         "name": "patientFirstName",
         "condition": "true",
@@ -173,9 +233,9 @@
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "ID: @{patientId}",
+                "primaryText": "@{householdHeadName}@{householdName} HH - @{householdNo}",
                 "fontSize": 14.0,
-                "primaryTextColor": "#000000"
+                "primaryTextColor": "#6F7274"
               }
             ],
             "showVerticalDivider": false,

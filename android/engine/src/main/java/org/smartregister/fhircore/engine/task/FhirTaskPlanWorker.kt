@@ -20,27 +20,27 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import java.util.Date
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.isReady
-import org.smartregister.fhircore.engine.util.extension.plusDays
+import org.smartregister.fhircore.engine.util.extension.lastOffset
 import org.smartregister.fhircore.engine.util.extension.toCoding
+import org.smartregister.fhircore.engine.util.getLastOffset
 import timber.log.Timber
 
 /** This job runs periodically to update the statuses of Task resources. */
@@ -50,14 +50,23 @@ class FhirTaskPlanWorker
 constructor(
   @Assisted val appContext: Context,
   @Assisted workerParams: WorkerParameters,
-  val fhirEngine: FhirEngine,
+  val defaultRepository: DefaultRepository,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
+    val fhirEngine = defaultRepository.fhirEngine
     return withContext(dispatcherProvider.io()) {
+      val appConfig =
+        configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+          ConfigType.Application
+        )
+      val batchSize = appConfig.taskBackgroundWorkerBatchSize
+      val lastOffset =
+        sharedPreferencesHelper.read(key = WORK_ID.lastOffset(), defaultValue = "0")!!.toInt()
+
       Timber.i("Running Task status updater worker")
 
       val tasks =
@@ -70,13 +79,6 @@ constructor(
             { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
             { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
           )
-          filter(
-            Task.PERIOD,
-            {
-              prefix = ParamPrefixEnum.STARTS_AFTER
-              value = of(DateTimeType(Date().plusDays(-1)))
-            }
-          )
         }
 
       Timber.i("Found ${tasks.size} tasks to be updated")
@@ -86,7 +88,7 @@ constructor(
           Timber.i("${task.id} failed its successful completion")
 
           task.status = Task.TaskStatus.FAILED
-          fhirEngine.update(task)
+          defaultRepository.update(task)
           task
             .basedOn
             .find { it.reference.startsWith(ResourceType.CarePlan.name) }
@@ -96,16 +98,23 @@ constructor(
               val carePlan = fhirEngine.get<CarePlan>(it)
               if (carePlan.isLastTask(task)) {
                 carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-                fhirEngine.update(carePlan)
+                defaultRepository.update(carePlan)
               }
             }
         } else if (task.isReady() && task.status == Task.TaskStatus.REQUESTED) {
           Timber.i("${task.id} marked ready")
 
           task.status = Task.TaskStatus.READY
-          fhirEngine.update(task)
+          defaultRepository.update(task)
         }
       }
+
+      val updatedLastOffset =
+        getLastOffset(items = tasks, lastOffset = lastOffset, batchSize = batchSize)
+      sharedPreferencesHelper.write(
+        key = WORK_ID.lastOffset(),
+        value = updatedLastOffset.toString()
+      )
       Result.success()
     }
   }

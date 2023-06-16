@@ -36,6 +36,7 @@ import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
@@ -60,7 +61,7 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 @HiltAndroidTest
 class AppMainActivityTest : ActivityRobolectricTest() {
 
-  @get:Rule val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
@@ -238,6 +239,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
     verify(exactly = 1) { syncBroadcaster.runSync(any()) }
     verify(exactly = 1) { syncBroadcaster.schedulePeriodicSync(any()) }
+
+    unmockkStatic(Context::isDeviceOnline)
   }
 
   @Test
@@ -249,6 +252,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
     val syncBroadcaster = mockk<SyncBroadcaster>()
 
+    every { syncBroadcaster.context } returns appMainActivity
+
     ReflectionHelpers.callInstanceMethod<Unit>(
       appMainActivity,
       "runSync",
@@ -257,6 +262,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
     verify(exactly = 0) { syncBroadcaster.runSync(any()) }
     verify(exactly = 0) { syncBroadcaster.schedulePeriodicSync(any()) }
+
+    unmockkStatic(Context::isDeviceOnline)
   }
 
   @Test

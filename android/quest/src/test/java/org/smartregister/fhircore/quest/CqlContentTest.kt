@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.quest
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
@@ -48,6 +46,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -55,15 +54,13 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 @HiltAndroidTest
 class CqlContentTest : RobolectricTest() {
 
-  @get:Rule var hiltRule = HiltAndroidRule(this)
-
-  private var context: Context = ApplicationProvider.getApplicationContext()
-
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
   private val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
   private val parser = fhirContext.newJsonParser()!!
   private val evaluator = LibraryEvaluator().apply { initialize() }
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private val configService: ConfigService = mockk()
+  private val configRulesExecutor: ConfigRulesExecutor = mockk()
 
   @Before
   fun setUp() {
@@ -111,7 +108,8 @@ class CqlContentTest : RobolectricTest() {
           DefaultDispatcherProvider(),
           mockk(),
           configurationRegistry,
-          configService
+          configService,
+          configRulesExecutor
         )
       )
 
@@ -178,7 +176,8 @@ class CqlContentTest : RobolectricTest() {
           DefaultDispatcherProvider(),
           mockk(),
           configurationRegistry,
-          configService
+          configService,
+          configRulesExecutor
         )
       )
 
@@ -250,7 +249,8 @@ class CqlContentTest : RobolectricTest() {
           DefaultDispatcherProvider(),
           mockk(),
           configurationRegistry,
-          configService
+          configService,
+          configRulesExecutor
         )
       )
 

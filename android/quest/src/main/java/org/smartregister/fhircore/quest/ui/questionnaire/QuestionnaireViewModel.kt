@@ -201,13 +201,15 @@ constructor(
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
         bundle.entry.forEach { bundleEntry ->
-          // add organization to entities representing individuals in registration questionnaire
-          // if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group,
-          // ResourceType.Encounter)) {
-          // if it is new registration set response subject
-          if (questionnaireConfig.resourceIdentifier == null)
+          if (bundleEntry.resource.resourceType.isIn(
+              ResourceType.Patient,
+              ResourceType.Group,
+              ResourceType.Encounter
+            ) && questionnaireResponse.subject?.reference.isNullOrEmpty()
+          ) {
             questionnaireResponse.subject = bundleEntry.resource.asReference()
-          // }
+          }
+
           if (questionnaireConfig.setPractitionerDetails) {
             appendPractitionerInfo(bundleEntry.resource)
           }
@@ -216,7 +218,7 @@ constructor(
           }
 
           if (questionnaireConfig.setAppVersion) {
-            appendAppVersion(bundleEntry.resource)
+            appendAppVersion(context, bundleEntry.resource)
           }
           if (bundleEntry.hasResource()) bundleEntry.resource.updateLastUpdated()
           if (questionnaireConfig.type != QuestionnaireType.EDIT &&
@@ -336,14 +338,13 @@ constructor(
    *
    * @property resource The resource to add the meta tag to.
    */
-  fun appendAppVersion(resource: Resource) {
+  fun appendAppVersion(context: Context, resource: Resource) {
     // Create a tag with the app version
     val metaTag = resource.meta.addTag()
-    metaTag.setSystem("https://smartregister.org/").setCode(BuildConfig.VERSION_NAME).display =
-      "Application Version"
-
-    // Update resource with metaTag
-    resource.meta.apply { addTag(metaTag) }
+    metaTag
+      .setSystem(context.getString(R.string.app_version_tag_url))
+      .setCode(BuildConfig.VERSION_NAME)
+      .display = context.getString(R.string.application_version)
   }
 
   suspend fun extractCarePlan(
@@ -355,21 +356,22 @@ constructor(
       questionnaireResponse.findSubject(bundle)
         ?: defaultRepository.loadResource(questionnaireResponse.subject)
 
-    questionnaireConfig.planDefinitions?.forEach { planId ->
-      val data =
-        Bundle().apply {
-          bundle?.entry?.map { this.addEntry(it) }
-          addEntry().resource = questionnaireResponse
-        }
+    val data =
+      Bundle().apply {
+        bundle?.entry?.map { this.addEntry(it) }
+        addEntry().resource = questionnaireResponse
+      }
 
+    questionnaireConfig.planDefinitions?.forEach { planId ->
       kotlin
         .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
         .onFailure {
           Timber.e(it)
           extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
         }
-      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(questionnaireConfig, subject, data)
     }
+
+    fhirCarePlanGenerator.conditionallyUpdateResourceStatus(questionnaireConfig, subject, data)
   }
 
   suspend fun extractCqlOutput(
@@ -654,6 +656,7 @@ constructor(
     subjectId: String?,
     subjectType: ResourceType?,
     questionnaireConfig: QuestionnaireConfig,
+    resourceMap: Map<ResourceType?, String>,
   ): QuestionnaireResponse {
     var questionnaireResponse = QuestionnaireResponse()
 
@@ -670,9 +673,25 @@ constructor(
             ?: QuestionnaireResponse()
       }
 
+      /**
+       * This will catch an exception and return QR from DB when population resource is empty,
+       * ResourceMapper.selectPopulateContext() will return null, then that null will get evaluated
+       * and gives an exception as a result.
+       */
       questionnaireResponse =
         runCatching {
-            val populationResources = loadPopulationResources(subjectId, subjectType)
+            // load required resources sent through Param for questionnaire Response expressions
+            val populationResources = arrayListOf<Resource>()
+            if (resourceMap.isEmpty()) {
+              populationResources.addAll(loadPopulationResources(subjectId, subjectType))
+            } else {
+              resourceMap.forEach {
+                populationResources.addAll(
+                  loadPopulationResources(it.value.extractLogicalIdUuid(), it.key!!)
+                )
+              }
+            }
+
             populateQuestionnaireResponse(
               questionnaire = questionnaire,
               populationResources = populationResources

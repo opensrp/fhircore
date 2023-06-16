@@ -36,7 +36,7 @@ import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDat
 @HiltAndroidTest
 class MeasureReportSubjectsPagingSourceTest : RobolectricTest() {
 
-  @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   @Inject lateinit var measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
   private val reportRepository = mockk<MeasureReportRepository>()
   private lateinit var reportSubjectsPagingSource: MeasureReportSubjectsPagingSource

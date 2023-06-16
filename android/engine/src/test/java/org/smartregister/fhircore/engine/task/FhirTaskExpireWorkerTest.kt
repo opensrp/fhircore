@@ -42,6 +42,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.extension.plusDays
@@ -55,6 +56,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   @BindValue var fhirTaskExpireUtil: FhirTaskExpireUtil = mockk()
   private val fhirEngine: FhirEngine = mockk(relaxed = true)
+  private val defaultRepository: DefaultRepository = mockk(relaxed = true)
   private lateinit var fhirTaskExpireWorker: FhirTaskExpireWorker
 
   @Before
@@ -116,7 +118,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
       return FhirTaskExpireWorker(
         context = appContext,
         workerParams = workerParameters,
-        fhirEngine = fhirEngine,
+        defaultRepository = defaultRepository,
         fhirTaskExpireUtil = fhirTaskExpireUtil,
         dispatcherProvider = coroutineTestRule.testDispatcherProvider
       )

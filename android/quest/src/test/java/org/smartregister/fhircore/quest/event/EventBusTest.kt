@@ -38,7 +38,6 @@ class EventBusTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @Inject lateinit var eventQueue: EventQueue<AppEvent>
-
   private lateinit var eventBus: EventBus
   lateinit var emittedEvents: MutableList<AppEvent>
 

@@ -51,6 +51,7 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -65,6 +66,7 @@ class LibraryEvaluatorTest : RobolectricTest() {
   @Inject lateinit var gson: Gson
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   @Inject lateinit var configService: ConfigService
+  @Inject lateinit var configRulesExecutor: ConfigRulesExecutor
 
   var evaluator: LibraryEvaluator? = null
   var libraryData = ""
@@ -186,7 +188,8 @@ class LibraryEvaluatorTest : RobolectricTest() {
         DefaultDispatcherProvider(),
         sharedPreferencesHelper,
         configurationRegistry,
-        configService
+        configService,
+        configRulesExecutor
       )
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
@@ -246,7 +249,8 @@ class LibraryEvaluatorTest : RobolectricTest() {
         DefaultDispatcherProvider(),
         sharedPreferencesHelper,
         configurationRegistry,
-        configService
+        configService,
+        configRulesExecutor
       )
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary

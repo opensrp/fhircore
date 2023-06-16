@@ -357,7 +357,7 @@ constructor(
             // MeasureEvaluator looks for Group members and skips the Group itself
             if (it is Group && !it.hasMember()) {
               it.addMember(Group.GroupMemberComponent(it.asReference()))
-              fhirEngine.update(it)
+              defaultRepository.update(it)
             }
             MeasureReportSubjectViewData(it.resourceType, it.logicalId, it.valueToString())
           }

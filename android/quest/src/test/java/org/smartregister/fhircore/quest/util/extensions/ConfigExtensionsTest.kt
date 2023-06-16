@@ -53,15 +53,11 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 class ConfigExtensionsTest : RobolectricTest() {
 
   private val navController = mockk<NavController>(relaxUnitFun = true)
-
   private val context = mockk<Context>(relaxUnitFun = true, relaxed = true)
-
   private val navigationMenuConfig by lazy {
     NavigationMenuConfig(id = "id", display = "menu", visible = true)
   }
-
   private val patient = Faker.buildPatient()
-
   private val resourceData by lazy {
     ResourceData(
       baseResourceId = patient.logicalId,
