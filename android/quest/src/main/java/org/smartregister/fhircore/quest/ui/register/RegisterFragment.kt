@@ -219,7 +219,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
           syncJobStatus.exceptions.any {
             it.exception is HttpException && (it.exception as HttpException).code() == 401
           }
-        Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
+        Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
         val messageResourceId =
           if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
         lifecycleScope.launch {

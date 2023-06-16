@@ -1,0 +1,420 @@
+{
+  "resourceType": "PlanDefinition",
+  "id": "d959dc24-065d-11ee-be56-0242ac120002",
+  "contained": [
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-init-activity",
+      "title": "Covid Vaccination Handler Activity",
+      "status": "active",
+      "description": "This action will assess careplan on registration to init careplan",
+      "kind": "CarePlan",
+      "dynamicValue": [
+        {
+          "path": "title",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.title"
+          }
+        },
+        {
+          "path": "description",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.description"
+          }
+        },
+        {
+          "path": "instantiatesCanonical",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.id.replaceMatches('/_history/.*', '')"
+          }
+        },
+        {
+          "path": "status",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'active'"
+          }
+        },
+        {
+          "path": "intent",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'plan'"
+          }
+        },
+        {
+          "path": "created",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "now()"
+          }
+        },
+        {
+          "path": "subject.reference",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.id.replaceMatches('/_history/.*', '')"
+          }
+        },
+        {
+          "path": "author",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.generalPractitioner.first()"
+          }
+        },
+        {
+          "path": "period.start",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='vaccine_date').answer.value"
+          }
+        },
+        {
+          "path": "activity.detail.kind",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'Task'"
+          }
+        },
+        {
+          "path": "activity.detail.status",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'in-progress'"
+          }
+        },
+        {
+          "path": "activity.detail.description",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'This action will assess careplan on registration to init careplan'"
+          }
+        },
+        {
+          "path": "activity.detail.performer",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.generalPractitioner.first()"
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-jnj-task-activity",
+      "title": "JnJ Immunization",
+      "description": "This is the JnJ scheduled immunization.",
+      "status": "active",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {"system":"http://snomed.info/sct","code":"840534001","display":"SARS-CoV-2 vaccination"}
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {"system":"https://icd.who.int/", "code":"XM6QV1","display":"Johnson & Johnson"}
+        ],
+        "text": "Johnson & Johnson"
+      },
+      "dosage": [
+        {
+          "sequence": 9999,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "period": 120,
+              "periodUnit": "d"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-astrazaneca-task-activity",
+      "title": "AstraZeneca Immunization",
+      "description": "This is the AstraZeneca scheduled immunization.",
+      "status": "active",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {"system":"http://snomed.info/sct","code":"840534001","display":"SARS-CoV-2 vaccination"}
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {"system":"https://icd.who.int/", "code":"XM4YL8","display":"AstraZeneca"}
+        ],
+        "text": "AstraZeneca"
+      },
+      "dosage": [
+        {
+          "sequence": 2,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "period": 70,
+              "periodUnit": "d"
+            }
+          }
+        },
+        {
+          "sequence": 9999,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "period": 180,
+              "periodUnit": "d"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-sinopharm-task-activity",
+      "title": "Sinopharm Immunization",
+      "description": "This is the Sinopharm scheduled immunization.",
+      "status": "active",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {"system":"http://snomed.info/sct","code":"840534001","display":"SARS-CoV-2 vaccination"}
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {"system":"https://icd.who.int/", "code":"XM1AU2","display":"Sinopharm"}
+        ],
+        "text": "Sinopharm"
+      },
+      "dosage": [
+        {
+          "sequence": 2,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "period": 28,
+              "periodUnit": "d"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-sinopharm-booster-task-activity",
+      "title": "Sinopharm Booster Immunization",
+      "description": "This is the Sinopharm Booster scheduled immunization.",
+      "status": "active",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {"system":"http://snomed.info/sct","code":"840534001","display":"SARS-CoV-2 vaccination"}
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {"system":"https://icd.who.int/", "code":"XM8NQ0","display":"Pfizer"}
+        ],
+        "text": "Pfizer"
+      },
+      "dosage": [
+        {
+          "sequence": 9999,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "period": 180,
+              "periodUnit": "d"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-pfizer-task-activity",
+      "title": "Pfizer Immunization",
+      "description": "This is the Pfizer scheduled immunization.",
+      "status": "active",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {"system":"http://snomed.info/sct","code":"840534001","display":"SARS-CoV-2 vaccination"}
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {"system":"https://icd.who.int/", "code":"XM8NQ0","display":"Pfizer"}
+        ],
+        "text": "Pfizer"
+      },
+      "dosage": [
+        {
+          "sequence": 2,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "period": 28,
+              "periodUnit": "d"
+            }
+          }
+        },
+        {
+          "sequence": 9999,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "period": 180,
+              "periodUnit": "d"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-moderna-task-activity",
+      "title": "Moderna Immunization",
+      "description": "This is the Moderna scheduled immunization.",
+      "status": "active",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {"system":"http://snomed.info/sct","code":"840534001","display":"SARS-CoV-2 vaccination"}
+        ]},
+      "productCodeableConcept": {
+        "coding": [
+          {"system":"https://icd.who.int/", "code":"XM3DT5","display":"Moderna"}
+        ],
+        "text": "Moderna"
+      },
+      "dosage": [
+        {
+          "sequence": 2,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "period": 28,
+              "periodUnit": "d"
+            }
+          }
+        },
+        {
+          "sequence": 9999,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "period": 180,
+              "periodUnit": "d"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "name": "Immunization",
+  "title": "Immunization",
+  "status": "active",
+  "description": "This scheduled will be used to track the child's immunization.",
+  "action": [
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/e8572c86-065d-11ee-be56-0242ac120002').descendants().where(linkId='previous_vaccine').answer.value.empty()"
+          }
+        }
+      ],
+      "definitionCanonical": "#careplan-init-activity"
+    },
+    {
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/e8572c86-065d-11ee-be56-0242ac120002' and descendants().where(linkId='previous_vaccine').answer.value.empty()).descendants().where(linkId='current_vaccine').answer.value.display.contains('Johnson & Johnson')"
+          }
+        }
+      ],
+      "definitionCanonical": "#careplan-jnj-task-activity",
+      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/3c965470-065e-11ee-be56-0242ac120002"
+    },
+    {
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/e8572c86-065d-11ee-be56-0242ac120002' and descendants().where(linkId='previous_vaccine').answer.value.empty()).descendants().where(linkId='current_vaccine').answer.value.display.contains('AstraZeneca')"
+          }
+        }
+      ],
+      "definitionCanonical": "#careplan-astrazaneca-task-activity",
+      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/3c965470-065e-11ee-be56-0242ac120002"
+    },
+    {
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/e8572c86-065d-11ee-be56-0242ac120002' and descendants().where(linkId='previous_vaccine').answer.value.empty()).descendants().where(linkId='current_vaccine').answer.value.display.contains('Sinopharm')"
+          }
+        }
+      ],
+      "definitionCanonical": "#careplan-sinopharm-task-activity",
+      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/3c965470-065e-11ee-be56-0242ac120002"
+    },
+    {
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/e8572c86-065d-11ee-be56-0242ac120002' and descendants().where(linkId='previous_vaccine').answer.value.empty()).descendants().where(linkId='current_vaccine').answer.value.display.contains('Sinopharm')"
+          }
+        }
+      ],
+      "definitionCanonical": "#careplan-sinopharm-booster-task-activity",
+      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/3c965470-065e-11ee-be56-0242ac120002"
+    },
+    {
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/e8572c86-065d-11ee-be56-0242ac120002' and descendants().where(linkId='previous_vaccine').answer.value.empty()).descendants().where(linkId='current_vaccine').answer.value.display.contains('Pfizer')"
+          }
+        }
+      ],
+      "definitionCanonical": "#careplan-pfizer-task-activity",
+      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/3c965470-065e-11ee-be56-0242ac120002"
+    },
+    {
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/e8572c86-065d-11ee-be56-0242ac120002' and descendants().where(linkId='previous_vaccine').answer.value.empty()).descendants().where(linkId='current_vaccine').answer.value.display.contains('Moderna')"
+          }
+        }
+      ],
+      "definitionCanonical": "#careplan-moderna-task-activity",
+      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/3c965470-065e-11ee-be56-0242ac120002"
+    }
+  ]
+}
