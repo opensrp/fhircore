@@ -19,13 +19,38 @@ plugins {
   id("io.sentry.android.gradle") version "3.5.0"
 }
 
-sonar { properties { property("sonar.projectKey", "fhircore") } }
+sonar {
+  properties {
+    property("sonar.projectKey", "fhircore")
+    property("sonar.kotlin.source.version", libs.kotlin)
+    property(
+      "sonar.androidLint.reportPaths",
+      "${project.buildDir}/reports/lint-results-opensrpDebug.xml"
+    )
+    property("sonar.host.url", "https://sonarqube.fhir.onalabs.org")
+    property("sonar.login", System.getenv("SONAR_TOKEN"))
+    property("sonar.sourceEncoding", "UTF-8")
+    property(
+      "sonar.kotlin.threads",
+      (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+    )
+    property(
+      "sonar.exclusions",
+      """**/*Test*/**,
+          **/*test*/**,
+          **/.gradle/**,
+          **/R.class,
+          *.json,
+          *.yaml"""
+    )
+  }
+}
 
 android {
   compileSdk = 33
 
   defaultConfig {
-    applicationId = "org.smartregister.fhircore"
+    applicationId = "org.smartregister.opensrp"
     minSdk = 26
     targetSdk = 33
     versionCode = 1
@@ -135,8 +160,7 @@ android {
   productFlavors {
     create("opensrp") {
       dimension = "apps"
-      applicationIdSuffix = ".opensrp"
-      manifestPlaceholders["appLabel"] = "OpenS+"
+      manifestPlaceholders["appLabel"] = "OpenSRP"
       isDefault = true
     }
 
