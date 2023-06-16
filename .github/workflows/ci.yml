@@ -47,7 +47,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Spotless check engine module
-        run: ./gradlew :engine:spotlessCheck --stacktrace
+        run: ./gradlew :engine:spotlessCheck --stacktrace && ./gradlew :engine:ktlintCheck --stacktrace
         working-directory: android 
       
       - name: Load AVD cache
@@ -190,7 +190,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
  
       - name: Spotless check quest application
-        run: ./gradlew :quest:spotlessCheck --stacktrace
+        run: ./gradlew :quest:spotlessCheck --stacktrace && ./gradlew :quest:ktlintCheck --stacktrace
         working-directory: android 
       
       - name: Load AVD cache
