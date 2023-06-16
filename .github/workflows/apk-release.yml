@@ -85,7 +85,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: android/quest/build/outputs/apk/${{steps.product-flavor.outputs.id}}/release/quest-${{steps.product-flavor.outputs.id}}-release.apk
-          asset_name: "$tag.apk"
+          asset_name: "opensrp-$(echo $tag | cut -d- -f1).apk"
           tag: ${{ github.ref }}
           prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') || contains(github.ref, '-rc') }}
           overwrite: true
