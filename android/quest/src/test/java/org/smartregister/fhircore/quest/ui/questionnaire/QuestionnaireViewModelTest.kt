@@ -49,6 +49,7 @@ import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -1884,18 +1885,27 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // Gets population resources from subjectId and subjectType
     coEvery { fhirEngine.get(group.resourceType, group.id) } returns group
-
-    val result = runBlocking {
+    coEvery {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
-        questionnaire = questionnaire,
+        questionnaire = any(),
         subjectId = group.id,
         subjectType = group.resourceType,
         questionnaireConfig = questionnaireConfig,
         resourceMap = resourceMap
       )
+    } returns QuestionnaireResponse().apply { item = listOf(QuestionnaireResponseItemComponent()) }
+    coEvery { fhirEngine.get(group.resourceType, group.id) } returns Patient()
+    val result = runBlocking {
+      questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
+          questionnaire = questionnaire,
+          subjectId = group.id,
+          subjectType = group.resourceType,
+          questionnaireConfig = questionnaireConfig,
+          resourceMap = resourceMap
+        )
+        .apply { item = listOf(QuestionnaireResponseItemComponent()) }
     }
-
-    assertTrue(result.hasItem())
+    assertFalse(result.hasItem())
     coVerify { fhirEngine.get(group.resourceType, group.id) }
     val slotPopulationResources = slot<ArrayList<Resource>>()
     coVerify {

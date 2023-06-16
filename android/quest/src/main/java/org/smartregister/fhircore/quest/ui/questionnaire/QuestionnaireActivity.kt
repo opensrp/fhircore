@@ -220,7 +220,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     val fragmentBuilder =
       QuestionnaireFragment.builder().apply {
         setQuestionnaire(questionnaireString)
-        if (!questionnaireConfig.type.isDefault()) {
+        if (!questionnaireConfig.type.isDefault() && questionnaireResponse.hasItem()) {
           setQuestionnaireResponse(questionnaireResponse.encodeResourceToString())
         }
         questionnaireConfig.resourceIdentifier?.takeIf { it.isNotBlank() }?.let {

@@ -655,27 +655,24 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
     resourceMap: Map<ResourceType?, String>,
   ): QuestionnaireResponse {
-    var questionnaireResponse = QuestionnaireResponse()
+    var questionnaireResponse: QuestionnaireResponse? = QuestionnaireResponse()
 
     if (!subjectId.isNullOrEmpty() && subjectType != null) {
       // Load questionnaire response from DB for Questionnaires opened in EDIT/READONLY mode
-      if (!questionnaireConfig.type.isDefault()) {
-        questionnaireResponse =
-          searchQuestionnaireResponses(
-            subjectId = subjectId,
-            subjectType = subjectType,
-            questionnaireId = questionnaire.logicalId
-          )
-            .maxByOrNull { it.meta.lastUpdated }
-            ?: QuestionnaireResponse()
-      }
+      questionnaireResponse =
+        searchQuestionnaireResponses(
+          subjectId = subjectId,
+          subjectType = subjectType,
+          questionnaireId = questionnaire.logicalId
+        )
+          .maxByOrNull { it.meta.lastUpdated }
 
       /**
        * This will catch an exception and return QR from DB when population resource is empty,
        * ResourceMapper.selectPopulateContext() will return null, then that null will get evaluated
        * and gives an exception as a result.
        */
-      if (questionnaireConfig.type.isDefault()) {
+      if (questionnaireResponse == null || questionnaireResponse.isEmpty) {
         questionnaireResponse =
           runCatching {
               // load required resources sent through Param for questionnaire Response
@@ -701,7 +698,7 @@ constructor(
       }
     }
 
-    return questionnaireResponse
+    return questionnaireResponse ?: QuestionnaireResponse()
   }
 
   /**
