@@ -17,11 +17,16 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
@@ -30,15 +35,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
-import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
-import org.smartregister.fhircore.engine.ui.theme.DangerColor
-import org.smartregister.fhircore.engine.ui.theme.WarningColor
+import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.engine.util.extension.retrieveResourceId
 import org.smartregister.fhircore.quest.ui.main.components.SIDE_MENU_ICON
 import org.smartregister.fhircore.quest.util.extensions.conditional
-import org.smartregister.p2p.search.ui.theme.SuccessColor
 
 const val SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG = "sideMenuItemLocalIconTestTag"
 const val SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG = "sideMenuItemBinaryIconTestTag"

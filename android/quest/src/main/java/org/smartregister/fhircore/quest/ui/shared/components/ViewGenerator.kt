@@ -50,7 +50,6 @@ import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
-import org.smartregister.fhircore.engine.ui.theme.MenuItemColor
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.util.extensions.conditional
 
@@ -63,22 +62,20 @@ fun GenerateView(
 ) {
   if (properties.visible.toBoolean()) {
     when (properties.viewType) {
-      ViewType.COMPOUND_TEXT -> {
+      ViewType.COMPOUND_TEXT ->
         CompoundText(
           modifier = modifier,
           compoundTextProperties = properties as CompoundTextProperties,
           resourceData = resourceData,
           navController = navController
         )
-      }
-      ViewType.BUTTON -> {
+      ViewType.BUTTON ->
         ActionableButton(
           modifier = modifier,
           buttonProperties = properties as ButtonProperties,
           navController = navController,
           resourceData = resourceData
         )
-      }
       ViewType.COLUMN -> {
         val children = (properties as ColumnProperties).children
         if (properties.wrapContent) {
@@ -187,14 +184,7 @@ fun GenerateView(
           resourceData = resourceData,
           navController = navController,
         )
-      ViewType.IMAGE -> {
-        Image(
-          modifier = modifier,
-          color = MenuItemColor,
-          imageProperties = properties as ImageProperties,
-          imageConfig = null
-        )
-      }
+      ViewType.IMAGE -> Image(modifier = modifier, imageProperties = properties as ImageProperties)
     }
   }
 }

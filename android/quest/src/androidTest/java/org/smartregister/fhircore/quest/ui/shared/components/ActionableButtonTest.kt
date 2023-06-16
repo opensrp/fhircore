@@ -30,6 +30,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
@@ -116,7 +117,8 @@ class ActionableButtonTest {
                     questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
                   )
                 ),
-              enabled = enabled
+              enabled = enabled,
+              startIcon = ImageConfig("ic_home","local")
             ),
           resourceData = ResourceData("id", ResourceType.Patient, computedValuesMap),
           navController = navController
