@@ -118,7 +118,7 @@ class ActionableButtonTest {
                   )
                 ),
               enabled = enabled,
-              startIcon = ImageConfig("ic_home","local")
+              startIcon = ImageConfig("ic_home", "local")
             ),
           resourceData = ResourceData("id", ResourceType.Patient, computedValuesMap),
           navController = navController
