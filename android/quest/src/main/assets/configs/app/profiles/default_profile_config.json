@@ -1270,7 +1270,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_birth'"
+                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '0_d'"
                 }
               ],
               "emptyList": {
@@ -1303,7 +1303,7 @@
                     "name": "taskPeriodDueDate",
                     "condition": "true",
                     "actions": [
-                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
+                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd/MMM/yyyy\"))"
                     ]
                   },
                   {
@@ -1318,7 +1318,7 @@
                     "condition": "true",
                     "priority": 2,
                     "actions": [
-                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
+                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' - ' + data.get('taskPeriodDueDate'))"
                     ]
                   },
                   {
@@ -1391,7 +1391,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_6_weeks'"
+                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '6_wk'"
                 }
               ],
               "emptyList": {
@@ -1424,7 +1424,7 @@
                     "name": "taskPeriodDueDate",
                     "condition": "true",
                     "actions": [
-                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
+                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd/MMM/yyyy\"))"
                     ]
                   },
                   {
@@ -1439,7 +1439,7 @@
                     "condition": "true",
                     "priority": 2,
                     "actions": [
-                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
+                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' - ' + data.get('taskPeriodDueDate'))"
                     ]
                   },
                   {
@@ -1512,7 +1512,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_10_weeks'"
+                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '10_wk'"
                 }
               ],
               "emptyList": {
@@ -1545,7 +1545,7 @@
                     "name": "taskPeriodDueDate",
                     "condition": "true",
                     "actions": [
-                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
+                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd/MMM/yyyy\"))"
                     ]
                   },
                   {
@@ -1560,7 +1560,7 @@
                     "condition": "true",
                     "priority": 2,
                     "actions": [
-                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
+                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' - ' + data.get('taskPeriodDueDate'))"
                     ]
                   },
                   {
@@ -1633,7 +1633,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_14_weeks'"
+                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '14_wk'"
                 }
               ],
               "emptyList": {
@@ -1666,7 +1666,7 @@
                     "name": "taskPeriodDueDate",
                     "condition": "true",
                     "actions": [
-                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
+                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd/MMM/yyyy\"))"
                     ]
                   },
                   {
@@ -1681,7 +1681,7 @@
                     "condition": "true",
                     "priority": 2,
                     "actions": [
-                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
+                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' - ' + data.get('taskPeriodDueDate'))"
                     ]
                   },
                   {
@@ -1754,7 +1754,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_9_months'"
+                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '9_mo'"
                 }
               ],
               "emptyList": {
@@ -1787,7 +1787,7 @@
                     "name": "taskPeriodDueDate",
                     "condition": "true",
                     "actions": [
-                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
+                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd/MMM/yyyy\"))"
                     ]
                   },
                   {
@@ -1802,7 +1802,7 @@
                     "condition": "true",
                     "priority": 2,
                     "actions": [
-                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
+                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' - ' + data.get('taskPeriodDueDate'))"
                     ]
                   },
                   {
@@ -1875,7 +1875,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_15_months'"
+                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '15_mo'"
                 }
               ],
               "emptyList": {
@@ -1908,7 +1908,7 @@
                     "name": "taskPeriodDueDate",
                     "condition": "true",
                     "actions": [
-                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
+                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd/MMM/yyyy\"))"
                     ]
                   },
                   {
@@ -1923,7 +1923,7 @@
                     "condition": "true",
                     "priority": 2,
                     "actions": [
-                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
+                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' - ' + data.get('taskPeriodDueDate'))"
                     ]
                   },
                   {
@@ -1996,7 +1996,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_9_years'"
+                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '108_mo'"
                 }
               ],
               "emptyList": {
@@ -2044,7 +2044,7 @@
                     "condition": "true",
                     "priority": 2,
                     "actions": [
-                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
+                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' - ' + data.get('taskPeriodDueDate'))"
                     ]
                   },
                   {
@@ -2117,7 +2117,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_9_half_years'"
+                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '114_mo'"
                 }
               ],
               "emptyList": {
@@ -2150,7 +2150,7 @@
                     "name": "taskPeriodDueDate",
                     "condition": "true",
                     "actions": [
-                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
+                      "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd/MMM/yyyy\"))"
                     ]
                   },
                   {
@@ -2165,7 +2165,7 @@
                     "condition": "true",
                     "priority": 2,
                     "actions": [
-                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
+                      "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' - ' + data.get('taskPeriodDueDate'))"
                     ]
                   },
                   {
