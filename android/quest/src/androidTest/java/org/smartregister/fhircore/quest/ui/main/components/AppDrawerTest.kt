@@ -26,7 +26,6 @@ import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import io.mockk.spyk
 import io.mockk.verify
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -141,7 +140,7 @@ class AppDrawerTest {
   }
 
   @Test
-  fun testAppDrawerRendersGivenItemNameCorrectly(){
+  fun testAppDrawerRendersGivenItemNameCorrectly() {
     setContent("My Register")
     composeTestRule
       .onNodeWithText("My Register", useUnmergedTree = true)
@@ -170,18 +169,22 @@ class AppDrawerTest {
     sideMenuItem[0].performClick()
     verify { mockAppMainEventListener(any()) }
   }
-  private fun setContent(name: String){
+  private fun setContent(name: String) {
     composeTestRule.setContent {
       AppDrawer(
         appUiState =
-        appMainUiStateOf(
-          appTitle = "MOH VTS",
-          username = "Demo",
-          lastSyncTime = "05:30 PM, Mar 3",
-          currentLanguage = "English",
-          languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-          navigationConfiguration = navigationConfiguration.copy(bottomSheetRegisters = navigationConfiguration.bottomSheetRegisters?.copy(display = name))
-        ),
+          appMainUiStateOf(
+            appTitle = "MOH VTS",
+            username = "Demo",
+            lastSyncTime = "05:30 PM, Mar 3",
+            currentLanguage = "English",
+            languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+            navigationConfiguration =
+              navigationConfiguration.copy(
+                bottomSheetRegisters =
+                  navigationConfiguration.bottomSheetRegisters?.copy(display = name)
+              )
+          ),
         navController = rememberNavController(),
         openDrawer = {},
         onSideMenuClick = mockAppMainEventListener,
