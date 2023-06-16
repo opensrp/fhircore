@@ -20,7 +20,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
@@ -37,22 +36,33 @@ class RegisterBottomSheetFragmentViewKtTest {
       NavigationMenuConfig(id = "UniqueTag2", display = "Menu 2")
     )
 
-  @Before
-  fun setUp() {
+  @Test
+  fun testThatTitleAndMenuItemsAreShowing() {
+    setContent("")
+    composeRule.onNodeWithTag(REGISTER_BOTTOM_SHEET_LIST, useUnmergedTree = true).assertExists()
+    composeRule
+      .onNodeWithText("Other patients", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule.onNodeWithText("Menu 1", useUnmergedTree = true).assertExists().assertIsDisplayed()
+    composeRule.onNodeWithText("Menu 2", useUnmergedTree = true).assertExists().assertIsDisplayed()
+  }
+  @Test
+  fun testTitleShowsWithGivenName() {
+    setContent("Other services")
+    composeRule
+      .onNodeWithText("Other services", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
+  private fun setContent(title: String) {
     composeRule.setContent {
       RegisterBottomSheetView(
         menuClickListener = mockListener,
         navigationMenuConfigs = navigationMenuConfigs,
         onDismiss = {},
-        title = ""
+        title = title
       )
     }
-  }
-
-  @Test
-  fun testThatMenuItemsAreShowing() {
-    composeRule.onNodeWithTag(REGISTER_BOTTOM_SHEET_LIST, useUnmergedTree = true).assertExists()
-    composeRule.onNodeWithText("Menu 1", useUnmergedTree = true).assertExists().assertIsDisplayed()
-    composeRule.onNodeWithText("Menu 2", useUnmergedTree = true).assertExists().assertIsDisplayed()
   }
 }
