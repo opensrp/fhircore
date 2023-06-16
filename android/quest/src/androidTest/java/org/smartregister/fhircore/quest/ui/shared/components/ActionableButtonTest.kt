@@ -30,6 +30,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -118,7 +119,7 @@ class ActionableButtonTest {
                   )
                 ),
               enabled = enabled,
-              startIcon = ImageConfig("ic_home", "local")
+              startIcon = ImageConfig("ic_home", ICON_TYPE_LOCAL)
             ),
           resourceData = ResourceData("id", ResourceType.Patient, computedValuesMap),
           navController = navController
