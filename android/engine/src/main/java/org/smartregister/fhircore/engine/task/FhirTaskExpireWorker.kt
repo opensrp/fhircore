@@ -20,10 +20,10 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.google.android.fhir.FhirEngine
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.withContext
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -38,7 +38,7 @@ class FhirTaskExpireWorker
 constructor(
   @Assisted val context: Context,
   @Assisted workerParams: WorkerParameters,
-  val fhirEngine: FhirEngine,
+  val defaultRepository: DefaultRepository,
   val fhirTaskExpireUtil: FhirTaskExpireUtil,
   val sharedPreferences: SharedPreferencesHelper,
   val dispatcherProvider: DispatcherProvider

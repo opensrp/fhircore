@@ -201,13 +201,15 @@ constructor(
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
         bundle.entry.forEach { bundleEntry ->
-          // add organization to entities representing individuals in registration questionnaire
-          // if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group,
-          // ResourceType.Encounter)) {
-          // if it is new registration set response subject
-          if (questionnaireConfig.resourceIdentifier == null)
+          if (bundleEntry.resource.resourceType.isIn(
+              ResourceType.Patient,
+              ResourceType.Group,
+              ResourceType.Encounter
+            ) && questionnaireResponse.subject?.reference.isNullOrEmpty()
+          ) {
             questionnaireResponse.subject = bundleEntry.resource.asReference()
-          // }
+          }
+
           if (questionnaireConfig.setPractitionerDetails) {
             appendPractitionerInfo(bundleEntry.resource)
           }
