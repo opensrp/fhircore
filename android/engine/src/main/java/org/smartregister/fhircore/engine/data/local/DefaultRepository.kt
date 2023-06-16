@@ -143,6 +143,13 @@ constructor(
       else -> listOf()
     }
 
+  /**
+   * Saves a resource in the database. It also updates the [Resource.meta.lastUpdated] and generates
+   * the [Resource.id] if it is missing before saving the resource.
+   *
+   * By default, mandatory Resource tags for sync are added but this can be disabled through the param
+   * [addResourceTags]
+   */
   suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
       resource.onEach {
@@ -162,7 +169,17 @@ constructor(
       fhirEngine.delete(resource.resourceType, resource.logicalId)
     }
   }
-
+  /**
+   * Upserts a resource into the database. This function also updates the [Resource.meta.lastUpdated] and generates
+   * the [Resource.id] if it is missing before upserting the resource. The resource needs to already have a [Resource.id].
+   *
+   * The function benefits since it merges the resource in the database and what is provided. It does this by filling in
+   * properties that are missing in the new resource but available in the old resource. This is useful such as during form edits where the
+   * resource updates might only contain data generated at this step
+   *
+   * By default, mandatory Resource tags for sync are added but this can be disabled through the param
+   * [addResourceTags]
+   */
   suspend fun <R : Resource> addOrUpdate(addMandatoryTags: Boolean = true, resource: R) {
     return withContext(dispatcherProvider.io()) {
       resource.updateLastUpdated()
