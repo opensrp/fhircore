@@ -279,7 +279,7 @@ constructor(
   }
 
   fun loadLastLoggedInUsername() {
-    //    _username.postValue(accountAuthenticator.retrieveLastLoggedInUsername() ?: "")
+    _username.postValue(accountAuthenticator.retrieveLastLoggedInUsername() ?: "")
   }
 
   companion object {

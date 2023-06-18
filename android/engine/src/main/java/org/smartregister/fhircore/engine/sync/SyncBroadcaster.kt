@@ -126,7 +126,8 @@ constructor(
     }
   }
 
-  fun isInitialSync() = sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null).isNullOrBlank()
+  fun isInitialSync() =
+    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null).isNullOrBlank()
 
   fun registerSyncListener(onSyncListener: OnSyncListener, scope: CoroutineScope) {
     scope.launch { sharedSyncStatus.collect { onSyncListener.onSync(state = it) } }

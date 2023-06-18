@@ -160,6 +160,8 @@ constructor(
 
   fun hasActiveSession() = secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
 
+  fun retrieveLastLoggedInUsername(): String? = secureSharedPreference.retrieveSessionUsername()
+
   companion object {
     const val ACCOUNT_TYPE = "ACCOUNT_TYPE"
   }

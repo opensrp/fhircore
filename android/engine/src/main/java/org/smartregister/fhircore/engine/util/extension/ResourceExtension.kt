@@ -50,7 +50,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
-private val fhirR4JsonParser = FhirContext.forR4Cached().newJsonParser()
+private val fhirR4JsonParser = FhirContext.forR4Cached().getCustomJsonParser()
 
 fun Base?.valueToString(): String {
   return when {

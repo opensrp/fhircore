@@ -86,7 +86,9 @@ class SyncBroadcasterTest : RobolectricTest() {
       }
     every { WorkManager.getInstance(any()) } returns workManager
 
-    every { sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null) } returns null
+    every {
+      sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+    } returns null
 
     every { tracer.startTrace(any()) } returns Unit
     every { tracer.putAttribute(any(), any(), any()) } just runs

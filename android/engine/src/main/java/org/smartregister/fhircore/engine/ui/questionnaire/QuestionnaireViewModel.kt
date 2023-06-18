@@ -84,6 +84,7 @@ import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.findSubject
@@ -95,7 +96,6 @@ import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
-import org.smartregister.model.practitioner.PractitionerDetails
 import timber.log.Timber
 
 @HiltViewModel
@@ -130,11 +130,10 @@ constructor(
     sharedPreferencesHelper.read<UserInfo>(USER_INFO_SHARED_PREFERENCE_KEY)
   }
 
-  private val loggedInPractitioner by lazy {
-    sharedPreferencesHelper.read<PractitionerDetails>(
-      key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-      decodeWithGson = true
-    )
+  private val practitionerId: String? by lazy {
+    sharedPreferencesHelper
+      .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+      ?.extractLogicalIdUuid()
   }
 
   suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
@@ -224,8 +223,8 @@ constructor(
   }
 
   fun appendPractitionerInfo(resource: Resource) {
-    loggedInPractitioner?.id?.let {
-      val practitionerRef = Reference().apply { reference = it }
+    practitionerId?.let {
+      val practitionerRef = it.asReference(ResourceType.Practitioner)
 
       if (resource is Encounter)
         resource.participant =

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util
+package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
@@ -29,7 +29,9 @@ fun FhirContext.getCustomJsonParser(): IParser {
           PractitionerDetails::class.java,
           FhirPractitionerDetails::class.java,
           LocationHierarchy::class.java,
-        )
+          //                KeycloakUserDetails::class.java,
+          //                UserBioData::class.java
+          )
       )
     }
     .newJsonParser()
