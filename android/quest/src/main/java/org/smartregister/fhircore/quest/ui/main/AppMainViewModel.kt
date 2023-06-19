@@ -216,7 +216,8 @@ constructor(
           registerCountMap = appMainUiState.value.registerCountMap,
           menuClickListener = {
             onEvent(AppMainEvent.TriggerWorkflow(navController = event.navController, navMenu = it))
-          }
+          },
+          title = event.title
         )
         .run { show(activity.supportFragmentManager, RegisterBottomSheetFragment.TAG) }
     }
