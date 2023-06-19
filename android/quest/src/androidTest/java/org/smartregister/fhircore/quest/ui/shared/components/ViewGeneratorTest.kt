@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -26,11 +27,14 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnArrangement
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataItem
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
 import org.smartregister.fhircore.engine.configuration.view.RowArrangement
@@ -322,9 +326,7 @@ class ViewGeneratorTest {
   fun testGenerateViewRendersViewTypeImageCorrectly() {
     composeRule.setContent {
       GenerateView(
-        properties =
-        ImageProperties(imageConfig = ImageConfig(ICON_TYPE_LOCAL,
-          "ic_walk")),
+        properties = ImageProperties(imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_walk")),
         resourceData = resourceData,
         navController = navController
       )
