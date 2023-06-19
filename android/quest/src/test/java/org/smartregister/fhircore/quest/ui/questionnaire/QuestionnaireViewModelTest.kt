@@ -1745,7 +1745,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testGetQuestionnaireResponseFromDbOrPopulation_whenResourceMapIsNotEmpty_retrieveThatResourceOnlyScenario_returnQuestionnaireResponseFromPopulation() {
+  fun testGetQuestionnaireResponseFromDbOrPopulation_whenResourceMapIsNotEmpty_retrieveThatResourceOnlyScenario_returnQuestionnaireResponseFromPopulation() =
+      runTest {
     val questionnaire =
       Questionnaire().apply {
         id = "12345"
@@ -1792,6 +1793,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
     val group = Group().apply { id = "group-1" }
     val resourceMap: Map<ResourceType?, String> = mapOf(group.resourceType to group.id)
+    val populationResponse = QuestionnaireResponse().apply { generateMissingItems(questionnaire) }
 
     // Mandatory get QR from DB, but only used when there's no population resource which triggers an
     // exception
@@ -1812,15 +1814,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         questionnaireConfig = questionnaireConfig,
         resourceMap = resourceMap
       )
-    } returns
-      QuestionnaireResponse().apply {
-        item =
-          listOf(
-            QuestionnaireResponseItemComponent().apply {
-              answer = listOf(QuestionnaireResponseItemAnswerComponent().apply { item = listOf() })
-            }
-          )
-      }
+    } returns populationResponse
     val result = runBlocking {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
         questionnaire = questionnaire,
@@ -1831,7 +1825,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
     }
 
-    assertTrue(result.hasItem())
+    assertEquals(result, populationResponse)
     coVerify { fhirEngine.get(group.resourceType, group.id) }
     coEvery {
       questionnaireViewModel.populateQuestionnaireResponse(questionnaire, listOf())
@@ -1853,7 +1847,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testGetQuestionnaireResponseFromDbOrPopulation_whenResourceMapIsEmpty_returnQuestionnaireResponseFromPopulation() {
+  fun testGetQuestionnaireResponseFromDbOrPopulation_whenResourceMapIsEmpty_returnQuestionnaireResponseFromPopulation() =
+      runTest {
     val questionnaire =
       Questionnaire().apply {
         id = "12345"
@@ -1912,6 +1907,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // Gets population resources from subjectId and subjectType
     coEvery { fhirEngine.get(group.resourceType, group.id) } returns group
+    val populationResponse = QuestionnaireResponse().apply { generateMissingItems(questionnaire) }
     coEvery {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
         questionnaire = any(),
@@ -1920,7 +1916,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         questionnaireConfig = questionnaireConfig,
         resourceMap = resourceMap
       )
-    } returns QuestionnaireResponse().apply { item = listOf(QuestionnaireResponseItemComponent()) }
+    } returns populationResponse
     coEvery { fhirEngine.get(group.resourceType, group.id) } returns Patient()
     val result = runBlocking {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
@@ -1934,6 +1930,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
     assertFalse(result.hasItem())
     val slotPopulationResources = slot<ArrayList<Resource>>()
+    questionnaireViewModel.populateQuestionnaireResponse(questionnaire, listOf())
     coVerify {
       questionnaireViewModel.populateQuestionnaireResponse(any(), capture(slotPopulationResources))
     }
