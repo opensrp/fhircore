@@ -14,29 +14,29 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.view;
+package org.smartregister.fhircore.engine.configuration.view
 
-import android.media.Image
 import org.junit.Assert
-import org.junit.Test;
+import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 
 class ImagePropertiesTest {
-    private val imageProperties = ImageProperties(
-            tint = "@{taskStatusColorCodeToTint}",
-            imageConfig = ImageConfig("@{taskStatusIcon}", ICON_TYPE_LOCAL)
+  private val imageProperties =
+    ImageProperties(
+      tint = "@{taskStatusColorCodeToTint}",
+      imageConfig = ImageConfig("@{taskStatusIcon}", ICON_TYPE_LOCAL)
     )
-    @Test
-    fun testInterpolateInImageProperties(){
-        val computedValuesMap = mutableMapOf<String, String>()
-        computedValuesMap["taskStatusColorCodeToTint"] = "successColor"
-        computedValuesMap["taskStatusIcon"] = "ic_green_tick"
+  @Test
+  fun testInterpolateInImageProperties() {
+    val computedValuesMap = mutableMapOf<String, String>()
+    computedValuesMap["taskStatusColorCodeToTint"] = "successColor"
+    computedValuesMap["taskStatusIcon"] = "ic_green_tick"
 
-        val interpolatedImageProperties = imageProperties.interpolate(computedValuesMap) as ImageProperties
+    val interpolatedImageProperties =
+      imageProperties.interpolate(computedValuesMap) as ImageProperties
 
-        Assert.assertEquals("successColor", interpolatedImageProperties.tint)
-        Assert.assertEquals("ic_green_tick", interpolatedImageProperties.imageConfig?.type)
-    }
-
+    Assert.assertEquals("successColor", interpolatedImageProperties.tint)
+    Assert.assertEquals("ic_green_tick", interpolatedImageProperties.imageConfig?.type)
+  }
 }

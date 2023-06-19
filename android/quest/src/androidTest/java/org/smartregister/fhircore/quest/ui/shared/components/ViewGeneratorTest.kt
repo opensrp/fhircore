@@ -318,4 +318,17 @@ class ViewGeneratorTest {
     composeRule.onNodeWithText("Sex").assertIsDisplayed()
     composeRule.onNodeWithText("Male").assertIsDisplayed()
   }
+  @Test
+  fun testGenerateViewRendersViewTypeImageCorrectly() {
+    composeRule.setContent {
+      GenerateView(
+        properties =
+        ImageProperties(imageConfig = ImageConfig(ICON_TYPE_LOCAL,
+          "ic_walk")),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule.onNode(hasTestTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG))
+  }
 }
