@@ -49,45 +49,55 @@ const val SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG = "sideMenuItemBinaryIconTestTag"
 @Composable
 fun Image(
   modifier: Modifier = Modifier,
-  color: Color?,
   paddingEnd: Int = 8,
-  imageProperties: ImageProperties? = null,
-  imageConfig: ImageConfig?
+  tint: Color? = null,
+  imageProperties: ImageProperties = ImageProperties(viewType = ViewType.IMAGE, size = 24),
 ) {
 
-  val imageConfigFinal: ImageConfig? = imageConfig ?: imageProperties?.imageConfig
-  val colorFinal: Color = if (imageProperties?.tint != null) imageProperties.tint.parseColor() else color!!
-  val size = imageProperties?.size
+  val imageConfig = imageProperties.imageConfig
 
-  if (imageConfigFinal != null) {
-    when (imageConfigFinal.type) {
+  if (imageConfig != null) {
+    when (imageConfig.type) {
       ICON_TYPE_LOCAL -> {
-        LocalContext.current.retrieveResourceId(imageConfigFinal.reference)?.let { drawableId ->
-          Icon(
-            modifier =
-              modifier
-                .testTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG)
-                .conditional(size != null, { modifier.size(size!!.dp) }, { modifier.size(24.dp) })
-                .padding(end = paddingEnd.dp),
-            painter = painterResource(id = drawableId),
-            contentDescription = SIDE_MENU_ICON,
-            tint = colorFinal
-          )
+        Box(
+          contentAlignment = Alignment.Center,
+          modifier = Modifier.clip(CircleShape).size(24.dp).background(DefaultColor.copy(0.1f))
+        ) {
+          LocalContext.current.retrieveResourceId(imageConfig.reference)?.let { drawableId ->
+            Icon(
+              modifier =
+                modifier
+                  .testTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG)
+                  .conditional(imageProperties.size != null, { size(imageProperties.size!!.dp) })
+                  .conditional(
+                    imageProperties.padding >= 0,
+                    { padding(imageProperties.padding.dp) }
+                  )
+                  .padding(end = paddingEnd.dp),
+              painter = painterResource(id = drawableId),
+              contentDescription = SIDE_MENU_ICON,
+              tint = tint ?: imageProperties.tint.parseColor()
+            )
+          }
         }
       }
       ICON_TYPE_REMOTE ->
-        if (imageConfigFinal.decodedBitmap != null) {
-          Image(
-            modifier =
-              modifier
-                .testTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
-                .conditional(size != null, { modifier.size(size!!.dp) }, { modifier.size(24.dp) })
-                .padding(end = paddingEnd.dp),
-            bitmap = imageConfigFinal.decodedBitmap!!.asImageBitmap(),
-            contentDescription = null
-          )
+        Box(
+          contentAlignment = Alignment.BottomEnd,
+          modifier = Modifier.clip(CircleShape).size(24.dp).background(DefaultColor.copy(0.1f))
+        ) {
+          if (imageConfig.decodedBitmap != null) {
+            Image(
+              modifier =
+                modifier
+                  .testTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
+                  .conditional(imageProperties.size != null, { size(imageProperties.size!!.dp) })
+                  .padding(end = paddingEnd.dp),
+              bitmap = imageConfig.decodedBitmap!!.asImageBitmap(),
+              contentDescription = null
+            )
+          }
         }
     }
   }
 }
-
