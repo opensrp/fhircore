@@ -13,7 +13,8 @@ class FhirEngineCreateUpdateMethodCallRule : Rule(
     ruleId = RuleId("$CUSTOM_RULE_SET_ID:fhir-engine-create-update-used"),
     about =
     About(
-        maintainer = "Ephraim Kigamba"
+        maintainer = "OpenSRP Developers",
+        repositoryUrl = "github.com/opensrp/fhircore"
     ),
 ) {
 
@@ -42,18 +43,27 @@ class FhirEngineCreateUpdateMethodCallRule : Rule(
 
         val parent = node.parent(ElementType.DOT_QUALIFIED_EXPRESSION)
 
-        if (parent != null && node.elementType == ElementType.REFERENCE_EXPRESSION && node.text == "fhirEngine") {
+        if (parent != null && node.elementType == ElementType.REFERENCE_EXPRESSION && node.text == FHIR_ENGINE_VARIABLE_NAME) {
             val children = parent.getChildren(null)
 
+            // Example PSI Structure
+            // fhirEngine.create(resource) -> [0]fhirEngine [1]. [2]create(resource)
+            // fhirEngine.update(resource) -> [0]fhirEngine [1]. [2]update(resource)
             if (children.size > 1 && children[2].elementType == ElementType.CALL_EXPRESSION) {
                 val funCall = children[2]
 
                 if (funCall.text.startsWith("create")) {
-                    emit(node.startOffset, "Do not use `FhirEngine.create` directly. Kindly use `DefaultRepository.create` or `DefaultRepository.addOrUpdate`", false)
+                    emit(node.startOffset, CREATE_USE_ERROR_MSG, false)
                 } else if (funCall.text.startsWith("update")) {
-                    emit(node.startOffset, "Do not use `FhirEngine.update` directly. Kindly use `DefaultRepository.addOrUpdate` or `DefaultRepository.update`. `DefaultRepository.addOrUpdate` fills the resource with previous values where they are empty", false)
+                    emit(node.startOffset, UPDATE_USE_ERROR_MSG, false)
                 }
             }
         }
+    }
+
+    companion object {
+        const val FHIR_ENGINE_VARIABLE_NAME = "fhirEngine"
+        const val CREATE_USE_ERROR_MSG = "Do not use `FhirEngine.create` directly. Kindly use `DefaultRepository.create` or `DefaultRepository.addOrUpdate`"
+        const val UPDATE_USE_ERROR_MSG = "Do not use `FhirEngine.update` directly. Kindly use `DefaultRepository.addOrUpdate` or `DefaultRepository.update`. `DefaultRepository.addOrUpdate` fills the resource with previous values where they are empty"
     }
 }

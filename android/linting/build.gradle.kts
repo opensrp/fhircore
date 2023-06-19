@@ -1,7 +1,6 @@
 plugins {
     id("java-library")
     id("org.jetbrains.kotlin.jvm")
-    //id("ktlint-kotlin-common")
 }
 
 dependencies {
