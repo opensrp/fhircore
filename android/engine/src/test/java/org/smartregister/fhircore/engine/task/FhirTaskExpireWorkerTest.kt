@@ -27,27 +27,36 @@ import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import java.util.Date
 import java.util.UUID
-import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Period
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.joda.time.DateTime
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.plusDays
+import org.smartregister.fhircore.engine.util.extension.plusMonths
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 24-11-2022. */
 @HiltAndroidTest
@@ -55,11 +64,14 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
-  @BindValue var fhirTaskExpireUtil: FhirTaskExpireUtil = mockk()
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
   private val fhirEngine: FhirEngine = mockk(relaxed = true)
   private val defaultRepository: DefaultRepository = mockk(relaxed = true)
+  @BindValue
+  var fhirTaskExpireUtil: FhirTaskExpireUtil =
+    FhirTaskExpireUtil(ApplicationProvider.getApplicationContext(), defaultRepository)
   private lateinit var fhirTaskExpireWorker: FhirTaskExpireWorker
+  private lateinit var tasks: List<Task>
 
   @Before
   fun setup() {
@@ -69,35 +81,105 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
       TestListenableWorkerBuilder<FhirTaskExpireWorker>(ApplicationProvider.getApplicationContext())
         .setWorkerFactory(FhirTaskExpireJobWorkerFactory())
         .build()
+
+    tasks =
+      listOf(
+        Task().apply {
+          id = UUID.randomUUID().toString()
+          status = Task.TaskStatus.READY
+          executionPeriod =
+            Period().apply {
+              start = Date().plusMonths(-1)
+              end = Date()
+            }
+          restriction =
+            Task.TaskRestrictionComponent().apply {
+              period = Period().apply { end = DateTime().plusDays(-2).toDate() }
+            }
+        }
+      )
+
+    coEvery { defaultRepository.fhirEngine } returns fhirEngine
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns tasks
   }
 
   @Test
   fun doWorkShouldFetchTasksAndMarkAsExpired() {
-    val taskDate = Date()
-
-    coEvery { fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = null) } returns
-      Pair(
-        taskDate,
-        listOf(
-          Task().apply {
-            id = UUID.randomUUID().toString()
-            status = Task.TaskStatus.CANCELLED
-            authoredOn = taskDate
-            restriction =
-              Task.TaskRestrictionComponent().apply {
-                period = Period().apply { end = DateTime().plusDays(2).toDate() }
-              }
-          }
-        )
-      )
-
-    // End the job successfully when an empty list is returned
-    coEvery { fhirTaskExpireUtil.expireOverdueTasks(lastAuthoredOnDate = taskDate) } returns
-      Pair(taskDate.plusDays(3), emptyList())
-
     val result = runBlocking { fhirTaskExpireWorker.doWork() }
 
     assertEquals(ListenableWorker.Result.success(), result)
+  }
+
+  @Test
+  fun `FhirTaskExpireWorker doWork task expires when past end no reference to careplan`() {
+    coEvery { defaultRepository.update(any()) } just runs
+    val result = fhirTaskExpireWorker.startWork().get()
+    coVerify { defaultRepository.update(any()) }
+    assertEquals(result, (ListenableWorker.Result.success()))
+    assertEquals(Task.TaskStatus.CANCELLED, tasks.first().status)
+  }
+
+  @Test
+  fun `FhirTaskExpireWorker doWork task expires when past end found CarePlan was not found`() {
+    tasks.forEach { it.basedOn = listOf(Reference().apply { reference = "CarePlan/123" }) }
+
+    coEvery { defaultRepository.update(any()) } just runs
+    coEvery { fhirEngine.get(ResourceType.CarePlan, any()) } throws IllegalArgumentException()
+    val result = fhirTaskExpireWorker.startWork().get()
+    coVerify { defaultRepository.update(any()) }
+    assertEquals(result, (ListenableWorker.Result.success()))
+    assertEquals(Task.TaskStatus.CANCELLED, tasks.first().status)
+  }
+
+  @Test
+  fun `FhirTaskExpireWorker doWork task expires when past end found CarePlan no reference to current task ID`() {
+    val carePlanId = "123"
+    val carePlan =
+      CarePlan().apply {
+        id = carePlanId
+        activity =
+          listOf(
+            CarePlan.CarePlanActivityComponent().apply {
+              outcomeReference = listOf(tasks.first().asReference())
+            }
+          )
+        status = CarePlan.CarePlanStatus.ACTIVE
+      }
+    tasks.forEach { it.addBasedOn(Reference().apply { reference = carePlan.referenceValue() }) }
+    coEvery { defaultRepository.update(any()) } just runs
+    coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
+    val result = fhirTaskExpireWorker.startWork().get()
+    coVerify { defaultRepository.update(any()) }
+    assertEquals(result, (ListenableWorker.Result.success()))
+    assertEquals(Task.TaskStatus.CANCELLED, tasks.first().status)
+    assertNotEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
+  }
+
+  @Test
+  fun `FhirTaskExpireWorker doWork task expires when past end found CarePlan and this is last task`() {
+    val carePlanId = "123"
+    val carePlan =
+      CarePlan().apply {
+        id = carePlanId
+        activity =
+          listOf(
+            CarePlan.CarePlanActivityComponent().apply {
+              outcomeReference =
+                listOf(Reference().apply { reference = tasks.first().referenceValue() })
+            }
+          )
+      }
+    tasks.forEach { it.basedOn = listOf(carePlan.asReference()) }
+    coEvery { defaultRepository.update(tasks.first()) } just runs
+    coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
+    coEvery { defaultRepository.update(carePlan) } just runs
+    val result = fhirTaskExpireWorker.startWork().get()
+    coVerify { fhirEngine.get(ResourceType.CarePlan, carePlanId) }
+    coVerify { defaultRepository.update(carePlan) }
+    coVerify { defaultRepository.update(tasks.first()) }
+    assertEquals(result, (ListenableWorker.Result.success()))
+    assertEquals(Task.TaskStatus.CANCELLED, tasks.first().status)
+    assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
   }
 
   private fun initializeWorkManager() {
@@ -125,7 +207,6 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
         workerParams = workerParameters,
         defaultRepository = defaultRepository,
         fhirTaskExpireUtil = fhirTaskExpireUtil,
-        sharedPreferences = sharedPreferencesHelper,
         dispatcherProvider = coroutineTestRule.testDispatcherProvider
       )
     }
