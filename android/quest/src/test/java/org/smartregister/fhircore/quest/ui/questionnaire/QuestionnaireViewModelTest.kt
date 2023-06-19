@@ -1906,6 +1906,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         .apply { item = listOf(QuestionnaireResponseItemComponent()) }
     }
     assertFalse(result.hasItem())
+    runBlocking { fhirEngine.get(group.resourceType, group.id) }
     coVerify { fhirEngine.get(any(), any()) }
     val slotPopulationResources = slot<ArrayList<Resource>>()
     coVerify {
@@ -1986,7 +1987,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         resourceMap = resourceMap
       )
     }
-
+    runBlocking { fhirEngine.get(group.resourceType, group.id) }
     assertTrue(result.hasItem())
     coVerify { fhirEngine.get(any(), any()) }
     val slotPopulationResources = slot<ArrayList<Resource>>()
