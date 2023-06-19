@@ -207,7 +207,7 @@ private fun OtherPatientsItem(
 ) {
   val context = LocalContext.current
   SideMenuItem(
-    menuIconConfig = navigationConfiguration.bottomSheetRegisters?.menuIconConfig,
+    imageConfig = navigationConfiguration.bottomSheetRegisters?.menuIconConfig,
     title =
       navigationConfiguration.bottomSheetRegisters?.display!!.ifEmpty {
         stringResource(R.string.other_patients)

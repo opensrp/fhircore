@@ -73,7 +73,8 @@ fun Image(
                     imageProperties.padding >= 0,
                     { padding(imageProperties.padding.dp) }
                   )
-                  .padding(end = paddingEnd.dp),
+                  .padding(end = paddingEnd.dp)
+                  .align(Alignment.Center),
               painter = painterResource(id = drawableId),
               contentDescription = SIDE_MENU_ICON,
               tint = tint ?: imageProperties.tint.parseColor()
@@ -100,4 +101,17 @@ fun Image(
         }
     }
   }
+}
+
+@Preview
+@Composable
+fun previewImage() {
+  Image(
+    modifier = Modifier,
+    imageProperties =
+      ImageProperties(
+        imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_walk"),
+      ),
+    tint = DangerColor.copy(0.1f)
+  )
 }
