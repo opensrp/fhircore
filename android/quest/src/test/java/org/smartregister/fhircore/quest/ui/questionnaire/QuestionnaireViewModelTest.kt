@@ -1804,7 +1804,23 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // Gets population resources from resource map
     coEvery { fhirEngine.get(group.resourceType, group.id) } returns group
-
+    coEvery {
+      questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
+        questionnaire = questionnaire,
+        subjectId = group.id,
+        subjectType = group.resourceType,
+        questionnaireConfig = questionnaireConfig,
+        resourceMap = resourceMap
+      )
+    } returns
+      QuestionnaireResponse().apply {
+        item =
+          listOf(
+            QuestionnaireResponseItemComponent().apply {
+              answer = listOf(QuestionnaireResponseItemAnswerComponent().apply { item = listOf() })
+            }
+          )
+      }
     val result = runBlocking {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
         questionnaire = questionnaire,
@@ -1817,6 +1833,17 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     assertTrue(result.hasItem())
     coVerify { fhirEngine.get(group.resourceType, group.id) }
+    coEvery {
+      questionnaireViewModel.populateQuestionnaireResponse(questionnaire, listOf())
+    } returns
+      QuestionnaireResponse().apply {
+        item =
+          listOf(
+            QuestionnaireResponseItemComponent().apply {
+              answer = listOf(QuestionnaireResponseItemAnswerComponent().apply { item = listOf() })
+            }
+          )
+      }
     val slotPopulationResources = slot<ArrayList<Resource>>()
     coVerify {
       questionnaireViewModel.populateQuestionnaireResponse(any(), capture(slotPopulationResources))
@@ -1906,8 +1933,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         .apply { item = listOf(QuestionnaireResponseItemComponent()) }
     }
     assertFalse(result.hasItem())
-    runBlocking { fhirEngine.get(group.resourceType, group.id) }
-    coVerify { fhirEngine.get(any(), any()) }
     val slotPopulationResources = slot<ArrayList<Resource>>()
     coVerify {
       questionnaireViewModel.populateQuestionnaireResponse(any(), capture(slotPopulationResources))

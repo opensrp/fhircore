@@ -675,7 +675,10 @@ constructor(
        * ResourceMapper.selectPopulateContext() will return null, then that null will get evaluated
        * and gives an exception as a result.
        */
-      if (questionnaireResponse == null || questionnaireResponse.isEmpty) {
+      if (questionnaireResponse == null ||
+          questionnaireResponse.isEmpty ||
+          !questionnaireResponse.hasItem()
+      ) {
         questionnaireResponse =
           runCatching {
               // load required resources sent through Param for questionnaire Response
