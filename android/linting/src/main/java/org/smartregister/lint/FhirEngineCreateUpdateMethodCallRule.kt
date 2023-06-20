@@ -49,17 +49,23 @@ class FhirEngineCreateUpdateMethodCallRule : Rule(
             // Example PSI Structure
             // fhirEngine.create(resource) -> [0]fhirEngine [1]. [2]create(resource)
             // fhirEngine.update(resource) -> [0]fhirEngine [1]. [2]update(resource)
-            if (children.size > 1 && children[2].elementType == ElementType.CALL_EXPRESSION) {
-                val funCall = children[2]
+            if (hasFunctionCall(children)) {
+                val functionCallNode = getFunctionCallNode(children)
 
-                if (funCall.text.startsWith("create")) {
+                if (functionCallNode.text.startsWith("create")) {
                     emit(node.startOffset, CREATE_USE_ERROR_MSG, false)
-                } else if (funCall.text.startsWith("update")) {
+                } else if (functionCallNode.text.startsWith("update")) {
                     emit(node.startOffset, UPDATE_USE_ERROR_MSG, false)
                 }
             }
         }
     }
+
+    private fun hasFunctionCall(children: Array<out ASTNode>) : Boolean {
+        return children.size > 1 && children[2].elementType == ElementType.CALL_EXPRESSION
+    }
+
+    private fun getFunctionCallNode(children: Array<out ASTNode>) = children[2]
 
     companion object {
         const val FHIR_ENGINE_VARIABLE_NAME = "fhirEngine"
