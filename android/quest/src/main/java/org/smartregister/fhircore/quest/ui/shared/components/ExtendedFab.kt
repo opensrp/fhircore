@@ -86,7 +86,6 @@ fun ExtendedFab(
       if (firstMenuIconConfig != null) {
         Image(
           modifier = modifier.testTag(FAB_BUTTON_ROW_ICON_TEST_TAG),
-          paddingEnd = 0,
           imageProperties = ImageProperties(imageConfig = firstMenuIconConfig),
           tint = if (firstFabEnabled) Color.White else DefaultColor,
         )

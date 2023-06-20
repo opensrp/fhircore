@@ -46,7 +46,8 @@ data class ImageProperties(
           reference = imageConfig.reference?.interpolate(computedValuesMap),
           type = imageConfig.type.interpolate(computedValuesMap)
         ),
-      tint = this.tint?.interpolate(computedValuesMap)
+      tint = this.tint?.interpolate(computedValuesMap),
+      backgroundColor = this.backgroundColor?.interpolate(computedValuesMap)
     )
   }
 }

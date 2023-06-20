@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -52,7 +53,7 @@ const val SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG = "sideMenuItemBinaryIconTestTag"
 @Composable
 fun Image(
   modifier: Modifier = Modifier,
-  paddingEnd: Int = 8,
+  paddingEnd: Int? = null,
   tint: Color? = null,
   imageProperties: ImageProperties = ImageProperties(viewType = ViewType.IMAGE, size = 24),
 ) {
@@ -94,7 +95,7 @@ fun Image(
                     imageProperties.imagePadding >= 0,
                     { padding(imageProperties.imagePadding.dp) }
                   )
-                  .padding(end = paddingEnd.dp)
+                  .conditional(paddingEnd != null, { padding(end = paddingEnd!!.dp) })
                   .align(Alignment.Center),
               painter = painterResource(id = drawableId),
               contentDescription = SIDE_MENU_ICON,
@@ -117,10 +118,11 @@ fun Image(
                     imageProperties.imagePadding >= 0,
                     { padding(imageProperties.imagePadding.dp) }
                   )
-                  .padding(end = paddingEnd.dp)
+                  .conditional(paddingEnd != null, { padding(end = paddingEnd!!.dp) })
                   .align(Alignment.Center),
               bitmap = imageConfig.decodedBitmap!!.asImageBitmap(),
-              contentDescription = null
+              contentDescription = null,
+              contentScale = ContentScale.Crop,
             )
           }
       }
