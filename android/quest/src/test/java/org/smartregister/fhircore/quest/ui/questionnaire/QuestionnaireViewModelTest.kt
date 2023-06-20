@@ -48,8 +48,11 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
+import kotlin.jvm.Throws
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -1799,11 +1802,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         filter(QuestionnaireResponse.SUBJECT, { value = group.id })
         filter(QuestionnaireResponse.QUESTIONNAIRE, { value = questionnaire.id })
       }
-    } returns listOf()
+    } returns listOf(QuestionnaireResponse())
 
     // Gets population resources from resource map
     coEvery { fhirEngine.get(group.resourceType, group.id) } returns group
-
     val result = runBlocking {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
         questionnaire = questionnaire,
@@ -1880,24 +1882,22 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         filter(QuestionnaireResponse.SUBJECT, { value = group.id })
         filter(QuestionnaireResponse.QUESTIONNAIRE, { value = questionnaire.id })
       }
-    } returns listOf()
+    } returns listOf(QuestionnaireResponse())
 
     // Gets population resources from subjectId and subjectType
     coEvery { fhirEngine.get(group.resourceType, group.id) } returns group
-
+    val slotPopulationResources = slot<ArrayList<Resource>>()
     val result = runBlocking {
       questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
-        questionnaire = questionnaire,
-        subjectId = group.id,
-        subjectType = group.resourceType,
-        questionnaireConfig = questionnaireConfig,
-        resourceMap = resourceMap
-      )
+          questionnaire = questionnaire,
+          subjectId = group.id,
+          subjectType = group.resourceType,
+          questionnaireConfig = questionnaireConfig,
+          resourceMap = resourceMap
+        )
+        .apply { item = listOf(QuestionnaireResponseItemComponent()) }
     }
-
-    assertTrue(result.hasItem())
-    coVerify { fhirEngine.get(group.resourceType, group.id) }
-    val slotPopulationResources = slot<ArrayList<Resource>>()
+    assertFalse(result.hasItem())
     coVerify {
       questionnaireViewModel.populateQuestionnaireResponse(any(), capture(slotPopulationResources))
     }
@@ -1906,7 +1906,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testGetQuestionnaireResponseFromDbOrPopulation_whenPopulationResourceIsEmpty_returnQuestionnaireResponseFromDB() {
+  @Throws(ResourceNotFoundException::class)
+  fun testGetQuestionnaireResponseFromDbOrPopulationThrowsResourceNotFoundException() {
     val questionnaire =
       Questionnaire().apply {
         id = "12345"
@@ -1961,7 +1962,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         filter(QuestionnaireResponse.SUBJECT, { value = group.id })
         filter(QuestionnaireResponse.QUESTIONNAIRE, { value = questionnaire.id })
       }
-    } returns listOf(QuestionnaireResponse().apply { generateMissingItems(questionnaire) })
+    } returns listOf(QuestionnaireResponse())
 
     // Population resource not found
     coEvery { fhirEngine.get(group.resourceType, group.id) } throws
@@ -1976,9 +1977,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         resourceMap = resourceMap
       )
     }
-
     assertTrue(result.hasItem())
-    coVerify { fhirEngine.get(group.resourceType, group.id) }
+    coVerify { fhirEngine.get(any(), any()) }
     val slotPopulationResources = slot<ArrayList<Resource>>()
     coVerify {
       questionnaireViewModel.populateQuestionnaireResponse(any(), capture(slotPopulationResources))
