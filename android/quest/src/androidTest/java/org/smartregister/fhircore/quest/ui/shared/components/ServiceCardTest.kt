@@ -53,20 +53,18 @@ class ServiceCardTest {
       .assertExists()
       .assertIsDisplayed()
   }
-  
+
   @Test
   fun serviceActionButtonIsDisplayedCorrectlyWithButtonParams() {
     composeRule.setContent {
       ServiceCard(
-        serviceCardProperties = initTestServiceCardProperties(serviceStatus = ServiceStatus.OVERDUE.name, text = "1"),
+        serviceCardProperties =
+          initTestServiceCardProperties(serviceStatus = ServiceStatus.OVERDUE.name, text = "1"),
         resourceData = resourceData,
         navController = navController
       )
     }
-    composeRule
-      .onNodeWithText("1", useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
+    composeRule.onNodeWithText("1", useUnmergedTree = true).assertExists().assertIsDisplayed()
   }
 
   @Test
