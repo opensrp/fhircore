@@ -35,7 +35,9 @@ data class ImageProperties(
   override val visible: String = "true",
   val tint: String? = null,
   val imageConfig: ImageConfig? = null,
-  val size: Int? = null
+  val size: Int? = null,
+  val isCircular: Boolean? = null,
+  val imagePadding: Int = -1
 ) : ViewProperties() {
   override fun interpolate(computedValuesMap: Map<String, Any>): ViewProperties {
     return this.copy(
