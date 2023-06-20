@@ -56,12 +56,13 @@ fun RegisterBottomSheetView(
   navigationMenuConfigs: List<NavigationMenuConfig>?,
   registerCountMap: Map<String, Long> = emptyMap(),
   menuClickListener: (NavigationMenuConfig) -> Unit,
+  title: String?,
   onDismiss: () -> Unit
 ) {
   Surface(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)) {
     Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
       Text(
-        text = stringResource(R.string.other_patients),
+        text = if (title.isNullOrEmpty()) stringResource(R.string.other_patients) else title,
         textAlign = TextAlign.Start,
         fontWeight = FontWeight.Bold,
         fontSize = 16.sp,
@@ -144,6 +145,7 @@ fun RegisterBottomSheetPreview() {
         NavigationMenuConfig(id = "TestFragmentTag2", display = "Families", showCount = true)
       ),
     menuClickListener = {},
-    onDismiss = {}
+    onDismiss = {},
+    title = "Other Services"
   )
 }
