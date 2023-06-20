@@ -32,6 +32,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
@@ -218,8 +219,106 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
       val snapshotStateList = listResourceDataStateMap[listProperties.id]
       Assert.assertNotNull(snapshotStateList)
       Assert.assertEquals(snapshotStateList?.size, 1)
-      Assert.assertEquals(patient.id, snapshotStateList?.first()?.baseResourceId)
-      Assert.assertEquals(patient.resourceType, snapshotStateList?.first()?.baseResourceType)
+
+      val resourceData = snapshotStateList?.first()!!
+      Assert.assertEquals(patient.id, resourceData.baseResourceId)
+      Assert.assertEquals(patient.resourceType, resourceData.baseResourceType)
+      Assert.assertEquals(0, resourceData.computedValuesMap.size)
+    }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun `processListResourceData with relatedResources and fhirPathExpression returning empty does not populate computedValuesMap`() {
+    runTest {
+      val registerCard = RegisterCardConfig()
+      val viewType = ViewType.CARD
+      val patient = Faker.buildPatient()
+      val listResource =
+        ListResource(
+          "id",
+          resourceType = ResourceType.Patient,
+          conditionalFhirPathExpression = "Patient.active",
+          relatedResources =
+            listOf(
+              ListResource(
+                null,
+                resourceType = ResourceType.Patient,
+                fhirPathExpression = "Patient.active = false"
+              )
+            )
+        )
+      val resources = listOf(listResource)
+      val listProperties =
+        ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
+
+      val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
+      val computedValuesMap: Map<String, List<Resource>> = emptyMap()
+
+      relatedRepositoryResourceData[ResourceType.Patient.name] =
+        LinkedList<Resource>().apply { add(patient) }
+
+      val listResourceDataStateMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
+
+      resourceDataRulesExecutor.processListResourceData(
+        listProperties = listProperties,
+        relatedResourcesMap = relatedRepositoryResourceData,
+        computedValuesMap = computedValuesMap,
+        listResourceDataStateMap = listResourceDataStateMap
+      )
+
+      val snapshotStateList = listResourceDataStateMap[listProperties.id]
+      val resourceData = snapshotStateList?.first()!!
+      Assert.assertEquals(0, resourceData.computedValuesMap?.size)
+    }
+  }
+
+  @Ignore("To get fhirPathExpression to return stuff in retriveRelatedResources list")
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun `processListResourceData with relatedResources and fhirPathExpression populates computedValuesMap`() {
+    runTest {
+      val registerCard = RegisterCardConfig()
+      val viewType = ViewType.CARD
+      val patient = Faker.buildPatient()
+      val listResource =
+        ListResource(
+          "id",
+          resourceType = ResourceType.Patient,
+          conditionalFhirPathExpression = "Patient.active",
+          relatedResources =
+            listOf(
+              ListResource(
+                null,
+                resourceType = ResourceType.Patient,
+                fhirPathExpression = "Patient.active = true"
+              )
+            )
+        )
+      val resources = listOf(listResource)
+      val listProperties =
+        ListProperties(registerCard = registerCard, viewType = viewType, resources = resources)
+
+      val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
+      val computedValuesMap: Map<String, List<Resource>> = emptyMap()
+
+      relatedRepositoryResourceData[ResourceType.Patient.name] =
+        LinkedList<Resource>().apply { add(patient) }
+
+      val listResourceDataStateMap = mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
+
+      resourceDataRulesExecutor.processListResourceData(
+        listProperties = listProperties,
+        relatedResourcesMap = relatedRepositoryResourceData,
+        computedValuesMap = computedValuesMap,
+        listResourceDataStateMap = listResourceDataStateMap
+      )
+
+      val snapshotStateList = listResourceDataStateMap[listProperties.id]
+      val resourceData = snapshotStateList?.first()!!
+      Assert.assertEquals(1, resourceData.computedValuesMap?.size)
+      Assert.assertEquals("[TBD expected value]", resourceData.computedValuesMap?.values?.first())
+      Assert.assertEquals("[TBD expected value]", resourceData.computedValuesMap?.keys?.first())
     }
   }
 
