@@ -658,50 +658,53 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
     resourceMap: Map<ResourceType?, String>,
   ): QuestionnaireResponse {
-    var questionnaireResponse = QuestionnaireResponse()
+    var questionnaireResponse: QuestionnaireResponse? = QuestionnaireResponse()
 
     if (!subjectId.isNullOrEmpty() && subjectType != null) {
       // Load questionnaire response from DB for Questionnaires opened in EDIT/READONLY mode
-      if (!questionnaireConfig.type.isDefault()) {
-        questionnaireResponse =
-          searchQuestionnaireResponses(
-            subjectId = subjectId,
-            subjectType = subjectType,
-            questionnaireId = questionnaire.logicalId
-          )
-            .maxByOrNull { it.meta.lastUpdated }
-            ?: QuestionnaireResponse()
-      }
+      questionnaireResponse =
+        searchQuestionnaireResponses(
+          subjectId = subjectId,
+          subjectType = subjectType,
+          questionnaireId = questionnaire.logicalId
+        )
+          .maxByOrNull { it.meta.lastUpdated }
 
       /**
        * This will catch an exception and return QR from DB when population resource is empty,
        * ResourceMapper.selectPopulateContext() will return null, then that null will get evaluated
        * and gives an exception as a result.
        */
-      questionnaireResponse =
-        runCatching {
-            // load required resources sent through Param for questionnaire Response expressions
-            val populationResources = arrayListOf<Resource>()
-            if (resourceMap.isEmpty()) {
-              populationResources.addAll(loadPopulationResources(subjectId, subjectType))
-            } else {
-              resourceMap.forEach {
-                populationResources.addAll(
-                  loadPopulationResources(it.value.extractLogicalIdUuid(), it.key!!)
-                )
+      if (questionnaireResponse == null ||
+          questionnaireResponse.isEmpty ||
+          !questionnaireResponse.hasItem()
+      ) {
+        questionnaireResponse =
+          runCatching {
+              // load required resources sent through Param for questionnaire Response
+              // expressions
+              val populationResources = arrayListOf<Resource>()
+              if (resourceMap.isEmpty()) {
+                populationResources.addAll(loadPopulationResources(subjectId, subjectType))
+              } else {
+                resourceMap.forEach {
+                  populationResources.addAll(
+                    loadPopulationResources(it.value.extractLogicalIdUuid(), it.key!!)
+                  )
+                }
               }
-            }
 
-            populateQuestionnaireResponse(
-              questionnaire = questionnaire,
-              populationResources = populationResources
-            )
-          }
-          .onFailure { Timber.e(it, "Error encountered while populating QuestionnaireResponse") }
-          .getOrDefault(questionnaireResponse)
+              populateQuestionnaireResponse(
+                questionnaire = questionnaire,
+                populationResources = populationResources
+              )
+            }
+            .onFailure { Timber.e(it, "Error encountered while populating QuestionnaireResponse") }
+            .getOrDefault(questionnaireResponse)
+      }
     }
 
-    return questionnaireResponse
+    return questionnaireResponse ?: QuestionnaireResponse()
   }
 
   /**
