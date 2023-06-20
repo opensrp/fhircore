@@ -1150,23 +1150,77 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
               val task = tasks.find { it.description.startsWith(vaccine.key) }
               assertNotNull(task)
+              assertEquals(task!!.executionPeriod.start.asYyyyMmDd(), vaccine.value.asYyyyMmDd())
+            }
+          }
+      }
+  }
+
+  @Test
+  @ExperimentalCoroutinesApi
+  fun `Generate CarePlan should generate covid immunization schedule`() = runTest {
+    val planDefinitionResources =
+      loadPlanDefinitionResources("covid-19-immunization", listOf("covid"))
+    val planDefinition = planDefinitionResources.planDefinition
+    val patient = planDefinitionResources.patient
+    val questionnaireResponses = planDefinitionResources.questionnaireResponses
+    val resourcesSlot = planDefinitionResources.resourcesSlot
+
+    val referenceDate =
+      questionnaireResponses.first().find("vaccine_date")!!.answerFirstRep.valueDateType.value
+
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        planDefinition,
+        patient,
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
+          )
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also { carePlan ->
+        assertCarePlan(carePlan, planDefinition, patient, referenceDate, null, 2)
+
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map {
+            println(it.encodeResourceToString())
+            it as Task
+          }
+          .also { tasks ->
+            assertTrue(tasks.all { it.status == TaskStatus.REQUESTED })
+            assertTrue(
+              tasks.all {
+                it.reasonReference.reference == "Questionnaire/e8572c86-065d-11ee-be56-0242ac120002"
+              }
+            )
+            assertTrue(
+              tasks.all {
+                it.code.codingFirstRep.display == "SARS-CoV-2 vaccination" &&
+                  it.code.codingFirstRep.code == "840534001"
+              }
+            )
+            assertTrue(tasks.all { it.description.contains(it.reasonCode.text, true) })
+            assertTrue(
+              tasks.all { it.`for`.reference == questionnaireResponses.first().subject.reference }
+            )
+            assertTrue(
+              tasks.all { it.basedOnFirstRep.reference == carePlan.asReference().reference }
+            )
+          }
+          .also { tasks ->
+            val vaccines =
+              mutableMapOf<String, Date>(
+                "AstraZeneca 2" to referenceDate.plusDays(70),
+                "AstraZeneca Booster" to referenceDate.plusDays(180)
+              )
+            vaccines.forEach { vaccine ->
+              println(vaccine)
+
+              val task = tasks.find { it.description.startsWith(vaccine.key) }
+              assertNotNull(task)
               assertTrue(task!!.executionPeriod.start.asYyyyMmDd() == vaccine.value.asYyyyMmDd())
-
-              if (vaccine.key.endsWith("2") || vaccine.key.endsWith("3")) {
-                assertTrue(task.partOf.isNotEmpty())
-
-                val preReq = task.partOf.find { it.reference.startsWith(ResourceType.Task.name) }
-                println("PRE-REQ: ${preReq?.reference}")
-
-                assertNotNull(preReq)
-                assertTrue(
-                  tasks.find { it.idElement.idPart == preReq!!.extractId() }!!.description
-                    .startsWith(vaccine.key.dropLast(1))
-                )
-              } else
-                assertTrue(
-                  task.partOf.isEmpty() || task.description.contains("OPV 1")
-                ) // only OPV 1 is not dependent on pre-req
             }
           }
       }
@@ -1699,7 +1753,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     planDefinition: PlanDefinition,
     patient: Patient,
     referenceDate: Date,
-    endDate: Date,
+    endDate: Date?,
     visitTasks: Int
   ) {
     assertNotNull(UUID.fromString(carePlan.id))
