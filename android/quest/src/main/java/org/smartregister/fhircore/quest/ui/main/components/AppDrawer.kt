@@ -204,9 +204,13 @@ private fun OtherPatientsItem(
   openDrawer: (Boolean) -> Unit,
   navController: NavController
 ) {
+  val context = LocalContext.current
   SideMenuItem(
     menuIconConfig = navigationConfiguration.bottomSheetRegisters?.menuIconConfig,
-    title = stringResource(R.string.other_patients),
+    title =
+      navigationConfiguration.bottomSheetRegisters?.display!!.ifEmpty {
+        stringResource(R.string.other_patients)
+      },
     endText = "",
     showEndText = false,
     endImageVector = Icons.Filled.KeyboardArrowRight,
@@ -216,7 +220,13 @@ private fun OtherPatientsItem(
     onSideMenuClick(
       AppMainEvent.OpenRegistersBottomSheet(
         registersList = navigationConfiguration.bottomSheetRegisters?.registers,
-        navController = navController
+        navController = navController,
+        title =
+          if (navigationConfiguration.bottomSheetRegisters?.display.isNullOrEmpty()) {
+            context.getString(R.string.other_patients)
+          } else {
+            navigationConfiguration.bottomSheetRegisters?.display
+          }
       )
     )
   }
