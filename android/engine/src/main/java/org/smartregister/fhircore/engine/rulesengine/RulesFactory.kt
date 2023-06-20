@@ -342,6 +342,14 @@ constructor(
       return regex.toRegex().findAll(inputString).joinToString(separator) { it.groupValues[1] }
     }
 
+    /** This function returns a list of resources with a limit of [limit] resources */
+    fun limitTo(source: List<Any>?, limit: Int?): List<Any> {
+      if (limit == null || limit <= 0) {
+        return emptyList()
+      }
+      return source?.take(limit) ?: emptyList()
+    }
+
     fun mapResourcesToExtractedValues(
       resources: List<Resource>?,
       fhirPathExpression: String
