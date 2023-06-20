@@ -71,20 +71,22 @@ constructor(
    * [RepositoryResourceData.relatedResourcesCountMap]. All related resources of same type are
    * flattened in a map for ease of usage in the rule engine.
    */
-  fun fireRules(rules: Rules, repositoryResourceData: RepositoryResourceData): Map<String, Any> {
-    with(repositoryResourceData) {
-      // Initialize new facts and fire rules in background
-      facts =
-        Facts().apply {
-          put(FHIR_PATH, fhirPathDataExtractor)
-          put(DATA, mutableMapOf<String, Any>())
-          put(SERVICE, rulesEngineService)
+  fun fireRules(rules: Rules, repositoryResourceData: RepositoryResourceData?): Map<String, Any> {
+    facts =
+      Facts().apply {
+        put(FHIR_PATH, fhirPathDataExtractor)
+        put(DATA, mutableMapOf<String, Any>())
+        put(SERVICE, rulesEngineService)
+      }
+    if (repositoryResourceData != null) {
+      with(repositoryResourceData) {
+        facts.apply {
           put(resourceRulesEngineFactId ?: resource.resourceType.name, resource)
-
           relatedResourcesMap.addToFacts(this)
           relatedResourcesCountMap.addToFacts(this)
 
-          // Populate the facts map with secondary resource data flatten base and related resources
+          // Populate the facts map with secondary resource data flatten base and related
+          // resources
           secondaryRepositoryResourceData
             ?.groupBy { it.resourceRulesEngineFactId ?: it.resource.resourceType.name }
             ?.forEach { entry -> put(entry.key, entry.value.map { it.resource }) }
@@ -108,12 +110,12 @@ constructor(
             }
           }
         }
-
-      if (BuildConfig.DEBUG) {
-        val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
-        Timber.d("Rule executed in $timeToFireRules millisecond(s)")
-      } else rulesEngine.fire(rules, facts)
+      }
     }
+    if (BuildConfig.DEBUG) {
+      val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
+      Timber.d("Rule executed in $timeToFireRules millisecond(s)")
+    } else rulesEngine.fire(rules, facts)
     return facts.get(DATA) as Map<String, Any>
   }
 

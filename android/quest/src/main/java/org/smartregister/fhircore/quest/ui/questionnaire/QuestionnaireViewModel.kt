@@ -54,6 +54,8 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -92,6 +94,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val libraryEvaluator: LibraryEvaluator,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
+  val resourceDataRulesExecutor: ResourceDataRulesExecutor
 ) : ViewModel() {
 
   val extractionProgress = MutableLiveData<Boolean>()
@@ -113,16 +116,15 @@ constructor(
   private var editQuestionnaireResourceParams: List<ActionParameter>? = emptyList()
 
   suspend fun loadQuestionnaire(
-    id: String,
-    type: QuestionnaireType,
+    questionnaireConfig: QuestionnaireConfig,
     prePopulationParams: List<ActionParameter>? = emptyList(),
     readOnlyLinkIds: List<String>? = emptyList()
   ): Questionnaire? =
-    defaultRepository.loadResource<Questionnaire>(id)?.apply {
-      if (type.isReadOnly() || type.isEditMode()) {
+    defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
+      if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditMode()) {
         item.prepareQuestionsForReadingOrEditing(
           QUESTIONNAIRE_RESPONSE_ITEM,
-          type.isReadOnly(),
+          questionnaireConfig.type.isReadOnly(),
           readOnlyLinkIds
         )
       }
@@ -785,6 +787,9 @@ constructor(
       )
       .singleOrNull()
   }
+
+  fun computeQuestionnaireConfigRules(ruleConfigs: List<RuleConfig>): Map<String, Any> =
+    resourceDataRulesExecutor.computeResourceDataRules(ruleConfigs, null)
 
   companion object {
     private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"
