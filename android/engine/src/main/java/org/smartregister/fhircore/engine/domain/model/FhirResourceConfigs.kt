@@ -87,7 +87,7 @@ data class ResourceConfig(
   val resultAsCount: Boolean = false,
   val countResultConfig: CountResultConfig? = CountResultConfig(),
   val nestedSearchResources: List<NestedSearchConfig>? = null,
-  val configRules: @RawValue List<RuleConfig>? = null,
+  val configRules: @RawValue List<RuleConfig>? = emptyList(),
   val planDefinitions: List<String>? = null,
   val attributesToUpdate: List<KeyValueConfig>? = emptyList()
 ) : Parcelable, java.io.Serializable
@@ -99,9 +99,10 @@ data class CountResultConfig(val sumCounts: Boolean = true) : Parcelable, java.i
 @Serializable
 @Parcelize
 data class SortConfig(
-  val paramName: String,
+  val paramName: String? = null,
   val dataType: Enumerations.DataType,
-  val order: Order = Order.ASCENDING
+  val order: Order = Order.ASCENDING,
+  val fhirPathExpression: String = ""
 ) : Parcelable
 
 @Serializable

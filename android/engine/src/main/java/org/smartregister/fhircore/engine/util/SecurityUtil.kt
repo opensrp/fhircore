@@ -28,7 +28,7 @@ fun CharArray.toPasswordHash(salt: ByteArray) = passwordHashString(this, salt)
 
 @VisibleForTesting
 fun passwordHashString(password: CharArray, salt: ByteArray): String {
-  val pbKeySpec = PBEKeySpec(password, salt, 1000000, 256)
+  val pbKeySpec = PBEKeySpec(password, salt, 800000, 256)
   val secretKeyFactory =
     SecretKeyFactory.getInstance(
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) "PBKDF2withHmacSHA256"
