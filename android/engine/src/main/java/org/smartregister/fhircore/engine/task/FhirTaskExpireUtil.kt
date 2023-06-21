@@ -62,6 +62,7 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
             { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
           )
 
+          // TODO: This might leave out tasks without an execution period
           filter(
             Task.PERIOD,
             {
