@@ -380,10 +380,13 @@ private fun SideMenuItem(
         .testTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG),
     verticalAlignment = Alignment.CenterVertically,
   ) {
-    Row(modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).padding(vertical = 16.dp)) {
+    Row(
+      modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).padding(vertical = 16.dp),
+      verticalAlignment = Alignment.CenterVertically
+    ) {
       Image(
         paddingEnd = 10,
-        imageProperties = ImageProperties(imageConfig = imageConfig),
+        imageProperties = ImageProperties(imageConfig = imageConfig, size = 32),
         tint = MenuItemColor
       )
       SideMenuItemText(title = title, textColor = Color.White)

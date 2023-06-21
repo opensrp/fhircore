@@ -19,9 +19,9 @@ package org.smartregister.fhircore.quest.ui.shared.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
@@ -39,6 +39,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCA
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageShape
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -64,8 +65,8 @@ fun Image(
       modifier =
         modifier
           .conditional(
-            imageProperties.isCircular == true,
-            { clip(CircleShape) },
+            imageProperties.shape != null,
+            { clip(imageProperties.shape!!.composeShape) },
             { clip(RoundedCornerShape(imageProperties.borderRadius.dp)) }
           )
           .conditional(
@@ -80,46 +81,27 @@ fun Image(
           .conditional(imageProperties.padding >= 0, { padding(imageProperties.padding.dp) })
     ) {
       when (imageConfig.type) {
-        ICON_TYPE_LOCAL -> {
+        ICON_TYPE_LOCAL ->
           LocalContext.current.retrieveResourceId(imageConfig.reference)?.let { drawableId ->
             Icon(
               modifier =
-                modifier
-                  .testTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG)
-                  .conditional(
-                    imageProperties.size != null,
-                    { size(imageProperties.size!!.dp) },
-                    { size(24.dp) }
-                  )
-                  .conditional(
-                    imageProperties.imagePadding >= 0,
-                    { padding(imageProperties.imagePadding.dp) }
-                  )
+                Modifier.testTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG)
                   .conditional(paddingEnd != null, { padding(end = paddingEnd!!.dp) })
-                  .align(Alignment.Center),
+                  .align(Alignment.Center)
+                  .fillMaxSize(0.9f),
               painter = painterResource(id = drawableId),
               contentDescription = SIDE_MENU_ICON,
               tint = tint ?: imageProperties.tint.parseColor()
             )
           }
-        }
         ICON_TYPE_REMOTE ->
           if (imageConfig.decodedBitmap != null) {
             Image(
               modifier =
-                modifier
-                  .testTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
-                  .conditional(
-                    imageProperties.size != null,
-                    { size(imageProperties.size!!.dp) },
-                    { size(24.dp) }
-                  )
-                  .conditional(
-                    imageProperties.imagePadding >= 0,
-                    { padding(imageProperties.imagePadding.dp) }
-                  )
+                Modifier.testTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
                   .conditional(paddingEnd != null, { padding(end = paddingEnd!!.dp) })
-                  .align(Alignment.Center),
+                  .align(Alignment.Center)
+                  .fillMaxSize(0.9f),
               bitmap = imageConfig.decodedBitmap!!.asImageBitmap(),
               contentDescription = null,
               contentScale = ContentScale.Crop,
@@ -138,10 +120,9 @@ fun ImagePreview() {
     imageProperties =
       ImageProperties(
         imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_walk"),
-        backgroundColor = "successColor",
+        backgroundColor = "dangerColor",
         size = 80,
-        imagePadding = 4,
-        isCircular = true
+        shape = ImageShape.CIRCLE
       ),
     tint = DangerColor.copy(0.1f)
   )

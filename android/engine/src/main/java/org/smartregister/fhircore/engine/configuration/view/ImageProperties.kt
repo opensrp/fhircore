@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
@@ -36,8 +39,7 @@ data class ImageProperties(
   val tint: String? = null,
   val imageConfig: ImageConfig? = null,
   val size: Int? = null,
-  val isCircular: Boolean? = null,
-  val imagePadding: Int = -1
+  val shape: ImageShape? = null
 ) : ViewProperties() {
   override fun interpolate(computedValuesMap: Map<String, Any>): ViewProperties {
     return this.copy(
@@ -50,4 +52,9 @@ data class ImageProperties(
       backgroundColor = this.backgroundColor?.interpolate(computedValuesMap)
     )
   }
+}
+
+enum class ImageShape(val composeShape: Shape) {
+  CIRCLE(CircleShape),
+  RECTANGLE(RectangleShape)
 }
