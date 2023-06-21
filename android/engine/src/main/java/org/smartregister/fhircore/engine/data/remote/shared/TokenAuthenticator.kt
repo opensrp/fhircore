@@ -237,6 +237,8 @@ constructor(
       password.concatToString().toSha1().contentEquals(credentials?.password)
   }
 
+  fun getAccountType(): String = authConfiguration.accountType
+
   fun findAccount(): Account? {
     val credentials = secureSharedPreference.retrieveCredentials()
     return accountManager.getAccountsByType(authConfiguration.accountType).find {

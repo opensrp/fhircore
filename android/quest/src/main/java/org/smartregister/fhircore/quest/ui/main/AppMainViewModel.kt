@@ -16,8 +16,10 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
+import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -108,19 +110,20 @@ constructor(
       }
       is AppMainEvent.RefreshAuthToken -> {
         Timber.e("Refreshing token")
-//        accountAuthenticator.refreshSessionAuthToken { accountBundleFuture ->
-//          val bundle = accountBundleFuture.result
-//          bundle.getParcelable<Intent>(AccountManager.KEY_INTENT).let { intent ->
-//            if (intent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-//              syncBroadcaster.runSync()
-//              return@let
-//            }
-//            intent!!
-//            appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
-//            intent.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
-//            event.launchManualAuth(intent)
-//          }
-//        }
+        try {
+          accountAuthenticator.refreshSessionAuthToken()?.let { bundle ->
+            bundle.getParcelable<Intent>(AccountManager.KEY_INTENT).let { intent ->
+              if (intent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
+                syncBroadcaster.runSync()
+                return@let
+              }
+              intent!!
+              appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
+              intent.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
+              event.launchManualAuth(intent)
+            }
+          }
+        } catch (e: Exception) {}
       }
       AppMainEvent.ResumeSync -> {
         run(resumeSync)

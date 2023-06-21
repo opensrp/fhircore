@@ -20,9 +20,12 @@ import android.accounts.AbstractAccountAuthenticator
 import android.accounts.Account
 import android.accounts.AccountAuthenticatorResponse
 import android.accounts.AccountManager
+import android.accounts.AccountManagerCallback
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.core.os.bundleOf
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.net.UnknownHostException
@@ -156,6 +159,70 @@ constructor(
 
   fun invalidateSession(onSessionInvalidated: () -> Unit) {
     tokenAuthenticator.invalidateSession(onSessionInvalidated)
+  }
+
+  fun refreshSessionAuthToken(): Bundle? {
+    val account = tokenAuthenticator.findAccount()
+    return if (account != null) {
+      getAuthToken(null, account, AUTH_TOKEN_TYPE, null)
+    } else {
+      null
+    }
+  }
+
+  private fun confirmAccount(
+    account: Account,
+    callback: AccountManagerCallback<Bundle>,
+    errorHandler: Handler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
+  ) {
+    accountManager.confirmCredentials(account, Bundle(), null, callback, errorHandler)
+  }
+
+  fun confirmActiveAccount(onResult: (Intent) -> Unit) {
+    tokenAuthenticator.findAccount()?.run {
+      confirmAccount(
+        this,
+        callback = {
+          val bundle = it.result
+          bundle.getParcelable<Intent>(AccountManager.KEY_INTENT)?.let { loginIntent ->
+            loginIntent.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
+            onResult(loginIntent)
+          }
+        }
+      )
+    }
+  }
+
+  fun loadActiveAccount(onValidTokenMissing: (Intent) -> Unit) {
+    tokenAuthenticator.findAccount()?.let {
+      val accountType = tokenAuthenticator.getAccountType()
+      val authToken = accountManager.peekAuthToken(it, AUTH_TOKEN_TYPE)
+      if (!tokenAuthenticator.isTokenActive(authToken)) {
+        accountManager.invalidateAuthToken(accountType, authToken)
+      }
+
+      tokenAuthenticator.findAccount()?.let { account ->
+        accountManager.getAuthToken(
+          account,
+          accountType,
+          Bundle(),
+          false,
+          { accountBundleFuture ->
+            val bundle = accountBundleFuture.result
+            bundle.getParcelable<Intent>(AccountManager.KEY_INTENT).let { logInIntent ->
+              if (logInIntent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
+                return@getAuthToken
+              }
+
+              logInIntent!!
+              logInIntent.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
+              onValidTokenMissing(logInIntent)
+            }
+          },
+          Handler(Looper.getMainLooper(), DefaultErrorHandler)
+        )
+      }
+    }
   }
 
   fun hasActiveSession() = secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
