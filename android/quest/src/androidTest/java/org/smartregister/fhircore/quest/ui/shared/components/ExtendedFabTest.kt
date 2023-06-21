@@ -28,7 +28,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
-import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
@@ -48,7 +48,7 @@ class ExtendedFabTest {
             NavigationMenuConfig(
               id = "test",
               display = "Fab Button",
-              menuIconConfig = MenuIconConfig(type = ICON_TYPE_LOCAL, reference = "ic_user"),
+              menuIconConfig = ImageConfig(type = ICON_TYPE_LOCAL, reference = "ic_user"),
               actions =
                 listOf(
                   ActionConfig(

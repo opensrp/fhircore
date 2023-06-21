@@ -60,6 +60,7 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.flow.SharedFlow
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.TopBarConfig
@@ -68,7 +69,7 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.shared.components.CompoundText
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
-import org.smartregister.fhircore.quest.ui.shared.components.MenuIcon
+import org.smartregister.fhircore.quest.ui.shared.components.Image
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
@@ -331,7 +332,10 @@ private fun ProfileTopAppBarMenuAction(
             )
       ) {
         Row {
-          MenuIcon(menuIconConfig = overflowMenuItemConfig.icon, color = contentColor)
+          Image(
+            imageProperties = ImageProperties(imageConfig = overflowMenuItemConfig.icon),
+            tint = contentColor
+          )
           if (overflowMenuItemConfig.icon != null) Spacer(modifier = Modifier.width(4.dp))
           Text(text = overflowMenuItemConfig.title, color = contentColor)
         }
