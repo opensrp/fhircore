@@ -171,6 +171,77 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
     Assert.assertEquals(Task.TaskStatus.INPROGRESS, task.status)
   }
 
+  @Test
+  fun `FhirTaskPlanWorker doWork set the correct status when start date is 2 years ago`() {
+    val task =
+      Task().apply {
+        status = Task.TaskStatus.REQUESTED
+        executionPeriod = Period().apply { start = DateTime.now().minusYears(2).toDate() }
+      }
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
+    coEvery { defaultRepository.update(task) } just runs
+    val worker =
+      TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
+        .setWorkerFactory(
+          FhirTaskPlanWorkerFactory(fhirEngine, sharedPreferencesHelper, configurationRegistry)
+        )
+        .build()
+    val result = worker.startWork().get()
+    coVerify { defaultRepository.update(task) }
+    Assert.assertEquals(result, (ListenableWorker.Result.success()))
+    Assert.assertEquals(Task.TaskStatus.READY, task.status)
+  }
+
+  @Test
+  fun `FhirTaskPlanWorker doWork sets the correct status if start date 2 years ago and end date is before today`() {
+    val task =
+      Task().apply {
+        status = Task.TaskStatus.REQUESTED
+        executionPeriod =
+          Period().apply {
+            start = DateTime.now().minusYears(2).toDate()
+            end = DateTime.now().minusMonths(10).toDate()
+          }
+      }
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
+    coEvery { defaultRepository.update(task) } just runs
+    val worker =
+      TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
+        .setWorkerFactory(
+          FhirTaskPlanWorkerFactory(fhirEngine, sharedPreferencesHelper, configurationRegistry)
+        )
+        .build()
+    val result = worker.startWork().get()
+    coVerify { defaultRepository.update(task) }
+    Assert.assertEquals(result, (ListenableWorker.Result.success()))
+    Assert.assertEquals(Task.TaskStatus.READY, task.status)
+  }
+
+  @Test
+  fun `FhirTaskPlanWorker doWork sets the correct status depending on the task status`() {
+    val task =
+      Task().apply {
+        status = Task.TaskStatus.INPROGRESS
+        executionPeriod =
+          Period().apply {
+            start = DateTime.now().minusYears(2).toDate()
+            end = DateTime.now().minusMonths(10).toDate()
+          }
+      }
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
+    coEvery { defaultRepository.update(task) } just runs
+    val worker =
+      TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
+        .setWorkerFactory(
+          FhirTaskPlanWorkerFactory(fhirEngine, sharedPreferencesHelper, configurationRegistry)
+        )
+        .build()
+    val result = worker.startWork().get()
+    coVerify(inverse = true) { defaultRepository.update(task) }
+    Assert.assertEquals(result, (ListenableWorker.Result.success()))
+    Assert.assertEquals(Task.TaskStatus.INPROGRESS, task.status)
+  }
+
   inner class FhirTaskPlanWorkerFactory(
     val fhirEngine: FhirEngine,
     val sharedPreferencesHelper: SharedPreferencesHelper,
