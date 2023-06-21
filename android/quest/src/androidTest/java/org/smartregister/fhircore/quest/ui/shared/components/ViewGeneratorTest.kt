@@ -16,9 +16,10 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.graphics.Bitmap
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.NavController
@@ -28,6 +29,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
@@ -323,7 +325,7 @@ class ViewGeneratorTest {
     composeRule.onNodeWithText("Male").assertIsDisplayed()
   }
   @Test
-  fun testGenerateViewRendersViewTypeImageCorrectly() {
+  fun testImageIsRenderedFromLocalAsset() {
     composeRule.setContent {
       GenerateView(
         properties = ImageProperties(imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_walk")),
@@ -331,6 +333,28 @@ class ViewGeneratorTest {
         navController = navController
       )
     }
-    composeRule.onNode(hasTestTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG))
+    composeRule.onNodeWithTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG).assertExists().assertIsDisplayed()
+  }
+
+  @Test
+  fun testImageIsRenderedFromDecodedBitmap() {
+    composeRule.setContent {
+      GenerateView(
+        properties =
+          ImageProperties(
+            imageConfig =
+              ImageConfig(
+                ICON_TYPE_REMOTE,
+                decodedBitmap = Bitmap.createBitmap(100, 16, Bitmap.Config.ARGB_8888)
+              )
+          ),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule
+      .onNodeWithTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
+      .assertExists()
+      .assertIsDisplayed()
   }
 }
