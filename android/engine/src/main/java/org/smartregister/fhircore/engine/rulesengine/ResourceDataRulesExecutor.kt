@@ -118,7 +118,8 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
           relatedListResource.fhirPathExpression?.let {
             rulesFactory.rulesEngineService.retrieveRelatedResources(
               resource = resource,
-              relatedResourceKey = relatedListResource.id ?: relatedListResource.resourceType.name,
+              relatedResourceKey = relatedListResource.relatedResourceId
+                  ?: relatedListResource.resourceType.name,
               referenceFhirPathExpression = it,
               relatedResourcesMap = relatedResourcesMap
             )
