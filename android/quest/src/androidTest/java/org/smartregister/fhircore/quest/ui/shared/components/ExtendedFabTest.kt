@@ -17,8 +17,12 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.navigation.NavController
 import io.mockk.mockk
@@ -84,9 +88,10 @@ class ExtendedFabTest {
 
   @Test
   fun extendedFabButtonRendersRowIconCorrectly() {
-    composeRule
-      .onNodeWithTag(FAB_BUTTON_ROW_ICON_TEST_TAG, useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
+    val onAllNodesWithTag =
+      composeRule.onAllNodesWithTag(FAB_BUTTON_ROW_ICON_TEST_TAG, useUnmergedTree = true)
+    onAllNodesWithTag.assertCountEquals(2)
+    onAllNodesWithTag.onFirst().assertExists().assertIsDisplayed()
+    onAllNodesWithTag.onLast().assertExists().assertIsDisplayed()
   }
 }
