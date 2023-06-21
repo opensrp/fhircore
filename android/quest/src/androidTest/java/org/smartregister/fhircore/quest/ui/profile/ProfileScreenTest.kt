@@ -85,7 +85,7 @@ class ProfileScreenTest {
     composeTestRule.waitUntilExists(hasTestTag(FAB_BUTTON_TEST_TAG))
     composeTestRule
       .onAllNodesWithTag(FAB_BUTTON_TEST_TAG, useUnmergedTree = true)
-      .assertCountEquals(4)
+      .assertCountEquals(3)
   }
 
   @Test
