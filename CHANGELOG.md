@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Configuration for button and overflow menu item icons
 - [Event Management] Add support for extra resources to close
 - Make other-patients name in menu configurable
+- Allow computation of configured rules on `QuestionnaireConfig` e.g. for autogenerating a unique ID for Patient registration
+- Additional (optional) `ActionParameter` on `QuestionnaireConfig` class for providing extra data to the Questionnaire
 - Added a `limitTo` service function that limits lists sizes to a define limit
 
 ### Fixed
