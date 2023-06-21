@@ -94,9 +94,9 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
    * [RepositoryResourceData.relatedResourcesCountMap]. The function returns the outcome of the
    * computation in a map; the name of the rule is used as the key.
    */
-  private fun computeResourceDataRules(
+  fun computeResourceDataRules(
     ruleConfigs: List<RuleConfig>,
-    repositoryResourceData: RepositoryResourceData
+    repositoryResourceData: RepositoryResourceData?
   ): Map<String, Any> {
     return rulesFactory.fireRules(
       rules = rulesFactory.generateRules(ruleConfigs),

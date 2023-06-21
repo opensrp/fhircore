@@ -54,6 +54,8 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -92,6 +94,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val libraryEvaluator: LibraryEvaluator,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
+  val resourceDataRulesExecutor: ResourceDataRulesExecutor
 ) : ViewModel() {
 
   val extractionProgress = MutableLiveData<Boolean>()
@@ -113,16 +116,15 @@ constructor(
   private var editQuestionnaireResourceParams: List<ActionParameter>? = emptyList()
 
   suspend fun loadQuestionnaire(
-    id: String,
-    type: QuestionnaireType,
+    questionnaireConfig: QuestionnaireConfig,
     prePopulationParams: List<ActionParameter>? = emptyList(),
     readOnlyLinkIds: List<String>? = emptyList()
   ): Questionnaire? =
-    defaultRepository.loadResource<Questionnaire>(id)?.apply {
-      if (type.isReadOnly() || type.isEditMode()) {
+    defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
+      if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditMode()) {
         item.prepareQuestionsForReadingOrEditing(
           QUESTIONNAIRE_RESPONSE_ITEM,
-          type.isReadOnly(),
+          questionnaireConfig.type.isReadOnly(),
           readOnlyLinkIds
         )
       }
@@ -201,8 +203,11 @@ constructor(
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
         bundle.entry.forEach { bundleEntry ->
-          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group) &&
-              questionnaireResponse.subject?.reference.isNullOrEmpty()
+          if (bundleEntry.resource.resourceType.isIn(
+              ResourceType.Patient,
+              ResourceType.Group,
+              ResourceType.Encounter
+            ) && questionnaireResponse.subject?.reference.isNullOrEmpty()
           ) {
             questionnaireResponse.subject = bundleEntry.resource.asReference()
           }
@@ -655,50 +660,53 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
     resourceMap: Map<ResourceType?, String>,
   ): QuestionnaireResponse {
-    var questionnaireResponse = QuestionnaireResponse()
+    var questionnaireResponse: QuestionnaireResponse? = QuestionnaireResponse()
 
     if (!subjectId.isNullOrEmpty() && subjectType != null) {
       // Load questionnaire response from DB for Questionnaires opened in EDIT/READONLY mode
-      if (!questionnaireConfig.type.isDefault()) {
-        questionnaireResponse =
-          searchQuestionnaireResponses(
-            subjectId = subjectId,
-            subjectType = subjectType,
-            questionnaireId = questionnaire.logicalId
-          )
-            .maxByOrNull { it.meta.lastUpdated }
-            ?: QuestionnaireResponse()
-      }
+      questionnaireResponse =
+        searchQuestionnaireResponses(
+          subjectId = subjectId,
+          subjectType = subjectType,
+          questionnaireId = questionnaire.logicalId
+        )
+          .maxByOrNull { it.meta.lastUpdated }
 
       /**
        * This will catch an exception and return QR from DB when population resource is empty,
        * ResourceMapper.selectPopulateContext() will return null, then that null will get evaluated
        * and gives an exception as a result.
        */
-      questionnaireResponse =
-        runCatching {
-            // load required resources sent through Param for questionnaire Response expressions
-            val populationResources = arrayListOf<Resource>()
-            if (resourceMap.isEmpty()) {
-              populationResources.addAll(loadPopulationResources(subjectId, subjectType))
-            } else {
-              resourceMap.forEach {
-                populationResources.addAll(
-                  loadPopulationResources(it.value.extractLogicalIdUuid(), it.key!!)
-                )
+      if (questionnaireResponse == null ||
+          questionnaireResponse.isEmpty ||
+          !questionnaireResponse.hasItem()
+      ) {
+        questionnaireResponse =
+          runCatching {
+              // load required resources sent through Param for questionnaire Response
+              // expressions
+              val populationResources = arrayListOf<Resource>()
+              if (resourceMap.isEmpty()) {
+                populationResources.addAll(loadPopulationResources(subjectId, subjectType))
+              } else {
+                resourceMap.forEach {
+                  populationResources.addAll(
+                    loadPopulationResources(it.value.extractLogicalIdUuid(), it.key!!)
+                  )
+                }
               }
-            }
 
-            populateQuestionnaireResponse(
-              questionnaire = questionnaire,
-              populationResources = populationResources
-            )
-          }
-          .onFailure { Timber.e(it, "Error encountered while populating QuestionnaireResponse") }
-          .getOrDefault(questionnaireResponse)
+              populateQuestionnaireResponse(
+                questionnaire = questionnaire,
+                populationResources = populationResources
+              )
+            }
+            .onFailure { Timber.e(it, "Error encountered while populating QuestionnaireResponse") }
+            .getOrDefault(questionnaireResponse)
+      }
     }
 
-    return questionnaireResponse
+    return questionnaireResponse ?: QuestionnaireResponse()
   }
 
   /**
@@ -782,6 +790,9 @@ constructor(
       )
       .singleOrNull()
   }
+
+  fun computeQuestionnaireConfigRules(ruleConfigs: List<RuleConfig>): Map<String, Any> =
+    resourceDataRulesExecutor.computeResourceDataRules(ruleConfigs, null)
 
   companion object {
     private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"

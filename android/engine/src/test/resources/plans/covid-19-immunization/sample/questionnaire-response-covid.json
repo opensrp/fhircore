@@ -1,0 +1,137 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "eec7a936-0786-43cf-9ecb-03a3a6e9621b",
+  "questionnaire": "Questionnaire/e8572c86-065d-11ee-be56-0242ac120002",
+  "status": "completed",
+  "subject": {
+    "reference": "Patient/TEST_PATIENT"
+  },
+  "authored": "2023-06-07T16:24:33+05:00",
+  "item": [
+    {
+      "linkId": "previous_vaccine",
+      "text": "Previous vaccine name"
+    },
+    {
+      "linkId": "vaccine_selector_list",
+      "text": "Vaccine name list",
+      "answer": [
+        {
+          "valueCoding": {
+            "system": "https://icd.who.int/",
+            "code": "XM4YL8",
+            "display": "AstraZeneca"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "https://icd.who.int/",
+            "code": "XM6QV1",
+            "display": "Johnson & Johnson"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "https://icd.who.int/",
+            "code": "XM1AU2",
+            "display": "Sinopharm"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "https://icd.who.int/",
+            "code": "XM8NQ0",
+            "display": "Pfizer"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "https://icd.who.int/",
+            "code": "XM3DT5",
+            "display": "Moderna"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "dose_number_selector_list",
+      "text": "Dose Number List",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "1",
+            "display": "1"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "2",
+            "display": "2"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "9999",
+            "display": "Booster"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "vaccine_selector",
+      "text": "Vaccine name",
+      "answer": [
+        {
+          "valueCoding": {
+            "system": "https://icd.who.int/",
+            "code": "XM4YL8",
+            "display": "AstraZeneca"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "current_vaccine",
+      "text": "Current Vaccine",
+      "answer": [
+        {
+          "valueCoding": {
+            "system": "https://icd.who.int/",
+            "code": "XM4YL8",
+            "display": "AstraZeneca"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "dose_number",
+      "text": "Dose Number",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "1",
+            "display": "1"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "vaccine_date",
+      "text": "Date Vaccine is Given",
+      "answer": [
+        {
+          "valueDate": "2023-06-07"
+        }
+      ]
+    },
+    {
+      "linkId": "batch_number",
+      "text": "Batch Number",
+      "answer": [
+        {
+          "valueString": "1111"
+        }
+      ]
+    }
+  ]
+}
