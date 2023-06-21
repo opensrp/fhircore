@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow computation of configured rules on `QuestionnaireConfig` e.g. for autogenerating a unique ID for Patient registration
 - Additional (optional) `ActionParameter` on `QuestionnaireConfig` class for providing extra data to the Questionnaire
 - Added a `limitTo` service function that limits lists sizes to a define limit
+- Implement configurable image/icon widget
 - Added functionality to filter related resources for list view
 
 ### Fixed
