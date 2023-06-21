@@ -28,7 +28,6 @@ import androidx.activity.viewModels
 import androidx.annotation.VisibleForTesting
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import ca.uhn.fhir.parser.IParser
@@ -70,6 +69,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.initialExpression
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
@@ -110,13 +110,26 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       intent.getSerializableExtra(QUESTIONNAIRE_ACTION_PARAMETERS) as List<ActionParameter>?
         ?: emptyList()
 
-    prePopulationParams =
-      actionParams.filter {
-        (it.paramType == ActionParameterType.PREPOPULATE ||
-          it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) &&
-          it.value.isNotEmpty() &&
-          !it.value.contains(STRING_INTERPOLATION_PREFIX)
+    // Compute questionnaire config rules and interpolate the extra questionnaire params
+    val questionnaireComputedValues =
+      questionnaireConfig.configRules?.let {
+        questionnaireViewModel.computeQuestionnaireConfigRules(it)
       }
+        ?: emptyMap()
+
+    val extraQuestionnaireParams =
+      questionnaireConfig.extraParams?.map { it.interpolate(questionnaireComputedValues) }
+        ?: emptyList()
+
+    prePopulationParams =
+      actionParams
+        .filter {
+          (it.paramType == ActionParameterType.PREPOPULATE ||
+            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) &&
+            it.value.isNotEmpty() &&
+            !it.value.contains(STRING_INTERPOLATION_PREFIX)
+        }
+        .plus(extraQuestionnaireParams)
 
     baseResourceId = intent.getStringExtra(BASE_RESOURCE_ID)
     val strBaseResourceType = intent.getStringExtra(BASE_RESOURCE_TYPE)
@@ -139,9 +152,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     lifecycleScope.launch {
       val questionnaire =
         questionnaireViewModel.loadQuestionnaire(
-          questionnaireConfig.id,
-          questionnaireConfig.type,
-          prePopulationParams
+          questionnaireConfig = questionnaireConfig,
+          prePopulationParams = prePopulationParams
         )
       if (questionnaire == null) {
         showToast(getString(R.string.questionnaire_not_found))
@@ -220,7 +232,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  suspend fun renderFragment() {
+  private suspend fun renderFragment() {
     fragment =
       fragmentBuilder(
           Questionnaire().apply { this.extension = questionnaire.extension },
@@ -263,7 +275,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireConfig.resourceIdentifier?.takeIf { it.isNotBlank() }?.let {
         val resourceId = IdType(it)
         val resourceType =
-          resourceId.resourceType?.let { ResourceType.fromCode(it) }
+          resourceId.resourceType?.let { resourceType -> ResourceType.fromCode(resourceType) }
             ?: questionnaireConfig.resourceType ?: ResourceType.Patient
 
         setQuestionnaireLaunchContexts(
@@ -279,8 +291,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   private fun setBarcode(questionnaire: Questionnaire, code: String) {
     questionnaire.find(QUESTIONNAIRE_ARG_BARCODE)?.apply {
-      initial =
-        mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
+      initial = mutableListOf(QuestionnaireItemInitialComponent().setValue(StringType(code)))
       readOnly = true
     }
   }
@@ -323,10 +334,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         // Reload the questionnaire and reopen the fragment
         questionnaire =
           questionnaireViewModel.loadQuestionnaire(
-            questionnaireConfig.id,
-            questionnaireConfig.type,
-            prePopulationParams,
-            questionnaireConfig.readOnlyLinkIds
+            questionnaireConfig = questionnaireConfig,
+            prePopulationParams = prePopulationParams,
+            readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds
           )!!
         supportFragmentManager.commit { detach(fragment) }
         renderFragment()
