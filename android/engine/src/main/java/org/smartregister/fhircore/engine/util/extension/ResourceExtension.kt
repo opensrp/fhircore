@@ -29,6 +29,7 @@ import java.util.LinkedList
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.abs
+import org.hl7.fhir.TaskStatus
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
@@ -349,7 +350,10 @@ suspend fun Task.updateDependentTaskDueDate(
       }
     dependentTasks.forEach { dependantTask ->
       dependantTask.partOf.forEach { _ ->
-        if (dependantTask.executionPeriod.hasStart() && dependantTask.hasInput()) {
+        if (dependantTask.executionPeriod.hasStart() &&
+            dependantTask.hasInput() &&
+            this.status.equals(Task.TaskStatus.REQUESTED)
+        ) {
           this.output.forEach { taskOp ->
             try {
               val taskOutReference = taskOp.value as Reference
@@ -364,7 +368,7 @@ suspend fun Task.updateDependentTaskDueDate(
                       { value = taskRef.extractLogicalIdUuid() }
                     )
                   }
-                dependantImmunization.forEach { immunization ->
+                dependantImmunization.filter { it.hasEncounter() }.forEach { immunization ->
                   val dependentTaskStartDate = dependantTask.executionPeriod.start
                   val immunizationDate =
                     immunization.occurrenceDateTimeType.dateTimeValue().valueAsCalendar
@@ -378,9 +382,7 @@ suspend fun Task.updateDependentTaskDueDate(
                           )
                           .toDays()
                       )
-                    if (difference < dependentTaskInputDate &&
-                        dependantTask.executionPeriod.hasStart()
-                    ) {
+                    if (difference < dependentTaskInputDate) {
                       dependantTask
                         .apply {
                           executionPeriod.start =

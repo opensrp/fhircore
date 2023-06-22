@@ -22,6 +22,7 @@ import androidx.work.WorkRequest
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
+import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.get
@@ -75,6 +76,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.Task.TaskOutputComponent
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
@@ -100,6 +102,7 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
@@ -123,8 +126,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   private val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
   private var immunizationResource = Immunization()
   private var encounter = Encounter()
-  private var groupTask = Task()
-  private var dependentTask = Task()
+  private var opv0 = Task()
+  private var opv1 = Task()
 
   @Before
   fun setup() {
@@ -173,7 +176,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Encounter::class.java,
         "{\n" +
           "   \"resourceType\":\"Encounter\",\n" +
-          "   \"id\":\"ebcfb052-47ed-4846-bb13-0f136cdc53a1\",\n" +
+          "   \"id\":\"14e2ae52-32fc-4507-8736-1177cdaafe90\",\n" +
           "   \"identifier\":{\n" +
           "      \"use\":\"official\",\n" +
           "      \"value\":\"4b62fff3-6010-4674-84a2-71f2bbdbf2e5\"\n" +
@@ -201,113 +204,122 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           "   }\n" +
           "}"
       )
-    groupTask =
+    opv0 =
       iParser.parseResource(
-        Task::class.java,
-        "{\n" +
-          "   \"resourceType\":\"Task\",\n" +
-          "   \"id\":\"a9100c01-c84b-404f-9d24-9b830463a152\",\n" +
-          "   \"identifier\":[\n" +
-          "      {\n" +
-          "         \"use\":\"official\",\n" +
-          "         \"value\":\"a20e88b4-4beb-4b31-86cd-572e1445e5f3\"\n" +
-          "      }\n" +
-          "   ],\n" +
-          "   \"basedOn\":[\n" +
-          "      {\n" +
-          "         \"reference\":\"CarePlan/28d7542c-ba08-4f16-b6a2-19e8b5d4c229\"\n" +
-          "      }\n" +
-          "   ],\n" +
-          "   \"partOf\":{\n" +
-          "      \"reference\":\"Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f\"\n" +
-          "   },\n" +
-          "   \"status\":\"requested\",\n" +
-          "   \"intent\":\"plan\",\n" +
-          "   \"priority\":\"routine\",\n" +
-          "   \"code\":{\n" +
-          "      \"coding\":[\n" +
-          "         {\n" +
-          "            \"system\":\"http://snomed.info/sct\",\n" +
-          "            \"code\":\"33879002\",\n" +
-          "            \"display\":\"Administration of vaccine to produce active immunity (procedure)\"\n" +
-          "         }\n" +
-          "      ]\n" +
-          "   },\n" +
-          "   \"description\":\"OPV 1 at 6 wk vaccine\",\n" +
-          "   \"for\":{\n" +
-          "      \"reference\":\"Patient/3e3d698a-4edb-48f9-9330-2f1adc0635d1\"\n" +
-          "   },\n" +
-          "   \"executionPeriod\":{\n" +
-          "      \"start\":\"2021-11-12T00:00:00+00:00\",\n" +
-          "      \"end\":\"2026-11-11T00:00:00+00:00\"\n" +
-          "   },\n" +
-          "   \"authoredOn\":\"2023-03-28T10:46:59+00:00\",\n" +
-          "   \"requester\":{\n" +
-          "      \"reference\":\"Practitioner/3812\"\n" +
-          "   },\n" +
-          "   \"owner\":{\n" +
-          "      \"reference\":\"Practitioner/3812\"\n" +
-          "   },\n" +
-          "   \"reasonCode\":{\n" +
-          "      \"coding\":[\n" +
-          "         {\n" +
-          "            \"system\":\"http://snomed.info/sct\",\n" +
-          "            \"code\":\"111164008\",\n" +
-          "            \"display\":\"Poliovirus vaccine\"\n" +
-          "         }\n" +
-          "      ],\n" +
-          "      \"text\":\"OPV\"\n" +
-          "   },\n" +
-          "   \"reasonReference\":{\n" +
-          "      \"reference\":\"Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82\"\n" +
-          "   },\n" +
-          "   \"input\":[\n" +
-          "      {\n" +
-          "         \"type\":{\n" +
-          "            \"coding\":[\n" +
-          "               {\n" +
-          "                  \"system\":\"http://snomed.info/sct\",\n" +
-          "                  \"code\":\"900000000000457003\",\n" +
-          "                  \"display\":\"Reference set attribute (foundation metadata concept)\"\n" +
-          "               }\n" +
-          "            ]\n" +
-          "         },\n" +
-          "         \"value\":{\n" +
-          "            \"reference\":\"Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f\"\n" +
-          "         }\n" +
-          "      },\n" +
-          "      {\n" +
-          "         \"type\":{\n" +
-          "            \"coding\":[\n" +
-          "               {\n" +
-          "                  \"system\":\"http://snomed.info/sct\",\n" +
-          "                  \"code\":\"371154000\",\n" +
-          "                  \"display\":\"Dependent (qualifier value)\"\n" +
-          "               }\n" +
-          "            ]\n" +
-          "         },\n" +
-          "         \"value\":28\n" +
-          "      }\n" +
-          "   ],\n" +
-          "   \"output\":[\n" +
-          "      {\n" +
-          "         \"type\":{\n" +
-          "            \"coding\":[\n" +
-          "               {\n" +
-          "                  \"system\":\"http://snomed.info/sct\",\n" +
-          "                  \"code\":\"41000179103\",\n" +
-          "                  \"display\":\"Immunization record (record artifact)\"\n" +
-          "               }\n" +
-          "            ]\n" +
-          "         },\n" +
-          "         \"value\":{\n" +
-          "            \"reference\":\"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
-          "         }\n" +
-          "      }\n" +
-          "   ]\n" +
-          "} "
-      )
-    dependentTask =
+          Task::class.java,
+          "{\n" +
+            "   \"resourceType\":\"Task\",\n" +
+            "   \"id\":\"a9100c01-c84b-404f-9d24-9b830463a152\",\n" +
+            "   \"identifier\":[\n" +
+            "      {\n" +
+            "         \"use\":\"official\",\n" +
+            "         \"value\":\"a20e88b4-4beb-4b31-86cd-572e1445e5f3\"\n" +
+            "      }\n" +
+            "   ],\n" +
+            "   \"basedOn\":[\n" +
+            "      {\n" +
+            "         \"reference\":\"CarePlan/28d7542c-ba08-4f16-b6a2-19e8b5d4c229\"\n" +
+            "      }\n" +
+            "   ],\n" +
+            "   \"partOf\":{\n" +
+            "      \"reference\":\"Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f\"\n" +
+            "   },\n" +
+            "   \"status\":\"requested\",\n" +
+            "   \"intent\":\"plan\",\n" +
+            "   \"priority\":\"routine\",\n" +
+            "   \"code\":{\n" +
+            "      \"coding\":[\n" +
+            "         {\n" +
+            "            \"system\":\"http://snomed.info/sct\",\n" +
+            "            \"code\":\"33879002\",\n" +
+            "            \"display\":\"Administration of vaccine to produce active immunity (procedure)\"\n" +
+            "         }\n" +
+            "      ]\n" +
+            "   },\n" +
+            "   \"description\":\"OPV 1 at 6 wk vaccine\",\n" +
+            "   \"for\":{\n" +
+            "      \"reference\":\"Patient/3e3d698a-4edb-48f9-9330-2f1adc0635d1\"\n" +
+            "   },\n" +
+            "   \"executionPeriod\":{\n" +
+            "      \"start\":\"2021-11-12T00:00:00+00:00\",\n" +
+            "      \"end\":\"2026-11-11T00:00:00+00:00\"\n" +
+            "   },\n" +
+            "   \"authoredOn\":\"2023-03-28T10:46:59+00:00\",\n" +
+            "   \"requester\":{\n" +
+            "      \"reference\":\"Practitioner/3812\"\n" +
+            "   },\n" +
+            "   \"owner\":{\n" +
+            "      \"reference\":\"Practitioner/3812\"\n" +
+            "   },\n" +
+            "   \"reasonCode\":{\n" +
+            "      \"coding\":[\n" +
+            "         {\n" +
+            "            \"system\":\"http://snomed.info/sct\",\n" +
+            "            \"code\":\"111164008\",\n" +
+            "            \"display\":\"Poliovirus vaccine\"\n" +
+            "         }\n" +
+            "      ],\n" +
+            "      \"text\":\"OPV\"\n" +
+            "   },\n" +
+            "   \"reasonReference\":{\n" +
+            "      \"reference\":\"Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82\"\n" +
+            "   },\n" +
+            "   \"input\":[\n" +
+            "      {\n" +
+            "         \"type\":{\n" +
+            "            \"coding\":[\n" +
+            "               {\n" +
+            "                  \"system\":\"http://snomed.info/sct\",\n" +
+            "                  \"code\":\"900000000000457003\",\n" +
+            "                  \"display\":\"Reference set attribute (foundation metadata concept)\"\n" +
+            "               }\n" +
+            "            ]\n" +
+            "         },\n" +
+            "         \"value\":{\n" +
+            "            \"reference\":\"Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f\"\n" +
+            "         }\n" +
+            "      },\n" +
+            "      {\n" +
+            "         \"type\":{\n" +
+            "            \"coding\":[\n" +
+            "               {\n" +
+            "                  \"system\":\"http://snomed.info/sct\",\n" +
+            "                  \"code\":\"371154000\",\n" +
+            "                  \"display\":\"Dependent (qualifier value)\"\n" +
+            "               }\n" +
+            "            ]\n" +
+            "         },\n" +
+            "         \"value\":28\n" +
+            "      }\n" +
+            "   ],\n" +
+            "   \"output\":[\n" +
+            "      {\n" +
+            "         \"type\":{\n" +
+            "            \"coding\":[\n" +
+            "               {\n" +
+            "                  \"system\":\"http://snomed.info/sct\",\n" +
+            "                  \"code\":\"41000179103\",\n" +
+            "                  \"display\":\"Immunization record (record artifact)\"\n" +
+            "               }\n" +
+            "            ]\n" +
+            "         },\n" +
+            "         \"value\":{\n" +
+            "            \"reference\":\"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
+            "         }\n" +
+            "      }\n" +
+            "   ]\n" +
+            "} "
+        )
+        .apply {
+          output =
+            listOf(
+              TaskOutputComponent(
+                CodeableConcept(),
+                Reference("Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90")
+              )
+            )
+        }
+    opv1 =
       iParser.parseResource(
         Task::class.java,
         "{\n" +
@@ -1677,25 +1689,25 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Test
   fun `updateDependentTaskDueDate - no dependent tasks`() = runBlocking {
-    groupTask.apply {
+    opv0.apply {
       status = TaskStatus.REQUESTED
       partOf = emptyList()
     }
     // when
-    val updatedTask = groupTask.updateDependentTaskDueDate(defaultRepository, fhirEngine)
+    val updatedTask = opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine)
     // then
-    assertEquals("650203d2-f327-4eb4-a9fd-741e0ce29c3f", dependentTask.logicalId)
-    assertEquals(groupTask, updatedTask)
+    assertEquals("650203d2-f327-4eb4-a9fd-741e0ce29c3f", opv1.logicalId)
+    assertEquals(opv0, updatedTask)
   }
 
   @Test
   fun `test updateDependentTaskDueDate - dependent task without output`() {
     coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
-      groupTask.apply {
+      opv0.apply {
         status = TaskStatus.READY
         partOf = listOf(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f"))
       }
-    dependentTask.apply {
+    opv1.apply {
       output = emptyList()
       executionPeriod =
         Period().apply {
@@ -1704,39 +1716,33 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         }
     }
 
-    coEvery {
-      defaultRepository.loadResource(Reference(groupTask.partOf.first().reference))
-    } returns dependentTask
-    val updatedTask = runBlocking {
-      groupTask.updateDependentTaskDueDate(defaultRepository, fhirEngine)
-    }
-    assertEquals(groupTask, updatedTask)
+    coEvery { defaultRepository.loadResource(Reference(opv0.partOf.first().reference)) } returns
+      opv1
+    val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
+    assertEquals(opv0, updatedTask)
   }
 
   @Test
   fun `test updateDependentTaskDueDate with dependent task , with output but no execution period start date`() {
     coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
-      groupTask.apply { status = TaskStatus.INPROGRESS }
-    dependentTask.apply { dependentTask.executionPeriod.start = null }
-    coEvery {
-      defaultRepository.loadResource(Reference(groupTask.partOf.first().reference))
-    } returns dependentTask
+      opv0.apply { status = TaskStatus.INPROGRESS }
+    opv1.apply { opv1.executionPeriod.start = null }
+    coEvery { defaultRepository.loadResource(Reference(opv0.partOf.first().reference)) } returns
+      opv1
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns emptyList()
-    val updatedTask = runBlocking {
-      groupTask.updateDependentTaskDueDate(defaultRepository, fhirEngine)
-    }
-    assertEquals(groupTask, updatedTask)
+    val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
+    assertEquals(opv0, updatedTask)
   }
 
   @Test
   fun `test updateDependentTaskDueDate with dependent task with output, execution period start date, and encounter part of reference that is null`() {
 
     coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
-      dependentTask.apply {
+      opv1.apply {
         status = TaskStatus.INPROGRESS
         output =
           listOf(
-            Task.TaskOutputComponent(
+            TaskOutputComponent(
               CodeableConcept(),
               StringType(
                 "{\n" +
@@ -1749,8 +1755,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery {
       defaultRepository.loadResource(
         Reference(
-          Json.decodeFromString<JsonObject>(dependentTask.output.first().value.toString())[
-              REFERENCE]
+          Json.decodeFromString<JsonObject>(opv1.output.first().value.toString())[REFERENCE]
             ?.jsonPrimitive
             ?.content
         )
@@ -1758,20 +1763,18 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     } returns encounter.apply { partOf = null }
     coEvery { defaultRepository.loadResource(Reference(ArgumentMatchers.anyString())) } returns
       Immunization()
-    val updatedTask = runBlocking {
-      groupTask.updateDependentTaskDueDate(defaultRepository, fhirEngine)
-    }
-    assertEquals(groupTask, updatedTask)
+    val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
+    assertEquals(opv0, updatedTask)
   }
 
   @Test
   fun `test updateDependentTaskDueDate with dependent task with output, execution period start date, and encounter part of reference that is not an Immunization`() {
     coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
-      dependentTask.apply {
+      opv1.apply {
         status = TaskStatus.INPROGRESS
         output =
           listOf(
-            Task.TaskOutputComponent(
+            TaskOutputComponent(
               CodeableConcept(),
               StringType(
                 "{\n" +
@@ -1792,8 +1795,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery {
       defaultRepository.loadResource(
         Reference(
-          Json.decodeFromString<JsonObject>(dependentTask.output.first().value.toString())[
-              REFERENCE]
+          Json.decodeFromString<JsonObject>(opv1.output.first().value.toString())[REFERENCE]
             ?.jsonPrimitive
             ?.content
         )
@@ -1803,103 +1805,95 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { defaultRepository.loadResource(Reference(encounter.partOf.reference)) } returns
       immunizationResource
 
-    val updatedTask = runBlocking {
-      groupTask.updateDependentTaskDueDate(defaultRepository, fhirEngine)
-    }
-    assertEquals(groupTask, updatedTask)
+    val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
+    assertEquals(opv0, updatedTask)
   }
 
   @Test
   fun `updateDependentTaskDueDate with Task input value equal or greater than difference between administration date and depedentTask executionPeriod start`() {
     coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
-      dependentTask.apply {
+      opv1.apply {
         status = TaskStatus.INPROGRESS
         output =
           listOf(
-            Task.TaskOutputComponent(
+            TaskOutputComponent(
               CodeableConcept(),
-              StringType(
-                "{\n" +
-                  "          \"reference\": \"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
-                  "        }"
-              )
+              Reference("Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90")
             )
           )
         input = listOf(Task.ParameterComponent(CodeableConcept(), StringType("9")))
       }
     coEvery {
-      fhirEngine.get(ResourceType.Encounter, "14e2ae52-32fc-4507-8736-1177cdaafe90")
-    } returns encounter
-    coEvery {
-      fhirEngine.get(ResourceType.Immunization, "15e2ae52-32fc-4507-8736-1177cdaafe90")
-    } returns immunizationResource
-
-    coEvery {
-      defaultRepository.loadResource(
-        Reference(
-          Json.decodeFromString<JsonObject>(dependentTask.output.first().value.toString())[
-              REFERENCE]
-            ?.jsonPrimitive
-            ?.content
+      fhirEngine.search<Task> {
+        filter(
+          referenceParameter = ReferenceClientParam("part-of"),
+          { value = opv1.id.extractLogicalIdUuid() }
         )
-      )
-    } returns encounter
+      }
+    } returns
+      listOf(opv1.apply { partOf = listOf(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f")) })
+    coEvery {
+      fhirEngine.search<Immunization> {
+        filter(
+          referenceParameter = ReferenceClientParam("part-of"),
+          { value = immunizationResource.id.extractLogicalIdUuid() }
+        )
+      }
+    } returns listOf(immunizationResource)
+    coEvery {
+      fhirEngine.search<Encounter> {
+        filter(
+          referenceParameter = ReferenceClientParam("part-of"),
+          { value = encounter.id.extractLogicalIdUuid() }
+        )
+      }
+    } returns listOf(encounter)
 
-    coEvery { defaultRepository.loadResource(Reference(encounter.partOf.reference)) } returns
-      immunizationResource
-
-    val updatedTask = runBlocking {
-      groupTask.updateDependentTaskDueDate(defaultRepository, fhirEngine)
-    }
-    assertEquals(groupTask, updatedTask)
+    val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
+    assertEquals(opv0, updatedTask)
   }
   @Test
   fun `updateDependentTaskDueDate sets executionPeriod start correctly`() {
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns
       listOf(
-        dependentTask.apply {
+        opv1.apply {
           status = TaskStatus.INPROGRESS
-          output =
-            listOf(
-              Task.TaskOutputComponent(
-                CodeableConcept(),
-                StringType(
-                  "{\n" +
-                    "          \"reference\": \"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
-                    "        }"
-                )
-              )
-            )
           input = listOf(Task.ParameterComponent(CodeableConcept(), StringType("28")))
         }
       )
     coEvery {
-      fhirEngine.get(ResourceType.Encounter, "14e2ae52-32fc-4507-8736-1177cdaafe90")
-    } returns encounter
-    coEvery {
-      fhirEngine.get(ResourceType.Immunization, "15e2ae52-32fc-4507-8736-1177cdaafe90")
-    } returns immunizationResource
-
-    coEvery {
-      defaultRepository.loadResource(
-        Reference(
-          Json.decodeFromString<JsonObject>(dependentTask.output.first().value.toString())[
-              REFERENCE]
-            ?.jsonPrimitive
-            ?.content
+      fhirEngine.search<Task> {
+        filter(
+          referenceParameter = ReferenceClientParam("part-of"),
+          { value = opv1.id.extractLogicalIdUuid() }
         )
-      )
-    } returns encounter
-    coEvery { defaultRepository.loadResource(Reference(encounter.partOf.reference)) } returns
-      immunizationResource
+      }
+    } returns
+      listOf(opv1.apply { partOf = listOf(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f")) })
+    coEvery {
+      fhirEngine.search<Immunization> {
+        filter(
+          referenceParameter = ReferenceClientParam("part-of"),
+          { value = immunizationResource.id.extractLogicalIdUuid() }
+        )
+      }
+    } returns listOf(immunizationResource)
+    coEvery {
+      fhirEngine.search<Encounter> {
+        filter(
+          referenceParameter = ReferenceClientParam("part-of"),
+          { value = encounter.id.extractLogicalIdUuid() }
+        )
+      }
+    } returns listOf(encounter)
 
-    coEvery { defaultRepository.addOrUpdate(addMandatoryTags = true, dependentTask) } just runs
-    runBlocking { groupTask.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
+    val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
     assertEquals(
-      Date.from(Instant.parse("2021-11-07T00:00:00Z")),
-      dependentTask.executionPeriod.start
+      Date.from(Instant.parse("2021-11-12T00:00:00Z")),
+      updatedTask.executionPeriod.start
     )
-    coVerify { defaultRepository.addOrUpdate(addMandatoryTags = true, dependentTask) }
+    coEvery { defaultRepository.addOrUpdate(addMandatoryTags = true, opv1) } just runs
+    coVerify { defaultRepository.addOrUpdate(addMandatoryTags = true, opv1) }
   }
 
   @Test
