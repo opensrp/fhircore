@@ -63,6 +63,7 @@ data class ButtonProperties(
       ServiceStatus.UPCOMING -> DefaultColor
       ServiceStatus.COMPLETED -> DefaultColor
       ServiceStatus.IN_PROGRESS -> WarningColor
+      ServiceStatus.EXPIRED -> DefaultColor
     }
   }
   override fun interpolate(computedValuesMap: Map<String, Any>): ButtonProperties {
