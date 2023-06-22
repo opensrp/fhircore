@@ -19,14 +19,16 @@ package org.smartregister.fhircore.engine.util.extension
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.search
+import java.lang.Math.abs
 import java.time.Duration
 import java.util.Date
 import java.util.LinkedList
 import java.util.Locale
 import java.util.UUID
-import kotlin.math.abs
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -314,10 +316,10 @@ fun String.resourceClassType(): Class<out Resource> =
  * A function that extracts only the UUID part of a resource logicalId.
  *
  * Examples:
- *
  * 1. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/2" returns
- * "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
- *
+ * ```
+ *    "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
+ * ```
  * 2. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4" returns "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
  */
 fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")
@@ -339,72 +341,69 @@ fun Resource.addTags(tags: List<Coding>) {
  *
  * @param defaultRepository An instance of DefaultRepository
  */
-suspend fun Task.updateDependentTaskDueDate(defaultRepository: DefaultRepository): Task {
+suspend fun Task.updateDependentTaskDueDate(
+  defaultRepository: DefaultRepository,
+  fhirEngine: FhirEngine
+): Task {
   return apply {
-    if (hasPartOf()) {
-      partOf.forEach { task ->
-        val dependentTask =
-          defaultRepository.loadResource<Task>(task.reference.extractLogicalIdUuid())
-        if (dependentTask != null &&
+    val dependentTasks =
+      fhirEngine.search<Task> {
+        filter(
+          referenceParameter = ReferenceClientParam("part-of"),
+          { value = id.asReference(ResourceType.Task).reference }
+        )
+      }
+
+    dependentTasks.forEach { dependentTask ->
+      if (dependentTask.hasPartOf() && dependentTask.partOf.equals(id)) {
+        if (dependentTask.hasOutput() &&
             dependentTask.hasOutput() &&
             dependentTask.executionPeriod.hasStart() &&
-            dependentTask.hasInput() &&
-            (dependentTask.isDue() || dependentTask.isOverDue() || dependentTask.isUpcoming())
+            dependentTask.hasInput()
         ) {
-          dependentTask.output?.forEach { dependentTaskOutputValue ->
-            if (dependentTaskOutputValue.hasValue()) {
-              val dependentTaskReference =
-                Reference(
-                  Json.decodeFromString<JsonObject>(dependentTaskOutputValue.value.toString())[
-                      REFERENCE]
-                    ?.jsonPrimitive
-                    ?.content
-                )
-              val encounterResource =
-                defaultRepository.loadResource<Encounter>(
-                  dependentTaskReference.reference.extractLogicalIdUuid()
-                )
-              encounterResource?.partOf?.reference?.let { partOfReference ->
-                try {
-                  val immunizationResource =
-                    defaultRepository.loadResource<Immunization>(
-                      partOfReference.extractLogicalIdUuid()
+          dependentTask.output.forEach { dependentTaskOutputValue ->
+            val dependentTaskReference =
+              Reference(
+                Json.decodeFromString<JsonObject>(dependentTaskOutputValue.value.toString())[
+                    REFERENCE]
+                  ?.jsonPrimitive
+                  ?.content
+              )
+            val encounterResource =
+              defaultRepository.loadResource<Encounter>(
+                dependentTaskReference.reference.extractLogicalIdUuid()
+              )
+            encounterResource?.partOf.let { encounterPartOfRef ->
+              val immunizationResource =
+                defaultRepository.loadResource<Immunization>(encounterPartOfRef!!.extractId())
+              immunizationResource?.occurrenceDateTimeType?.dateTimeValue()?.valueAsCalendar.let {
+                immunizationDate ->
+                val dependentTaskStartDate = dependentTask.executionPeriod.start
+                dependentTask.input.onEach {
+                  val dependentTaskInputDate = it.value.toString().toInt()
+                  val difference =
+                    abs(
+                      Duration.between(
+                          immunizationDate?.toInstant(),
+                          dependentTaskStartDate.toInstant()
+                        )
+                        .toDays()
                     )
-                  immunizationResource?.occurrenceDateTimeType?.dateTimeValue()
-                    ?.valueAsCalendar
-                    ?.let { immunizationDate ->
-                      val dependentTaskStartDate = dependentTask.executionPeriod.start
-                      dependentTask.input.forEach {
-                        val dependentTaskInputDate = it.value.toString().toInt()
-                        val difference =
-                          abs(
-                            Duration.between(
-                                immunizationDate.toInstant(),
-                                dependentTaskStartDate.toInstant()
-                              )
-                              .toDays()
-                          )
-                        if (difference < dependentTaskInputDate &&
-                            dependentTask.executionPeriod.hasStart()
-                        ) {
-                          dependentTask
-                            .apply {
-                              executionPeriod.start =
-                                Date.from(immunizationDate.toInstant())
-                                  .plusDays(dependentTaskInputDate)
-                            }
-                            .run {
-                              defaultRepository.addOrUpdate(
-                                addMandatoryTags = true,
-                                resource = dependentTask
-                              )
-                            }
-                        }
+                  if (difference < dependentTaskInputDate &&
+                      dependentTask.executionPeriod.hasStart()
+                  ) {
+                    dependentTask
+                      .apply {
+                        executionPeriod.start =
+                          Date.from(immunizationDate?.toInstant()).plusDays(dependentTaskInputDate)
                       }
-                    }
-                } catch (e: ClassCastException) {
-                  Timber.e(e)
-                  return@forEach
+                      .run {
+                        defaultRepository.addOrUpdate(
+                          addMandatoryTags = true,
+                          resource = dependentTask
+                        )
+                      }
+                  }
                 }
               }
             }
