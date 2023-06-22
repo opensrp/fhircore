@@ -85,7 +85,7 @@ constructor(
             task.status == TaskStatus.REQUESTED &&
             task.preReqConditionSatisfied()
         ) {
-          Timber.i("${task.id} marked ready")
+          Timber.i("Task ${task.id} marked ready")
 
           task.status = TaskStatus.READY
           defaultRepository.update(task)
