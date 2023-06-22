@@ -1610,6 +1610,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Test
   fun testConditionallyUpdateCarePlanStatusCallsDefaultRepositoryUpdateResourcesRecursively() {
+    val carePlanId = "carePlan1"
+    val patientId = "patient-1"
     val planDefinitions = listOf("plandef-1")
     val eventWorkflow =
       EventWorkflow(
@@ -1625,7 +1627,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             ResourceConfig(
               resource = ResourceType.CarePlan,
               planDefinitions = planDefinitions,
-              id = "carePlan1"
+              id = carePlanId
             )
           )
       )
@@ -1637,19 +1639,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       )
     val patient =
       Patient().apply {
-        id = "patient-1"
+        id = patientId
         active = true
-      }
-    val carePlan =
-      CarePlan().apply {
-        id = "careplan-1"
-        status = CarePlan.CarePlanStatus.ACTIVE
-        activity =
-          listOf(
-            CarePlanActivityComponent().apply {
-              outcomeReference = listOf(Reference("Task/f10eec84-ef78-4bd1-bac4-6e68c7548f4c"))
-            }
-          )
       }
     val bundle = Bundle().apply { addEntry().resource = patient }
     coEvery { defaultRepository.updateResourcesRecursively(any(), any()) } just runs
@@ -1671,8 +1662,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         capture(resourceSLot)
       )
     }
-    assertEquals("carePlan1", eventResourceConfigSlot.captured.id)
-    assertEquals("patient-1", resourceSLot.captured.id)
+    assertEquals(carePlanId, eventResourceConfigSlot.captured.id)
+    assertEquals(patientId, resourceSLot.captured.id)
   }
 
   @Test
