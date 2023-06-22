@@ -35,9 +35,9 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.executionStartIsBeforeOrToday
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isIn
-import org.smartregister.fhircore.engine.util.extension.isReady
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
@@ -65,15 +65,13 @@ constructor(
           filter(
             Task.STATUS,
             { value = of(TaskStatus.REQUESTED.toCoding()) },
-            // { value = of(Task.TaskStatus.READY.toCoding()) }, this would be handled by expiry job
-            // { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
             { value = of(TaskStatus.ACCEPTED.toCoding()) },
             { value = of(TaskStatus.RECEIVED.toCoding()) },
           )
           filter(
             Task.PERIOD,
             {
-              prefix = ParamPrefixEnum.STARTS_AFTER
+              prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
               value = of(DateTimeType(Date().plusDays(-1)))
             }
           )
@@ -83,7 +81,9 @@ constructor(
 
       tasks.forEach { task ->
         // expired tasks are handled by other service i.e. FhirTaskExpireWorker
-        if (task.isReady() && task.status == TaskStatus.REQUESTED && task.preReqConditionSatisfied()
+        if (task.executionStartIsBeforeOrToday() &&
+            task.status == TaskStatus.REQUESTED &&
+            task.preReqConditionSatisfied()
         ) {
           Timber.i("${task.id} marked ready")
 
@@ -95,6 +95,10 @@ constructor(
     }
   }
 
+  /**
+   * Check in the task is part of another task and if so check if the parent task is
+   * completed,cancelled,failed or entered in error.
+   */
   private suspend fun Task.preReqConditionSatisfied() =
     this.partOf.find { it.reference.startsWith(ResourceType.Task.name + "/") }?.let {
       defaultRepository

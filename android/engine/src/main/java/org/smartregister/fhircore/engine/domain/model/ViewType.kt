@@ -50,4 +50,7 @@ enum class ViewType {
 
   /** A type of view component used to render items in a list */
   @JsonNames("list", "List") LIST,
+
+  /** A type of view component used to render an icon */
+  @JsonNames("image", "Image") IMAGE
 }

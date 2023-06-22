@@ -18,7 +18,7 @@ package org.smartregister.fhircore.engine.configuration.view
 
 import androidx.compose.ui.graphics.Color
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.domain.model.ViewType
@@ -48,7 +48,7 @@ data class ButtonProperties(
   val fontSize: Float = 14.0f,
   val actions: List<ActionConfig> = emptyList(),
   val buttonType: ButtonType = ButtonType.MEDIUM,
-  val startIcon: MenuIconConfig? = null
+  val startIcon: ImageConfig? = null
 ) : ViewProperties() {
   /**
    * This function determines the status color to display depending on the value of the service
@@ -74,7 +74,7 @@ data class ButtonProperties(
       enabled = enabled.interpolate(computedValuesMap),
       clickable = clickable.interpolate(computedValuesMap),
       contentColor = contentColor?.interpolate(computedValuesMap),
-      startIcon = startIcon?.copy(reference = startIcon.reference?.interpolate(computedValuesMap))
+      startIcon = startIcon?.interpolate(computedValuesMap)
     )
   }
 
