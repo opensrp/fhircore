@@ -70,26 +70,27 @@ fun Base?.valueToString(): String {
     this is CodeableConcept -> this.stringValue()
     this is Quantity -> this.value.toPlainString()
     this is Timing ->
-        this.repeat.let {
-          it.period
-              .toPlainString()
-              .plus(" ")
-              .plus(
-                  it.periodUnit.display.replaceFirstChar { char ->
-                    if (char.isLowerCase()) char.titlecase(Locale.getDefault()) else char.toString()
-                  })
-              .plus(" (s)")
-        }
+      this.repeat.let {
+        it.period
+          .toPlainString()
+          .plus(" ")
+          .plus(
+            it.periodUnit.display.replaceFirstChar { char ->
+              if (char.isLowerCase()) char.titlecase(Locale.getDefault()) else char.toString()
+            }
+          )
+          .plus(" (s)")
+      }
     this is HumanName ->
-        this.given.firstOrNull().let {
-          (if (it != null) "${it.valueToString()} " else "").plus(this.family)
-        }
+      this.given.firstOrNull().let {
+        (if (it != null) "${it.valueToString()} " else "").plus(this.family)
+      }
     this is Patient ->
-        this.nameFirstRep.nameAsSingleString +
-            ", " +
-            this.gender.name.first() +
-            ", " +
-            this.birthDate.yearsPassed()
+      this.nameFirstRep.nameAsSingleString +
+        ", " +
+        this.gender.name.first() +
+        ", " +
+        this.birthDate.yearsPassed()
     this is Practitioner -> this.nameFirstRep.nameAsSingleString
     this is Group -> this.name
     else -> this.toString()
@@ -97,21 +98,21 @@ fun Base?.valueToString(): String {
 }
 
 fun CodeableConcept.stringValue(): String =
-    this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
+  this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
 
 fun Resource.encodeResourceToString(parser: IParser = fhirR4JsonParser): String =
-    parser.encodeResourceToString(this.copy())
+  parser.encodeResourceToString(this.copy())
 
 fun StructureMap.encodeResourceToString(parser: IParser = fhirR4JsonParser): String =
-    parser
-        .encodeResourceToString(this)
-        .replace("'months'", "\\\\'months\\\\'")
-        .replace("'days'", "\\\\'days\\\\'")
-        .replace("'years'", "\\\\'years\\\\'")
-        .replace("'weeks'", "\\\\'weeks\\\\'")
+  parser
+    .encodeResourceToString(this)
+    .replace("'months'", "\\\\'months\\\\'")
+    .replace("'days'", "\\\\'days\\\\'")
+    .replace("'years'", "\\\\'years\\\\'")
+    .replace("'weeks'", "\\\\'weeks\\\\'")
 
 fun <T> String.decodeResourceFromString(parser: IParser = fhirR4JsonParser): T =
-    parser.parseResource(this) as T
+  parser.parseResource(this) as T
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   var extensionUpdateForm = listOf<Extension>()
@@ -159,19 +160,19 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
 @Throws(JSONException::class)
 fun JSONObject.updateFrom(updated: JSONObject) {
   val keys =
-      mutableListOf<String>().apply {
-        keys().forEach { add(it) }
-        updated.keys().forEach { add(it) }
-      }
+    mutableListOf<String>().apply {
+      keys().forEach { add(it) }
+      updated.keys().forEach { add(it) }
+    }
 
   keys.forEach { key -> updated.opt(key)?.run { put(key, this) } }
 }
 
 fun QuestionnaireResponse.generateMissingItems(questionnaire: Questionnaire) =
-    questionnaire.item.generateMissingItems(this.item)
+  questionnaire.item.generateMissingItems(this.item)
 
 fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
-    qrItems: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>
+  qrItems: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>
 ) {
   this.forEachIndexed { index, qItem ->
     // generate complete hierarchy if response item missing otherwise check for nested items
@@ -188,18 +189,22 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
  * question when mapped to the corresponding [QuestionnaireResponse]
  */
 fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrEditing(
-    path: String,
-    readOnly: Boolean = false,
-    readOnlyLinkIds: List<String>? = emptyList()
+  path: String,
+  readOnly: Boolean = false,
+  readOnlyLinkIds: List<String>? = emptyList()
 ) {
   forEach { item ->
     if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
       item.readOnly = readOnly || item.readOnly || readOnlyLinkIds?.contains(item.linkId) == true
       item.item.prepareQuestionsForReadingOrEditing(
-          "$path.where(linkId = '${item.linkId}').answer.item", readOnly)
+        "$path.where(linkId = '${item.linkId}').answer.item",
+        readOnly
+      )
     } else {
       item.item.prepareQuestionsForReadingOrEditing(
-          "$path.where(linkId = '${item.linkId}').item", readOnly)
+        "$path.where(linkId = '${item.linkId}').item",
+        readOnly
+      )
     }
   }
 }
@@ -224,9 +229,9 @@ fun QuestionnaireResponse.retainMetadata(questionnaireResponse: QuestionnaireRes
 
 fun QuestionnaireResponse.getEncounterId(): String? {
   return this.contained
-      ?.find { it.resourceType == ResourceType.Encounter }
-      ?.logicalId
-      ?.replace("#", "")
+    ?.find { it.resourceType == ResourceType.Encounter }
+    ?.logicalId
+    ?.replace("#", "")
 }
 
 fun Resource.generateMissingId() {
@@ -238,7 +243,7 @@ fun Resource.updateLastUpdated() {
 }
 
 fun Resource.isPatient(patientId: String) =
-    this.resourceType == ResourceType.Patient && this.logicalId == patientId
+  this.resourceType == ResourceType.Patient && this.logicalId == patientId
 
 fun Resource.asReference(): Reference {
   val referenceValue = "${fhirType()}/$logicalId"
@@ -248,25 +253,24 @@ fun Resource.asReference(): Reference {
 fun Resource.referenceValue(): String = "${fhirType()}/$logicalId"
 
 fun Resource.referenceParamForCondition(): ReferenceClientParam =
-    when (resourceType) {
-      ResourceType.Patient -> Condition.PATIENT
-      ResourceType.Encounter -> Condition.ENCOUNTER
-      else ->
-          throw IllegalStateException("Do not know how to use $resourceType for Condition resource")
-    }
+  when (resourceType) {
+    ResourceType.Patient -> Condition.PATIENT
+    ResourceType.Encounter -> Condition.ENCOUNTER
+    else ->
+      throw IllegalStateException("Do not know how to use $resourceType for Condition resource")
+  }
 
 fun Resource.referenceParamForObservation(): ReferenceClientParam =
-    when (resourceType) {
-      ResourceType.Patient -> Observation.PATIENT
-      ResourceType.Encounter -> Observation.ENCOUNTER
-      ResourceType.QuestionnaireResponse -> Observation.FOCUS
-      else ->
-          throw IllegalStateException(
-              "Do not know how to use $resourceType for Observation resource")
-    }
+  when (resourceType) {
+    ResourceType.Patient -> Observation.PATIENT
+    ResourceType.Encounter -> Observation.ENCOUNTER
+    ResourceType.QuestionnaireResponse -> Observation.FOCUS
+    else ->
+      throw IllegalStateException("Do not know how to use $resourceType for Observation resource")
+  }
 
 fun Resource.setPropertySafely(name: String, value: Base) =
-    kotlin.runCatching { this.setProperty(name, value) }.onFailure { Timber.w(it) }.getOrNull()
+  kotlin.runCatching { this.setProperty(name, value) }.onFailure { Timber.w(it) }.getOrNull()
 
 fun isValidResourceType(resourceCode: String): Boolean {
   return try {
@@ -302,7 +306,7 @@ fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent
 }
 
 fun String.resourceClassType(): Class<out Resource> =
-    FhirContext.forR4Cached().getResourceDefinition(this).implementingClass as Class<out Resource>
+  FhirContext.forR4Cached().getResourceDefinition(this).implementingClass as Class<out Resource>
 
 /**
  * A function that extracts only the UUID part of a resource logicalId.
@@ -335,62 +339,67 @@ fun Resource.addTags(tags: List<Coding>) {
  * @param defaultRepository An instance of DefaultRepository
  */
 suspend fun Task.updateDependentTaskDueDate(
-    defaultRepository: DefaultRepository,
-    fhirEngine: FhirEngine
+  defaultRepository: DefaultRepository,
+  fhirEngine: FhirEngine
 ): Task {
   return apply {
     val dependentTasks =
-        fhirEngine.search<Task> {
-          filter(referenceParameter = ReferenceClientParam("part-of"), { value = id })
-        }
+      fhirEngine.search<Task> {
+        filter(referenceParameter = ReferenceClientParam("part-of"), { value = id })
+      }
     dependentTasks.forEach { dependantTask ->
       dependantTask.partOf.forEach {
         if (it.reference.equals(id)) {
           if (dependantTask.hasOutput() &&
               dependantTask.executionPeriod.hasStart() &&
               dependantTask.hasInput() &&
-              (dependantTask.isDue() || dependantTask.isOverDue() || dependantTask.isUpcoming())) {
+              (dependantTask.isDue() || dependantTask.isOverDue() || dependantTask.isUpcoming())
+          ) {
             this.output.forEach { taskOp ->
               try {
                 if (taskOp.valueToString().contains("Encounter")) {
                   val taskRef = taskOp.value.valueToString().asReference(ResourceType.Encounter)
                   val encounterResource =
-                      defaultRepository.loadResource<Encounter>(
-                          taskRef.reference.extractLogicalIdUuid())
+                    defaultRepository.loadResource<Encounter>(
+                      taskRef.reference.extractLogicalIdUuid()
+                    )
                   encounterResource?.partOf.let { encounterPartOfRef ->
                     val immunizationResource =
-                        encounterPartOfRef?.extractId()?.let { immunization ->
-                          defaultRepository.loadResource<Immunization>(immunization)
-                        }
-                    immunizationResource
-                        ?.occurrenceDateTimeType
-                        ?.dateTimeValue()
-                        ?.valueAsCalendar
-                        .let { immunizationDate ->
-                          val dependentTaskStartDate = dependantTask.executionPeriod.start
-                          dependantTask.input.onEach { input ->
-                            val dependentTaskInputDate = input.value.toString().toInt()
-                            val difference =
-                                abs(
-                                    Duration.between(
-                                            immunizationDate?.toInstant(),
-                                            dependentTaskStartDate.toInstant())
-                                        .toDays())
-                            if (difference < dependentTaskInputDate &&
-                                dependantTask.executionPeriod.hasStart()) {
-                              dependantTask
-                                  .apply {
-                                    executionPeriod.start =
-                                        Date.from(immunizationDate?.toInstant())
-                                            .plusDays(dependentTaskInputDate)
-                                  }
-                                  .run {
-                                    defaultRepository.addOrUpdate(
-                                        addMandatoryTags = true, resource = dependantTask)
-                                  }
-                            }
+                      encounterPartOfRef?.extractId()?.let { immunization ->
+                        defaultRepository.loadResource<Immunization>(immunization)
+                      }
+                    immunizationResource?.occurrenceDateTimeType?.dateTimeValue()
+                      ?.valueAsCalendar
+                      .let { immunizationDate ->
+                        val dependentTaskStartDate = dependantTask.executionPeriod.start
+                        dependantTask.input.onEach { input ->
+                          val dependentTaskInputDate = input.value.toString().toInt()
+                          val difference =
+                            abs(
+                              Duration.between(
+                                  immunizationDate?.toInstant(),
+                                  dependentTaskStartDate.toInstant()
+                                )
+                                .toDays()
+                            )
+                          if (difference < dependentTaskInputDate &&
+                              dependantTask.executionPeriod.hasStart()
+                          ) {
+                            dependantTask
+                              .apply {
+                                executionPeriod.start =
+                                  Date.from(immunizationDate?.toInstant())
+                                    .plusDays(dependentTaskInputDate)
+                              }
+                              .run {
+                                defaultRepository.addOrUpdate(
+                                  addMandatoryTags = true,
+                                  resource = dependantTask
+                                )
+                              }
                           }
                         }
+                      }
                   }
                 }
               } catch (ex: Exception) {
