@@ -317,6 +317,7 @@ fun String.resourceClassType(): Class<out Resource> =
  *
  * Examples:
  * 1. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/2" returns
+ *
  * ```
  *    "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
  * ```
@@ -353,15 +354,15 @@ suspend fun Task.updateDependentTaskDueDate(
           { value = id.asReference(ResourceType.Task).reference }
         )
       }
-
-    dependentTasks.forEach { dependentTask ->
-      if (dependentTask.hasPartOf() && dependentTask.partOf.equals(id)) {
-        if (dependentTask.hasOutput() &&
-            dependentTask.hasOutput() &&
-            dependentTask.executionPeriod.hasStart() &&
-            dependentTask.hasInput()
+    dependentTasks.forEach { dependantTask ->
+      if (dependantTask.hasPartOf() && dependantTask.partOf.equals(id)) {
+        if (dependantTask.hasOutput() &&
+            dependantTask.hasOutput() &&
+            dependantTask.executionPeriod.hasStart() &&
+            dependantTask.hasInput() &&
+            (dependantTask.isDue() || dependantTask.isOverDue() || dependantTask.isUpcoming())
         ) {
-          dependentTask.output.forEach { dependentTaskOutputValue ->
+          dependantTask.output.forEach { dependentTaskOutputValue ->
             val dependentTaskReference =
               Reference(
                 Json.decodeFromString<JsonObject>(dependentTaskOutputValue.value.toString())[
@@ -378,8 +379,8 @@ suspend fun Task.updateDependentTaskDueDate(
                 defaultRepository.loadResource<Immunization>(encounterPartOfRef!!.extractId())
               immunizationResource?.occurrenceDateTimeType?.dateTimeValue()?.valueAsCalendar.let {
                 immunizationDate ->
-                val dependentTaskStartDate = dependentTask.executionPeriod.start
-                dependentTask.input.onEach {
+                val dependentTaskStartDate = dependantTask.executionPeriod.start
+                dependantTask.input.onEach {
                   val dependentTaskInputDate = it.value.toString().toInt()
                   val difference =
                     abs(
@@ -390,9 +391,9 @@ suspend fun Task.updateDependentTaskDueDate(
                         .toDays()
                     )
                   if (difference < dependentTaskInputDate &&
-                      dependentTask.executionPeriod.hasStart()
+                      dependantTask.executionPeriod.hasStart()
                   ) {
-                    dependentTask
+                    dependantTask
                       .apply {
                         executionPeriod.start =
                           Date.from(immunizationDate?.toInstant()).plusDays(dependentTaskInputDate)
@@ -400,7 +401,7 @@ suspend fun Task.updateDependentTaskDueDate(
                       .run {
                         defaultRepository.addOrUpdate(
                           addMandatoryTags = true,
-                          resource = dependentTask
+                          resource = dependantTask
                         )
                       }
                   }
