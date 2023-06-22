@@ -48,10 +48,8 @@ constructor(
       context = appTimeStampContext,
       defaultRepository
     )
-  
-  /**
-   * Disable ETag for upload
-   */
+
+  /** Disable ETag for upload */
   override fun getUploadConfiguration(): UploadConfiguration =
     UploadConfiguration(useETagForUpload = false)
 
