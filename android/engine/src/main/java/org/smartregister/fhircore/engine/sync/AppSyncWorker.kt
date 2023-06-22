@@ -48,7 +48,8 @@ constructor(
       context = appTimeStampContext,
       defaultRepository
     )
-  override fun getUploadConfiguration(): UploadConfiguration = UploadConfiguration(useETagForUpload = false)
-  
+  override fun getUploadConfiguration(): UploadConfiguration =
+    UploadConfiguration(useETagForUpload = false)
+
   override fun getFhirEngine(): FhirEngine = defaultRepository.fhirEngine
 }
