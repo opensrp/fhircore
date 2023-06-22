@@ -24,6 +24,7 @@ import com.google.android.fhir.sync.AcceptLocalConflictResolver
 import com.google.android.fhir.sync.ConflictResolver
 import com.google.android.fhir.sync.DownloadWorkManager
 import com.google.android.fhir.sync.FhirSyncWorker
+import com.google.android.fhir.sync.UploadConfiguration
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -47,6 +48,7 @@ constructor(
       context = appTimeStampContext,
       defaultRepository
     )
-
+  override fun getUploadConfiguration(): UploadConfiguration = UploadConfiguration(useETagForUpload = false)
+  
   override fun getFhirEngine(): FhirEngine = defaultRepository.fhirEngine
 }
