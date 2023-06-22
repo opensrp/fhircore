@@ -144,7 +144,7 @@ constructor(
      * @param resource The parent resource for which the related resources will be retrieved
      * @param relatedResourceKey The key representing the relatedResources in the map
      * @param referenceFhirPathExpression A fhir path expression used to retrieve the subject
-     *   reference Id from the related resources
+     *  reference Id from the related resources
      */
     @Suppress("UNCHECKED_CAST")
     @JvmOverloads
