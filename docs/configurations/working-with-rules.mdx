@@ -85,7 +85,7 @@ This rule is used within the ruels engine or workflow to generate the correct se
       "name": "serviceStatus",
       "condition": "true",
       "actions": [
-        "data.put('serviceStatus', service.generateTaskServiceStatus(Task.status).name)"
+        "data.put('serviceStatus', service.generateTaskServiceStatus(Task))"
       ]
     }
 ```
