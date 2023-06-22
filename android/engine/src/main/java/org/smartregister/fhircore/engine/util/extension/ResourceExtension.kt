@@ -23,12 +23,12 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
-import java.lang.Math.abs
 import java.time.Duration
 import java.util.Date
 import java.util.LinkedList
 import java.util.Locale
 import java.util.UUID
+import kotlin.math.abs
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -349,15 +349,11 @@ suspend fun Task.updateDependentTaskDueDate(
   return apply {
     val dependentTasks =
       fhirEngine.search<Task> {
-        filter(
-          referenceParameter = ReferenceClientParam("part-of"),
-          { value = id.asReference(ResourceType.Task).reference }
-        )
+        filter(referenceParameter = ReferenceClientParam("part-of"), { value = id })
       }
     dependentTasks.forEach { dependantTask ->
       if (dependantTask.hasPartOf() && dependantTask.partOf.equals(id)) {
         if (dependantTask.hasOutput() &&
-            dependantTask.hasOutput() &&
             dependantTask.executionPeriod.hasStart() &&
             dependantTask.hasInput() &&
             (dependantTask.isDue() || dependantTask.isOverDue() || dependantTask.isUpcoming())
