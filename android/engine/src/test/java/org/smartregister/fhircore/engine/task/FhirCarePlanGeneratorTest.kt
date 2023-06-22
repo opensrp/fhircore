@@ -58,7 +58,6 @@ import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.CarePlan.CarePlanActivityComponent
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
@@ -1076,6 +1075,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val patient = planDefinitionResources.patient
     val questionnaireResponses = planDefinitionResources.questionnaireResponses
     val resourcesSlot = planDefinitionResources.resourcesSlot
+    val vaccines = makeVaccinesMapForPatient(patient)
 
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinition,
@@ -1096,13 +1096,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           patient.birthDate.plusDays(4017),
           20
         )
-
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
-          .map {
-            println(it.encodeResourceToString())
-            it as Task
-          }
+          .map { it as Task }
           .also { tasks ->
             assertTrue(tasks.all { it.status == TaskStatus.REQUESTED })
             assertTrue(
@@ -1124,37 +1120,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             assertTrue(
               tasks.all { it.basedOnFirstRep.reference == carePlan.asReference().reference }
             )
-          }
-          .also { tasks ->
-            val vaccines =
-              mutableMapOf<String, Date>(
-                "BCG" to patient.birthDate,
-                "OPV 0" to patient.birthDate,
-                "PENTA 1" to patient.birthDate.plusDays(42),
-                "OPV 1" to patient.birthDate.plusDays(42),
-                "PCV 1" to patient.birthDate.plusDays(42),
-                "ROTA 1" to patient.birthDate.plusDays(42),
-                "PENTA 2" to patient.birthDate.plusDays(70),
-                "OPV 2" to patient.birthDate.plusDays(70),
-                "PCV 2" to patient.birthDate.plusDays(70),
-                "ROTA 2" to patient.birthDate.plusDays(70),
-                "PENTA 3" to patient.birthDate.plusDays(98),
-                "OPV 3" to patient.birthDate.plusDays(98),
-                "PCV 3" to patient.birthDate.plusDays(98),
-                "IPV" to patient.birthDate.plusDays(98),
-                "MEASLES 1" to patient.birthDate.plusMonths(9),
-                "MEASLES 2" to patient.birthDate.plusMonths(15),
-                "YELLOW FEVER" to patient.birthDate.plusMonths(9),
-                "TYPHOID" to patient.birthDate.plusMonths(9),
-                "HPV 1" to patient.birthDate.plusMonths(108),
-                "HPV 2" to patient.birthDate.plusMonths(114),
-              )
             vaccines.forEach { vaccine ->
-              println(vaccine)
-
-              val task = tasks.find { it.description.startsWith(vaccine.key) }
-              assertNotNull(task)
-              assertEquals(task!!.executionPeriod.start.asYyyyMmDd(), vaccine.value.asYyyyMmDd())
+              val task = tasks.find { it.description.startsWith(vaccine.key) }!!
+              assertEquals(task.executionPeriod.start.asYyyyMmDd(), vaccine.value.asYyyyMmDd())
             }
           }
       }
@@ -1169,9 +1137,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val patient = planDefinitionResources.patient
     val questionnaireResponses = planDefinitionResources.questionnaireResponses
     val resourcesSlot = planDefinitionResources.resourcesSlot
-
     val referenceDate =
       questionnaireResponses.first().find("vaccine_date")!!.answerFirstRep.valueDateType.value
+    val vaccines =
+      mapOf(
+        "AstraZeneca 2" to referenceDate.plusDays(70),
+        "AstraZeneca Booster" to referenceDate.plusDays(180)
+      )
 
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinition,
@@ -1182,16 +1154,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
           )
       )!!
-      .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
         assertCarePlan(carePlan, planDefinition, patient, referenceDate, null, 2)
 
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
-          .map {
-            println(it.encodeResourceToString())
-            it as Task
-          }
+          .map { it as Task }
           .also { tasks ->
             assertTrue(tasks.all { it.status == TaskStatus.REQUESTED })
             assertTrue(
@@ -1212,19 +1180,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             assertTrue(
               tasks.all { it.basedOnFirstRep.reference == carePlan.asReference().reference }
             )
-          }
-          .also { tasks ->
-            val vaccines =
-              mutableMapOf<String, Date>(
-                "AstraZeneca 2" to referenceDate.plusDays(70),
-                "AstraZeneca Booster" to referenceDate.plusDays(180)
-              )
             vaccines.forEach { vaccine ->
-              println(vaccine)
-
-              val task = tasks.find { it.description.startsWith(vaccine.key) }
-              assertNotNull(task)
-              assertTrue(task!!.executionPeriod.start.asYyyyMmDd() == vaccine.value.asYyyyMmDd())
+              val task = tasks.find { it.description.startsWith(vaccine.key) }!!
+              assertTrue(task.executionPeriod.start.asYyyyMmDd() == vaccine.value.asYyyyMmDd())
             }
           }
       }
@@ -1267,6 +1225,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val patient = planDefinitionResources.patient
     val questionnaireResponses = planDefinitionResources.questionnaireResponses
     val resourcesSlot = planDefinitionResources.resourcesSlot
+    val vaccines = makeVaccinesMapForPatient(patient)
 
     fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinition,
@@ -1277,7 +1236,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
           )
       )!!
-      .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
         assertCarePlan(
           carePlan,
@@ -1287,13 +1245,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           patient.birthDate.plusDays(4017),
           20
         )
-
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
-          .map {
-            println(it.encodeResourceToString())
-            it as Task
-          }
+          .map { it as Task }
           .also { tasks ->
             assertTrue(tasks.all { it.status == TaskStatus.REQUESTED })
             assertTrue(
@@ -1315,59 +1269,30 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             assertTrue(
               tasks.all { it.basedOnFirstRep.reference == carePlan.asReference().reference }
             )
-          }
-          .also { tasks ->
-            val vaccines =
-              mutableMapOf<String, Date>(
-                "BCG" to patient.birthDate,
-                "OPV 0" to patient.birthDate,
-                "PENTA 1" to patient.birthDate.plusDays(42),
-                "OPV 1" to patient.birthDate.plusDays(42),
-                "PCV 1" to patient.birthDate.plusDays(42),
-                "ROTA 1" to patient.birthDate.plusDays(42),
-                "PENTA 2" to patient.birthDate.plusDays(70),
-                "OPV 2" to patient.birthDate.plusDays(70),
-                "PCV 2" to patient.birthDate.plusDays(70),
-                "ROTA 2" to patient.birthDate.plusDays(70),
-                "PENTA 3" to patient.birthDate.plusDays(98),
-                "OPV 3" to patient.birthDate.plusDays(98),
-                "PCV 3" to patient.birthDate.plusDays(98),
-                "IPV" to patient.birthDate.plusDays(98),
-                "MEASLES 1" to patient.birthDate.plusMonths(9),
-                "MEASLES 2" to patient.birthDate.plusMonths(15),
-                "YELLOW FEVER" to patient.birthDate.plusMonths(9),
-                "TYPHOID" to patient.birthDate.plusMonths(9),
-                "HPV 1" to patient.birthDate.plusMonths(108),
-                "HPV 2" to patient.birthDate.plusMonths(114),
-              )
             vaccines.forEach { vaccine ->
-              println(vaccine)
-
-              val task = tasks.find { it.description.startsWith(vaccine.key) }
-              assertNotNull(task)
+              val task = tasks.find { it.description.startsWith(vaccine.key) }!!
               when (vaccine.key) {
-                "BCG" -> assertEquals(task!!.groupIdentifier.value, "0_d")
-                "OPV 0" -> assertEquals(task!!.groupIdentifier.value, "0_d")
-                "PENTA 1" -> assertEquals(task!!.groupIdentifier.value, "6_wk")
-                "OPV 1" -> assertEquals(task!!.groupIdentifier.value, "6_wk")
-                "PCV 1" -> assertEquals(task!!.groupIdentifier.value, "6_wk")
-                "ROTA 1" -> assertEquals(task!!.groupIdentifier.value, "6_wk")
-                "PENTA 2" -> assertEquals(task!!.groupIdentifier.value, "10_wk")
-                "OPV 2" -> assertEquals(task!!.groupIdentifier.value, "10_wk")
-                "PCV 2" -> assertEquals(task!!.groupIdentifier.value, "10_wk")
-                "ROTA 2" -> assertEquals(task!!.groupIdentifier.value, "10_wk")
-                "PENTA 3" -> assertEquals(task!!.groupIdentifier.value, "14_wk")
-                "OPV 3" -> assertEquals(task!!.groupIdentifier.value, "14_wk")
-                "PCV 3" -> assertEquals(task!!.groupIdentifier.value, "14_wk")
-                "IPV" -> assertEquals(task!!.groupIdentifier.value, "14_wk")
-                "MEASLES 1" -> assertEquals(task!!.groupIdentifier.value, "9_mo")
-                "MEASLES 2" -> assertEquals(task!!.groupIdentifier.value, "15_mo")
-                "YELLOW FEVER" -> assertEquals(task!!.groupIdentifier.value, "9_mo")
-                "TYPHOID" -> assertEquals(task!!.groupIdentifier.value, "9_mo")
-                "HPV 1" -> assertEquals(task!!.groupIdentifier.value, "108_mo")
-                "HPV 2" -> assertEquals(task!!.groupIdentifier.value, "114_mo")
+                "BCG" -> assertEquals(task.groupIdentifier.value, "0_d")
+                "OPV 0" -> assertEquals(task.groupIdentifier.value, "0_d")
+                "PENTA 1" -> assertEquals(task.groupIdentifier.value, "6_wk")
+                "OPV 1" -> assertEquals(task.groupIdentifier.value, "6_wk")
+                "PCV 1" -> assertEquals(task.groupIdentifier.value, "6_wk")
+                "ROTA 1" -> assertEquals(task.groupIdentifier.value, "6_wk")
+                "PENTA 2" -> assertEquals(task.groupIdentifier.value, "10_wk")
+                "OPV 2" -> assertEquals(task.groupIdentifier.value, "10_wk")
+                "PCV 2" -> assertEquals(task.groupIdentifier.value, "10_wk")
+                "ROTA 2" -> assertEquals(task.groupIdentifier.value, "10_wk")
+                "PENTA 3" -> assertEquals(task.groupIdentifier.value, "14_wk")
+                "OPV 3" -> assertEquals(task.groupIdentifier.value, "14_wk")
+                "PCV 3" -> assertEquals(task.groupIdentifier.value, "14_wk")
+                "IPV" -> assertEquals(task.groupIdentifier.value, "14_wk")
+                "MEASLES 1" -> assertEquals(task.groupIdentifier.value, "9_mo")
+                "MEASLES 2" -> assertEquals(task.groupIdentifier.value, "15_mo")
+                "YELLOW FEVER" -> assertEquals(task.groupIdentifier.value, "9_mo")
+                "TYPHOID" -> assertEquals(task.groupIdentifier.value, "9_mo")
+                "HPV 1" -> assertEquals(task.groupIdentifier.value, "108_mo")
+                "HPV 2" -> assertEquals(task.groupIdentifier.value, "114_mo")
               }
-              assertEquals(task!!.executionPeriod.start.asYyyyMmDd(), vaccine.value.asYyyyMmDd())
             }
           }
       }
@@ -1622,6 +1547,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Test
   fun testConditionallyUpdateCarePlanStatusCallsDefaultRepositoryUpdateResourcesRecursively() {
+    val carePlanId = "carePlan1"
+    val patientId = "patient-1"
     val planDefinitions = listOf("plandef-1")
     val eventWorkflow =
       EventWorkflow(
@@ -1637,7 +1564,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             ResourceConfig(
               resource = ResourceType.CarePlan,
               planDefinitions = planDefinitions,
-              id = "carePlan1"
+              id = carePlanId
             )
           )
       )
@@ -1649,19 +1576,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       )
     val patient =
       Patient().apply {
-        id = "patient-1"
+        id = patientId
         active = true
-      }
-    val carePlan =
-      CarePlan().apply {
-        id = "careplan-1"
-        status = CarePlan.CarePlanStatus.ACTIVE
-        activity =
-          listOf(
-            CarePlanActivityComponent().apply {
-              outcomeReference = listOf(Reference("Task/f10eec84-ef78-4bd1-bac4-6e68c7548f4c"))
-            }
-          )
       }
     val bundle = Bundle().apply { addEntry().resource = patient }
     coEvery { defaultRepository.updateResourcesRecursively(any(), any()) } just runs
@@ -1683,8 +1599,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         capture(resourceSLot)
       )
     }
-    assertEquals("carePlan1", eventResourceConfigSlot.captured.id)
-    assertEquals("patient-1", resourceSLot.captured.id)
+    assertEquals(carePlanId, eventResourceConfigSlot.captured.id)
+    assertEquals(patientId, resourceSLot.captured.id)
   }
 
   @Test
@@ -2062,6 +1978,30 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
     assertEquals(visitTasks, carePlan.activityFirstRep.outcomeReference.size)
   }
+
+  private fun makeVaccinesMapForPatient(patient: Patient) =
+    mapOf<String, Date>(
+      "BCG" to patient.birthDate,
+      "OPV 0" to patient.birthDate,
+      "PENTA 1" to patient.birthDate.plusDays(42),
+      "OPV 1" to patient.birthDate.plusDays(42),
+      "PCV 1" to patient.birthDate.plusDays(42),
+      "ROTA 1" to patient.birthDate.plusDays(42),
+      "PENTA 2" to patient.birthDate.plusDays(70),
+      "OPV 2" to patient.birthDate.plusDays(70),
+      "PCV 2" to patient.birthDate.plusDays(70),
+      "ROTA 2" to patient.birthDate.plusDays(70),
+      "PENTA 3" to patient.birthDate.plusDays(98),
+      "OPV 3" to patient.birthDate.plusDays(98),
+      "PCV 3" to patient.birthDate.plusDays(98),
+      "IPV" to patient.birthDate.plusDays(98),
+      "MEASLES 1" to patient.birthDate.plusMonths(9),
+      "MEASLES 2" to patient.birthDate.plusMonths(15),
+      "YELLOW FEVER" to patient.birthDate.plusMonths(9),
+      "TYPHOID" to patient.birthDate.plusMonths(9),
+      "HPV 1" to patient.birthDate.plusMonths(108),
+      "HPV 2" to patient.birthDate.plusMonths(114),
+    )
 }
 
 private fun Date.asYyyyMmDd(): String = this.formatDate(SDF_YYYY_MM_DD)
