@@ -45,10 +45,6 @@ import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -82,7 +78,11 @@ import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -440,14 +440,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           carePlan.description
         )
         assertEquals(patient.logicalId, carePlan.subject.extractId())
-        assertEquals(
-          DateTimeType.now().value.makeItReadable(),
-          carePlan.created.makeItReadable()
-        )
-        assertEquals(
-          patient.generalPractitionerFirstRep.extractId(),
-          carePlan.author.extractId()
-        )
+        assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
+        assertEquals(patient.generalPractitionerFirstRep.extractId(), carePlan.author.extractId())
         assertEquals(
           DateTimeType.now().value.makeItReadable(),
           carePlan.period.start.makeItReadable()
@@ -524,10 +518,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         assertEquals("HH Routine visit Plan", carePlan.title)
         assertEquals("sample plan", carePlan.description)
         assertEquals(group.logicalId, carePlan.subject.extractId())
-        assertEquals(
-          DateTimeType.now().value.makeItReadable(),
-          carePlan.created.makeItReadable()
-        )
+        assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
         assertNotNull(carePlan.period.start)
         assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
 
@@ -596,10 +587,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           carePlan.description
         )
         assertEquals(group.logicalId, carePlan.subject.extractId())
-        assertEquals(
-          DateTimeType.now().value.makeItReadable(),
-          carePlan.created.makeItReadable()
-        )
+        assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
         assertNotNull(carePlan.period.start)
         assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
 
@@ -772,9 +760,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .also { tasks ->
             tasks.first().let { task ->
               assertTrue(task.status == TaskStatus.READY)
-              assertTrue(
-                task.basedOn.first().reference == plandefinition.asReference().reference
-              )
+              assertTrue(task.basedOn.first().reference == plandefinition.asReference().reference)
               assertTrue(task.`for`.reference == patient.asReference().reference)
               assertTrue(task.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
             }
@@ -831,9 +817,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .also { list ->
             list.first().let {
               assertTrue(it.status == TaskStatus.READY)
-              assertTrue(
-                it.basedOn.first().reference == plandefinition.asReference().reference
-              )
+              assertTrue(it.basedOn.first().reference == plandefinition.asReference().reference)
               assertTrue(it.`for`.reference == patient.asReference().reference)
               assertTrue(it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
             }
@@ -1460,8 +1444,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .decodeResourceFromString<QuestionnaireResponse>()
 
     val structureMapScript = "plans/disease-followup/structure-map.txt".readFile()
-    val structureMap =
-      structureMapUtilities.parse(structureMapScript, "eCBIS Child Immunization")
+    val structureMap = structureMapUtilities.parse(structureMapScript, "eCBIS Child Immunization")
 
     val resourcesSlot = mutableListOf<Resource>()
     val booleanSlot = slot<Boolean>()
@@ -1493,14 +1476,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           carePlan.description
         )
         assertEquals(patient.logicalId, carePlan.subject.extractId())
-        assertEquals(
-          DateTimeType.now().value.makeItReadable(),
-          carePlan.created.makeItReadable()
-        )
-        assertEquals(
-          patient.generalPractitionerFirstRep.extractId(),
-          carePlan.author.extractId()
-        )
+        assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
+        assertEquals(patient.generalPractitionerFirstRep.extractId(), carePlan.author.extractId())
         assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
         coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) }
         resourcesSlot
@@ -1879,21 +1856,23 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun `updateDependentTaskDueDate sets executionPeriod start correctly`() {
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns
-      listOf(dependentTask.apply {
-        status = TaskStatus.INPROGRESS
-        output =
-          listOf(
-            Task.TaskOutputComponent(
-              CodeableConcept(),
-              StringType(
-                "{\n" +
-                  "          \"reference\": \"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
-                  "        }"
+      listOf(
+        dependentTask.apply {
+          status = TaskStatus.INPROGRESS
+          output =
+            listOf(
+              Task.TaskOutputComponent(
+                CodeableConcept(),
+                StringType(
+                  "{\n" +
+                    "          \"reference\": \"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
+                    "        }"
+                )
               )
             )
-          )
-        input = listOf(Task.ParameterComponent(CodeableConcept(), StringType("28")))
-      })
+          input = listOf(Task.ParameterComponent(CodeableConcept(), StringType("28")))
+        }
+      )
     coEvery {
       fhirEngine.get(ResourceType.Encounter, "14e2ae52-32fc-4507-8736-1177cdaafe90")
     } returns encounter
@@ -2009,7 +1988,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     assertFalse(conditionsMet)
   }
 
-
   data class PlanDefinitionResources(
     val planDefinition: PlanDefinition,
     val patient: Patient,
@@ -2038,9 +2016,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val structureMapRegister =
       structureMapUtilities.parse(
-        "plans/$planName/structure-map-register.txt".readFile(),
-        "${planName.uppercase().replace("-", "").replace(" ", "")}CarePlan"
-      )
+          "plans/$planName/structure-map-register.txt".readFile(),
+          "${planName.uppercase().replace("-", "").replace(" ", "")}CarePlan"
+        )
         .also { println(it.encodeResourceToString()) }
 
     val structureMapReferral =
@@ -2050,12 +2028,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val resourcesSlot = mutableListOf<Resource>()
     val booleanSlot = slot<Boolean>()
     coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
-        emptyList()
+      emptyList()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
     coEvery { fhirEngine.get<StructureMap>(structureMapRegister.logicalId) } returns
-        structureMapRegister
+      structureMapRegister
     coEvery { fhirEngine.get<StructureMap>("528a8603-2e43-4a2e-a33d-1ec2563ffd3e") } returns
-        structureMapReferral
+      structureMapReferral
 
     return PlanDefinitionResources(
       planDefinition,
