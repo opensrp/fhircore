@@ -24,6 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Configuration for button content color
 - Configuration for button and overflow menu item icons
 - [Event Management] Add support for extra resources to close
+- Make other-patients name in menu configurable
+- Allow computation of configured rules on `QuestionnaireConfig` e.g. for autogenerating a unique ID for Patient registration
+- Additional (optional) `ActionParameter` on `QuestionnaireConfig` class for providing extra data to the Questionnaire
+- Added a `limitTo` service function that limits lists sizes to a define limit
+- Implement configurable image/icon widget
+- Added functionality to filter related resources for list view
 
 ### Fixed
 - Member icons display wrapping; hiding some texts
@@ -31,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Issue with loading related resources
 - Fix P2P sync progress showing greater than 100%
 - Background worker performance
+- The `requested` to `ready` task status update background worker 
 
 ### Changed
 - Refactored how the related resources SELECT and COUNT queries search results are represented. 

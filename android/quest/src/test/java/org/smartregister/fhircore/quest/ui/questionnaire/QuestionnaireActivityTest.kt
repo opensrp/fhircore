@@ -78,6 +78,8 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -95,18 +97,15 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
   @Inject lateinit var jsonParser: IParser
+  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
   private lateinit var questionnaireActivity: QuestionnaireActivity
   private lateinit var questionnaireFragment: QuestionnaireFragment
   private lateinit var intent: Intent
-
-  val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
-
+  private lateinit var questionnaireConfig: QuestionnaireConfig
+  private val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
   private val fhirEngine: FhirEngine = mockk()
-
   private val defaultRepository: DefaultRepository =
     DefaultRepository(fhirEngine, dispatcherProvider, mockk(), mockk(), mockk(), mockk())
-
-  private lateinit var questionnaireConfig: QuestionnaireConfig
 
   @BindValue
   val questionnaireViewModel: QuestionnaireViewModel =
@@ -119,6 +118,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         sharedPreferencesHelper = mockk(),
         libraryEvaluator = mockk(),
         fhirCarePlanGenerator = mockk(),
+        resourceDataRulesExecutor = mockk()
       )
     )
 
@@ -127,12 +127,32 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     // TODO Proper set up
     hiltRule.inject()
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
+    val questionnaireConfigRules =
+      listOf(
+        RuleConfig(
+          name = "humanReadableId",
+          description = "Generate OpenSRP ID",
+          condition = "true",
+          actions = listOf("data.put('humanReadableId', service.generateRandomSixDigitInt())")
+        )
+      )
     questionnaireConfig =
       QuestionnaireConfig(
         id = "patient-registration",
         title = "Patient registration",
         "form",
         resourceIdentifier = "Patient/P1",
+        extraParams =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "household.id",
+              dataType = DataType.INTEGER,
+              key = "opensrpId",
+              value = "@{humanReadableId}"
+            )
+          ),
+        configRules = questionnaireConfigRules
       )
     val actionParams =
       listOf(
@@ -153,6 +173,9 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
           )
         )
 
+    coEvery {
+      questionnaireViewModel.computeQuestionnaireConfigRules(questionnaireConfigRules)
+    } returns mapOf("humanReadableId" to "199290")
     coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
       Questionnaire().apply { id = "12345" }

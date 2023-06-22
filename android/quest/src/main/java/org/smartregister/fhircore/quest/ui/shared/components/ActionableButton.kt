@@ -44,9 +44,10 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
-import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.ButtonType
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -72,7 +73,6 @@ fun ActionableButton(
       if (configuredContentColor == Color.Unspecified)
         buttonProperties.statusColor(resourceData.computedValuesMap)
       else if (status == ServiceStatus.COMPLETED.name) DefaultColor else configuredContentColor
-
     val backgroundColor = buttonProperties.backgroundColor.parseColor()
     val isButtonEnabled = buttonProperties.enabled.toBoolean()
     val clickable = buttonProperties.clickable.toBoolean()
@@ -115,7 +115,10 @@ fun ActionableButton(
           }
         else DefaultColor
       if (buttonProperties.startIcon != null) {
-        MenuIcon(menuIconConfig = buttonProperties.startIcon, color = iconTintColor, size = 16)
+        Image(
+          imageProperties = ImageProperties(imageConfig = buttonProperties.startIcon, size = 16),
+          tint = iconTintColor
+        )
       } else {
         Icon(
           imageVector =
@@ -184,7 +187,7 @@ fun DisabledActionableButtonPreview() {
           contentColor = "#700f2b",
           enabled = "true",
           buttonType = ButtonType.BIG,
-          startIcon = MenuIconConfig(reference = "ic_walk", type = ICON_TYPE_LOCAL)
+          startIcon = ImageConfig(reference = "ic_walk", type = ICON_TYPE_LOCAL)
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()

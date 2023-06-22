@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.util.extension.BLACK_COLOR_HEX_CODE
 import org.smartregister.fhircore.engine.util.extension.TRUE
 import org.smartregister.fhircore.engine.util.extension.interpolate
@@ -27,7 +27,7 @@ data class OverflowMenuItemConfig(
   val id: Int = 1,
   val title: String = "",
   val confirmAction: Boolean = false,
-  val icon: MenuIconConfig? = null,
+  val icon: ImageConfig? = null,
   val titleColor: String = BLACK_COLOR_HEX_CODE,
   val backgroundColor: String? = null,
   val visible: String,
@@ -41,7 +41,8 @@ data class OverflowMenuItemConfig(
       enabled = enabled.interpolate(computedValuesMap),
       visible = visible.interpolate(computedValuesMap),
       titleColor = titleColor.interpolate(computedValuesMap),
-      backgroundColor = backgroundColor?.interpolate(computedValuesMap)
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      icon = icon?.interpolate(computedValuesMap)
     )
   }
 }
