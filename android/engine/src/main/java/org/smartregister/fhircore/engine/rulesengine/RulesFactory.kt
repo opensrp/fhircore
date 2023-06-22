@@ -419,8 +419,8 @@ constructor(
       }
     }
 
-    fun generateTaskServiceStatus(taskStatus: Task.TaskStatus): ServiceStatus {
-      return when (taskStatus) {
+    fun generateTaskServiceStatus(task: Task): String {
+      return when (task.status) {
         Task.TaskStatus.NULL,
         Task.TaskStatus.FAILED,
         Task.TaskStatus.RECEIVED,
@@ -430,13 +430,13 @@ constructor(
         Task.TaskStatus.DRAFT,
         Task.TaskStatus.ONHOLD -> {
           Timber.e("Task.status is null", Exception())
-          ServiceStatus.DUE
+          ServiceStatus.DUE.name
         }
-        Task.TaskStatus.REQUESTED -> ServiceStatus.UPCOMING
-        Task.TaskStatus.READY -> ServiceStatus.DUE
-        Task.TaskStatus.CANCELLED -> ServiceStatus.EXPIRED
-        Task.TaskStatus.INPROGRESS -> ServiceStatus.IN_PROGRESS
-        Task.TaskStatus.COMPLETED -> ServiceStatus.COMPLETED
+        Task.TaskStatus.REQUESTED -> ServiceStatus.UPCOMING.name
+        Task.TaskStatus.READY -> ServiceStatus.DUE.name
+        Task.TaskStatus.CANCELLED -> ServiceStatus.EXPIRED.name
+        Task.TaskStatus.INPROGRESS -> ServiceStatus.IN_PROGRESS.name
+        Task.TaskStatus.COMPLETED -> ServiceStatus.COMPLETED.name
       }
     }
   }
