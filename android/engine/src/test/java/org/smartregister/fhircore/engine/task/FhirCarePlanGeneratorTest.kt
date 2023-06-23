@@ -1642,7 +1642,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
-  fun `updateDependentTaskDueDate should have no dependent tasks`() = runBlocking {
+  fun `updateDependentTaskDueDate should have no dependent tasks`() {
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns emptyList()
     opv0.apply {
       status = TaskStatus.REQUESTED
@@ -1651,8 +1651,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     // when
     val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
     // then
-
-    val updatedTask = opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine)
     assertEquals("650203d2-f327-4eb4-a9fd-741e0ce29c3f", opv1.logicalId)
     assertEquals(opv0, updatedTask)
   }

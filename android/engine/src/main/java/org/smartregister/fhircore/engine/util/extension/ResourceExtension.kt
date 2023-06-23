@@ -392,6 +392,7 @@ suspend fun Task.updateDependentTaskDueDate(
                               )
                             }
                         }
+                      }
                     }
                   }
                 }
