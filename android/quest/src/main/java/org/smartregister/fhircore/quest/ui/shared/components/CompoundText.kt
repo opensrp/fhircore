@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.engine.util.extension.removeExtraWhiteSpaces
 import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import org.smartregister.p2p.utils.capitalize
 
 @Composable
 fun CompoundText(
@@ -151,6 +152,7 @@ private fun CompoundTextPart(
         TextCase.UPPER_CASE -> text.uppercase()
         TextCase.LOWER_CASE -> text.lowercase()
         TextCase.CAMEL_CASE -> text.camelCase()
+        TextCase.TITLE_CASE -> text.capitalize()
         null -> text
       }.removeExtraWhiteSpaces(),
     color = textColor?.parseColor()?.copy(alpha = colorOpacity)

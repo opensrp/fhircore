@@ -488,6 +488,69 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun testLimitTo() {
+    val source = mutableListOf("apple", "banana", "cherry", "date")
+    val expected = mutableListOf("apple", "banana")
+    Assert.assertTrue(expected == rulesEngineService.limitTo(source.toMutableList(), 2))
+  }
+
+  @Test
+  fun testLimitToWithResources() {
+    val source =
+      mutableListOf(
+        Condition().apply {
+          id = "001"
+          clinicalStatus = CodeableConcept(Coding("", "0001", "Pregnant"))
+        },
+        Condition().apply {
+          id = "002"
+          clinicalStatus = CodeableConcept(Coding("", "0002", "Family Planning"))
+        }
+      )
+    val expected =
+      mutableListOf(
+        Condition().apply {
+          id = "001"
+          clinicalStatus = CodeableConcept(Coding("", "0001", "Pregnant"))
+        }
+      )
+
+    val result = rulesEngineService.limitTo(source.toMutableList(), 1)
+    Assert.assertTrue(result?.size == expected.size)
+    with(result?.first() as Condition) { Assert.assertEquals(expected[0].id, id) }
+  }
+
+  @Test
+  fun testLimitToWithNull() {
+    val result = rulesEngineService.limitTo(null, 1)
+    Assert.assertTrue(result.isEmpty())
+  }
+
+  @Test
+  fun testLimitToWithNullSourceAndNUllLimit() {
+    val result = rulesEngineService.limitTo(null, null)
+    Assert.assertTrue(result.isEmpty())
+  }
+
+  @Test
+  fun testLimitToWithZeroLimit() {
+    val source =
+      mutableListOf(
+        Condition().apply {
+          id = "001"
+          clinicalStatus = CodeableConcept(Coding("", "0001", "Pregnant"))
+        },
+        Condition().apply {
+          id = "002"
+          clinicalStatus = CodeableConcept(Coding("", "0002", "Family Planning"))
+        }
+      )
+
+    val result = rulesEngineService.limitTo(source.toMutableList(), 0)
+    Assert.assertTrue(result.isEmpty())
+  }
+
+  @Test
   fun testJoinToStringWithNulls() {
     val source = mutableListOf("apple", null, "banana", "cherry", null, "date")
     val expected = "apple, banana, cherry, date"

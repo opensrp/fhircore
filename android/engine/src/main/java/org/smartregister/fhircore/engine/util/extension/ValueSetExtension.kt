@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.domain.model
+package org.smartregister.fhircore.engine.util.extension
 
-import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 
-@Serializable
-data class ExtractedResource(
-  val id: String? = null,
-  val resourceType: ResourceType,
-  val fhirPathExpression: String
-)
+fun expiredConcept() =
+  CodeableConcept().apply {
+    this.text = "Expired"
+    this.addCoding(Coding("http://snomed.info/sct", "255261002", "End-expiration"))
+  }

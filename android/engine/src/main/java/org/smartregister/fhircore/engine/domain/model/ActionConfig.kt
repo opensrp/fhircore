@@ -79,4 +79,12 @@ data class ActionParameter(
   val value: String,
   val linkId: String? = null,
   val resourceType: ResourceType? = null
-) : Parcelable
+) : Parcelable, java.io.Serializable {
+
+  fun interpolate(computedValuesMap: Map<String, Any>) =
+    this.copy(
+      value = value.interpolate(computedValuesMap),
+      key = key.interpolate(computedValuesMap),
+      linkId = linkId?.interpolate(computedValuesMap)
+    )
+}

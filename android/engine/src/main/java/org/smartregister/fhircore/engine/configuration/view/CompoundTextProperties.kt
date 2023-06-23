@@ -82,6 +82,7 @@ enum class TextCase {
   UPPER_CASE,
   LOWER_CASE,
   CAMEL_CASE,
+  TITLE_CASE
 }
 
 enum class TextOverFlow {

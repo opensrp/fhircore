@@ -29,6 +29,7 @@ import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.Task
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.Rules
@@ -40,6 +41,7 @@ import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
+import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
 import org.smartregister.fhircore.engine.util.extension.extractAge
@@ -71,20 +73,22 @@ constructor(
    * [RepositoryResourceData.relatedResourcesCountMap]. All related resources of same type are
    * flattened in a map for ease of usage in the rule engine.
    */
-  fun fireRules(rules: Rules, repositoryResourceData: RepositoryResourceData): Map<String, Any> {
-    with(repositoryResourceData) {
-      // Initialize new facts and fire rules in background
-      facts =
-        Facts().apply {
-          put(FHIR_PATH, fhirPathDataExtractor)
-          put(DATA, mutableMapOf<String, Any>())
-          put(SERVICE, rulesEngineService)
+  fun fireRules(rules: Rules, repositoryResourceData: RepositoryResourceData?): Map<String, Any> {
+    facts =
+      Facts().apply {
+        put(FHIR_PATH, fhirPathDataExtractor)
+        put(DATA, mutableMapOf<String, Any>())
+        put(SERVICE, rulesEngineService)
+      }
+    if (repositoryResourceData != null) {
+      with(repositoryResourceData) {
+        facts.apply {
           put(resourceRulesEngineFactId ?: resource.resourceType.name, resource)
-
           relatedResourcesMap.addToFacts(this)
           relatedResourcesCountMap.addToFacts(this)
 
-          // Populate the facts map with secondary resource data flatten base and related resources
+          // Populate the facts map with secondary resource data flatten base and related
+          // resources
           secondaryRepositoryResourceData
             ?.groupBy { it.resourceRulesEngineFactId ?: it.resource.resourceType.name }
             ?.forEach { entry -> put(entry.key, entry.value.map { it.resource }) }
@@ -108,12 +112,12 @@ constructor(
             }
           }
         }
-
-      if (BuildConfig.DEBUG) {
-        val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
-        Timber.d("Rule executed in $timeToFireRules millisecond(s)")
-      } else rulesEngine.fire(rules, facts)
+      }
     }
+    if (BuildConfig.DEBUG) {
+      val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
+      Timber.d("Rule executed in $timeToFireRules millisecond(s)")
+    } else rulesEngine.fire(rules, facts)
     return facts.get(DATA) as Map<String, Any>
   }
 
@@ -342,6 +346,14 @@ constructor(
       return regex.toRegex().findAll(inputString).joinToString(separator) { it.groupValues[1] }
     }
 
+    /** This function returns a list of resources with a limit of [limit] resources */
+    fun limitTo(source: List<Any>?, limit: Int?): List<Any> {
+      if (limit == null || limit <= 0) {
+        return emptyList()
+      }
+      return source?.take(limit) ?: emptyList()
+    }
+
     fun mapResourcesToExtractedValues(
       resources: List<Resource>?,
       fhirPathExpression: String
@@ -404,6 +416,27 @@ constructor(
         Order.ASCENDING -> mappedResources?.sortedWith(compareBy { it.first })?.map { it.second }
         Order.DESCENDING ->
           mappedResources?.sortedWith(compareByDescending { it.first })?.map { it.second }
+      }
+    }
+
+    fun generateTaskServiceStatus(task: Task): String {
+      return when (task.status) {
+        Task.TaskStatus.NULL,
+        Task.TaskStatus.FAILED,
+        Task.TaskStatus.RECEIVED,
+        Task.TaskStatus.ENTEREDINERROR,
+        Task.TaskStatus.ACCEPTED,
+        Task.TaskStatus.REJECTED,
+        Task.TaskStatus.DRAFT,
+        Task.TaskStatus.ONHOLD -> {
+          Timber.e("Task.status is null", Exception())
+          ServiceStatus.DUE.name
+        }
+        Task.TaskStatus.REQUESTED -> ServiceStatus.UPCOMING.name
+        Task.TaskStatus.READY -> ServiceStatus.DUE.name
+        Task.TaskStatus.CANCELLED -> ServiceStatus.EXPIRED.name
+        Task.TaskStatus.INPROGRESS -> ServiceStatus.IN_PROGRESS.name
+        Task.TaskStatus.COMPLETED -> ServiceStatus.COMPLETED.name
       }
     }
   }
