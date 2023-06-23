@@ -322,10 +322,6 @@ fun String.resourceClassType(): Class<out Resource> =
  */
 fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")
 
-fun Resource.addTags(tags: List<Coding>) {
-  tags.forEach { this.meta.addTag(it) }
-}
-
 /**
  * You provide a suspended function in Kotlin, which updates the due date of a task's dependent
  * tasks based on the date of a related immunization. The function takes a [defaultRepository]
