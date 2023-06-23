@@ -29,6 +29,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -44,6 +45,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.DataRequirement
@@ -96,22 +98,22 @@ class DefaultRepositoryTest : RobolectricTest() {
   private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var defaultRepository: DefaultRepository
   @Inject lateinit var configRulesExecutor: ConfigRulesExecutor
+  private lateinit var spiedConfigService: ConfigService
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    //    runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
-
     dispatcherProvider = DefaultDispatcherProvider()
     fhirEngine = mockk(relaxUnitFun = true)
     sharedPreferenceHelper = SharedPreferencesHelper(application, gson)
+    spiedConfigService = spyk(configService)
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
         dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferenceHelper,
         configurationRegistry = configurationRegistry,
-        configService = configService,
+        configService = spiedConfigService,
         configRulesExecutor = configRulesExecutor
       )
   }
@@ -293,6 +295,32 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertNotNull(resource.meta.lastUpdated)
     verify { resource.updateLastUpdated() }
     unmockkStatic(Resource::updateLastUpdated)
+  }
+
+  @Test
+  fun testCreateShouldNotDuplicateMetaTagsWithSameSystemCode() {
+    val system = "https://smartregister.org/location-tag-id"
+    val code = "86453"
+    val anotherCode = "10200"
+    val coding = Coding(system, code, "Location")
+    val anotherCoding = Coding(system, anotherCode, "Location")
+    val resource = Patient().apply { meta.addTag(coding) }
+
+    // Meta contains 1 tag with code 86453
+    Assert.assertEquals(1, resource.meta.tag.size)
+    val firstTag = resource.meta.tag.first()
+    Assert.assertEquals(code, firstTag.code)
+    Assert.assertEquals(system, firstTag.system)
+
+    coEvery { fhirEngine.create(any()) } returns listOf(resource.id)
+    every { spiedConfigService.provideResourceTags(sharedPreferenceHelper) } returns
+      listOf(coding, anotherCoding)
+    runBlocking { defaultRepository.create(true, resource) }
+
+    // Expecting 2 tags; tag with code 86453 should not be duplicated.
+    Assert.assertEquals(2, resource.meta.tag.size)
+    Assert.assertNotNull(resource.meta.lastUpdated)
+    Assert.assertNotNull(resource.meta.getTag(system, code))
   }
 
   @Test

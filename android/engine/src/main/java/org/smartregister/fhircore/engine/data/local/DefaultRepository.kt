@@ -65,7 +65,6 @@ import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -145,11 +144,17 @@ constructor(
 
   suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
-      resource.onEach {
-        it.updateLastUpdated()
-        it.generateMissingId()
+      resource.onEach { currentResource ->
+        currentResource.updateLastUpdated()
+        currentResource.generateMissingId()
         if (addResourceTags) {
-          it.addTags(configService.provideResourceTags(sharedPreferencesHelper))
+          val tags = configService.provideResourceTags(sharedPreferencesHelper)
+          tags.forEach {
+            val existingTag = currentResource.meta.getTag(it.system, it.code)
+            if (existingTag == null) {
+              currentResource.meta.addTag(it)
+            }
+          }
         }
       }
 
