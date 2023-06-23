@@ -689,6 +689,7 @@ constructor(
       is Procedure -> resource.status = Procedure.ProcedureStatus.STOPPED
       is Condition -> {
         // TODO Remove the hardcoded custom logic for closing PNC Condition i.e remove if block
+        // https://github.com/opensrp/fhircore/issues/2488
         /**
          * The logic for closing PNC Condition makes 2 assumptions
          * 1. The eventResource id value is "pncConditionToClose"
