@@ -207,107 +207,145 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       iParser.parseResource(
           Task::class.java,
           "{\n" +
-            "   \"resourceType\":\"Task\",\n" +
-            "   \"id\":\"a9100c01-c84b-404f-9d24-9b830463a152\",\n" +
-            "   \"identifier\":[\n" +
+            "  \"resourceType\": \"Task\",\n" +
+            "  \"id\": \"648f786a-f716-4668-aee9-66600a8bb8c9\",\n" +
+            "  \"meta\": {\n" +
+            "    \"lastUpdated\": \"2023-06-23T09:36:04.849+00:00\",\n" +
+            "    \"tag\": [\n" +
             "      {\n" +
-            "         \"use\":\"official\",\n" +
-            "         \"value\":\"a20e88b4-4beb-4b31-86cd-572e1445e5f3\"\n" +
-            "      }\n" +
-            "   ],\n" +
-            "   \"basedOn\":[\n" +
-            "      {\n" +
-            "         \"reference\":\"CarePlan/28d7542c-ba08-4f16-b6a2-19e8b5d4c229\"\n" +
-            "      }\n" +
-            "   ],\n" +
-            "   \"partOf\":{\n" +
-            "      \"reference\":\"Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f\"\n" +
-            "   },\n" +
-            "   \"status\":\"requested\",\n" +
-            "   \"intent\":\"plan\",\n" +
-            "   \"priority\":\"routine\",\n" +
-            "   \"code\":{\n" +
-            "      \"coding\":[\n" +
-            "         {\n" +
-            "            \"system\":\"http://snomed.info/sct\",\n" +
-            "            \"code\":\"33879002\",\n" +
-            "            \"display\":\"Administration of vaccine to produce active immunity (procedure)\"\n" +
-            "         }\n" +
-            "      ]\n" +
-            "   },\n" +
-            "   \"description\":\"OPV 1 at 6 wk vaccine\",\n" +
-            "   \"for\":{\n" +
-            "      \"reference\":\"Patient/3e3d698a-4edb-48f9-9330-2f1adc0635d1\"\n" +
-            "   },\n" +
-            "   \"executionPeriod\":{\n" +
-            "      \"start\":\"2021-11-12T00:00:00+00:00\",\n" +
-            "      \"end\":\"2026-11-11T00:00:00+00:00\"\n" +
-            "   },\n" +
-            "   \"authoredOn\":\"2023-03-28T10:46:59+00:00\",\n" +
-            "   \"requester\":{\n" +
-            "      \"reference\":\"Practitioner/3812\"\n" +
-            "   },\n" +
-            "   \"owner\":{\n" +
-            "      \"reference\":\"Practitioner/3812\"\n" +
-            "   },\n" +
-            "   \"reasonCode\":{\n" +
-            "      \"coding\":[\n" +
-            "         {\n" +
-            "            \"system\":\"http://snomed.info/sct\",\n" +
-            "            \"code\":\"111164008\",\n" +
-            "            \"display\":\"Poliovirus vaccine\"\n" +
-            "         }\n" +
-            "      ],\n" +
-            "      \"text\":\"OPV\"\n" +
-            "   },\n" +
-            "   \"reasonReference\":{\n" +
-            "      \"reference\":\"Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82\"\n" +
-            "   },\n" +
-            "   \"input\":[\n" +
-            "      {\n" +
-            "         \"type\":{\n" +
-            "            \"coding\":[\n" +
-            "               {\n" +
-            "                  \"system\":\"http://snomed.info/sct\",\n" +
-            "                  \"code\":\"900000000000457003\",\n" +
-            "                  \"display\":\"Reference set attribute (foundation metadata concept)\"\n" +
-            "               }\n" +
-            "            ]\n" +
-            "         },\n" +
-            "         \"value\":{\n" +
-            "            \"reference\":\"Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f\"\n" +
-            "         }\n" +
+            "        \"system\": \"https://smartregister.org/app-version\",\n" +
+            "        \"code\": \"0.2.2-ecbis\",\n" +
+            "        \"display\": \"Application Version\"\n" +
             "      },\n" +
             "      {\n" +
-            "         \"type\":{\n" +
-            "            \"coding\":[\n" +
-            "               {\n" +
-            "                  \"system\":\"http://snomed.info/sct\",\n" +
-            "                  \"code\":\"371154000\",\n" +
-            "                  \"display\":\"Dependent (qualifier value)\"\n" +
-            "               }\n" +
-            "            ]\n" +
-            "         },\n" +
-            "         \"value\":28\n" +
-            "      }\n" +
-            "   ],\n" +
-            "   \"output\":[\n" +
+            "        \"system\": \"https://smartregister.org/care-team-tag-id\",\n" +
+            "        \"code\": \"eb47e6cf-6631-4d22-85db-423c109f9717\",\n" +
+            "        \"display\": \"Practitioner CareTeam\"\n" +
+            "      },\n" +
             "      {\n" +
-            "         \"type\":{\n" +
-            "            \"coding\":[\n" +
-            "               {\n" +
-            "                  \"system\":\"http://snomed.info/sct\",\n" +
-            "                  \"code\":\"41000179103\",\n" +
-            "                  \"display\":\"Immunization record (record artifact)\"\n" +
-            "               }\n" +
-            "            ]\n" +
-            "         },\n" +
-            "         \"value\":{\n" +
-            "            \"reference\":\"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
-            "         }\n" +
+            "        \"system\": \"https://smartregister.org/location-tag-id\",\n" +
+            "        \"code\": \"52a6d6e5-e0cd-4239-9950-7c094296128c\",\n" +
+            "        \"display\": \"Practitioner Location\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"system\": \"https://smartregister.org/organisation-tag-id\",\n" +
+            "        \"code\": \"b284e210-930d-465b-9cf6-4be64b31fd4e\",\n" +
+            "        \"display\": \"Practitioner Organization\"\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"system\": \"https://smartregister.org/practitioner-tag-id\",\n" +
+            "        \"code\": \"b3c19bc5-838c-4b53-a681-3995765e276f\",\n" +
+            "        \"display\": \"Practitioner\"\n" +
             "      }\n" +
-            "   ]\n" +
-            "} "
+            "    ]\n" +
+            "  },\n" +
+            "  \"identifier\": [\n" +
+            "    {\n" +
+            "      \"use\": \"official\",\n" +
+            "      \"value\": \"a136ce5b-902f-4e56-9b57-71958eab1c8b\"\n" +
+            "    }\n" +
+            "  ],\n" +
+            "  \"basedOn\": [\n" +
+            "    {\n" +
+            "      \"reference\": \"CarePlan/6b160e75-7543-44de-8f0c-e0178d696c28\"\n" +
+            "    }\n" +
+            "  ],\n" +
+            "  \"groupIdentifier\": {\n" +
+            "    \"use\": \"secondary\",\n" +
+            "    \"value\": \"0_d\"\n" +
+            "  },\n" +
+            "  \"status\": \"completed\",\n" +
+            "  \"intent\": \"plan\",\n" +
+            "  \"priority\": \"routine\",\n" +
+            "  \"code\": {\n" +
+            "    \"coding\": [\n" +
+            "      {\n" +
+            "        \"system\": \"http://snomed.info/sct\",\n" +
+            "        \"code\": \"33879002\",\n" +
+            "        \"display\": \"Administration of vaccine to produce active immunity (procedure)\"\n" +
+            "      }\n" +
+            "    ]\n" +
+            "  },\n" +
+            "  \"description\": \"OPV 0\",\n" +
+            "  \"for\": {\n" +
+            "    \"reference\": \"Patient/2305efe1-6e36-44a9-bd6e-dec746fa553c\"\n" +
+            "  },\n" +
+            "  \"executionPeriod\": {\n" +
+            "    \"start\": \"2021-06-22T00:00:00.00Z\",\n" +
+            "    \"end\": \"2021-07-06T00:00:00.00Z\"\n" +
+            "  },\n" +
+            "  \"authoredOn\": \"2023-06-23T09:34:48+00:00\",\n" +
+            "  \"lastModified\": \"2023-06-23T09:36:04+00:00\",\n" +
+            "  \"requester\": {\n" +
+            "    \"reference\": \"Practitioner/b3c19bc5-838c-4b53-a681-3995765e276f\"\n" +
+            "  },\n" +
+            "  \"owner\": {\n" +
+            "    \"reference\": \"Practitioner/b3c19bc5-838c-4b53-a681-3995765e276f\"\n" +
+            "  },\n" +
+            "  \"reasonCode\": {\n" +
+            "    \"coding\": [\n" +
+            "      {\n" +
+            "        \"system\": \"http://snomed.info/sct\",\n" +
+            "        \"code\": \"111164008\",\n" +
+            "        \"display\": \"Poliovirus vaccine\"\n" +
+            "      }\n" +
+            "    ],\n" +
+            "    \"text\": \"OPV\"\n" +
+            "  },\n" +
+            "  \"reasonReference\": {\n" +
+            "    \"reference\": \"Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82\"\n" +
+            "  },\n" +
+            "  \"restriction\": {\n" +
+            "    \"period\": {\n" +
+            "      \"start\": \"2021-06-22T00:00:00.00Z\",\n" +
+            "      \"end\": \"2026-06-21T00:00:00.00Z\"\n" +
+            "    }\n" +
+            "  },\n" +
+            "  \"output\": [\n" +
+            "    {\n" +
+            "      \"type\": {\n" +
+            "        \"coding\": [\n" +
+            "          {\n" +
+            "            \"system\": \"http://snomed.info/sct\",\n" +
+            "            \"code\": \"41000179103\",\n" +
+            "            \"display\": \"Immunization record (record artifact)\"\n" +
+            "          }\n" +
+            "        ]\n" +
+            "      },\n" +
+            "      \"valueReference\": {\n" +
+            "        \"reference\": \"Encounter/b2cf5d28-5a3a-4217-bf57-8da5b97ae126\"\n" +
+            "      }\n" +
+            "    },\n" +
+            "    {\n" +
+            "      \"type\": {\n" +
+            "        \"coding\": [\n" +
+            "          {\n" +
+            "            \"system\": \"http://snomed.info/sct\",\n" +
+            "            \"code\": \"41000179103\",\n" +
+            "            \"display\": \"Immunization record (record artifact)\"\n" +
+            "          }\n" +
+            "        ]\n" +
+            "      },\n" +
+            "      \"valueReference\": {\n" +
+            "        \"reference\": \"Encounter/fb6abe21-a771-45e5-8abb-3fdd2626c3c3\"\n" +
+            "      }\n" +
+            "    },\n" +
+            "    {\n" +
+            "      \"type\": {\n" +
+            "        \"coding\": [\n" +
+            "          {\n" +
+            "            \"system\": \"http://snomed.info/sct\",\n" +
+            "            \"code\": \"41000179103\",\n" +
+            "            \"display\": \"Immunization record (record artifact)\"\n" +
+            "          }\n" +
+            "        ]\n" +
+            "      },\n" +
+            "      \"valueReference\": {\n" +
+            "        \"reference\": \"Immunization/4922b562-147e-4097-867c-44b905ce7ac4\"\n" +
+            "      }\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}"
         )
         .apply {
           output =
@@ -1604,13 +1642,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
-  fun `updateDependentTaskDueDate - no dependent tasks`() = runBlocking {
+  fun `updateDependentTaskDueDate - no dependent tasks`() {
     opv0.apply {
       status = TaskStatus.REQUESTED
       partOf = emptyList()
     }
     // when
-    val updatedTask = opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine)
+    val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
     // then
     assertEquals("650203d2-f327-4eb4-a9fd-741e0ce29c3f", opv1.logicalId)
     assertEquals(opv0, updatedTask)
@@ -1624,7 +1662,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         partOf = listOf(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f"))
       }
     opv1.apply {
-      output = emptyList()
+      output = listOf()
       executionPeriod =
         Period().apply {
           start = Date()

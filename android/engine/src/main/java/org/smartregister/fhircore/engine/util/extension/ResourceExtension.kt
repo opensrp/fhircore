@@ -29,7 +29,6 @@ import java.util.LinkedList
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.abs
-import org.hl7.fhir.TaskStatus
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
@@ -37,7 +36,6 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
@@ -55,6 +53,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
+import org.joda.time.Instant
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -350,51 +349,50 @@ suspend fun Task.updateDependentTaskDueDate(
       }
     dependentTasks.forEach { dependantTask ->
       dependantTask.partOf.forEach { _ ->
-        if (dependantTask.executionPeriod.hasStart() &&
-            dependantTask.hasInput() &&
-            this.status.equals(Task.TaskStatus.REQUESTED)
-        ) {
+        if (dependantTask.executionPeriod.hasStart() && dependantTask.hasInput()) {
           this.output.forEach { taskOp ->
             try {
               val taskOutReference = taskOp.value as Reference
-              if (taskOp.value != null &&
-                  taskOutReference.extractType()?.equals(ResourceType.Encounter) == true
-              ) {
-                val taskRef = taskOutReference.reference
-                val dependantImmunization =
-                  fhirEngine.search<Immunization> {
-                    filter(
-                      referenceParameter = ReferenceClientParam(PARTOF),
-                      { value = taskRef.extractLogicalIdUuid() }
+              if (taskOp.value != null) {
+                if (taskOutReference.extractType()?.equals(ResourceType.Immunization) == true) {
+                  val immunizationRef = taskOutReference.reference
+                  val immunization =
+                    defaultRepository.loadResource<Immunization>(
+                      immunizationRef.extractLogicalIdUuid()
                     )
-                  }
-                dependantImmunization.filter { it.hasEncounter() }.forEach { immunization ->
-                  val dependentTaskStartDate = dependantTask.executionPeriod.start
-                  val immunizationDate =
-                    immunization.occurrenceDateTimeType.dateTimeValue().valueAsCalendar
-                  dependantTask.input.onEach { input ->
-                    val dependentTaskInputDate = input.value.toString().toInt()
-                    val difference =
-                      abs(
-                        Duration.between(
-                            immunizationDate?.toInstant(),
-                            dependentTaskStartDate.toInstant()
+                  if (immunization != null &&
+                      immunization.isResource &&
+                      immunization.hasOccurrence()
+                  ) {
+                    val dependentTaskStartDate = dependantTask.executionPeriod.start
+                    val immunizationDate =
+                      Instant.parse(immunization.occurrence.valueToString()).toDate()
+                    dependantTask.input.onEach { input ->
+                      if (input.value.isPrimitive) {
+                        val dependentTaskInputDate = input.value.valueToString().toInt()
+                        val difference =
+                          abs(
+                            Duration.between(
+                                immunizationDate.toInstant(),
+                                dependentTaskStartDate.toInstant()
+                              )
+                              .toDays()
                           )
-                          .toDays()
-                      )
-                    if (difference < dependentTaskInputDate) {
-                      dependantTask
-                        .apply {
-                          executionPeriod.start =
-                            Date.from(immunizationDate?.toInstant())
-                              .plusDays(dependentTaskInputDate)
+                        if (difference < dependentTaskInputDate) {
+                          dependantTask
+                            .apply {
+                              executionPeriod.start =
+                                Date.from(immunizationDate?.toInstant())
+                                  .plusDays(dependentTaskInputDate)
+                            }
+                            .run {
+                              defaultRepository.addOrUpdate(
+                                addMandatoryTags = true,
+                                resource = dependantTask
+                              )
+                            }
                         }
-                        .run {
-                          defaultRepository.addOrUpdate(
-                            addMandatoryTags = true,
-                            resource = dependantTask
-                          )
-                        }
+                      }
                     }
                   }
                 }
@@ -411,3 +409,4 @@ suspend fun Task.updateDependentTaskDueDate(
 
 const val REFERENCE = "reference"
 const val PARTOF = "part-of"
+const val ENCOUNTER = "encounter"
