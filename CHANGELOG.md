@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix P2P sync progress showing greater than 100%
 - Background worker performance
 - The `requested` to `ready` task status update background worker 
+- Calculate DUE dates for dependent Tasks
 
 ### Changed
 - Refactored how the related resources SELECT and COUNT queries search results are represented. 
