@@ -1649,9 +1649,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       status = TaskStatus.REQUESTED
       partOf = emptyList()
     }
-    // when
+
     val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
-    // then
+
+    coVerify { fhirEngine.search<Task>(any<Search>()) }
     assertEquals("650203d2-f327-4eb4-a9fd-741e0ce29c3f", opv1.logicalId)
     assertEquals(opv0, updatedTask)
   }
