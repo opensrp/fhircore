@@ -683,6 +683,7 @@ constructor(
       is CarePlan -> resource.status = CarePlan.CarePlanStatus.COMPLETED
       is Procedure -> resource.status = Procedure.ProcedureStatus.STOPPED
       is Condition -> {
+        //TODO Remove the hardcoded custom logic for closing PNC Condition i.e remove if block
         if (resourceConfig.id == PNC_CONDITION_TO_CLOSE_RESOURCE_ID) {
           val closePncCondition = resource.onset.dateTimeValue().value.daysPassed() > 28
           if (closePncCondition) {
