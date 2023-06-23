@@ -21,6 +21,7 @@ import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import java.time.Duration
@@ -360,19 +361,14 @@ suspend fun Task.updateDependentTaskDueDate(
                 if (taskOutReference.extractType()?.equals(ResourceType.Immunization) == true) {
                   val immunizationRef = taskOutReference.reference
                   val immunization =
-                    defaultRepository.loadResource<Immunization>(
-                      immunizationRef.extractLogicalIdUuid()
-                    )
-                  if (immunization != null &&
-                      immunization.isResource &&
-                      immunization.hasOccurrence()
-                  ) {
+                    fhirEngine.get<Immunization>(immunizationRef.extractLogicalIdUuid())
+                  if (immunization.isResource && immunization.hasOccurrence()) {
                     val dependentTaskStartDate = dependantTask.executionPeriod.start
                     val immunizationDate =
                       Instant.parse(immunization.occurrence.valueToString()).toDate()
                     dependantTask.input.onEach { input ->
                       if (input.value.isPrimitive) {
-                        val dependentTaskInputDate = input.value.valueToString().toInt()
+                        val dependentTaskInputDuration = input.value.valueToString().toInt()
                         val difference =
                           abs(
                             Duration.between(
@@ -381,12 +377,12 @@ suspend fun Task.updateDependentTaskDueDate(
                               )
                               .toDays()
                           )
-                        if (difference < dependentTaskInputDate) {
+                        if (difference < dependentTaskInputDuration) {
                           dependantTask
                             .apply {
                               executionPeriod.start =
                                 Date.from(immunizationDate?.toInstant())
-                                  .plusDays(dependentTaskInputDate)
+                                  .plusDays(dependentTaskInputDuration)
                             }
                             .run {
                               defaultRepository.addOrUpdate(

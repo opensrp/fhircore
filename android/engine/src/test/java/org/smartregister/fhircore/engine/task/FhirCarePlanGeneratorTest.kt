@@ -46,7 +46,6 @@ import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -95,6 +94,7 @@ import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.extension.REFERENCE
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -116,6 +116,7 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 @HiltAndroidTest
 class FhirCarePlanGeneratorTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   @Inject lateinit var transformSupportServices: TransformSupportServices
   @Inject lateinit var fhirPathEngine: FHIRPathEngine
   private lateinit var fhirEngine: FhirEngine
@@ -136,7 +137,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val workManager = mockk<WorkManager>()
 
-    every { defaultRepository.dispatcherProvider.io() } returns Dispatchers.IO
+    every { defaultRepository.dispatcherProvider } returns coroutineTestRule.testDispatcherProvider
     every { defaultRepository.fhirEngine } returns fhirEngine
     every { workManager.enqueue(any<WorkRequest>()) } returns mockk()
 
@@ -166,7 +167,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           "   \"encounter\":{\n" +
           "      \"reference\":\"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
           "   },\n" +
-          "   \"occurrenceString\":\"2021-06-23T00:00:00.00Z\"\n" +
+          "   \"occurrenceString\":\"2021-10-23T00:00:00.00Z\"\n" +
           "}"
       )
 
@@ -1810,13 +1811,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
   @Test
   fun `updateDependentTaskDueDate sets executionPeriod start correctly`() {
-    coEvery { fhirEngine.search<Task>(any<Search>()) } returns
-      listOf(
-        opv1.apply {
-          status = TaskStatus.INPROGRESS
-          input = listOf(Task.ParameterComponent(CodeableConcept(), StringType("28")))
-        }
-      )
     coEvery {
       fhirEngine.search<Task> {
         filter(
@@ -1825,15 +1819,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         )
       }
     } returns
-      listOf(opv1.apply { partOf = listOf(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f")) })
-    coEvery {
-      fhirEngine.search<Immunization> {
-        filter(
-          referenceParameter = ReferenceClientParam("part-of"),
-          { value = immunizationResource.id.extractLogicalIdUuid() }
-        )
-      }
-    } returns listOf(immunizationResource)
+      listOf(
+        opv1.apply {
+          partOf = listOf(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f"))
+          status = TaskStatus.REQUESTED
+          input = listOf(Task.ParameterComponent(CodeableConcept(), StringType("28")))
+        }
+      )
+    coEvery { fhirEngine.get<Immunization>(immunizationResource.id.extractLogicalIdUuid()) } returns
+      immunizationResource
 
     coEvery {
       fhirEngine.search<Encounter> {
@@ -1845,12 +1839,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     } returns listOf(encounter)
     coEvery { defaultRepository.addOrUpdate(addMandatoryTags = true, opv1) } just runs
     runBlocking { defaultRepository.addOrUpdate(true, opv1) }
-    val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
-    assertEquals(
-      Date.from(Instant.parse("2021-06-22T00:00:00Z")),
-      updatedTask.executionPeriod.start
-    )
+    runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
+    assertEquals(Date.from(Instant.parse("2021-11-20T00:00:00Z")), opv1.executionPeriod.start)
     coVerify { defaultRepository.addOrUpdate(addMandatoryTags = true, opv1) }
+    // Todo list. Add test for other scenarios
   }
 
   @Test
