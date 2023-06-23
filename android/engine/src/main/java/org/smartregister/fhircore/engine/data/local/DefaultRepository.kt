@@ -683,7 +683,7 @@ constructor(
       is CarePlan -> resource.status = CarePlan.CarePlanStatus.COMPLETED
       is Procedure -> resource.status = Procedure.ProcedureStatus.STOPPED
       is Condition -> {
-        //TODO Remove the hardcoded custom logic for closing PNC Condition i.e remove if block
+        // TODO Remove the hardcoded custom logic for closing PNC Condition i.e remove if block
         /**
          * The logic for closing PNC Condition makes 2 assumptions
          * 1. The eventResource id value is "pncConditionToClose"
@@ -717,9 +717,7 @@ constructor(
                 )
             }
         }
-
       }
-
       is ServiceRequest -> resource.status = ServiceRequest.ServiceRequestStatus.REVOKED
     }
     fhirEngine.update(resource)
