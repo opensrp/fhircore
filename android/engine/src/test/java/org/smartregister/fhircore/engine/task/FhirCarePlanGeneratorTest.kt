@@ -1686,7 +1686,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       opv1
     coEvery { defaultRepository.loadResource(Reference(opv0.partOf.first().reference)) } returns
       opv1
+
     val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
+
+    coVerify { fhirEngine.search<Task>(any<Search>()) }
     assertEquals(opv0, updatedTask)
   }
 
@@ -1698,7 +1701,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         output = listOf()
       }
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf()
+
     val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
+
+    coVerify { fhirEngine.search<Task>(any<Search>()) }
     assertEquals(opv0, updatedTask)
   }
 
@@ -1852,7 +1858,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
     assertEquals(Date.from(Instant.parse("2021-11-20T00:00:00Z")), opv1.executionPeriod.start)
     coVerify { defaultRepository.addOrUpdate(addMandatoryTags = true, opv1) }
-    // Todo list. Add test for other scenarios
+    // TODO update list to add tests for other scenarios
   }
 
   @Test
