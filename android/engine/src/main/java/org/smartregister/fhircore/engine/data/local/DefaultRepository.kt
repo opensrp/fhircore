@@ -66,6 +66,7 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
@@ -652,7 +653,7 @@ constructor(
     val resources = fhirEngine.search<Resource>(search)
     resources.forEach {
       Timber.i("Closing Resource type ${it.resourceType.name} and id ${it.id}")
-      closeResource(it)
+      closeResource(it, resourceConfig)
     }
 
     // recursive related resources
@@ -671,12 +672,12 @@ constructor(
         Timber.i(
           "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}"
         )
-        closeResource(resource)
+        closeResource(resource, resourceConfig)
       }
     }
   }
   @VisibleForTesting
-  suspend fun closeResource(resource: Resource) {
+  suspend fun closeResource(resource: Resource, resourceConfig: ResourceConfig) {
     when (resource) {
       is Task -> {
         if (resource.status != Task.TaskStatus.COMPLETED) {
@@ -686,18 +687,38 @@ constructor(
       }
       is CarePlan -> resource.status = CarePlan.CarePlanStatus.COMPLETED
       is Procedure -> resource.status = Procedure.ProcedureStatus.STOPPED
-      is Condition ->
-        resource.clinicalStatus =
-          CodeableConcept().apply {
-            coding =
-              listOf(
-                Coding().apply {
-                  system = SNOMED_SYSTEM
-                  display = PATIENT_CONDITION_RESOLVED_DISPLAY
-                  code = PATIENT_CONDITION_RESOLVED_CODE
-                }
-              )
+      is Condition -> {
+        if (resourceConfig.id == "pncConditionToBeClosed") {
+          val closePncCondition = resource.onset.dateTimeValue().value.daysPassed() > 28
+          if (closePncCondition) {
+            resource.clinicalStatus =
+              CodeableConcept().apply {
+                coding =
+                  listOf(
+                    Coding().apply {
+                      system = SNOMED_SYSTEM
+                      display = PATIENT_CONDITION_RESOLVED_DISPLAY
+                      code = PATIENT_CONDITION_RESOLVED_CODE
+                    }
+                  )
+              }
           }
+        } else {
+          resource.clinicalStatus =
+            CodeableConcept().apply {
+              coding =
+                listOf(
+                  Coding().apply {
+                    system = SNOMED_SYSTEM
+                    display = PATIENT_CONDITION_RESOLVED_DISPLAY
+                    code = PATIENT_CONDITION_RESOLVED_CODE
+                  }
+                )
+            }
+        }
+
+      }
+
       is ServiceRequest -> resource.status = ServiceRequest.ServiceRequestStatus.REVOKED
     }
     fhirEngine.update(resource)
