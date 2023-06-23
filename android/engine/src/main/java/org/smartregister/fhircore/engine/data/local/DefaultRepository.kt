@@ -688,7 +688,7 @@ constructor(
       is CarePlan -> resource.status = CarePlan.CarePlanStatus.COMPLETED
       is Procedure -> resource.status = Procedure.ProcedureStatus.STOPPED
       is Condition -> {
-        if (resourceConfig.id == "pncConditionToBeClosed") {
+        if (resourceConfig.id == PNC_CONDITION_TO_CLOSE_RESOURCE_ID) {
           val closePncCondition = resource.onset.dateTimeValue().value.daysPassed() > 28
           if (closePncCondition) {
             resource.clinicalStatus =
@@ -737,5 +737,6 @@ constructor(
     const val SNOMED_SYSTEM = "http://www.snomed.org/"
     const val PATIENT_CONDITION_RESOLVED_CODE = "370996005"
     const val PATIENT_CONDITION_RESOLVED_DISPLAY = "resolved"
+    const val PNC_CONDITION_TO_CLOSE_RESOURCE_ID = "pncConditionToClose"
   }
 }
