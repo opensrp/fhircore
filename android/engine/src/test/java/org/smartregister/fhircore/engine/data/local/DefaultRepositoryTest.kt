@@ -38,6 +38,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import java.time.ZoneId
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -49,6 +50,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.DataRequirement
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
@@ -673,7 +675,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
     val taskSlot = slot<Task>()
 
-    runBlocking { defaultRepository.closeResource(task) }
+    runBlocking {
+      defaultRepository.closeResource(task, ResourceConfig(resource = ResourceType.CarePlan))
+    }
     coVerify { fhirEngine.update(capture(taskSlot)) }
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", taskSlot.captured.id)
     Assert.assertEquals(Task.TaskStatus.CANCELLED, taskSlot.captured.status)
@@ -689,7 +693,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
     val carePlanSlot = slot<CarePlan>()
 
-    runBlocking { defaultRepository.closeResource(carePlan) }
+    runBlocking {
+      defaultRepository.closeResource(carePlan, ResourceConfig(resource = ResourceType.CarePlan))
+    }
     coVerify { fhirEngine.update(capture(carePlanSlot)) }
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", carePlanSlot.captured.id)
     Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
@@ -733,7 +739,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
     val procedureSlot = slot<Procedure>()
 
-    runBlocking { defaultRepository.closeResource(procedure) }
+    runBlocking {
+      defaultRepository.closeResource(procedure, ResourceConfig(resource = ResourceType.Procedure))
+    }
     coVerify { fhirEngine.update(capture(procedureSlot)) }
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", procedureSlot.captured.id)
     Assert.assertEquals(Procedure.ProcedureStatus.STOPPED, procedureSlot.captured.status)
@@ -749,7 +757,12 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
     val serviceRequestSlot = slot<ServiceRequest>()
 
-    runBlocking { defaultRepository.closeResource(serviceRequest) }
+    runBlocking {
+      defaultRepository.closeResource(
+        serviceRequest,
+        ResourceConfig(resource = ResourceType.ServiceRequest)
+      )
+    }
     coVerify { fhirEngine.update(capture(serviceRequestSlot)) }
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", serviceRequestSlot.captured.id)
     Assert.assertEquals(
@@ -768,7 +781,46 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
     val conditionSlot = slot<Condition>()
 
-    runBlocking { defaultRepository.closeResource(condition) }
+    runBlocking {
+      defaultRepository.closeResource(condition, ResourceConfig(resource = ResourceType.Condition))
+    }
+    coVerify { fhirEngine.update(capture(conditionSlot)) }
+    val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
+    Assert.assertEquals("370996005", capturedCode.code)
+    Assert.assertEquals("http://www.snomed.org/", capturedCode.system)
+    Assert.assertEquals("resolved", capturedCode.display)
+  }
+
+  // TODO Refactor/Remove after https://github.com/opensrp/fhircore/issues/2488
+  @Test
+  fun testCloseResourceUpdatesCorrectConditionStatusForClosePNCCondition() {
+    val condition =
+      Condition().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        clinicalStatus = null
+        onset =
+          DateTimeType(
+            Date.from(
+              java.time.LocalDate.now()
+                .minusDays(30)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+            )
+          )
+      }
+    coEvery { fhirEngine.update(any()) } just runs
+    val conditionSlot = slot<Condition>()
+
+    runBlocking {
+      defaultRepository.closeResource(
+        condition,
+        ResourceConfig(
+          id = DefaultRepository.PNC_CONDITION_TO_CLOSE_RESOURCE_ID,
+          resource = ResourceType.Condition
+        )
+      )
+    }
     coVerify { fhirEngine.update(capture(conditionSlot)) }
     val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
