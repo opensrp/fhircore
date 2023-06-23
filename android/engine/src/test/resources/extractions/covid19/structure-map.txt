@@ -64,9 +64,7 @@ group ExtractAdministrationEncounter(source src : QuestionnaireResponse,target a
                 src -> period.start = evaluate(src, now()) "r_start";
                 src -> period.end = evaluate(src, now()) "r_end";
         } "r_period";
-        src -> administrationEncounter.partOf = create('Reference') as ref then {
-               src -> ref.reference = evaluate(encounter,$this.id) "r_ref";
-        } "r_partof";
+        src -> administrationEncounter.partOf = reference(encounter) "r_partof";
         src -> bundle.entry as entry, entry.resource = administrationEncounter "r_enc_cp";
 }
 
