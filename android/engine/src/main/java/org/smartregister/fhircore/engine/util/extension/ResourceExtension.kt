@@ -349,7 +349,10 @@ suspend fun Task.updateDependentTaskDueDate(
       }
     dependentTasks.forEach { dependantTask ->
       dependantTask.partOf.forEach { _ ->
-        if (dependantTask.executionPeriod.hasStart() && dependantTask.hasInput()) {
+        if (dependantTask.executionPeriod.hasStart() &&
+            dependantTask.hasInput() &&
+            dependantTask.status.equals(Task.TaskStatus.REQUESTED)
+        ) {
           this.output.forEach { taskOp ->
             try {
               val taskOutReference = taskOp.value as Reference

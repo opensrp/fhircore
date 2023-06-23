@@ -166,7 +166,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           "   \"encounter\":{\n" +
           "      \"reference\":\"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
           "   },\n" +
-          "   \"occurrenceDateTime\":\"2021-10-10T00:00:00+00:00\"\n" +
+          "   \"occurrenceString\":\"2021-06-23T00:00:00.00Z\"\n" +
           "}"
       )
 
@@ -352,7 +352,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             listOf(
               TaskOutputComponent(
                 CodeableConcept(),
-                Reference("Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90")
+                Reference("Immunization/41921cfe-5074-4eec-925f-2bc581237660")
               )
             )
         }
@@ -390,7 +390,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           "      \"reference\":\"Patient/3e3d698a-4edb-48f9-9330-2f1adc0635d1\"\n" +
           "   },\n" +
           "   \"executionPeriod\":{\n" +
-          "      \"start\":\"2021-10-01T00:00:00+00:00\",\n" +
+          "      \"start\":\"2021-10-10T00:00:00+00:00\",\n" +
           "      \"end\":\"2021-10-15T00:00:00+00:00\"\n" +
           "   },\n" +
           "   \"authoredOn\":\"2023-03-28T10:46:59+00:00\",\n" +
@@ -1682,11 +1682,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   fun `updateDependentTaskDueDate should run with dependent task, with output but no execution period start date`() {
     coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
-      opv0.apply { status = TaskStatus.INPROGRESS }
-    opv1.apply { opv1.executionPeriod.start = null }
-    coEvery { defaultRepository.loadResource(Reference(opv0.partOf.first().reference)) } returns
-      opv1
-    coEvery { fhirEngine.search<Task>(any<Search>()) } returns emptyList()
+      opv0.apply {
+        status = TaskStatus.INPROGRESS
+        output = listOf()
+      }
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf()
     val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
     assertEquals(opv0, updatedTask)
   }
@@ -1834,6 +1834,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         )
       }
     } returns listOf(immunizationResource)
+
     coEvery {
       fhirEngine.search<Encounter> {
         filter(
@@ -1842,13 +1843,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         )
       }
     } returns listOf(encounter)
-
+    coEvery { defaultRepository.addOrUpdate(addMandatoryTags = true, opv1) } just runs
+    runBlocking { defaultRepository.addOrUpdate(true, opv1) }
     val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
     assertEquals(
-      Date.from(Instant.parse("2021-11-12T00:00:00Z")),
+      Date.from(Instant.parse("2021-06-22T00:00:00Z")),
       updatedTask.executionPeriod.start
     )
-    coEvery { defaultRepository.addOrUpdate(addMandatoryTags = true, opv1) } just runs
     coVerify { defaultRepository.addOrUpdate(addMandatoryTags = true, opv1) }
   }
 
