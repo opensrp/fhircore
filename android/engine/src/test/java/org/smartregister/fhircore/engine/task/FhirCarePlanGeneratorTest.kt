@@ -1604,20 +1604,24 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
-  fun `updateDependentTaskDueDate - no dependent tasks`() = runBlocking {
+  fun `updateDependentTaskDueDate should have no dependent tasks`() = runBlocking {
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns emptyList()
+
     opv0.apply {
       status = TaskStatus.REQUESTED
       partOf = emptyList()
     }
-    // when
+
     val updatedTask = opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine)
-    // then
+
+    coVerify { fhirEngine.search<Task>(any<Search>()) }
     assertEquals("650203d2-f327-4eb4-a9fd-741e0ce29c3f", opv1.logicalId)
     assertEquals(opv0, updatedTask)
   }
 
   @Test
-  fun `test updateDependentTaskDueDate - dependent task without output`() {
+  fun `updateDependentTaskDueDate should update dependent task without output`() {
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns emptyList()
     coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
       opv0.apply {
         status = TaskStatus.READY
@@ -1631,15 +1635,17 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           end = Date()
         }
     }
-
     coEvery { defaultRepository.loadResource(Reference(opv0.partOf.first().reference)) } returns
       opv1
+
     val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
+
+    coVerify { fhirEngine.search<Task>(any<Search>()) }
     assertEquals(opv0, updatedTask)
   }
 
   @Test
-  fun `test updateDependentTaskDueDate with dependent task , with output but no execution period start date`() {
+  fun `updateDependentTaskDueDate should run with dependent task, with output but no execution period start date`() {
     coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
       opv0.apply { status = TaskStatus.INPROGRESS }
     opv1.apply { opv1.executionPeriod.start = null }
@@ -1651,8 +1657,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   }
 
   @Test
-  fun `test updateDependentTaskDueDate with dependent task with output, execution period start date, and encounter part of reference that is null`() {
-
+  fun `updateDependentTaskDueDate with dependent task with output, execution period start date, and encounter part of reference that is null`() {
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns emptyList()
     coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
       opv1.apply {
         status = TaskStatus.INPROGRESS
@@ -1679,12 +1685,16 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     } returns encounter.apply { partOf = null }
     coEvery { defaultRepository.loadResource(Reference(ArgumentMatchers.anyString())) } returns
       Immunization()
+
     val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
+
+    coVerify { fhirEngine.search<Task>(any<Search>()) }
     assertEquals(opv0, updatedTask)
   }
 
   @Test
-  fun `test updateDependentTaskDueDate with dependent task with output, execution period start date, and encounter part of reference that is not an Immunization`() {
+  fun `updateDependentTaskDueDate with dependent task with output, execution period start date, and encounter part of reference that is not an Immunization`() {
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns emptyList()
     coEvery { fhirEngine.get(ResourceType.Task, "650203d2-f327-4eb4-a9fd-741e0ce29c3f") } returns
       opv1.apply {
         status = TaskStatus.INPROGRESS
@@ -1707,7 +1717,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery {
       fhirEngine.get(ResourceType.Immunization, "15e2ae52-32fc-4507-8736-1177cdaafe90")
     } returns Task()
-
     coEvery {
       defaultRepository.loadResource(
         Reference(
@@ -1717,11 +1726,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         )
       )
     } returns encounter
-
     coEvery { defaultRepository.loadResource(Reference(encounter.partOf.reference)) } returns
       immunizationResource
 
     val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
+
+    coVerify { fhirEngine.search<Task>(any<Search>()) }
     assertEquals(opv0, updatedTask)
   }
 
