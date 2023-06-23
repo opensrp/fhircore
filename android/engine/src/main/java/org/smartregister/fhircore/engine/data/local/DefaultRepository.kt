@@ -689,6 +689,11 @@ constructor(
       is Procedure -> resource.status = Procedure.ProcedureStatus.STOPPED
       is Condition -> {
         //TODO Remove the hardcoded custom logic for closing PNC Condition i.e remove if block
+        /**
+         * The logic for closing PNC Condition makes 2 assumptions
+         * 1. The eventResource id value is "pncConditionToClose"
+         * 2. Conditions to be closed must have an onset that is more than 28 days in the past
+         */
         if (resourceConfig.id == PNC_CONDITION_TO_CLOSE_RESOURCE_ID) {
           val closePncCondition = resource.onset.dateTimeValue().value.daysPassed() > 28
           if (closePncCondition) {
