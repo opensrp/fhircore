@@ -65,8 +65,8 @@ import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
@@ -152,11 +152,17 @@ constructor(
    */
   suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
-      resource.onEach {
-        it.updateLastUpdated()
-        it.generateMissingId()
+      resource.onEach { currentResource ->
+        currentResource.updateLastUpdated()
+        currentResource.generateMissingId()
         if (addResourceTags) {
-          it.addTags(configService.provideResourceTags(sharedPreferencesHelper))
+          val tags = configService.provideResourceTags(sharedPreferencesHelper)
+          tags.forEach {
+            val existingTag = currentResource.meta.getTag(it.system, it.code)
+            if (existingTag == null) {
+              currentResource.meta.addTag(it)
+            }
+          }
         }
       }
 
@@ -666,7 +672,7 @@ constructor(
     val resources = fhirEngine.search<Resource>(search)
     resources.forEach {
       Timber.i("Closing Resource type ${it.resourceType.name} and id ${it.id}")
-      closeResource(it)
+      closeResource(it, resourceConfig)
     }
 
     // recursive related resources
@@ -685,12 +691,12 @@ constructor(
         Timber.i(
           "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}"
         )
-        closeResource(resource)
+        closeResource(resource, resourceConfig)
       }
     }
   }
   @VisibleForTesting
-  suspend fun closeResource(resource: Resource) {
+  suspend fun closeResource(resource: Resource, resourceConfig: ResourceConfig) {
     when (resource) {
       is Task -> {
         if (resource.status != Task.TaskStatus.COMPLETED) {
@@ -700,18 +706,43 @@ constructor(
       }
       is CarePlan -> resource.status = CarePlan.CarePlanStatus.COMPLETED
       is Procedure -> resource.status = Procedure.ProcedureStatus.STOPPED
-      is Condition ->
-        resource.clinicalStatus =
-          CodeableConcept().apply {
-            coding =
-              listOf(
-                Coding().apply {
-                  system = SNOMED_SYSTEM
-                  display = PATIENT_CONDITION_RESOLVED_DISPLAY
-                  code = PATIENT_CONDITION_RESOLVED_CODE
-                }
-              )
+      is Condition -> {
+        // TODO Remove the hardcoded custom logic for closing PNC Condition i.e remove if block
+        // https://github.com/opensrp/fhircore/issues/2488
+        /**
+         * The logic for closing PNC Condition makes 2 assumptions
+         * 1. The eventResource id value is "pncConditionToClose"
+         * 2. Conditions to be closed must have an onset that is more than 28 days in the past
+         */
+        if (resourceConfig.id == PNC_CONDITION_TO_CLOSE_RESOURCE_ID) {
+          val closePncCondition = resource.onset.dateTimeValue().value.daysPassed() > 28
+          if (closePncCondition) {
+            resource.clinicalStatus =
+              CodeableConcept().apply {
+                coding =
+                  listOf(
+                    Coding().apply {
+                      system = SNOMED_SYSTEM
+                      display = PATIENT_CONDITION_RESOLVED_DISPLAY
+                      code = PATIENT_CONDITION_RESOLVED_CODE
+                    }
+                  )
+              }
           }
+        } else {
+          resource.clinicalStatus =
+            CodeableConcept().apply {
+              coding =
+                listOf(
+                  Coding().apply {
+                    system = SNOMED_SYSTEM
+                    display = PATIENT_CONDITION_RESOLVED_DISPLAY
+                    code = PATIENT_CONDITION_RESOLVED_CODE
+                  }
+                )
+            }
+        }
+      }
       is ServiceRequest -> resource.status = ServiceRequest.ServiceRequestStatus.REVOKED
     }
     fhirEngine.update(resource)
@@ -730,5 +761,6 @@ constructor(
     const val SNOMED_SYSTEM = "http://www.snomed.org/"
     const val PATIENT_CONDITION_RESOLVED_CODE = "370996005"
     const val PATIENT_CONDITION_RESOLVED_DISPLAY = "resolved"
+    const val PNC_CONDITION_TO_CLOSE_RESOURCE_ID = "pncConditionToClose"
   }
 }
