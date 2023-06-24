@@ -3,6 +3,15 @@
   "configType": "register",
   "id": "childRegister",
   "pageSize": 20,
+  "configRules": [
+    {
+      "name": "under5",
+      "condition": "true",
+      "actions": [
+        "data.put('under5', dateService.addOrSubtractYearFromCurrentDate(5,'-'))"
+      ]
+    }
+  ],
   "fhirResource": {
     "baseResource": {
       "resource": "Patient",
@@ -12,7 +21,7 @@
           "filterCriteria": [
             {
               "dataType": "DATE",
-              "valueDate": "2017-03-14",
+              "computedRule": "under5",
               "prefix": "GREATERTHAN_OR_EQUALS"
             }
           ]
@@ -111,7 +120,7 @@
         "name": "serviceStatus",
         "condition": "true",
         "actions": [
-          "data.put('serviceStatus', service.evaluateToBoolean(Task, \"Task.status = 'failed' \", false) ? 'OVERDUE' : 'DUE')"
+          "data.put('serviceStatus', service.generateTaskServiceStatus(Task.get(0)) )"
         ]
       },
       {

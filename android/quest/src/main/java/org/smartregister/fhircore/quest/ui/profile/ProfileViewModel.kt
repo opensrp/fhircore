@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.profile
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.db.ResourceNotFoundException
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -37,15 +39,16 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
+import org.smartregister.fhircore.engine.configuration.view.retrieveListProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
-import org.smartregister.fhircore.engine.rulesengine.retrieveListProperties
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
@@ -65,9 +68,10 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
   val fhirPathDataExtractor: FhirPathDataExtractor,
-  val rulesExecutor: RulesExecutor
+  val resourceDataRulesExecutor: ResourceDataRulesExecutor
 ) : ViewModel() {
 
+  val refreshProfileDataLiveData = MutableLiveData<Boolean?>(null)
   val profileUiState = mutableStateOf(ProfileUiState())
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
@@ -75,8 +79,33 @@ constructor(
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow: SharedFlow<SnackBarMessageConfig> = _snackBarStateFlow.asSharedFlow()
   private lateinit var profileConfiguration: ProfileConfiguration
+
   private val listResourceDataStateMap =
     mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
+
+  /**
+   * This function retrieves an image that was synced from the backend as a [Binary] resource, the
+   * content of the Binary resource is a base64 encoding of the actual image. The encoded imaged is
+   * then transformed into bitmap for use in an Image Composable (returns null if the referenced
+   * resource doesn't exist)
+   */
+  fun decodeBinaryResourceIconsToBitmap(profileId: String) {
+    val profileConfig =
+      configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
+        configId = profileId,
+        configType = ConfigType.Profile
+      )
+    profileConfig.overFlowMenuItems
+      .filter { it.icon != null && !it.icon!!.reference.isNullOrEmpty() }
+      .forEach {
+        val resourceId = it.icon!!.reference!!.extractLogicalIdUuid()
+        viewModelScope.launch(dispatcherProvider.io()) {
+          registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
+            it.icon!!.decodedBitmap = binary.data.decodeToBitmap()
+          }
+        }
+      }
+  }
 
   suspend fun retrieveProfileUiState(
     profileId: String,
@@ -87,10 +116,10 @@ constructor(
     if (resourceId.isNotEmpty()) {
       val repositoryResourceData =
         registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
-      val paramsMap: Map<String, String> = paramsList.toParamDataMap<String, String>()
+      val paramsMap: Map<String, String> = paramsList.toParamDataMap()
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
       val resourceData =
-        rulesExecutor
+        resourceDataRulesExecutor
           .processResourceData(
             repositoryResourceData = repositoryResourceData,
             ruleConfigs = profileConfigs.rules,
@@ -107,7 +136,7 @@ constructor(
         )
 
       profileConfigs.views.retrieveListProperties().forEach { listProperties ->
-        rulesExecutor.processListResourceData(
+        resourceDataRulesExecutor.processListResourceData(
           listProperties = listProperties,
           relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
           computedValuesMap = resourceData.computedValuesMap.plus(paramsMap),
@@ -143,7 +172,7 @@ constructor(
               changeManagingEntity(
                 event = event,
                 managingEntity =
-                  it.interpolateManagingEntity(event.resourceData?.computedValuesMap ?: emptyMap())
+                  it.interpolate(event.resourceData?.computedValuesMap ?: emptyMap()).managingEntity
               )
             }
             handleClickEvent(navController = event.navController, resourceData = event.resourceData)
@@ -166,6 +195,7 @@ constructor(
                   actionLabel = event.context.getString(R.string.ok)
                 )
             )
+            refreshProfileDataLiveData.value = true
           }
         }
       }

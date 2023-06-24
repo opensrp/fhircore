@@ -1,14 +1,13 @@
 # This workflow will build a Java project with Gradle
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
 
-name: Quest APK Release
+name: OpenSRP APK Release
 
 on:
   push:
     tags:
-      - v[0-9]+.[0-9]+.[0-9]+
-      - v[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+
-      - v[0-9]+.[0-9]+.[0-9]+-[0-9a-zA-Z]+-[0-9a-zA-Z]+
+      - v[0-9]+.[0-9]+.[0-9]+-opensrp
+      - v[0-9]+.[0-9]+.[0-9]+-opensrp-[0-9a-zA-Z]+
 env:
  FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
  FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
@@ -60,11 +59,7 @@ jobs:
         run: echo $KEYSTORE_PROPERTIES | base64 -di > keystore.properties
         working-directory: android
         env:
-          KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }} 
- 
-      - name: Spotless check quest application
-        run: ./gradlew :quest:spotlessCheck
-        working-directory: android
+          KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }}
 
     #  - name: Generate AAB (Android App Bundle) file
     #    if: ${{ false }}
@@ -77,7 +72,7 @@ jobs:
     #    with:
     #      repo_token: ${{ secrets.GITHUB_TOKEN }}
     #      file: android/quest/build/outputs/bundle/${{steps.product-flavor.outputs.id}}/release/quest-${{steps.product-flavor.outputs.id}}-release.aab
-    #      asset_name: "quest-$tag.aab"
+    #      asset_name: "$tag.aab"
     #      tag: ${{ github.ref }}
     #      overwrite: true
       
@@ -90,7 +85,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: android/quest/build/outputs/apk/${{steps.product-flavor.outputs.id}}/release/quest-${{steps.product-flavor.outputs.id}}-release.apk
-          asset_name: "quest-$tag.apk"
+          asset_name: "opensrp-$(echo $tag | cut -d- -f1).apk"
           tag: ${{ github.ref }}
-          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
+          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') || contains(github.ref, '-rc') }}
           overwrite: true

@@ -25,4 +25,4 @@ data class RuleConfig(
   val priority: Int = 1,
   val condition: String = "true", // Default to always execute the action
   val actions: List<String>
-)
+) : java.io.Serializable

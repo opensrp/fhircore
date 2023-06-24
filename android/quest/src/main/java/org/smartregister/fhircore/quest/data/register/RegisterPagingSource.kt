@@ -22,7 +22,7 @@ import androidx.paging.PagingState
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import timber.log.Timber
 
@@ -32,7 +32,7 @@ import timber.log.Timber
  */
 class RegisterPagingSource(
   private val registerRepository: RegisterRepository,
-  val rulesExecutor: RulesExecutor,
+  val resourceDataRulesExecutor: ResourceDataRulesExecutor,
   private val ruleConfigs: List<RuleConfig>
 ) : PagingSource<Int, ResourceData>() {
 
@@ -73,7 +73,7 @@ class RegisterPagingSource(
 
       val data =
         registerData.map { repositoryResourceData ->
-          rulesExecutor.processResourceData(
+          resourceDataRulesExecutor.processResourceData(
             repositoryResourceData = repositoryResourceData,
             ruleConfigs = ruleConfigs,
             params = emptyMap()

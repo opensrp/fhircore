@@ -67,9 +67,7 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
-import org.smartregister.fhircore.quest.util.extensions.clickable
 import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.p2p.utils.capitalize
@@ -83,7 +81,7 @@ fun ServiceCard(
   resourceData: ResourceData,
   navController: NavController,
 ) {
-  val serviceCardClickable = serviceCardProperties.clickable(resourceData)
+  val serviceCardClickable = serviceCardProperties.clickable.toBoolean()
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
@@ -133,8 +131,7 @@ fun ServiceCard(
       if (serviceCardProperties.showVerticalDivider) {
         ServiceMemberIcons(
           modifier = modifier.wrapContentWidth(Alignment.End).weight(0.3f),
-          serviceMemberIcons =
-            serviceCardProperties.serviceMemberIcons?.interpolate(resourceData.computedValuesMap)
+          serviceMemberIcons = serviceCardProperties.serviceMemberIcons
         )
       }
     }
@@ -148,11 +145,7 @@ fun ServiceCard(
       )
     } else {
       ServiceMemberIcons(
-        serviceMemberIcons =
-          serviceCardProperties
-            .serviceMemberIcons
-            ?.replace("\\s+".toRegex(), "")
-            ?.interpolate(resourceData.computedValuesMap)
+        serviceMemberIcons = serviceCardProperties.serviceMemberIcons?.replace("\\s+".toRegex(), "")
       )
     }
 
@@ -167,10 +160,7 @@ fun ServiceCard(
       // Service card visibility can be determined dynamically e.g. only display when task is due
       if ((serviceCardProperties.serviceButton != null || serviceCardProperties.services != null)) {
         if (serviceCardProperties.serviceButton != null &&
-            serviceCardProperties.serviceButton!!
-              .visible
-              .interpolate(resourceData.computedValuesMap)
-              .toBoolean()
+            serviceCardProperties.serviceButton!!.visible.toBoolean()
         ) {
           if (serviceCardProperties.serviceButton!!.smallSized) {
             Column {
@@ -248,13 +238,12 @@ private fun BigServiceButton(
   navController: NavController,
   resourceData: ResourceData
 ) {
-  val interpolatedButtonProperties = buttonProperties.interpolate(resourceData.computedValuesMap)
-  val status = interpolatedButtonProperties.status
-  val isButtonEnabled = interpolatedButtonProperties.enabled.toBoolean()
-  val backgroundColor = interpolatedButtonProperties.backgroundColor
+  val status = buttonProperties.status
+  val isButtonEnabled = buttonProperties.enabled.toBoolean()
+  val backgroundColor = buttonProperties.backgroundColor
   val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
   val contentColor = remember { statusColor.copy(alpha = 0.85f) }
-  val buttonClickable = buttonProperties.clickable(resourceData)
+  val buttonClickable = buttonProperties.clickable.toBoolean()
 
   Column(
     modifier =
@@ -277,9 +266,11 @@ private fun BigServiceButton(
           shape = RoundedCornerShape(4.dp)
         )
         .background(
-          if (backgroundColor != Color.Unspecified.toString()) {
+          if (status == ServiceStatus.OVERDUE.name) {
+            contentColor
+          } else if (backgroundColor != Color.Unspecified.toString()) {
             backgroundColor.parseColor()
-          } else if (status == ServiceStatus.OVERDUE.name) contentColor else Color.Unspecified
+          } else Color.Unspecified
         ),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
@@ -296,7 +287,7 @@ private fun BigServiceButton(
           }
       )
     Text(
-      text = interpolatedButtonProperties.text ?: "",
+      text = buttonProperties.text ?: "",
       color = if (status == ServiceStatus.OVERDUE.name) Color.White else contentColor,
       textAlign = TextAlign.Center,
       fontSize = buttonProperties.fontSize.sp,
@@ -342,6 +333,116 @@ private fun ServiceCardServiceOverduePreview() {
                 ButtonProperties(
                   visible = "true",
                   status = ServiceStatus.OVERDUE.name,
+                  text = "1",
+                  buttonType = ButtonType.BIG
+                )
+            )
+          )
+      )
+    )
+
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+    ViewRenderer(
+      viewProperties = viewProperties,
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+      navController = rememberNavController()
+    )
+  }
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+private fun ServiceCardServiceOverdueWithBackgroundColorPreview() {
+  val viewProperties =
+    listOf<ViewProperties>(
+      ColumnProperties(
+        viewType = ViewType.COLUMN,
+        children =
+          listOf(
+            ServiceCardProperties(
+              viewType = ViewType.SERVICE_CARD,
+              details =
+                listOf(
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Overdue household service",
+                    primaryTextColor = "#000000",
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Town/Village",
+                    primaryTextColor = "#5A5A5A",
+                    secondaryText = "HH No.",
+                    secondaryTextColor = "#555AAA"
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Last visited yesterday",
+                    primaryTextColor = "#5A5A5A",
+                  )
+                ),
+              serviceMemberIcons = "CHILD",
+              showVerticalDivider = true,
+              serviceButton =
+                ButtonProperties(
+                  visible = "true",
+                  status = "",
+                  backgroundColor = "#000000",
+                  text = "1",
+                  buttonType = ButtonType.BIG
+                )
+            )
+          )
+      )
+    )
+
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+    ViewRenderer(
+      viewProperties = viewProperties,
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+      navController = rememberNavController()
+    )
+  }
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+private fun ServiceCardServiceOverdueWithNoBackgroundColorAndStatusPreview() {
+  val viewProperties =
+    listOf<ViewProperties>(
+      ColumnProperties(
+        viewType = ViewType.COLUMN,
+        children =
+          listOf(
+            ServiceCardProperties(
+              viewType = ViewType.SERVICE_CARD,
+              details =
+                listOf(
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Overdue household service",
+                    primaryTextColor = "#000000",
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Town/Village",
+                    primaryTextColor = "#5A5A5A",
+                    secondaryText = "HH No.",
+                    secondaryTextColor = "#555AAA"
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Last visited yesterday",
+                    primaryTextColor = "#5A5A5A",
+                  )
+                ),
+              serviceMemberIcons = "CHILD",
+              showVerticalDivider = true,
+              serviceButton =
+                ButtonProperties(
+                  visible = "true",
+                  status = "",
+                  backgroundColor = "",
                   text = "1",
                   buttonType = ButtonType.BIG
                 )

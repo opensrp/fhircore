@@ -53,15 +53,11 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 class ConfigExtensionsTest : RobolectricTest() {
 
   private val navController = mockk<NavController>(relaxUnitFun = true)
-
   private val context = mockk<Context>(relaxUnitFun = true, relaxed = true)
-
   private val navigationMenuConfig by lazy {
     NavigationMenuConfig(id = "id", display = "menu", visible = true)
   }
-
   private val patient = Faker.buildPatient()
-
   private val resourceData by lazy {
     ResourceData(
       baseResourceId = patient.logicalId,
@@ -328,26 +324,26 @@ class ConfigExtensionsTest : RobolectricTest() {
   }
   fun testConvertActionParameterArrayToMapShouldReturnEmptyMapIfNoParamData() {
     val array = arrayOf(ActionParameter(key = "k", value = "v"))
-    Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap<String, String>())
+    Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap())
   }
 
   @Test
   fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapIfArrayIsEmpty() {
     val array = emptyArray<ActionParameter>()
-    Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap<String, String>())
+    Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap())
   }
 
   @Test
   fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapValue() {
     val array =
       arrayOf(ActionParameter(key = "k", value = "", paramType = ActionParameterType.PARAMDATA))
-    Assert.assertEquals("", array.toParamDataMap<String, String>()["k"])
+    Assert.assertEquals("", array.toParamDataMap()["k"])
   }
 
   @Test
   fun testConvertActionParameterArrayToMapShouldReturnMapIfParamData() {
     val array =
       arrayOf(ActionParameter(key = "k", value = "v", paramType = ActionParameterType.PARAMDATA))
-    Assert.assertEquals(mapOf("k" to "v"), array.toParamDataMap<String, String>())
+    Assert.assertEquals(mapOf("k" to "v"), array.toParamDataMap())
   }
 }

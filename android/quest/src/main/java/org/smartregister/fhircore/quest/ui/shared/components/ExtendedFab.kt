@@ -34,8 +34,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import org.smartregister.fhircore.engine.configuration.navigation.MenuIconConfig
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -83,11 +84,10 @@ fun ExtendedFab(
       verticalAlignment = Alignment.CenterVertically
     ) {
       if (firstMenuIconConfig != null) {
-        MenuIcon(
-          menuIconConfig = firstMenuIconConfig,
-          color = if (firstFabEnabled) Color.White else DefaultColor,
+        Image(
           modifier = modifier.testTag(FAB_BUTTON_ROW_ICON_TEST_TAG),
-          paddingEnd = 0
+          imageProperties = ImageProperties(imageConfig = firstMenuIconConfig),
+          tint = if (firstFabEnabled) Color.White else DefaultColor,
         )
       }
       if (text.isNotEmpty()) {
@@ -111,7 +111,7 @@ fun PreviewDisabledExtendedFab() {
         NavigationMenuConfig(
           id = "test",
           display = "Fab Button",
-          menuIconConfig = MenuIconConfig(type = "local", reference = "ic_add"),
+          menuIconConfig = ImageConfig(type = "local", reference = "ic_add"),
           enabled = "false"
         )
       ),
@@ -129,7 +129,7 @@ fun PreviewExtendedFab() {
         NavigationMenuConfig(
           id = "test",
           display = "Fab Button",
-          menuIconConfig = MenuIconConfig(type = "local", reference = "ic_add")
+          menuIconConfig = ImageConfig(type = "local", reference = "ic_add")
         )
       ),
     navController = rememberNavController(),
@@ -146,7 +146,7 @@ fun PreviewExtendedFabJustIcon() {
         NavigationMenuConfig(
           id = "test",
           display = "",
-          menuIconConfig = MenuIconConfig(type = "local", reference = "ic_add")
+          menuIconConfig = ImageConfig(type = "local", reference = "ic_add")
         )
       ),
     navController = rememberNavController(),

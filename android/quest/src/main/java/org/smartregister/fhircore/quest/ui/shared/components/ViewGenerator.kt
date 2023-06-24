@@ -40,6 +40,7 @@ import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
@@ -61,22 +62,20 @@ fun GenerateView(
 ) {
   if (properties.visible.toBoolean()) {
     when (properties.viewType) {
-      ViewType.COMPOUND_TEXT -> {
+      ViewType.COMPOUND_TEXT ->
         CompoundText(
           modifier = modifier,
           compoundTextProperties = properties as CompoundTextProperties,
           resourceData = resourceData,
           navController = navController
         )
-      }
-      ViewType.BUTTON -> {
+      ViewType.BUTTON ->
         ActionableButton(
           modifier = modifier,
           buttonProperties = properties as ButtonProperties,
           navController = navController,
           resourceData = resourceData
         )
-      }
       ViewType.COLUMN -> {
         val children = (properties as ColumnProperties).children
         if (properties.wrapContent) {
@@ -185,6 +184,7 @@ fun GenerateView(
           resourceData = resourceData,
           navController = navController,
         )
+      ViewType.IMAGE -> Image(modifier = modifier, imageProperties = properties as ImageProperties)
     }
   }
 }

@@ -13,6 +13,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The ability to define a regex and separator on the `RulesFactory.RulesEngineService#joinToString(java.util.List<java.lang.String>, java.lang.String, java.lang.String)`
 - Use Sentry to track and monitor performance bottlenecks on quest and FHIR Core release app variants
 - Add functionality to allow usage of computed rules on DataQuery values
+- Allow configs to pass multiple subjects to measure evaluate interface so we can create reports per another resource (e.g. a MeasureReport per Practitioner)
+- Introduce an open function on ViewProperties#interpolate to retrieve values from computed values map
+- Update the CarePlan Closure configs to define the PlanDefs to closure separately.
+- Configurable population resource using ActionParameter
+- Migrate build script to Kotlin DSL
+- Sorting of resources via rules engine
+- Configuration for sorting LIST widget resources
+- Closing CarePlans and Related resources configuration update
+- Configuration for button content color
+- Configuration for button and overflow menu item icons
+- [Event Management] Add support for extra resources to close
+- Make other-patients name in menu configurable
+- Allow computation of configured rules on `QuestionnaireConfig` e.g. for autogenerating a unique ID for Patient registration
+- Additional (optional) `ActionParameter` on `QuestionnaireConfig` class for providing extra data to the Questionnaire
+- Added a `limitTo` service function that limits lists sizes to a define limit
+- Implement configurable image/icon widget
+- Added functionality to filter related resources for list view
 
 ### Fixed
 - Member icons display wrapping; hiding some texts
@@ -20,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Issue with loading related resources
 - Fix P2P sync progress showing greater than 100%
 - Background worker performance
+- The `requested` to `ready` task status update background worker 
+- Calculate DUE dates for dependent Tasks
 
 ### Changed
 - Refactored how the related resources SELECT and COUNT queries search results are represented. 

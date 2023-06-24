@@ -54,6 +54,8 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -92,16 +94,13 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val libraryEvaluator: LibraryEvaluator,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
+  val resourceDataRulesExecutor: ResourceDataRulesExecutor
 ) : ViewModel() {
 
   val extractionProgress = MutableLiveData<Boolean>()
-
   val extractionProgressMessage = MutableLiveData<String>()
-
   val removeOperation = MutableLiveData(false)
-
   var editQuestionnaireResponse: QuestionnaireResponse? = null
-
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
   private val authenticatedOrganizationIds by lazy {
@@ -113,19 +112,19 @@ constructor(
       .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
       ?.extractLogicalIdUuid()
   }
+
   private var editQuestionnaireResourceParams: List<ActionParameter>? = emptyList()
 
   suspend fun loadQuestionnaire(
-    id: String,
-    type: QuestionnaireType,
+    questionnaireConfig: QuestionnaireConfig,
     prePopulationParams: List<ActionParameter>? = emptyList(),
     readOnlyLinkIds: List<String>? = emptyList()
   ): Questionnaire? =
-    defaultRepository.loadResource<Questionnaire>(id)?.apply {
-      if (type.isReadOnly() || type.isEditMode()) {
+    defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
+      if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditMode()) {
         item.prepareQuestionsForReadingOrEditing(
           QUESTIONNAIRE_RESPONSE_ITEM,
-          type.isReadOnly(),
+          questionnaireConfig.type.isReadOnly(),
           readOnlyLinkIds
         )
       }
@@ -204,12 +203,15 @@ constructor(
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
         bundle.entry.forEach { bundleEntry ->
-          // add organization to entities representing individuals in registration questionnaire
-          if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
-            // if it is new registration set response subject
-            if (questionnaireConfig.resourceIdentifier == null)
-              questionnaireResponse.subject = bundleEntry.resource.asReference()
+          if (bundleEntry.resource.resourceType.isIn(
+              ResourceType.Patient,
+              ResourceType.Group,
+              ResourceType.Encounter
+            ) && questionnaireResponse.subject?.reference.isNullOrEmpty()
+          ) {
+            questionnaireResponse.subject = bundleEntry.resource.asReference()
           }
+
           if (questionnaireConfig.setPractitionerDetails) {
             appendPractitionerInfo(bundleEntry.resource)
           }
@@ -218,7 +220,7 @@ constructor(
           }
 
           if (questionnaireConfig.setAppVersion) {
-            appendAppVersion(bundleEntry.resource)
+            appendAppVersion(context, bundleEntry.resource)
           }
           if (bundleEntry.hasResource()) bundleEntry.resource.updateLastUpdated()
           if (questionnaireConfig.type != QuestionnaireType.EDIT &&
@@ -338,14 +340,13 @@ constructor(
    *
    * @property resource The resource to add the meta tag to.
    */
-  fun appendAppVersion(resource: Resource) {
+  fun appendAppVersion(context: Context, resource: Resource) {
     // Create a tag with the app version
     val metaTag = resource.meta.addTag()
-    metaTag.setSystem("https://smartregister.org/").setCode(BuildConfig.VERSION_NAME).display =
-      "Application Version"
-
-    // Update resource with metaTag
-    resource.meta.apply { addTag(metaTag) }
+    metaTag
+      .setSystem(context.getString(R.string.app_version_tag_url))
+      .setCode(BuildConfig.VERSION_NAME)
+      .display = context.getString(R.string.application_version)
   }
 
   suspend fun extractCarePlan(
@@ -357,21 +358,22 @@ constructor(
       questionnaireResponse.findSubject(bundle)
         ?: defaultRepository.loadResource(questionnaireResponse.subject)
 
-    questionnaireConfig.planDefinitions?.forEach { planId ->
-      val data =
-        Bundle().apply {
-          bundle?.entry?.map { this.addEntry(it) }
-          addEntry().resource = questionnaireResponse
-        }
+    val data =
+      Bundle().apply {
+        bundle?.entry?.map { this.addEntry(it) }
+        addEntry().resource = questionnaireResponse
+      }
 
+    questionnaireConfig.planDefinitions?.forEach { planId ->
       kotlin
         .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
         .onFailure {
           Timber.e(it)
           extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
         }
-      fhirCarePlanGenerator.conditionallyUpdateCarePlanStatus(questionnaireConfig, subject, data)
     }
+
+    fhirCarePlanGenerator.conditionallyUpdateResourceStatus(questionnaireConfig, subject, data)
   }
 
   suspend fun extractCqlOutput(
@@ -588,6 +590,7 @@ constructor(
       defaultRepository.delete(resourceType = resourceType, resourceId = resourceIdentifier)
     }
   }
+
   suspend fun updateResourceLastUpdatedLinkedAsSubject(
     questionnaireResponse: QuestionnaireResponse
   ) {
@@ -652,35 +655,58 @@ constructor(
    */
   suspend fun getQuestionnaireResponseFromDbOrPopulation(
     questionnaire: Questionnaire,
-    subjectId: String,
-    subjectType: ResourceType,
-    configComputedRuleValues: Map<String, Any> = emptyMap(),
+    subjectId: String?,
+    subjectType: ResourceType?,
     questionnaireConfig: QuestionnaireConfig,
+    resourceMap: Map<ResourceType?, String>,
   ): QuestionnaireResponse {
-    var questionnaireResponse: QuestionnaireResponse? = null
-    // if questionnaireType is Default that means we don't have to load response from DB
-    if (!questionnaireConfig.type.isDefault()) {
+    var questionnaireResponse: QuestionnaireResponse? = QuestionnaireResponse()
+
+    if (!subjectId.isNullOrEmpty() && subjectType != null) {
+      // Load questionnaire response from DB for Questionnaires opened in EDIT/READONLY mode
       questionnaireResponse =
-        loadQuestionnaireResponse(subjectId, subjectType, questionnaire.logicalId)
-    }
-    var populationResources = ArrayList<Resource>()
-    if (questionnaireResponse == null) {
-      if (!subjectType.isIn(ResourceType.Group, ResourceType.Patient)) {
-        if (questionnaireConfig.resourceIdentifier != null &&
-            questionnaireConfig.resourceType != null
-        ) {
-          populationResources =
-            loadPopulationResources(
-              questionnaireConfig.resourceIdentifier!!,
-              questionnaireConfig.resourceType!!
-            )
-        }
+        searchQuestionnaireResponses(
+          subjectId = subjectId,
+          subjectType = subjectType,
+          questionnaireId = questionnaire.logicalId
+        )
+          .maxByOrNull { it.meta.lastUpdated }
+
+      /**
+       * This will catch an exception and return QR from DB when population resource is empty,
+       * ResourceMapper.selectPopulateContext() will return null, then that null will get evaluated
+       * and gives an exception as a result.
+       */
+      if (questionnaireResponse == null ||
+          questionnaireResponse.isEmpty ||
+          !questionnaireResponse.hasItem()
+      ) {
+        questionnaireResponse =
+          runCatching {
+              // load required resources sent through Param for questionnaire Response
+              // expressions
+              val populationResources = arrayListOf<Resource>()
+              if (resourceMap.isEmpty()) {
+                populationResources.addAll(loadPopulationResources(subjectId, subjectType))
+              } else {
+                resourceMap.forEach {
+                  populationResources.addAll(
+                    loadPopulationResources(it.value.extractLogicalIdUuid(), it.key!!)
+                  )
+                }
+              }
+
+              populateQuestionnaireResponse(
+                questionnaire = questionnaire,
+                populationResources = populationResources
+              )
+            }
+            .onFailure { Timber.e(it, "Error encountered while populating QuestionnaireResponse") }
+            .getOrDefault(questionnaireResponse)
       }
-      populationResources.addAll(loadPopulationResources(subjectId, subjectType))
-      questionnaireResponse = populateQuestionnaireResponse(questionnaire, populationResources)
     }
 
-    return questionnaireResponse
+    return questionnaireResponse ?: QuestionnaireResponse()
   }
 
   /**
@@ -692,7 +718,7 @@ constructor(
   @VisibleForTesting
   suspend fun populateQuestionnaireResponse(
     questionnaire: Questionnaire,
-    populationResources: ArrayList<Resource>
+    populationResources: List<Resource>
   ): QuestionnaireResponse {
     return ResourceMapper.populate(questionnaire, *populationResources.toTypedArray()).also {
       questionnaireResponse ->
@@ -701,33 +727,6 @@ constructor(
           .d("Questionnaire response has no populated answers")
       }
     }
-  }
-
-  /**
-   * Loads the latest Questionnaire Response resource that is associated with the given subject ID
-   * and Questionnaire ID.
-   *
-   * @param subjectId ID of the resource that submitted the Questionnaire Response
-   * @param subjectType resource type of the resource that submitted the Questionnaire Response
-   * @param questionnaireId ID of the Questionnaire that owns the Questionnaire Response
-   */
-  private suspend fun loadQuestionnaireResponse(
-    subjectId: String,
-    subjectType: ResourceType,
-    questionnaireId: String
-  ): QuestionnaireResponse? {
-    return searchQuestionnaireResponses(
-      subjectId = subjectId,
-      subjectType = subjectType,
-      questionnaireId = questionnaireId
-    )
-      .maxByOrNull { it.meta.lastUpdated }
-      .also { questionnaireResponse ->
-        if (questionnaireResponse == null) {
-          Timber.tag("QuestionnaireViewModel.loadQuestionnaireResponse")
-            .d("Questionnaire response is not found in database")
-        }
-      }
   }
 
   /**
@@ -762,7 +761,7 @@ constructor(
   private suspend fun loadPopulationResources(
     subjectId: String,
     subjectType: ResourceType
-  ): ArrayList<Resource> {
+  ): List<Resource> {
     val populationResources = arrayListOf<Resource>()
     try {
       populationResources.add(defaultRepository.loadResource(subjectId, subjectType))
@@ -791,6 +790,9 @@ constructor(
       )
       .singleOrNull()
   }
+
+  fun computeQuestionnaireConfigRules(ruleConfigs: List<RuleConfig>): Map<String, Any> =
+    resourceDataRulesExecutor.computeResourceDataRules(ruleConfigs, null)
 
   companion object {
     private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"

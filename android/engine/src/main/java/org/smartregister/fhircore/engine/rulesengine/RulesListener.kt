@@ -30,9 +30,8 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import timber.log.Timber
 
 abstract class RulesListener : RuleListener {
-
-  protected var facts: Facts = Facts()
-  protected val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
+  protected val rulesEngine: DefaultRulesEngine =
+    DefaultRulesEngine().also { it.registerRuleListener(this) }
   private val jexlEngine: JexlEngine by lazy {
     JexlBuilder()
       .namespaces(
@@ -66,7 +65,7 @@ abstract class RulesListener : RuleListener {
             exception,
             "${exception.localizedMessage}, consider checking for null before usage: e.g ${exception.variable} != null"
           )
-        else -> log(exception)
+        else -> log(exception, "Failed to execute rule : ${rule.name} ")
       }
     } else log(exception)
 

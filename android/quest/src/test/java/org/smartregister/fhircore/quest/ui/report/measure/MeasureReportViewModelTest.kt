@@ -60,7 +60,7 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
@@ -68,7 +68,6 @@ import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -79,23 +78,20 @@ import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDat
 class MeasureReportViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  @get:Rule(order = 1)
-  val coroutinesTestRule = CoroutineTestRule()
   @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
   @Inject lateinit var measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
   @Inject lateinit var registerRepository: RegisterRepository
   @Inject lateinit var defaultRepository: DefaultRepository
-  @Inject lateinit var rulesExecutor: RulesExecutor
-  var fhirEngine: FhirEngine = mockk()
-  var fhirOperator: FhirOperator = mockk()
-  val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
+  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  private val fhirEngine: FhirEngine = mockk()
+  private val fhirOperator: FhirOperator = mockk()
+  private val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
   private val measureReportRepository = mockk<MeasureReportRepository>()
-  private lateinit var measureReportViewModel: MeasureReportViewModel
   private val navController: NavController = mockk(relaxUnitFun = true)
   private val invalidReportId = "invalidSupplyChainMeasureReport"
   private val reportId = "supplyChainMeasureReport"
   private val application: Context = ApplicationProvider.getApplicationContext()
+  private lateinit var measureReportViewModel: MeasureReportViewModel
 
   @Before
   fun setUp() {
@@ -121,7 +117,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
           defaultRepository = defaultRepository,
-          rulesExecutor = rulesExecutor
+          resourceDataRulesExecutor = resourceDataRulesExecutor
         )
       )
   }
