@@ -53,7 +53,9 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
     }
 
     if (BuildConfig.DEBUG.not()) {
-      Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
+      // TODO, strip out global exception handling - potential for ANR in prod
+      // Tracked under https://github.com/opensrp/fhircore/issues/2488
+      // Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
       initSentryMonitoring()
     }
 

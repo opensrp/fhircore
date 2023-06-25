@@ -72,3 +72,20 @@ priority | Specifies the priority of the component. The priority value determine
 1. `context`, e.g. `data.get('activeConditions')`, specifies the context or data from which the expression is being evaluated
 2. `FhirPathExpression`, e.g. `"Condition.code.text = 'Pregnant' \"`, specifies the expression to be evaluated. It contains the logical operators and variables that refernce values from the context
 3. An optional `defaultValue`, e.g. `false`, specifies a boolean default to be returned if the expression results in an error or does not produce a boolean value
+
+
+## Using the `generateTaskServiceStatus()` rule
+
+This rule is used within the ruels engine or workflow to generate the correct service status when given the `Task.status` . Only one parameter is passed of the type `TaskStatus`. Below is an example:
+
+```
+
+...
+    {
+      "name": "serviceStatus",
+      "condition": "true",
+      "actions": [
+        "data.put('serviceStatus', service.generateTaskServiceStatus(Task))"
+      ]
+    }
+```
