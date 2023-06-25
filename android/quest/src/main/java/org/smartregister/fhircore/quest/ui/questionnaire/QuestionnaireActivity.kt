@@ -466,7 +466,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     if (questionnaireConfig.confirmationDialog != null) {
       dismissSaveProcessing()
-      confirmationDialog(questionnaireConfig = questionnaireConfig)
+      confirmationDialog(
+        questionnaireConfig = questionnaireConfig,
+        questionnaireResponse = questionnaireResponse
+      )
     } else {
       questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
       questionnaireViewModel.extractAndSaveResources(
@@ -483,7 +486,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     questionnaireViewModel.savePartialQuestionnaireResponse(questionnaire, questionnaireResponse)
   }
 
-  private fun confirmationDialog(questionnaireConfig: QuestionnaireConfig) {
+  private fun confirmationDialog(
+    questionnaireConfig: QuestionnaireConfig,
+    questionnaireResponse: QuestionnaireResponse
+  ) {
     AlertDialogue.showAlert(
       context = this,
       alertIntent = AlertIntent.CONFIRM,
@@ -510,6 +516,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             memberResourceType = questionnaireConfig.groupResource!!.memberResourceType
           )
         }
+
+        questionnaireViewModel.extractAndSaveResources(
+          context = this,
+          questionnaire = questionnaire,
+          questionnaireResponse = questionnaireResponse,
+          questionnaireConfig = questionnaireConfig
+        )
+
         dialog.dismiss()
       },
       neutralButtonListener = { dialog -> dialog.dismiss() }
