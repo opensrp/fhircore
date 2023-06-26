@@ -119,3 +119,6 @@ fun String.compare(anotherString: String): Boolean =
   this.toSortedSet().containsAll(anotherString.toSortedSet())
 
 fun String.lastOffset() = this.uppercase() + "_" + SharedPreferenceKey.LAST_OFFSET.name
+
+fun String.spaceByUppercase() =
+  this.split(Regex("(?=\\p{Upper})")).joinToString(separator = " ").trim()

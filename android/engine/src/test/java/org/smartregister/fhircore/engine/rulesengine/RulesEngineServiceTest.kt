@@ -32,6 +32,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
+import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -169,6 +170,60 @@ class RulesEngineServiceTest : RobolectricTest() {
     Assert.assertEquals(
       listOf("task1", "task3", "task2").reversed(),
       sortedByDateResources?.map { it.id }
+    )
+  }
+
+  @Test
+  fun `generateTaskServiceStatus() should return DUE when Task#status is NULL`() {
+    val task = Task().apply { status = Task.TaskStatus.NULL }
+
+    Assert.assertEquals(ServiceStatus.DUE.name, rulesEngineService.generateTaskServiceStatus(task))
+  }
+
+  @Test
+  fun `generateTaskServiceStatus() should return UPCOMING when Task#status is Requested`() {
+    val task = Task().apply { status = Task.TaskStatus.REQUESTED }
+
+    Assert.assertEquals(
+      ServiceStatus.UPCOMING.name,
+      rulesEngineService.generateTaskServiceStatus(task)
+    )
+  }
+
+  @Test
+  fun `generateTaskServiceStatus() should return DUE when Task#status is READY`() {
+    val task = Task().apply { status = Task.TaskStatus.READY }
+
+    Assert.assertEquals(ServiceStatus.DUE.name, rulesEngineService.generateTaskServiceStatus(task))
+  }
+
+  @Test
+  fun `generateTaskServiceStatus() should return INPROGRESS when Task#status is INPROGRESS`() {
+    val task = Task().apply { status = Task.TaskStatus.INPROGRESS }
+
+    Assert.assertEquals(
+      ServiceStatus.IN_PROGRESS.name,
+      rulesEngineService.generateTaskServiceStatus(task)
+    )
+  }
+
+  @Test
+  fun `generateTaskServiceStatus() should return COMPLETED when Task#status is COMPLETED`() {
+    val task = Task().apply { status = Task.TaskStatus.COMPLETED }
+
+    Assert.assertEquals(
+      ServiceStatus.COMPLETED.name,
+      rulesEngineService.generateTaskServiceStatus(task)
+    )
+  }
+
+  @Test
+  fun `generateTaskServiceStatus() should return EXPIRED when Task#status is CANCELLED`() {
+    val task = Task().apply { status = Task.TaskStatus.CANCELLED }
+
+    Assert.assertEquals(
+      ServiceStatus.EXPIRED.name,
+      rulesEngineService.generateTaskServiceStatus(task)
     )
   }
 }
