@@ -33,7 +33,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
 
-class UserSettingScreenKtTest {
+class UserSettingScreenTest {
 
   @get:Rule(order = 1) val composeRule = createEmptyComposeRule()
   private lateinit var scenario: ActivityScenario<ComponentActivity>
