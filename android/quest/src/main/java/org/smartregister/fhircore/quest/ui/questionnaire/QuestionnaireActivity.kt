@@ -516,7 +516,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             memberResourceType = questionnaireConfig.groupResource!!.memberResourceType
           )
         }
-
+        
+        // Calls the QuestionnaireViewModel to extract and save the resources.
         questionnaireViewModel.extractAndSaveResources(
           context = this,
           questionnaire = questionnaire,

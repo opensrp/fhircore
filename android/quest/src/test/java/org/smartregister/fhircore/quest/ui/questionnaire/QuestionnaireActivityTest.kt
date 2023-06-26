@@ -34,7 +34,6 @@ import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import com.google.android.fhir.get
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.BindValue
@@ -73,6 +72,7 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.ConfirmationDialog
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
@@ -472,6 +472,38 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         any(),
       )
     }
+  }
+
+  @Test
+  fun testHandleQuestionnaireResponseThroughADialogShouldCallExtractAndSaveResources() {
+    val questionnaireResponseId = "patient-registration-response"
+    val questionnaireResponse = QuestionnaireResponse().apply { id = questionnaireResponseId }
+    questionnaireConfig =
+      QuestionnaireConfig(
+        id = questionnaireResponseId,
+        title = "Patient registration",
+        "form",
+        confirmationDialog =
+          ConfirmationDialog(
+            title = "title",
+            message = "message",
+            actionButtonText = "Save changes",
+          )
+      )
+
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", Questionnaire())
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaireConfig", questionnaireConfig)
+
+    questionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
+
+    coEvery { fhirEngine.get(any(), any()) } returns questionnaireResponse
+    coEvery { fhirEngine.update(any()) } returns Unit
+
+    verify { questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any()) }
   }
 
   @Test
