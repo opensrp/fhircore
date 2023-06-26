@@ -60,10 +60,18 @@ object Faker {
     val composition =
       getBasePath("composition").readFile(systemPath).decodeResourceFromString() as Composition
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
-
+    coEvery { fhirEngine.get(ResourceType.Binary, any()) } answers
+      {
+        val sectionComponent =
+          composition.section.find {
+            this.args[1].toString() == it.focus.reference.substringAfter("Binary/")
+          }
+        val configName = sectionComponent!!.focus.identifier.value
+        Binary().apply { content = getBasePath(configName).readFile(systemPath).toByteArray() }
+      }
     runBlocking {
       configurationRegistry.loadConfigurations(
-        appId = APP_DEBUG,
+        appId = APP_DEBUG.substringBefore("/"),
       ) {}
     }
   }
@@ -105,7 +113,7 @@ object Faker {
 
     runBlocking {
       configurationRegistry.loadConfigurations(
-        appId = APP_DEBUG,
+        appId = APP_DEBUG.substringBefore("/"),
       ) {}
     }
 

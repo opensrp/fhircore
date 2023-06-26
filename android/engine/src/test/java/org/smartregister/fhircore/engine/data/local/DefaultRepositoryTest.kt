@@ -35,7 +35,6 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
-import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
@@ -82,8 +81,8 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-hiltRule.inject()
-    every { configService.provideResourceTags(any()) }  returns listOf()
+    hiltRule.inject()
+    every { configService.provideResourceTags(any()) } returns listOf()
   }
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test

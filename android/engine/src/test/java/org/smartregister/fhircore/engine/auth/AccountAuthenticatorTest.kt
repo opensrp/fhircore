@@ -17,10 +17,7 @@
 package org.smartregister.fhircore.engine.auth
 
 import android.accounts.Account
-import android.accounts.AccountAuthenticatorResponse
 import android.accounts.AccountManager
-import android.accounts.AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE
-import android.accounts.AccountManager.KEY_ACCOUNT_NAME
 import android.accounts.AccountManager.KEY_AUTHTOKEN
 import android.accounts.AccountManager.KEY_INTENT
 import android.accounts.AccountManagerCallback
@@ -116,7 +113,10 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     Assert.assertTrue(parcelable.extras!!.containsKey(AccountAuthenticator.ACCOUNT_TYPE))
     Assert.assertEquals(accountType, parcelable.getStringExtra(AccountAuthenticator.ACCOUNT_TYPE))
-    Assert.assertEquals(authTokenType, parcelable.getStringExtra(TokenAuthenticator.AUTH_TOKEN_TYPE))
+    Assert.assertEquals(
+      authTokenType,
+      parcelable.getStringExtra(TokenAuthenticator.AUTH_TOKEN_TYPE)
+    )
   }
 
   @Test
@@ -150,16 +150,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     val token = "mystesttoken"
     every { accountManager.peekAuthToken(account, accountType) } returns token
     every { accountManager.invalidateAuthToken(any(), any()) } just runs
-    every {
-      accountManager.getAuthToken(
-        any(),
-        any(),
-        any(),
-        any<Boolean>(),
-        any(),
-        any()
-      )
-    } returns
+    every { accountManager.getAuthToken(any(), any(), any(), any<Boolean>(), any(), any()) } returns
       object : AccountManagerFuture<Bundle> {
         override fun cancel(mayInterruptIfRunning: Boolean): Boolean {
           TODO("Not yet implemented")

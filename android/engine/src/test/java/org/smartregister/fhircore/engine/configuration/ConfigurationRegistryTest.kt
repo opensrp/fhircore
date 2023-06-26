@@ -27,7 +27,6 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -47,12 +46,10 @@ import org.smartregister.fhircore.engine.configuration.view.LoginViewConfigurati
 import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.robolectric.RobolectricTest.Companion.readFile
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -65,8 +62,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   val context = ApplicationProvider.getApplicationContext<Context>()
   @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
-  private val testAppId = "default"
-  private val application: Context = ApplicationProvider.getApplicationContext()
+  private val testAppId = "app"
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
   lateinit var configurationRegistry: ConfigurationRegistry
   var fhirEngine: FhirEngine = mockk()
@@ -74,7 +70,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    fhirResourceDataSource = spyk(FhirResourceDataSource(mockk()))
+    fhirResourceDataSource = mockk()
     configurationRegistry =
       ConfigurationRegistry(
         context,
@@ -83,6 +79,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
         sharedPreferencesHelper,
         coroutineRule.testDispatcherProvider,
       )
+    coEvery { fhirResourceDataSource.loadData(any()) } returns
+      Bundle().apply { entry = mutableListOf() }
     Assert.assertNotNull(configurationRegistry)
     Faker.loadTestConfigurationRegistryData(fhirEngine, configurationRegistry)
   }
@@ -107,8 +105,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
     val configurationsMap = configurationRegistry.configurationsMap
     Assert.assertTrue(configurationsMap.isNotEmpty())
-    Assert.assertTrue(configurationsMap.containsKey("default|login"))
-    Assert.assertTrue(configurationsMap["default|login"]!! is LoginViewConfiguration)
+    Assert.assertTrue(configurationsMap.containsKey("app|login"))
+    Assert.assertTrue(configurationsMap["app|login"]!! is LoginViewConfiguration)
 
     Assert.assertFalse(retrievedConfiguration.darkMode)
     Assert.assertFalse(retrievedConfiguration.showLogo)
@@ -141,8 +139,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testRetrieveConfigurationWithNoEntryShouldReturnNewConfiguration() {
     configurationRegistry.appId = "testApp"
 
-    Assert.assertTrue(configurationRegistry.workflowPointsMap.isEmpty())
-    Assert.assertTrue(configurationRegistry.configurationsMap.isEmpty())
+    configurationRegistry.workflowPointsMap.clear()
+    configurationRegistry.configurationsMap.clear()
 
     val retrievedConfiguration =
       configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigClassification.PIN)
@@ -173,7 +171,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   fun testLoadConfigurationsLocally_shouldReturn_8_workflows() {
     runTest {
-      Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
+      configurationRegistry.workflowPointsMap.clear()
       configurationRegistry.loadConfigurationsLocally("$testAppId/debug") { Assert.assertTrue(it) }
       Assert.assertEquals(9, configurationRegistry.workflowPointsMap.size)
 
@@ -196,7 +194,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   fun testLoadConfigurationsLocally_shouldReturn_empty_workflows() {
     runTest {
-      Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
+      configurationRegistry.workflowPointsMap.clear()
       configurationRegistry.loadConfigurationsLocally("") { Assert.assertFalse(it) }
       Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
     }
@@ -217,7 +215,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     //    coVerify { configurationRegistry.repository.searchCompositionByIdentifier(any()) }
     advanceUntilIdle()
     coVerify {
-      configurationRegistry.fhirResourceDataSource.loadData(
+      fhirResourceDataSource.loadData(
         withArg { Assert.assertTrue(it.startsWith("Questionnaire", ignoreCase = true)) }
       )
     }
@@ -226,7 +224,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   fun testFetchNonWorkflowConfigResourcesWithNoEntry() {
     configurationRegistry.appId = "testApp"
-    Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
+    configurationRegistry.workflowPointsMap.clear()
 
     coEvery { configurationRegistry.searchCompositionByIdentifier(any()) } returns null
 

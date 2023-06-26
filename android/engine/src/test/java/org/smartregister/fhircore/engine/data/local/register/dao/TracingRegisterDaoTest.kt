@@ -68,7 +68,6 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -105,8 +104,9 @@ class TracingRegisterDaoTest : RobolectricTest() {
       )
     coEvery { configurationRegistry.retrieveDataFilterConfiguration(any()) } returns emptyList()
 
-    every { sharedPreferencesHelper.read<Practitioner>(LOGGED_IN_PRACTITIONER, decodeWithGson = true) } returns
-      Practitioner().apply { id = "123" }
+    every {
+      sharedPreferencesHelper.read<Practitioner>(LOGGED_IN_PRACTITIONER, decodeWithGson = true)
+    } returns Practitioner().apply { id = "123" }
 
     tracingRegisterDao =
       HomeTracingRegisterDao(
