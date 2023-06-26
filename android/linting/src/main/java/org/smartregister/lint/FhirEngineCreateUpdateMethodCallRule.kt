@@ -33,11 +33,8 @@ class FhirEngineCreateUpdateMethodCallRule :
     autoCorrect: Boolean,
     emit: (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> Unit,
   ) {
-    val filename = node.psi.containingFile.name
-
     // Ignore FhirEngine.create and FhirEngine.update call in tests. This should ideally not change
     val filesToSkip = arrayOf("DefaultRepository.kt", "ConfigurationRegistry.kt")
-
     val filePath = node.psi.containingFile.originalFile.virtualFile.path
 
     // Ignore FhirEngine.create and FhirEngine.update call in tests
@@ -45,6 +42,7 @@ class FhirEngineCreateUpdateMethodCallRule :
       return
     }
 
+    val filename = node.psi.containingFile.name
     filesToSkip.forEach {
       if (filename.endsWith(it)) {
         return

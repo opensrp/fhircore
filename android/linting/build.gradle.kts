@@ -4,8 +4,8 @@ plugins {
 }
 
 dependencies {
-    implementation("com.pinterest.ktlint:ktlint-cli-ruleset-core:0.49.1")
-    implementation("com.pinterest.ktlint:ktlint-rule-engine-core:0.49.1")
+    implementation(libs.ktlint.cli.ruleset)
+    implementation(libs.ktlint.rule.engine.core)
 }
 
 java {
