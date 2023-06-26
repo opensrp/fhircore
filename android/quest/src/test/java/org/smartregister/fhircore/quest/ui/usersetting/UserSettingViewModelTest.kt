@@ -266,4 +266,16 @@ class UserSettingViewModelTest : RobolectricTest() {
     coVerify { fhirEngine.clearDatabase() }
     verify { accountAuthenticator.invalidateSession(any()) }
   }
+
+  @Test
+  fun testShowInsightsView() {
+    val userSettingViewModelSpy = spyk(userSettingViewModel)
+    every { userSettingViewModelSpy.resetAppData(any()) } just runs
+
+    val userSettingsEvent = UserSettingsEvent.ShowInsightsView(true, context)
+
+    userSettingViewModelSpy.onEvent(userSettingsEvent)
+
+    verify { userSettingViewModelSpy.renderInsightsView(context) }
+  }
 }

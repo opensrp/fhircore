@@ -57,7 +57,9 @@ class UserSettingFragment : Fragment() {
               userSettingViewModel.progressBarState.observeAsState(Pair(false, 0)).value,
             isDebugVariant = BuildConfig.DEBUG,
             mainNavController = findNavController(),
-            lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp()
+            lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp(),
+            unsyncedResourcesFlow = userSettingViewModel.unsyncedResourcesMutableSharedFlow,
+            dismissInsightsView = userSettingViewModel::dismissInsightsView
           )
         }
       }
