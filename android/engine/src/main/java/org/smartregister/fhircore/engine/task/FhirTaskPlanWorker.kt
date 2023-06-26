@@ -20,27 +20,26 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.google.android.fhir.FhirEngine
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.get
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import java.util.Date
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.executionStartIsBeforeOrToday
 import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.engine.util.extension.hasPastEnd
-import org.smartregister.fhircore.engine.util.extension.isReady
-import org.smartregister.fhircore.engine.util.extension.lastOffset
+import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.toCoding
-import org.smartregister.fhircore.engine.util.getLastOffset
 import timber.log.Timber
 
 /** This job runs periodically to update the statuses of Task resources. */
@@ -50,76 +49,70 @@ class FhirTaskPlanWorker
 constructor(
   @Assisted val appContext: Context,
   @Assisted workerParams: WorkerParameters,
-  val fhirEngine: FhirEngine,
+  val defaultRepository: DefaultRepository,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
+    val fhirEngine = defaultRepository.fhirEngine
     return withContext(dispatcherProvider.io()) {
-      val appConfig =
-        configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-          ConfigType.Application
-        )
-      val batchSize = appConfig.taskBackgroundWorkerBatchSize
-      val lastOffset =
-        sharedPreferencesHelper.read(key = WORK_ID.lastOffset(), defaultValue = "0")!!.toInt()
-
       Timber.i("Running Task status updater worker")
 
       val tasks =
         fhirEngine.search<Task> {
           filter(
             Task.STATUS,
-            { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
-            { value = of(Task.TaskStatus.READY.toCoding()) },
-            { value = of(Task.TaskStatus.ACCEPTED.toCoding()) },
-            { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
-            { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
+            { value = of(TaskStatus.REQUESTED.toCoding()) },
+            { value = of(TaskStatus.ACCEPTED.toCoding()) },
+            { value = of(TaskStatus.RECEIVED.toCoding()) },
+          )
+          filter(
+            Task.PERIOD,
+            {
+              prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+              value = of(DateTimeType(Date().plusDays(-1)))
+            }
           )
         }
 
       Timber.i("Found ${tasks.size} tasks to be updated")
 
       tasks.forEach { task ->
-        if (task.hasPastEnd()) {
-          Timber.i("${task.id} failed its successful completion")
+        // expired tasks are handled by other service i.e. FhirTaskExpireWorker
+        if (task.executionStartIsBeforeOrToday() &&
+            task.status == TaskStatus.REQUESTED &&
+            task.preReqConditionSatisfied()
+        ) {
+          Timber.i("Task ${task.id} marked ready")
 
-          task.status = Task.TaskStatus.FAILED
-          fhirEngine.update(task)
-          task
-            .basedOn
-            .find { it.reference.startsWith(ResourceType.CarePlan.name) }
-            ?.extractId()
-            ?.takeIf { it.isNotBlank() }
-            ?.let {
-              val carePlan = fhirEngine.get<CarePlan>(it)
-              if (carePlan.isLastTask(task)) {
-                carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-                fhirEngine.update(carePlan)
-              }
-            }
-        } else if (task.isReady() && task.status == Task.TaskStatus.REQUESTED) {
-          Timber.i("${task.id} marked ready")
-
-          task.status = Task.TaskStatus.READY
-          fhirEngine.update(task)
+          task.status = TaskStatus.READY
+          defaultRepository.update(task)
         }
       }
-
-      val updatedLastOffset =
-        getLastOffset(items = tasks, lastOffset = lastOffset, batchSize = batchSize)
-      sharedPreferencesHelper.write(
-        key = WORK_ID.lastOffset(),
-        value = updatedLastOffset.toString()
-      )
       Result.success()
     }
   }
 
-  private fun CarePlan.isLastTask(task: Task) =
-    this.activity.lastOrNull()?.outcomeReference?.lastOrNull()?.extractId() == task.logicalId
+  /**
+   * Check in the task is part of another task and if so check if the parent task is
+   * completed,cancelled,failed or entered in error.
+   */
+  private suspend fun Task.preReqConditionSatisfied() =
+    this.partOf.find { it.reference.startsWith(ResourceType.Task.name + "/") }?.let {
+      defaultRepository
+        .fhirEngine
+        .get<Task>(it.extractId())
+        .status
+        .isIn(
+          TaskStatus.CANCELLED,
+          TaskStatus.COMPLETED,
+          TaskStatus.FAILED,
+          TaskStatus.ENTEREDINERROR
+        )
+    }
+      ?: true
 
   companion object {
     const val WORK_ID = "FhirTaskPlanWorker"

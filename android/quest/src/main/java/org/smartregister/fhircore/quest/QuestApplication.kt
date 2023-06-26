@@ -53,8 +53,10 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
     }
 
     if (BuildConfig.DEBUG.not()) {
-      Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
-      //initSentryMonitoring()
+      // TODO, strip out global exception handling - potential for ANR in prod
+      // Tracked under https://github.com/opensrp/fhircore/issues/2488
+      // Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
+      initSentryMonitoring()
     }
 
     // TODO Fix this workaround for cursor size issue. Currently size set to 10 MB

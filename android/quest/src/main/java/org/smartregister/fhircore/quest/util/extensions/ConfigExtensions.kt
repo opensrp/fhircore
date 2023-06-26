@@ -137,16 +137,7 @@ fun List<ActionConfig>.handleClickEvent(
 fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =
   actionConfig
     .params
-    .map {
-      ActionParameter(
-        key = it.key,
-        paramType = it.paramType,
-        dataType = it.dataType,
-        linkId = it.linkId,
-        value = it.value.interpolate(resourceData?.computedValuesMap ?: emptyMap()),
-        resourceType = it.resourceType
-      )
-    }
+    .map { it.interpolate(resourceData?.computedValuesMap ?: emptyMap()) }
     .toTypedArray()
 
 /**

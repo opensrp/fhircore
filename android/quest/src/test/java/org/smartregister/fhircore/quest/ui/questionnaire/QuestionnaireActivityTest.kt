@@ -31,7 +31,10 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.DataCaptureConfig
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -51,6 +54,7 @@ import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -68,14 +72,19 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.ConfirmationDialog
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
@@ -88,23 +97,28 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
   @Inject lateinit var jsonParser: IParser
-  private val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
+  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
   private lateinit var questionnaireActivity: QuestionnaireActivity
   private lateinit var questionnaireFragment: QuestionnaireFragment
   private lateinit var intent: Intent
   private lateinit var questionnaireConfig: QuestionnaireConfig
+  private val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
+  private val fhirEngine: FhirEngine = mockk()
+  private val defaultRepository: DefaultRepository =
+    DefaultRepository(fhirEngine, dispatcherProvider, mockk(), mockk(), mockk(), mockk())
 
   @BindValue
   val questionnaireViewModel: QuestionnaireViewModel =
     spyk(
       QuestionnaireViewModel(
-        defaultRepository = mockk(),
+        defaultRepository = defaultRepository,
         configurationRegistry = mockk(),
         transformSupportServices = mockk(),
         dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = mockk(),
         libraryEvaluator = mockk(),
         fhirCarePlanGenerator = mockk(),
+        resourceDataRulesExecutor = mockk()
       )
     )
 
@@ -113,12 +127,32 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     // TODO Proper set up
     hiltRule.inject()
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
+    val questionnaireConfigRules =
+      listOf(
+        RuleConfig(
+          name = "humanReadableId",
+          description = "Generate OpenSRP ID",
+          condition = "true",
+          actions = listOf("data.put('humanReadableId', service.generateRandomSixDigitInt())")
+        )
+      )
     questionnaireConfig =
       QuestionnaireConfig(
         id = "patient-registration",
         title = "Patient registration",
         "form",
-        resourceIdentifier = "@{familyLogicalId}",
+        resourceIdentifier = "Patient/P1",
+        extraParams =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "household.id",
+              dataType = DataType.INTEGER,
+              key = "opensrpId",
+              value = "@{humanReadableId}"
+            )
+          ),
+        configRules = questionnaireConfigRules
       )
     val actionParams =
       listOf(
@@ -139,17 +173,24 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
           )
         )
 
+    coEvery {
+      questionnaireViewModel.computeQuestionnaireConfigRules(questionnaireConfigRules)
+    } returns mapOf("humanReadableId" to "199290")
     coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
       Questionnaire().apply { id = "12345" }
 
+    buildActivity(buildQuestionnaireWithConstraints(), questionnaireConfig)
+  }
+
+  private fun buildActivity(
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig
+  ) {
     questionnaireFragment = spyk()
 
     questionnaireFragment.apply {
-      arguments =
-        bundleOf(
-          Pair("questionnaire", buildQuestionnaireWithConstraints().encodeResourceToString())
-        )
+      arguments = bundleOf(Pair("questionnaire", questionnaire.encodeResourceToString()))
     }
 
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
@@ -431,6 +472,40 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         any(),
       )
     }
+  }
+
+  // TODO: https://github.com/opensrp/fhircore/issues/2494 - fix this test.
+  @Ignore
+  @Test
+  fun testHandleQuestionnaireResponseThroughADialogShouldCallExtractAndSaveResources() {
+    val questionnaireResponseId = "patient-registration-response"
+    val questionnaireResponse = QuestionnaireResponse().apply { id = questionnaireResponseId }
+    questionnaireConfig =
+      QuestionnaireConfig(
+        id = questionnaireResponseId,
+        title = "Patient registration",
+        "form",
+        confirmationDialog =
+          ConfirmationDialog(
+            title = "title",
+            message = "message",
+            actionButtonText = "Save changes",
+          )
+      )
+
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", Questionnaire())
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaireConfig", questionnaireConfig)
+
+    questionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
+
+    coEvery { fhirEngine.get(any(), any()) } returns questionnaireResponse
+    coEvery { fhirEngine.update(any()) } returns Unit
+
+    verify { questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any()) }
   }
 
   @Test
@@ -924,6 +999,50 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun `test covid 19 vaccines questionnaire on followup`() = runTest {
+    ReflectionHelpers.loadClass(
+        QuestionnaireFragment.javaClass.classLoader,
+        "com.google.android.fhir.datacapture.DataCapture"
+      )
+      .let {
+        it.getDeclaredField("configuration")
+          .also { it.isAccessible = true }
+          .set(null, DataCaptureConfig(xFhirQueryResolver = { fhirEngine.search(it) }))
+      }
+    val questionnaire =
+      "covid-19/questionnaire.json".readFile().decodeResourceFromString<Questionnaire>()
+    val data =
+      "covid-19/resource_data_bundle.json"
+        .readFile()
+        .decodeResourceFromString<org.hl7.fhir.r4.model.Bundle>()
+
+    coEvery { fhirEngine.get(ResourceType.Patient, "P1") } returns
+      Patient().apply {
+        id = "P1"
+        birthDate = Date()
+      }
+    coEvery { fhirEngine.search<Resource>(any<Search>()) } returns
+      data.entry.map { it.resource as Immunization }
+    coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns questionnaire
+
+    buildActivity(questionnaire, questionnaireConfig)
+
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
+
+    questionnaireActivity.fragment = questionnaireFragment
+
+    val questionnaireResponse = questionnaireActivity.getQuestionnaireResponse()
+    questionnaireActivity.setInitialExpression(questionnaire)
+
+    Assert.assertNotNull(questionnaireResponse.id)
+    Assert.assertNotNull(questionnaireResponse.authored)
+    Assert.assertEquals(
+      "Patient/${questionnaireConfig.resourceIdentifier}",
+      questionnaireResponse.subject.reference
+    )
+    Assert.assertEquals(2, questionnaire.item.elementAt(1).initial.size)
+  }
+
   fun testGetResourcesFromParamsForQR_shouldFilterQuestionnaireResponsePopulationParam() {
     val questionnaireConfig =
       QuestionnaireConfig(

@@ -122,7 +122,11 @@ constructor(
     navigationConfiguration
       .clientRegisters
       .asSequence()
-      .filter { it.menuIconConfig != null && it.menuIconConfig?.type == ICON_TYPE_REMOTE }
+      .filter {
+        it.menuIconConfig != null &&
+          it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
+          !it.menuIconConfig!!.reference.isNullOrEmpty()
+      }
       .forEach {
         val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
         viewModelScope.launch(dispatcherProvider.io()) {
@@ -212,7 +216,8 @@ constructor(
           registerCountMap = appMainUiState.value.registerCountMap,
           menuClickListener = {
             onEvent(AppMainEvent.TriggerWorkflow(navController = event.navController, navMenu = it))
-          }
+          },
+          title = event.title
         )
         .run { show(activity.supportFragmentManager, RegisterBottomSheetFragment.TAG) }
     }

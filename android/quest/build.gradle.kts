@@ -1,10 +1,6 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
-val keysStoreAlias: String by project.extra
-val keyPassword: String by project.extra
-val keystorePassword: String by project.extra
-
 buildscript {
   apply(from = "../jacoco.gradle.kts")
   apply(from = "../properties.gradle.kts")
@@ -23,29 +19,54 @@ plugins {
   id("io.sentry.android.gradle") version "3.5.0"
 }
 
-sonar { properties { property("sonar.projectKey", "fhircore") } }
+sonar {
+  properties {
+    property("sonar.projectKey", "fhircore")
+    property("sonar.kotlin.source.version", libs.kotlin)
+    property(
+      "sonar.androidLint.reportPaths",
+      "${project.buildDir}/reports/lint-results-opensrpDebug.xml"
+    )
+    property("sonar.host.url", System.getenv("SONAR_HOST_URL"))
+    property("sonar.login", System.getenv("SONAR_TOKEN"))
+    property("sonar.sourceEncoding", "UTF-8")
+    property(
+      "sonar.kotlin.threads",
+      (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+    )
+    property(
+      "sonar.exclusions",
+      """**/*Test*/**,
+          **/*test*/**,
+          **/.gradle/**,
+          **/R.class,
+          *.json,
+          *.yaml"""
+    )
+  }
+}
 
 android {
   compileSdk = 33
 
   defaultConfig {
-    applicationId = "org.smartregister.fhircore"
+    applicationId = "org.smartregister.opensrp"
     minSdk = 26
     targetSdk = 33
     versionCode = 1
-    versionName = "0.2.2"
+    versionName = "0.2.4"
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
     buildConfigField("String", "FHIR_BASE_URL", """"${project.extra["FHIR_BASE_URL"]}"""")
     buildConfigField("String", "OAUTH_BASE_URL", """"${project.extra["OAUTH_BASE_URL"]}"""")
-    buildConfigField("String", "OAUTH_CIENT_ID", """"${project.extra["OAUTH_CIENT_ID"]}"""")
+    buildConfigField("String", "OAUTH_CLIENT_ID", """"${project.extra["OAUTH_CLIENT_ID"]}"""")
+    buildConfigField("String", "OAUTH_SCOPE", """"${project.extra["OAUTH_SCOPE"]}"""")
     buildConfigField(
       "String",
       "OAUTH_CLIENT_SECRET",
       """"${project.extra["OAUTH_CLIENT_SECRET"]}""""
     )
-    buildConfigField("String", "OAUTH_SCOPE", """"${project.extra["OAUTH_SCOPE"]}"""")
     buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """"100"""")
     buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
 
@@ -56,10 +77,10 @@ android {
     create("release") {
       enableV1Signing = false
       enableV2Signing = true
-      keyAlias = System.getenv("KEYSTORE_ALIAS") ?: """"${project.extra["FHIR_BASE_URL"]}""""
-      keyPassword = System.getenv("KEY_PASSWORD") ?: """"${project.extra["FHIR_BASE_URL"]}""""
+      keyAlias = System.getenv("KEYSTORE_ALIAS") ?: """${project.extra["KEYSTORE_ALIAS"]}"""
+      keyPassword = System.getenv("KEY_PASSWORD") ?: """${project.extra["KEY_PASSWORD"]}"""
       storePassword =
-        System.getenv("KEYSTORE_PASSWORD") ?: """"${project.extra["FHIR_BASE_URL"]}""""
+        System.getenv("KEYSTORE_PASSWORD") ?: """${project.extra["KEYSTORE_PASSWORD"]}"""
       storeFile = file(System.getProperty("user.home") + "/fhircore.keystore.jks")
     }
   }
@@ -132,14 +153,14 @@ android {
 
   testCoverage { jacocoVersion = "0.8.7" }
 
-  lintOptions { isAbortOnError = false }
+  lint { abortOnError = false }
 
   flavorDimensions += "apps"
 
   productFlavors {
     create("opensrp") {
       dimension = "apps"
-      applicationIdSuffix = ".opensrp"
+      manifestPlaceholders["appLabel"] = "OpenSRP"
       isDefault = true
     }
 
@@ -147,61 +168,81 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".ecbis"
       versionNameSuffix = "-ecbis"
+      manifestPlaceholders["appLabel"] = "MOH eCBIS"
     }
 
     create("g6pd") {
       dimension = "apps"
       applicationIdSuffix = ".g6pd"
       versionNameSuffix = "-g6pd"
+      manifestPlaceholders["appLabel"] = "G6PD"
     }
 
     create("mwcore") {
       dimension = "apps"
       applicationIdSuffix = ".mwcore"
       versionNameSuffix = "-mwcore"
+      manifestPlaceholders["appLabel"] = "Malawi Core"
     }
 
     create("afyayangu") {
       dimension = "apps"
       applicationIdSuffix = ".afyayangu"
       versionNameSuffix = "-afyayangu"
+      manifestPlaceholders["appLabel"] = "Afya Yangu"
     }
 
     create("map") {
       dimension = "apps"
       applicationIdSuffix = ".map"
       versionNameSuffix = "-map"
+      manifestPlaceholders["appLabel"] = "Geo Widget"
     }
 
     create("echis") {
       dimension = "apps"
       applicationIdSuffix = ".echis"
       versionNameSuffix = "-echis"
+      manifestPlaceholders["appLabel"] = "MOH eCHIS"
     }
 
     create("bunda") {
       dimension = "apps"
       applicationIdSuffix = ".bunda"
       versionNameSuffix = "-bunda"
+      manifestPlaceholders["appLabel"] = "Bunda App"
     }
 
     create("wdf") {
       dimension = "apps"
       applicationIdSuffix = ".wdf"
       versionNameSuffix = "-wdf"
+      manifestPlaceholders["appLabel"] = "Diabetes Compass"
     }
 
     create("zeir") {
       dimension = "apps"
       applicationIdSuffix = ".zeir"
       versionNameSuffix = "-zeir"
+      manifestPlaceholders["appLabel"] = "ZEIR"
     }
 
     create("engage") {
       dimension = "apps"
       applicationIdSuffix = ".engage"
       versionNameSuffix = "-engage"
+      manifestPlaceholders["appLabel"] = "Engage"
     }
+  }
+
+  applicationVariants.all {
+    val variant = this
+    variant.resValue("string", "authenticator_account_type", "\"${applicationId}\"")
+    variant.resValue(
+      "string",
+      "app_name",
+      "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\""
+    )
   }
 
   splits {
@@ -257,6 +298,7 @@ tasks.withType<Test> {
   testLogging { events = setOf(TestLogEvent.FAILED) }
   minHeapSize = "4608m"
   maxHeapSize = "4608m"
+  maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
 }
 
 configurations {
