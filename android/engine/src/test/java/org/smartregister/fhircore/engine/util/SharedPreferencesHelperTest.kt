@@ -20,8 +20,10 @@ import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.logicalId
+import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Practitioner
 import org.junit.Assert
 import org.junit.Before
@@ -30,22 +32,19 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.encodeJson
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 
 @HiltAndroidTest
-class SharedPreferencesHelperTest : RobolectricTest() {
-
+internal class SharedPreferencesHelperTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
-
   private val application = ApplicationProvider.getApplicationContext<Application>()
-
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var gson: Gson
 
   @Before
   fun setUp() {
-    sharedPreferencesHelper = SharedPreferencesHelper(application)
+    hiltRule.inject()
+    sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
   }
 
   @Test
@@ -71,7 +70,7 @@ class SharedPreferencesHelperTest : RobolectricTest() {
 
   @Test
   fun testWriteStringAsync() {
-    sharedPreferencesHelper.write("anyStringKey", "test write String", async = true)
+    sharedPreferencesHelper.write("anyStringKey", "test write String")
     Assert.assertEquals("test write String", sharedPreferencesHelper.read("anyStringKey", ""))
   }
 
@@ -83,7 +82,7 @@ class SharedPreferencesHelperTest : RobolectricTest() {
 
   @Test
   fun testWriteBooleanAsync() {
-    sharedPreferencesHelper.write("anyBooleanKey", true, async = true)
+    sharedPreferencesHelper.write("anyBooleanKey", true)
     Assert.assertEquals(true, sharedPreferencesHelper.read("anyBooleanKey", false))
   }
 
@@ -95,17 +94,17 @@ class SharedPreferencesHelperTest : RobolectricTest() {
 
   @Test
   fun testWriteLongAsync() {
-    sharedPreferencesHelper.write("anyLongKey", 123456789, async = true)
+    sharedPreferencesHelper.write("anyLongKey", 123456789)
     Assert.assertEquals(123456789, sharedPreferencesHelper.read("anyLongKey", 0))
   }
 
   @Test
   fun testReadObject() {
     val practitioner = Practitioner().apply { id = "1234" }
-    sharedPreferencesHelper.write(LOGGED_IN_PRACTITIONER, practitioner.encodeResourceToString())
+    sharedPreferencesHelper.write(LOGGED_IN_PRACTITIONER, practitioner, encodeWithGson = true)
 
     val readPractitioner =
-      sharedPreferencesHelper.read<Practitioner>(LOGGED_IN_PRACTITIONER, decodeFhirResource = true)
+      sharedPreferencesHelper.read<Practitioner>(LOGGED_IN_PRACTITIONER, decodeWithGson = true)
     Assert.assertNotNull(readPractitioner!!.logicalId)
     Assert.assertEquals(practitioner.logicalId, readPractitioner.logicalId)
 

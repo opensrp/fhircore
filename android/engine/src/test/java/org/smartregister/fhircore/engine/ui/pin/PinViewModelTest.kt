@@ -35,10 +35,8 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
-import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.pinViewConfigurationOf
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -61,8 +59,7 @@ internal class PinViewModelTest : RobolectricTest() {
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
-  val defaultRepository: DefaultRepository = mockk()
-  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
   private lateinit var pinViewModel: PinViewModel
@@ -88,11 +85,8 @@ internal class PinViewModelTest : RobolectricTest() {
     coEvery { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     coEvery { secureSharedPreference.saveSessionPin("1234") } returns Unit
     coEvery { secureSharedPreference.retrieveSessionPin() } returns "1234"
-    coEvery {
-      secureSharedPreference.saveCredentials(
-        AuthCredentials("username", "password", "sessionToken", "refreshToken")
-      )
-    } returns Unit
+    coEvery { secureSharedPreference.saveCredentials("username", "password".toCharArray()) } returns
+      Unit
 
     pinViewModel =
       PinViewModel(

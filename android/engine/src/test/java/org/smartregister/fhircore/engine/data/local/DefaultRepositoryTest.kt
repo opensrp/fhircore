@@ -21,8 +21,12 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -31,6 +35,8 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Address
@@ -47,18 +53,39 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.joda.time.LocalDate
 import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.generateMissingVersionId
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 
+@HiltAndroidTest
 class DefaultRepositoryTest : RobolectricTest() {
 
   private val dispatcherProvider = spyk(DefaultDispatcherProvider())
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @get:Rule(order = 2)
+  var coroutineRule = CoroutineTestRule()
+  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
+  @BindValue val sharedPreferencesHelper = mockk<SharedPreferencesHelper>(relaxed = true)
 
+  private val configService: ConfigService = mockk()
+
+  @Before
+  fun setUp() {
+hiltRule.inject()
+    every { configService.provideResourceTags(any()) }  returns listOf()
+  }
+  @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun `addOrUpdate() should call fhirEngine#update when resource exists`() {
     val patientId = "15672-9234"
@@ -92,10 +119,16 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
 
     val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configurationRegistry = configurationRegistry,
+        configService = configService
+      )
 
     // Call the function under test
-    runBlocking { defaultRepository.addOrUpdate(patient) }
+    runBlocking { defaultRepository.addOrUpdate(resource = patient) }
 
     coVerify { fhirEngine.get(ResourceType.Patient, patientId) }
     coVerify { fhirEngine.update(capture(savedPatientSlot)) }
@@ -115,10 +148,11 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Patient, any()) } throws
       mockk<ResourceNotFoundException>()
     coEvery { fhirEngine.create(any()) } returns listOf()
-    runBlocking { defaultRepository.addOrUpdate(Patient()) }
+    runBlocking { defaultRepository.addOrUpdate(resource = Patient()) }
     coVerify(exactly = 1) { fhirEngine.create(any()) }
   }
 
+  @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun `loadRelatedPersons() should call FhirEngine#loadRelatedPersons`() {
     val patientId = "15672-9234"
@@ -126,7 +160,13 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.loadRelatedPersons(patientId) } returns listOf()
 
     val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configurationRegistry = configurationRegistry,
+        configService = configService
+      )
 
     runBlocking { defaultRepository.loadRelatedPersons(patientId) }
 
@@ -140,7 +180,13 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.loadPatientImmunizations(patientId) } returns listOf()
 
     val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configurationRegistry = configurationRegistry,
+        configService = configService
+      )
 
     runBlocking { defaultRepository.loadPatientImmunizations(patientId) }
 
@@ -153,7 +199,13 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.search<QuestionnaireResponse>(any<Search>()) } returns listOf()
 
     val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configurationRegistry = configurationRegistry,
+        configService = configService
+      )
 
     runBlocking { defaultRepository.loadQuestionnaireResponses("1234", Questionnaire()) }
 
@@ -170,7 +222,13 @@ class DefaultRepositoryTest : RobolectricTest() {
       ResourceNotFoundException("Exce", "Exce")
     coEvery { fhirEngine.create(any()) } returns listOf()
     val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configurationRegistry = configurationRegistry,
+        configService = configService
+      )
 
     runBlocking { defaultRepository.save(resource) }
 
@@ -188,10 +246,17 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Patient, any()) } throws
       ResourceNotFoundException("Exce", "Exce")
     coEvery { fhirEngine.create(any()) } returns listOf()
-    val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
-    runBlocking { defaultRepository.addOrUpdate(resource) }
+    val defaultRepository =
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configurationRegistry = configurationRegistry,
+        configService = configService
+      )
+
+    runBlocking { defaultRepository.addOrUpdate(resource = resource) }
 
     verify { resource.generateMissingId() }
 
@@ -205,7 +270,13 @@ class DefaultRepositoryTest : RobolectricTest() {
       listOf(Composition().apply { id = "123" })
 
     val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configurationRegistry = configurationRegistry,
+        configService = configService
+      )
 
     val result = defaultRepository.searchCompositionByIdentifier("appId")
 
@@ -220,7 +291,13 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Binary, any()) } returns Binary().apply { id = "111" }
 
     val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configurationRegistry = configurationRegistry,
+        configService = configService
+      )
 
     val result = defaultRepository.getBinary("111")
 
@@ -239,9 +316,15 @@ class DefaultRepositoryTest : RobolectricTest() {
       ResourceNotFoundException("Exce", "Exce")
     coEvery { fhirEngine.create(any()) } returns listOf()
     val defaultRepository =
-      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configurationRegistry = configurationRegistry,
+        configService = configService
+      )
 
-    runBlocking { defaultRepository.addOrUpdate(resource) }
+    runBlocking { defaultRepository.addOrUpdate(resource = resource) }
 
     verify { resource.generateMissingVersionId() }
 

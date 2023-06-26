@@ -69,7 +69,7 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.di.AnalyticsModule
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -78,8 +78,8 @@ import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
-import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asString
 import retrofit2.HttpException
@@ -93,19 +93,21 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
 
-  @BindValue var tokenManagerService: TokenManagerService = mockk()
+  @BindValue var tokenAuthenticator: TokenAuthenticator = mockk()
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
   @BindValue val accountAuthenticator = mockk<AccountAuthenticator>()
   @BindValue @JvmField val performanceReporter: PerformanceReporter = FakePerformanceReporter()
 
-  val defaultRepository: DefaultRepository = mockk()
-  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
 
   private lateinit var testRegisterActivityController: ActivityController<TestRegisterActivity>
 
   private lateinit var testRegisterActivity: TestRegisterActivity
+
+  val context: Context =
+    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
 
   @Before
   fun setUp() {
@@ -422,7 +424,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     val currentDateTime = OffsetDateTime.now()
     every { sharedPreferencesHelper.read(any(), any<String>()) } answers
       {
-        if (firstArg<String>() == LAST_SYNC_TIMESTAMP) {
+        if (firstArg<String>() == SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name) {
           currentDateTime.asString()
         } else {
           ""
@@ -436,7 +438,10 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     // Shared preference saved with last sync timestamp
     Assert.assertEquals(
       currentDateTime.asString(),
-      testRegisterActivity.registerViewModel.sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null)
+      testRegisterActivity.registerViewModel.sharedPreferencesHelper.read(
+        SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+        null
+      )
     )
   }
 
@@ -449,7 +454,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     val lastDateTimestamp = OffsetDateTime.now()
     every { sharedPreferencesHelper.read(any(), any<String>()) } answers
       {
-        if (firstArg<String>() == LAST_SYNC_TIMESTAMP) {
+        if (firstArg<String>() == SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name) {
           lastDateTimestamp.asString()
         } else {
           ""
@@ -461,7 +466,10 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     Assert.assertTrue(registerActivityBinding.containerProgressSync.hasOnClickListeners())
     Assert.assertEquals(
       lastDateTimestamp.asString(),
-      testRegisterActivity.registerViewModel.sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null)
+      testRegisterActivity.registerViewModel.sharedPreferencesHelper.read(
+        SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+        null
+      )
     )
   }
 
@@ -476,7 +484,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals(View.GONE, registerActivityBinding.progressSync.visibility)
     val syncStatus =
       testRegisterActivity.registerViewModel.sharedPreferencesHelper.read(
-        LAST_SYNC_TIMESTAMP,
+        SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
         testRegisterActivity.getString(R.string.syncing_retry)
       )
     Assert.assertEquals(syncStatus, registerActivityBinding.tvLastSyncTimestamp.text.toString())
@@ -491,7 +499,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestAlertDialog())
     dialog.clickOnItem(0)
 
-    verify(exactly = 1) { sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, "en") }
+    verify(exactly = 1) { sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, "en") }
 
     Assert.assertEquals(
       testRegisterActivity.getString(R.string.select_language),
@@ -502,16 +510,16 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnNavigation_logout_onItemClicked_should_finishActivity() {
-    every { tokenManagerService.getActiveAccount() } returns Account("abc", "type")
-    every { tokenManagerService.isTokenActive(any()) } returns false
-    every { accountAuthenticator.logout() } just runs
+    every { tokenAuthenticator.findAccount() } returns Account("abc", "type")
+    every { tokenAuthenticator.isTokenActive(any()) } returns false
+    every { accountAuthenticator.logout(context) } just runs
 
     val logoutMenuItem = RoboMenuItem(R.id.menu_item_logout)
     testRegisterActivity.onNavigationItemSelected(logoutMenuItem)
     Assert.assertFalse(
       testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
     )
-    verify(exactly = 1) { accountAuthenticator.logout() }
+    verify(exactly = 1) { accountAuthenticator.logout(context) }
   }
 
   @Test
@@ -600,7 +608,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   @Test
   fun testHandleSyncFailed_should_verifyAllInternalState() {
 
-    every { accountAuthenticator.logout() } returns Unit
+    every { accountAuthenticator.logout(context) } returns Unit
 
     val glitchState =
       SyncJobStatus.Glitch(
@@ -612,7 +620,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
       )
 
     handleSyncFailed(glitchState)
-    verify(exactly = 1) { accountAuthenticator.logout() }
+    verify(exactly = 1) { accountAuthenticator.logout(context) }
 
     val failedState =
       SyncJobStatus.Failed(
@@ -624,7 +632,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
       )
 
     handleSyncFailed(failedState)
-    verify(exactly = 1, inverse = true) { accountAuthenticator.logout() }
+    verify(exactly = 1, inverse = true) { accountAuthenticator.logout(context) }
 
     val glitchStateInterruptedIOException =
       SyncJobStatus.Glitch(

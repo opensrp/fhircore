@@ -20,12 +20,14 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.gson.Gson
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
 import io.mockk.mockk
+import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -50,11 +52,11 @@ class AppSettingActivityTest {
 
   val context: Context =
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
-  @BindValue val sharedPreferencesHelper = SharedPreferencesHelper(context)
+  @Inject lateinit var gson: Gson
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @BindValue val secureSharedPreference = mockk<SecureSharedPreference>()
   @BindValue val accountAuthenticator = mockk<AccountAuthenticator>()
-  @BindValue
-  var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository = mockk())
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Before
   fun setUp() {

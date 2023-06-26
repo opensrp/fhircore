@@ -16,13 +16,29 @@
 
 package org.smartregister.fhircore.engine.util
 
-import java.security.MessageDigest
-import java.util.Locale
-import javax.xml.bind.DatatypeConverter
+import android.os.Build
+import java.nio.charset.StandardCharsets
+import java.security.SecureRandom
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.PBEKeySpec
+import org.jetbrains.annotations.VisibleForTesting
 
-fun String.toSha1() = hashString("SHA-1", this)
+fun CharArray.toPasswordHash(salt: ByteArray) = passwordHashString(this, salt)
 
-private fun hashString(type: String, input: String): String {
-  val bytes = MessageDigest.getInstance(type).digest(input.toByteArray())
-  return DatatypeConverter.printHexBinary(bytes).uppercase(Locale.getDefault())
+@VisibleForTesting
+fun passwordHashString(password: CharArray, salt: ByteArray): String {
+  val pbKeySpec = PBEKeySpec(password, salt, 1000000, 256)
+  val secretKeyFactory =
+    SecretKeyFactory.getInstance(
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) "PBKDF2withHmacSHA256"
+      else "PBKDF2WithHmacSHA1"
+    )
+  return secretKeyFactory.generateSecret(pbKeySpec).encoded.toString(StandardCharsets.UTF_8)
+}
+
+fun Int.getRandomBytesOfSize(): ByteArray {
+  val random = SecureRandom()
+  val randomSaltBytes = ByteArray(this)
+  random.nextBytes(randomSaltBytes)
+  return randomSaltBytes
 }

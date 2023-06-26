@@ -17,6 +17,9 @@
 package org.smartregister.fhircore.engine.data.local.register
 
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -25,6 +28,7 @@ import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import java.util.Date
+import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,8 +37,11 @@ import org.hl7.fhir.r4.model.Patient
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.AppointmentRegisterFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.TracingRegisterFilter
@@ -46,22 +53,37 @@ import org.smartregister.fhircore.engine.data.local.register.dao.RegisterDaoFact
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class AppRegisterRepositoryTest {
-
+@HiltAndroidTest
+class AppRegisterRepositoryTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   private lateinit var repository: AppRegisterRepository
   private val fhirEngine: FhirEngine = mockk()
   private val dispatcherProvider: DefaultDispatcherProvider = mockk()
   private val registerDaoFactory: RegisterDaoFactory = mockk()
   private val tracer: PerformanceReporter = FakePerformanceReporter()
-
+  @BindValue val sharedPreferencesHelper = mockk<SharedPreferencesHelper>(relaxed = true)
+  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
+  @Inject lateinit var configService: ConfigService
   @Before
   fun setUp() {
-    repository = AppRegisterRepository(fhirEngine, dispatcherProvider, registerDaoFactory, tracer)
+    hiltRule.inject()
+    repository =
+      AppRegisterRepository(
+        fhirEngine,
+        dispatcherProvider,
+        sharedPreferencesHelper,
+        configurationRegistry,
+        registerDaoFactory,
+        configService,
+        tracer
+      )
     mockkConstructor(DefaultRepository::class)
     mockkStatic("kotlinx.coroutines.DispatchersKt")
     every { anyConstructed<DefaultRepository>().fhirEngine } returns fhirEngine

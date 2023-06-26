@@ -188,7 +188,7 @@ class SyncBroadcasterTest : RobolectricTest() {
 
   @Test
   fun runSyncWhenNetworkStateFalseEmitsSyncFailed() = runTest {
-    val configurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+    val configurationRegistry = Faker.buildTestConfigurationRegistry()
     val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
     val configService = AppConfigService(context = context)
     val sharedSyncStatus: MutableSharedFlow<SyncJobStatus> = MutableSharedFlow()

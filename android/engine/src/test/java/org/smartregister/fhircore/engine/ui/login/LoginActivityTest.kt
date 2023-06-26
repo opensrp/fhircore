@@ -37,6 +37,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
 import kotlin.test.assertTrue
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
@@ -51,15 +52,19 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.di.AnalyticsModule
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @UninstallModules(AnalyticsModule::class)
@@ -69,7 +74,9 @@ class LoginActivityTest : ActivityRobolectricTest() {
   private lateinit var loginActivity: LoginActivity
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
-
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @get:Rule(order = 2)
+  val coroutineTestRule: CoroutineTestRule = CoroutineTestRule()
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @BindValue val repository: DefaultRepository = mockk()
@@ -87,27 +94,37 @@ class LoginActivityTest : ActivityRobolectricTest() {
   private lateinit var loginService: LoginService
 
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
-
+  @Inject lateinit var secureSharedPreference: SecureSharedPreference
   @BindValue @JvmField val performanceReporter: PerformanceReporter = FakePerformanceReporter()
+  private val fhirResourceService = mockk<FhirResourceService>()
+  private val keycloakService = mockk<KeycloakService>()
+  private val defaultRepository: DefaultRepository = mockk(relaxed = true)
+  private val tokenAuthenticator = mockk<TokenAuthenticator>()
 
+  @OptIn(ExperimentalCoroutinesApi::class)
   @Before
   fun setUp() {
     hiltRule.inject()
 
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
 
-    coEvery { accountAuthenticator.hasActivePin() } returns false
-
     coEvery { accountAuthenticator.retrieveLastLoggedInUsername() } returns ""
 
     fhirResourceDataSource = FhirResourceDataSource(resourceService)
 
     loginViewModel =
-      LoginViewModel(
-        accountAuthenticator = accountAuthenticator,
-        dispatcher = DefaultDispatcherProvider(),
-        sharedPreferences = sharedPreferencesHelper,
-        fhirResourceDataSource = fhirResourceDataSource
+      spyk(
+        LoginViewModel(
+          accountAuthenticator = accountAuthenticator,
+          sharedPreferences = sharedPreferencesHelper,
+          defaultRepository = defaultRepository,
+          keycloakService = keycloakService,
+          fhirResourceService = fhirResourceService,
+          tokenAuthenticator = tokenAuthenticator,
+          secureSharedPreference = secureSharedPreference,
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          fhirResourceDataSource = fhirResourceDataSource
+        )
       )
 
     loginActivity =
@@ -115,11 +132,11 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
     configurationRegistry =
       ConfigurationRegistry(
-        ApplicationProvider.getApplicationContext<Context>(),
+        ApplicationProvider.getApplicationContext(),
+        mockk(),
         fhirResourceDataSource,
         sharedPreferencesHelper,
         DefaultDispatcherProvider(),
-        repository
       )
 
     loginActivity.configurationRegistry = configurationRegistry
@@ -138,13 +155,13 @@ class LoginActivityTest : ActivityRobolectricTest() {
     val accountName = "testUser"
     val updateAuthIntent =
       Intent().apply {
-        putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountAuthenticator.AUTH_TOKEN_TYPE)
+        putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountManager.KEY_ACCOUNT_TYPE)
         putExtra(AccountManager.KEY_ACCOUNT_NAME, accountName)
         putExtra(
           AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE,
           mockk<AccountAuthenticatorResponse>()
         )
-        putExtra(AccountAuthenticator.AUTH_TOKEN_TYPE, AccountAuthenticator.AUTH_TOKEN_TYPE)
+        putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountManager.KEY_ACCOUNT_TYPE)
       }
     Robolectric.buildActivity(LoginActivity::class.java, updateAuthIntent).create().resume()
     Assert.assertEquals(accountName, loginViewModel.username.value)
@@ -155,13 +172,13 @@ class LoginActivityTest : ActivityRobolectricTest() {
     val accountName = "testUser"
     val updateAuthIntent =
       Intent().apply {
-        putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountAuthenticator.AUTH_TOKEN_TYPE)
+        putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountManager.KEY_ACCOUNT_TYPE)
         putExtra(AccountManager.KEY_ACCOUNT_NAME, accountName)
         putExtra(
           AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE,
           mockk<AccountAuthenticatorResponse>()
         )
-        putExtra(AccountAuthenticator.AUTH_TOKEN_TYPE, AccountAuthenticator.AUTH_TOKEN_TYPE)
+        putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountManager.KEY_ACCOUNT_TYPE)
       }
     loginActivity =
       spyk(
@@ -189,13 +206,13 @@ class LoginActivityTest : ActivityRobolectricTest() {
     val accountName = "testUser"
     val updateAuthIntent =
       Intent().apply {
-        putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountAuthenticator.AUTH_TOKEN_TYPE)
+        putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountManager.KEY_ACCOUNT_TYPE)
         putExtra(AccountManager.KEY_ACCOUNT_NAME, accountName)
         putExtra(
           AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE,
           mockk<AccountAuthenticatorResponse>()
         )
-        putExtra(AccountAuthenticator.AUTH_TOKEN_TYPE, AccountAuthenticator.AUTH_TOKEN_TYPE)
+        putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountManager.KEY_ACCOUNT_TYPE)
       }
     loginActivity =
       spyk(
@@ -222,7 +239,6 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntentWhenPinExists() {
-    coEvery { accountAuthenticator.hasActivePin() } returns true
     val loginConfig = loginViewConfigurationOf(enablePin = true)
     loginViewModel.updateViewConfigurations(loginConfig)
     loginViewModel.navigateToHome()
@@ -231,7 +247,6 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntentWhenForcedLogin() {
-    coEvery { accountAuthenticator.hasActivePin() } returns false
     sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, true)
     val loginConfig = loginViewConfigurationOf(enablePin = true)
     loginViewModel.updateViewConfigurations(loginConfig)

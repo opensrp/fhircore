@@ -63,7 +63,6 @@ class LoginScreenWithLogoTest : RobolectricTest() {
           {
             this@LoginScreenWithLogoTest.password.value = firstArg()
           }
-        every { attemptRemoteLogin() } returns Unit
       }
   }
 

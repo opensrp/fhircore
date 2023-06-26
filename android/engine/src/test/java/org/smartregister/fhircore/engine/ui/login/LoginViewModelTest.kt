@@ -17,44 +17,44 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
+import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
-import java.io.IOException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import okhttp3.internal.http.RealResponseBody
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Practitioner
-import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Organization
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
-import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.app.fakes.FakeModel.authCredentials
+import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import retrofit2.Call
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.model.practitioner.FhirPractitionerDetails
+import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.Response
 
 @ExperimentalCoroutinesApi
@@ -68,131 +68,250 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 2) val coroutineTestRule: CoroutineTestRule = CoroutineTestRule()
 
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+  private val accountAuthenticator: AccountAuthenticator = mockk()
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
   private lateinit var loginViewModel: LoginViewModel
-
-  private lateinit var accountAuthenticatorSpy: AccountAuthenticator
-
+  private val fhirResourceService = mockk<FhirResourceService>()
+  private val keycloakService = mockk<KeycloakService>()
   private val resourceService: FhirResourceService = mockk()
-
+  private val defaultRepository: DefaultRepository = mockk(relaxed = true)
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
+  private val tokenAuthenticator = mockk<TokenAuthenticator>()
+
+  private val thisUsername = "demo"
+  private val thisPassword = "paswd"
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    // Spy needed to control interaction with the real injected dependency
-    accountAuthenticatorSpy = spyk(accountAuthenticator)
 
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
 
     loginViewModel =
-      LoginViewModel(
-        accountAuthenticator = accountAuthenticatorSpy,
-        dispatcher = coroutineTestRule.testDispatcherProvider,
-        sharedPreferences = sharedPreferencesHelper,
-        fhirResourceDataSource = fhirResourceDataSource
+      spyk(
+        LoginViewModel(
+          accountAuthenticator = accountAuthenticator,
+          sharedPreferences = sharedPreferencesHelper,
+          defaultRepository = defaultRepository,
+          keycloakService = keycloakService,
+          fhirResourceService = fhirResourceService,
+          tokenAuthenticator = tokenAuthenticator,
+          secureSharedPreference = secureSharedPreference,
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          fhirResourceDataSource = fhirResourceDataSource
+        )
       )
   }
 
   @After
   fun tearDown() {
-    accountAuthenticatorSpy.secureSharedPreference.deleteCredentials()
+    secureSharedPreference.deleteCredentials()
   }
 
   @Test
-  fun testAttemptLocalLoginWithCorrectCredentials() {
-    // Simulate saving of credentials prior to login
-    accountAuthenticatorSpy.secureSharedPreference.saveCredentials(authCredentials)
+  fun testSuccessfulOfflineLogin() {
+    val activity = mockedActivity()
 
-    // Provide username and password (The saved password is hashed, actual one is needed)
-    loginViewModel.run {
-      onUsernameUpdated(authCredentials.username)
-      onPasswordUpdated("51r1K4l1")
-    }
+    updateCredentials()
 
-    val successfulLocalLogin = loginViewModel.attemptLocalLogin()
-    Assert.assertTrue(successfulLocalLogin)
-  }
+    every {
+      accountAuthenticator.validateLoginCredentials(thisUsername, thisPassword.toCharArray())
+    } returns true
 
-  @Test
-  fun testAttemptLocalLoginWithWrongCredentials() {
-    // Simulate saving of credentials prior to login
-    accountAuthenticatorSpy.secureSharedPreference.saveCredentials(authCredentials)
+    every {
+      tokenAuthenticator.validateSavedLoginCredentials(thisUsername, thisPassword.toCharArray())
+    } returns true
 
-    // Provide username and password (The saved password is hashed, actual one is needed)
-    loginViewModel.run {
-      onUsernameUpdated("hello")
-      onPasswordUpdated("51r1K4l1")
-    }
+    loginViewModel.login(activity)
 
-    val successfulLocalLogin = loginViewModel.attemptLocalLogin()
-    Assert.assertFalse(successfulLocalLogin)
-  }
-
-  @Test
-  fun testAttemptLocalLoginWithNewUser() {
-
-    // Provide username and password (The saved password is hashed, actual one is needed)
-    loginViewModel.run {
-      onUsernameUpdated("demo")
-      onPasswordUpdated("51r1K4l1")
-    }
-
-    val callMock = spyk<Call<OAuthResponse>>()
-
-    every { callMock.enqueue(any()) } just runs
-
-    every { accountAuthenticatorSpy.fetchToken(any(), any()) } returns callMock
-
-    loginViewModel.attemptRemoteLogin()
-
-    // Login error is reset to null
     Assert.assertNull(loginViewModel.loginErrorState.value)
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertTrue(loginViewModel.navigateToHome.value!!)
+  }
+  @Test
+  fun testUnSuccessfulOfflineLogin() {
+    val activity = mockedActivity()
 
-    // Show progress bar active
-    Assert.assertNotNull(loginViewModel.showProgressBar.value)
-    Assert.assertTrue(loginViewModel.showProgressBar.value!!)
+    updateCredentials()
 
-    verify { accountAuthenticatorSpy.fetchToken(any(), any()) }
+    every {
+      accountAuthenticator.validateLoginCredentials(thisUsername, thisPassword.toCharArray())
+    } returns false
+
+    every {
+      tokenAuthenticator.validateSavedLoginCredentials(thisUsername, thisPassword.toCharArray())
+    } returns false
+
+    loginViewModel.login(activity)
+
+    Assert.assertNotNull(loginViewModel.loginErrorState.value)
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertEquals(LoginErrorState.INVALID_CREDENTIALS, loginViewModel.loginErrorState.value!!)
   }
 
   @Test
-  fun testOauthResponseHandlerHandleSuccessfulResponse() {
+  fun testSuccessfulOnlineLoginWithActiveSessionWithSavedPractitionerDetails() {
+    updateCredentials()
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+      PractitionerDetails()
+    )
+    every { tokenAuthenticator.sessionActive() } returns true
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertTrue(loginViewModel.navigateToHome.value!!)
+  }
 
-    // Provide username and password (The saved password is hashed, actual one is needed)
-    loginViewModel.run {
-      onUsernameUpdated("demo")
-      onPasswordUpdated("51r1K4l1")
-    }
+  @Test
+  fun testSuccessfulOnlineLoginWithActiveSessionWithNoPractitionerDetailsSaved() {
+    updateCredentials()
+    every { tokenAuthenticator.sessionActive() } returns true
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+    Assert.assertFalse(loginViewModel.navigateToHome.value!!)
+  }
 
-    val callMock = spyk<Call<OAuthResponse>>()
+  @Test
+  fun testUnSuccessfulOnlineLoginUsingDifferentUsername() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials("nativeUser", "n4t1veP5wd".toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertEquals(
+      LoginErrorState.MULTI_USER_LOGIN_ATTEMPT,
+      loginViewModel.loginErrorState.value!!
+    )
+  }
 
-    val mockResponse: Response<OAuthResponse> =
-      Response.success(
+  @Test
+  fun testSuccessfulNewOnlineLoginShouldFetchUserInfoAndPractitioner() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns
+      Result.success(
         OAuthResponse(
-          accessToken = authCredentials.sessionToken,
-          tokenType = "openid email profile",
-          refreshToken = authCredentials.refreshToken,
-          scope = "openid"
+          accessToken = "very_new_top_of_the_class_access_token",
+          tokenType = "you_guess_it",
+          refreshToken = "another_very_refreshing_token",
+          refreshExpiresIn = 540000,
+          scope = "open_my_guy"
         )
       )
 
-    loginViewModel.oauthResponseHandler.handleResponse(call = callMock, response = mockResponse)
+    // Mock result for fetch user info via keycloak endpoint
+    coEvery { keycloakService.fetchUserInfo() } returns
+      Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
 
-    // Show progress bar inactive
-    Assert.assertNotNull(loginViewModel.showProgressBar.value)
+    // Mock result for retrieving a FHIR resource using user's keycloak uuid
+    val bundle = Bundle()
+    val bundleEntry = Bundle.BundleEntryComponent().apply { resource = practitionerDetails() }
+    coEvery { fhirResourceService.getResource(any()) } returns bundle.addEntry(bundleEntry)
+
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertTrue(loginViewModel.navigateToHome.value!!)
 
-    // New user credentials added
-    val retrieveCredentials = secureSharedPreference.retrieveCredentials()
-    Assert.assertNotNull(retrieveCredentials)
-    Assert.assertEquals(authCredentials.username, retrieveCredentials!!.username)
-    Assert.assertEquals(authCredentials.sessionToken, retrieveCredentials.sessionToken)
+    // Login was successful savePractitionerDetails was called
+    val bundleSlot = slot<Bundle>()
+    verify { loginViewModel.savePractitionerDetails(capture(bundleSlot)) }
+
+    Assert.assertNotNull(bundleSlot.captured)
+    Assert.assertTrue(bundleSlot.captured.entry.isNotEmpty())
+    Assert.assertTrue(bundleSlot.captured.entry[0].resource is PractitionerDetails)
+  }
+
+  @Test
+  fun testUnSuccessfulOnlineLoginUserInfoNotFetched() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns
+      Result.success(
+        OAuthResponse(
+          accessToken = "very_new_top_of_the_class_access_token",
+          tokenType = "you_guess_it",
+          refreshToken = "another_very_refreshing_token",
+          refreshExpiresIn = 540000,
+          scope = "open_my_guy"
+        )
+      )
+
+    // Mock result for fetch user info via keycloak endpoint
+    coEvery { keycloakService.fetchUserInfo() } returns
+      Response.error(400, mockk<RealResponseBody>(relaxed = true))
+
+    // Mock result for retrieving a FHIR resource using user's keycloak uuid
+    coEvery { fhirResourceService.getResource(any()) } returns Bundle()
+
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertEquals(LoginErrorState.ERROR_FETCHING_USER, loginViewModel.loginErrorState.value!!)
+  }
+
+  @Test
+  fun testUnSuccessfulOnlineLoginWhenAccessTokenNotReceived() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns Result.failure(UnknownHostException())
+
+    // Mock result for fetch user info via keycloak endpoint
+    coEvery { keycloakService.fetchUserInfo() } returns
+      Response.error(400, mockk<RealResponseBody>(relaxed = true))
+
+    // Mock result for retrieving a FHIR resource using user's keycloak uuid
+    coEvery { fhirResourceService.getResource(any()) } returns Bundle()
+
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertEquals(LoginErrorState.UNKNOWN_HOST, loginViewModel.loginErrorState.value!!)
+  }
+
+  private fun practitionerDetails(): PractitionerDetails {
+    return PractitionerDetails().apply {
+      fhirPractitionerDetails =
+        FhirPractitionerDetails().apply {
+          organizations =
+            listOf(
+              Organization().apply {
+                name = "the.org"
+                id = "the.org.id"
+              }
+            )
+        }
+    }
+  }
+
+  @Test
+  fun testSavePractitionerDetails() {
+    coEvery { defaultRepository.create(true, any()) } returns listOf()
+    loginViewModel.savePractitionerDetails(
+      Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = practitionerDetails() })
+    )
+    Assert.assertNotNull(
+      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name)
+    )
+  }
+
+  @Test
+  fun testUpdateNavigateShouldUpdateLiveData() {
+    loginViewModel.updateNavigateHome(true)
+    Assert.assertNotNull(loginViewModel.navigateToHome.value)
+    Assert.assertTrue(loginViewModel.navigateToHome.value!!)
   }
 
   @Test
@@ -201,123 +320,15 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertEquals("tel:0123456789", loginViewModel.launchDialPad.value)
   }
 
-  @Test
-  fun testAttemptRemoteLoginWithCredentialsCallsAccountAuthenticator() {
-
-    // Provide username and password
+  private fun updateCredentials() {
     loginViewModel.run {
-      onUsernameUpdated("testUser")
-      onPasswordUpdated("51r1K4l1")
-    }
-
-    loginViewModel.attemptRemoteLogin()
-
-    Assert.assertEquals(null, loginViewModel.loginErrorState.value)
-    loginViewModel.showProgressBar.value?.let { Assert.assertTrue(it) }
-    verify { accountAuthenticatorSpy.fetchToken("testUser", "51r1K4l1".toCharArray()) }
-  }
-
-  @Test
-  fun testHandleErrorMessageShouldVerifyExpectedMessage() {
-
-    ReflectionHelpers.callInstanceMethod<Any>(
-      loginViewModel,
-      "handleErrorMessage",
-      ReflectionHelpers.ClassParameter(Throwable::class.java, UnknownHostException())
-    )
-    Assert.assertEquals(LoginErrorState.UNKNOWN_HOST, loginViewModel.loginErrorState.value)
-
-    ReflectionHelpers.callInstanceMethod<Any>(
-      loginViewModel,
-      "handleErrorMessage",
-      ReflectionHelpers.ClassParameter(Throwable::class.java, InvalidCredentialsException())
-    )
-    Assert.assertEquals(LoginErrorState.INVALID_CREDENTIALS, loginViewModel.loginErrorState.value)
-
-    ReflectionHelpers.callInstanceMethod<Any>(
-      loginViewModel,
-      "handleErrorMessage",
-      ReflectionHelpers.ClassParameter(Throwable::class.java, LoginNetworkException())
-    )
-    Assert.assertEquals(LoginErrorState.NETWORK_ERROR, loginViewModel.loginErrorState.value)
-
-    ReflectionHelpers.callInstanceMethod<Any>(
-      loginViewModel,
-      "handleErrorMessage",
-      ReflectionHelpers.ClassParameter(Throwable::class.java, IOException())
-    )
-    Assert.assertEquals(LoginErrorState.NETWORK_ERROR, loginViewModel.loginErrorState.value)
-  }
-
-  @Test
-  fun testFetchLoggedInPractitionerShouldRetrieveAndSavePractitioner() {
-    coroutineTestRule.runBlockingTest {
-      val userInfo =
-        UserInfo(
-          questionnairePublisher = "quesP1",
-          keycloakUuid = "keyck1",
-          organization = "org",
-          location = "Nairobi"
-        )
-
-      val practitionerId = "12123"
-
-      coEvery { resourceService.searchResource(ResourceType.Practitioner.name, any()) } returns
-        Bundle().apply {
-          entry.add(
-            Bundle.BundleEntryComponent().apply {
-              resource = Practitioner().apply { id = practitionerId }
-            }
-          )
-        }
-
-      loginViewModel.fetchLoggedInPractitioner(userInfo)
-
-      // Shared preference contains practitioner details
-      val practitioner =
-        sharedPreferencesHelper.read<Practitioner>(
-          LOGGED_IN_PRACTITIONER,
-          decodeFhirResource = true
-        )
-      Assert.assertNotNull(practitioner)
-      Assert.assertEquals(practitionerId, practitioner!!.logicalId)
-
-      // Eventually dismisses the progress dialog and navigates home
-      Assert.assertNotNull(loginViewModel.showProgressBar.value)
-      Assert.assertFalse(loginViewModel.showProgressBar.value!!)
-      Assert.assertNotNull(loginViewModel.navigateToHome.value)
-      Assert.assertTrue(loginViewModel.navigateToHome.value!!)
+      onUsernameUpdated(thisUsername)
+      onPasswordUpdated(thisPassword)
     }
   }
-  @Test
-  fun testFetchLoggedInPractitionerWithNullKeycloakUuid() {
-    coroutineTestRule.runBlockingTest {
-      val userInfo =
-        UserInfo(
-          questionnairePublisher = "quesP1",
-          keycloakUuid = null,
-          organization = "org",
-          location = "Nairobi"
-        )
-
-      val practitionerId = "12123"
-
-      coEvery { resourceService.searchResource(ResourceType.Practitioner.name, any()) } returns
-        Bundle().apply {
-          entry.add(
-            Bundle.BundleEntryComponent().apply {
-              resource = Practitioner().apply { id = practitionerId }
-            }
-          )
-        }
-
-      loginViewModel.fetchLoggedInPractitioner(userInfo)
-
-      // Eventually dismisses the progress dialog and navigates home
-      Assert.assertNotNull(loginViewModel.showProgressBar.value)
-      Assert.assertFalse(loginViewModel.showProgressBar.value!!)
-      Assert.assertNotNull(loginViewModel.navigateToHome.value)
-      Assert.assertTrue(loginViewModel.navigateToHome.value!!)
-    }
+  private fun mockedActivity(isDeviceOnline: Boolean = false): HiltActivityForTest {
+    val activity = mockk<HiltActivityForTest>(relaxed = true)
+    every { activity.isDeviceOnline() } returns isDeviceOnline
+    return activity
   }
 }

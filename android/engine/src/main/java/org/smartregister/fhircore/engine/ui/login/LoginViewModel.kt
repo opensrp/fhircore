@@ -137,12 +137,12 @@ constructor(
   }
 
   fun login(context: Context) {
-    if (!username.value.isNullOrBlank() && !password.value.isNullOrBlank()) {
+    if (!_username.value.isNullOrBlank() && !_password.value.isNullOrBlank()) {
       _loginErrorState.postValue(null)
       _showProgressBar.postValue(true)
 
-      val trimmedUsername = username.value!!.trim()
-      val passwordAsCharArray = password.value!!.toCharArray()
+      val trimmedUsername = _username.value!!.trim()
+      val passwordAsCharArray = _password.value!!.toCharArray()
 
       if (context.getActivity()!!.isDeviceOnline()) {
         viewModelScope.launch {
