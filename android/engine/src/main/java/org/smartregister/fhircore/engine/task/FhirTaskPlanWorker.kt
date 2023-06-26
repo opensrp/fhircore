@@ -32,7 +32,6 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.hasStarted
 import org.smartregister.fhircore.engine.util.extension.isLastTask
-import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
 @HiltWorker
@@ -52,12 +51,22 @@ constructor(
       .search<Task> {
         filter(
           Task.STATUS,
-          { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
-          { value = of(Task.TaskStatus.READY.toCoding()) },
-          { value = of(Task.TaskStatus.ACCEPTED.toCoding()) },
-          { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
-          { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
+          { value = of(Task.TaskStatus.REQUESTED.toCode()) },
+          { value = of(Task.TaskStatus.READY.toCode()) },
+          { value = of(Task.TaskStatus.ACCEPTED.toCode()) },
+          { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
+          { value = of(Task.TaskStatus.RECEIVED.toCode()) },
         )
+      }
+      .filter {
+        it.status in
+          arrayOf(
+            Task.TaskStatus.REQUESTED,
+            Task.TaskStatus.READY,
+            Task.TaskStatus.ACCEPTED,
+            Task.TaskStatus.INPROGRESS,
+            Task.TaskStatus.RECEIVED
+          )
       }
       .forEach { task ->
         if (task.hasPastEnd()) {
@@ -75,7 +84,7 @@ constructor(
                 fhirEngine.update(carePlan)
               }
             }
-        } else if (task.hasStarted()) {
+        } else if (task.hasStarted() && task.status != Task.TaskStatus.READY) {
           task.status = Task.TaskStatus.READY
           fhirEngine.update(task)
         }
