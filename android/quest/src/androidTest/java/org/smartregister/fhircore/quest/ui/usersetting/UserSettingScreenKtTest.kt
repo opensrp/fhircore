@@ -24,6 +24,7 @@ import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ActivityScenario
 import java.util.Locale
+import kotlinx.coroutines.flow.MutableSharedFlow
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -150,7 +151,9 @@ class UserSettingScreenKtTest {
           onEvent = {},
           mainNavController = rememberNavController(),
           allowP2PSync = isP2PAvailable,
-          lastSyncTime = "05:30 PM, Mar 3"
+          lastSyncTime = "05:30 PM, Mar 3",
+          unsyncedResourcesFlow = MutableSharedFlow(),
+          dismissInsightsView = {}
         )
       }
 

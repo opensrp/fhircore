@@ -256,6 +256,19 @@ class RegisterFragmentTest : RobolectricTest() {
   }
 
   @Test
+  fun testOnSyncWithFailedJobStatusNonAuthErrorNullExceptionsRendersSyncFailedMessage() {
+
+    val syncJobStatus: SyncJobStatus.Failed = mockk()
+
+    every { syncJobStatus.exceptions } throws NullPointerException()
+
+    val registerFragmentSpy = spyk(registerFragment)
+    registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)
+    verify { registerFragmentSpy.onSync(syncJobStatus) }
+    verify { registerFragmentSpy.getString(R.string.sync_failed) }
+  }
+
+  @Test
   fun testOnSyncWithFailedJobStatusAuthErrorRendersSyncUnauthorizedMessage() {
     val syncJobStatus =
       SyncJobStatus.Failed(
