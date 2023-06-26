@@ -222,7 +222,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
             Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
 
-            syncJobStatus.exceptions.filterIsInstance<HttpException>().any { it.code() == 401 }
+            (syncJobStatus.exceptions[0].takeIf { it.exception is HttpException }?.exception as
+                HttpException)
+              .code() == 401
           } catch (e: NullPointerException) {
             false
           }
