@@ -162,7 +162,6 @@ constructor(
             .map { it.key to it.value }
 
         if (unsyncedResources.isNullOrEmpty()) {
-
           withContext(dispatcherProvider.main()) {
             context.showToast(context.getString(R.string.all_data_synced))
           }

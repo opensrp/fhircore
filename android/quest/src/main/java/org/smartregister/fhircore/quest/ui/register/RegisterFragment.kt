@@ -216,10 +216,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
       is SyncJobStatus.Failed -> {
         refreshRegisterData()
         // Show error message in snackBar message
-        // syncJobStatus.exceptions may be null when worker fails; hence the null safety usage
+        // syncJobStatus.exceptions may be null when worker fails; hence the null safety handling
         val hasAuthError =
           try {
-
             Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
 
             (syncJobStatus.exceptions[0].takeIf { it.exception is HttpException }?.exception as
