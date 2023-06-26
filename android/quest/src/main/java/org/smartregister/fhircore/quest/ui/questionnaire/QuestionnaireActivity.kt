@@ -69,7 +69,6 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.initialExpression
-import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
@@ -471,13 +470,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         questionnaireResponse = questionnaireResponse
       )
     } else {
-      questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
-      questionnaireViewModel.extractAndSaveResources(
-        context = this,
-        questionnaire = questionnaire,
-        questionnaireResponse = questionnaireResponse,
-        questionnaireConfig = questionnaireConfig
-      )
+      executeExtraction(questionnaireResponse)
     }
   }
 
@@ -516,18 +509,25 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             memberResourceType = questionnaireConfig.groupResource!!.memberResourceType
           )
         }
-        
-        // Calls the QuestionnaireViewModel to extract and save the resources.
-        questionnaireViewModel.extractAndSaveResources(
-          context = this,
-          questionnaire = questionnaire,
-          questionnaireResponse = questionnaireResponse,
-          questionnaireConfig = questionnaireConfig
-        )
-
+        executeExtraction(questionnaireResponse, questionnaireConfig)
         dialog.dismiss()
       },
       neutralButtonListener = { dialog -> dialog.dismiss() }
+    )
+  }
+
+  /** Calls the QuestionnaireViewModel to extract and save the resources. */
+  private fun executeExtraction(
+    questionnaireResponse: QuestionnaireResponse,
+    questionnaireConfig: QuestionnaireConfig = this.questionnaireConfig
+  ) {
+    questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
+
+    questionnaireViewModel.extractAndSaveResources(
+      context = this,
+      questionnaire = questionnaire,
+      questionnaireResponse = questionnaireResponse,
+      questionnaireConfig = questionnaireConfig
     )
   }
 
