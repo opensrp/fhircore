@@ -46,10 +46,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.DeleteForever
+import androidx.compose.material.icons.rounded.Insights
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,6 +75,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.flow.MutableSharedFlow
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
@@ -87,7 +90,7 @@ const val RESET_DATABASE_DIALOG = "resetDatabaseDialog"
 const val USER_SETTING_ROW_LOGOUT = "userSettingRowLogout"
 const val USER_SETTING_ROW_RESET_DATA = "userSettingRowResetData"
 const val USER_SETTING_ROW_P2P = "userSettingRowP2P"
-const val USER_SETTING_ROW_LANGUAGE = "userSettingRowLanguage"
+const val USER_SETTING_ROW_INSIGHTS = "userSettingRowInsights"
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
@@ -104,7 +107,9 @@ fun UserSettingScreen(
   mainNavController: NavController,
   appVersionPair: Pair<Int, String>? = null,
   allowP2PSync: Boolean,
-  lastSyncTime: String?
+  lastSyncTime: String?,
+  unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>>,
+  dismissInsightsView: () -> Unit
 ) {
   val context = LocalContext.current
   val (showProgressBar, messageResource) = progressBarState
@@ -267,6 +272,13 @@ fun UserSettingScreen(
       }
 
       UserSettingRow(
+        icon = Icons.Rounded.Insights,
+        text = stringResource(id = R.string.insights),
+        clickListener = { onEvent(UserSettingsEvent.ShowInsightsView(true, context)) },
+        modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS)
+      )
+
+      UserSettingRow(
         icon = Icons.Rounded.Logout,
         text = stringResource(id = R.string.logout),
         clickListener = { onEvent(UserSettingsEvent.Logout(context)) },
@@ -302,6 +314,12 @@ fun UserSettingScreen(
           modifier =
             modifier.padding(bottom = 12.dp, top = 2.dp).align(Alignment.CenterHorizontally)
         )
+      }
+
+      val unsyncedResources = unsyncedResourcesFlow.collectAsState(initial = listOf()).value
+
+      if (!unsyncedResources.isNullOrEmpty()) {
+        UserSettingInsightScreen(unsyncedResources, dismissInsightsView)
       }
     }
   }
@@ -397,6 +415,8 @@ fun UserSettingPreview() {
     mainNavController = rememberNavController(),
     appVersionPair = Pair(1, "1.0.1"),
     allowP2PSync = true,
-    lastSyncTime = "05:30 PM, Mar 3"
+    lastSyncTime = "05:30 PM, Mar 3",
+    unsyncedResourcesFlow = MutableSharedFlow(),
+    dismissInsightsView = {}
   )
 }
