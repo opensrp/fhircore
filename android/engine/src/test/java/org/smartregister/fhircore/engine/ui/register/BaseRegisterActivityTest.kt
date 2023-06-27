@@ -41,9 +41,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import java.io.InterruptedIOException
@@ -118,7 +116,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     every { secureSharedPreference.retrieveCredentials() } returns FakeModel.authCredentials
     every { secureSharedPreference.deleteCredentials() } returns Unit
-    every { accountAuthenticator.logout(any()) } returns  Unit
+    every { accountAuthenticator.logout(any()) } returns Unit
 
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
 

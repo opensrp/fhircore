@@ -96,9 +96,10 @@ constructor(
 
   fun onEvent(event: AppMainEvent) {
     when (event) {
-      is AppMainEvent.Logout -> accountAuthenticator.logout {
-        event.context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
-      }
+      is AppMainEvent.Logout ->
+        accountAuthenticator.logout {
+          event.context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
+        }
       is AppMainEvent.SwitchLanguage -> {
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {

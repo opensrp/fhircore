@@ -35,8 +35,6 @@ import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator.Companion.AUTH_TOKEN_TYPE
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.extension.getActivity
-import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import retrofit2.HttpException
 import timber.log.Timber
 

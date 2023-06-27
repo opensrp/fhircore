@@ -59,8 +59,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @BindValue
-  var configurationRegistry: ConfigurationRegistry =
-    Faker.buildTestConfigurationRegistry("quest", mockk())
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry("quest")
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()

@@ -24,7 +24,6 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
-import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import java.util.Date
@@ -51,8 +50,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 class PatientUtilTest : RobolectricTest() {
 
   @BindValue
-  var configurationRegistry: ConfigurationRegistry =
-    Faker.buildTestConfigurationRegistry("g6pd", mockk())
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry("g6pd")
   @Inject lateinit var fhirEngine: FhirEngine
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
