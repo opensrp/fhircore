@@ -269,3 +269,32 @@ spacedBy | An integer value that represents the spacing between the children vie
 wrapContent| A boolean value that represents whether the column should wrap its content or not | | false |
 arrangement | An enum value that represents the vertical arrangement of the child views of the column | | Null|
 children | A list of ViewProperties objects that represents the child views of the column | | emptyList()|
+
+## IMAGE widget
+Displays icons or Images. It inherits from ViewProperties and adds or modifies some other attributes.
+```json
+{
+  "viewType": "IMAGE",
+  "tint": "#FFFFFF",
+  "size": 40,
+  "imageConfig": {
+    "type": "local",
+    "reference": "@{taskStatusIcon}"
+    },
+    "padding": 4,
+    "backgroundColor": "@{taskStatusIcon}",
+    "isCircular": true
+    }
+```
+
+## Config properties of IMAGE
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType |  | Yes | [ViewType.IMAGE]|
+tint | a string specified as RGB Hex e.g '#FFFFFF'|  | |
+backgroundColor | The background color of the Image, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No |  Null |
+padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
+size | Size of the image in pixels | | 24 |
+imageConfig | The property that points to the actual image. It can either point to a local drawable or a server side Binary file| | [ViewAlignment.None]|
+padding | Dertimines whether the view should fill its parent's width | | false |
+shape | Used to clip the image into a shape e.g into a circle or rectangle | | false |
