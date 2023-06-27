@@ -25,6 +25,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -68,7 +69,7 @@ constructor(
   val launchDialPad
     get() = _launchDialPad
 
-  private val _navigateToHome = MutableLiveData<Boolean>()
+  private val _navigateToHome = MutableLiveData(false)
   val navigateToHome: LiveData<Boolean>
     get() = _navigateToHome
 
@@ -137,7 +138,9 @@ constructor(
   }
 
   fun login(context: Context) {
-    if (!_username.value.isNullOrBlank() && !_password.value.isNullOrBlank()) {
+    val usernameValue = _username.value
+    val passwordValue = _password.value
+    if (!usernameValue.isNullOrBlank() && !passwordValue.isNullOrBlank()) {
       _loginErrorState.postValue(null)
       _showProgressBar.postValue(true)
 
@@ -145,7 +148,7 @@ constructor(
       val passwordAsCharArray = _password.value!!.toCharArray()
 
       if (context.getActivity()!!.isDeviceOnline()) {
-        viewModelScope.launch {
+        viewModelScope.launch(dispatcherProvider.io()) {
           fetchToken(
             username = trimmedUsername,
             password = passwordAsCharArray,
@@ -190,9 +193,14 @@ constructor(
     username: String,
     password: CharArray,
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
-    onFetchPractitioner: (Result<org.hl7.fhir.r4.model.Bundle>) -> Unit
+    onFetchPractitioner: (Result<Bundle>) -> Unit
   ) {
-    if (tokenAuthenticator.sessionActive()) {
+    val practitionerDetails =
+      sharedPreferences.read<PractitionerDetails>(
+        key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+        decodeWithGson = true
+      )
+    if (tokenAuthenticator.sessionActive() && practitionerDetails != null) {
       _showProgressBar.postValue(false)
       updateNavigateHome(true)
     } else {
@@ -213,7 +221,6 @@ constructor(
       }
     }
   }
-
   fun updateNavigateHome(navigateHome: Boolean = true) {
     _navigateToHome.postValue(navigateHome)
   }

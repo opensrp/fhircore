@@ -97,7 +97,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
-  @BindValue val accountAuthenticator = mockk<AccountAuthenticator>()
+  @BindValue @JvmField val accountAuthenticator = mockk<AccountAuthenticator>()
   @BindValue @JvmField val performanceReporter: PerformanceReporter = FakePerformanceReporter()
 
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
@@ -118,6 +118,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     every { secureSharedPreference.retrieveCredentials() } returns FakeModel.authCredentials
     every { secureSharedPreference.deleteCredentials() } returns Unit
+    every { accountAuthenticator.logout(any()) } returns  Unit
 
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
 
@@ -512,14 +513,13 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   fun testOnNavigation_logout_onItemClicked_should_finishActivity() {
     every { tokenAuthenticator.findAccount() } returns Account("abc", "type")
     every { tokenAuthenticator.isTokenActive(any()) } returns false
-    every { accountAuthenticator.logout(context) } just runs
 
     val logoutMenuItem = RoboMenuItem(R.id.menu_item_logout)
     testRegisterActivity.onNavigationItemSelected(logoutMenuItem)
     Assert.assertFalse(
       testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
     )
-    verify(exactly = 1) { accountAuthenticator.logout(context) }
+    verify(exactly = 1) { accountAuthenticator.logout(any()) }
   }
 
   @Test
@@ -607,9 +607,6 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testHandleSyncFailed_should_verifyAllInternalState() {
-
-    every { accountAuthenticator.logout(context) } returns Unit
-
     val glitchState =
       SyncJobStatus.Glitch(
         listOf(
@@ -620,7 +617,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
       )
 
     handleSyncFailed(glitchState)
-    verify(exactly = 1) { accountAuthenticator.logout(context) }
+    verify(exactly = 1) { accountAuthenticator.logout(any()) }
 
     val failedState =
       SyncJobStatus.Failed(
@@ -632,7 +629,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
       )
 
     handleSyncFailed(failedState)
-    verify(exactly = 1, inverse = true) { accountAuthenticator.logout(context) }
+    verify(exactly = 1, inverse = true) { accountAuthenticator.logout(any()) }
 
     val glitchStateInterruptedIOException =
       SyncJobStatus.Glitch(

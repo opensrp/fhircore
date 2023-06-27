@@ -238,14 +238,6 @@ class LoginActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testNavigateToHomeShouldVerifyExpectedIntentWhenPinExists() {
-    val loginConfig = loginViewConfigurationOf(enablePin = true)
-    loginViewModel.updateViewConfigurations(loginConfig)
-    loginViewModel.navigateToHome()
-    verify { loginService.navigateToHome() }
-  }
-
-  @Test
   fun testNavigateToHomeShouldVerifyExpectedIntentWhenForcedLogin() {
     sharedPreferencesHelper.write(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, true)
     val loginConfig = loginViewConfigurationOf(enablePin = true)

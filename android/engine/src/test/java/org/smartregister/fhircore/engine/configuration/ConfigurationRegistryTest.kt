@@ -26,6 +26,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -48,7 +49,6 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -155,9 +155,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun testIsAppIdInitialized() {
-    runBlocking {
-      configurationRegistry.loadConfigurations(testAppId) {}
-    }
+    runBlocking { configurationRegistry.loadConfigurations(testAppId) {} }
     Assert.assertTrue(configurationRegistry.isAppIdInitialized())
   }
 

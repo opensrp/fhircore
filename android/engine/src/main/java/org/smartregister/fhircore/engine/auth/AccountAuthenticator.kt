@@ -150,10 +150,6 @@ constructor(
     }
   }
 
-  fun logout(context: Context) {
-    logout { context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>() }
-  }
-
   fun validateLoginCredentials(username: String, password: CharArray) =
     tokenAuthenticator.validateSavedLoginCredentials(username, password)
 

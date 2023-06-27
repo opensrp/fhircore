@@ -43,6 +43,7 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
+import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -95,7 +96,9 @@ constructor(
 
   fun onEvent(event: AppMainEvent) {
     when (event) {
-      is AppMainEvent.Logout -> accountAuthenticator.logout(event.context)
+      is AppMainEvent.Logout -> accountAuthenticator.logout {
+        event.context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
+      }
       is AppMainEvent.SwitchLanguage -> {
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {

@@ -171,7 +171,8 @@ internal class LoginViewModelTest : RobolectricTest() {
     updateCredentials()
     every { tokenAuthenticator.sessionActive() } returns true
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
-    Assert.assertFalse(loginViewModel.navigateToHome.value!!)
+    val toHome = loginViewModel.navigateToHome.value!!
+    Assert.assertFalse(toHome)
   }
 
   @Test

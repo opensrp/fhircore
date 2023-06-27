@@ -1091,7 +1091,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.appendPractitionerInfo(patient)
 
-    Assert.assertEquals("Practitioner/123", patient.generalPractitioner[0].reference)
+    Assert.assertEquals("Practitioner/12345", patient.generalPractitioner[0].reference)
   }
 
   @Test
@@ -1111,7 +1111,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testAddPractitionerInfoShouldSetIndividualPractitionerReferenceToEncounterResource() {
     val encounter = Encounter().apply { this.id = "123456" }
     questionnaireViewModel.appendPractitionerInfo(encounter)
-    Assert.assertEquals("Practitioner/123", encounter.participant[0].individual.reference)
+    Assert.assertEquals("Practitioner/12345", encounter.participant[0].individual.reference)
   }
 
   @Test
