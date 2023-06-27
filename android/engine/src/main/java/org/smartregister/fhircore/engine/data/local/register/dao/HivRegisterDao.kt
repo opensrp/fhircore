@@ -280,11 +280,20 @@ constructor(
       }
 
   internal suspend fun Patient.activeTasks(): List<Task> {
-    return this.activeCarePlans()
-      .flatMap { it.activity }
-      .flatMap { it.outcomeReference }
-      .filter { it.reference.startsWith(ResourceType.Task.name) }
-      .map { defaultRepository.loadResource(it) as Task }
+    return this.activeCarePlans().flatMap { it.activity }.flatMap {
+      it.outcomeReference
+        .filter { outcomeRef -> outcomeRef.reference.startsWith(ResourceType.Task.name) }
+        .map { reference ->
+          val task = defaultRepository.loadResource(reference) as Task
+          task.apply {
+            if (it.detail.status == CarePlan.CarePlanActivityStatus.COMPLETED &&
+                status != Task.TaskStatus.COMPLETED
+            ) {
+              status = Task.TaskStatus.COMPLETED
+            }
+          }
+        }
+    }
   }
 
   internal suspend fun Patient.activeCarePlans() =
