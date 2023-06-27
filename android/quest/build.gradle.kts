@@ -4,6 +4,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 buildscript {
   apply(from = "../jacoco.gradle.kts")
   apply(from = "../properties.gradle.kts")
+  apply(from = "../ktlint.gradle.kts")
 }
 
 plugins {
@@ -360,4 +361,8 @@ dependencies {
   androidTestImplementation(libs.ui.test.junit4)
   androidTestImplementation(libs.hilt.android.testing)
   androidTestImplementation(libs.mockk.android)
+  ktlint(libs.ktlint.main) {
+    attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
+  }
+  ktlint(project(":linting"))
 }
