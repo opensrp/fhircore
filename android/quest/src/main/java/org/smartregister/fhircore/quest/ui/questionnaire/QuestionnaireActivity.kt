@@ -69,7 +69,6 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.initialExpression
-import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
@@ -466,15 +465,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     if (questionnaireConfig.confirmationDialog != null) {
       dismissSaveProcessing()
-      confirmationDialog(questionnaireConfig = questionnaireConfig)
-    } else {
-      questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
-      questionnaireViewModel.extractAndSaveResources(
-        context = this,
-        questionnaire = questionnaire,
-        questionnaireResponse = questionnaireResponse,
-        questionnaireConfig = questionnaireConfig
+      confirmationDialog(
+        questionnaireConfig = questionnaireConfig,
+        questionnaireResponse = questionnaireResponse
       )
+    } else {
+      executeExtraction(questionnaireResponse)
     }
   }
 
@@ -483,7 +479,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     questionnaireViewModel.savePartialQuestionnaireResponse(questionnaire, questionnaireResponse)
   }
 
-  private fun confirmationDialog(questionnaireConfig: QuestionnaireConfig) {
+  private fun confirmationDialog(
+    questionnaireConfig: QuestionnaireConfig,
+    questionnaireResponse: QuestionnaireResponse
+  ) {
     AlertDialogue.showAlert(
       context = this,
       alertIntent = AlertIntent.CONFIRM,
@@ -510,9 +509,25 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             memberResourceType = questionnaireConfig.groupResource!!.memberResourceType
           )
         }
+        executeExtraction(questionnaireResponse, questionnaireConfig)
         dialog.dismiss()
       },
       neutralButtonListener = { dialog -> dialog.dismiss() }
+    )
+  }
+
+  /** Calls the QuestionnaireViewModel to extract and save the resources. */
+  private fun executeExtraction(
+    questionnaireResponse: QuestionnaireResponse,
+    questionnaireConfig: QuestionnaireConfig = this.questionnaireConfig
+  ) {
+    questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
+
+    questionnaireViewModel.extractAndSaveResources(
+      context = this,
+      questionnaire = questionnaire,
+      questionnaireResponse = questionnaireResponse,
+      questionnaireConfig = questionnaireConfig
     )
   }
 

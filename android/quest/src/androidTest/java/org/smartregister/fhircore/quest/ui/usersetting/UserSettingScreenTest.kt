@@ -24,6 +24,8 @@ import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ActivityScenario
 import java.util.Locale
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -31,7 +33,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
 
-class UserSettingScreenKtTest {
+class UserSettingScreenTest {
 
   @get:Rule(order = 1) val composeRule = createEmptyComposeRule()
   private lateinit var scenario: ActivityScenario<ComponentActivity>
@@ -129,13 +131,45 @@ class UserSettingScreenKtTest {
     composeRule.onNodeWithText("English").assertExists()
   }
 
+  @Test
+  fun testInsightsIsRenderedOnProfileScreen() {
+    initComposable()
+    composeRule.onNodeWithText("Insights").assertExists()
+  }
+
+  @Test
+  fun testOnClickingInsightsUnsavedDataShowsSyncStats() {
+    val unsyncedResources = listOf("Patient" to 10, "Encounters" to 5, "Observations" to 20)
+    initComposable(unsyncedResourcesFlow = MutableStateFlow(unsyncedResources))
+    composeRule.onNodeWithText("Insights").performClick()
+    composeRule.onNodeWithText("Dismiss").assertExists()
+
+    // Assert correct Sync stats content is rendered
+
+    composeRule.onNodeWithText("Patient").assertExists()
+    composeRule.onNodeWithText("10").assertExists()
+
+    composeRule.onNodeWithText("Observations").assertExists()
+    composeRule.onNodeWithText("20").assertExists()
+
+    composeRule.onNodeWithText("Encounters").assertExists()
+    composeRule.onNodeWithText("5").assertExists()
+  }
+  @Test
+  fun testOnClickingInsightsAllDataSavedToastShown() {
+    initComposable()
+    composeRule.onNodeWithText("Insights").performClick()
+    composeRule.onNodeWithText("Dismiss").assertDoesNotExist()
+  }
+
   private fun initComposable(
     allowSwitchingLanguages: Boolean = true,
     allowMainClockAutoAdvance: Boolean = false,
     isShowProgressBar: Boolean = false,
     isShowDatabaseResetConfirmation: Boolean = false,
     isDebugVariant: Boolean = false,
-    isP2PAvailable: Boolean = false
+    isP2PAvailable: Boolean = false,
+    unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>> = MutableSharedFlow()
   ) {
     scenario.onActivity { activity ->
       activity.setContent {
@@ -150,7 +184,9 @@ class UserSettingScreenKtTest {
           onEvent = {},
           mainNavController = rememberNavController(),
           allowP2PSync = isP2PAvailable,
-          lastSyncTime = "05:30 PM, Mar 3"
+          lastSyncTime = "05:30 PM, Mar 3",
+          unsyncedResourcesFlow = unsyncedResourcesFlow,
+          dismissInsightsView = {},
         )
       }
 

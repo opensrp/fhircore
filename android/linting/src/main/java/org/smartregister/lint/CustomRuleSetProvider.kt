@@ -16,7 +16,6 @@
 
 package org.smartregister.lint
 
-/** Created by Ephraim Kigamba - nek.eam@gmail.com on 14-06-2023. */
 import com.pinterest.ktlint.cli.ruleset.core.api.RuleSetProviderV3
 import com.pinterest.ktlint.rule.engine.core.api.RuleProvider
 import com.pinterest.ktlint.rule.engine.core.api.RuleSetId
