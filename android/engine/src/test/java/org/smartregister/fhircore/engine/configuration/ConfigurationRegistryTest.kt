@@ -20,14 +20,12 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -50,6 +48,7 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -62,7 +61,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   val context = ApplicationProvider.getApplicationContext<Context>()
   @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
-  private val testAppId = "app"
+  private val testAppId = "default"
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
   lateinit var configurationRegistry: ConfigurationRegistry
   var fhirEngine: FhirEngine = mockk()
@@ -105,8 +104,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
     val configurationsMap = configurationRegistry.configurationsMap
     Assert.assertTrue(configurationsMap.isNotEmpty())
-    Assert.assertTrue(configurationsMap.containsKey("app|login"))
-    Assert.assertTrue(configurationsMap["app|login"]!! is LoginViewConfiguration)
+    Assert.assertTrue(configurationsMap.containsKey("default|login"))
+    Assert.assertTrue(configurationsMap["default|login"]!! is LoginViewConfiguration)
 
     Assert.assertFalse(retrievedConfiguration.darkMode)
     Assert.assertFalse(retrievedConfiguration.showLogo)
@@ -151,13 +150,14 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   fun testLoadConfigurationRegistry() {
     runTest { configurationRegistry.fetchNonWorkflowConfigResources() }
-
     coVerify { fhirEngine.search<Composition>(any<Search>()) }
   }
 
   @Test
   fun testIsAppIdInitialized() {
-    Assert.assertFalse(configurationRegistry.isAppIdInitialized())
+    runBlocking {
+      configurationRegistry.loadConfigurations(testAppId) {}
+    }
     Assert.assertTrue(configurationRegistry.isAppIdInitialized())
   }
 
@@ -203,16 +203,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   fun testFetchNonWorkflowConfigResources() = runTest {
     val dispatcher = StandardTestDispatcher(testScheduler)
-    coEvery { configurationRegistry.searchCompositionByIdentifier(testAppId) } returns
-      Composition().apply {
-        addSection().apply { this.focus = Reference().apply { reference = "Questionnaire/123" } }
-      }
-    coEvery { configurationRegistry.fhirResourceDataSource.loadData(any()) } returns Bundle()
-
     configurationRegistry.appId = testAppId
     configurationRegistry.fetchNonWorkflowConfigResources(dispatcher)
 
-    //    coVerify { configurationRegistry.repository.searchCompositionByIdentifier(any()) }
     advanceUntilIdle()
     coVerify {
       fhirResourceDataSource.loadData(
@@ -225,12 +218,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testFetchNonWorkflowConfigResourcesWithNoEntry() {
     configurationRegistry.appId = "testApp"
     configurationRegistry.workflowPointsMap.clear()
-
-    coEvery { configurationRegistry.searchCompositionByIdentifier(any()) } returns null
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf()
 
     runBlocking { configurationRegistry.fetchNonWorkflowConfigResources() }
 
-    //    coVerify { defaultRepository.searchCompositionByIdentifier("testApp") }
     coVerify(inverse = true) { fhirResourceDataSource.loadData(any()) }
   }
 

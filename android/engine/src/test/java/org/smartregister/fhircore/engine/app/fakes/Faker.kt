@@ -42,7 +42,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest.Companion.r
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 
 object Faker {
-  private const val APP_DEBUG = "app/debug"
+  private const val APP_DEBUG = "default/debug"
   private val systemPath =
     (System.getProperty("user.dir") +
       File.separator +
