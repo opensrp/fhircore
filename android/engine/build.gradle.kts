@@ -250,7 +250,7 @@ dependencies {
   androidTestImplementation(libs.ui.test.junit4)
   androidTestImplementation(libs.hilt.android.testing)
 
-  ktlint("com.pinterest:ktlint:0.49.1") {
+  ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }
   ktlint(project(":linting"))
