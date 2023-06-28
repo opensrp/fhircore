@@ -23,6 +23,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.DateUtils.isToday
 
 class DateTimeExtensionTest : RobolectricTest() {
 
@@ -85,5 +86,10 @@ class DateTimeExtensionTest : RobolectricTest() {
     val date = Date("Fri, 1 Oct 2021 13:30:00")
     val formattedDate = date.toHumanDisplay()
     assertEquals("Oct 1, 2021 1:30:00 PM", formattedDate)
+  }
+
+  @Test
+  fun isTodayWithDateTodayShouldReturnTrue() {
+    assertTrue(today().isToday())
   }
 }

@@ -31,6 +31,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 
 @HiltAndroidTest
@@ -96,6 +97,27 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
   fun testWriteLongAsync() {
     sharedPreferencesHelper.write("anyLongKey", 123456789)
     Assert.assertEquals(123456789, sharedPreferencesHelper.read("anyLongKey", 0))
+  }
+
+  @Test
+  fun writeObjectUsingSerialized() {
+    val questionnaireConfig =
+      QuestionnaireConfig(form = "123", identifier = "123", title = "my-questionnaire")
+    sharedPreferencesHelper.write("object", questionnaireConfig)
+    Assert.assertEquals(
+      questionnaireConfig.identifier,
+      sharedPreferencesHelper.read<QuestionnaireConfig>("object")?.identifier
+    )
+  }
+
+  @Test
+  fun writeObjectUsingGson() {
+    val practitioner = Practitioner().apply { id = "1234" }
+    sharedPreferencesHelper.write("object", practitioner, encodeWithGson = true)
+    Assert.assertEquals(
+      practitioner.id,
+      sharedPreferencesHelper.read<Practitioner>("object", decodeWithGson = true)?.id
+    )
   }
 
   @Test
