@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.accompanist.flowlayout.FlowColumn
 import com.google.accompanist.flowlayout.FlowRow
+import org.smartregister.fhircore.engine.configuration.view.BorderProperties
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
@@ -177,6 +178,8 @@ fun GenerateView(
         )
       ViewType.SPACER ->
         SpacerView(modifier = modifier, spacerProperties = properties as SpacerProperties)
+      ViewType.BORDER ->
+        BorderView(modifier = modifier, borderProperties = properties as BorderProperties)
       ViewType.LIST ->
         List(
           modifier = modifier,
