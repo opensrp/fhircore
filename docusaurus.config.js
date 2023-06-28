@@ -47,9 +47,9 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'OpenSRP FHIR Core',
+        title: 'OpenSRP',
         logo: {
-          alt: 'OpenSRP FHIR Core Documentation',
+          alt: 'OpenSRP ocumentation',
           src: 'img/fhircore.png',
         },
         items: [
