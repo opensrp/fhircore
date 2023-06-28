@@ -49,7 +49,7 @@ const config = {
       navbar: {
         title: 'OpenSRP',
         logo: {
-          alt: 'OpenSRP ocumentation',
+          alt: 'OpenSRP Documentation',
           src: 'img/fhircore.png',
         },
         items: [
