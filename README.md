@@ -2,6 +2,7 @@
 [![codecov](https://codecov.io/gh/opensrp/fhircore/branch/main/graph/badge.svg?token=IJUTHZUGGH)](https://codecov.io/gh/opensrp/fhircore)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![project chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.fhir.org/#narrow/stream/370552-OpenSRP)
+[![Slack](https://img.shields.io/badge/slack-join_chat-purple)](https://join.slack.com/t/opensrp/shared_invite/zt-1xvw5fsjo-5RPlKqHmpU57SumJavgCzA)
 
 # OpenSRP FHIR Core
 
