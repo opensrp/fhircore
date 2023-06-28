@@ -19,6 +19,8 @@ package org.smartregister.fhircore.engine.configuration
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -239,5 +241,45 @@ class ConfigurationRegistryTest : RobolectricTest() {
         this.focus = Reference().apply { reference = "Questionnaire/123" }
       }
     Assert.assertFalse(configurationRegistry.isWorkflowPoint(sectionComponent))
+  }
+
+  @Test
+  @ExperimentalCoroutinesApi
+  fun testAddOrUpdate() {
+    // when does not exist
+    val patient = Faker.buildPatient()
+    coEvery { fhirEngine.get(patient.resourceType, patient.logicalId) } returns patient
+    coEvery { fhirEngine.update(any()) } returns Unit
+
+    runTest {
+      val previousLastUpdate = patient.meta.lastUpdated
+      configurationRegistry.addOrUpdate(patient)
+      Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
+    }
+
+    // when exists
+    runTest {
+      val previousLastUpdate = patient.meta.lastUpdated
+      configurationRegistry.addOrUpdate(patient)
+      Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
+    }
+  }
+
+  @Test
+  @ExperimentalCoroutinesApi
+  fun testAddOrUpdateCatchesResourceNotFound() {
+    val patient = Faker.buildPatient()
+    coEvery { fhirEngine.get(patient.resourceType, patient.logicalId) } throws
+      ResourceNotFoundException("", "")
+    coEvery { fhirEngine.create(any()) } returns listOf()
+
+    runTest {
+      val previousLastUpdate = patient.meta.lastUpdated
+      configurationRegistry.addOrUpdate(patient)
+      Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
+    }
+
+    coVerify(inverse = true) { fhirEngine.update(any()) }
+    coVerify { fhirEngine.create(patient) }
   }
 }
