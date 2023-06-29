@@ -62,4 +62,12 @@ class StringExtensionTest {
 
     Assert.assertEquals(templateString, templateString.interpolate(lookupMap))
   }
+
+  @Test
+  fun spaceByUppercaseShouldFormatString() {
+    val beforeFormatExampleOne = "QuestionnaireResponse"
+    val expected = "Questionnaire Response"
+
+    Assert.assertEquals(expected, beforeFormatExampleOne.spaceByUppercase())
+  }
 }
