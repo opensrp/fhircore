@@ -19,6 +19,10 @@ package org.smartregister.fhircore.engine.rulesengine
 import com.google.android.fhir.search.Order
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.ResourceType
@@ -32,10 +36,6 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import javax.inject.Inject
 
 @HiltAndroidTest
 class RulesEngineServiceTest : RobolectricTest() {
@@ -231,15 +231,19 @@ class RulesEngineServiceTest : RobolectricTest() {
 
   @Test
   fun `generateTaskServiceStatus() should return OVERDUE when Task#executionPeriod#hasEnd() and Task#executionPeriod#end#before(today())`() {
-  
+
     val sdf = SimpleDateFormat("dd/MM/yyyy")
     val startDate: Date? = sdf.parse("01/01/2023")
     val endDate: Date? = sdf.parse("01/02/2023")
-    
+
     val task =
       Task().apply {
         status = Task.TaskStatus.INPROGRESS
-        executionPeriod = Period().apply { start = startDate; end = endDate }
+        executionPeriod =
+          Period().apply {
+            start = startDate
+            end = endDate
+          }
       }
 
     Assert.assertEquals(
@@ -247,18 +251,22 @@ class RulesEngineServiceTest : RobolectricTest() {
       rulesEngineService.generateTaskServiceStatus(task)
     )
   }
-  
-    @Test
+
+  @Test
   fun `generateTaskServiceStatus() should not return OVERDUE when Task#executionPeriod#hasEnd() andTask#executionPeriod#end#before(today()) and Task#status is not INPROGRESS or READY`() {
-  
+
     val sdf = SimpleDateFormat("dd/MM/yyyy")
     val startDate: Date? = sdf.parse("01/01/2023")
     val endDate: Date? = sdf.parse("01/02/2023")
-    
+
     val task =
       Task().apply {
         status = Task.TaskStatus.REQUESTED
-        executionPeriod = Period().apply { start = startDate; end = endDate }
+        executionPeriod =
+          Period().apply {
+            start = startDate
+            end = endDate
+          }
       }
 
     Assert.assertEquals(
