@@ -4,8 +4,8 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.ktlint.cli.ruleset)
-    implementation(libs.ktlint.rule.engine.core)
+  implementation(libs.ktlint.cli.ruleset)
+  implementation(libs.ktlint.rule.engine.core)
 }
 
 java {
