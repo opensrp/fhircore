@@ -13,7 +13,8 @@ const config = {
   trailingSlash:false,
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/fhircore.png',
+  favicon: 'img/opensrp-logo.png',
+  staticDirectories: ['static'],
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -50,11 +51,11 @@ const config = {
         title: 'OpenSRP',
         logo: {
           alt: 'OpenSRP Documentation',
-          src: 'img/fhircore.png',
+          src: 'img/opensrp-logo.png',
         },
         items: [
           {
-            href: 'https://fhircore.smartregister.org/dokka',
+            href: '/dokka',
             label: 'Code Docs',
             position: 'right',
           },
