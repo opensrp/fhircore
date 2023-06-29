@@ -41,7 +41,6 @@ import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.domain.model.Language
@@ -49,6 +48,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -60,25 +60,27 @@ class UserProfileViewModelTest : RobolectricTest() {
   lateinit var userProfileViewModel: UserProfileViewModel
   lateinit var accountAuthenticator: AccountAuthenticator
   lateinit var secureSharedPreference: SecureSharedPreference
-  var sharedPreferencesHelper: SharedPreferencesHelper
+  lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
-  val defaultRepository: DefaultRepository = mockk()
-  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
 
-  private var configService: ConfigService
+  private lateinit var configService: ConfigService
 
   private val sharedSyncStatus: MutableSharedFlow<SyncJobStatus> = MutableSharedFlow()
-  private var syncBroadcaster: SyncBroadcaster
+  private lateinit var syncBroadcaster: SyncBroadcaster
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
-
   private val resourceService: FhirResourceService = mockk()
+  private lateinit var fhirResourceDataSource: FhirResourceDataSource
 
-  private var fhirResourceDataSource: FhirResourceDataSource
-
-  init {
-    sharedPreferencesHelper = SharedPreferencesHelper(context)
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+    accountAuthenticator = mockk()
+    secureSharedPreference = mockk()
+    sharedPreferencesHelper = mockk()
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
+
     syncBroadcaster =
       SyncBroadcaster(
         configurationRegistry,
@@ -90,14 +92,6 @@ class UserProfileViewModelTest : RobolectricTest() {
         tracer = mockk(),
         sharedPreferencesHelper = sharedPreferencesHelper
       )
-  }
-
-  @Before
-  fun setUp() {
-    hiltRule.inject()
-    accountAuthenticator = mockk()
-    secureSharedPreference = mockk()
-    sharedPreferencesHelper = mockk()
     userProfileViewModel =
       UserProfileViewModel(
         syncBroadcaster,
@@ -123,11 +117,11 @@ class UserProfileViewModelTest : RobolectricTest() {
 
   @Test
   fun testLogoutUserShouldCallAuthLogoutService() {
-    every { accountAuthenticator.logout() } returns Unit
+    every { accountAuthenticator.logout(any<() -> Unit>()) } returns Unit
 
-    userProfileViewModel.logoutUser()
+    userProfileViewModel.logoutUser(context)
 
-    verify(exactly = 1) { accountAuthenticator.logout() }
+    verify(exactly = 1) { accountAuthenticator.logout(any<() -> Unit>()) }
     Shadows.shadowOf(Looper.getMainLooper()).idle()
     Assert.assertTrue(userProfileViewModel.onLogout.value!!)
   }
@@ -154,10 +148,10 @@ class UserProfileViewModelTest : RobolectricTest() {
 
   @Test
   fun loadSelectedLanguage() {
-    every { sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, "en-GB") } returns "fr"
+    every { sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, "en-GB") } returns "fr"
 
     Assert.assertEquals("French", userProfileViewModel.loadSelectedLanguage())
-    verify { sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, "en-GB") }
+    verify { sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, "en-GB") }
   }
 
   @Test
@@ -173,7 +167,7 @@ class UserProfileViewModelTest : RobolectricTest() {
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
-    verify { sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, "es") }
+    verify { sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, "es") }
     Assert.assertEquals(language, postedValue!!)
   }
 

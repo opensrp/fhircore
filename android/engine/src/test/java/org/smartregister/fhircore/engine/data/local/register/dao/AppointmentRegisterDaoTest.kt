@@ -26,6 +26,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import java.util.Date
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Appointment
@@ -44,6 +45,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.app.fakes.Faker.buildPatient
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.AppointmentRegisterFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
@@ -53,13 +55,13 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class AppointmentRegisterDaoTest : RobolectricTest() {
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
+  @get:Rule(order = 2) var coroutineRule = CoroutineTestRule()
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
@@ -71,22 +73,30 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
 
   private val fhirEngine: FhirEngine = mockk()
 
-  var defaultRepository: DefaultRepository =
-    DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = DefaultDispatcherProvider())
+  lateinit var defaultRepository: DefaultRepository
+  @Inject lateinit var configService: ConfigService
 
-  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Before
   fun setUp() {
     hiltRule.inject()
-
+    defaultRepository =
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configurationRegistry = configurationRegistry,
+        configService = configService
+      )
     coEvery { fhirEngine.get(ResourceType.Patient, "1234") } returns
       buildPatient("1", "doe", "john", 10, patientType = "exposed-infant")
 
     coEvery { configurationRegistry.retrieveDataFilterConfiguration(any()) } returns emptyList()
 
-    every { sharedPreferencesHelper.read(LOGGED_IN_PRACTITIONER, null) } returns
-      Practitioner().apply { id = "123" }.encodeResourceToString()
+    every {
+      sharedPreferencesHelper.read<Practitioner>(LOGGED_IN_PRACTITIONER, decodeWithGson = true)
+    } returns Practitioner().apply { id = "123" }
 
     appointmentRegisterDao =
       AppointmentRegisterDao(

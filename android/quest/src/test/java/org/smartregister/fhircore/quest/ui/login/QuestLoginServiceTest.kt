@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.login
 import android.content.Intent
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
@@ -55,7 +54,7 @@ class QuestLoginServiceTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    runBlocking { configurationRegistry = Faker.buildTestConfigurationRegistry("quest", mockk()) }
+    runBlocking { configurationRegistry = Faker.buildTestConfigurationRegistry("quest") }
     loginService = spyk(questLoginService)
     loginActivity = Robolectric.buildActivity(LoginActivity::class.java).get()
     loginService.loginActivity = loginActivity

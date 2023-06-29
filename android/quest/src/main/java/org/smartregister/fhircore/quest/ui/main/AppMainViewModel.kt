@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.accounts.AccountManager
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -41,10 +42,14 @@ import org.smartregister.fhircore.engine.configuration.app.AppConfigClassificati
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
+import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
+import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
+import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.quest.navigation.SideMenuOptionFactory
@@ -91,9 +96,12 @@ constructor(
 
   fun onEvent(event: AppMainEvent) {
     when (event) {
-      AppMainEvent.Logout -> accountAuthenticator.logout()
+      is AppMainEvent.Logout ->
+        accountAuthenticator.logout {
+          event.context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
+        }
       is AppMainEvent.SwitchLanguage -> {
-        sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, event.language.tag)
+        sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
           setAppLocale(event.language.tag)
           (this as Activity).refresh()
@@ -101,29 +109,25 @@ constructor(
       }
       is AppMainEvent.SyncData -> {
         appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = false)
-        accountAuthenticator.loadActiveAccount(
-          onActiveAuthTokenFound = {
-            appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
-            run(resumeSync)
-          },
-          onValidTokenMissing = { onEvent(AppMainEvent.RefreshAuthToken(event.launchManualAuth)) }
-        )
+        appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
+        run(resumeSync)
       }
       is AppMainEvent.RefreshAuthToken -> {
         Timber.e("Refreshing token")
-        accountAuthenticator.refreshSessionAuthToken { accountBundleFuture ->
-          val bundle = accountBundleFuture.result
-          bundle.getParcelable<Intent>(AccountManager.KEY_INTENT).let { intent ->
-            if (intent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-              syncBroadcaster.runSync()
-              return@let
+        try {
+          accountAuthenticator.refreshSessionAuthToken()?.let { bundle ->
+            bundle.getParcelable<Intent>(AccountManager.KEY_INTENT).let { intent ->
+              if (intent == null && bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
+                syncBroadcaster.runSync()
+                return@let
+              }
+              intent!!
+              appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
+              intent.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
+              event.launchManualAuth(intent)
             }
-            intent!!
-            appMainUiState.value = appMainUiState.value.copy(syncClickEnabled = true)
-            intent.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
-            event.launchManualAuth(intent)
           }
-        }
+        } catch (e: Exception) {}
       }
       AppMainEvent.ResumeSync -> {
         run(resumeSync)
@@ -162,7 +166,7 @@ constructor(
 
   private fun loadCurrentLanguage() =
     Locale.forLanguageTag(
-        sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.UK.toLanguageTag())!!
+        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.UK.toLanguageTag())!!
       )
       .displayName
 
@@ -176,18 +180,20 @@ constructor(
     return if (parse == null) "" else simpleDateFormat.format(parse)
   }
 
-  fun retrieveLastSyncTimestamp(): String? = sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null)
+  fun retrieveLastSyncTimestamp(): String? =
+    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
   fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {
     sharedPreferencesHelper.write(
-      LAST_SYNC_TIMESTAMP,
-      formatLastSyncTimestamp(timestamp),
-      async = true
+      SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+      formatLastSyncTimestamp(timestamp)
     )
   }
 
-  fun onTimeOut() {
-    accountAuthenticator.invalidateAccount()
+  fun onTimeOut(context: Context) {
+    accountAuthenticator.invalidateSession {
+      context.getActivity()?.launchActivityWithNoBackStackHistory<AppSettingActivity>()
+    }
   }
 
   fun onTaskComplete(id: String?) {

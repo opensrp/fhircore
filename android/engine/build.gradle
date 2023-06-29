@@ -238,6 +238,7 @@ dependencies {
     // Hilt test dependencies
     testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
     kaptTest("com.google.dagger:hilt-android-compiler:$hiltVersion")
+    kaptTest("com.google.dagger:hilt-compiler:$hiltVersion")
 
     testImplementation deps.junit5_api
     testRuntimeOnly deps.junit5_engine

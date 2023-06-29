@@ -75,8 +75,7 @@ class ListDataDetailScreenTest : RobolectricTest() {
 
   @Inject lateinit var patientItemMapper: PatientItemMapper
   @BindValue
-  var configurationRegistry: ConfigurationRegistry =
-    Faker.buildTestConfigurationRegistry("g6pd", mockk())
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry("g6pd")
   val application = ApplicationProvider.getApplicationContext<Application>()
 
   val patientRepository: PatientRepository = mockk()

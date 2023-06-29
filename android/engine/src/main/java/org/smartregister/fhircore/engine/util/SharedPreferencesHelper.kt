@@ -18,26 +18,30 @@ package org.smartregister.fhircore.engine.util
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.util.extension.decodeJson
-import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 
 @Singleton
-class SharedPreferencesHelper @Inject constructor(@ApplicationContext val context: Context) {
+class SharedPreferencesHelper
+@Inject
+constructor(@ApplicationContext val context: Context, val gson: Gson) {
 
-  private var prefs: SharedPreferences =
+  val prefs: SharedPreferences by lazy {
     context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+  }
 
   /** @see [SharedPreferences.getString] */
   fun read(key: String, defaultValue: String?) = prefs.getString(key, defaultValue)
 
   /** @see [SharedPreferences.Editor.putString] */
-  fun write(key: String, value: String?, async: Boolean = false) {
+  fun write(key: String, value: String?) {
     with(prefs.edit()) {
       putString(key, value)
-      if (async) apply() else commit()
+      commit()
     }
   }
 
@@ -45,11 +49,11 @@ class SharedPreferencesHelper @Inject constructor(@ApplicationContext val contex
   fun read(key: String, defaultValue: Long) = prefs.getLong(key, defaultValue)
 
   /** @see [SharedPreferences.Editor.putLong] */
-  fun write(key: String, value: Long, async: Boolean = false) {
+  fun write(key: String, value: Long) {
     val prefsEditor: SharedPreferences.Editor = prefs.edit()
     with(prefsEditor) {
       putLong(key, value)
-      if (async) apply() else commit()
+      commit()
     }
   }
 
@@ -57,10 +61,26 @@ class SharedPreferencesHelper @Inject constructor(@ApplicationContext val contex
   fun read(key: String, defaultValue: Boolean) = prefs.getBoolean(key, defaultValue)
 
   /** @see [SharedPreferences.Editor.putBoolean] */
-  fun write(key: String, value: Boolean, async: Boolean = false) {
+  fun write(key: String, value: Boolean) {
     with(prefs.edit()) {
       putBoolean(key, value)
-      if (async) apply() else commit()
+      commit()
+    }
+  }
+
+  /** Read any JSON object with type T */
+  inline fun <reified T> read(key: String, decodeWithGson: Boolean = true): T? =
+    if (decodeWithGson) {
+      gson.fromJson(this.read(key, null), T::class.java)
+    } else {
+      this.read(key, null)?.decodeJson<T>()
+    }
+
+  /** Write any object by saving it as JSON */
+  inline fun <reified T> write(key: String, value: T?, encodeWithGson: Boolean = true) {
+    with(prefs.edit()) {
+      putString(key, if (encodeWithGson) gson.toJson(value) else value.encodeJson())
+      commit()
     }
   }
 
@@ -68,13 +88,12 @@ class SharedPreferencesHelper @Inject constructor(@ApplicationContext val contex
     prefs.edit().remove(key).apply()
   }
 
-  inline fun <reified T> read(key: String, decodeFhirResource: Boolean = false): T? =
-    if (decodeFhirResource) this.read(key, null)?.decodeResourceFromString()
-    else this.read(key, null)?.decodeJson<T>()
+  /** This method resets/clears all existing values in the shared preferences asynchronously */
+  fun resetSharedPrefs() {
+    prefs.edit()?.clear()?.apply()
+  }
 
   companion object {
-    const val LANG = "shared_pref_lang"
-    const val THEME = "shared_pref_theme"
     const val PREFS_NAME = "params"
     const val MEASURE_RESOURCES_LOADED = "measure_resources_loaded"
   }

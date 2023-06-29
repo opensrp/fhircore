@@ -20,34 +20,45 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
-import io.mockk.spyk
 import kotlinx.coroutines.runBlocking
 import org.cqframework.cql.cql2elm.CqlTranslator
 import org.cqframework.cql.cql2elm.FhirLibrarySourceProvider
 import org.cqframework.cql.cql2elm.LibraryManager
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
+@HiltAndroidTest
 class CqlContentTest : RobolectricTest() {
+  @get:Rule var hiltRule = HiltAndroidRule(this)
   val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
   val parser = fhirContext.newJsonParser()!!
   val evaluator = LibraryEvaluator().apply { initialize() }
+
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+  }
 
   @Test
   fun runCqlLibraryTestForPqMedication() {
@@ -83,11 +94,12 @@ class CqlContentTest : RobolectricTest() {
       }
 
     val fhirEngine = mockk<FhirEngine>()
-    val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
+    val defaultRepository = mockk<DefaultRepository>()
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
+    every { defaultRepository.fhirEngine } returns fhirEngine
     coEvery { defaultRepository.save(any()) } just runs
     coEvery { defaultRepository.search(any()) } returns listOf()
 
@@ -141,12 +153,13 @@ class CqlContentTest : RobolectricTest() {
       }
 
     val fhirEngine = mockk<FhirEngine>()
-    val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
+    val defaultRepository = mockk<DefaultRepository>()
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
     coEvery { defaultRepository.save(any()) } just runs
+    every { defaultRepository.fhirEngine } returns fhirEngine
     coEvery { defaultRepository.search(any()) } returns listOf()
 
     val result = runBlocking {
@@ -203,12 +216,14 @@ class CqlContentTest : RobolectricTest() {
       }
 
     val fhirEngine = mockk<FhirEngine>()
-    val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
+    val defaultRepository = mockk<DefaultRepository>()
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
+    every { defaultRepository.fhirEngine } returns fhirEngine
     coEvery { defaultRepository.save(any()) } just runs
+    coEvery { defaultRepository.search(any<DataRequirement>()) } returns listOf()
 
     val result = runBlocking {
       evaluator.runCqlLibrary(cqlLibrary.logicalId, null, dataBundle, defaultRepository)

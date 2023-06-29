@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.userprofile
 
+import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,9 +26,13 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
+import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 
 @HiltViewModel
 class UserProfileViewModel
@@ -50,9 +55,11 @@ constructor(
     syncBroadcaster.runSync()
   }
 
-  fun logoutUser() {
+  fun logoutUser(context: Context) {
     onLogout.postValue(true)
-    accountAuthenticator.logout()
+    accountAuthenticator.logout {
+      context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
+    }
   }
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
@@ -61,12 +68,12 @@ constructor(
 
   fun loadSelectedLanguage(): String =
     Locale.forLanguageTag(
-        sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.UK.toLanguageTag())!!
+        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.UK.toLanguageTag())!!
       )
       .displayName
 
   fun setLanguage(language: Language) {
-    sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, language.tag)
+    sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, language.tag)
     this.language.postValue(language)
   }
 }

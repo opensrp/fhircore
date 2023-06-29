@@ -58,6 +58,20 @@ class LoginActivity :
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
+    navigateToScreen()
+
+    setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
+
+    if (!intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME).isNullOrBlank() &&
+        loginViewModel.username.value.isNullOrBlank()
+    ) {
+      loginViewModel.onUsernameUpdated(intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)!!)
+      this@LoginActivity.showToast(getString(R.string.auth_token_expired), Toast.LENGTH_SHORT)
+    }
+  }
+
+  private fun navigateToScreen() {
     loginService.loginActivity = this
     loginViewModel.apply {
       loadLastLoggedInUsername()
@@ -68,7 +82,7 @@ class LoginActivity :
               loginViewModel.username.value?.trim()
 
         if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
-          val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
+          val lastPinExist = !secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
           val forceLoginViaUsernamePinSetup =
             loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
           when {
@@ -94,29 +108,20 @@ class LoginActivity :
         }
       }
       launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
-    }
 
-    if (configurationRegistry.isAppIdInitialized()) {
-      configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
-    }
+      if (configurationRegistry.isAppIdInitialized()) {
+        configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
+      }
 
-    // Check if Pin enabled and stored then move to Pin login
-    val isPinEnabled = loginViewModel.loginViewConfiguration.value?.enablePin ?: false
-    val forceLoginViaUsername =
-      loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, false)
-    val lastPinExist = loginViewModel.accountAuthenticator.hasActivePin()
-    if (isPinEnabled && lastPinExist && !forceLoginViaUsername) {
-      loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
-      loginService.navigateToPinLogin()
-    }
-
-    setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
-
-    if (!intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME).isNullOrBlank() &&
-        loginViewModel.username.value.isNullOrBlank()
-    ) {
-      loginViewModel.onUsernameUpdated(intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)!!)
-      this@LoginActivity.showToast(getString(R.string.auth_token_expired), Toast.LENGTH_SHORT)
+      // Check if Pin enabled and stored then move to Pin login
+      val isPinEnabled = loginViewConfiguration.value?.enablePin ?: false
+      val forceLoginViaUsername =
+        loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, false)
+      val lastPinExist = !secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
+      if (isPinEnabled && lastPinExist && !forceLoginViaUsername) {
+        loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
+        loginService.navigateToPinLogin()
+      }
     }
   }
 

@@ -16,41 +16,38 @@
 
 package org.smartregister.fhircore.engine.ui.login
 
-import android.accounts.AccountManager
-import android.accounts.AccountManagerCallback
-import android.accounts.AccountManagerFuture
-import android.os.Bundle
-import androidx.core.os.bundleOf
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.io.IOException
-import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import okhttp3.ResponseBody
-import org.hl7.fhir.r4.model.Practitioner
+import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
-import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
+import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.extension.decodeJson
-import org.smartregister.fhircore.engine.util.extension.encodeJson
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
-import retrofit2.Call
-import retrofit2.Response
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
+import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.model.practitioner.PractitionerDetails
+import retrofit2.HttpException
 import timber.log.Timber
 
 @HiltViewModel
@@ -58,96 +55,21 @@ class LoginViewModel
 @Inject
 constructor(
   val accountAuthenticator: AccountAuthenticator,
-  val dispatcher: DispatcherProvider,
   val sharedPreferences: SharedPreferencesHelper,
-  val fhirResourceDataSource: FhirResourceDataSource
-) : ViewModel(), AccountManagerCallback<Bundle> {
+  val secureSharedPreference: SecureSharedPreference,
+  val dispatcherProvider: DispatcherProvider,
+  val fhirResourceDataSource: FhirResourceDataSource,
+  val defaultRepository: DefaultRepository,
+  val tokenAuthenticator: TokenAuthenticator,
+  val keycloakService: KeycloakService,
+  val fhirResourceService: FhirResourceService,
+) : ViewModel() {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
   val launchDialPad
     get() = _launchDialPad
 
-  /**
-   * Fetch the user info after verifying credentials with flow.
-   *
-   * On user-resp (failure) show-error. On user-resp (success) store user info and goto home.
-   */
-  val responseBodyHandler =
-    object : ResponseHandler<ResponseBody> {
-      override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-        if (response.isSuccessful) {
-          response.body()?.let {
-            with(it.string().decodeJson<UserInfo>()) {
-              sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, this.encodeJson())
-              fetchLoggedInPractitioner(this)
-            }
-          }
-        } else {
-          handleFailure(call, IOException("Network call failed with $response"))
-        }
-        Timber.i(response.errorBody()?.toString() ?: "No error")
-      }
-
-      override fun handleFailure(call: Call<ResponseBody>, throwable: Throwable) {
-        Timber.e(throwable)
-        handleErrorMessage(throwable)
-        _showProgressBar.postValue(false)
-      }
-    }
-
-  private val userInfoResponseCallback: ResponseCallback<ResponseBody> by lazy {
-    object : ResponseCallback<ResponseBody>(responseBodyHandler) {}
-  }
-
-  /**
-   * Call after remote login and subsequently fetch userinfo, handles network failures incase
-   * previous successful attempt exists.
-   *
-   * On auth-resp (failure) show error, attempt local login (true), and goto home.
-   *
-   * On auth-resp success, fetch userinfo #LoginViewModel.responseBodyHandler. On subsequent
-   * user-resp (failure) show-error, otherwise on user-resp (success) store user info, and goto
-   * home.
-   * ```
-   * ```
-   */
-  val oauthResponseHandler =
-    object : ResponseHandler<OAuthResponse> {
-      override fun handleResponse(call: Call<OAuthResponse>, response: Response<OAuthResponse>) {
-        if (!response.isSuccessful) {
-          if (response.code() == 401) {
-            handleFailure(
-              call,
-              InvalidCredentialsException(Throwable(response.errorBody()?.toString()))
-            )
-          } else {
-            handleFailure(call, LoginNetworkException(Throwable(response.errorBody()?.toString())))
-          }
-        } else {
-          accountAuthenticator.run {
-            addAuthenticatedAccount(
-              response,
-              username.value!!.trim(),
-              password.value?.trim()?.toCharArray()!!
-            )
-            getUserInfo().enqueue(userInfoResponseCallback)
-          }
-        }
-      }
-
-      override fun handleFailure(call: Call<OAuthResponse>, throwable: Throwable) {
-        Timber.e(throwable.stackTraceToString())
-        if (attemptLocalLogin()) {
-          _navigateToHome.postValue(true)
-          _showProgressBar.postValue(false)
-          return
-        }
-        handleErrorMessage(throwable)
-        _showProgressBar.postValue(false)
-      }
-    }
-
-  private val _navigateToHome = MutableLiveData<Boolean>()
+  private val _navigateToHome = MutableLiveData(false)
   val navigateToHome: LiveData<Boolean>
     get() = _navigateToHome
 
@@ -175,52 +97,28 @@ constructor(
   val loadingConfig: LiveData<Boolean>
     get() = _loadingConfig
 
-  fun fetchLoggedInPractitioner(userInfo: UserInfo) {
-    if (!userInfo.keycloakUuid.isNullOrEmpty() &&
-        sharedPreferences.read(LOGGED_IN_PRACTITIONER, null) == null
-    ) {
-      viewModelScope.launch(dispatcher.io()) {
+  private suspend fun fetchPractitioner(
+    onFetchUserInfo: (Result<UserInfo>) -> Unit,
+    onFetchPractitioner: (Result<org.hl7.fhir.r4.model.Bundle>) -> Unit
+  ) {
+    try {
+      val userInfo = keycloakService.fetchUserInfo().body()
+      if (userInfo != null && !userInfo.keycloakUuid.isNullOrEmpty()) {
+        onFetchUserInfo(Result.success(userInfo))
         try {
-          fhirResourceDataSource.search(
-              ResourceType.Practitioner.name,
-              mapOf(IDENTIFIER to userInfo.keycloakUuid!!)
-            )
-            .run {
-              if (!this.entry.isNullOrEmpty()) {
-                sharedPreferences.write(
-                  LOGGED_IN_PRACTITIONER,
-                  (this.entryFirstRep.resource as Practitioner).encodeResourceToString()
-                )
-              }
-            }
-        } catch (throwable: Throwable) {
-          Timber.e("Error fetching practitioner details", throwable)
-        } finally {
-          _showProgressBar.postValue(false)
-          _navigateToHome.postValue(true)
+          val bundle =
+            fhirResourceService.getResource(url = userInfo.keycloakUuid!!.practitionerEndpointUrl())
+          onFetchPractitioner(Result.success(bundle))
+        } catch (httpException: HttpException) {
+          onFetchPractitioner(Result.failure(httpException))
         }
-      }
-    } else {
-      _showProgressBar.postValue(false)
-      _navigateToHome.postValue(true)
-    }
-  }
-
-  fun attemptLocalLogin(): Boolean {
-    return accountAuthenticator.validLocalCredentials(
-      username.value!!.trim(),
-      password.value!!.trim().toCharArray()
-    )
-  }
-
-  fun loginUser() {
-    viewModelScope.launch(dispatcher.io()) {
-      if (accountAuthenticator.hasActiveSession()) {
-        Timber.v("Login not needed .. navigating to home directly")
-        _navigateToHome.postValue(true)
       } else {
-        accountAuthenticator.loadActiveAccount(this@LoginViewModel)
+        onFetchPractitioner(
+          Result.failure(NullPointerException("Keycloak user is null. Failed to fetch user."))
+        )
       }
+    } catch (httpException: HttpException) {
+      onFetchUserInfo(Result.failure(httpException))
     }
   }
 
@@ -239,23 +137,92 @@ constructor(
     _password.value = password
   }
 
-  override fun run(future: AccountManagerFuture<Bundle>) {
-    val bundle = future.result ?: bundleOf()
-    bundle.getString(AccountManager.KEY_AUTHTOKEN)?.run {
-      if (this.isNotEmpty() && accountAuthenticator.tokenManagerService.isTokenActive(this)) {
-        _navigateToHome.postValue(true)
+  fun login(context: Context) {
+    val usernameValue = _username.value
+    val passwordValue = _password.value
+    if (!usernameValue.isNullOrBlank() && !passwordValue.isNullOrBlank()) {
+      _loginErrorState.postValue(null)
+      _showProgressBar.postValue(true)
+
+      val trimmedUsername = _username.value!!.trim()
+      val passwordAsCharArray = _password.value!!.toCharArray()
+
+      if (context.getActivity()!!.isDeviceOnline()) {
+        viewModelScope.launch(dispatcherProvider.io()) {
+          fetchToken(
+            username = trimmedUsername,
+            password = passwordAsCharArray,
+            onFetchUserInfo = {
+              if (it.isFailure) {
+                Timber.e(it.exceptionOrNull())
+                _showProgressBar.postValue(false)
+                _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
+              }
+            },
+            onFetchPractitioner = { bundleResult ->
+              _showProgressBar.postValue(false)
+              if (bundleResult.isSuccess) {
+                updateNavigateHome(true)
+                val bundle = bundleResult.getOrDefault(org.hl7.fhir.r4.model.Bundle())
+                savePractitionerDetails(bundle)
+              } else {
+                Timber.e(bundleResult.exceptionOrNull())
+                _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
+              }
+            }
+          )
+        }
+      } else {
+        if (accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)) {
+          _showProgressBar.postValue(false)
+          updateNavigateHome(true)
+        } else {
+          _showProgressBar.postValue(false)
+          _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
+        }
       }
     }
   }
 
-  fun attemptRemoteLogin() {
-    if (!username.value.isNullOrBlank() && !password.value.isNullOrBlank()) {
-      _loginErrorState.postValue(null)
-      _showProgressBar.postValue(true)
-      accountAuthenticator
-        .fetchToken(username.value!!.trim(), password.value!!.trim().toCharArray())
-        .enqueue(object : ResponseCallback<OAuthResponse>(oauthResponseHandler) {})
+  /**
+   * This function checks first if the existing token is active otherwise fetches a new token, then
+   * gets the user information from the authentication server. The id of the retrieved user is used
+   * to obtain the [PractitionerDetails] from the FHIR server.
+   */
+  private suspend fun fetchToken(
+    username: String,
+    password: CharArray,
+    onFetchUserInfo: (Result<UserInfo>) -> Unit,
+    onFetchPractitioner: (Result<Bundle>) -> Unit
+  ) {
+    val practitionerDetails =
+      sharedPreferences.read<PractitionerDetails>(
+        key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+        decodeWithGson = true
+      )
+    if (tokenAuthenticator.sessionActive() && practitionerDetails != null) {
+      _showProgressBar.postValue(false)
+      updateNavigateHome(true)
+    } else {
+      // Prevent user from logging in with different credentials
+      val existingCredentials = secureSharedPreference.retrieveCredentials()
+      if (existingCredentials != null && !username.equals(existingCredentials.username, true)) {
+        _showProgressBar.postValue(false)
+        _loginErrorState.postValue(LoginErrorState.MULTI_USER_LOGIN_ATTEMPT)
+      } else {
+        tokenAuthenticator
+          .fetchAccessToken(username, password)
+          .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
+          .onFailure {
+            _showProgressBar.postValue(false)
+            _loginErrorState.postValue(LoginErrorState.UNKNOWN_HOST)
+            Timber.e(it)
+          }
+      }
     }
+  }
+  fun updateNavigateHome(navigateHome: Boolean = true) {
+    _navigateToHome.postValue(navigateHome)
   }
 
   fun forgotPassword() {
@@ -269,12 +236,52 @@ constructor(
     _navigateToHome.postValue(navigateHome)
   }
 
-  private fun handleErrorMessage(throwable: Throwable) {
-    when (throwable) {
-      is UnknownHostException -> _loginErrorState.postValue(LoginErrorState.UNKNOWN_HOST)
-      is InvalidCredentialsException ->
-        _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
-      else -> _loginErrorState.postValue(LoginErrorState.NETWORK_ERROR)
+  fun savePractitionerDetails(bundle: org.hl7.fhir.r4.model.Bundle) {
+    Timber.e("Crashing here 2")
+    if (bundle.entry.isNullOrEmpty()) return
+    viewModelScope.launch {
+      val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
+
+      val careTeams = practitionerDetails.fhirPractitionerDetails?.careTeams ?: listOf()
+      val organizations = practitionerDetails.fhirPractitionerDetails?.organizations ?: listOf()
+      val locations = practitionerDetails.fhirPractitionerDetails?.locations ?: listOf()
+      val locationHierarchies =
+        practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
+      Timber.e("Crashing here 1")
+      val careTeamIds =
+        withContext(dispatcherProvider.io()) {
+          Timber.e("Crashing here")
+          defaultRepository.create(true, *careTeams.toTypedArray()).map {
+            it.extractLogicalIdUuid()
+          }
+        }
+      val organizationIds =
+        withContext(dispatcherProvider.io()) {
+          defaultRepository.create(true, *organizations.toTypedArray()).map {
+            it.extractLogicalIdUuid()
+          }
+        }
+      val locationIds =
+        withContext(dispatcherProvider.io()) {
+          defaultRepository.create(true, *locations.toTypedArray()).map {
+            it.extractLogicalIdUuid()
+          }
+        }
+
+      Timber.e("Practitioner ID: ${practitionerDetails.fhirPractitionerDetails?.practitionerId}")
+      sharedPreferences.write(
+        key = SharedPreferenceKey.PRACTITIONER_ID.name,
+        value = practitionerDetails.fhirPractitionerDetails?.practitionerId.valueToString()
+      )
+
+      sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS.name, practitionerDetails)
+      sharedPreferences.write(ResourceType.CareTeam.name, careTeamIds)
+      sharedPreferences.write(ResourceType.Organization.name, organizationIds)
+      sharedPreferences.write(ResourceType.Location.name, locationIds)
+      sharedPreferences.write(
+        SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
+        locationHierarchies
+      )
     }
   }
 

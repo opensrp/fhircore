@@ -196,7 +196,7 @@ fun AppDrawer(
         iconResource = R.drawable.ic_logout_white,
         title = stringResource(R.string.logout_user, username),
         showEndText = false,
-        onSideMenuClick = { onSideMenuClick(AppMainEvent.Logout) }
+        onSideMenuClick = { onSideMenuClick(AppMainEvent.Logout(context)) }
       )
     }
     Box(

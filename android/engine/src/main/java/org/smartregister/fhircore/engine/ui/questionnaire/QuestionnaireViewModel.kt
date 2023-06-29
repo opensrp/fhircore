@@ -55,7 +55,6 @@ import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
@@ -75,7 +74,7 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.TracingHelpers
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
@@ -85,6 +84,7 @@ import org.smartregister.fhircore.engine.util.extension.assertSubject
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.findSubject
@@ -130,11 +130,10 @@ constructor(
     sharedPreferencesHelper.read<UserInfo>(USER_INFO_SHARED_PREFERENCE_KEY)
   }
 
-  private val loggedInPractitioner by lazy {
-    sharedPreferencesHelper.read<Practitioner>(
-      key = LOGGED_IN_PRACTITIONER,
-      decodeFhirResource = true
-    )
+  private val practitionerId: String? by lazy {
+    sharedPreferencesHelper
+      .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+      ?.extractLogicalIdUuid()
   }
 
   suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
@@ -224,8 +223,8 @@ constructor(
   }
 
   fun appendPractitionerInfo(resource: Resource) {
-    loggedInPractitioner?.id?.let {
-      val practitionerRef = Reference().apply { reference = it }
+    practitionerId?.let {
+      val practitionerRef = it.asReference(ResourceType.Practitioner)
 
       if (resource is Encounter)
         resource.participant =
@@ -257,7 +256,7 @@ constructor(
             reference = "${ResourceType.RelatedPerson.name}/${resource.logicalId}"
           }
       }
-      defaultRepository.addOrUpdate(this)
+      defaultRepository.addOrUpdate(true, this)
     }
   }
 
@@ -467,7 +466,7 @@ constructor(
       it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
     }
 
-    defaultRepository.addOrUpdate(questionnaireResponse)
+    defaultRepository.addOrUpdate(true, questionnaireResponse)
   }
 
   suspend fun performExtraction(
@@ -489,7 +488,7 @@ constructor(
 
   suspend fun saveBundleResources(bundle: Bundle) {
     if (!bundle.isEmpty) {
-      bundle.entry.forEach { defaultRepository.addOrUpdate(it.resource) }
+      bundle.entry.forEach { defaultRepository.addOrUpdate(true, it.resource) }
     }
   }
 

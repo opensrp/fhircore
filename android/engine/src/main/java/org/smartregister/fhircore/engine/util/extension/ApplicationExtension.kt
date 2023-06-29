@@ -81,14 +81,6 @@ suspend fun FhirEngine.searchActivePatients(
 suspend fun FhirEngine.countActivePatients(): Long =
   this.count<Patient> { apply { filter(Patient.ACTIVE, { value = of(true) }) }.getQuery(true) }
 
-suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
-  return try {
-    this@loadResource.get(resourceId)
-  } catch (resourceNotFoundException: ResourceNotFoundException) {
-    null
-  }
-}
-
 suspend fun FhirEngine.loadRelatedPersons(patientId: String): List<RelatedPerson>? {
   return try {
     this@loadRelatedPersons.search {

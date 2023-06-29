@@ -139,6 +139,15 @@ class QuestApplication :
 
   override fun onStart(owner: LifecycleOwner) {
     appInActivityListener.stop()
+    if (mForegroundActivityContext != null) {
+      accountAuthenticator.loadActiveAccount(
+        onValidTokenMissing = {
+          if (it.component!!.className != mForegroundActivityContext!!::class.java.name) {
+            mForegroundActivityContext!!.startActivity(it)
+          }
+        }
+      )
+    }
     mForegroundActivityContext
       ?.takeIf {
         val name = it::class.java.name

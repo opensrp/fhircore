@@ -30,6 +30,8 @@ val SDF_DD_MMM_YYYY = SimpleDateFormat("dd-MMM-yyyy")
 val SDF_YYYY_MM_DD = SimpleDateFormat("yyyy-MM-dd")
 val SDF_DD_MM_YYYY = SimpleDateFormat("dd/MM/yyyy")
 
+fun today(): Date = DateTimeType.today().value
+
 fun OffsetDateTime.asString(): String {
   return this.format(DateTimeFormatter.RFC_1123_DATE_TIME)
 }

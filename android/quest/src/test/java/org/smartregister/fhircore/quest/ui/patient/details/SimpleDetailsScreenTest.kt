@@ -74,7 +74,7 @@ class SimpleDetailsScreenTest : RobolectricTest() {
         mockk(),
         mockk(),
         mockk(),
-        defaultRepository
+        mockk()
       )
 
     viewModel = spyk(SimpleDetailsViewModel(patientRepository = patientRepository))

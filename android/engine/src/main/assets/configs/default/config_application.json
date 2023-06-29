@@ -8,5 +8,6 @@
   ],
   "applicationName": "Sample App",
   "appLogoIconResourceFile": "ic_launcher",
-  "count": "100"
+  "count": "100",
+  "syncStrategies": ["Organization", "Location", "CareTeam", "Practitioner"]
 }

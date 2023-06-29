@@ -36,7 +36,7 @@ class AppSyncWorker
 constructor(
   @Assisted appContext: Context,
   @Assisted workerParams: WorkerParameters,
-  val syncParametersManager: SyncParametersManager,
+  private val syncListenerManager: SyncListenerManager,
   val engine: FhirEngine,
   val dataStore: AppDataStore
 ) : FhirSyncWorker(appContext, workerParams) {
@@ -44,7 +44,7 @@ constructor(
 
   override fun getDownloadWorkManager(): DownloadWorkManager =
     ResourceParamsBasedDownloadWorkManager(
-      syncParams = syncParametersManager.getSyncParams(),
+      syncParams = syncListenerManager.loadSyncParams(),
       context =
         object : ResourceParamsBasedDownloadWorkManager.TimestampContext {
           override suspend fun getLasUpdateTimestamp(resourceType: ResourceType): String =

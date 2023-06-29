@@ -55,8 +55,7 @@ class QuestionnaireDataDetailDetailActivityTest : RobolectricTest() {
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
   @BindValue
-  var configurationRegistry: ConfigurationRegistry =
-    Faker.buildTestConfigurationRegistry("g6pd", mockk())
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry("g6pd")
 
   private val hiltTestApplication = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 

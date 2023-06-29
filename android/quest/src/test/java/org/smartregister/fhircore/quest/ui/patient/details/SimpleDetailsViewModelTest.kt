@@ -66,7 +66,7 @@ class SimpleDetailsViewModelTest : RobolectricTest() {
   @Test
   fun testLoadData() = runBlockingTest {
     coEvery { patientRepository.configurationRegistry } returns
-      Faker.buildTestConfigurationRegistry("g6pd", mockk())
+      Faker.buildTestConfigurationRegistry("g6pd")
     coEvery { patientRepository.loadEncounter(any()) } returns
       Encounter().apply { id = encounterId }
 

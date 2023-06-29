@@ -21,11 +21,12 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
+import io.mockk.spyk
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -41,37 +42,26 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    secureSharedPreference = SecureSharedPreference(application)
+    secureSharedPreference = spyk(SecureSharedPreference(application))
   }
 
   @Test
   fun testSaveCredentialsAndRetrieveSessionToken() {
-    secureSharedPreference.saveCredentials(
-      AuthCredentials(
-        username = "userName",
-        password = "!@#$",
-        sessionToken = "sessionToken",
-        refreshToken = "refreshToken"
-      )
-    )
-    Assert.assertEquals("sessionToken", secureSharedPreference.retrieveSessionToken()!!)
+    secureSharedPreference.saveCredentials(username = "userName", password = "!@#$".toCharArray())
     Assert.assertEquals("userName", secureSharedPreference.retrieveSessionUsername()!!)
   }
 
   @Test
   fun testRetrieveCredentials() {
-    secureSharedPreference.saveCredentials(
-      AuthCredentials(
-        username = "userName",
-        password = "!@#$",
-        sessionToken = "sessionToken",
-        refreshToken = "refreshToken"
-      )
-    )
+    every { secureSharedPreference.get256RandomBytes() } returns byteArrayOf(-100, 0, 100, 101)
+
+    secureSharedPreference.saveCredentials(username = "userName", password = "!@#$".toCharArray())
+
     Assert.assertEquals("userName", secureSharedPreference.retrieveCredentials()!!.username)
-    Assert.assertEquals("!@#$", secureSharedPreference.retrieveCredentials()!!.password)
-    Assert.assertEquals("sessionToken", secureSharedPreference.retrieveCredentials()!!.sessionToken)
-    Assert.assertEquals("refreshToken", secureSharedPreference.retrieveCredentials()!!.refreshToken)
+    Assert.assertEquals(
+      "!@#$".toCharArray().toPasswordHash(byteArrayOf(-100, 0, 100, 101)),
+      secureSharedPreference.retrieveCredentials()!!.passwordHash
+    )
   }
 
   @Test

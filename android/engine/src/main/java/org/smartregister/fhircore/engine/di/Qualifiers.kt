@@ -22,12 +22,27 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 @ExcludeFromJacocoGeneratedReport
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
-annotation class AuthOkHttpClientQualifier
+annotation class NoAuthorizationOkHttpClientQualifier
 
 @ExcludeFromJacocoGeneratedReport
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
-annotation class OkHttpClientQualifier
+annotation class WithAuthorizationOkHttpClientQualifier
+
+@ExcludeFromJacocoGeneratedReport
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class AuthenticationRetrofit
+
+@ExcludeFromJacocoGeneratedReport
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class KeycloakRetrofit
+
+@ExcludeFromJacocoGeneratedReport
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class RegularRetrofit
 
 @ExcludeFromJacocoGeneratedReport
 @Qualifier

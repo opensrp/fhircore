@@ -28,7 +28,10 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import timber.log.Timber
 
 @HiltViewModel
@@ -114,5 +117,9 @@ constructor(
     return if (!appId.value.isNullOrBlank())
       appId.value!!.split("/").last().contentEquals(DEBUG_SUFFIX)
     else null
+  }
+
+  fun launchLoginScreen(context: Context) {
+    context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
   }
 }
