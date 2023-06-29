@@ -1,5 +1,5 @@
 ---
-title: Questionnaire
+title: Questionnaires
 ---
 
 # Questionnaire configuration
@@ -12,34 +12,31 @@ Use this configuration in other configs like profile and register.
 
 FHIR Core reads user data from label fields, date pickers, radiobutton, checkboxes  e.t.c through forms called Questionnaires
 We can group these into 3 categories.fields
-## The questionnaire configs
 
-Let's take the example below
-
-## A General Questionnaire config
+## A general questionnaire config
 
 ``` json
+{
+  "id":"recordAsSick",
+  "title": "Record as Sick",
+  "titleColor": "@{patientTextColor}",
+  "visible": "@{isChildUnder2months}",
+  "enabled": "@{patientActive}",
+  "actions": [
     {
-      "id":"recordAsSick",
-      "title": "Record as Sick",
-      "titleColor": "@{patientTextColor}",
-      "visible": "@{isChildUnder2months}",
-      "enabled": "@{patientActive}",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "questionnaire": {
-            "id": "questionnaire-uuid",
-            "title": "Record sick child",
-            "resourceIdentifier": "@{patientId}"
-          }
-        }
-      ]
-    },
+      "trigger": "ON_CLICK",
+      "workflow": "LAUNCH_QUESTIONNAIRE",
+      "questionnaire": {
+        "id": "questionnaire-uuid",
+        "title": "Record sick child",
+        "resourceIdentifier": "@{patientId}"
+      }
+    }
+  ]
+}
 ```
-The above is a simple question that can be used to record a sick patient.
 
+The above is a simple question that can be used to record a sick patient.
 
 ## Config properties
 
@@ -54,16 +51,18 @@ actions    | A list of actions that you would like to be executed | yes if you a
 actions (trigger) | Defines when you want to launch the questions | yes |        |
 actions(workflow) | Import to execute logic related to the questionnaire | yes |  |
 
-### questionnaire config actions
+### Questionnaire config actions
+
 ``` json
-  "questionnaire": {
-            "id": "questionnaire-uuid",
-            "title": "Record sick child",
-            "resourceIdentifier": "@{patientId}"
-          }
+"questionnaire": {
+  "id": "questionnaire-uuid",
+  "title": "Record sick child",
+  "resourceIdentifier": "@{patientId}"
+}
 ```
 
-## Questionnaire block Config properties
+## Questionnaire block config properties
+
 | Property | Description | Required | Default |
 |--|--|:--:|:--:|
 id   | Unique uuid that determines what questionnaire i.e form to launch | yes | |
@@ -74,35 +73,35 @@ resourceIdentifier | FHIR resource to pull/add or update | yes | |
 The questionnaire id inside the questionnaire block
 
 
-## Sample questionnaire with planDefinition
+## Sample questionnaire with a planDefinition
 
 ``` json
-   {
-      "title": "Register Pregnancy",
-      "titleColor": "@{patientTextColor}",
-      "visible": "@{canRegisterPregnancy}",
-      "enabled": "@{patientActive}",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "questionnaire": {
-            "id": "questionnaire-uuid",
-            "title": "Record to ANC",
-            "resourceIdentifier": "@{patientId}",
-            "planDefinitions": [
-              "planDefinition-uuid"
-            ]
-          }
-        }
-      ]
+{
+  "title": "Register Pregnancy",
+  "titleColor": "@{patientTextColor}",
+  "visible": "@{canRegisterPregnancy}",
+  "enabled": "@{patientActive}",
+  "actions": [
+    {
+      "trigger": "ON_CLICK",
+      "workflow": "LAUNCH_QUESTIONNAIRE",
+      "questionnaire": {
+        "id": "questionnaire-uuid",
+        "title": "Record to ANC",
+        "resourceIdentifier": "@{patientId}",
+        "planDefinitions": [
+          "planDefinition-uuid"
+        ]
+      }
     }
+  ]
+}
 ```
 
 The above questionnaire JSON config adds planDefinition in an array. For each item in the array, we pull related plan Definitions.
 These are used when generating other tasks, CarePlans and related resources.See https://fhircore.smartregister.org/writing-fhir/plan-definiton
 
-## Extra Config properties
+## Extra config properties
 
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
@@ -110,96 +109,96 @@ planDefinitions | A list of questionnaire planDefinition uuids | no | null |
 
 
 ## Sample questionnaire with an event workflow
-Suppose you wanted to close above mentioned generated resources. For example when moving a patient from ANC to PNC you would like to close Tasks and careplans
-generated then below are the configs to use
+
+Suppose you wanted to close above mentioned generated resources. For example, when moving a patient from ANC to PNC you would like to close exsiting Tasks and Careplans generated for ANC, the below configs shows how to do this.
 
 
 ## Sample questionnaire with an event workflow
 ``` json
-       {
-         "title": "Pregnancy Outcome",
-         "titleColor": "@{patientTextColor}",
-         "visible": "@{isPregnant}",
-         "enabled": "@{patientActive}",
-         "actions": [
-           {
-             "trigger": "ON_CLICK",
-             "workflow": "LAUNCH_QUESTIONNAIRE",
-             "questionnaire": {
-               "id": "questionnaire-uuid",
-               "title": "Pregnancy outcome",
-               "resourceIdentifier": "@{patientId}",
-               "planDefinitions": [
-                 "planDefinitions-uuid"
-               ],
-               "eventWorkflows": [
+{
+  "title": "Pregnancy Outcome",
+  "titleColor": "@{patientTextColor}",
+  "visible": "@{isPregnant}",
+  "enabled": "@{patientActive}",
+  "actions": [
+   {
+     "trigger": "ON_CLICK",
+     "workflow": "LAUNCH_QUESTIONNAIRE",
+     "questionnaire": {
+       "id": "questionnaire-uuid",
+       "title": "Pregnancy outcome",
+       "resourceIdentifier": "@{patientId}",
+       "planDefinitions": [
+         "planDefinitions-uuid"
+       ],
+       "eventWorkflows": [
+         {
+           "eventType": "RESOURCE_CLOSURE",
+           "triggerConditions": [
+             {
+               "eventResourceId": "carePlanToBeClosed",
+               "matchAll": false,
+               "conditionalFhirPathExpressions": [
+                 "condition-to-check"
+               ]
+             }
+           ],
+           "eventResources": [
+             {
+               "id": "carePlanToBeClosed",
+               "resource": "CarePlan",
+               "configRules": [
                  {
-                   "eventType": "RESOURCE_CLOSURE",
-                   "triggerConditions": [
+                   "name": "patientId",
+                   "condition": "true",
+                   "actions": [
+                     "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))"
+                   ]
+                 }
+               ],
+               "dataQueries": [
+                 {
+                   "paramName": "instantiates-canonical",
+                   "filterCriteria": [
                      {
-                       "eventResourceId": "carePlanToBeClosed",
-                       "matchAll": false,
-                       "conditionalFhirPathExpressions": [
-                         "condition-to-check"
-                       ]
+                       "dataType": "REFERENCE",
+                       "value": "PlanDefinition/planDefinition-uuid-used-to-generate-the-resources"
                      }
-                   ],
-                   "eventResources": [
+                   ]
+                 },
+                 {
+                   "paramName": "subject",
+                   "filterCriteria": [
                      {
-                       "id": "carePlanToBeClosed",
-                       "resource": "CarePlan",
-                       "configRules": [
-                         {
-                           "name": "patientId",
-                           "condition": "true",
-                           "actions": [
-                             "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))"
-                           ]
-                         }
-                       ],
-                       "dataQueries": [
-                         {
-                           "paramName": "instantiates-canonical",
-                           "filterCriteria": [
-                             {
-                               "dataType": "REFERENCE",
-                               "value": "PlanDefinition/planDefinition-uuid-used-to-generate-the-resources"
-                             }
-                           ]
-                         },
-                         {
-                           "paramName": "subject",
-                           "filterCriteria": [
-                             {
-                               "dataType": "REFERENCE",
-                               "computedRule": "patientId"
-                             }
-                           ]
-                         }
-                       ],
-                       "relatedResources": [
-                         {
-                           "resource": "Task",
-                           "searchParameter": "based-on"
-                         }
-                       ]
+                       "dataType": "REFERENCE",
+                       "computedRule": "patientId"
                      }
                    ]
                  }
+               ],
+               "relatedResources": [
+                 {
+                   "resource": "Task",
+                   "searchParameter": "based-on"
+                 }
                ]
-             },
-             "params": [
-               {
-                 "paramType": "PREPOPULATE",
-                 "linkId": "linkId-uuid",
-                 "dataType": "STRING",
-                 "key": "key",
-                 "value": "@{value-before-interpolation}"
-               }
-             ]
-           }
-         ]
+             }
+           ]
+         }
+       ]
+     },
+     "params": [
+       {
+         "paramType": "PREPOPULATE",
+         "linkId": "linkId-uuid",
+         "dataType": "STRING",
+         "key": "key",
+         "value": "@{value-before-interpolation}"
        }
+     ]
+   }
+  ]
+}
 ```
 
 ## Extra eventWorkflows properties
