@@ -4,6 +4,7 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.sync.ResourceTag
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,4 +20,8 @@ class DataClerkConfigService @Inject constructor(@ApplicationContext val context
                     clientSecret = BuildConfig.OAUTH_CLIENT_SECRET,
                     accountType = BuildConfig.APPLICATION_ID
             )
+
+    override fun defineResourceTags(): List<ResourceTag> {
+        TODO("Not yet implemented")
+    }
 }
