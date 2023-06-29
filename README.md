@@ -34,7 +34,7 @@ This repository contains the folders
 * **[android](android)**: for building the Android application.
 * **[docs](docs)**: a library of documents describing the FHIR Core solution.
 
-We recommend reviewing the [docs](https://fhircore.smartregister.org/) before setting up the Android Studio Project in the [android](android) folder.
+We recommend reviewing the [docs](https://docs.smartregister.org/) before setting up the Android Studio Project in the [android](android) folder.
 
 For starter resources on the FHIR specification:
 
