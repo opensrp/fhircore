@@ -54,7 +54,7 @@ const config = {
         },
         items: [
           {
-            href: 'https://fhircore.smartregister.org/dokka',
+            href: '/dokka',
             label: 'Code Docs',
             position: 'right',
           },
