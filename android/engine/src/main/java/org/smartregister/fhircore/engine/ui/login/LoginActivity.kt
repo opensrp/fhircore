@@ -75,36 +75,39 @@ class LoginActivity :
     loginService.loginActivity = this
     loginViewModel.apply {
       loadLastLoggedInUsername()
-      navigateToHome.observe(this@LoginActivity) {
-        val isUpdatingCurrentAccount =
-          intent.hasExtra(AccountManager.KEY_ACCOUNT_NAME) &&
-            intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)!!.trim() ==
-              loginViewModel.username.value?.trim()
+      navigateToHome.observe(this@LoginActivity) { isNavigate ->
+        if (isNavigate) {
 
-        if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
-          val lastPinExist = !secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
-          val forceLoginViaUsernamePinSetup =
-            loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
-          when {
-            lastPinExist -> {
-              goToHomeScreen(FORCE_LOGIN_VIA_USERNAME, false)
+          val isUpdatingCurrentAccount =
+            intent.hasExtra(AccountManager.KEY_ACCOUNT_NAME) &&
+              intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)!!.trim() ==
+                loginViewModel.username.value?.trim()
+
+          if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
+            val lastPinExist = !secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
+            val forceLoginViaUsernamePinSetup =
+              loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
+            when {
+              lastPinExist -> {
+                goToHomeScreen(FORCE_LOGIN_VIA_USERNAME, false)
+              }
+              forceLoginViaUsernamePinSetup -> {
+                goToHomeScreen(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
+              }
+              else -> {
+                loginService.navigateToPinLogin(goForSetup = true)
+              }
             }
-            forceLoginViaUsernamePinSetup -> {
-              goToHomeScreen(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
-            }
-            else -> {
-              loginService.navigateToPinLogin(goForSetup = true)
-            }
+          } else if (isUpdatingCurrentAccount) {
+            configurationRegistry.fetchNonWorkflowConfigResources()
+            syncBroadcaster.get().runSync() // restart/resume sync
+            setResult(Activity.RESULT_OK)
+            finish() // Return to the previous activity
+          } else {
+            configurationRegistry.fetchNonWorkflowConfigResources()
+            syncBroadcaster.get().runSync()
+            loginService.navigateToHome()
           }
-        } else if (isUpdatingCurrentAccount) {
-          configurationRegistry.fetchNonWorkflowConfigResources()
-          syncBroadcaster.get().runSync() // restart/resume sync
-          setResult(Activity.RESULT_OK)
-          finish() // Return to the previous activity
-        } else {
-          configurationRegistry.fetchNonWorkflowConfigResources()
-          syncBroadcaster.get().runSync()
-          loginService.navigateToHome()
         }
       }
       launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }

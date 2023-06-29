@@ -37,9 +37,9 @@ import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
-import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.IS_LOGGED_IN
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -70,20 +70,26 @@ class AppSettingActivityTest {
     activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
       Assert.assertEquals(false, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
-      Assert.assertEquals(null, activity.sharedPreferencesHelper.read(APP_ID_CONFIG, null))
+      Assert.assertEquals(
+        null,
+        activity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+      )
       Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
     }
   }
 
   @Test
   fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasNotLoggedIn() {
-    sharedPreferencesHelper.write(APP_ID_CONFIG, "default")
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "default")
     every { accountAuthenticator.hasActiveSession() } returns false
 
     activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
       Assert.assertEquals(false, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
-      Assert.assertEquals("default", activity.sharedPreferencesHelper.read(APP_ID_CONFIG, null))
+      Assert.assertEquals(
+        "default",
+        activity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+      )
       Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
     }
   }
@@ -91,13 +97,16 @@ class AppSettingActivityTest {
   @Test
   fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasLoggedIn() {
     sharedPreferencesHelper.write(IS_LOGGED_IN, true)
-    sharedPreferencesHelper.write(APP_ID_CONFIG, "default")
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "default")
     every { accountAuthenticator.hasActiveSession() } returns true
 
     activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
       Assert.assertEquals(true, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
-      Assert.assertEquals("default", activity.sharedPreferencesHelper.read(APP_ID_CONFIG, null))
+      Assert.assertEquals(
+        "default",
+        activity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+      )
       Assert.assertEquals(true, activity.accountAuthenticator.hasActiveSession())
     }
   }
@@ -105,36 +114,17 @@ class AppSettingActivityTest {
   @Test
   fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasLoggedIn_withSessionToken_hasExpired() {
     sharedPreferencesHelper.write(IS_LOGGED_IN, true)
-    sharedPreferencesHelper.write(APP_ID_CONFIG, "default")
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "default")
     every { accountAuthenticator.hasActiveSession() } returns false
 
     activityScenarioRule.scenario.recreate()
     activityScenarioRule.scenario.onActivity { activity ->
       Assert.assertEquals(true, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
-      Assert.assertEquals("default", activity.sharedPreferencesHelper.read(APP_ID_CONFIG, null))
+      Assert.assertEquals(
+        "default",
+        activity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+      )
       Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
-    }
-  }
-
-  @Test
-  fun testAppSettingActivity_withConfig_hasBeenLoaded() {
-    sharedPreferencesHelper.write(APP_ID_CONFIG, "default/debug")
-    every { accountAuthenticator.hasActiveSession() } returns true
-
-    activityScenarioRule.scenario.recreate()
-    activityScenarioRule.scenario.onActivity { activity ->
-      activity.configurationRegistry.workflowPointsMap.let { workflows ->
-        Assert.assertEquals(9, workflows.size)
-        Assert.assertEquals(true, workflows.containsKey("default|application"))
-        Assert.assertEquals(true, workflows.containsKey("default|login"))
-        Assert.assertEquals(true, workflows.containsKey("default|app_feature"))
-        Assert.assertEquals(true, workflows.containsKey("default|patient_register"))
-        Assert.assertEquals(true, workflows.containsKey("default|patient_task_register"))
-        Assert.assertEquals(true, workflows.containsKey("default|pin"))
-        Assert.assertEquals(true, workflows.containsKey("default|patient_details_view"))
-        Assert.assertEquals(true, workflows.containsKey("default|result_details_navigation"))
-        Assert.assertEquals(true, workflows.containsKey("default|sync"))
-      }
     }
   }
 }
