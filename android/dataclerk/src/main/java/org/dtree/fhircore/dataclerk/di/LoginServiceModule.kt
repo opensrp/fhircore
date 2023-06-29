@@ -11,5 +11,5 @@ import org.smartregister.fhircore.engine.ui.login.LoginService
 abstract class LoginServiceModule {
 
     @Binds
-    abstract fun bindLoginService(loginService: DataClerkServiceModule): LoginService
+    abstract fun bindLoginService(loginService: DataClerkLoginService): LoginService
 }

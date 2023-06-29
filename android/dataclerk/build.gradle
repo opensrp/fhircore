@@ -8,9 +8,9 @@ plugins {
     id 'jacoco'
     id 'dagger.hilt.android.plugin'
     id 'org.jetbrains.kotlin.android'
-//    id 'com.google.firebase.firebase-perf'
-//    id 'com.google.gms.google-services'
-//    id 'com.google.firebase.crashlytics'
+    id 'com.google.firebase.firebase-perf'
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
 }
 
 apply from: '../properties.gradle'
@@ -53,19 +53,21 @@ android {
 //        }
 //    }
 
-//    buildTypes {
-//        debug {
+    buildTypes {
+        debug {
 //            testCoverageEnabled true
-//        }
-//        release {
+            resValue("string", "authenticator_account_type", "\"${android.defaultConfig.applicationId}\"")
+        }
+        release {
+            resValue("string", "authenticator_account_type", "\"${android.defaultConfig.applicationId}\"")
 //            minifyEnabled false
 //            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 //            signingConfig signingConfigs.release
 //            firebaseCrashlytics {
 //                nativeSymbolUploadEnabled false
 //            }
-//        }
-//    }
+        }
+    }
 
     compileOptions {
         coreLibraryDesugaringEnabled true
@@ -154,6 +156,13 @@ dependencies {
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"
+
+    // analytics
+    implementation platform('com.google.firebase:firebase-bom:31.2.0')
+
+    implementation 'com.google.firebase:firebase-perf-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.google.firebase:firebase-analytics-ktx'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
