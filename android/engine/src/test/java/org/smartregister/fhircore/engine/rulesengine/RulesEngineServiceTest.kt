@@ -176,10 +176,13 @@ class RulesEngineServiceTest : RobolectricTest() {
   }
 
   @Test
-  fun `generateTaskServiceStatus() should return DUE when Task#status is NULL`() {
+  fun `generateTaskServiceStatus() should return UPCOMING when Task#status is NULL`() {
     val task = Task().apply { status = Task.TaskStatus.NULL }
 
-    Assert.assertEquals(ServiceStatus.DUE.name, rulesEngineService.generateTaskServiceStatus(task))
+    Assert.assertEquals(
+      ServiceStatus.UPCOMING.name,
+      rulesEngineService.generateTaskServiceStatus(task)
+    )
   }
 
   @Test
