@@ -436,7 +436,7 @@ constructor(
             Task.TaskStatus.DRAFT,
             Task.TaskStatus.ONHOLD -> {
               Timber.e("Task.status is null", Exception())
-              ServiceStatus.DUE.name
+              ServiceStatus.UPCOMING.name
             }
             Task.TaskStatus.REQUESTED -> ServiceStatus.UPCOMING.name
             Task.TaskStatus.READY -> ServiceStatus.DUE.name
