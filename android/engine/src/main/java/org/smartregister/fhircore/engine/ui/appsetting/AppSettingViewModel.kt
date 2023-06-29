@@ -20,18 +20,27 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.net.UnknownHostException
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
+import retrofit2.HttpException
 import timber.log.Timber
 
 @HiltViewModel
@@ -39,12 +48,11 @@ class AppSettingViewModel
 @Inject
 constructor(
   val fhirResourceDataSource: FhirResourceDataSource,
-  val defaultRepository: DefaultRepository
+  val defaultRepository: DefaultRepository,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val configurationRegistry: ConfigurationRegistry,
+  val dispatcherProvider: DispatcherProvider
 ) : ViewModel() {
-
-  val loadConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
-
-  val fetchConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
 
   private val _appId = MutableLiveData("")
   val appId
@@ -62,20 +70,34 @@ constructor(
     _appId.value = appId
   }
 
-  fun loadConfigurations(loadConfigs: Boolean) {
-    this.loadConfigs.postValue(loadConfigs)
+  fun loadConfigurations(context: Context) {
+    viewModelScope.launch(dispatcherProvider.io()) {
+      appId.value?.let { thisAppId ->
+        configurationRegistry.loadConfigurations(thisAppId) {
+          showProgressBar.postValue(false)
+          sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, thisAppId)
+          launchLoginScreen(context)
+        }
+      }
+    }
   }
 
-  fun fetchConfigurations(fetchConfigs: Boolean) {
-    this.fetchConfigs.postValue(fetchConfigs)
+  fun fetchConfigurations(context: Context) {
+    showProgressBar.postValue(true)
+    val appId = appId.value
+    if (!appId.isNullOrEmpty()) {
+      when {
+        hasDebugSuffix() -> loadConfigurations(context)
+        else -> fetchRemoteConfigurations(appId, context)
+      }
+    }
   }
-
-  suspend fun fetchConfigurations(appId: String, context: Context) {
-    kotlin
-      .runCatching {
+  fun fetchRemoteConfigurations(appId: String, context: Context) {
+    viewModelScope.launch {
+      try {
         Timber.i("Fetching configs for app $appId")
 
-        this._showProgressBar.postValue(true)
+        _showProgressBar.postValue(true)
         val cPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
         val data =
           fhirResourceDataSource.loadData(cPath).entryFirstRep.also {
@@ -83,7 +105,7 @@ constructor(
               Timber.w("No response for composition resource on path $cPath")
               _showProgressBar.postValue(false)
               _error.postValue(context.getString(R.string.application_not_supported, appId))
-              return
+              return@launch
             }
           }
 
@@ -103,21 +125,22 @@ constructor(
             }
           }
 
-        loadConfigurations(true)
+        loadConfigurations(context)
         _showProgressBar.postValue(false)
+      } catch (unknownHostException: UnknownHostException) {
+        _error.postValue(context.getString(R.string.error_loading_config_no_internet))
+        showProgressBar.postValue(false)
+      } catch (httpException: HttpException) {
+        if ((400..503).contains(httpException.response()!!.code()))
+          _error.postValue(context.getString(R.string.error_loading_config_general))
+        else _error.postValue(context.getString(R.string.error_loading_config_http_error))
+        showProgressBar.postValue(false)
       }
-      .onFailure {
-        Timber.w(it)
-        _showProgressBar.postValue(false)
-        _error.postValue("${it.message}")
-      }
+    }
   }
 
-  fun hasDebugSuffix(): Boolean? {
-    return if (!appId.value.isNullOrBlank())
-      appId.value!!.split("/").last().contentEquals(DEBUG_SUFFIX)
-    else null
-  }
+  fun hasDebugSuffix(): Boolean =
+    appId.value?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true && BuildConfig.DEBUG
 
   fun launchLoginScreen(context: Context) {
     context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()

@@ -148,4 +148,8 @@
     <string name="sync_strategy_location_display" translatable="false">Practitioner Location</string>
     <string name="sync_strategy_organization_display" translatable="false">Practitioner Organization</string>
     <string name="sync_strategy_practitioner_display" translatable="false">Practitioner</string>
+    <string name="initializing">Initializing settings &#8230;</string>
+    <string name="error_loading_config_http_error">Could not load configuration. Please try again later</string>
+    <string name="error_loading_config_no_internet">Could not load configuration. Please check your internet connection</string>
+    <string name="error_loading_config_general">Error connecting to the server. Please contact the system administrator</string>
 </resources>

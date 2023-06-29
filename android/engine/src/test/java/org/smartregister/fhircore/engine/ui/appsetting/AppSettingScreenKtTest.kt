@@ -35,7 +35,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 class AppSettingScreenKtTest : RobolectricTest() {
 
   private class Listeners {
-    val onLoadConfigurations: (Boolean) -> Unit = spyk()
+    val fetchConfiguration: (Context) -> Unit = spyk()
 
     val onAppIdChanged: (String) -> Unit = spyk()
   }
@@ -53,7 +53,8 @@ class AppSettingScreenKtTest : RobolectricTest() {
       AppSettingScreen(
         appId = appId,
         onAppIdChanged = listenersSpy.onAppIdChanged,
-        onLoadConfigurations = listenersSpy.onLoadConfigurations
+        fetchConfiguration = listenersSpy.fetchConfiguration,
+        error = "",
       )
     }
   }
@@ -71,7 +72,7 @@ class AppSettingScreenKtTest : RobolectricTest() {
   @Test
   fun testLoadConfigurationButtonListenerAction() {
     composeRule.onNodeWithText(context.getString(R.string.load_configurations)).performClick()
-    verify { listenersSpy.onLoadConfigurations }
+    verify { listenersSpy.fetchConfiguration }
   }
 
   @Test

@@ -27,10 +27,10 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
 import org.smartregister.fhircore.engine.ui.components.PIN_INPUT_MAX_THRESHOLD
-import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.IS_LOGGED_IN
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltViewModel
@@ -109,7 +109,7 @@ constructor(
   fun getPinConfiguration(): PinViewConfiguration =
     configurationRegistry.retrieveConfiguration(AppConfigClassification.PIN)
 
-  fun retrieveAppId(): String = sharedPreferences.read(APP_ID_CONFIG, "")!!
+  fun retrieveAppId(): String = sharedPreferences.read(SharedPreferenceKey.APP_ID.name, "")!!
 
   fun retrieveAppName(): String = pinViewConfiguration.applicationName
 
@@ -157,7 +157,7 @@ constructor(
   }
 
   fun onMenuSettingClicked() {
-    sharedPreferences.remove(APP_ID_CONFIG)
+    sharedPreferences.remove(SharedPreferenceKey.APP_ID.name)
     _navigateToSettings.value = true
   }
 }
