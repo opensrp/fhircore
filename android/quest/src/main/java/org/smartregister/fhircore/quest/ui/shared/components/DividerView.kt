@@ -19,23 +19,28 @@ package org.smartregister.fhircore.quest.ui.shared.components
 import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import org.smartregister.fhircore.engine.configuration.view.BorderProperties
+import org.smartregister.fhircore.engine.configuration.view.DividerProperties
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
+const val HORIZONTAL_DIVIDER_TEST_TAG = "horizontalDividerTestTag"
+
 @Composable
-fun BorderView(
+fun DividerView(
   modifier: Modifier = Modifier,
-  borderProperties: BorderProperties,
+  dividerProperties: DividerProperties,
 ) {
-  if (borderProperties.thickness != null) {
-    Divider(color = DividerColor, thickness = borderProperties.thickness!!.dp)
-  }
+  Divider(
+    color = DividerColor,
+    thickness = dividerProperties.thickness.dp,
+    modifier = modifier.testTag(HORIZONTAL_DIVIDER_TEST_TAG)
+  )
 }
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
-private fun BorderPreview() {
-  BorderView(borderProperties = BorderProperties(thickness = 16f))
+private fun DividerPreview() {
+  DividerView(dividerProperties = DividerProperties(thickness = 16f))
 }

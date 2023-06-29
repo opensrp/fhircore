@@ -49,7 +49,7 @@ object ViewPropertiesSerializer :
       ViewType.SPACER -> SpacerProperties.serializer()
       ViewType.LIST -> ListProperties.serializer()
       ViewType.IMAGE -> ImageProperties.serializer()
-      ViewType.BORDER -> BorderProperties.serializer()
+      ViewType.BORDER -> DividerProperties.serializer()
     }
   }
 }
