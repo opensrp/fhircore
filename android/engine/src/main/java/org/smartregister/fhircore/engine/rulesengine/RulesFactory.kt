@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.isOverDue
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
@@ -420,24 +421,31 @@ constructor(
     }
 
     fun generateTaskServiceStatus(task: Task): String {
-      return when (task.status) {
-        Task.TaskStatus.NULL,
-        Task.TaskStatus.FAILED,
-        Task.TaskStatus.RECEIVED,
-        Task.TaskStatus.ENTEREDINERROR,
-        Task.TaskStatus.ACCEPTED,
-        Task.TaskStatus.REJECTED,
-        Task.TaskStatus.DRAFT,
-        Task.TaskStatus.ONHOLD -> {
-          Timber.e("Task.status is null", Exception())
-          ServiceStatus.DUE.name
-        }
-        Task.TaskStatus.REQUESTED -> ServiceStatus.UPCOMING.name
-        Task.TaskStatus.READY -> ServiceStatus.DUE.name
-        Task.TaskStatus.CANCELLED -> ServiceStatus.EXPIRED.name
-        Task.TaskStatus.INPROGRESS -> ServiceStatus.IN_PROGRESS.name
-        Task.TaskStatus.COMPLETED -> ServiceStatus.COMPLETED.name
+      val serviceStatus: String
+      if (task.isOverDue()) {
+        serviceStatus = ServiceStatus.OVERDUE.name
+      } else {
+        serviceStatus =
+          when (task.status) {
+            Task.TaskStatus.NULL,
+            Task.TaskStatus.FAILED,
+            Task.TaskStatus.RECEIVED,
+            Task.TaskStatus.ENTEREDINERROR,
+            Task.TaskStatus.ACCEPTED,
+            Task.TaskStatus.REJECTED,
+            Task.TaskStatus.DRAFT,
+            Task.TaskStatus.ONHOLD -> {
+              Timber.e("Task.status is null", Exception())
+              ServiceStatus.DUE.name
+            }
+            Task.TaskStatus.REQUESTED -> ServiceStatus.UPCOMING.name
+            Task.TaskStatus.READY -> ServiceStatus.DUE.name
+            Task.TaskStatus.CANCELLED -> ServiceStatus.EXPIRED.name
+            Task.TaskStatus.INPROGRESS -> ServiceStatus.IN_PROGRESS.name
+            Task.TaskStatus.COMPLETED -> ServiceStatus.COMPLETED.name
+          }
       }
+      return serviceStatus
     }
   }
 
