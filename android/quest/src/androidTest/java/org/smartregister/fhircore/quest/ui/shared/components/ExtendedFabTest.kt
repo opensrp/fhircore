@@ -93,7 +93,6 @@ class ExtendedFabTest {
   }
 
   @Test
-  @Ignore("Fix: Fab text is not displayed")
   fun testFloatingButtonWhenAnimateIsFalse() {
     composeRule.setContent {
       composeRule.mainClock.autoAdvance = false
