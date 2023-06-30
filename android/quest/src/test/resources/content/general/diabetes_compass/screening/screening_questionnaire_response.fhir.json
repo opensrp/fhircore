@@ -7,6 +7,18 @@
         {
           "linkId": "screening-instructions-title",
           "text": "Health Screening"
+        },
+        {
+          "linkId": "screening-consent-choice"
+        },
+        {
+          "linkId": "screening-consent",
+          "text": "Consent to participating in screening",
+          "answer": [
+            {
+              "valueBoolean": true
+            }
+          ]
         }
       ]
     },

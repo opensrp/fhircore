@@ -691,18 +691,18 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     fhirCarePlanGenerator.generateOrUpdateCarePlan(planDefinition, patient, Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse }))!!
             .also { println(it.encodeResourceToString()) }
             .also { carePlan ->
-              Assert.assertNotNull(UUID.fromString(carePlan.id))
-              Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
-              Assert.assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
-              Assert.assertEquals(patient.logicalId, carePlan.subject.extractId())
-              Assert.assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
-              Assert.assertEquals(patient.generalPractitionerFirstRep.extractId(), carePlan.author.extractId())
-              Assert.assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.period.start.makeItReadable())
-              Assert.assertEquals(patient.birthDate.plusYears(5).makeItReadable(), carePlan.period.end.makeItReadable())
+              assertNotNull(UUID.fromString(carePlan.id))
+              assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
+              assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
+              assertEquals(patient.logicalId, carePlan.subject.extractId())
+              assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
+              assertEquals(patient.generalPractitionerFirstRep.extractId(), carePlan.author.extractId())
+              assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.period.start.makeItReadable())
+              assertEquals(patient.birthDate.plusYears(5).makeItReadable(), carePlan.period.end.makeItReadable())
               // 60 - 2  = 58 TODO Fix issue with number of tasks updating relative to today's date
-              Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
+              assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
 
-              resourcesSlot.filter { res -> res.resourceType == ResourceType.Task }.map { it as Task }.also { list -> Assert.assertTrue(list.isNotEmpty()) }.all { task ->
+              resourcesSlot.filter { res -> res.resourceType == ResourceType.Task }.map { it as Task }.also { list -> assertTrue(list.isNotEmpty()) }.all { task ->
                 // TODO
                 task.status == TaskStatus.REQUESTED && LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
                   localDate.dayOfMonth == localDate.lengthOfMonth()
@@ -710,9 +710,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
               }
 
               val task1 = resourcesSlot[1] as Task
-              Assert.assertEquals(TaskStatus.REQUESTED, task1.status)
+              assertEquals(TaskStatus.REQUESTED, task1.status)
               // TODO Fix issue with task start date updating relative to today's date
-              Assert.assertTrue(task1.executionPeriod.start.makeItReadable().isNotEmpty())
+              assertTrue(task1.executionPeriod.start.makeItReadable().isNotEmpty())
             }
   }
 

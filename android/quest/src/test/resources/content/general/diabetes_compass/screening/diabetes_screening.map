@@ -2,6 +2,7 @@ map "https://fhir.demo.smartregister.org/fhir/StructureMap/dc-diabetes-screening
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+uses "http://hl7.org/fhir/StructureDefinition/Consent" as target
 uses "http://hl7.org/fhir/StructureDefinition/Encounter" as target
 uses "http://hl7.org/fhir/StructureDefinition/Observation" as target
 uses "http://hl7.org/fhir/StructureDefinition/RiskAssessment" as target
@@ -27,8 +28,40 @@ group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle
             } "r_enc_cc_cod";
             src -> concept.text = "Elective" "r_enc_prio_text";
         } "r_en_prio";
+        src then ExtractConsent(src, bundle, encounter) "r_extract_cnst";
         src then ExtractObservations(src, bundle, encounter) "r_extract_obs";
     } "r_encounter";
+}
+
+group ExtractConsent(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
+    src.item as page where(linkId = "page-1") then {
+        page.item as item where(linkId = "screening-consent-choice") then {
+                src -> bundle.entry as entry,
+                entry.resource = create("Consent") as cns then {
+                    src -> cns.id = uuid(),
+                    evaluate(item, $this.answer.count()) as count then {
+                        src where(count > 0) then {
+                            src -> cns.status = "active" "r_status_active";
+                        } "r_cns_ans";
+                        src where(count <= 0) then {
+                            src -> cns.status = "rejected" "r_status_rejected";
+                        } "r_cns_no_ans";
+                    }"r_cns_eval";
+                    src -> cns.scope = cc("http://hl7.org/fhir/ValueSet/consent-scope", "patient-privacy", "Privacy Consent"),
+                        cns.dateTime = evaluate(src, now()) "r_date_created";
+                    src ->cns.patient = create("Reference") as ref then {
+                        src ->ref.reference = evaluate(src, "Patient/"+ $this.item.where(linkId="patient-id").answer.value) "r_cns_patient_ref";
+                    } "r_cns_patient";
+                    src -> cns.performer = evaluate(src, $this.generalPractitioner.first()) "r_cns_performer";
+                    src -> cns.organization = create('Reference') as orgRef then {
+                        src -> orgRef.reference = evaluate(src, 'Organization/' + $this.managingOrganization) "org";
+                   } "r_cns_org";
+                   src -> cns.source = create('Reference') as consentSource then {
+                    src -> consentSource.reference = evaluate(src, 'QuestionnaireResponse/' + src.id) "source";
+                   } "r_cns_source";
+                } "r_cns_item";
+        } "r_consent";
+    } "r_consent_pg";
 }
 
 group ExtractObservations(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {

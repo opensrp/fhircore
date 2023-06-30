@@ -26,7 +26,7 @@ group ExtractTask(
                task.intent = 'plan',
                task.executionPeriod = period,
                task.priority = 'routine',
-               task.description = 'Phone Call Follow-up Task',
+               task.description = 'Phone Call',
                task.for = create('Reference') as ref, ref.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
                task.basedOn = reference(careplan),
                task.authoredOn = evaluate(subject, now()),
