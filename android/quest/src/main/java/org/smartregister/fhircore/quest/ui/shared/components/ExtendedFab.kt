@@ -91,12 +91,19 @@ fun ExtendedFab(
         )
       }
       if (text.isNotEmpty()) {
-        AnimatedVisibility(visible = !lazyListState.isScrollingUp()) {
-          Text(
-            text = firstFabAction.display.uppercase(),
-            modifier = modifier.padding(start = 8.dp).testTag(FAB_BUTTON_ROW_TEXT_TEST_TAG)
-          )
+        if (firstFabAction.animate) {
+          AnimatedVisibility(visible = !lazyListState.isScrollingUp()) {
+            Text(
+              text = firstFabAction.display.uppercase(),
+              modifier = modifier.padding(start = 8.dp).testTag(FAB_BUTTON_ROW_TEXT_TEST_TAG)
+            )
+          }
         }
+      }else{
+        Text(
+          text = firstFabAction.display.uppercase(),
+          modifier = modifier.padding(start = 8.dp).testTag(FAB_BUTTON_ROW_TEXT_TEST_TAG)
+        )
       }
     }
   }
