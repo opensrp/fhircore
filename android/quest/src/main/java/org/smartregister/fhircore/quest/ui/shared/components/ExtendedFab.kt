@@ -54,7 +54,7 @@ fun ExtendedFab(
   fabActions: List<NavigationMenuConfig>,
   resourceData: ResourceData? = null,
   navController: NavController,
-  lazyListState: LazyListState
+  lazyListState: LazyListState?
 ) {
   val firstFabAction = remember { fabActions.first() }
   val firstFabEnabled =
@@ -92,18 +92,18 @@ fun ExtendedFab(
       }
       if (text.isNotEmpty()) {
         if (firstFabAction.animate) {
-          AnimatedVisibility(visible = !lazyListState.isScrollingUp()) {
+          AnimatedVisibility(visible = lazyListState?.isScrollingUp() == false) {
             Text(
-              text = firstFabAction.display.uppercase(),
+              text = text.uppercase(),
               modifier = modifier.padding(start = 8.dp).testTag(FAB_BUTTON_ROW_TEXT_TEST_TAG)
             )
           }
+        } else {
+          Text(
+            text = text.uppercase(),
+            modifier = modifier.padding(start = 8.dp).testTag(FAB_BUTTON_ROW_TEXT_TEST_TAG)
+          )
         }
-      }else{
-        Text(
-          text = firstFabAction.display.uppercase(),
-          modifier = modifier.padding(start = 8.dp).testTag(FAB_BUTTON_ROW_TEXT_TEST_TAG)
-        )
       }
     }
   }

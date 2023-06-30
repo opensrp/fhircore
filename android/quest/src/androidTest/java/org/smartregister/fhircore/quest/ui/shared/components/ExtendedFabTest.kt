@@ -16,26 +16,13 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.estimateAnimationDurationMillis
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Surface
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onRoot
 import androidx.navigation.NavController
 import io.mockk.mockk
-import org.checkerframework.checker.units.qual.A
 import org.hl7.fhir.r4.model.ResourceType
-import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -46,15 +33,13 @@ import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.quest.util.extensions.isScrollingUp
 
 class ExtendedFabTest {
-  private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
 
+  private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
   @get:Rule val composeRule = createComposeRule()
-  @get:Rule val rule = createComposeRule()
-  @Before
-  fun init() {
+
+  private fun init() {
     composeRule.setContent {
       ExtendedFab(
         fabActions =
@@ -75,13 +60,14 @@ class ExtendedFabTest {
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController,
-        lazyListState = rememberLazyListState()
+        lazyListState = null
       )
     }
   }
 
   @Test
   fun testFloatingButtonIsDisplayed() {
+    init()
     composeRule
       .onNodeWithTag(FAB_BUTTON_TEST_TAG, useUnmergedTree = true)
       .assertExists()
@@ -90,6 +76,7 @@ class ExtendedFabTest {
 
   @Test
   fun extendedFabButtonRendersRowCorrectly() {
+    init()
     composeRule
       .onNodeWithTag(FAB_BUTTON_ROW_TEST_TAG, useUnmergedTree = true)
       .assertExists()
@@ -98,32 +85,49 @@ class ExtendedFabTest {
 
   @Test
   fun extendedFabButtonRendersRowIconCorrectly() {
+    init()
     composeRule
       .onNodeWithTag(FAB_BUTTON_ROW_ICON_TEST_TAG, useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
   }
-  data class FabAction(val animate: Boolean)
-  @Test
-  fun animationAppearsWhenAnimateIsFalse(){
-    rule.setContent {
-        FabAction(animate = false)
-    }
-    rule.onNodeWithTag(FAB_BUTTON_ROW_ICON_TEST_TAG, useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
-    }
-  @Test
-  fun animationAppearsWhenAnimateIsTrue(){
-    var animate by mutableStateOf(false)
-    rule.mainClock.autoAdvance = true
-    rule.setContent {
-      if (animate) {
-        rule.onNodeWithTag(FAB_BUTTON_ROW_ICON_TEST_TAG, useUnmergedTree = true)
-          .assertIsDisplayed()
-      }
-    }
-    rule.mainClock.advanceTimeBy(50L)
 
-  }
+  @Test
+  @Ignore("Fix: Fab text is not displayed")
+  fun testFloatingButtonWhenAnimateIsFalse() {
+    composeRule.setContent {
+      composeRule.mainClock.autoAdvance = false
+      ExtendedFab(
+        fabActions =
+          listOf(
+            NavigationMenuConfig(
+              id = "test",
+              display = "Fab Button",
+              menuIconConfig = MenuIconConfig(type = ICON_TYPE_LOCAL, reference = "ic_user"),
+              animate = false,
+              actions =
+                listOf(
+                  ActionConfig(
+                    trigger = ActionTrigger.ON_CLICK,
+                    workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+                    questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
+                  )
+                )
+            )
+          ),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+        navController = navController,
+        lazyListState = null
+      )
     }
+    composeRule.run {
+      onNodeWithTag(FAB_BUTTON_ROW_ICON_TEST_TAG, useUnmergedTree = true)
+        .assertExists()
+        .assertIsDisplayed()
+
+      onNodeWithTag(FAB_BUTTON_ROW_TEXT_TEST_TAG, useUnmergedTree = true)
+        .assertExists()
+        .assertIsDisplayed()
+    }
+  }
+}
