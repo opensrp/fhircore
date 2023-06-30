@@ -26,6 +26,7 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
@@ -120,9 +121,9 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testRunSyncWhenDeviceIsOnline() {
-    every { syncBroadcaster.runOneTimeSync(any()) } returns Unit
+    coEvery { syncBroadcaster.runOneTimeSync() } returns Unit
     userSettingViewModel.onEvent(UserSettingsEvent.SyncData(context))
-    verify(exactly = 1) { syncBroadcaster.runOneTimeSync(any()) }
+    coVerify(exactly = 1) { syncBroadcaster.runOneTimeSync() }
   }
 
   @Test
@@ -131,10 +132,10 @@ class UserSettingViewModelTest : RobolectricTest() {
 
     val context = mockk<Context>(relaxed = true) { every { isDeviceOnline() } returns false }
 
-    every { syncBroadcaster.runOneTimeSync(any()) } returns Unit
+    coEvery { syncBroadcaster.runOneTimeSync() } returns Unit
 
     userSettingViewModel.onEvent(UserSettingsEvent.SyncData(context))
-    verify(exactly = 0) { syncBroadcaster.runOneTimeSync(any()) }
+    coVerify(exactly = 0) { syncBroadcaster.runOneTimeSync() }
 
     val errorMessage = context.getString(R.string.sync_failed)
     coVerify { context.showToast(errorMessage, Toast.LENGTH_LONG) }
