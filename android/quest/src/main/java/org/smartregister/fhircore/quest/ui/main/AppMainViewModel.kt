@@ -168,9 +168,9 @@ constructor(
         }
       }
       is AppMainEvent.SyncData -> {
-        if (event.context.isDeviceOnline()) {
-          syncBroadcaster.runSync(syncSharedFlow)
-        } else
+        if (event.context.isDeviceOnline())
+          viewModelScope.launch { syncBroadcaster.runSync(syncSharedFlow) }
+        else
           event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
