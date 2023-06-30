@@ -23,7 +23,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
@@ -70,7 +69,6 @@ constructor(
   val showDBResetConfirmationDialog = MutableLiveData(false)
   val progressBarState = MutableLiveData(Pair(false, 0))
   val unsyncedResourcesMutableSharedFlow = MutableSharedFlow<List<Pair<String, Int>>>()
-  private val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
   private val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
@@ -105,7 +103,7 @@ constructor(
       }
       is UserSettingsEvent.SyncData -> {
         if (event.context.isDeviceOnline())
-          viewModelScope.launch { syncBroadcaster.runSync(syncSharedFlow) }
+          viewModelScope.launch(dispatcherProvider.main()) { syncBroadcaster.runOneTimeSync() }
         else
           event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
       }

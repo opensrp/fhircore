@@ -123,12 +123,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     appMainViewModel.run {
       lifecycleScope.launch {
         retrieveAppMainUiState()
-        if (isDeviceOnline()) {
-          syncBroadcaster.schedulePeriodicSync(
-            syncSharedFlow,
-            applicationConfiguration.syncInterval
-          )
-        } else showToast(getString(R.string.sync_failed), Toast.LENGTH_LONG)
+        if (isDeviceOnline())
+          syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
+        else showToast(getString(R.string.sync_failed), Toast.LENGTH_LONG)
       }
       schedulePeriodicJobs()
     }

@@ -143,7 +143,7 @@ class AppMainViewModelTest : RobolectricTest() {
     val appMainEvent = AppMainEvent.SyncData(application)
     appMainViewModel.onEvent(appMainEvent)
 
-    verify(exactly = 1) { syncBroadcaster.runSync(any()) }
+    verify(exactly = 1) { syncBroadcaster.runOneTimeSync(any()) }
   }
 
   @Test
@@ -154,7 +154,7 @@ class AppMainViewModelTest : RobolectricTest() {
     val appMainEvent = AppMainEvent.SyncData(context)
     appMainViewModel.onEvent(appMainEvent)
 
-    verify(exactly = 0) { syncBroadcaster.runSync(any()) }
+    verify(exactly = 0) { syncBroadcaster.runOneTimeSync(any()) }
 
     val errorMessage = context.getString(R.string.sync_failed)
     coVerify { context.showToast(errorMessage, Toast.LENGTH_LONG) }
