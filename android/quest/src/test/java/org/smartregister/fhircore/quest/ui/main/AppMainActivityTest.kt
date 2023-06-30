@@ -227,7 +227,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
     val syncBroadcaster =
       mockk<SyncBroadcaster> {
-        coEvery { runSync(any()) } returns Unit
+        coEvery { runOneTimeSync(any()) } returns Unit
         coEvery { schedulePeriodicSync(any()) } returns Unit
       }
 
@@ -237,7 +237,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       ReflectionHelpers.ClassParameter(SyncBroadcaster::class.java, syncBroadcaster)
     )
 
-    coVerify(exactly = 1) { syncBroadcaster.runSync(any()) }
+    coVerify(exactly = 1) { syncBroadcaster.runOneTimeSync(any()) }
     coVerify(exactly = 1) { syncBroadcaster.schedulePeriodicSync(any()) }
 
     unmockkStatic(Context::isDeviceOnline)
@@ -260,7 +260,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       ReflectionHelpers.ClassParameter(SyncBroadcaster::class.java, syncBroadcaster)
     )
 
-    coVerify(exactly = 0) { syncBroadcaster.runSync(any()) }
+    coVerify(exactly = 0) { syncBroadcaster.runOneTimeSync(any()) }
     coVerify(exactly = 0) { syncBroadcaster.schedulePeriodicSync(any()) }
 
     unmockkStatic(Context::isDeviceOnline)

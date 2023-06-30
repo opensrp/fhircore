@@ -120,9 +120,9 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testRunSyncWhenDeviceIsOnline() {
-    every { syncBroadcaster.runSync(any()) } returns Unit
+    every { syncBroadcaster.runOneTimeSync(any()) } returns Unit
     userSettingViewModel.onEvent(UserSettingsEvent.SyncData(context))
-    verify(exactly = 1) { syncBroadcaster.runSync(any()) }
+    verify(exactly = 1) { syncBroadcaster.runOneTimeSync(any()) }
   }
 
   @Test
@@ -131,10 +131,10 @@ class UserSettingViewModelTest : RobolectricTest() {
 
     val context = mockk<Context>(relaxed = true) { every { isDeviceOnline() } returns false }
 
-    every { syncBroadcaster.runSync(any()) } returns Unit
+    every { syncBroadcaster.runOneTimeSync(any()) } returns Unit
 
     userSettingViewModel.onEvent(UserSettingsEvent.SyncData(context))
-    verify(exactly = 0) { syncBroadcaster.runSync(any()) }
+    verify(exactly = 0) { syncBroadcaster.runOneTimeSync(any()) }
 
     val errorMessage = context.getString(R.string.sync_failed)
     coVerify { context.showToast(errorMessage, Toast.LENGTH_LONG) }
