@@ -28,15 +28,13 @@ import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkMana
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import timber.log.Timber
@@ -58,23 +56,16 @@ constructor(
   @ApplicationContext val context: Context,
 ) {
 
-  fun runSync(syncSharedFlow: MutableSharedFlow<SyncJobStatus>) {
-    val coroutineScope = CoroutineScope(dispatcherProvider.main())
+  suspend fun runSync(syncSharedFlow: MutableSharedFlow<SyncJobStatus>) = coroutineScope {
     Timber.i("Running one time sync...")
-    coroutineScope.launch {
-      syncSharedFlow
-        .onEach {
-          syncListenerManager.onSyncListeners.forEach { onSyncListener ->
-            onSyncListener.onSync(it)
-          }
-        }
-        .handleErrors()
-        .launchIn(this)
-    }
+    syncSharedFlow
+      .onEach {
+        syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }
+      }
+      .handleErrors()
+      .launchIn(this)
 
-    coroutineScope.launch(dispatcherProvider.main()) {
-      Sync.oneTimeSync<AppSyncWorker>(context).collect { syncSharedFlow.emit(it) }
-    }
+    Sync.oneTimeSync<AppSyncWorker>(context).collect { syncSharedFlow.emit(it) }
   }
 
   private fun <T> Flow<T>.handleErrors(): Flow<T> = catch { throwable -> Timber.e(throwable) }
@@ -84,33 +75,27 @@ constructor(
    * [SyncJobStatus] will be broadcast to the listeners
    */
   @OptIn(ExperimentalCoroutinesApi::class)
-  fun schedulePeriodicSync(periodicSyncSharedFlow: MutableSharedFlow<SyncJobStatus>) {
+  suspend fun schedulePeriodicSync(
+    periodicSyncSharedFlow: MutableSharedFlow<SyncJobStatus>,
+    interval: Long = 15
+  ) = // Launch in main to observer UI updates that should ONLY happen on main thread
+   coroutineScope {
     Timber.i("Scheduling periodic sync...")
-
-    // Launch in main to observer UI updates that should ONLY happen on main thread
-    val coroutineScope = CoroutineScope(dispatcherProvider.main())
-    coroutineScope.launch {
-      periodicSyncSharedFlow
-        .onEach {
-          syncListenerManager.onSyncListeners.forEach { onSyncListener ->
-            onSyncListener.onSync(it)
-          }
-        }
-        .handleErrors()
-        .launchIn(this)
-
-      // Switch to io thread when triggering periodic sync
-      withContext(dispatcherProvider.io()) {
-        Sync.periodicSync<AppSyncWorker>(
-            context,
-            PeriodicSyncConfiguration(
-              syncConstraints =
-                Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
-              repeat = RepeatInterval(interval = 15, timeUnit = TimeUnit.MINUTES)
-            )
-          )
-          .collect { periodicSyncSharedFlow.emit(it) }
+    periodicSyncSharedFlow
+      .onEach {
+        syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }
       }
-    }
+      .handleErrors()
+      .launchIn(this)
+
+    Sync.periodicSync<AppSyncWorker>(
+        context,
+        PeriodicSyncConfiguration(
+          syncConstraints =
+            Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+          repeat = RepeatInterval(interval = interval, timeUnit = TimeUnit.MINUTES)
+        )
+      )
+      .collect { periodicSyncSharedFlow.emit(it) }
   }
 }
