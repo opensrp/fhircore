@@ -28,6 +28,7 @@ import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
@@ -37,7 +38,6 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkStatic
-import io.mockk.verify
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
@@ -227,8 +227,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
     val syncBroadcaster =
       mockk<SyncBroadcaster> {
-        every { runSync(any()) } returns Unit
-        every { schedulePeriodicSync(any()) } returns Unit
+        coEvery { runSync(any()) } returns Unit
+        coEvery { schedulePeriodicSync(any()) } returns Unit
       }
 
     ReflectionHelpers.callInstanceMethod<Unit>(
@@ -237,8 +237,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       ReflectionHelpers.ClassParameter(SyncBroadcaster::class.java, syncBroadcaster)
     )
 
-    verify(exactly = 1) { syncBroadcaster.runSync(any()) }
-    verify(exactly = 1) { syncBroadcaster.schedulePeriodicSync(any()) }
+    coVerify(exactly = 1) { syncBroadcaster.runSync(any()) }
+    coVerify(exactly = 1) { syncBroadcaster.schedulePeriodicSync(any()) }
 
     unmockkStatic(Context::isDeviceOnline)
   }
@@ -260,8 +260,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       ReflectionHelpers.ClassParameter(SyncBroadcaster::class.java, syncBroadcaster)
     )
 
-    verify(exactly = 0) { syncBroadcaster.runSync(any()) }
-    verify(exactly = 0) { syncBroadcaster.schedulePeriodicSync(any()) }
+    coVerify(exactly = 0) { syncBroadcaster.runSync(any()) }
+    coVerify(exactly = 0) { syncBroadcaster.schedulePeriodicSync(any()) }
 
     unmockkStatic(Context::isDeviceOnline)
   }
@@ -269,7 +269,6 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   @Test
   fun testStartForResult() {
     val event = appMainActivity.startForResult
-
     Assert.assertNotNull(event)
   }
 }
