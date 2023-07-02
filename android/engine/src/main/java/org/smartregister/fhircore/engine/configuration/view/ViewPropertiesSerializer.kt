@@ -50,6 +50,8 @@ object ViewPropertiesSerializer :
       ViewType.SPACER -> SpacerProperties.serializer()
       ViewType.IMAGE_VIEW -> ProfileImageViewProperties.serializer()
       ViewType.LIST -> ListProperties.serializer()
+      ViewType.IMAGE -> ImageProperties.serializer()
+      ViewType.BORDER -> DividerProperties.serializer()
     }
   }
 }

@@ -18,8 +18,10 @@ package org.smartregister.fhircore.engine.configuration
 
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.domain.model.CarePlanConfig
+import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.interpolate
@@ -41,9 +43,11 @@ data class QuestionnaireConfig(
   val taskId: String? = null,
   val saveDraft: Boolean = false,
   val snackBarMessage: SnackBarMessageConfig? = null,
-  val carePlanConfigs: List<CarePlanConfig> = emptyList(),
+  val eventWorkflows: List<EventWorkflow> = emptyList(),
   val refreshContent: Boolean = false,
   val readOnlyLinkIds: List<String>? = emptyList(),
+  val configRules: List<RuleConfig>? = null,
+  val extraParams: List<ActionParameter>? = null
 ) : java.io.Serializable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =

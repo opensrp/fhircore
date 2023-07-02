@@ -26,7 +26,6 @@ import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import io.mockk.spyk
 import io.mockk.verify
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -62,29 +61,9 @@ class AppDrawerTest {
         NavigationMenuConfig(id = "id1", visible = true, display = "Register Household")
     )
 
-  @Before
-  fun setup() {
-    composeTestRule.setContent {
-      AppDrawer(
-        appUiState =
-          appMainUiStateOf(
-            appTitle = "MOH VTS",
-            username = "Demo",
-            lastSyncTime = "05:30 PM, Mar 3",
-            currentLanguage = "English",
-            languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-            navigationConfiguration = navigationConfiguration
-          ),
-        navController = rememberNavController(),
-        openDrawer = {},
-        onSideMenuClick = mockAppMainEventListener,
-        appVersionPair = Pair(1, "0.0.1")
-      )
-    }
-  }
-
   @Test
   fun testNavDrawerRendersTopSectionCorrectly() {
+    setContent("")
     composeTestRule
       .onNodeWithTag(NAV_TOP_SECTION_TEST_TAG, useUnmergedTree = true)
       .assertExists()
@@ -95,6 +74,7 @@ class AppDrawerTest {
 
   @Test
   fun testNavDrawerRendersMenuActionButtonCorrectly() {
+    setContent("")
     composeTestRule
       .onNodeWithTag(MENU_BUTTON_TEST_TAG, useUnmergedTree = true)
       .assertExists()
@@ -117,6 +97,7 @@ class AppDrawerTest {
 
   @Test
   fun testAppDrawerRendersSideMenuItemsCorrectly() {
+    setContent("")
     composeTestRule
       .onAllNodesWithTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG, useUnmergedTree = true)
       .assertCountEquals(3)
@@ -130,6 +111,7 @@ class AppDrawerTest {
 
   @Test
   fun testAppDrawerRendersNavBottomSectionCorrectly() {
+    setContent("")
     composeTestRule
       .onNodeWithText("Sync", useUnmergedTree = true)
       .assertExists()
@@ -146,6 +128,7 @@ class AppDrawerTest {
 
   @Test
   fun testAppDrawerRendersOtherPatientsItemCorrectly() {
+    setContent("")
     composeTestRule
       .onNodeWithText("Other patients", useUnmergedTree = true)
       .assertExists()
@@ -157,7 +140,17 @@ class AppDrawerTest {
   }
 
   @Test
+  fun testAppDrawerRendersGivenItemNameCorrectly() {
+    setContent("My Register")
+    composeTestRule
+      .onNodeWithText("My Register", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
+
+  @Test
   fun testAppDrawerRendersClientRegisterMenusCorrectly() {
+    setContent("")
     composeTestRule.onNodeWithTag(NAV_CLIENT_REGISTER_MENUS_LIST).assertExists().assertIsDisplayed()
     composeTestRule
       .onNodeWithText("Register 1", useUnmergedTree = true)
@@ -171,8 +164,32 @@ class AppDrawerTest {
 
   @Test
   fun testThatSideMenuClickCallsTheListener() {
+    setContent("")
     val sideMenuItem = composeTestRule.onAllNodesWithTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG)
     sideMenuItem[0].performClick()
     verify { mockAppMainEventListener(any()) }
+  }
+  private fun setContent(name: String) {
+    composeTestRule.setContent {
+      AppDrawer(
+        appUiState =
+          appMainUiStateOf(
+            appTitle = "MOH VTS",
+            username = "Demo",
+            lastSyncTime = "05:30 PM, Mar 3",
+            currentLanguage = "English",
+            languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+            navigationConfiguration =
+              navigationConfiguration.copy(
+                bottomSheetRegisters =
+                  navigationConfiguration.bottomSheetRegisters?.copy(display = name)
+              )
+          ),
+        navController = rememberNavController(),
+        openDrawer = {},
+        onSideMenuClick = mockAppMainEventListener,
+        appVersionPair = Pair(1, "0.0.1")
+      )
+    }
   }
 }

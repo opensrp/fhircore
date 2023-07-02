@@ -134,6 +134,8 @@ constructor(
     }
   }
 
+  fun isCurrentRefreshTokenActive() = isTokenActive(accountManager.getPassword(findAccount()))
+
   private fun buildOAuthPayload(grantType: String) =
     mutableMapOf(
       GRANT_TYPE to grantType,

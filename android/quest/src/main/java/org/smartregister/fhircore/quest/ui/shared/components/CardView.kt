@@ -167,12 +167,7 @@ private fun CardViewWithPaddingPreview() {
               )
             ),
           header =
-            CompoundTextProperties(
-              primaryText = "VISITS",
-              fontSize = 18.0f,
-              primaryTextColor = "#6F7274",
-              padding = 16
-            )
+            CompoundTextProperties(fontSize = 18.0f, primaryTextColor = "#6F7274", padding = 16)
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()

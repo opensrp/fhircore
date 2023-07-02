@@ -33,7 +33,7 @@ import org.hl7.fhir.r4.model.ResourceType
 data class FhirResourceConfig(
   val baseResource: ResourceConfig,
   val relatedResources: List<ResourceConfig> = emptyList()
-) : Parcelable
+) : Parcelable, java.io.Serializable
 
 /**
  * This is the data class used to hold configurations for FHIR resources used in Profile and
@@ -87,17 +87,22 @@ data class ResourceConfig(
   val resultAsCount: Boolean = false,
   val countResultConfig: CountResultConfig? = CountResultConfig(),
   val nestedSearchResources: List<NestedSearchConfig>? = null,
-  val configRules: @RawValue List<RuleConfig>? = null
-) : Parcelable
+  val configRules: @RawValue List<RuleConfig>? = emptyList(),
+  val planDefinitions: List<String>? = null,
+  val attributesToUpdate: List<KeyValueConfig>? = emptyList()
+) : Parcelable, java.io.Serializable
 
-@Serializable @Parcelize data class CountResultConfig(val sumCounts: Boolean = true) : Parcelable
+@Serializable
+@Parcelize
+data class CountResultConfig(val sumCounts: Boolean = true) : Parcelable, java.io.Serializable
 
 @Serializable
 @Parcelize
 data class SortConfig(
-  val paramName: String,
+  val paramName: String? = null,
   val dataType: Enumerations.DataType,
-  val order: Order = Order.ASCENDING
+  val order: Order = Order.ASCENDING,
+  val fhirPathExpression: String = ""
 ) : Parcelable
 
 @Serializable

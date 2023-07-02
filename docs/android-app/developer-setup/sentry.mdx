@@ -1,0 +1,25 @@
+# Sentry setup
+
+> ### Note
+>
+> * You need to have already setup a [project](https://docs.sentry.io/product/sentry-basics/integrate-frontend/create-new-project/) and dashboard with the necessary access permissions, and
+> * are able to obtain the dsn (Data Source Name) of this project through `[Project] > Settings > Client Keys (DSN)`. This will be required later for configuration and logging.
+
+
+### Instructions
+
+1.  Once you have created the Sentry project as instructed above, inside the `local.properties` file add a line in the form
+    `SENTRY_DSN=xxxxxx` replace the `xxxxxx` with the `sentry dsn` from your project in Sentry. This will be picked up 
+    automatically by the setup inside the quest module's build.gradle file
+2.  If you want to seperate your staging and production environment logs and performance information you can add an environment variable 
+    to the Sentry,init method. You will need to insert an extra option in the form of `options.environment = <Your Environment Name>`. When 
+    data gets pushed to the dashboard for the first time, the environment will be automatically created. Use the Environment tag set from the previous step to filter               environment as shown below.
+    ![sentry_environment_dropdown](https://github.com/opensrp/fhircore/assets/12864384/e00e9da9-01ea-41ec-aa72-5588fde4fdf8)
+
+3.  Timber logs should show up in the Sentry dashboard. Sentry will track crashes and timber Errors. You can also
+    configure the log levels inside the Sentry.init function
+4.  By default we have configured additional Sentry integrations for:
+    - Navigation
+    - Fragments
+    
+    You can also add support for `Jetpack compose` and `OkHttp`

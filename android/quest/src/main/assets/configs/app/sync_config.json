@@ -8,7 +8,6 @@
         "name": "_id",
         "code": "_id",
         "base": [
-          "Encounter",
           "Observation",
           "Condition",
           "CarePlan",
@@ -68,7 +67,6 @@
         "code": "_count",
         "base": [
           "Patient",
-          "Encounter",
           "Observation",
           "Condition",
           "CarePlan",

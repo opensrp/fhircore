@@ -31,7 +31,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 @HiltAndroidTest
 class MeasureReportPatientViewDataMapperTest : RobolectricTest() {
 
-  @get:Rule val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportSubjectViewDataMapper
 

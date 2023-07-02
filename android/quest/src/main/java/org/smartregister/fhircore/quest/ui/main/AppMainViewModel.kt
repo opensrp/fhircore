@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +43,7 @@ import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -70,6 +72,7 @@ import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -119,7 +122,11 @@ constructor(
     navigationConfiguration
       .clientRegisters
       .asSequence()
-      .filter { it.menuIconConfig != null && it.menuIconConfig?.type == ICON_TYPE_REMOTE }
+      .filter {
+        it.menuIconConfig != null &&
+          it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
+          !it.menuIconConfig!!.reference.isNullOrEmpty()
+      }
       .forEach {
         val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
         viewModelScope.launch(dispatcherProvider.io()) {
@@ -163,7 +170,8 @@ constructor(
       is AppMainEvent.SyncData -> {
         if (event.context.isDeviceOnline()) {
           syncBroadcaster.runSync(syncSharedFlow)
-        }
+        } else
+          event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
@@ -208,7 +216,8 @@ constructor(
           registerCountMap = appMainUiState.value.registerCountMap,
           menuClickListener = {
             onEvent(AppMainEvent.TriggerWorkflow(navController = event.navController, navMenu = it))
-          }
+          },
+          title = event.title
         )
         .run { show(activity.supportFragmentManager, RegisterBottomSheetFragment.TAG) }
     }

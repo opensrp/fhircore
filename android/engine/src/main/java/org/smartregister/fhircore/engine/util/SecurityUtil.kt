@@ -28,7 +28,7 @@ fun CharArray.toPasswordHash(salt: ByteArray) = passwordHashString(this, salt)
 
 @VisibleForTesting
 fun passwordHashString(password: CharArray, salt: ByteArray): String {
-  val pbKeySpec = PBEKeySpec(password, salt, 1000000, 256)
+  val pbKeySpec = PBEKeySpec(password, salt, 800000, 256)
   val secretKeyFactory =
     SecretKeyFactory.getInstance(
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) "PBKDF2withHmacSHA256"
@@ -45,3 +45,18 @@ fun Int.getRandomBytesOfSize(): ByteArray {
 }
 
 fun clearPasswordInMemory(charArray: CharArray) = Arrays.fill(charArray, '*')
+
+fun CharArray.safePlus(element: Char): CharArray {
+  val index = size
+  val result = this.copyOf(index + 1)
+  result[index] = element
+  clearPasswordInMemory(this)
+  return result
+}
+
+fun CharArray.safeRemoveLast(): CharArray {
+  val index = size
+  val result = this.copyOf(index - 1)
+  clearPasswordInMemory(this)
+  return result
+}

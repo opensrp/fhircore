@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.profile
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.db.ResourceNotFoundException
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -46,6 +48,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
@@ -68,6 +71,7 @@ constructor(
   val resourceDataRulesExecutor: ResourceDataRulesExecutor
 ) : ViewModel() {
 
+  val refreshProfileDataLiveData = MutableLiveData<Boolean?>(null)
   val profileUiState = mutableStateOf(ProfileUiState())
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
@@ -75,8 +79,33 @@ constructor(
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow: SharedFlow<SnackBarMessageConfig> = _snackBarStateFlow.asSharedFlow()
   private lateinit var profileConfiguration: ProfileConfiguration
+
   private val listResourceDataStateMap =
     mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
+
+  /**
+   * This function retrieves an image that was synced from the backend as a [Binary] resource, the
+   * content of the Binary resource is a base64 encoding of the actual image. The encoded imaged is
+   * then transformed into bitmap for use in an Image Composable (returns null if the referenced
+   * resource doesn't exist)
+   */
+  fun decodeBinaryResourceIconsToBitmap(profileId: String) {
+    val profileConfig =
+      configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
+        configId = profileId,
+        configType = ConfigType.Profile
+      )
+    profileConfig.overFlowMenuItems
+      .filter { it.icon != null && !it.icon!!.reference.isNullOrEmpty() }
+      .forEach {
+        val resourceId = it.icon!!.reference!!.extractLogicalIdUuid()
+        viewModelScope.launch(dispatcherProvider.io()) {
+          registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
+            it.icon!!.decodedBitmap = binary.data.decodeToBitmap()
+          }
+        }
+      }
+  }
 
   suspend fun retrieveProfileUiState(
     profileId: String,
@@ -175,6 +204,7 @@ constructor(
                   actionLabel = event.context.getString(R.string.ok)
                 )
             )
+            refreshProfileDataLiveData.value = true
           }
         }
       }

@@ -1,4 +1,0 @@
-<resources>
-    <string name="app_name" translatable="false">fhir HA</string>
-    <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.mpower</string>
-</resources>

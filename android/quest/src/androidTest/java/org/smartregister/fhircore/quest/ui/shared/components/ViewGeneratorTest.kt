@@ -16,8 +16,10 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.graphics.Bitmap
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.NavController
@@ -26,11 +28,15 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnArrangement
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataItem
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
 import org.smartregister.fhircore.engine.configuration.view.RowArrangement
@@ -172,6 +178,30 @@ class ViewGeneratorTest {
       .onNodeWithText("Ready Task", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
+  }
+
+  @Test
+  fun testColumnIsRenderedCorrectlyWithDivider() {
+    composeRule.setContent {
+      GenerateView(
+        properties =
+          ColumnProperties(
+            wrapContent = false,
+            alignment = ViewAlignment.CENTER,
+            arrangement = ColumnArrangement.TOP,
+            showDivider = "true",
+            children =
+              listOf(
+                ButtonProperties(status = "DUE", text = "Due Task", visible = "true"),
+                ButtonProperties(status = "COMPLETED", text = "Completed Task", visible = "false")
+              ),
+            viewType = ViewType.COLUMN
+          ),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule.onNodeWithTag(COLUMN_DIVIDER_TEST_TAG).assertExists()
   }
 
   @Test
@@ -317,5 +347,38 @@ class ViewGeneratorTest {
     }
     composeRule.onNodeWithText("Sex").assertIsDisplayed()
     composeRule.onNodeWithText("Male").assertIsDisplayed()
+  }
+  @Test
+  fun testImageIsRenderedFromLocalAsset() {
+    composeRule.setContent {
+      GenerateView(
+        properties = ImageProperties(imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_walk")),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule.onNodeWithTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG).assertExists().assertIsDisplayed()
+  }
+
+  @Test
+  fun testImageIsRenderedFromDecodedBitmap() {
+    composeRule.setContent {
+      GenerateView(
+        properties =
+          ImageProperties(
+            imageConfig =
+              ImageConfig(
+                ICON_TYPE_REMOTE,
+                decodedBitmap = Bitmap.createBitmap(100, 16, Bitmap.Config.ARGB_8888)
+              )
+          ),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule
+      .onNodeWithTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
+      .assertExists()
+      .assertIsDisplayed()
   }
 }
