@@ -102,7 +102,7 @@ constructor(
     configCacheMap[configKey] = decodedConfig
     return decodedConfig
   }
-/*
+  /*
   inline fun <reified T : Configuration> retrieveConfigurations(configType: ConfigType): List<T> =
     configsJsonMap.values
       .map {
@@ -123,7 +123,7 @@ constructor(
       .filter {
         try {
           JSONObject(it).getString("configType").equals(configType.name, ignoreCase = true)
-        } catch ( e: Exception){
+        } catch (e: Exception) {
           Timber.w(e.localizedMessage)
           false
         }

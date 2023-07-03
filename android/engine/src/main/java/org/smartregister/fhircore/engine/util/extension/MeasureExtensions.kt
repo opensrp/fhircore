@@ -123,10 +123,15 @@ suspend inline fun retrievePreviouslyGeneratedMeasureReports(
   return fhirEngine.search(search)
 }
 
-suspend inline fun fetchReportSubjects(config: MeasureReportConfig, fhirEngine: FhirEngine, defaultRepository: DefaultRepository): List<String> {
+suspend inline fun fetchReportSubjects(
+  config: MeasureReportConfig,
+  fhirEngine: FhirEngine,
+  defaultRepository: DefaultRepository
+): List<String> {
   return if (config.subjectXFhirQuery?.isNotEmpty() == true) {
     fhirEngine.search(config.subjectXFhirQuery!!).map {
-      // prevent missing subject where MeasureEvaluator looks for Group members and skips the Group itself
+      // prevent missing subject where MeasureEvaluator looks for Group members and skips the Group
+      // itself
       if (it is Group && !it.hasMember()) {
         it.addMember(Group.GroupMemberComponent(it.asReference()))
         defaultRepository.update(it)

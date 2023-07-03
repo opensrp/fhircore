@@ -28,8 +28,6 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -65,7 +63,6 @@ import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
-import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.codingOf
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -81,7 +78,6 @@ import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGeneratedMeasureReports
 import org.smartregister.fhircore.engine.util.extension.valueCode
-import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportSubjectsPagingSource

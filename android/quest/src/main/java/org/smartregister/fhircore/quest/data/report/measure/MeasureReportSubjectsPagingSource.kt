@@ -22,8 +22,8 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectVie
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDataMapper
 
 class MeasureReportSubjectsPagingSource(
-    private val measureReportPagingSource: MeasureReportPagingSource,
-    val measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
+  private val measureReportPagingSource: MeasureReportPagingSource,
+  val measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
 ) : PagingSource<Int, MeasureReportSubjectViewData>() {
 
   override suspend fun load(

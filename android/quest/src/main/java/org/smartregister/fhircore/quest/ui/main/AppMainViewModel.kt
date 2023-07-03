@@ -319,14 +319,16 @@ constructor(
         requiresNetwork = false
       )
 
-      measureReportConfigurations.forEach{ measureReportConfig ->
+      measureReportConfigurations.forEach { measureReportConfig ->
         measureReportConfig.scheduledGenerationDuration?.let {
           schedulePeriodically<MeasureReportConfigWorker>(
             workId = MeasureReportConfigWorker.WORK_ID + "-" + measureReportConfig.id,
             duration = Duration.tryParse(measureReportConfig.scheduledGenerationDuration!!),
             requiresNetwork = false,
-            inputData = workDataOf(
-              MeasureReportConfigWorker.MEASURE_REPORT_CONFIG_ID to measureReportConfig.id)
+            inputData =
+              workDataOf(
+                MeasureReportConfigWorker.MEASURE_REPORT_CONFIG_ID to measureReportConfig.id
+              )
           )
         }
       }
