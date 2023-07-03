@@ -165,6 +165,13 @@ android {
       isDefault = true
     }
 
+    create("mpower") {
+      dimension = "apps"
+      applicationIdSuffix = ".mpower"
+      versionNameSuffix = "-mpower"
+      manifestPlaceholders["appLabel"] = "fhir HA"
+    }
+
     create("ecbis") {
       dimension = "apps"
       applicationIdSuffix = ".ecbis"
@@ -318,6 +325,8 @@ dependencies {
   implementation(libs.core.ktx)
   implementation(libs.appcompat)
   implementation(libs.material)
+  implementation(libs.accompanist.pager)
+  implementation(libs.accompanist.pager.indicators)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.cql.measure.evaluator)

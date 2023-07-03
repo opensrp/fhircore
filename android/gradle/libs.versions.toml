@@ -1,6 +1,8 @@
 [versions]
 accompanist-flowlayout = "0.23.1"
 accompanist-placeholder = "0.23.1"
+accompanist-pager = "0.25.1"
+accompanist-pager-indicators = "0.25.1"
 activity-compose = "1.6.1"
 activity-ktx = "1.6.1"
 appcompat = "1.5.1"
@@ -100,6 +102,8 @@ xercesImpl = "2.12.2"
 [libraries]
 accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version.ref = "accompanist-flowlayout" }
 accompanist-placeholder = { group = "com.google.accompanist", name = "accompanist-placeholder", version.ref = "accompanist-placeholder" }
+accompanist-pager = { group = "com.google.accompanist", name = "accompanist-pager", version.ref = "accompanist-pager" }
+accompanist-pager-indicators = { group = "com.google.accompanist", name = "accompanist-pager-indicators", version.ref = "accompanist-pager-indicators" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity-ktx" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
