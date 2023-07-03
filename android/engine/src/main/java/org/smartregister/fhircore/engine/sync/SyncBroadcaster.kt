@@ -44,7 +44,7 @@ import timber.log.Timber
 /**
  * This class is used to trigger one time and periodic syncs. A new instance of this class is
  * created each time because a new instance of [ResourceParamsBasedDownloadWorkManager] is needed
- * everytime sync is triggered. This class should not be provided as a singleton. The
+ * everytime sync is triggered; this class SHOULD NOT be provided as a singleton. The
  * [SyncJobStatus] events are sent to the registered [OnSyncListener] maintained by the
  * [SyncListenerManager]
  */
@@ -55,6 +55,7 @@ constructor(
   val fhirEngine: FhirEngine,
   val syncListenerManager: SyncListenerManager,
   val dispatcherProvider: DispatcherProvider,
+  val sync: Sync,
   @ApplicationContext val context: Context,
 ) {
 
@@ -64,7 +65,7 @@ constructor(
    */
   suspend fun runOneTimeSync() = coroutineScope {
     Timber.i("Running one time sync...")
-    Sync.oneTimeSync<AppSyncWorker>(context).handleSyncJobStatus(this)
+    sync.oneTimeSync<AppSyncWorker>().handleSyncJobStatus(this)
   }
 
   /**
@@ -74,8 +75,8 @@ constructor(
   @OptIn(ExperimentalCoroutinesApi::class)
   suspend fun schedulePeriodicSync(interval: Long = 15) = coroutineScope {
     Timber.i("Scheduling periodic sync...")
-    Sync.periodicSync<AppSyncWorker>(
-        context,
+    sync
+      .periodicSync<AppSyncWorker>(
         PeriodicSyncConfiguration(
           syncConstraints =
             Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
