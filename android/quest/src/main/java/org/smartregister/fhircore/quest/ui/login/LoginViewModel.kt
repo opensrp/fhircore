@@ -262,20 +262,20 @@ constructor(
 
       val careTeamIds =
         withContext(dispatcherProvider.io()) {
-          defaultRepository.create(false, *careTeams.toTypedArray()).map {
-            it.extractLogicalIdUuid()
+          defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
+            careTeams.map { it.id.extractLogicalIdUuid() }
           }
         }
       val organizationIds =
         withContext(dispatcherProvider.io()) {
-          defaultRepository.create(false, *organizations.toTypedArray()).map {
-            it.extractLogicalIdUuid()
+          defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
+            organizations.map { it.id.extractLogicalIdUuid() }
           }
         }
       val locationIds =
         withContext(dispatcherProvider.io()) {
-          defaultRepository.create(false, *locations.toTypedArray()).map {
-            it.extractLogicalIdUuid()
+          defaultRepository.createRemote(false, *locations.toTypedArray()).run {
+            locations.map { it.id.extractLogicalIdUuid() }
           }
         }
 
