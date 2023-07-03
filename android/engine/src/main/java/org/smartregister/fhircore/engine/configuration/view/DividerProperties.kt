@@ -16,16 +16,15 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
-import androidx.compose.foundation.layout.Arrangement
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
-data class ColumnProperties(
-  override val viewType: ViewType,
+data class DividerProperties(
+  override val viewType: ViewType = ViewType.BORDER,
   override val weight: Float = 0f,
-  override val backgroundColor: String? = null,
+  override val backgroundColor: String? = "#FFFFFF",
   override val padding: Int = 0,
   override val borderRadius: Int = 0,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
@@ -33,26 +32,12 @@ data class ColumnProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   override val visible: String = "true",
-  val spacedBy: Int = 8,
-  val wrapContent: Boolean = false,
-  val arrangement: ColumnArrangement? = null,
-  val children: List<ViewProperties> = emptyList(),
-  val showDivider: String = "false"
+  val thickness: Float = 0.5f,
 ) : ViewProperties() {
-  override fun interpolate(computedValuesMap: Map<String, Any>): ColumnProperties {
+  override fun interpolate(computedValuesMap: Map<String, Any>): DividerProperties {
     return this.copy(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),
-      visible = visible.interpolate(computedValuesMap),
-      showDivider = showDivider.interpolate(computedValuesMap)
+      visible = visible.interpolate(computedValuesMap)
     )
   }
-}
-
-enum class ColumnArrangement(val position: Arrangement.Vertical) {
-  SPACE_BETWEEN(Arrangement.SpaceBetween),
-  SPACE_AROUND(Arrangement.SpaceAround),
-  SPACE_EVENLY(Arrangement.SpaceEvenly),
-  CENTER(Arrangement.Center),
-  TOP(Arrangement.Top),
-  BOTTOM(Arrangement.Bottom)
 }

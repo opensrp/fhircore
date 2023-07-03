@@ -23,7 +23,7 @@ desugar-jdk-libs = "1.1.5"
 easy-rules-jexl = "4.1.0"
 espresso-core = "3.5.0"
 fhir-common-utils = "0.0.2-SNAPSHOT"
-fhir-engine = "0.1.0-beta03-preview8-SNAPSHOT"
+fhir-engine = "0.1.0-beta03-preview9-SNAPSHOT"
 foundation = "1.3.1"
 fragment-ktx = "1.5.5"
 fragment-testing = "1.5.2"
@@ -51,6 +51,9 @@ kotlinx-coroutines-debug = "1.6.2"
 kotlinx-coroutines-test = "1.6.2"
 kotlinx-serialization-json = "1.3.2"
 kujaku-library = "0.9.0"
+ktlint = "0.49.1"
+ktlint-cli-ruleset = "0.49.1"
+ktlint-rule-engine-core = "0.49.1"
 leakcanary-android = "2.10"
 lifecycle-livedata-ktx = "2.5.1"
 lifecycle-viewmodel-compose = "2.5.1"
@@ -152,6 +155,9 @@ kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 kotlinx-coroutines-debug = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-debug", version.ref = "kotlinx-coroutines-debug" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines-test" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
+ktlint-main = { group = "com.pinterest", name = "ktlint", version.ref = "ktlint"}
+ktlint-cli-ruleset = { group = "com.pinterest.ktlint", name = "ktlint-cli-ruleset-core", version.ref = "ktlint-cli-ruleset" }
+ktlint-rule-engine-core = { group = "com.pinterest.ktlint", name = "ktlint-rule-engine-core", version.ref = "ktlint-rule-engine-core" }
 kujaku-library = { group = "io.ona.kujaku", name = "library", version.ref = "kujaku-library" }
 leakcanary-android = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary-android" }
 lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle-livedata-ktx" }
