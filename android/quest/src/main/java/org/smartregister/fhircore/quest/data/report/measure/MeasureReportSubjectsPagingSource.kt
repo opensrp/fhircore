@@ -22,8 +22,8 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectVie
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDataMapper
 
 class MeasureReportSubjectsPagingSource(
-  private val measureReportRepository: MeasureReportRepository,
-  val measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
+    private val measureReportPagingSource: MeasureReportPagingSource,
+    val measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
 ) : PagingSource<Int, MeasureReportSubjectViewData>() {
 
   override suspend fun load(
@@ -33,7 +33,7 @@ class MeasureReportSubjectsPagingSource(
       val currentPage = params.key ?: 0
       val pageSize = params.loadSize
       val data =
-        measureReportRepository.retrieveSubjects(currentPage).map { resourceData ->
+        measureReportPagingSource.retrieveSubjects(currentPage).map { resourceData ->
           measureReportSubjectViewDataMapper.transformInputToOutputModel(resourceData)
         }
       val prevKey = if (currentPage == 0) null else currentPage - 1

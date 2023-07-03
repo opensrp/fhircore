@@ -18,13 +18,17 @@ package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.ResourceType
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 
 // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
 fun MeasureReport.StratifierGroupComponent.findPopulation(
@@ -117,4 +121,17 @@ suspend inline fun retrievePreviouslyGeneratedMeasureReports(
   subjects.forEach { search.filter(MeasureReport.SUBJECT, { value = it }) }
 
   return fhirEngine.search(search)
+}
+
+suspend inline fun fetchReportSubjects(config: MeasureReportConfig, fhirEngine: FhirEngine, defaultRepository: DefaultRepository): List<String> {
+  return if (config.subjectXFhirQuery?.isNotEmpty() == true) {
+    fhirEngine.search(config.subjectXFhirQuery!!).map {
+      // prevent missing subject where MeasureEvaluator looks for Group members and skips the Group itself
+      if (it is Group && !it.hasMember()) {
+        it.addMember(Group.GroupMemberComponent(it.asReference()))
+        defaultRepository.update(it)
+      }
+      "${it.resourceType.name}/${it.logicalId}"
+    }
+  } else emptyList()
 }

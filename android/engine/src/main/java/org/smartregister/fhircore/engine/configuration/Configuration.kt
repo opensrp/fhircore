@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.configuration
 
+import kotlinx.serialization.Serializable
+
 /**
  * Every class or object providing UI customizations e.g. appTitle, showFilter, showSideMenu,
  * showSearchBar etc. is required MUST adhere to this contract to provide consistencies.
