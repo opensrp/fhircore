@@ -361,7 +361,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     runBlocking { defaultRepository.addOrUpdate(resource = resource) }
 
-    verify { resource.generateMissingId() }
+    coVerify { resource.generateMissingId() }
 
     unmockkStatic(Resource::generateMissingId)
   }
