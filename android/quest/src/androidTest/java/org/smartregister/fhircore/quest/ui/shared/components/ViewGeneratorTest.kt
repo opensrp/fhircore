@@ -205,6 +205,30 @@ class ViewGeneratorTest {
   }
 
   @Test
+  fun testColumnIsRenderedCorrectlyWithNoDivider() {
+    composeRule.setContent {
+      GenerateView(
+        properties =
+          ColumnProperties(
+            wrapContent = false,
+            alignment = ViewAlignment.CENTER,
+            arrangement = ColumnArrangement.TOP,
+            showDivider = "false",
+            children =
+              listOf(
+                ButtonProperties(status = "DUE", text = "Due Task", visible = "true"),
+                ButtonProperties(status = "COMPLETED", text = "Completed Task", visible = "false")
+              ),
+            viewType = ViewType.COLUMN
+          ),
+        resourceData = resourceData,
+        navController = navController
+      )
+    }
+    composeRule.onNodeWithTag(COLUMN_DIVIDER_TEST_TAG).assertDoesNotExist()
+  }
+
+  @Test
   fun testChildIsVisibleTogglesVisibilityOfComponentsNestedInColumn() {
     composeRule.setContent {
       GenerateView(
