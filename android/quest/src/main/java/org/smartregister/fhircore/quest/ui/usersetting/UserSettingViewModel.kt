@@ -105,7 +105,7 @@ constructor(
       }
       is UserSettingsEvent.SyncData -> {
         if (event.context.isDeviceOnline()) {
-          syncBroadcaster.runSync(syncSharedFlow)
+          viewModelScope.launch { syncBroadcaster.runOneTimeSync() }
         } else
           event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
       }

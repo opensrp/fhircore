@@ -200,9 +200,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   private fun runSync(syncBroadcaster: SyncBroadcaster) {
     syncBroadcaster.run {
       if (isDeviceOnline()) {
-        with(appMainViewModel.syncSharedFlow) {
-          runSync(this)
-          schedulePeriodicSync(this)
+        lifecycleScope.launch {
+          runOneTimeSync()
+          schedulePeriodicSync()
         }
       } else context.showToast(context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
     }
