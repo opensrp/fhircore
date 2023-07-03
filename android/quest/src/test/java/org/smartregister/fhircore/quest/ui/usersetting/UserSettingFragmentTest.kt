@@ -80,6 +80,7 @@ class UserSettingFragmentTest : RobolectricTest() {
         fhirEngine = mockk(),
         dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
         syncListenerManager = mockk(relaxed = true),
+        sync = mockk(relaxed = true),
         context = application
       )
 
