@@ -69,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `requested` to `ready` task status update background worker 
 - Calculate DUE dates for dependent Tasks
 - Triggering QuestionnaireResponse extraction for Questionnaires closed via a Confirm Dialog
+- Fix the OVERDUE service status setting on the `RulesFactory#generateTaskServiceStatus()`
 
 ### Changed
 - Refactored how the related resources SELECT and COUNT queries search results are represented. 
