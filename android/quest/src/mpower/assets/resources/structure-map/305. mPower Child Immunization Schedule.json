@@ -266,7 +266,7 @@
           ],
           "rule": [
             {
-              "name": "rule_carepla_data_period",
+              "name": "rule_careplan_data_period",
               "source": [
                 {
                   "context": "subject"
@@ -521,7 +521,7 @@
                                   "valueId": "patientBirthDate"
                                 },
                                 {
-                                  "valueString": "$this + '14 \\'days\\''.toQuantity()"
+                                  "valueString": "$this + '365 \\'days\\''.toQuantity()"
                                 }
                               ]
                             },
@@ -533,7 +533,7 @@
                                   "valueId": "subject"
                                 },
                                 {
-                                  "valueString": "'OPV at Birth Vaccine'"
+                                  "valueString": "'OPV(0) at Birth Vaccine'"
                                 }
                               ]
                             },
@@ -595,7 +595,7 @@
                                   "valueId": "patientBirthDate"
                                 },
                                 {
-                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                                  "valueString": "$this + '365 \\'days\\''.toQuantity()"
                                 }
                               ]
                             },
@@ -693,7 +693,7 @@
                                   "valueId": "sixWeeksDate"
                                 },
                                 {
-                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                                  "valueString": "$this + '365 \\'days\\''.toQuantity()"
                                 }
                               ]
                             },
@@ -705,7 +705,7 @@
                                   "valueId": "subject"
                                 },
                                 {
-                                  "valueString": "'OPV(2) at 6 weeks Vaccine'"
+                                  "valueString": "'OPV(1) at 6 weeks Vaccine'"
                                 }
                               ]
                             },
@@ -767,7 +767,7 @@
                                   "valueId": "sixWeeksDate"
                                 },
                                 {
-                                  "valueString": "$this + '1460 \\'days\\''.toQuantity()"
+                                  "valueString": "$this + '365 \\'days\\''.toQuantity()"
                                 }
                               ]
                             },
@@ -779,7 +779,7 @@
                                   "valueId": "subject"
                                 },
                                 {
-                                  "valueString": "'Penta at 6 weeks Vaccine'"
+                                  "valueString": "'Penta(1) at 6 weeks Vaccine'"
                                 }
                               ]
                             },
@@ -826,7 +826,7 @@
                           ]
                         },
                         {
-                          "name": "rule_rota_tasks",
+                          "name": "rule_pcv_tasks",
                           "source": [
                             {
                               "context": "subject"
@@ -834,14 +834,14 @@
                           ],
                           "target": [
                             {
-                              "variable": "rotaEndDate",
+                              "variable": "pcvEndDate",
                               "transform": "evaluate",
                               "parameter": [
                                 {
                                   "valueId": "sixWeeksDate"
                                 },
                                 {
-                                  "valueString": "$this + '105 \\'days\\''.toQuantity()"
+                                  "valueString": "$this + '365 \\'days\\''.toQuantity()"
                                 }
                               ]
                             },
@@ -853,7 +853,7 @@
                                   "valueId": "subject"
                                 },
                                 {
-                                  "valueString": "'ROTA at 6 weeks Vaccine'"
+                                  "valueString": "'PCV(1) at 6 weeks Vaccine'"
                                 }
                               ]
                             },
@@ -887,7 +887,7 @@
                               "name": "extractTasks",
                               "variable": [
                                 "sixWeeksDate",
-                                "rotaEndDate",
+                                "pcvEndDate",
                                 "subject",
                                 "careplan",
                                 "activity",
@@ -900,7 +900,7 @@
                           ]
                         },
                         {
-                          "name": "rule_pneumo_tasks",
+                          "name": "rule_fipv_tasks",
                           "source": [
                             {
                               "context": "subject"
@@ -908,14 +908,14 @@
                           ],
                           "target": [
                             {
-                              "variable": "pneumoEndDate",
+                              "variable": "fipvEndDate",
                               "transform": "evaluate",
                               "parameter": [
                                 {
                                   "valueId": "sixWeeksDate"
                                 },
                                 {
-                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                                  "valueString": "$this + '365 \\'days\\''.toQuantity()"
                                 }
                               ]
                             },
@@ -927,7 +927,7 @@
                                   "valueId": "subject"
                                 },
                                 {
-                                  "valueString": "'Pneumo at 6 weeks Vaccine'"
+                                  "valueString": "'fIPV(1) at 6 weeks Vaccine'"
                                 }
                               ]
                             },
@@ -961,7 +961,7 @@
                               "name": "extractTasks",
                               "variable": [
                                 "sixWeeksDate",
-                                "pneumoEndDate",
+                                "fipvEndDate",
                                 "subject",
                                 "careplan",
                                 "activity",
@@ -1013,7 +1013,7 @@
                                   "valueId": "tenWeeksDate"
                                 },
                                 {
-                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                                  "valueString": "$this + '365 \\'days\\''.toQuantity()"
                                 }
                               ]
                             },
@@ -1025,7 +1025,7 @@
                                   "valueId": "subject"
                                 },
                                 {
-                                  "valueString": "'OPV(3) at 10 weeks Vaccine'"
+                                  "valueString": "'OPV(2) at 10 weeks Vaccine'"
                                 }
                               ]
                             },
@@ -1072,7 +1072,7 @@
                           ]
                         },
                         {
-                          "name": "rule_penta_one_tasks",
+                          "name": "rule_penta_two_tasks",
                           "source": [
                             {
                               "context": "subject"
@@ -1080,14 +1080,14 @@
                           ],
                           "target": [
                             {
-                              "variable": "pentaOneEndDate",
+                              "variable": "pentaTwoEndDate",
                               "transform": "evaluate",
                               "parameter": [
                                 {
                                   "valueId": "tenWeeksDate"
                                 },
                                 {
-                                  "valueString": "$this + '1460 \\'days\\''.toQuantity()"
+                                  "valueString": "$this + '365 \\'days\\''.toQuantity()"
                                 }
                               ]
                             },
@@ -1133,7 +1133,7 @@
                               "name": "extractTasks",
                               "variable": [
                                 "tenWeeksDate",
-                                "pentaOneEndDate",
+                                "pentaTwoEndDate",
                                 "subject",
                                 "careplan",
                                 "activity",
@@ -1146,7 +1146,7 @@
                           ]
                         },
                         {
-                          "name": "rule_rota_one_tasks",
+                          "name": "rule_pcv_two_tasks",
                           "source": [
                             {
                               "context": "subject"
@@ -1154,14 +1154,14 @@
                           ],
                           "target": [
                             {
-                              "variable": "rotaOneEndDate",
+                              "variable": "pcvTwoEndDate",
                               "transform": "evaluate",
                               "parameter": [
                                 {
                                   "valueId": "tenWeeksDate"
                                 },
                                 {
-                                  "valueString": "$this + '105 \\'days\\''.toQuantity()"
+                                  "valueString": "$this + '365 \\'days\\''.toQuantity()"
                                 }
                               ]
                             },
@@ -1173,7 +1173,7 @@
                                   "valueId": "subject"
                                 },
                                 {
-                                  "valueString": "'ROTA(2) at 10 weeks Vaccine'"
+                                  "valueString": "'PCV(2) at 10 weeks Vaccine'"
                                 }
                               ]
                             },
@@ -1207,81 +1207,7 @@
                               "name": "extractTasks",
                               "variable": [
                                 "tenWeeksDate",
-                                "rotaOneEndDate",
-                                "subject",
-                                "careplan",
-                                "activity",
-                                "timing",
-                                "immunizationTitle",
-                                "reasonConceptCode",
-                                "reasonConceptDisplay"
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "rule_pneumo_one_tasks",
-                          "source": [
-                            {
-                              "context": "subject"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "variable": "pneumoOneEndDate",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "tenWeeksDate"
-                                },
-                                {
-                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "immunizationTitle",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'Pneumo(2) at 10 weeks Vaccine'"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "reasonConceptCode",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'immunization_at_10_weeks'"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "reasonConceptDisplay",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'Immunization at 10 weeks'"
-                                }
-                              ]
-                            }
-                          ],
-                          "dependent": [
-                            {
-                              "name": "extractTasks",
-                              "variable": [
-                                "tenWeeksDate",
-                                "pneumoOneEndDate",
+                                "pcvTwoEndDate",
                                 "subject",
                                 "careplan",
                                 "activity",
@@ -1333,7 +1259,7 @@
                                   "valueId": "fourteenWeeksDate"
                                 },
                                 {
-                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                                  "valueString": "$this + '365 \\'days\\''.toQuantity()"
                                 }
                               ]
                             },
@@ -1345,7 +1271,7 @@
                                   "valueId": "subject"
                                 },
                                 {
-                                  "valueString": "'OPV(4) at 15 weeks Vaccine'"
+                                  "valueString": "'OPV(3) at 15 weeks Vaccine'"
                                 }
                               ]
                             },
@@ -1392,7 +1318,7 @@
                           ]
                         },
                         {
-                          "name": "rule_penta_two_tasks",
+                          "name": "rule_penta_three_tasks",
                           "source": [
                             {
                               "context": "subject"
@@ -1400,14 +1326,14 @@
                           ],
                           "target": [
                             {
-                              "variable": "pentaTwoEndDate",
+                              "variable": "pentaThreeEndDate",
                               "transform": "evaluate",
                               "parameter": [
                                 {
                                   "valueId": "fourteenWeeksDate"
                                 },
                                 {
-                                  "valueString": "$this + '1460 \\'days\\''.toQuantity()"
+                                  "valueString": "$this + '365 \\'days\\''.toQuantity()"
                                 }
                               ]
                             },
@@ -1453,7 +1379,7 @@
                               "name": "extractTasks",
                               "variable": [
                                 "fourteenWeeksDate",
-                                "pentaTwoEndDate",
+                                "pentaThreeEndDate",
                                 "subject",
                                 "careplan",
                                 "activity",
@@ -1466,7 +1392,7 @@
                           ]
                         },
                         {
-                          "name": "rule_ipv_tasks",
+                          "name": "rule_pcv_three_tasks",
                           "source": [
                             {
                               "context": "subject"
@@ -1474,81 +1400,7 @@
                           ],
                           "target": [
                             {
-                              "variable": "ipvEndDate",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "fourteenWeeksDate"
-                                },
-                                {
-                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "immunizationTitle",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'IPV at 15 weeks Vaccine'"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "reasonConceptCode",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'immunization_at_14_weeks'"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "reasonConceptDisplay",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'Immunization at 14 weeks'"
-                                }
-                              ]
-                            }
-                          ],
-                          "dependent": [
-                            {
-                              "name": "extractTasks",
-                              "variable": [
-                                "fourteenWeeksDate",
-                                "ipvEndDate",
-                                "subject",
-                                "careplan",
-                                "activity",
-                                "timing",
-                                "immunizationTitle",
-                                "reasonConceptCode",
-                                "reasonConceptDisplay"
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "rule_pneumo_two_tasks",
-                          "source": [
-                            {
-                              "context": "subject"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "variable": "pneumoTwoEndDate",
+                              "variable": "pcvThreeEndDate",
                               "transform": "evaluate",
                               "parameter": [
                                 {
@@ -1567,7 +1419,7 @@
                                   "valueId": "subject"
                                 },
                                 {
-                                  "valueString": "'Pneumo(3) at 15 weeks Vaccine'"
+                                  "valueString": "'PCV(3) at 15 weeks Vaccine'"
                                 }
                               ]
                             },
@@ -1601,7 +1453,81 @@
                               "name": "extractTasks",
                               "variable": [
                                 "fourteenWeeksDate",
-                                "pneumoTwoEndDate",
+                                "pcvThreeEndDate",
+                                "subject",
+                                "careplan",
+                                "activity",
+                                "timing",
+                                "immunizationTitle",
+                                "reasonConceptCode",
+                                "reasonConceptDisplay"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_fipv_two_tasks",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "fipvTwoEndDate",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "fourteenWeeksDate"
+                                },
+                                {
+                                  "valueString": "$this + '365 \\'days\\''.toQuantity()"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "immunizationTitle",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'fIPV(2) at 15 weeks Vaccine'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptCode",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'immunization_at_14_weeks'"
+                                }
+                              ]
+                            },
+                            {
+                              "variable": "reasonConceptDisplay",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "'Immunization at 14 weeks'"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractTasks",
+                              "variable": [
+                                "fourteenWeeksDate",
+                                "fipvTwoEndDate",
                                 "subject",
                                 "careplan",
                                 "activity",
@@ -1631,14 +1557,14 @@
                               "valueId": "subject"
                             },
                             {
-                              "valueString": "$this.birthDate + '270 \\'days\\''.toQuantity()"
+                              "valueString": "$this.birthDate + '274 \\'days\\''.toQuantity()"
                             }
                           ]
                         }
                       ],
                       "rule": [
                         {
-                          "name": "rule_measles_tasks",
+                          "name": "rule_mr_one_tasks",
                           "source": [
                             {
                               "context": "subject"
@@ -1646,155 +1572,7 @@
                           ],
                           "target": [
                             {
-                              "variable": "measlesEndDate",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "nineMonthsDate"
-                                },
-                                {
-                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "immunizationTitle",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'Measles at 9 months Vaccine'"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "reasonConceptCode",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'immunization_at_9_months'"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "reasonConceptDisplay",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'Immunization at 9 months'"
-                                }
-                              ]
-                            }
-                          ],
-                          "dependent": [
-                            {
-                              "name": "extractTasks",
-                              "variable": [
-                                "nineMonthsDate",
-                                "measlesEndDate",
-                                "subject",
-                                "careplan",
-                                "activity",
-                                "timing",
-                                "immunizationTitle",
-                                "reasonConceptCode",
-                                "reasonConceptDisplay"
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "rule_yellow_fever_tasks",
-                          "source": [
-                            {
-                              "context": "subject"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "variable": "yellowFeverEndDate",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "nineMonthsDate"
-                                },
-                                {
-                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "immunizationTitle",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'Yellow Fever at 9 months Vaccine'"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "reasonConceptCode",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'immunization_at_9_months'"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "reasonConceptDisplay",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'Immunization at 9 months'"
-                                }
-                              ]
-                            }
-                          ],
-                          "dependent": [
-                            {
-                              "name": "extractTasks",
-                              "variable": [
-                                "nineMonthsDate",
-                                "yellowFeverEndDate",
-                                "subject",
-                                "careplan",
-                                "activity",
-                                "timing",
-                                "immunizationTitle",
-                                "reasonConceptCode",
-                                "reasonConceptDisplay"
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "rule_typhoid_tasks",
-                          "source": [
-                            {
-                              "context": "subject"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "variable": "typhoidEndDate",
+                              "variable": "mrOneEndDate",
                               "transform": "evaluate",
                               "parameter": [
                                 {
@@ -1813,7 +1591,7 @@
                                   "valueId": "subject"
                                 },
                                 {
-                                  "valueString": "'Typhoid at 9 months Vaccine'"
+                                  "valueString": "'MR(1) at 9 months Vaccine'"
                                 }
                               ]
                             },
@@ -1847,7 +1625,7 @@
                               "name": "extractTasks",
                               "variable": [
                                 "nineMonthsDate",
-                                "typhoidEndDate",
+                                "mrOneEndDate",
                                 "subject",
                                 "careplan",
                                 "activity",
@@ -1877,14 +1655,14 @@
                               "valueId": "subject"
                             },
                             {
-                              "valueString": "$this.birthDate + '540 \\'days\\''.toQuantity()"
+                              "valueString": "$this.birthDate + '455 \\'days\\''.toQuantity()"
                             }
                           ]
                         }
                       ],
                       "rule": [
                         {
-                          "name": "rule_measles_one_tasks",
+                          "name": "rule_mr_two_tasks",
                           "source": [
                             {
                               "context": "subject"
@@ -1892,14 +1670,14 @@
                           ],
                           "target": [
                             {
-                              "variable": "measlesOneEndDate",
+                              "variable": "mrTwoEndDate",
                               "transform": "evaluate",
                               "parameter": [
                                 {
                                   "valueId": "fifteenMonthsDate"
                                 },
                                 {
-                                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                                  "valueString": "$this + '730 \\'days\\''.toQuantity()"
                                 }
                               ]
                             },
@@ -1911,7 +1689,7 @@
                                   "valueId": "subject"
                                 },
                                 {
-                                  "valueString": "'Measles(2) at 15 months Vaccine'"
+                                  "valueString": "'MR(2) at 15 months Vaccine'"
                                 }
                               ]
                             },
@@ -1945,203 +1723,7 @@
                               "name": "extractTasks",
                               "variable": [
                                 "fifteenMonthsDate",
-                                "measlesOneEndDate",
-                                "subject",
-                                "careplan",
-                                "activity",
-                                "timing",
-                                "immunizationTitle",
-                                "reasonConceptCode",
-                                "reasonConceptDisplay"
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "rule_at_nine_months",
-                      "source": [
-                        {
-                          "context": "subject"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "variable": "nineYearsDate",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "subject"
-                            },
-                            {
-                              "valueString": "$this.birthDate + '3285 \\'days\\''.toQuantity()"
-                            }
-                          ]
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "rule_hpv_tasks",
-                          "source": [
-                            {
-                              "context": "subject"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "variable": "hpvEndDate",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "nineYearsDate"
-                                },
-                                {
-                                  "valueString": "$this + '3653 \\'days\\''.toQuantity()"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "immunizationTitle",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'HPV at 9 years Vaccine'"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "reasonConceptCode",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'immunization_at_9_years'"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "reasonConceptDisplay",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'Immunization at 9 years'"
-                                }
-                              ]
-                            }
-                          ],
-                          "dependent": [
-                            {
-                              "name": "extractTasks",
-                              "variable": [
-                                "nineYearsDate",
-                                "hpvEndDate",
-                                "subject",
-                                "careplan",
-                                "activity",
-                                "timing",
-                                "immunizationTitle",
-                                "reasonConceptCode",
-                                "reasonConceptDisplay"
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "rule_at_nine_and_half_months",
-                      "source": [
-                        {
-                          "context": "subject"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "variable": "nineAndHalfYearsDate",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "subject"
-                            },
-                            {
-                              "valueString": "$this.birthDate + '3467 \\'days\\''.toQuantity()"
-                            }
-                          ]
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "rule_hpv_one_tasks",
-                          "source": [
-                            {
-                              "context": "subject"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "variable": "hpvOneEndDate",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "nineAndHalfYearsDate"
-                                },
-                                {
-                                  "valueString": "$this + '4017 \\'days\\''.toQuantity()"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "immunizationTitle",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'HPV(2) at 9.5 years Vaccine'"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "reasonConceptCode",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'immunization_at_9_half_years'"
-                                }
-                              ]
-                            },
-                            {
-                              "variable": "reasonConceptDisplay",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "subject"
-                                },
-                                {
-                                  "valueString": "'Immunization at 9.5 years'"
-                                }
-                              ]
-                            }
-                          ],
-                          "dependent": [
-                            {
-                              "name": "extractTasks",
-                              "variable": [
-                                "nineAndHalfYearsDate",
-                                "hpvOneEndDate",
+                                "mrTwoEndDate",
                                 "subject",
                                 "careplan",
                                 "activity",
@@ -2967,7 +2549,7 @@
                   "valueId": "offset"
                 },
                 {
-                  "valueString": "$this + '1825 \\'days\\''.toQuantity()"
+                  "valueString": "$this + '730 \\'days\\''.toQuantity()"
                 }
               ]
             }
