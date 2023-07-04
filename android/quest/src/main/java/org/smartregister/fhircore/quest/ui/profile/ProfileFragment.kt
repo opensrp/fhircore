@@ -114,21 +114,17 @@ class ProfileFragment : Fragment() {
 
   @VisibleForTesting
   suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
-    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission) { onSubmissionSuccessful ->
-      lifecycleScope.launch {
-        if (onSubmissionSuccessful) {
-          // Always refresh data when questionnaire is submitted
-          with(profileFragmentArgs) {
-            profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
-          }
+    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
-          // Display SnackBar message
-          val (questionnaireConfig, _) = questionnaireSubmission
-          questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
-            profileViewModel.emitSnackBarState(snackBarMessageConfig)
-          }
-        }
-      }
+    // Always refresh data on every submission
+    with(profileFragmentArgs) {
+      profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
+    }
+
+    // Display SnackBar message
+    val (questionnaireConfig, _) = questionnaireSubmission
+    questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
+      profileViewModel.emitSnackBarState(snackBarMessageConfig)
     }
   }
 }

@@ -280,22 +280,18 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
   @VisibleForTesting
   suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
-    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission) { onSubmissionSuccessful ->
-      lifecycleScope.launch {
-        if (onSubmissionSuccessful) {
-          // Always refresh data with each questionnaire submission
-          refreshRegisterData()
+    appMainViewModel.run {
+      onQuestionnaireSubmission(questionnaireSubmission)
+      retrieveAppMainUiState() // Update register counts
+    }
 
-          // Update side menu counts
-          appMainViewModel.retrieveAppMainUiState()
+    // Always refresh data on every submission
+    refreshRegisterData()
 
-          // Display SnackBar message
-          val (questionnaireConfig, _) = questionnaireSubmission
-          questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
-            registerViewModel.emitSnackBarState(snackBarMessageConfig)
-          }
-        }
-      }
+    // Display SnackBar message
+    val (questionnaireConfig, _) = questionnaireSubmission
+    questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
+      registerViewModel.emitSnackBarState(snackBarMessageConfig)
     }
   }
 
