@@ -28,40 +28,6 @@
       }
     ]
   },
-  "secondaryResources": [
-    {
-      "baseResource": {
-        "id": "commodities",
-        "resource": "Group",
-        "dataQueries": [
-          {
-            "paramName": "code",
-            "filterCriteria": [
-              {
-                "dataType": "CODE",
-                "value": {
-                  "system": "http://snomed.info/sct",
-                  "code": "386452003"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "relatedResources": [
-        {
-          "id": "stockObservations",
-          "resource": "Observation",
-          "searchParameter": "subject"
-        },
-        {
-          "id": "stockOutFlags",
-          "resource": "Flag",
-          "searchParameter": "subject"
-        }
-      ]
-    }
-  ],
   "topAppBar": {
     "title": {
       "viewType": "COMPOUND_TEXT",
@@ -182,6 +148,13 @@
     "collapsible": false
   },
   "rules": [
+    {
+      "name": "totalTaskCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalTaskCount', size(Task)"
+      ]
+    },
     {
       "name": "patientFirstName",
       "condition": "true",
@@ -539,7 +512,7 @@
                     "id": "atBirthReadyTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.reasonCode.coding[0].code = 'immunization_at_birth'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.groupIdentifier.value = '0_d'))"
                   }
                 ],
                 "emptyList": {
@@ -548,6 +521,13 @@
                 "registerCard": {
                   "rules": [
                     {
+                      "name": "isDueBirthTaskAvailable",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('isDueBirthTaskAvailable', (data.get('isChild') && size(Task) > 0))"
+                      ]
+                    },
+                    {
                       "name": "taskStatus",
                       "condition": "true",
                       "actions": [
@@ -555,17 +535,24 @@
                       ]
                     },
                     {
-                      "name": "taskStatusColorCode",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
-                      ]
-                    },
-                    {
                       "name": "taskExecutionStartDate",
                       "condition": "true",
                       "actions": [
                         "data.put('taskExecutionStartDate', fhirPath.extractValue(Task, 'Task.executionPeriod.start'))"
+                      ]
+                    },
+                    {
+                      "name": "isTaskOverDue",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('isTaskOverDue', fhirPath.extractValue(Task, \"Task.executionPeriod.start + 10 'days' < today()\"))"
+                      ]
+                    },
+                    {
+                      "name": "taskStatusColorCode",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? (data.get('isTaskOverDue') ? 'OVERDUE' : 'DUE') : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
                       ]
                     },
                     {
@@ -660,7 +647,7 @@
                     "id": "at6WeeksReadyTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.reasonCode.coding[0].code = 'immunization_at_6_weeks'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.groupIdentifier.value = '6_wk'))"
                   }
                 ],
                 "emptyList": {
@@ -676,10 +663,17 @@
                       ]
                     },
                     {
+                      "name": "isTaskOverDue",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('isTaskOverDue', fhirPath.extractValue(Task, \"Task.executionPeriod.start + 10 'days' < today()\"))"
+                      ]
+                    },
+                    {
                       "name": "taskStatusColorCode",
                       "condition": "true",
                       "actions": [
-                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
+                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? (data.get('isTaskOverDue') ? 'OVERDUE' : 'DUE') : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
                       ]
                     },
                     {
@@ -781,7 +775,7 @@
                     "id": "at10WeeksReadyTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.reasonCode.coding[0].code = 'immunization_at_10_weeks'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.groupIdentifier.value = '10_wk'))"
                   }
                 ],
                 "emptyList": {
@@ -797,10 +791,17 @@
                       ]
                     },
                     {
+                      "name": "isTaskOverDue",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('isTaskOverDue', fhirPath.extractValue(Task, \"Task.executionPeriod.start + 10 'days' < today()\"))"
+                      ]
+                    },
+                    {
                       "name": "taskStatusColorCode",
                       "condition": "true",
                       "actions": [
-                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
+                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? (data.get('isTaskOverDue') ? 'OVERDUE' : 'DUE') : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
                       ]
                     },
                     {
@@ -902,7 +903,7 @@
                     "id": "at14WeeksReadyTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.reasonCode.coding[0].code = 'immunization_at_14_weeks'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.groupIdentifier.value = '14_wk'))"
                   }
                 ],
                 "emptyList": {
@@ -918,10 +919,17 @@
                       ]
                     },
                     {
+                      "name": "isTaskOverDue",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('isTaskOverDue', fhirPath.extractValue(Task, \"Task.executionPeriod.start + 10 'days' < today()\"))"
+                      ]
+                    },
+                    {
                       "name": "taskStatusColorCode",
                       "condition": "true",
                       "actions": [
-                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
+                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? (data.get('isTaskOverDue') ? 'OVERDUE' : 'DUE') : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
                       ]
                     },
                     {
@@ -1023,7 +1031,7 @@
                     "id": "at9MonthsReadyTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.reasonCode.coding[0].code = 'immunization_at_9_months'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.groupIdentifier.value = '9_mo'))"
                   }
                 ],
                 "emptyList": {
@@ -1039,10 +1047,17 @@
                       ]
                     },
                     {
+                      "name": "isTaskOverDue",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('isTaskOverDue', fhirPath.extractValue(Task, \"Task.executionPeriod.start + 10 'days' < today()\"))"
+                      ]
+                    },
+                    {
                       "name": "taskStatusColorCode",
                       "condition": "true",
                       "actions": [
-                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
+                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? (data.get('isTaskOverDue') ? 'OVERDUE' : 'DUE') : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
                       ]
                     },
                     {
@@ -1144,7 +1159,7 @@
                     "id": "at15MonthsReadyTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.reasonCode.coding[0].code = 'immunization_at_15_months'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.groupIdentifier.value = '15_mo'))"
                   }
                 ],
                 "emptyList": {
@@ -1160,252 +1175,17 @@
                       ]
                     },
                     {
-                      "name": "taskStatusColorCode",
+                      "name": "isTaskOverDue",
                       "condition": "true",
                       "actions": [
-                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
-                      ]
-                    },
-                    {
-                      "name": "taskExecutionStartDate",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskExecutionStartDate', fhirPath.extractValue(Task, 'Task.executionPeriod.start'))"
-                      ]
-                    },
-                    {
-                      "name": "taskPeriodDueDate",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
-                      ]
-                    },
-                    {
-                      "name": "taskDescription",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
-                      ]
-                    },
-                    {
-                      "name": "taskDescriptionWithStartDate",
-                      "condition": "true",
-                      "priority": 2,
-                      "actions": [
-                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
-                      ]
-                    },
-                    {
-                      "name": "taskId",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskId', fhirPath.extractValue(Task, 'Task.id'))"
-                      ]
-                    },
-                    {
-                      "name": "taskFor",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskFor', fhirPath.extractValue(Task, 'Task.for.reference'))"
-                      ]
-                    },
-                    {
-                      "name": "taskQuestionnaireId",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskQuestionnaireId', fhirPath.extractValue(Task, 'Task.reasonReference.reference'))"
-                      ]
-                    }
-                  ],
-                  "views": [
-                    {
-                      "viewType": "BUTTON",
-                      "smallSized": "true",
-                      "text": "@{taskDescriptionWithStartDate}",
-                      "status": "@{taskStatusColorCode}",
-                      "visible": "true",
-                      "enabled": "@{patientActive}",
-                      "actions": [
-                        {
-                          "trigger": "ON_CLICK",
-                          "workflow": "LAUNCH_QUESTIONNAIRE",
-                          "questionnaire": {
-                            "id": "@{taskQuestionnaireId}",
-                            "title": "@{taskDescription}",
-
-                            "saveButtonText": "Save",
-                            "taskId": "@{taskId}",
-                            "resourceIdentifier": "@{taskFor}"
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "viewType": "CARD",
-            "visible": "@{isChild}",
-            "padding": 16,
-            "header": {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "Immunizations at 9 years",
-              "primaryTextColor": "#6F7274",
-              "fontSize": 18.0,
-              "padding": 16
-            },
-            "content": [
-              {
-                "viewType": "LIST",
-                "id": "at9yearsReadyTaskList",
-                "resources": [
-                  {
-                    "id": "at9yearsReadyTasks",
-                    "relatedResourceId": "availableTasks",
-                    "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.reasonCode.coding[0].code = 'immunization_at_9_years'))"
-                  }
-                ],
-                "emptyList": {
-                  "message": "No visit tasks available for this patient at the moment"
-                },
-                "registerCard": {
-                  "rules": [
-                    {
-                      "name": "taskStatus",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"
+                        "data.put('isTaskOverDue', fhirPath.extractValue(Task, \"Task.executionPeriod.start + 10 'days' < today()\"))"
                       ]
                     },
                     {
                       "name": "taskStatusColorCode",
                       "condition": "true",
                       "actions": [
-                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
-                      ]
-                    },
-                    {
-                      "name": "taskExecutionStartDate",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskExecutionStartDate', fhirPath.extractValue(Task, 'Task.executionPeriod.start'))"
-                      ]
-                    },
-                    {
-                      "name": "taskPeriodDueDate",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
-                      ]
-                    },
-                    {
-                      "name": "taskDescription",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
-                      ]
-                    },
-                    {
-                      "name": "taskDescriptionWithStartDate",
-                      "condition": "true",
-                      "priority": 2,
-                      "actions": [
-                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
-                      ]
-                    },
-                    {
-                      "name": "taskId",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskId', fhirPath.extractValue(Task, 'Task.id'))"
-                      ]
-                    },
-                    {
-                      "name": "taskFor",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskFor', fhirPath.extractValue(Task, 'Task.for.reference'))"
-                      ]
-                    },
-                    {
-                      "name": "taskQuestionnaireId",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskQuestionnaireId', fhirPath.extractValue(Task, 'Task.reasonReference.reference'))"
-                      ]
-                    }
-                  ],
-                  "views": [
-                    {
-                      "viewType": "BUTTON",
-                      "smallSized": "true",
-                      "text": "@{taskDescriptionWithStartDate}",
-                      "status": "@{taskStatusColorCode}",
-                      "visible": "true",
-                      "enabled": "@{patientActive}",
-                      "actions": [
-                        {
-                          "trigger": "ON_CLICK",
-                          "workflow": "LAUNCH_QUESTIONNAIRE",
-                          "questionnaire": {
-                            "id": "@{taskQuestionnaireId}",
-
-                            "title": "@{taskDescription}",
-                            "saveButtonText": "Save",
-                            "taskId": "@{taskId}",
-                            "resourceIdentifier": "@{taskFor}"
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "viewType": "CARD",
-            "visible": "@{isChild}",
-            "padding": 16,
-            "header": {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "Immunizations at 9.5 years",
-              "primaryTextColor": "#6F7274",
-              "fontSize": 18.0,
-              "padding": 16
-            },
-            "content": [
-              {
-                "viewType": "LIST",
-                "id": "at9HalfYearsReadyTaskList",
-                "resources": [
-                  {
-                    "id": "at9HalfYearsReadyTasks",
-                    "relatedResourceId": "availableTasks",
-                    "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.reasonCode.coding[0].code = 'immunization_at_9_half_years'))"
-                  }
-                ],
-                "emptyList": {
-                  "message": "No visit tasks available for this patient at the moment"
-                },
-                "registerCard": {
-                  "rules": [
-                    {
-                      "name": "taskStatus",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"
-                      ]
-                    },
-                    {
-                      "name": "taskStatusColorCode",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
+                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? (data.get('isTaskOverDue') ? 'OVERDUE' : 'DUE') : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
                       ]
                     },
                     {
@@ -1633,6 +1413,134 @@
             "padding": 16,
             "header": {
               "viewType": "COMPOUND_TEXT",
+              "primaryText": "Immunizations at Birth",
+              "primaryTextColor": "#6F7274",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "LIST",
+                "id": "atBirthCompletedTaskList",
+                "resources": [
+                  {
+                    "id": "atBirthCompletedTasks",
+                    "relatedResourceId": "availableTasks",
+                    "resourceType": "Task",
+                    "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.groupIdentifier.value = '0_d'))"
+                  }
+                ],
+                "emptyList": {
+                  "message": "No visit tasks available for this patient at the moment"
+                },
+                "registerCard": {
+                  "rules": [
+                    {
+                      "name": "isUpcomingBirthTaskAvailable",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('isUpcomingBirthTaskAvailable', (data.get('isChild') && size(Task) > 0))"
+                      ]
+                    },
+                    {
+                      "name": "taskStatus",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"
+                      ]
+                    },
+                    {
+                      "name": "taskStatusColorCode",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
+                      ]
+                    },
+                    {
+                      "name": "taskExecutionStartDate",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('taskExecutionStartDate', fhirPath.extractValue(Task, 'Task.executionPeriod.start'))"
+                      ]
+                    },
+                    {
+                      "name": "taskPeriodDueDate",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
+                      ]
+                    },
+                    {
+                      "name": "taskDescription",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
+                      ]
+                    },
+                    {
+                      "name": "taskDescriptionWithStartDate",
+                      "condition": "true",
+                      "priority": 2,
+                      "actions": [
+                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
+                      ]
+                    },
+                    {
+                      "name": "taskId",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('taskId', fhirPath.extractValue(Task, 'Task.id'))"
+                      ]
+                    },
+                    {
+                      "name": "taskFor",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('taskFor', fhirPath.extractValue(Task, 'Task.for.reference'))"
+                      ]
+                    },
+                    {
+                      "name": "taskQuestionnaireId",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('taskQuestionnaireId', fhirPath.extractValue(Task, 'Task.reasonReference.reference'))"
+                      ]
+                    }
+                  ],
+                  "views": [
+                    {
+                      "viewType": "BUTTON",
+                      "smallSized": "true",
+                      "text": "@{taskDescriptionWithStartDate}",
+                      "status": "@{taskStatusColorCode}",
+                      "visible": "true",
+                      "enabled": "@{patientActive}",
+                      "actions": [
+                        {
+                          "trigger": "ON_CLICK",
+                          "workflow": "LAUNCH_QUESTIONNAIRE",
+                          "questionnaire": {
+                            "id": "@{taskQuestionnaireId}",
+                            "title": "@{taskDescription}",
+
+                            "saveButtonText": "Save",
+                            "taskId": "@{taskId}",
+                            "resourceIdentifier": "@{taskFor}"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "visible": "@{isChild}",
+            "padding": 16,
+            "header": {
+              "viewType": "COMPOUND_TEXT",
               "primaryText": "Immunizations at 6 weeks",
               "primaryTextColor": "#6F7274",
               "fontSize": 18.0,
@@ -1647,7 +1555,7 @@
                     "id": "at6WeeksUpcomingTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.reasonCode.coding[0].code = 'immunization_at_6_weeks'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.groupIdentifier.value = '6_wk'))"
                   }
                 ],
                 "emptyList": {
@@ -1768,7 +1676,7 @@
                     "id": "at10WeeksUpcomingTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.reasonCode.coding[0].code = 'immunization_at_10_weeks'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.groupIdentifier.value = '10_wk'))"
                   }
                 ],
                 "emptyList": {
@@ -1889,7 +1797,7 @@
                     "id": "at14WeeksUpcomingTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.reasonCode.coding[0].code = 'immunization_at_14_weeks'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.groupIdentifier.value = '14_wk'))"
                   }
                 ],
                 "emptyList": {
@@ -2010,7 +1918,7 @@
                     "id": "at9MonthsUpcomingTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.reasonCode.coding[0].code = 'immunization_at_9_months'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.groupIdentifier.value = '9_mo'))"
                   }
                 ],
                 "emptyList": {
@@ -2131,249 +2039,7 @@
                     "id": "at15MonthsUpcomingTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.reasonCode.coding[0].code = 'immunization_at_15_months'))"
-                  }
-                ],
-                "emptyList": {
-                  "message": "No visit tasks available for this patient at the moment"
-                },
-                "registerCard": {
-                  "rules": [
-                    {
-                      "name": "taskStatus",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"
-                      ]
-                    },
-                    {
-                      "name": "taskStatusColorCode",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
-                      ]
-                    },
-                    {
-                      "name": "taskExecutionStartDate",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskExecutionStartDate', fhirPath.extractValue(Task, 'Task.executionPeriod.start'))"
-                      ]
-                    },
-                    {
-                      "name": "taskPeriodDueDate",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
-                      ]
-                    },
-                    {
-                      "name": "taskDescription",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
-                      ]
-                    },
-                    {
-                      "name": "taskDescriptionWithStartDate",
-                      "condition": "true",
-                      "priority": 2,
-                      "actions": [
-                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
-                      ]
-                    },
-                    {
-                      "name": "taskId",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskId', fhirPath.extractValue(Task, 'Task.id'))"
-                      ]
-                    },
-                    {
-                      "name": "taskFor",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskFor', fhirPath.extractValue(Task, 'Task.for.reference'))"
-                      ]
-                    },
-                    {
-                      "name": "taskQuestionnaireId",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskQuestionnaireId', fhirPath.extractValue(Task, 'Task.reasonReference.reference'))"
-                      ]
-                    }
-                  ],
-                  "views": [
-                    {
-                      "viewType": "BUTTON",
-                      "smallSized": "true",
-                      "text": "@{taskDescriptionWithStartDate}",
-                      "status": "@{taskStatusColorCode}",
-                      "visible": "true",
-                      "enabled": "@{patientActive}",
-                      "actions": [
-                        {
-                          "trigger": "ON_CLICK",
-                          "workflow": "LAUNCH_QUESTIONNAIRE",
-                          "questionnaire": {
-                            "id": "@{taskQuestionnaireId}",
-                            "title": "@{taskDescription}",
-
-                            "saveButtonText": "Save",
-                            "taskId": "@{taskId}",
-                            "resourceIdentifier": "@{taskFor}"
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "viewType": "CARD",
-            "visible": "@{isChild}",
-            "padding": 16,
-            "header": {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "Immunizations at 9 years",
-              "primaryTextColor": "#6F7274",
-              "fontSize": 18.0,
-              "padding": 16
-            },
-            "content": [
-              {
-                "viewType": "LIST",
-                "id": "at9yearsUpcomingTaskList",
-                "resources": [
-                  {
-                    "id": "at9yearsUpcomingTasks",
-                    "relatedResourceId": "availableTasks",
-                    "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.reasonCode.coding[0].code = 'immunization_at_9_years'))"
-                  }
-                ],
-                "emptyList": {
-                  "message": "No visit tasks available for this patient at the moment"
-                },
-                "registerCard": {
-                  "rules": [
-                    {
-                      "name": "taskStatus",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"
-                      ]
-                    },
-                    {
-                      "name": "taskStatusColorCode",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
-                      ]
-                    },
-                    {
-                      "name": "taskExecutionStartDate",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskExecutionStartDate', fhirPath.extractValue(Task, 'Task.executionPeriod.start'))"
-                      ]
-                    },
-                    {
-                      "name": "taskPeriodDueDate",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
-                      ]
-                    },
-                    {
-                      "name": "taskDescription",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
-                      ]
-                    },
-                    {
-                      "name": "taskDescriptionWithStartDate",
-                      "condition": "true",
-                      "priority": 2,
-                      "actions": [
-                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
-                      ]
-                    },
-                    {
-                      "name": "taskId",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskId', fhirPath.extractValue(Task, 'Task.id'))"
-                      ]
-                    },
-                    {
-                      "name": "taskFor",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskFor', fhirPath.extractValue(Task, 'Task.for.reference'))"
-                      ]
-                    },
-                    {
-                      "name": "taskQuestionnaireId",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskQuestionnaireId', fhirPath.extractValue(Task, 'Task.reasonReference.reference'))"
-                      ]
-                    }
-                  ],
-                  "views": [
-                    {
-                      "viewType": "BUTTON",
-                      "smallSized": "true",
-                      "text": "@{taskDescriptionWithStartDate}",
-                      "status": "@{taskStatusColorCode}",
-                      "visible": "true",
-                      "enabled": "@{patientActive}",
-                      "actions": [
-                        {
-                          "trigger": "ON_CLICK",
-                          "workflow": "LAUNCH_QUESTIONNAIRE",
-                          "questionnaire": {
-                            "id": "@{taskQuestionnaireId}",
-
-                            "title": "@{taskDescription}",
-                            "saveButtonText": "Save",
-                            "taskId": "@{taskId}",
-                            "resourceIdentifier": "@{taskFor}"
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "viewType": "CARD",
-            "visible": "@{isChild}",
-            "padding": 16,
-            "header": {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "Immunizations at 9.5 years",
-              "primaryTextColor": "#6F7274",
-              "fontSize": 18.0,
-              "padding": 16
-            },
-            "content": [
-              {
-                "viewType": "LIST",
-                "id": "at9HalfYearsUpcomingTaskList",
-                "resources": [
-                  {
-                    "id": "at9HalfYearsUpcomingTasks",
-                    "relatedResourceId": "availableTasks",
-                    "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.reasonCode.coding[0].code = 'immunization_at_9_half_years'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.groupIdentifier.value = '15_mo'))"
                   }
                 ],
                 "emptyList": {
@@ -2634,7 +2300,7 @@
                     "id": "atBirthCompletedTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.reasonCode.coding[0].code = 'immunization_at_birth'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.groupIdentifier.value = '0_d'))"
                   }
                 ],
                 "emptyList": {
@@ -2642,6 +2308,13 @@
                 },
                 "registerCard": {
                   "rules": [
+                    {
+                      "name": "isCompletedBirthTaskAvailable",
+                      "condition": "true",
+                      "actions": [
+                        "data.put('isCompletedBirthTaskAvailable', (data.get('isChild') && size(Task) > 0))"
+                      ]
+                    },
                     {
                       "name": "taskStatus",
                       "condition": "true",
@@ -2755,7 +2428,7 @@
                     "id": "at6WeeksCompletedTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.reasonCode.coding[0].code = 'immunization_at_6_weeks'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.groupIdentifier.value = '6_wk'))"
                   }
                 ],
                 "emptyList": {
@@ -2876,7 +2549,7 @@
                     "id": "at10WeeksCompletedTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.reasonCode.coding[0].code = 'immunization_at_10_weeks'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.groupIdentifier.value = '10_wk'))"
                   }
                 ],
                 "emptyList": {
@@ -2997,7 +2670,7 @@
                     "id": "at14WeeksCompletedTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.reasonCode.coding[0].code = 'immunization_at_14_weeks'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.groupIdentifier.value = '14_wk'))"
                   }
                 ],
                 "emptyList": {
@@ -3118,7 +2791,7 @@
                     "id": "at9MonthsCompletedTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.reasonCode.coding[0].code = 'immunization_at_9_months'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.groupIdentifier.value = '9_mo'))"
                   }
                 ],
                 "emptyList": {
@@ -3239,249 +2912,7 @@
                     "id": "at15MonthsCompletedTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.reasonCode.coding[0].code = 'immunization_at_15_months'))"
-                  }
-                ],
-                "emptyList": {
-                  "message": "No visit tasks available for this patient at the moment"
-                },
-                "registerCard": {
-                  "rules": [
-                    {
-                      "name": "taskStatus",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"
-                      ]
-                    },
-                    {
-                      "name": "taskStatusColorCode",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
-                      ]
-                    },
-                    {
-                      "name": "taskExecutionStartDate",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskExecutionStartDate', fhirPath.extractValue(Task, 'Task.executionPeriod.start'))"
-                      ]
-                    },
-                    {
-                      "name": "taskPeriodDueDate",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
-                      ]
-                    },
-                    {
-                      "name": "taskDescription",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
-                      ]
-                    },
-                    {
-                      "name": "taskDescriptionWithStartDate",
-                      "condition": "true",
-                      "priority": 2,
-                      "actions": [
-                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
-                      ]
-                    },
-                    {
-                      "name": "taskId",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskId', fhirPath.extractValue(Task, 'Task.id'))"
-                      ]
-                    },
-                    {
-                      "name": "taskFor",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskFor', fhirPath.extractValue(Task, 'Task.for.reference'))"
-                      ]
-                    },
-                    {
-                      "name": "taskQuestionnaireId",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskQuestionnaireId', fhirPath.extractValue(Task, 'Task.reasonReference.reference'))"
-                      ]
-                    }
-                  ],
-                  "views": [
-                    {
-                      "viewType": "BUTTON",
-                      "smallSized": "true",
-                      "text": "@{taskDescriptionWithStartDate}",
-                      "status": "@{taskStatusColorCode}",
-                      "visible": "true",
-                      "enabled": "@{patientActive}",
-                      "actions": [
-                        {
-                          "trigger": "ON_CLICK",
-                          "workflow": "LAUNCH_QUESTIONNAIRE",
-                          "questionnaire": {
-                            "id": "@{taskQuestionnaireId}",
-                            "title": "@{taskDescription}",
-
-                            "saveButtonText": "Save",
-                            "taskId": "@{taskId}",
-                            "resourceIdentifier": "@{taskFor}"
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "viewType": "CARD",
-            "visible": "@{isChild}",
-            "padding": 16,
-            "header": {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "Immunizations at 9 years",
-              "primaryTextColor": "#6F7274",
-              "fontSize": 18.0,
-              "padding": 16
-            },
-            "content": [
-              {
-                "viewType": "LIST",
-                "id": "at9yearsCompletedTaskList",
-                "resources": [
-                  {
-                    "id": "at9yearsCompletedTasks",
-                    "relatedResourceId": "availableTasks",
-                    "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.reasonCode.coding[0].code = 'immunization_at_9_years'))"
-                  }
-                ],
-                "emptyList": {
-                  "message": "No visit tasks available for this patient at the moment"
-                },
-                "registerCard": {
-                  "rules": [
-                    {
-                      "name": "taskStatus",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"
-                      ]
-                    },
-                    {
-                      "name": "taskStatusColorCode",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
-                      ]
-                    },
-                    {
-                      "name": "taskExecutionStartDate",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskExecutionStartDate', fhirPath.extractValue(Task, 'Task.executionPeriod.start'))"
-                      ]
-                    },
-                    {
-                      "name": "taskPeriodDueDate",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
-                      ]
-                    },
-                    {
-                      "name": "taskDescription",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
-                      ]
-                    },
-                    {
-                      "name": "taskDescriptionWithStartDate",
-                      "condition": "true",
-                      "priority": 2,
-                      "actions": [
-                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
-                      ]
-                    },
-                    {
-                      "name": "taskId",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskId', fhirPath.extractValue(Task, 'Task.id'))"
-                      ]
-                    },
-                    {
-                      "name": "taskFor",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskFor', fhirPath.extractValue(Task, 'Task.for.reference'))"
-                      ]
-                    },
-                    {
-                      "name": "taskQuestionnaireId",
-                      "condition": "true",
-                      "actions": [
-                        "data.put('taskQuestionnaireId', fhirPath.extractValue(Task, 'Task.reasonReference.reference'))"
-                      ]
-                    }
-                  ],
-                  "views": [
-                    {
-                      "viewType": "BUTTON",
-                      "smallSized": "true",
-                      "text": "@{taskDescriptionWithStartDate}",
-                      "status": "@{taskStatusColorCode}",
-                      "visible": "true",
-                      "enabled": "@{patientActive}",
-                      "actions": [
-                        {
-                          "trigger": "ON_CLICK",
-                          "workflow": "LAUNCH_QUESTIONNAIRE",
-                          "questionnaire": {
-                            "id": "@{taskQuestionnaireId}",
-
-                            "title": "@{taskDescription}",
-                            "saveButtonText": "Save",
-                            "taskId": "@{taskId}",
-                            "resourceIdentifier": "@{taskFor}"
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "viewType": "CARD",
-            "visible": "@{isChild}",
-            "padding": 16,
-            "header": {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "Immunizations at 9.5 years",
-              "primaryTextColor": "#6F7274",
-              "fontSize": 18.0,
-              "padding": 16
-            },
-            "content": [
-              {
-                "viewType": "LIST",
-                "id": "at9HalfYearsCompletedTaskList",
-                "resources": [
-                  {
-                    "id": "at9HalfYearsCompletedTasks",
-                    "relatedResourceId": "availableTasks",
-                    "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.reasonCode.coding[0].code = 'immunization_at_9_half_years'))"
+                    "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.groupIdentifier.value = '15_mo'))"
                   }
                 ],
                 "emptyList": {
