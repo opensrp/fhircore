@@ -176,12 +176,16 @@ constructor(
   }
 
   fun loadConfigurations(context: Context) {
-    viewModelScope.launch(dispatcherProvider.io()) {
-      appId.value?.let { thisAppId ->
-        configurationRegistry.loadConfigurations(thisAppId, context) {
+    appId.value?.let { thisAppId ->
+      viewModelScope.launch(dispatcherProvider.io()) {
+        configurationRegistry.loadConfigurations(thisAppId, context) { loadConfigSuccessful ->
           showProgressBar.postValue(false)
-          sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, thisAppId)
-          context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
+          if (loadConfigSuccessful) {
+            sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, thisAppId)
+            context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
+          } else {
+            _error.postValue(context.getString(R.string.application_not_supported, appId.value))
+          }
         }
       }
     }
