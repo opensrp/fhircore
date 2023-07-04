@@ -75,7 +75,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override val startForResult =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
-      if (activityResult.resultCode == Activity.RESULT_OK) onSubmitQuestionnaire(activityResult)
+      if (activityResult.resultCode == Activity.RESULT_OK)
+        lifecycleScope.launch { onSubmitQuestionnaire(activityResult) }
     }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -143,7 +144,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     navHostFragment.navController.removeOnDestinationChangedListener(sentryNavListener)
   }
 
-  override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
+  override suspend fun onSubmitQuestionnaire(activityResult: ActivityResult) {
     if (activityResult.resultCode == RESULT_OK) {
       val questionnaireResponse: QuestionnaireResponse? =
         activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE) as
@@ -152,17 +153,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as
           QuestionnaireConfig?
 
-      lifecycleScope.launch {
-        if (questionnaireConfig != null && questionnaireResponse != null) {
-          eventBus.triggerEvent(
-            AppEvent.OnSubmitQuestionnaire(
-              QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
-            )
+      if (questionnaireConfig != null && questionnaireResponse != null) {
+        eventBus.triggerEvent(
+          AppEvent.OnSubmitQuestionnaire(
+            QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
           )
-        }
-        if (questionnaireConfig != null && questionnaireConfig.refreshContent) {
-          eventBus.triggerEvent(AppEvent.RefreshCache(questionnaireConfig = questionnaireConfig))
-        }
+        )
       }
     }
   }

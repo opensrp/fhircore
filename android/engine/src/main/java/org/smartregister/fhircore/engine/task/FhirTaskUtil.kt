@@ -30,22 +30,24 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.extension.executionStartIsBeforeOrToday
 import org.smartregister.fhircore.engine.util.extension.expiredConcept
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.isPastExpiry
+import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
 @Singleton
-class FhirTaskExpireUtil
+class FhirTaskUtil
 @Inject
 constructor(@ApplicationContext val appContext: Context, val defaultRepository: DefaultRepository) {
 
   /**
    * Fetches and returns tasks whose Task.status is either "requested", "ready", "accepted",
    * "in-progress" and "received" and Task.restriction.period.end is <= today. It uses the maximum .
-   * The size of the tasks is between 0 to (tasksCount * 2). It is not guaranteed that the list of
-   * tasks returned will be of size [tasksCount].
+   * The size of the tasks is between 0 to (tasksCount * 2).
    */
   suspend fun expireOverdueTasks(): List<Task> {
     Timber.i("Fetch and expire overdue tasks")
@@ -108,4 +110,58 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
       ?.outcomeReference
       ?.lastOrNull()
       ?.extractId() == task.logicalId
+
+  suspend fun updateTaskStatuses() {
+    Timber.i("Update tasks statuses")
+
+    val tasks =
+      defaultRepository.fhirEngine.search<Task> {
+        filter(
+          Task.STATUS,
+          { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
+          { value = of(Task.TaskStatus.ACCEPTED.toCoding()) },
+          { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
+        )
+        filter(
+          Task.PERIOD,
+          {
+            prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+            value = of(DateTimeType(Date().plusDays(-1)))
+          }
+        )
+      }
+
+    Timber.i("Found ${tasks.size} tasks to be updated")
+
+    tasks.forEach { task ->
+      // expired tasks are handled by other service i.e. FhirTaskExpireWorker
+      if (task.executionStartIsBeforeOrToday() &&
+          task.status == Task.TaskStatus.REQUESTED &&
+          task.preReqConditionSatisfied()
+      ) {
+        Timber.i("Task ${task.id} marked ready")
+        task.status = Task.TaskStatus.READY
+        defaultRepository.update(task)
+      }
+    }
+  }
+
+  /**
+   * Check in the task is part of another task and if so check if the parent task is
+   * completed,cancelled,failed or entered in error.
+   */
+  private suspend fun Task.preReqConditionSatisfied() =
+    this.partOf.find { it.reference.startsWith(ResourceType.Task.name + "/") }?.let {
+      defaultRepository
+        .fhirEngine
+        .get<Task>(it.extractId())
+        .status
+        .isIn(
+          Task.TaskStatus.CANCELLED,
+          Task.TaskStatus.COMPLETED,
+          Task.TaskStatus.FAILED,
+          Task.TaskStatus.ENTEREDINERROR
+        )
+    }
+      ?: true
 }

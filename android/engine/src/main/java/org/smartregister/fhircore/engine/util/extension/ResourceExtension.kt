@@ -323,17 +323,13 @@ fun String.resourceClassType(): Class<out Resource> =
 fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")
 
 /**
- * You provide a suspended function in Kotlin, which updates the due date of a task's dependent
- * tasks based on the date of a related immunization. The function takes a [defaultRepository]
- * parameter that is an instance of [DefaultRepository]. It then loops through all the tasks that
- * this task is a part of, loads the dependent tasks and their related immunization resources from
- * the repository, and updates the start date of the dependent task if it's scheduled to start
+ * This suspend function in updates the due date of the dependents of the current [Task], based on
+ * the date of a related [Immunization] [Task]. The function loops through all the tasks that are
+ * part-of the current, loads the dependent tasks and their related immunization resources from the
+ * [DefaultRepository] then updates the start date of the dependent task if it's scheduled to start
  * before the immunization date plus the required number of days.
  *
- * We may potentially extend this function to consider the attributes of resources other than
- * immunizations.
- *
- * @param defaultRepository An instance of DefaultRepository
+ * This function can be extended in future to support other [ResourceType] s.
  */
 suspend fun Task.updateDependentTaskDueDate(
   defaultRepository: DefaultRepository,
@@ -404,4 +400,3 @@ suspend fun Task.updateDependentTaskDueDate(
 
 const val REFERENCE = "reference"
 const val PARTOF = "part-of"
-const val ENCOUNTER = "encounter"

@@ -51,10 +51,11 @@ import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.today
 
 @HiltAndroidTest
-class FhirTaskExpireUtilTest : RobolectricTest() {
+class FhirTaskUtilTest : RobolectricTest() {
+
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   @Inject lateinit var sharedPreferenceHelper: SharedPreferencesHelper
-  private lateinit var fhirTaskExpireUtil: FhirTaskExpireUtil
+  private lateinit var fhirTaskUtil: FhirTaskUtil
   private lateinit var fhirEngine: FhirEngine
   private lateinit var defaultRepository: DefaultRepository
 
@@ -64,8 +65,8 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
     fhirEngine = spyk(FhirEngineProvider.getInstance(ApplicationProvider.getApplicationContext()))
     defaultRepository = mockk()
     every { defaultRepository.fhirEngine } returns fhirEngine
-    fhirTaskExpireUtil =
-      spyk(FhirTaskExpireUtil(ApplicationProvider.getApplicationContext(), defaultRepository))
+    fhirTaskUtil =
+      spyk(FhirTaskUtil(ApplicationProvider.getApplicationContext(), defaultRepository))
   }
 
   @Test
@@ -95,7 +96,7 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns taskList
     coEvery { defaultRepository.update(any()) } just runs
 
-    val tasks = runBlocking { fhirTaskExpireUtil.expireOverdueTasks() }
+    val tasks = runBlocking { fhirTaskUtil.expireOverdueTasks() }
 
     assertEquals(2, tasks.size)
 
@@ -143,7 +144,7 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
 
     coEvery { defaultRepository.update(any()) } just runs
 
-    val tasks = runBlocking { fhirTaskExpireUtil.expireOverdueTasks() }
+    val tasks = runBlocking { fhirTaskUtil.expireOverdueTasks() }
 
     assertEquals(4, tasks.size)
 
@@ -159,7 +160,7 @@ class FhirTaskExpireUtilTest : RobolectricTest() {
   fun fetchOverdueTasksNoTasks() {
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns emptyList()
 
-    val tasks = runBlocking { fhirTaskExpireUtil.expireOverdueTasks() }
+    val tasks = runBlocking { fhirTaskUtil.expireOverdueTasks() }
 
     assertEquals(0, tasks.size)
 

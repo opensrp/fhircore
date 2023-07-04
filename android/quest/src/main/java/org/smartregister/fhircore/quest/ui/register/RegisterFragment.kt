@@ -263,14 +263,14 @@ class RegisterFragment : Fragment(), OnSyncListener {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+        // Each register should have unique eventId
         eventBus
           .events
-          .getFor(MainNavigationScreen.Home.route.toString())
+          .getFor(MainNavigationScreen.Home.eventId(registerFragmentArgs.registerId))
           .onEach { appEvent ->
             when (appEvent) {
               is AppEvent.OnSubmitQuestionnaire ->
                 handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
-              is AppEvent.RefreshCache -> handleRefreshLiveData()
             }
           }
           .launchIn(lifecycleScope)
@@ -280,32 +280,22 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
   @VisibleForTesting
   suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
-    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission) { onSubmissionSuccessful ->
+      lifecycleScope.launch {
+        if (onSubmissionSuccessful) {
+          // Always refresh data with each questionnaire submission
+          refreshRegisterData()
 
-    // Always refresh data when registration happens
-    registerViewModel.paginateRegisterData(
-      registerId = registerFragmentArgs.registerId,
-      loadAll = false,
-      clearCache = true
-    )
-    // Update side menu counts
-    appMainViewModel.retrieveAppMainUiState()
+          // Update side menu counts
+          appMainViewModel.retrieveAppMainUiState()
 
-    // Display SnackBar message
-    val (questionnaireConfig, _) = questionnaireSubmission
-    questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
-      registerViewModel.emitSnackBarState(snackBarMessageConfig)
-    }
-  }
-
-  fun handleRefreshLiveData() {
-    with(registerFragmentArgs) {
-      registerViewModel.retrieveRegisterUiState(
-        registerId = registerId,
-        screenTitle = screenTitle,
-        params = params,
-        clearCache = true
-      )
+          // Display SnackBar message
+          val (questionnaireConfig, _) = questionnaireSubmission
+          questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
+            registerViewModel.emitSnackBarState(snackBarMessageConfig)
+          }
+        }
+      }
     }
   }
 

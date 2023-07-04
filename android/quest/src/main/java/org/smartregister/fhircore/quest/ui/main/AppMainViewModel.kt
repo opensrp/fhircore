@@ -81,6 +81,7 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
+import timber.log.Timber
 
 @HiltViewModel
 class AppMainViewModel
@@ -319,7 +320,10 @@ constructor(
     }
   }
 
-  suspend fun onQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
+  suspend fun onQuestionnaireSubmission(
+    questionnaireSubmission: QuestionnaireSubmission,
+    onSubmission: (Boolean) -> Unit
+  ) {
     questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
       val status: Task.TaskStatus =
         when (questionnaireSubmission.questionnaireResponse.status) {
@@ -327,9 +331,20 @@ constructor(
           QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED -> Task.TaskStatus.COMPLETED
           else -> Task.TaskStatus.COMPLETED
         }
-      withContext(dispatcherProvider.io()) {
-        fhirCarePlanGenerator.updateTaskDetailsByResourceId(taskId.extractLogicalIdUuid(), status)
-      }
+      kotlin
+        .runCatching {
+          withContext(dispatcherProvider.io()) {
+            fhirCarePlanGenerator.updateTaskDetailsByResourceId(
+              id = taskId.extractLogicalIdUuid(),
+              status = status
+            )
+          }
+        }
+        .onSuccess { onSubmission(true) }
+        .onFailure {
+          Timber.e("Questionnaire submission error", it)
+          onSubmission(false)
+        }
     }
   }
 

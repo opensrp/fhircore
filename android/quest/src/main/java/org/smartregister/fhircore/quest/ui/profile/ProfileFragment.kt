@@ -97,14 +97,14 @@ class ProfileFragment : Fragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+        // Each profile should have unique eventId
         eventBus
           .events
-          .getFor(MainNavigationScreen.Profile.route.toString())
+          .getFor(MainNavigationScreen.Profile.eventId(profileFragmentArgs.profileId))
           .onEach { appEvent ->
             when (appEvent) {
               is AppEvent.OnSubmitQuestionnaire ->
                 handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
-              else -> {}
             }
           }
           .launchIn(lifecycleScope)
@@ -114,17 +114,21 @@ class ProfileFragment : Fragment() {
 
   @VisibleForTesting
   suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
-    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission) { onSubmissionSuccessful ->
+      lifecycleScope.launch {
+        if (onSubmissionSuccessful) {
+          // Always refresh data when questionnaire is submitted
+          with(profileFragmentArgs) {
+            profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
+          }
 
-    // Always refresh data when questionnaire is submitted
-    with(profileFragmentArgs) {
-      profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
-    }
-
-    // Display SnackBar message
-    val (questionnaireConfig, _) = questionnaireSubmission
-    questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
-      profileViewModel.emitSnackBarState(snackBarMessageConfig)
+          // Display SnackBar message
+          val (questionnaireConfig, _) = questionnaireSubmission
+          questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
+            profileViewModel.emitSnackBarState(snackBarMessageConfig)
+          }
+        }
+      }
     }
   }
 }

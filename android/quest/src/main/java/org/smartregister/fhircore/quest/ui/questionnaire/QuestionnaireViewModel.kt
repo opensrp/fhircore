@@ -273,7 +273,7 @@ constructor(
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
         performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle = null)
       }
-      viewModelScope.launch(dispatcherProvider.main()) { extractionProgress.postValue(true) }
+      extractionProgress.postValue(true)
     }
   }
 

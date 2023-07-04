@@ -44,7 +44,6 @@ data class QuestionnaireConfig(
   val saveDraft: Boolean = false,
   val snackBarMessage: SnackBarMessageConfig? = null,
   val eventWorkflows: List<EventWorkflow> = emptyList(),
-  val refreshContent: Boolean = false,
   val readOnlyLinkIds: List<String>? = emptyList(),
   val configRules: List<RuleConfig>? = null,
   val extraParams: List<ActionParameter>? = null
