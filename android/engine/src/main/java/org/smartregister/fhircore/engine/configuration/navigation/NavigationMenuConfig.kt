@@ -27,9 +27,9 @@ data class NavigationMenuConfig(
   val visible: Boolean = true,
   val enabled: String = "true",
   val menuIconConfig: MenuIconConfig? = null,
-  val animate: Boolean = true,
   val display: String,
   val showCount: Boolean = false,
+  val animate: Boolean = false,
   val actions: List<ActionConfig>? = null,
 )
 
