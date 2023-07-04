@@ -26,8 +26,9 @@ data class MeasureReportConfiguration(
   override var configType: String = ConfigType.MeasureReport.name,
   val id: String,
   val registerId: String,
-  val registerDate: String? = null,
+  val startPeriod: String? = "2023-01-01",
   val showFixedRangeSelection: Boolean? = null,
   val showSubjectSelection: Boolean? = null,
+  val scheduledGenerationDuration: String? = null,
   val reports: List<MeasureReportConfig> = emptyList()
 ) : Configuration()

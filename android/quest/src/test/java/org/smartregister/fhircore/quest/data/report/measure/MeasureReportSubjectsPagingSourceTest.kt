@@ -38,7 +38,7 @@ class MeasureReportSubjectsPagingSourceTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   @Inject lateinit var measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
-  private val reportRepository = mockk<MeasureReportRepository>()
+  private val reportRepository = mockk<MeasureReportPagingSource>()
   private lateinit var reportSubjectsPagingSource: MeasureReportSubjectsPagingSource
 
   @Before

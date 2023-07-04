@@ -68,6 +68,7 @@ import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -83,10 +84,11 @@ class MeasureReportViewModelTest : RobolectricTest() {
   @Inject lateinit var registerRepository: RegisterRepository
   @Inject lateinit var defaultRepository: DefaultRepository
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  @Inject lateinit var measureReportRepository: MeasureReportRepository
   private val fhirEngine: FhirEngine = mockk()
   private val fhirOperator: FhirOperator = mockk()
   private val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
-  private val measureReportRepository = mockk<MeasureReportRepository>()
+  private val measureReportPagingSource = mockk<MeasureReportPagingSource>()
   private val navController: NavController = mockk(relaxUnitFun = true)
   private val invalidReportId = "invalidSupplyChainMeasureReport"
   private val reportId = "supplyChainMeasureReport"
@@ -97,7 +99,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    coEvery { measureReportRepository.retrieveSubjects(0) } returns
+    coEvery { measureReportPagingSource.retrieveSubjects(0) } returns
       listOf(
         ResourceData(
           baseResourceId = Faker.buildPatient().id,
@@ -117,7 +119,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
           defaultRepository = defaultRepository,
-          resourceDataRulesExecutor = resourceDataRulesExecutor
+          resourceDataRulesExecutor = resourceDataRulesExecutor,
+          measureReportRepository = measureReportRepository
         )
       )
   }
