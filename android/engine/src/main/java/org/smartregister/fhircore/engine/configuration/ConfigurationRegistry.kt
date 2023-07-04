@@ -102,21 +102,6 @@ constructor(
     configCacheMap[configKey] = decodedConfig
     return decodedConfig
   }
-  /*
-  inline fun <reified T : Configuration> retrieveConfigurations(configType: ConfigType): List<T> =
-    configsJsonMap.values
-      .map {
-        localizationHelper
-          .parseTemplate(
-            bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
-            locale = Locale.getDefault(),
-            template = it
-          )
-          .decodeJson<T>()
-      }
-      .filter {
-        it.configType.equals(configType.name, ignoreCase = true)
-      }*/
 
   inline fun <reified T : Configuration> retrieveConfigurations(configType: ConfigType): List<T> =
     configsJsonMap.values

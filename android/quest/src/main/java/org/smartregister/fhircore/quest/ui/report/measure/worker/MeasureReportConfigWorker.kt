@@ -21,21 +21,20 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.workflow.FhirOperator
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import java.util.Date
-import org.hl7.fhir.r4.model.MeasureReport
+import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.lastDayOfMonth
-import org.smartregister.fhircore.engine.util.extension.parseDate
+import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGeneratedMeasureReports
 import org.smartregister.fhircore.engine.util.extension.today
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
@@ -48,6 +47,7 @@ constructor(
   @Assisted val context: Context,
   @Assisted workerParams: WorkerParameters,
   val fhirEngine: FhirEngine,
+  val fhirOperator: FhirOperator,
   val defaultRepository: DefaultRepository,
   val dispatcherProvider: DispatcherProvider,
   val measureReportRepository: MeasureReportRepository,
@@ -57,6 +57,7 @@ constructor(
   override suspend fun doWork(): Result {
 
     try {
+      Timber.i("started  / . . . MeasureReportWorker . . ./")
 
       inputData
         .getString(MEASURE_REPORT_CONFIG_ID)
@@ -75,13 +76,14 @@ constructor(
               startDateFormatted = startDateFormatted,
               endDateFormatted = endDateFormatted,
               measureUrl = config.url,
-              subjects = subjects
+              subjects = listOf()
             )
 
-          if (endDateFormatted.parseDate(SDF_YYYY_MM_DD)!!
-              .formatDate(SDF_YYYY_MMM)
-              .contentEquals(Date().formatDate(SDF_YYYY_MMM)) || existing.isEmpty()
-          ) {
+          if (existing.isEmpty()) {
+            withContext(dispatcherProvider.io()) {
+              fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
+            }
+
             measureReportRepository.evaluatePopulationMeasure(
               config.url,
               startDateFormatted,
@@ -91,7 +93,7 @@ constructor(
             )
           }
         }
-      Timber.w("Result.success  / . . . MeasureReportWorker . . ./")
+      Timber.i("Result.success  / . . . MeasureReportWorker . . ./")
     } catch (e: Exception) {
       Timber.w(e.localizedMessage)
       Result.failure()
