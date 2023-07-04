@@ -99,7 +99,7 @@ constructor(
 
   private suspend fun fetchPractitioner(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
-    onFetchPractitioner: (Result<org.hl7.fhir.r4.model.Bundle>) -> Unit
+    onFetchPractitioner: (Result<Bundle>) -> Unit
   ) {
     try {
       val userInfo = keycloakService.fetchUserInfo().body()
@@ -163,10 +163,15 @@ constructor(
               _showProgressBar.postValue(false)
               if (bundleResult.isSuccess) {
                 updateNavigateHome(true)
-                val bundle = bundleResult.getOrDefault(org.hl7.fhir.r4.model.Bundle())
-                savePractitionerDetails(bundle)
+                val bundle = bundleResult.getOrDefault(Bundle())
+                savePractitionerDetails(bundle) {
+                  _showProgressBar.postValue(false)
+                  updateNavigateHome(true)
+                }
               } else {
+                _showProgressBar.postValue(false)
                 Timber.e(bundleResult.exceptionOrNull())
+                Timber.e(bundleResult.getOrNull().valueToString())
                 _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
               }
             }
@@ -236,8 +241,7 @@ constructor(
     _navigateToHome.postValue(navigateHome)
   }
 
-  fun savePractitionerDetails(bundle: org.hl7.fhir.r4.model.Bundle) {
-    Timber.e("Crashing here 2")
+  fun savePractitionerDetails(bundle: Bundle, postProcess: () -> Unit) {
     if (bundle.entry.isNullOrEmpty()) return
     viewModelScope.launch {
       val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
@@ -247,10 +251,9 @@ constructor(
       val locations = practitionerDetails.fhirPractitionerDetails?.locations ?: listOf()
       val locationHierarchies =
         practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
-      Timber.e("Crashing here 1")
+
       val careTeamIds =
         withContext(dispatcherProvider.io()) {
-          Timber.e("Crashing here")
           defaultRepository.create(true, *careTeams.toTypedArray()).map {
             it.extractLogicalIdUuid()
           }
@@ -268,7 +271,6 @@ constructor(
           }
         }
 
-      Timber.e("Practitioner ID: ${practitionerDetails.fhirPractitionerDetails?.practitionerId}")
       sharedPreferences.write(
         key = SharedPreferenceKey.PRACTITIONER_ID.name,
         value = practitionerDetails.fhirPractitionerDetails?.practitionerId.valueToString()
@@ -282,6 +284,8 @@ constructor(
         SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
         locationHierarchies
       )
+
+      postProcess()
     }
   }
 
