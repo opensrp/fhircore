@@ -511,10 +511,8 @@ class DefaultRepositoryTest : RobolectricTest() {
         managingEntity.id = "33292"
       }
     coEvery { fhirEngine.get<Group>("73847") } returns group
-
     coEvery { fhirEngine.update(any()) } just runs
 
-    coEvery { fhirEngine.get(relatedPerson.resourceType, any()) } answers { relatedPerson }
     runBlocking {
       defaultRepositorySpy.changeManagingEntity(
         newManagingEntityId = "54321",
@@ -532,10 +530,8 @@ class DefaultRepositoryTest : RobolectricTest() {
     }
 
     coVerify { fhirEngine.get<Patient>("54321") }
-
     coVerify { fhirEngine.get<Group>("73847") }
-
-    coVerify(inverse = true) { defaultRepositorySpy.addOrUpdate(resource = any()) }
+    coVerify(inverse = true) { defaultRepositorySpy.addOrUpdate(resource = relatedPerson) }
   }
 
   @Test
