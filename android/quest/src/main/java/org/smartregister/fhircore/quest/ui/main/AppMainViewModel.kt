@@ -27,6 +27,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
@@ -36,7 +37,6 @@ import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
 import kotlin.time.Duration
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
@@ -52,6 +52,7 @@ import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfig
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -77,6 +78,7 @@ import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportConfigWorker
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -96,7 +98,6 @@ constructor(
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
 ) : ViewModel() {
 
-  val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
       appMainUiStateOf(
@@ -116,6 +117,10 @@ constructor(
 
   val navigationConfiguration: NavigationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
+  }
+
+  private val measureReportConfigurations: List<MeasureReportConfiguration> by lazy {
+    configurationRegistry.retrieveConfigurations(ConfigType.MeasureReport)
   }
 
   fun retrieveIconsAsBitmap() {
@@ -168,9 +173,9 @@ constructor(
         }
       }
       is AppMainEvent.SyncData -> {
-        if (event.context.isDeviceOnline()) {
-          syncBroadcaster.runSync(syncSharedFlow)
-        } else
+        if (event.context.isDeviceOnline())
+          viewModelScope.launch { syncBroadcaster.runOneTimeSync() }
+        else
           event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
@@ -311,6 +316,20 @@ constructor(
         duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
         requiresNetwork = false
       )
+
+      measureReportConfigurations.forEach { measureReportConfig ->
+        measureReportConfig.scheduledGenerationDuration?.let { scheduledGenerationDuration ->
+          schedulePeriodically<MeasureReportConfigWorker>(
+            workId = MeasureReportConfigWorker.WORK_ID + "-" + measureReportConfig.id,
+            duration = Duration.tryParse(scheduledGenerationDuration),
+            requiresNetwork = false,
+            inputData =
+              workDataOf(
+                MeasureReportConfigWorker.MEASURE_REPORT_CONFIG_ID to measureReportConfig.id
+              )
+          )
+        }
+      }
 
       // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
       /* // Schedule job for generating measure report in the background

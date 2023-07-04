@@ -51,7 +51,7 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
-class MeasureReportRepositoryTest : RobolectricTest() {
+class MeasureReportPagingSourceTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
@@ -60,7 +60,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
   private lateinit var rulesFactory: RulesFactory
   private lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
   private lateinit var measureReportConfiguration: MeasureReportConfiguration
-  private lateinit var measureReportRepository: MeasureReportRepository
+  private lateinit var measureReportPagingSource: MeasureReportPagingSource
   private lateinit var registerRepository: RegisterRepository
 
   @Before
@@ -96,8 +96,8 @@ class MeasureReportRepositoryTest : RobolectricTest() {
         )
       )
 
-    measureReportRepository =
-      MeasureReportRepository(
+    measureReportPagingSource =
+      MeasureReportPagingSource(
         measureReportConfiguration,
         registerConfiguration,
         registerRepository,
@@ -117,7 +117,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
     val pages = listOf(page)
     val pagingConfig = PagingConfig(1)
     val state = PagingState(pages, null, pagingConfig, 0)
-    val refreshKey = measureReportRepository.getRefreshKey(state)
+    val refreshKey = measureReportPagingSource.getRefreshKey(state)
     Assert.assertNull(refreshKey)
   }
 
@@ -126,7 +126,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
   fun testLoad() {
     val params = PagingSource.LoadParams.Refresh<Int>(null, 1, false)
     runBlocking(Dispatchers.Default) {
-      val result = measureReportRepository.load(params)
+      val result = measureReportPagingSource.load(params)
       Assert.assertNotNull(result)
     }
   }
@@ -136,7 +136,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
   fun testRetrieveSubjectsWithResults() {
     coEvery { fhirEngine.search<Patient>(any<Search>()) } returns listOf(Patient())
     runBlocking(Dispatchers.Default) {
-      val data = measureReportRepository.retrieveSubjects(0)
+      val data = measureReportPagingSource.retrieveSubjects(0)
       Assert.assertEquals(1, data.size)
     }
   }
