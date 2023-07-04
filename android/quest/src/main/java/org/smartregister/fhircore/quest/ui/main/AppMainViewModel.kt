@@ -36,7 +36,6 @@ import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
 import kotlin.time.Duration
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
@@ -96,7 +95,6 @@ constructor(
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
 ) : ViewModel() {
 
-  val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
       appMainUiStateOf(
@@ -168,9 +166,9 @@ constructor(
         }
       }
       is AppMainEvent.SyncData -> {
-        if (event.context.isDeviceOnline()) {
-          syncBroadcaster.runSync(syncSharedFlow)
-        } else
+        if (event.context.isDeviceOnline())
+          viewModelScope.launch { syncBroadcaster.runOneTimeSync() }
+        else
           event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
