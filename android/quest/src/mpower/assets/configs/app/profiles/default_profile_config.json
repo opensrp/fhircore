@@ -1421,10 +1421,10 @@
             "content": [
               {
                 "viewType": "LIST",
-                "id": "atBirthCompletedTaskList",
+                "id": "atBirthUpcomingTaskList",
                 "resources": [
                   {
-                    "id": "atBirthCompletedTasks",
+                    "id": "atBirthUpcomingTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
                     "conditionalFhirPathExpression": "((Task.status = 'requested') and (Task.groupIdentifier.value = '0_d'))"
@@ -2355,7 +2355,7 @@
                       "condition": "true",
                       "priority": 2,
                       "actions": [
-                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
+                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'completed on' + ' ' + data.get('taskPeriodDueDate'))"
                       ]
                     },
                     {
@@ -2476,7 +2476,7 @@
                       "condition": "true",
                       "priority": 2,
                       "actions": [
-                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
+                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'completed on' + ' ' + data.get('taskPeriodDueDate'))"
                       ]
                     },
                     {
@@ -2597,7 +2597,7 @@
                       "condition": "true",
                       "priority": 2,
                       "actions": [
-                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
+                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'completed on' + ' ' + data.get('taskPeriodDueDate'))"
                       ]
                     },
                     {
@@ -2718,7 +2718,7 @@
                       "condition": "true",
                       "priority": 2,
                       "actions": [
-                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
+                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'completed on' + ' ' + data.get('taskPeriodDueDate'))"
                       ]
                     },
                     {
@@ -2839,7 +2839,7 @@
                       "condition": "true",
                       "priority": 2,
                       "actions": [
-                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
+                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'completed on' + ' ' + data.get('taskPeriodDueDate'))"
                       ]
                     },
                     {
@@ -2960,7 +2960,7 @@
                       "condition": "true",
                       "priority": 2,
                       "actions": [
-                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'due on' + ' ' + data.get('taskPeriodDueDate'))"
+                        "data.put('taskDescriptionWithStartDate', data.get('taskDescription') + ' ' + 'completed on' + ' ' + data.get('taskPeriodDueDate'))"
                       ]
                     },
                     {
