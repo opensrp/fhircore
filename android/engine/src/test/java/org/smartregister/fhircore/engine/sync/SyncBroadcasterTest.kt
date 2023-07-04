@@ -46,21 +46,13 @@ import org.smartregister.fhircore.engine.util.extension.isIn
 class SyncBroadcasterTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
-
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-
   @Inject lateinit var configService: ConfigService
-
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
   private val fhirEngine = mockk<FhirEngine>()
-
   private lateinit var syncListenerManager: SyncListenerManager
-
   private lateinit var syncBroadcaster: SyncBroadcaster
-
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
   @Before
@@ -81,6 +73,7 @@ class SyncBroadcasterTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           dispatcherProvider = coroutineTestRule.testDispatcherProvider,
           syncListenerManager = syncListenerManager,
+          sync = mockk(relaxed = true),
           context = context
         )
       )
