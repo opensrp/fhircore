@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.sync
 import android.content.Context
 import androidx.work.Constraints
 import androidx.work.NetworkType
+import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
@@ -73,7 +74,9 @@ constructor(
     }
 
     coroutineScope.launch(dispatcherProvider.main()) {
-      Sync.oneTimeSync<AppSyncWorker>(context).collect { syncSharedFlow.emit(it) }
+      Sync(WorkManager.getInstance(context)).oneTimeSync<AppSyncWorker>().collect {
+        syncSharedFlow.emit(it)
+      }
     }
   }
 
@@ -101,8 +104,8 @@ constructor(
 
       // Switch to io thread when triggering periodic sync
       withContext(dispatcherProvider.io()) {
-        Sync.periodicSync<AppSyncWorker>(
-            context,
+        Sync(WorkManager.getInstance(context))
+          .periodicSync<AppSyncWorker>(
             PeriodicSyncConfiguration(
               syncConstraints =
                 Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),

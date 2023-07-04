@@ -172,7 +172,7 @@ class AppSettingViewModelTest : RobolectricTest() {
                 )
           }
       }
-    coEvery { defaultRepository.create(any(), any()) } returns emptyList()
+    coEvery { defaultRepository.createRemote(any(), any()) } just runs
     coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
     coEvery { configService.provideConfigurationSyncPageSize() } returns 20.toString()
 
@@ -185,7 +185,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     coVerify { appSettingViewModel.fetchComposition(any(), any()) }
     coVerify { fhirResourceDataSource.getResource(any()) }
-    coVerify { defaultRepository.create(any(), any()) }
+    coVerify { defaultRepository.createRemote(any(), any()) }
     coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
 
     Assert.assertEquals(

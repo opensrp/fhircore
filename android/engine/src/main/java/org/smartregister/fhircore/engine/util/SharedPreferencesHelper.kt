@@ -105,6 +105,8 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
     prefs.edit()?.clear()?.apply()
   }
 
+  fun retrieveApplicationId() = read(SharedPreferenceKey.APP_ID.name, null)
+
   companion object {
     const val PREFS_NAME = "params"
   }
