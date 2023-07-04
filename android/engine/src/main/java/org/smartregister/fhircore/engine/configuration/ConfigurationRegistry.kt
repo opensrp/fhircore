@@ -37,6 +37,7 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.json.JSONObject
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -103,6 +104,26 @@ constructor(
     configCacheMap[configKey] = decodedConfig
     return decodedConfig
   }
+
+  inline fun <reified T : Configuration> retrieveConfigurations(configType: ConfigType): List<T> =
+    configsJsonMap.values
+      .filter {
+        try {
+          JSONObject(it).getString("configType").equals(configType.name, ignoreCase = true)
+        } catch (e: Exception) {
+          Timber.w(e.localizedMessage)
+          false
+        }
+      }
+      .map {
+        localizationHelper
+          .parseTemplate(
+            bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
+            locale = Locale.getDefault(),
+            template = it
+          )
+          .decodeJson<T>()
+      }
 
   /**
    * This function interpolates the value for the given [configKey] by replacing the string
