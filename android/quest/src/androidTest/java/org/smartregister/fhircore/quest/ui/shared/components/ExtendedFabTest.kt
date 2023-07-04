@@ -22,7 +22,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.navigation.NavController
 import io.mockk.mockk
 import org.hl7.fhir.r4.model.ResourceType
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -135,22 +134,22 @@ class ExtendedFabTest {
       composeRule.mainClock.autoAdvance = false
       ExtendedFab(
         fabActions =
-        listOf(
-          NavigationMenuConfig(
-            id = "test",
-            display = "Fab Button",
-            menuIconConfig = MenuIconConfig(type = ICON_TYPE_LOCAL, reference = "ic_user"),
-            animate = true,
-            actions =
-            listOf(
-              ActionConfig(
-                trigger = ActionTrigger.ON_CLICK,
-                workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-                questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
-              )
+          listOf(
+            NavigationMenuConfig(
+              id = "test",
+              display = "Fab Button",
+              menuIconConfig = MenuIconConfig(type = ICON_TYPE_LOCAL, reference = "ic_user"),
+              animate = true,
+              actions =
+                listOf(
+                  ActionConfig(
+                    trigger = ActionTrigger.ON_CLICK,
+                    workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+                    questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
+                  )
+                )
             )
-          )
-        ),
+          ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController,
         lazyListState = null
@@ -161,8 +160,7 @@ class ExtendedFabTest {
         .assertExists()
         .assertIsDisplayed()
 
-      onNodeWithTag(FAB_BUTTON_ROW_TEXT_TEST_TAG, useUnmergedTree = true)
-        .assertDoesNotExist()
+      onNodeWithTag(FAB_BUTTON_ROW_TEXT_TEST_TAG, useUnmergedTree = true).assertDoesNotExist()
     }
   }
 }
