@@ -129,4 +129,40 @@ class ExtendedFabTest {
         .assertIsDisplayed()
     }
   }
+  @Test
+  fun testFloatingButtonWhenAnimateIsTrue() {
+    composeRule.setContent {
+      composeRule.mainClock.autoAdvance = false
+      ExtendedFab(
+        fabActions =
+        listOf(
+          NavigationMenuConfig(
+            id = "test",
+            display = "Fab Button",
+            menuIconConfig = MenuIconConfig(type = ICON_TYPE_LOCAL, reference = "ic_user"),
+            animate = true,
+            actions =
+            listOf(
+              ActionConfig(
+                trigger = ActionTrigger.ON_CLICK,
+                workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+                questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
+              )
+            )
+          )
+        ),
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+        navController = navController,
+        lazyListState = null
+      )
+    }
+    composeRule.run {
+      onNodeWithTag(FAB_BUTTON_ROW_ICON_TEST_TAG, useUnmergedTree = true)
+        .assertExists()
+        .assertIsDisplayed()
+
+      onNodeWithTag(FAB_BUTTON_ROW_TEXT_TEST_TAG, useUnmergedTree = true)
+        .assertDoesNotExist()
+    }
+  }
 }
