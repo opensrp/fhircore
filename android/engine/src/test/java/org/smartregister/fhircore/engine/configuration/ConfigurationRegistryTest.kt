@@ -27,7 +27,9 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
@@ -326,7 +328,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val patient = Faker.buildPatient()
     coEvery { fhirEngine.get(patient.resourceType, patient.logicalId) } throws
       ResourceNotFoundException("", "")
-    coEvery { fhirEngine.create(any()) } returns listOf()
+    coEvery { fhirEngine.createRemote(any()) } just runs
 
     runTest {
       val previousLastUpdate = patient.meta.lastUpdated
@@ -335,18 +337,18 @@ class ConfigurationRegistryTest : RobolectricTest() {
     }
 
     coVerify(inverse = true) { fhirEngine.update(any()) }
-    coVerify { fhirEngine.create(patient) }
+    coVerify { fhirEngine.createRemote(patient) }
   }
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testCreate() {
     val patient = Faker.buildPatient()
-    coEvery { fhirEngine.create(patient) } returns listOf(patient.id)
+    coEvery { fhirEngine.createRemote(patient) } just runs
 
     runTest {
-      val result = configRegistry.create(patient)
-      Assert.assertEquals(listOf(patient.id), result)
+      configRegistry.create(patient)
+      coVerify { fhirEngine.createRemote(patient) }
     }
   }
 

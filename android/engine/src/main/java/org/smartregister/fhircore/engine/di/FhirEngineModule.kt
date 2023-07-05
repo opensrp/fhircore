@@ -60,7 +60,12 @@ class FhirEngineModule {
           baseUrl = configService.provideAuthConfiguration().fhirServerBaseUrl,
           authenticator = tokenAuthenticator,
           networkConfiguration =
-            NetworkConfiguration(TIMEOUT_DURATION, TIMEOUT_DURATION, TIMEOUT_DURATION),
+            NetworkConfiguration(
+              connectionTimeOut = TIMEOUT_DURATION,
+              readTimeOut = TIMEOUT_DURATION,
+              writeTimeOut = TIMEOUT_DURATION,
+              uploadWithGzip = true
+            ),
           httpLogger =
             HttpLogger(
               HttpLogger.Configuration(

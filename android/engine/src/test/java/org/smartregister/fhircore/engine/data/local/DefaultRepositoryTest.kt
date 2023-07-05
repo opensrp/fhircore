@@ -54,6 +54,7 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Procedure
 import org.hl7.fhir.r4.model.Reference
@@ -361,7 +362,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     runBlocking { defaultRepository.addOrUpdate(resource = resource) }
 
-    verify { resource.generateMissingId() }
+    coVerify { resource.generateMissingId() }
 
     unmockkStatic(Resource::generateMissingId)
   }
@@ -459,6 +460,78 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.get<Group>("73847") }
 
     coVerify { defaultRepositorySpy.addOrUpdate(resource = relatedPerson) }
+  }
+
+  @Test
+  fun changeManagingEntityShouldVerifyFhirEngineCallsEvenWithAnOrganizationAsTheCurrentManagingEntity() {
+
+    val patient =
+      Patient().apply {
+        id = "54321"
+        addName().apply {
+          addGiven("Sam")
+          family = "Smith"
+        }
+        addTelecom().apply { value = "ssmith@mail.com" }
+        addAddress().apply {
+          district = "Mawar"
+          city = "Jakarta"
+        }
+        gender = Enumerations.AdministrativeGender.MALE
+      }
+    val relatedPerson =
+      RelatedPerson().apply {
+        active = true
+        name = patient.name
+        birthDate = patient.birthDate
+        telecom = patient.telecom
+        address = patient.address
+        gender = patient.gender
+        this.patient = patient.asReference()
+        id = "testRelatedPersonId"
+      }
+
+    val organization =
+      Organization().apply {
+        id = "12983"
+        name = "Test Organization"
+      }
+
+    val defaultRepositorySpy = spyk(defaultRepository)
+
+    coEvery { fhirEngine.get<Patient>("54321") } returns patient
+    coEvery { fhirEngine.get<Organization>("12983") } returns organization
+    coEvery { fhirEngine.get<RelatedPerson>(any()) } returns relatedPerson
+    coEvery { fhirEngine.create(any()) } returns listOf()
+
+    val group =
+      Group().apply {
+        id = "73847"
+        managingEntity = Reference("Organization/12983")
+        managingEntity.id = "33292"
+      }
+    coEvery { fhirEngine.get<Group>("73847") } returns group
+    coEvery { fhirEngine.update(any()) } just runs
+
+    runBlocking {
+      defaultRepositorySpy.changeManagingEntity(
+        newManagingEntityId = "54321",
+        groupId = "73847",
+        ManagingEntityConfig(
+          resourceType = ResourceType.Patient,
+          relationshipCode =
+            Code().apply {
+              system = "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
+              code = "99990006"
+              display = "Family Head"
+            }
+        )
+      )
+    }
+
+    coVerify { fhirEngine.get<Patient>("54321") }
+    coVerify { fhirEngine.get<Group>("73847") }
+    coVerify(inverse = true) { defaultRepositorySpy.addOrUpdate(resource = relatedPerson) }
   }
 
   @Test
@@ -827,5 +900,15 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertEquals("370996005", capturedCode.code)
     Assert.assertEquals("http://www.snomed.org/", capturedCode.system)
     Assert.assertEquals("resolved", capturedCode.display)
+  }
+
+  @Test
+  fun `createRemote() should correctly invoke FhirEngine#createRemote`() {
+    val resource = spyk(Patient())
+    coEvery { fhirEngine.createRemote(resource) } just runs
+
+    runBlocking { defaultRepository.createRemote(false, resource) }
+
+    coVerify { fhirEngine.createRemote(resource) }
   }
 }
