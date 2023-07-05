@@ -901,8 +901,8 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertEquals("http://www.snomed.org/", capturedCode.system)
     Assert.assertEquals("resolved", capturedCode.display)
   }
-  
-    // TODO Refactor/Remove after https://github.com/opensrp/fhircore/issues/2488
+
+  // TODO Refactor/Remove after https://github.com/opensrp/fhircore/issues/2488
   @Test
   fun testCloseResourceUpdatesCorrectConditionStatusForCloseSickChildCondition() {
     val condition =
