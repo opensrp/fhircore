@@ -128,6 +128,7 @@ class ExtendedFabTest {
         .assertIsDisplayed()
     }
   }
+
   @Test
   fun testFloatingButtonWhenAnimateIsTrue() {
     composeRule.setContent {
