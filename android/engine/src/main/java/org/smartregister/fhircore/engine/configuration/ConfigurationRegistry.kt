@@ -400,10 +400,10 @@ constructor(
    *
    * @param resources vararg of resources
    */
-  suspend fun create(vararg resources: Resource): List<String> {
+  suspend fun create(vararg resources: Resource) {
     return withContext(dispatcherProvider.io()) {
       resources.onEach { it.generateMissingId() }
-      fhirEngine.create(*resources)
+      fhirEngine.createRemote(*resources)
     }
   }
 

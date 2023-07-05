@@ -85,7 +85,6 @@ constructor(
       )
       .handleSyncJobStatus(this)
   }
-
   private fun Flow<SyncJobStatus>.handleSyncJobStatus(coroutineScope: CoroutineScope) {
     this.onEach {
         syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }
