@@ -34,6 +34,8 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import java.io.Serializable
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
@@ -148,7 +150,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSubmitQuestionnaireShouldUpdateLiveData() {
+  fun testOnSubmitQuestionnaireShouldUpdateLiveData() = runTest {
     appMainActivity.onSubmitQuestionnaire(
       ActivityResult(
         -1,
@@ -161,7 +163,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
           )
           putExtra(
             QuestionnaireActivity.QUESTIONNAIRE_CONFIG,
-            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId")
+            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId") as Serializable
           )
         }
       )
@@ -180,7 +182,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSubmitQuestionnaireShouldUpdateDataRefreshLivedata() {
+  fun testOnSubmitQuestionnaireShouldUpdateDataRefreshLivedata() = runTest {
     val appMainViewModel = mockk<AppMainViewModel>()
     val refreshLiveDataMock = mockk<MutableLiveData<Boolean?>>()
     every { refreshLiveDataMock.postValue(true) } just runs
@@ -198,11 +200,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
           )
           putExtra(
             QuestionnaireActivity.QUESTIONNAIRE_CONFIG,
-            QuestionnaireConfig(
-              taskId = "Task/12345",
-              id = "questionnaireId",
-              refreshContent = true
-            )
+            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId") as Serializable
           )
         }
       )

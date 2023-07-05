@@ -246,7 +246,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
     }
   }
 
-  private fun refreshRegisterData() {
+  fun refreshRegisterData() {
     with(registerFragmentArgs) {
       registerViewModel.run {
         // Clear pages cache to load new data

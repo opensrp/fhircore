@@ -89,12 +89,12 @@ fun List<ActionConfig>.handleClickEvent(
         if (!currentRegisterId.isNullOrEmpty() && sameRegisterNavigation) return
         else {
           navController.navigate(
-            MainNavigationScreen.Home.route,
-            args,
-            navOptions(
-              resId = navController.currentDestination?.id!!,
-              inclusive = actionConfig.popNavigationBackStack == true
-            )
+            resId = MainNavigationScreen.Home.route,
+            args = args,
+            navOptions =
+              navController.currentDestination?.id?.let {
+                navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
+              }
           )
         }
       }

@@ -192,25 +192,6 @@ class RegisterFragmentTest : RobolectricTest() {
   }
 
   @Test
-  fun testHandleRefreshLiveDataCallsRetrieveRegisterUiState() {
-    val registerFragmentSpy = spyk(registerFragment)
-    val registerViewModel = mockk<RegisterViewModel>()
-    every { registerViewModel.retrieveRegisterUiState(any(), any(), any(), any()) } just runs
-    every { registerFragmentSpy getProperty "registerViewModel" } returns registerViewModel
-
-    registerFragmentSpy.handleRefreshLiveData()
-
-    verify {
-      registerViewModel.retrieveRegisterUiState(
-        registerId = "householdRegister",
-        screenTitle = "All HouseHolds",
-        params = emptyArray(),
-        clearCache = true
-      )
-    }
-  }
-
-  @Test
   fun testHandleQuestionnaireSubmissionCallsRegisterViewModelPaginateRegisterDataAndEmitSnackBarState() {
     val snackBarMessageConfig = SnackBarMessageConfig(message = "Family member added")
     val questionnaireConfig =
@@ -225,13 +206,7 @@ class RegisterFragmentTest : RobolectricTest() {
 
     coEvery { registerViewModel.emitSnackBarState(any()) } just runs
     runBlocking { registerFragmentSpy.handleQuestionnaireSubmission(questionnaireSubmission) }
-    coVerify {
-      registerViewModel.paginateRegisterData(
-        registerId = "householdRegister",
-        loadAll = false,
-        clearCache = true
-      )
-    }
+    coVerify { registerFragmentSpy.refreshRegisterData() }
     coVerify { registerViewModel.emitSnackBarState(snackBarMessageConfig) }
   }
 
