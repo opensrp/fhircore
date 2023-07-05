@@ -152,21 +152,31 @@ constructor(
    */
   suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
-      resource.onEach { currentResource ->
-        currentResource.updateLastUpdated()
-        currentResource.generateMissingId()
-        if (addResourceTags) {
-          val tags = configService.provideResourceTags(sharedPreferencesHelper)
-          tags.forEach {
-            val existingTag = currentResource.meta.getTag(it.system, it.code)
-            if (existingTag == null) {
-              currentResource.meta.addTag(it)
-            }
+      preProcessResources(addResourceTags, *resource)
+      fhirEngine.create(*resource)
+    }
+  }
+
+  suspend fun createRemote(addResourceTags: Boolean = true, vararg resource: Resource) {
+    return withContext(dispatcherProvider.io()) {
+      preProcessResources(addResourceTags, *resource)
+      fhirEngine.createRemote(*resource)
+    }
+  }
+
+  private fun preProcessResources(addResourceTags: Boolean, vararg resource: Resource) {
+    resource.onEach { currentResource ->
+      currentResource.updateLastUpdated()
+      currentResource.generateMissingId()
+      if (addResourceTags) {
+        val tags = configService.provideResourceTags(sharedPreferencesHelper)
+        tags.forEach {
+          val existingTag = currentResource.meta.getTag(it.system, it.code)
+          if (existingTag == null) {
+            currentResource.meta.addTag(it)
           }
         }
       }
-
-      fhirEngine.create(*resource)
     }
   }
 
