@@ -361,7 +361,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     runBlocking { defaultRepository.addOrUpdate(resource = resource) }
 
-    verify { resource.generateMissingId() }
+    coVerify { resource.generateMissingId() }
 
     unmockkStatic(Resource::generateMissingId)
   }
@@ -827,5 +827,15 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertEquals("370996005", capturedCode.code)
     Assert.assertEquals("http://www.snomed.org/", capturedCode.system)
     Assert.assertEquals("resolved", capturedCode.display)
+  }
+
+  @Test
+  fun `createRemote() should correctly invoke FhirEngine#createRemote`() {
+    val resource = spyk(Patient())
+    coEvery { fhirEngine.createRemote(resource) } just runs
+
+    runBlocking { defaultRepository.createRemote(false, resource) }
+
+    coVerify { fhirEngine.createRemote(resource) }
   }
 }
