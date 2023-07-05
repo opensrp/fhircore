@@ -70,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Calculate DUE dates for dependent Tasks
 - Triggering QuestionnaireResponse extraction for Questionnaires closed via a Confirm Dialog
 - Fix the OVERDUE service status setting on the `RulesFactory#generateTaskServiceStatus()`
+- Fix change HH head breaking if a HH head is not already assigned
 
 ### Changed
 - Refactored how the related resources SELECT and COUNT queries search results are represented. 
