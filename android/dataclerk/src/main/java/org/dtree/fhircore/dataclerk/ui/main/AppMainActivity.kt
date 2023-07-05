@@ -17,50 +17,92 @@
 package org.dtree.fhircore.dataclerk.ui.main
 
 import android.os.Bundle
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
-import org.dtree.fhircore.dataclerk.ui.theme.FhircoreandroidTheme
+import javax.inject.Inject
+import kotlin.math.max
+import kotlinx.coroutines.launch
+import org.dtree.fhircore.dataclerk.R
+import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.showToast
+import timber.log.Timber
 
 @AndroidEntryPoint
-class AppMainActivity : BaseMultiLanguageActivity() {
+class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
   private val appMainViewModel by viewModels<AppMainViewModel>()
-  @OptIn(ExperimentalMaterial3Api::class)
+  @Inject lateinit var syncBroadcaster: SyncBroadcaster
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContent {
-      FhircoreandroidTheme() {
-        val patientRegistrationLauncher =
-          rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.StartActivityForResult(),
-            onResult = {}
-          )
-        Scaffold(
-          bottomBar = {
-            Button(
-              onClick = { patientRegistrationLauncher.launch(appMainViewModel.openForm(this)) },
-              Modifier.fillMaxWidth()
-            ) { Text(text = "Create New Patient") }
+
+    setContent { AppTheme() { AppScreen(appMainViewModel) } }
+
+    syncBroadcaster.registerSyncListener(this, lifecycleScope)
+    appMainViewModel.run { lifecycleScope.launch { retrieveAppMainUiState() } }
+  }
+
+  override fun onSync(state: SyncJobStatus) {
+    Timber.i("Sync state received is $state")
+    when (state) {
+      is SyncJobStatus.Started -> {
+        showToast(getString(org.smartregister.fhircore.engine.R.string.syncing))
+        appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state, null))
+      }
+      is SyncJobStatus.InProgress -> {
+        Timber.d(
+          "Syncing in progress: ${state.syncOperation.name} ${state.completed.div(max(state.total, 1).toDouble()).times(100)}%"
+        )
+        appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state, null))
+      }
+      is SyncJobStatus.Glitch -> {
+        appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state, lastSyncTime = null))
+        Timber.w(
+          (if (state?.exceptions != null) state.exceptions else emptyList()).joinToString {
+            it.exception.message.toString()
           }
-        ) { paddingValues ->
-          Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(paddingValues)
-          ) { Text(text = "Data Clerk App") }
+        )
+      }
+      is SyncJobStatus.Failed -> {
+        if (!state?.exceptions.isNullOrEmpty() &&
+            state.exceptions.first().resourceType == ResourceType.Flag
+        ) {
+          showToast(state.exceptions.first().exception.message!!)
+          return
+        }
+        showToast(getString(org.smartregister.fhircore.engine.R.string.sync_failed_text))
+        appMainViewModel.onEvent(
+          AppMainEvent.UpdateSyncState(
+            state,
+            lastSyncTime =
+              if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
+                getString(
+                  org.smartregister.fhircore.engine.R.string.last_sync_timestamp,
+                  appMainViewModel.retrieveLastSyncTimestamp()
+                )
+              else null
+          )
+        )
+      }
+      is SyncJobStatus.Finished -> {
+        showToast(getString(org.smartregister.fhircore.engine.R.string.sync_completed))
+        appMainViewModel.run {
+          onEvent(
+            AppMainEvent.UpdateSyncState(
+              state,
+              getString(
+                org.smartregister.fhircore.engine.R.string.last_sync_timestamp,
+                formatLastSyncTimestamp(state.timestamp)
+              )
+            )
+          )
+          updateLastSyncTimestamp(state.timestamp)
         }
       }
     }
