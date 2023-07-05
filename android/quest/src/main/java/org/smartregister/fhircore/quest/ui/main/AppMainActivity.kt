@@ -156,10 +156,13 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as
           QuestionnaireConfig?
 
-      if (questionnaireConfig != null && questionnaireResponse != null) {
+      if (questionnaireConfig != null) {
         eventBus.triggerEvent(
           AppEvent.OnSubmitQuestionnaire(
-            QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
+            QuestionnaireSubmission(
+              questionnaireConfig,
+              questionnaireResponse ?: QuestionnaireResponse()
+            )
           )
         )
       }

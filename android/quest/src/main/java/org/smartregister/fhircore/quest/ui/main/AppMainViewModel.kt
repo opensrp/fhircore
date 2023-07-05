@@ -135,17 +135,19 @@ constructor(
       }
   }
 
-  suspend fun retrieveAppMainUiState() {
-    appMainUiState.value =
-      appMainUiStateOf(
-        appTitle = applicationConfiguration.appTitle,
-        currentLanguage = loadCurrentLanguage(),
-        username = secureSharedPreference.retrieveSessionUsername() ?: "",
-        lastSyncTime = retrieveLastSyncTimestamp() ?: "",
-        languages = configurationRegistry.fetchLanguages(),
-        navigationConfiguration = navigationConfiguration,
-        registerCountMap = registerCountMap
-      )
+  suspend fun retrieveAppMainUiState(refreshAll: Boolean = true) {
+    if (refreshAll) {
+      appMainUiState.value =
+        appMainUiStateOf(
+          appTitle = applicationConfiguration.appTitle,
+          currentLanguage = loadCurrentLanguage(),
+          username = secureSharedPreference.retrieveSessionUsername() ?: "",
+          lastSyncTime = retrieveLastSyncTimestamp() ?: "",
+          languages = configurationRegistry.fetchLanguages(),
+          navigationConfiguration = navigationConfiguration,
+          registerCountMap = registerCountMap
+        )
+    }
 
     // Count data for configured registers by populating the register count map
     viewModelScope.launch {
@@ -188,13 +190,12 @@ constructor(
               appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: "")
         }
       }
-      is AppMainEvent.TriggerWorkflow -> {
+      is AppMainEvent.TriggerWorkflow ->
         event.navMenu.actions?.handleClickEvent(
           navController = event.navController,
           resourceData = null,
           navMenu = event.navMenu
         )
-      }
       is AppMainEvent.OpenProfile -> {
         val args =
           bundleOf(

@@ -38,6 +38,7 @@ import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValid
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.Serializable
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -140,7 +141,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       if (it) {
         setResult(
           Activity.RESULT_OK,
-          Intent().apply { putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig) }
+          Intent().apply { putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Serializable) }
         )
         finish()
       }
@@ -446,7 +447,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       Activity.RESULT_OK,
       Intent().apply {
         putExtra(QUESTIONNAIRE_RESPONSE, parcelResponse)
-        putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig)
+        putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Serializable)
       }
     )
     finish()

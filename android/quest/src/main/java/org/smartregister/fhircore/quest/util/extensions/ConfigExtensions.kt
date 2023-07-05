@@ -19,30 +19,26 @@ package org.smartregister.fhircore.quest.util.extensions
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
-import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
 
 fun List<ActionConfig>.handleClickEvent(
   navController: NavController,
   resourceData: ResourceData? = null,
-  navMenu: NavigationMenuConfig? = null,
-  questionnaireResponse: QuestionnaireResponse? = null
+  navMenu: NavigationMenuConfig? = null
 ) {
-  val onClickAction = this.find { it.trigger == ActionTrigger.ON_CLICK }
+  val onClickAction =
+    this.find { it.trigger.isIn(ActionTrigger.ON_CLICK, ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION) }
   onClickAction?.let { theConfig ->
     val computedValuesMap = resourceData?.computedValuesMap ?: emptyMap()
     val actionConfig = theConfig.interpolate(computedValuesMap)
@@ -51,24 +47,9 @@ fun List<ActionConfig>.handleClickEvent(
         actionConfig.questionnaire?.let { questionnaireConfig ->
           val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
 
-          val intentBundle =
-            when (questionnaireConfigInterpolated.type) {
-              QuestionnaireType.EDIT, QuestionnaireType.READ_ONLY -> {
-                actionConfig.paramsBundle(resourceData?.computedValuesMap ?: emptyMap()).apply {
-                  putString(
-                    QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
-                    questionnaireResponse?.encodeResourceToString()
-                      ?: QuestionnaireResponse().encodeResourceToString()
-                  )
-                }
-              }
-              else -> bundleOf()
-            }
-
           if (navController.context is QuestionnaireHandler) {
             (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
               context = navController.context,
-              intentBundle = intentBundle,
               questionnaireConfig = questionnaireConfigInterpolated,
               actionParams = interpolateActionParamsValue(actionConfig, resourceData).toList(),
               baseResourceId = resourceData?.baseResourceId,
@@ -93,29 +74,29 @@ fun List<ActionConfig>.handleClickEvent(
         val args =
           bundleOf(
             Pair(NavigationArg.REGISTER_ID, actionConfig.id ?: navMenu?.id),
-            Pair(
-              NavigationArg.SCREEN_TITLE,
-              resourceData?.let { actionConfig.display } ?: navMenu?.display ?: ""
-            ),
+            Pair(NavigationArg.SCREEN_TITLE, actionConfig.display ?: navMenu?.display ?: ""),
             Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
             Pair(NavigationArg.PARAMS, interpolateActionParamsValue(actionConfig, resourceData))
           )
 
-        // Register is the entry point destination, clear back stack with every register switch
-        val currentDestinationId = navController.currentDestination?.id
-        val sameRegisterId =
+        // If value != null, we are navigating FROM a register; disallow same register navigation
+        val currentRegisterId =
+          navController.currentBackStackEntry?.arguments?.getString(NavigationArg.REGISTER_ID)
+        val sameRegisterNavigation =
           args.getString(NavigationArg.REGISTER_ID) ==
             navController.previousBackStackEntry?.arguments?.getString(NavigationArg.REGISTER_ID)
-        if (currentDestinationId != null &&
-            currentDestinationId != navController.graph.id &&
-            !sameRegisterId
-        ) {
+
+        if (!currentRegisterId.isNullOrEmpty() && sameRegisterNavigation) return
+        else {
           navController.navigate(
-            resId = MainNavigationScreen.Home.route,
-            args = args,
-            navOptions = navOptions(currentDestinationId, inclusive = false)
+            MainNavigationScreen.Home.route,
+            args,
+            navOptions(
+              resId = navController.currentDestination?.id!!,
+              inclusive = actionConfig.popNavigationBackStack == true
+            )
           )
-        } else return
+        }
       }
       ApplicationWorkflow.LAUNCH_REPORT -> {
         val args = bundleOf(Pair(NavigationArg.REPORT_ID, actionConfig.id))

@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.util.extension.BLACK_COLOR_HEX_CODE
@@ -23,6 +25,7 @@ import org.smartregister.fhircore.engine.util.extension.TRUE
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class OverflowMenuItemConfig(
   val id: Int = 1,
   val title: String = "",
@@ -34,7 +37,7 @@ data class OverflowMenuItemConfig(
   val showSeparator: Boolean = false,
   val enabled: String = TRUE,
   val actions: List<ActionConfig> = emptyList()
-) {
+) : Parcelable, java.io.Serializable {
   fun interpolate(computedValuesMap: Map<String, Any>): OverflowMenuItemConfig {
     return this.copy(
       title = title.interpolate(computedValuesMap),
