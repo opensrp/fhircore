@@ -101,7 +101,7 @@ class ExtendedFabTest {
             NavigationMenuConfig(
               id = "test",
               display = "Fab Button",
-              menuIconConfig = MenuIconConfig(type = ICON_TYPE_LOCAL, reference = "ic_user"),
+              menuIconConfig = ImageConfig(type = ICON_TYPE_LOCAL, reference = "ic_user"),
               animate = false,
               actions =
                 listOf(
@@ -138,7 +138,7 @@ class ExtendedFabTest {
             NavigationMenuConfig(
               id = "test",
               display = "Fab Button",
-              menuIconConfig = MenuIconConfig(type = ICON_TYPE_LOCAL, reference = "ic_user"),
+              menuIconConfig = ImageConfig(type = ICON_TYPE_LOCAL, reference = "ic_user"),
               animate = true,
               actions =
                 listOf(
