@@ -30,6 +30,7 @@ data class NavigationMenuConfig(
   val menuIconConfig: ImageConfig? = null,
   val display: String,
   val showCount: Boolean = false,
+  val animate: Boolean = true,
   val actions: List<ActionConfig>? = null,
 )
 
