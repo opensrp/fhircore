@@ -704,12 +704,15 @@ constructor(
         // https://github.com/opensrp/fhircore/issues/2488
         /**
          * The logic for closing PNC Condition makes 2 assumptions
-         * 1. The eventResource id value is "pncConditionToClose"
+         * 1. The eventResource id value is "pncConditionToClose" or "sickChildConditionToClose"
          * 2. Conditions to be closed must have an onset that is more than 28 days in the past
          */
-        if (resourceConfig.id == PNC_CONDITION_TO_CLOSE_RESOURCE_ID) {
+        if (resourceConfig.id == PNC_CONDITION_TO_CLOSE_RESOURCE_ID ||
+            resourceConfig.id == SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID
+        ) {
           val closePncCondition = resource.onset.dateTimeValue().value.daysPassed() > 28
-          if (closePncCondition) {
+          val closeSickChildCondition = resource.onset.dateTimeValue().value.daysPassed() > 7
+          if (closePncCondition || closeSickChildCondition) {
             resource.clinicalStatus =
               CodeableConcept().apply {
                 coding =
@@ -755,5 +758,6 @@ constructor(
     const val PATIENT_CONDITION_RESOLVED_CODE = "370996005"
     const val PATIENT_CONDITION_RESOLVED_DISPLAY = "resolved"
     const val PNC_CONDITION_TO_CLOSE_RESOURCE_ID = "pncConditionToClose"
+    const val SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID = "sickChildConditionToClose"
   }
 }
