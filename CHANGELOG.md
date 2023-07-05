@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a `limitTo` service function that limits lists sizes to a define limit
 - Implement configurable image/icon widget
 - Added functionality to filter related resources for list view
+- Added the sick child workflow automated closure
 
 ### Fixed
 - Logout while offline causes flicker(multiple render) of Login Page
