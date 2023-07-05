@@ -27,7 +27,9 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
@@ -79,7 +81,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         configService = configService,
         json = Faker.json
       )
-    coEvery { fhirEngine.create(any()) } answers { listOf() }
+    coEvery { fhirEngine.createRemote(any()) } just runs
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
   }
 

@@ -123,4 +123,13 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
     sharedPreferencesHelper.remove("anyBooleanKey")
     Assert.assertFalse(sharedPreferencesHelper.read("anyBooleanKey", false))
   }
+
+  @Test
+  fun testRetrieveApplicationId() {
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "test.demo")
+
+    val retrievedAppId = sharedPreferencesHelper.retrieveApplicationId()
+
+    Assert.assertEquals("test.demo", retrievedAppId)
+  }
 }
