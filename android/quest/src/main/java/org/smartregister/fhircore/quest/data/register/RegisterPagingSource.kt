@@ -20,10 +20,9 @@ import android.database.SQLException
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import timber.log.Timber
 
@@ -33,7 +32,7 @@ import timber.log.Timber
  */
 class RegisterPagingSource(
   private val registerRepository: RegisterRepository,
-  val rulesExecutor: RulesExecutor,
+  val resourceDataRulesExecutor: ResourceDataRulesExecutor,
   private val ruleConfigs: List<RuleConfig>
 ) : PagingSource<Int, ResourceData>() {
 
@@ -73,14 +72,11 @@ class RegisterPagingSource(
         }
 
       val data =
-        registerData.map { repoResourceData ->
-          val queryResult =
-            repoResourceData.queryResult as RepositoryResourceData.QueryResult.Search
-          rulesExecutor.processResourceData(
-            baseResource = queryResult.resource,
-            relatedRepositoryResourceData = queryResult.relatedResources,
+        registerData.map { repositoryResourceData ->
+          resourceDataRulesExecutor.processResourceData(
+            repositoryResourceData = repositoryResourceData,
             ruleConfigs = ruleConfigs,
-            emptyMap()
+            params = emptyMap()
           )
         }
       LoadResult.Page(data = data, prevKey = prevKey, nextKey = nextKey)

@@ -19,6 +19,8 @@ package org.smartregister.fhircore.quest.util.extensions
 import android.content.Context
 import android.os.Bundle
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
+import androidx.navigation.NavGraph
 import androidx.navigation.NavOptions
 import com.google.android.fhir.logicalId
 import io.mockk.every
@@ -32,7 +34,6 @@ import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
-import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
@@ -52,15 +53,11 @@ import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 class ConfigExtensionsTest : RobolectricTest() {
 
   private val navController = mockk<NavController>(relaxUnitFun = true)
-
   private val context = mockk<Context>(relaxUnitFun = true, relaxed = true)
-
   private val navigationMenuConfig by lazy {
     NavigationMenuConfig(id = "id", display = "menu", visible = true)
   }
-
   private val patient = Faker.buildPatient()
-
   private val resourceData by lazy {
     ResourceData(
       baseResourceId = patient.logicalId,
@@ -76,7 +73,7 @@ class ConfigExtensionsTest : RobolectricTest() {
 
   @Test
   fun testLaunchProfileActionOnClick() {
-    val resourceConfig = FhirResourceConfig(ResourceConfig(resource = "Patient"))
+    val resourceConfig = FhirResourceConfig(ResourceConfig(resource = ResourceType.Patient))
     val clickAction =
       ActionConfig(
         id = "profileId",
@@ -106,8 +103,12 @@ class ConfigExtensionsTest : RobolectricTest() {
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_REGISTER,
         display = "menu",
-        toolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
+        toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK
       )
+    val graph = mockk<NavGraph>()
+    every { navController.currentDestination } returns NavDestination(navigatorName = "navigating")
+    every { navController.previousBackStackEntry } returns null
+    every { navController.graph.id } returns 1
     listOf(clickAction)
       .handleClickEvent(
         navController = navController,
@@ -123,10 +124,10 @@ class ConfigExtensionsTest : RobolectricTest() {
     Assert.assertEquals("registerId", slotBundle.captured.getString(NavigationArg.REGISTER_ID))
     Assert.assertEquals("menu", slotBundle.captured.getString(NavigationArg.SCREEN_TITLE))
     Assert.assertEquals(
-      ToolBarHomeNavigation.OPEN_DRAWER,
+      ToolBarHomeNavigation.NAVIGATE_BACK,
       slotBundle.captured.getSerializable(NavigationArg.TOOL_BAR_HOME_NAVIGATION)
     )
-    Assert.assertTrue(navOptions.captured.isPopUpToInclusive())
+    Assert.assertFalse(navOptions.captured.isPopUpToInclusive())
     Assert.assertTrue(navOptions.captured.shouldLaunchSingleTop())
   }
 
@@ -174,6 +175,31 @@ class ConfigExtensionsTest : RobolectricTest() {
     Assert.assertEquals(1, slotBundle.captured.size())
     Assert.assertEquals("geoWidgetId", slotBundle.captured.getString(NavigationArg.CONFIG_ID))
   }
+  @Test
+  fun testNavigateBackToHomeWhenCurrentAndPreviousDestinationIdsAreNull() {
+    val clickAction =
+      ActionConfig(
+        id = null,
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER,
+        display = null,
+        toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK
+      )
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val navOptions = slot<NavOptions>()
+    every { navController.currentDestination } returns null
+    every { navController.previousBackStackEntry } returns null
+    listOf(clickAction)
+      .handleClickEvent(
+        navController = navController,
+        resourceData = resourceData,
+        navMenu = navigationMenuConfig,
+      )
+    verify(exactly = 0) {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(navOptions))
+    }
+  }
 
   @Test
   fun testDeviceToDeviceSyncActionOnClick() {
@@ -207,24 +233,11 @@ class ConfigExtensionsTest : RobolectricTest() {
         context = any(),
         intentBundle = any(),
         questionnaireConfig = any(),
-        actionParams = emptyList()
+        actionParams = emptyList(),
+        baseResourceId = patient.logicalId,
+        baseResourceType = patient.resourceType.name
       )
     }
-  }
-
-  @Test
-  fun testViewIsVisibleReturnsCorrectValue() {
-    val computedValuesMap = mapOf("visible" to "true", "invisible" to "false")
-    val visibleButtonProperties =
-      ButtonProperties(status = "DUE", text = "Button Text", visible = "@{visible}")
-    val invisibleButtonProperties =
-      ButtonProperties(status = "DUE", text = "Button Text", visible = "@{invisible}")
-
-    val visible = visibleButtonProperties.isVisible(computedValuesMap)
-    Assert.assertEquals(true, visible)
-
-    val invisible = invisibleButtonProperties.isVisible(computedValuesMap)
-    Assert.assertEquals(false, invisible)
   }
 
   fun testInterpolateValueWithANonNullComputedValuesMapReturnsValues() {
@@ -311,26 +324,26 @@ class ConfigExtensionsTest : RobolectricTest() {
   }
   fun testConvertActionParameterArrayToMapShouldReturnEmptyMapIfNoParamData() {
     val array = arrayOf(ActionParameter(key = "k", value = "v"))
-    Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap<String, String>())
+    Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap())
   }
 
   @Test
   fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapIfArrayIsEmpty() {
     val array = emptyArray<ActionParameter>()
-    Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap<String, String>())
+    Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap())
   }
 
   @Test
   fun testConvertActionParameterArrayToMapShouldReturnEmtpyMapValue() {
     val array =
       arrayOf(ActionParameter(key = "k", value = "", paramType = ActionParameterType.PARAMDATA))
-    Assert.assertEquals("", array.toParamDataMap<String, String>()["k"])
+    Assert.assertEquals("", array.toParamDataMap()["k"])
   }
 
   @Test
   fun testConvertActionParameterArrayToMapShouldReturnMapIfParamData() {
     val array =
       arrayOf(ActionParameter(key = "k", value = "v", paramType = ActionParameterType.PARAMDATA))
-    Assert.assertEquals(mapOf("k" to "v"), array.toParamDataMap<String, String>())
+    Assert.assertEquals(mapOf("k" to "v"), array.toParamDataMap())
   }
 }

@@ -30,13 +30,13 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.shareIn
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import timber.log.Timber
@@ -44,7 +44,7 @@ import timber.log.Timber
 /**
  * This class is used to trigger one time and periodic syncs. A new instance of this class is
  * created each time because a new instance of [ResourceParamsBasedDownloadWorkManager] is needed
- * everytime sync is triggered. This class should not be provided as a singleton. The
+ * everytime sync is triggered; this class SHOULD NOT be provided as a singleton. The
  * [SyncJobStatus] events are sent to the registered [OnSyncListener] maintained by the
  * [SyncListenerManager]
  */
@@ -55,62 +55,43 @@ constructor(
   val fhirEngine: FhirEngine,
   val syncListenerManager: SyncListenerManager,
   val dispatcherProvider: DispatcherProvider,
+  val sync: Sync,
   @ApplicationContext val context: Context,
 ) {
 
-  fun runSync(syncSharedFlow: MutableSharedFlow<SyncJobStatus>) {
-    val coroutineScope = CoroutineScope(dispatcherProvider.main())
+  /**
+   * Run one time sync. The [SyncJobStatus] will be broadcast to all the registered [OnSyncListener]
+   * 's
+   */
+  suspend fun runOneTimeSync() = coroutineScope {
     Timber.i("Running one time sync...")
-    coroutineScope.launch {
-      syncSharedFlow
-        .onEach {
-          syncListenerManager.onSyncListeners.forEach { onSyncListener ->
-            onSyncListener.onSync(it)
-          }
-        }
-        .handleErrors()
-        .launchIn(this)
-    }
-
-    coroutineScope.launch(dispatcherProvider.main()) {
-      Sync.oneTimeSync<AppSyncWorker>(context).collect { syncSharedFlow.emit(it) }
-    }
+    sync.oneTimeSync<AppSyncWorker>().handleSyncJobStatus(this)
   }
-
-  private fun <T> Flow<T>.handleErrors(): Flow<T> = catch { throwable -> Timber.e(throwable) }
 
   /**
    * Schedule periodic sync periodically as defined in the application config interval. The
-   * [SyncJobStatus] will be broadcast to the listeners
+   * [SyncJobStatus] will be broadcast to all the registered [OnSyncListener]'s
    */
   @OptIn(ExperimentalCoroutinesApi::class)
-  fun schedulePeriodicSync(periodicSyncSharedFlow: MutableSharedFlow<SyncJobStatus>) {
+  suspend fun schedulePeriodicSync(interval: Long = 15) = coroutineScope {
     Timber.i("Scheduling periodic sync...")
+    sync
+      .periodicSync<AppSyncWorker>(
+        PeriodicSyncConfiguration(
+          syncConstraints =
+            Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+          repeat = RepeatInterval(interval = interval, timeUnit = TimeUnit.MINUTES)
+        )
+      )
+      .handleSyncJobStatus(this)
+  }
 
-    // Launch in main to observer UI updates that should ONLY happen on main thread
-    val coroutineScope = CoroutineScope(dispatcherProvider.main())
-    coroutineScope.launch {
-      periodicSyncSharedFlow
-        .onEach {
-          syncListenerManager.onSyncListeners.forEach { onSyncListener ->
-            onSyncListener.onSync(it)
-          }
-        }
-        .handleErrors()
-        .launchIn(this)
-
-      // Switch to io thread when triggering periodic sync
-      withContext(dispatcherProvider.io()) {
-        Sync.periodicSync<AppSyncWorker>(
-            context,
-            PeriodicSyncConfiguration(
-              syncConstraints =
-                Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
-              repeat = RepeatInterval(interval = 15, timeUnit = TimeUnit.MINUTES)
-            )
-          )
-          .collect { periodicSyncSharedFlow.emit(it) }
+  private fun Flow<SyncJobStatus>.handleSyncJobStatus(coroutineScope: CoroutineScope) {
+    this.onEach {
+        syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }
       }
-    }
+      .catch { throwable -> Timber.e("Encountered an error during sync:", throwable) }
+      .shareIn(coroutineScope, SharingStarted.Eagerly, 1)
+      .launchIn(coroutineScope)
   }
 }

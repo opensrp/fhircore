@@ -65,6 +65,7 @@ import retrofit2.Response
 
 @HiltAndroidTest
 class AppSettingViewModelTest : RobolectricTest() {
+
   private val defaultRepository = mockk<DefaultRepository>()
   private val fhirResourceDataSource = mockk<FhirResourceDataSource>()
   private val sharedPreferencesHelper =
@@ -83,7 +84,7 @@ class AppSettingViewModelTest : RobolectricTest() {
         sharedPreferencesHelper = sharedPreferencesHelper,
         configService = configService,
         configurationRegistry = Faker.buildTestConfigurationRegistry(),
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider
+        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider
       )
     )
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
@@ -158,11 +159,11 @@ class AppSettingViewModelTest : RobolectricTest() {
                         configType = "register",
                         fhirResource =
                           FhirResourceConfig(
-                            baseResource = ResourceConfig(resource = "Patient"),
+                            baseResource = ResourceConfig(resource = ResourceType.Patient),
                             relatedResources =
                               listOf(
-                                ResourceConfig(resource = "Encounter"),
-                                ResourceConfig(resource = "Task")
+                                ResourceConfig(resource = ResourceType.Encounter),
+                                ResourceConfig(resource = ResourceType.Task)
                               )
                           )
                       )

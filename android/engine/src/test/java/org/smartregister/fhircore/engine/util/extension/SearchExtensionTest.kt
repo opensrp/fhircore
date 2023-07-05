@@ -65,8 +65,9 @@ class SearchExtensionTest {
           ]
          }""".decodeJson<
         DataQuery>()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
     val search = spyk(Search(ResourceType.Patient))
-    search.filterBy(dataQuery)
+    search.filterBy(dataQuery, computedRulesMap)
     val stringClientParamSlot = slot<StringClientParam>()
     verify {
       search.filter(
@@ -91,8 +92,9 @@ class SearchExtensionTest {
           ]
          }""".decodeJson<
         DataQuery>()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
     val search = spyk(Search(ResourceType.Patient))
-    search.filterBy(dataQuery)
+    search.filterBy(dataQuery, computedRulesMap)
     val clientParamSlot = slot<NumberClientParam>()
     verify {
       search.filter(
@@ -117,8 +119,9 @@ class SearchExtensionTest {
           ]
          }""".decodeJson<
         DataQuery>()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
     val search = spyk(Search(ResourceType.Patient))
-    search.filterBy(dataQuery)
+    search.filterBy(dataQuery, computedRulesMap)
     val clientParamSlot = slot<QuantityClientParam>()
     verify {
       search.filter(
@@ -143,8 +146,9 @@ class SearchExtensionTest {
           ]
          }""".decodeJson<
         DataQuery>()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
     val search = spyk(Search(ResourceType.Patient))
-    search.filterBy(dataQuery)
+    search.filterBy(dataQuery, computedRulesMap)
     val clientParamSlot = slot<ReferenceClientParam>()
     verify {
       search.filter(
@@ -169,8 +173,9 @@ class SearchExtensionTest {
           ]
          }""".decodeJson<
         DataQuery>()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
     val search = spyk(Search(ResourceType.Patient))
-    search.filterBy(dataQuery)
+    search.filterBy(dataQuery, computedRulesMap)
     val clientParamSlot = slot<UriClientParam>()
     verify {
       search.filter(uriParam = capture(clientParamSlot), init = anyVararg(), operation = any())
@@ -194,8 +199,9 @@ class SearchExtensionTest {
         }"""
         .trimMargin()
         .decodeJson<DataQuery>()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
     val search = spyk(Search(ResourceType.Patient))
-    search.filterBy(dataQuery)
+    search.filterBy(dataQuery, computedRulesMap)
     val stringClientParamSlot = slot<TokenClientParam>()
     verify {
       search.filter(
@@ -215,14 +221,43 @@ class SearchExtensionTest {
           "filterCriteria": [
             {
               "dataType": "DATE",
-              "valueDate": "2017-03-14",
+              "value": "2017-03-14",
               "prefix": "GREATERTHAN_OR_EQUALS"
             }
           ]
         }""".decodeJson<
         DataQuery>()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
     val search = spyk(Search(ResourceType.Patient))
-    search.filterBy(dataQuery)
+    search.filterBy(dataQuery, computedRulesMap)
+    val dateClientParamSlot = slot<DateClientParam>()
+    verify {
+      search.filter(
+        dateParameter = capture(dateClientParamSlot),
+        init = anyVararg(),
+        operation = any()
+      )
+    }
+    Assert.assertEquals(dataQuery.paramName, dateClientParamSlot.captured.paramName)
+  }
+
+  @Test
+  fun testFilterForDateTypeWithComputedRule() {
+    val dataQuery =
+      """{
+          "paramName": "birthdate",
+          "filterCriteria": [
+            {
+              "dataType": "DATE",
+              "computedRule": "valueDate",
+              "prefix": "GREATERTHAN_OR_EQUALS"
+            }
+          ]
+        }""".decodeJson<
+        DataQuery>()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
+    val search = spyk(Search(ResourceType.Patient))
+    search.filterBy(dataQuery, computedRulesMap)
     val dateClientParamSlot = slot<DateClientParam>()
     verify {
       search.filter(

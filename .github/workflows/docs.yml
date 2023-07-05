@@ -3,8 +3,6 @@ name: Docs
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   build-and-deploy-docusaurus:
@@ -63,6 +61,6 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
           branch: gh-pages # The branch the action should deploy to.
-          folder: android/docs # The folder the action should deploy.
+          folder: android/build/dokka # The folder the action should deploy.
           target-folder: dokka
 

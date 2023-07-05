@@ -48,6 +48,8 @@ object ViewPropertiesSerializer :
       ViewType.BUTTON -> ButtonProperties.serializer()
       ViewType.SPACER -> SpacerProperties.serializer()
       ViewType.LIST -> ListProperties.serializer()
+      ViewType.IMAGE -> ImageProperties.serializer()
+      ViewType.BORDER -> DividerProperties.serializer()
     }
   }
 }

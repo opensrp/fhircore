@@ -20,13 +20,14 @@ import android.graphics.Bitmap
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
 data class NavigationMenuConfig(
   val id: String,
   val visible: Boolean = true,
   val enabled: String = "true",
-  val menuIconConfig: MenuIconConfig? = null,
+  val menuIconConfig: ImageConfig? = null,
   val display: String,
   val showCount: Boolean = false,
   val animate: Boolean = true,
@@ -34,11 +35,18 @@ data class NavigationMenuConfig(
 )
 
 @Serializable
-data class MenuIconConfig(
-  val type: String? = null,
+data class ImageConfig(
+  val type: String = ICON_TYPE_LOCAL,
   val reference: String? = null,
   @Contextual var decodedBitmap: Bitmap? = null
-)
+) {
+  fun interpolate(computedValuesMap: Map<String, Any>): ImageConfig {
+    return this.copy(
+      reference = this.reference?.interpolate(computedValuesMap),
+      type = this.type.interpolate(computedValuesMap)
+    )
+  }
+}
 
 const val ICON_TYPE_LOCAL = "local"
 const val ICON_TYPE_REMOTE = "remote"

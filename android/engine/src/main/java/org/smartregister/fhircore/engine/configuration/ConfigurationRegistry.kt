@@ -21,6 +21,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import java.io.FileNotFoundException
 import java.net.UnknownHostException
 import java.util.LinkedList
 import java.util.Locale
@@ -36,6 +37,7 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -76,7 +78,10 @@ constructor(
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
-   * can be directly converted to a FHIR resource or hard coded custom model.
+   * can be directly converted to a FHIR resource or hard coded custom model. The filtering assumes
+   * you are passing data across screens, then later using it in DataQueries and to retrieve
+   * registerConfiguration. It is necessary to check that [paramsMap] is empty to confirm that the
+   * params used in the DataQuery are passed when retrieving the configurations.
    */
   inline fun <reified T : Configuration> retrieveConfiguration(
     configType: ConfigType,
@@ -85,7 +90,8 @@ constructor(
   ): T {
     require(!configType.parseAsResource) { "Configuration MUST be a template" }
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
-    if (configCacheMap.contains(configKey)) return configCacheMap[configKey] as T
+    if (configCacheMap.contains(configKey) && paramsMap?.isEmpty() == true)
+      return configCacheMap[configKey] as T
     val decodedConfig =
       localizationHelper
         .parseTemplate(
@@ -190,35 +196,40 @@ constructor(
     // For appId that ends with suffix /debug e.g. app/debug, we load configurations from assets
     // extract appId by removing the suffix e.g. app from above example
     val loadFromAssets = appId.endsWith(DEBUG_SUFFIX, ignoreCase = true)
+    val parsedAppId = appId.substringBefore("/").trim()
     if (loadFromAssets) {
-      val parsedAppId = appId.substringBefore("/").trim()
-      context
-        .assets
-        .open(String.format(COMPOSITION_CONFIG_PATH, parsedAppId))
-        .bufferedReader()
-        .readText()
-        .decodeResourceFromString<Composition>()
-        .run {
-          val iconConfigs =
-            retrieveCompositionSections().filter {
-              it.focus.hasIdentifier() && isIconConfig(it.focus.identifier.value)
+      try {
+        context
+          .assets
+          .open(String.format(COMPOSITION_CONFIG_PATH, parsedAppId))
+          .bufferedReader()
+          .readText()
+          .decodeResourceFromString<Composition>()
+          .run {
+            val iconConfigs =
+              retrieveCompositionSections().filter {
+                it.focus.hasIdentifier() && isIconConfig(it.focus.identifier.value)
+              }
+            if (iconConfigs.isNotEmpty()) {
+              val ids = iconConfigs.joinToString(",") { it.focus.extractId() }
+              fhirResourceDataSource.getResource(
+                  "${ResourceType.Binary.name}?${Composition.SP_RES_ID}=$ids"
+                )
+                .entry
+                .forEach { addOrUpdate(it.resource) }
             }
-          if (iconConfigs.isNotEmpty()) {
-            val ids = iconConfigs.joinToString(",") { it.focus.extractId() }
-            fhirResourceDataSource.getResource(
-                "${ResourceType.Binary.name}?${Composition.SP_RES_ID}=$ids"
-              )
-              .entry
-              .forEach { addOrUpdate(it.resource) }
+            populateConfigurationsMap(
+              composition = this,
+              loadFromAssets = true,
+              appId = parsedAppId,
+              configsLoadedCallback = configsLoadedCallback,
+              context = context
+            )
           }
-          populateConfigurationsMap(
-            composition = this,
-            loadFromAssets = true,
-            appId = parsedAppId,
-            configsLoadedCallback = configsLoadedCallback,
-            context = context
-          )
-        }
+      } catch (fileNotFoundException: FileNotFoundException) {
+        Timber.e("Missing app configs for app ID: $parsedAppId", fileNotFoundException)
+        withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
+      }
     } else {
       fhirEngine.searchCompositionByIdentifier(appId)?.run {
         populateConfigurationsMap(context, this, false, appId, configsLoadedCallback)

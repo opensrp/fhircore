@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.task
 
+import androidx.annotation.VisibleForTesting
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import ca.uhn.fhir.context.FhirContext
@@ -52,6 +53,7 @@ import org.hl7.fhir.r4.model.Timing.UnitsOfTime
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.event.EventType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.addResourceParameter
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -60,7 +62,6 @@ import org.smartregister.fhircore.engine.util.extension.extractFhirpathDuration
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathPeriod
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isIn
-import org.smartregister.fhircore.engine.util.extension.isValidResourceType
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.updateDependentTaskDueDate
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
@@ -93,6 +94,7 @@ constructor(
     subject: Resource,
     data: Bundle = Bundle()
   ): CarePlan? {
+
     // Only one CarePlan per plan, update or init a new one if not exists
     val output =
       fhirEngine
@@ -117,18 +119,18 @@ constructor(
       if (action.passesConditions(input, planDefinition, subject)) {
         val definition = action.activityDefinition(planDefinition)
 
-        val source =
-          Parameters().apply {
-            addResourceParameter(CarePlan.SP_SUBJECT, subject)
-            addResourceParameter(PlanDefinition.SP_DEFINITION, definition)
-            // TODO find some other way (activity definition based) to pass additional data
-            addResourceParameter(PlanDefinition.SP_DEPENDS_ON, data)
-          }
-
         if (action.hasTransform()) {
+
           val taskPeriods = action.taskPeriods(definition, output)
 
           taskPeriods.forEachIndexed { index, period ->
+            val source =
+              Parameters().apply {
+                addResourceParameter(CarePlan.SP_SUBJECT, subject)
+                addResourceParameter(PlanDefinition.SP_DEFINITION, definition)
+                // TODO find some other way (activity definition based) to pass additional data
+                addResourceParameter(PlanDefinition.SP_DEPENDS_ON, data)
+              }
             source.setParameter(Task.SP_PERIOD, period)
             source.setParameter(ActivityDefinition.SP_VERSION, IntegerType(index))
 
@@ -213,7 +215,7 @@ constructor(
         this.lastModified = Date()
         if (reason != null) this.statusReason = CodeableConcept().apply { text = reason }
       }
-      ?.updateDependentTaskDueDate(defaultRepository)
+      ?.updateDependentTaskDueDate(defaultRepository, fhirEngine)
       ?.run { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = this) }
   }
 
@@ -224,7 +226,8 @@ constructor(
   suspend fun getTask(id: String) =
     kotlin.runCatching { fhirEngine.get<Task>(id) }.onFailure { Timber.e(it) }.getOrNull()
 
-  private fun evaluateToDate(base: Base?, expression: String): BaseDateTimeType? =
+  @VisibleForTesting
+  fun evaluateToDate(base: Base?, expression: String): BaseDateTimeType? =
     base?.let { fhirPathEngine.evaluate(it, expression).firstOrNull()?.dateTimeValue() }
 
   private fun PlanDefinition.PlanDefinitionActionComponent.passesConditions(
@@ -278,6 +281,7 @@ constructor(
         timing.repeat.hasCountMax() ||
         timing.repeat.durationUnit?.equals(UnitsOfTime.H) == true)
     val count = if (isLegacyPlanDefinition || !timing.repeat.hasCount()) 1 else timing.repeat.count
+
     val periodExpression = timing.extractFhirpathPeriod()
     val durationExpression = timing.extractFhirpathDuration()
 
@@ -323,53 +327,57 @@ constructor(
    * @param subject The subject to evaluate CarePlanConfig FHIR path expressions against if the
    * CarePlanConfig does not reference a resource.
    */
-  suspend fun conditionallyUpdateCarePlanStatus(
+  suspend fun conditionallyUpdateResourceStatus(
     questionnaireConfig: QuestionnaireConfig,
-    subject: Resource
+    subject: Resource,
+    bundle: Bundle
   ) {
-    questionnaireConfig.planDefinitions?.forEach { planDefinition ->
-      val carePlans =
-        fhirEngine.search<CarePlan> {
-          filter(
-            CarePlan.INSTANTIATES_CANONICAL,
-            { value = "${PlanDefinition().fhirType()}/$planDefinition" }
-          )
-        }
-
-      if (carePlans.isEmpty()) return@forEach
-
-      questionnaireConfig.carePlanConfigs.forEach { carePlanConfig ->
-        val base: Base =
-          if ((carePlanConfig.fhirPathResource?.isNotEmpty() == true) &&
-              (carePlanConfig.fhirPathResourceId?.isNotEmpty() == true) &&
-              isValidResourceType(carePlanConfig.fhirPathResource)
-          ) {
-            fhirEngine.get(
-              ResourceType.fromCode(carePlanConfig.fhirPathResource),
-              carePlanConfig.fhirPathResourceId
+    questionnaireConfig.eventWorkflows
+      .filter { it.eventType == EventType.RESOURCE_CLOSURE }
+      .forEach { eventWorkFlow ->
+        eventWorkFlow.eventResources.forEach { eventResource ->
+          val currentResourceTriggerConditions =
+            eventWorkFlow.triggerConditions.firstOrNull { it.eventResourceId == eventResource.id }
+          val resourceClosureConditionsMet =
+            evaluateToBoolean(
+              subject = subject,
+              bundle = bundle,
+              triggerConditions = currentResourceTriggerConditions?.conditionalFhirPathExpressions,
+              matchAll = currentResourceTriggerConditions?.matchAll!!
             )
-          } else {
-            subject
-          }
 
-        if (fhirPathEngine.evaluateToBoolean(null, null, base, carePlanConfig.fhirPathExpression)) {
-          carePlans.forEach { carePlan ->
-            carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-            fhirEngine.update(carePlan)
-
-            carePlan
-              .activity
-              .flatMap { it.outcomeReference }
-              .filter { it.reference.startsWith(ResourceType.Task.name) }
-              .mapNotNull { getTask(it.extractId()) }
-              .forEach { task ->
-                if (task.status != TaskStatus.COMPLETED) {
-                  cancelTaskByTaskId(task.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
-                }
-              }
+          if (resourceClosureConditionsMet) {
+            defaultRepository.updateResourcesRecursively(eventResource, subject)
           }
         }
       }
+  }
+
+  fun closeResource(resource: Resource) {
+    when (resource) {
+      is Task -> {
+        resource.status = TaskStatus.CANCELLED
+        resource.lastModified = Date()
+      }
+      is CarePlan -> {
+        resource.status = CarePlan.CarePlanStatus.COMPLETED
+      }
+    }
+  }
+  fun evaluateToBoolean(
+    subject: Resource,
+    bundle: Bundle,
+    triggerConditions: List<String>?,
+    matchAll: Boolean = false
+  ): Boolean {
+    return if (matchAll) {
+      triggerConditions?.all { triggerCondition ->
+        fhirPathEngine.evaluateToBoolean(bundle, null, subject, triggerCondition)
+      } == true
+    } else {
+      triggerConditions?.any { triggerCondition ->
+        fhirPathEngine.evaluateToBoolean(bundle, null, subject, triggerCondition)
+      } == true
     }
   }
 }

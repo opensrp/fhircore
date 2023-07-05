@@ -31,9 +31,9 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 @HiltAndroidTest
 class MeasureReportPatientViewDataMapperTest : RobolectricTest() {
 
-  @get:Rule val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
+  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportSubjectViewDataMapper
 
   @Before
   fun setup() {
@@ -56,10 +56,9 @@ class MeasureReportPatientViewDataMapperTest : RobolectricTest() {
       // TODO Update expected values once refactors in
       //  MeasureReportPatientViewDataMapper#transformInputToOutputModel() are complete
       Assert.assertEquals("TEST_PATIENT", logicalId)
-      Assert.assertEquals("", name)
+      Assert.assertEquals("", display)
       Assert.assertEquals("", getTestPatientAge())
       Assert.assertEquals("", family)
-      Assert.assertEquals("", gender)
     }
     Assert.assertEquals("TEST_PATIENT", profileViewDataHiv.logicalId)
   }

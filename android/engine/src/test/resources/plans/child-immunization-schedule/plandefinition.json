@@ -5,7 +5,7 @@
     {
       "resourceType": "ActivityDefinition",
       "id": "careplan-init-activity",
-      "title": "ANC Register Handler Activity",
+      "title": "Child Immunization CarePlan",
       "status": "active",
       "description": "This action will assess careplan on registration to init careplan",
       "kind": "CarePlan",
@@ -617,8 +617,8 @@
               "count": 1,
               "duration": 3653,
               "durationUnit": "d",
-              "period": 3285,
-              "periodUnit": "d"
+              "period": 108,
+              "periodUnit": "mo"
             }
           }
         },
@@ -629,8 +629,8 @@
               "count": 1,
               "duration": 4017,
               "durationUnit": "d",
-              "period": 3467,
-              "periodUnit": "d"
+              "period": 114,
+              "periodUnit": "mo"
             }
           }
         }
@@ -879,7 +879,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            "expression": "(($this is Patient) and (%resource.entry.first().resource is Patient) and ((today() - 60 'months') <= $this.birthDate) and ($this.gender = 'female'))"
           }
         }
       ],

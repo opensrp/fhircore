@@ -19,12 +19,28 @@ package org.smartregister.fhircore.engine.configuration
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Assert
 import org.junit.Test
-import org.smartregister.fhircore.engine.domain.model.CarePlanConfig
+import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class QuestionnaireConfigTest : RobolectricTest() {
+  @Test
+  fun testDefaultQuestionnaireConfig() {
+    val id = "123"
+    val questionnaireConfig = QuestionnaireConfig(id)
+    val interpolatedConfig = questionnaireConfig.interpolate(emptyMap())
+    interpolatedConfig.apply {
+      Assert.assertEquals(id, this.id)
+      Assert.assertEquals(null, taskId)
+      Assert.assertEquals(null, title)
+      Assert.assertEquals(null, resourceIdentifier)
+      Assert.assertEquals(null, groupResource)
+      Assert.assertEquals(null, confirmationDialog)
+      Assert.assertEquals(null, planDefinitions)
+      Assert.assertEquals(emptyList<String>(), readOnlyLinkIds)
+    }
+  }
 
   @Test
   fun testVerifyInterpolationInQuestionnaireConfig() {
@@ -53,20 +69,25 @@ class QuestionnaireConfigTest : RobolectricTest() {
           ),
         taskId = "@{taskId}",
         saveDraft = true,
-        carePlanConfigs = listOf(CarePlanConfig()),
-        planDefinitions = listOf("@{planDef1}")
+        eventWorkflows = listOf(EventWorkflow()),
+        planDefinitions = listOf("@{planDef1}"),
+        readOnlyLinkIds = listOf("@{linkId1}", "@{linkId2}")
       )
 
-    val map = mutableMapOf<String, String>()
-    map["id"] = "123"
-    map["title"] = "New Title"
-    map["taskId"] = "333"
-    map["resourceIdentifier"] = "999"
-    map["groupIdentifier"] = "777"
-    map["dialogTitle"] = "Alert"
-    map["dialogMessage"] = "Are you sure?"
-    map["dialogActionButtonText"] = "Yes"
-    map["planDef1"] = "97c5f33b-389c-4ecb-abd3-46c5a3ac4026"
+    val map =
+      mapOf(
+        "id" to "123",
+        "title" to "New Title",
+        "taskId" to "333",
+        "resourceIdentifier" to "999",
+        "groupIdentifier" to "777",
+        "dialogTitle" to "Alert",
+        "dialogMessage" to "Are you sure?",
+        "dialogActionButtonText" to "Yes",
+        "planDef1" to "97c5f33b-389c-4ecb-abd3-46c5a3ac4026",
+        "linkId1" to "1",
+        "linkId2" to "2"
+      )
 
     val interpolatedConfig = questionnaireConfig.interpolate(map)
 
@@ -82,6 +103,8 @@ class QuestionnaireConfigTest : RobolectricTest() {
       "97c5f33b-389c-4ecb-abd3-46c5a3ac4026",
       interpolatedConfig.planDefinitions?.firstOrNull()
     )
+    Assert.assertEquals("1", interpolatedConfig.readOnlyLinkIds!![0])
+    Assert.assertEquals("2", interpolatedConfig.readOnlyLinkIds!![1])
   }
 
   @Test
@@ -90,6 +113,32 @@ class QuestionnaireConfigTest : RobolectricTest() {
       Assert.assertEquals("", title)
       Assert.assertEquals("", message)
       Assert.assertEquals("", actionButtonText)
+    }
+  }
+
+  @Test
+  fun testSetConfirmationDialog() {
+    val title = "Alert"
+    val message = "Are you sure?"
+    val actionButtonText = "Yes"
+    ConfirmationDialog(title, message, actionButtonText).apply {
+      Assert.assertEquals(title, this.title)
+      Assert.assertEquals(message, this.message)
+      Assert.assertEquals(actionButtonText, this.actionButtonText)
+    }
+  }
+
+  @Test
+  fun testDefaultGroupResourceConfig() {
+    val groupIdentifier = "groupIdentifier"
+    val memberResourceType = "Condition"
+    val groupResourceConfig = GroupResourceConfig(groupIdentifier, memberResourceType)
+    groupResourceConfig.apply {
+      Assert.assertEquals(groupIdentifier, this.groupIdentifier)
+      Assert.assertEquals(memberResourceType, this.memberResourceType)
+      Assert.assertEquals(false, removeMember)
+      Assert.assertEquals(false, removeGroup)
+      Assert.assertEquals(true, deactivateMembers)
     }
   }
 }

@@ -35,13 +35,17 @@ internal class PinTest {
         pinLength = 4,
         inputMode = true,
         onPinSet = {},
-        onPinVerified = {},
-        onShowPinError = {}
+        onShowPinError = {},
+        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
       )
     }
-    composeRule.onNodeWithTag(PIN_TEXT_FIELD_TEST_TAG).performTextInput("1234")
+    composeRule.onNodeWithTag(PIN_TEXT_FIELD_TEST_TAG).performTextInput("1")
+    composeRule.onNodeWithTag(PIN_TEXT_FIELD_TEST_TAG).performTextInput("2")
+    composeRule.onNodeWithTag(PIN_TEXT_FIELD_TEST_TAG).performTextInput("3")
+    composeRule.onNodeWithTag(PIN_TEXT_FIELD_TEST_TAG).performTextInput("4")
 
     composeRule.onAllNodesWithTag(PIN_CELL_TEST_TAG).assertCountEquals(4)
+
     composeRule.onAllNodesWithTag(PIN_CELL_TEXT_TEST_TAG, true)[0].assertTextEquals("1")
     composeRule.onAllNodesWithTag(PIN_CELL_TEXT_TEST_TAG, true)[1].assertTextEquals("2")
     composeRule.onAllNodesWithTag(PIN_CELL_TEXT_TEST_TAG, true)[2].assertTextEquals("3")

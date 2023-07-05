@@ -27,6 +27,8 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.sentry.Sentry
+import io.sentry.protocol.User
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -45,11 +47,13 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.clearPasswordInMemory
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
 import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
 import timber.log.Timber
@@ -117,8 +121,8 @@ constructor(
       val trimmedUsername = username.value!!.trim()
       val passwordAsCharArray = password.value!!.toCharArray()
 
-      if (context.getActivity()!!.isDeviceOnline()) {
-        viewModelScope.launch {
+      viewModelScope.launch(dispatcherProvider.io()) {
+        if (context.getActivity()!!.isDeviceOnline()) {
           fetchToken(
             username = trimmedUsername,
             password = passwordAsCharArray,
@@ -130,26 +134,42 @@ constructor(
               }
             },
             onFetchPractitioner = { bundleResult ->
-              _showProgressBar.postValue(false)
               if (bundleResult.isSuccess) {
-                updateNavigateHome(true)
                 val bundle = bundleResult.getOrDefault(FhirR4ModelBundle())
-                savePractitionerDetails(bundle)
+                savePractitionerDetails(bundle) {
+                  _showProgressBar.postValue(false)
+                  updateNavigateHome(true)
+                }
               } else {
+                _showProgressBar.postValue(false)
                 Timber.e(bundleResult.exceptionOrNull())
+                Timber.e(bundleResult.getOrNull().valueToString())
                 _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
               }
             }
           )
-        }
-      } else {
-        if (accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)) {
-          _showProgressBar.postValue(false)
-          updateNavigateHome(true)
         } else {
-          _showProgressBar.postValue(false)
-          _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
+          if (accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)) {
+            try {
+
+              // Configure Sentry scope
+              Sentry.configureScope { scope ->
+                scope.setTag("versionCode", BuildConfig.VERSION_CODE.toString())
+                scope.setTag("versionName", BuildConfig.VERSION_NAME)
+                scope.user = User().apply { username = trimmedUsername }
+              }
+            } catch (e: Exception) {
+              Timber.e(e)
+            }
+
+            _showProgressBar.postValue(false)
+            updateNavigateHome(true)
+          } else {
+            _showProgressBar.postValue(false)
+            _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
+          }
         }
+        clearPasswordInMemory(passwordAsCharArray)
       }
     }
   }
@@ -176,7 +196,12 @@ constructor(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>) -> Unit
   ) {
-    if (tokenAuthenticator.sessionActive()) {
+    val practitionerDetails =
+      sharedPreferences.read<PractitionerDetails>(
+        key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+        decodeWithGson = true
+      )
+    if (tokenAuthenticator.sessionActive() && practitionerDetails != null) {
       _showProgressBar.postValue(false)
       updateNavigateHome(true)
     } else {
@@ -212,6 +237,7 @@ constructor(
           onFetchPractitioner(Result.success(bundle))
         } catch (httpException: HttpException) {
           onFetchPractitioner(Result.failure(httpException))
+          Timber.e(httpException.response()?.errorBody()?.charStream()?.readText())
         }
       } else {
         onFetchPractitioner(
@@ -223,7 +249,7 @@ constructor(
     }
   }
 
-  fun savePractitionerDetails(bundle: FhirR4ModelBundle) {
+  fun savePractitionerDetails(bundle: FhirR4ModelBundle, postProcess: () -> Unit) {
     if (bundle.entry.isNullOrEmpty()) return
     viewModelScope.launch {
       val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
@@ -266,6 +292,8 @@ constructor(
         SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
         locationHierarchies
       )
+
+      postProcess()
     }
   }
 

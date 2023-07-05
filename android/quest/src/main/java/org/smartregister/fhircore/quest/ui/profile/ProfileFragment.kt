@@ -20,24 +20,35 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.VisibleForTesting
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.quest.event.AppEvent
+import org.smartregister.fhircore.quest.event.EventBus
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 
 @AndroidEntryPoint
-class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
+class ProfileFragment : Fragment() {
 
+  @Inject lateinit var eventBus: EventBus
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
   val profileFragmentArgs by navArgs<ProfileFragmentArgs>()
   val profileViewModel by viewModels<ProfileViewModel>()
   val appMainViewModel by activityViewModels<AppMainViewModel>()
@@ -47,11 +58,27 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
+
     with(profileFragmentArgs) {
       lifecycleScope.launch {
-        profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
+        profileViewModel.run {
+          decodeBinaryResourceIconsToBitmap(profileId)
+          retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
+        }
       }
     }
+
+    profileViewModel.refreshProfileDataLiveData.observe(viewLifecycleOwner) {
+      viewLifecycleOwner.lifecycleScope.launch {
+        if (it == true) {
+          with(profileFragmentArgs) {
+            profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
+          }
+          profileViewModel.refreshProfileDataLiveData.value = null
+        }
+      }
+    }
+
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
@@ -68,33 +95,36 @@ class ProfileFragment : Fragment(), Observer<QuestionnaireSubmission?> {
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    appMainViewModel.questionnaireSubmissionLiveData.observe(viewLifecycleOwner, this)
+    viewLifecycleOwner.lifecycleScope.launch {
+      viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+        eventBus
+          .events
+          .getFor(MainNavigationScreen.Profile.route.toString())
+          .onEach { appEvent ->
+            when (appEvent) {
+              is AppEvent.OnSubmitQuestionnaire ->
+                handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+              else -> {}
+            }
+          }
+          .launchIn(lifecycleScope)
+      }
+    }
   }
 
-  /**
-   * Overridden method for [Observer] class used to address [QuestionnaireSubmission] events. A new
-   * [Observer] is needed for every fragment since the [AppMainViewModel]'s
-   * questionnaireSubmissionLiveData outlives the Fragment. Cannot use Kotlin Observer { } as it is
-   * optimized to a singleton resulting to an exception using an observer from a detached fragment.
-   */
-  override fun onChanged(questionnaireSubmission: QuestionnaireSubmission?) {
-    lifecycleScope.launch {
-      questionnaireSubmission?.let {
-        appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
-        // Always refresh data when questionnaire is submitted
-        with(profileFragmentArgs) {
-          profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
-        }
+  @VisibleForTesting
+  suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
+    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
-        // Display SnackBar message
-        val (questionnaireConfig, _) = questionnaireSubmission
-        questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
-          profileViewModel.emitSnackBarState(snackBarMessageConfig)
-        }
+    // Always refresh data when questionnaire is submitted
+    with(profileFragmentArgs) {
+      profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
+    }
 
-        // Reset activity livedata
-        appMainViewModel.questionnaireSubmissionLiveData.postValue(null)
-      }
+    // Display SnackBar message
+    val (questionnaireConfig, _) = questionnaireSubmission
+    questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
+      profileViewModel.emitSnackBarState(snackBarMessageConfig)
     }
   }
 }

@@ -21,16 +21,17 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
-import java.util.NoSuchElementException
 import javax.inject.Inject
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -41,28 +42,23 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class MeasureReportRepositoryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  @get:Rule(order = 1)
-  val coroutineRule = CoroutineTestRule()
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val fhirEngine: FhirEngine = mockk()
   private val registerId = "register id"
   private lateinit var rulesFactory: RulesFactory
-  private lateinit var rulesExecutor: RulesExecutor
+  private lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
   private lateinit var measureReportConfiguration: MeasureReportConfiguration
   private lateinit var measureReportRepository: MeasureReportRepository
   private lateinit var registerRepository: RegisterRepository
@@ -77,14 +73,14 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           context = ApplicationProvider.getApplicationContext(),
           configurationRegistry = configurationRegistry,
           fhirPathDataExtractor = fhirPathDataExtractor,
-          dispatcherProvider = coroutineRule.testDispatcherProvider
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider
         )
       )
-    rulesExecutor = RulesExecutor(rulesFactory)
+    resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)
 
     val appId = "appId"
     val id = "id"
-    val fhirResource = FhirResourceConfig(ResourceConfig(resource = "Patient"))
+    val fhirResource = FhirResourceConfig(ResourceConfig(resource = ResourceType.Patient))
 
     measureReportConfiguration = MeasureReportConfiguration(appId, id = id, registerId = registerId)
     val registerConfiguration = RegisterConfiguration(appId, id = id, fhirResource = fhirResource)
@@ -96,7 +92,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
-          fhirPathDataExtractor = fhirPathDataExtractor
+          configRulesExecutor = mockk()
         )
       )
 
@@ -105,7 +101,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
         measureReportConfiguration,
         registerConfiguration,
         registerRepository,
-        rulesExecutor
+        resourceDataRulesExecutor
       )
   }
 
@@ -137,24 +133,10 @@ class MeasureReportRepositoryTest : RobolectricTest() {
 
   @Test
   @kotlinx.serialization.ExperimentalSerializationApi
-  fun testRetrievePatients() {
+  fun testRetrieveSubjectsWithResults() {
+    coEvery { fhirEngine.search<Patient>(any<Search>()) } returns listOf(Patient())
     runBlocking(Dispatchers.Default) {
-      assertFailsWith<NoSuchElementException> { measureReportRepository.retrievePatients(0) }
-    }
-  }
-
-  @Test
-  @kotlinx.serialization.ExperimentalSerializationApi
-  fun testRetrievePatientsWithResults() {
-    val resource = Faker.buildPatient()
-    coEvery {
-      registerRepository.loadRegisterData(0, measureReportConfiguration.registerId)
-    } returns
-      listOf(
-        RepositoryResourceData(queryResult = RepositoryResourceData.QueryResult.Search(resource))
-      )
-    runBlocking(Dispatchers.Default) {
-      val data = measureReportRepository.retrievePatients(0)
+      val data = measureReportRepository.retrieveSubjects(0)
       Assert.assertEquals(1, data.size)
     }
   }

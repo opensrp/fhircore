@@ -18,23 +18,21 @@ package org.smartregister.fhircore.engine.rulesengine
 
 import android.content.Context
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Order
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
-import kotlinx.coroutines.withContext
-import org.apache.commons.jexl3.JexlBuilder
-import org.apache.commons.jexl3.JexlException
+import org.hl7.fhir.r4.model.Base
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.Task
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
-import org.jeasy.rules.api.RuleListener
 import org.jeasy.rules.api.Rules
-import org.jeasy.rules.core.DefaultRulesEngine
-import org.jeasy.rules.jexl.JexlRule
 import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
@@ -43,11 +41,14 @@ import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
+import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.isOverDue
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
@@ -62,126 +63,64 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val dispatcherProvider: DispatcherProvider
-) : RuleListener {
-
+) : RulesListener() {
   val rulesEngineService = RulesEngineService()
-  private val rulesEngine: DefaultRulesEngine = DefaultRulesEngine()
-  private val jexlEngine =
-    JexlBuilder()
-      .namespaces(
-        mutableMapOf<String, Any>(
-          "Timber" to Timber,
-          "StringUtils" to Class.forName("org.apache.commons.lang3.StringUtils"),
-          "RegExUtils" to Class.forName("org.apache.commons.lang3.RegExUtils"),
-          "Math" to Class.forName("java.lang.Math")
-        )
-      )
-      .silent(false)
-      .strict(false)
-      .create()
-
   private var facts: Facts = Facts()
-
-  init {
-    rulesEngine.registerRuleListener(this)
-  }
-
-  override fun beforeEvaluate(rule: Rule, facts: Facts): Boolean = true
-
-  override fun onSuccess(rule: Rule, facts: Facts) {
-    if (BuildConfig.DEBUG) {
-      val computedValuesMap = facts.get(DATA) as Map<String, Any>
-      Timber.d("Rule executed: %s -> %s", rule, computedValuesMap[rule.name])
-    }
-  }
-
-  override fun onFailure(rule: Rule, facts: Facts, exception: Exception) =
-    if (exception is JexlException) {
-      when (exception) {
-        // Just display error message for undefined variable; expected for missing facts
-        is JexlException.Variable ->
-          log(
-            exception,
-            "${exception.localizedMessage}, consider checking for null before usage: e.g ${exception.variable} != null"
-          )
-        else -> log(exception)
-      }
-    } else log(exception)
-
-  override fun onEvaluationError(rule: Rule, facts: Facts, exception: java.lang.Exception) {
-    log(exception, "Evaluation error")
-  }
-
-  override fun afterEvaluate(rule: Rule, facts: Facts, evaluationResult: Boolean) = Unit
-
-  fun log(exception: java.lang.Exception, message: String? = null) = Timber.e(exception, message)
 
   /**
    * This function executes the actions defined in the [Rule] s generated from the provided list of
    * [RuleConfig] against the [Facts] populated by the provided FHIR [Resource] s available in the
-   * [relatedResourcesMap] and the [baseResource].
+   * [RepositoryResourceData.resource], [RepositoryResourceData.relatedResourcesMap] and
+   * [RepositoryResourceData.relatedResourcesCountMap]. All related resources of same type are
+   * flattened in a map for ease of usage in the rule engine.
    */
-  @Suppress("UNCHECKED_CAST")
-  fun fireRules(
-    rules: Rules,
-    baseResource: Resource? = null,
-    relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap(),
-  ): Map<String, Any> {
-
-    // Initialize new facts and fire rules in background
+  fun fireRules(rules: Rules, repositoryResourceData: RepositoryResourceData?): Map<String, Any> {
     facts =
       Facts().apply {
         put(FHIR_PATH, fhirPathDataExtractor)
         put(DATA, mutableMapOf<String, Any>())
         put(SERVICE, rulesEngineService)
-        if (baseResource != null) {
-          put(baseResource.resourceType.name, baseResource)
-        }
-        relatedResourcesMap.forEach {
-          val actualValue =
-            it.value.map { queryResult ->
-              when (queryResult) {
-                is RepositoryResourceData.QueryResult.Count -> queryResult.relatedResourceCount
-                is RepositoryResourceData.QueryResult.Search -> queryResult.resource
+      }
+    if (repositoryResourceData != null) {
+      with(repositoryResourceData) {
+        facts.apply {
+          put(resourceRulesEngineFactId ?: resource.resourceType.name, resource)
+          relatedResourcesMap.addToFacts(this)
+          relatedResourcesCountMap.addToFacts(this)
+
+          // Populate the facts map with secondary resource data flatten base and related
+          // resources
+          secondaryRepositoryResourceData
+            ?.groupBy { it.resourceRulesEngineFactId ?: it.resource.resourceType.name }
+            ?.forEach { entry -> put(entry.key, entry.value.map { it.resource }) }
+
+          secondaryRepositoryResourceData?.forEach { repoResourceData ->
+            repoResourceData.relatedResourcesMap.forEach { entry ->
+              val existingRelatedResourceList = get<MutableList<Resource>>(entry.key)
+              if (existingRelatedResourceList == null) {
+                put(entry.key, mutableListOf<Resource>())
               }
+              get<MutableList<Resource>>(entry.key).addAll(entry.value)
             }
-          put(it.key, actualValue)
+
+            repoResourceData.relatedResourcesCountMap.forEach { entry ->
+              val existingRelatedResourceCountList =
+                get<MutableList<RelatedResourceCount>>(entry.key)
+              if (existingRelatedResourceCountList == null) {
+                put(entry.key, mutableListOf<RelatedResourceCount>())
+              }
+              get<MutableList<RelatedResourceCount>>(entry.key).addAll(entry.value)
+            }
+          }
         }
       }
-
+    }
     if (BuildConfig.DEBUG) {
       val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
       Timber.d("Rule executed in $timeToFireRules millisecond(s)")
     } else rulesEngine.fire(rules, facts)
-
     return facts.get(DATA) as Map<String, Any>
   }
-
-  suspend fun generateRules(ruleConfigs: List<RuleConfig>): Rules =
-    withContext(dispatcherProvider.io()) {
-      Rules(
-        ruleConfigs
-          .map { ruleConfig ->
-            val customRule: JexlRule =
-              JexlRule(jexlEngine)
-                .name(ruleConfig.name)
-                .description(ruleConfig.description)
-                .priority(ruleConfig.priority)
-                .`when`(ruleConfig.condition.ifEmpty { TRUE })
-
-            for (action in ruleConfig.actions) {
-              try {
-                customRule.then(action)
-              } catch (jexlException: JexlException) {
-                Timber.e(jexlException)
-                continue // Skip action when an error occurs to avoid app force close
-              }
-            }
-            customRule
-          }
-          .toSet()
-      )
-    }
 
   /** Provide access to utility functions accessible to the users defining rules in JSON format. */
   inner class RulesEngineService {
@@ -209,6 +148,7 @@ constructor(
      * reference Id from the related resources
      */
     @Suppress("UNCHECKED_CAST")
+    @JvmOverloads
     fun retrieveRelatedResources(
       resource: Resource,
       relatedResourceKey: String,
@@ -260,6 +200,7 @@ constructor(
      *            When false the function checks whether any of the resources fulfills the expression provided
      * ```
      */
+    @JvmOverloads
     fun evaluateToBoolean(
       resources: List<Resource>?,
       fhirPathExpression: String,
@@ -303,6 +244,7 @@ constructor(
             label
           else null
         }
+        ?.distinctBy { it }
         ?.joinToString(",")
         ?: ""
 
@@ -351,10 +293,11 @@ constructor(
      * and then it gives output in expected Format, [expectedFormat] is by default (Example: Mon,
      * Nov 5 2021)
      */
+    @JvmOverloads
     fun formatDate(
       inputDate: String,
       inputDateFormat: String,
-      expectedFormat: String = "E, MMM dd yyyy"
+      expectedFormat: String = SDF_E_MMM_DD_YYYY
     ): String? = inputDate.parseDate(inputDateFormat)?.formatDate(expectedFormat)
 
     /**
@@ -362,7 +305,8 @@ constructor(
      * takes an input a [date] as input and then it gives output in expected Format,
      * [expectedFormat] is by default (Example: Mon, Nov 5 2021)
      */
-    fun formatDate(date: Date, expectedFormat: String = "E, MMM dd yyyy"): String =
+    @JvmOverloads
+    fun formatDate(date: Date, expectedFormat: String = SDF_E_MMM_DD_YYYY): String =
       date.formatDate(expectedFormat)
 
     /**
@@ -388,12 +332,27 @@ constructor(
         ?: emptyList()
     }
 
-    /** This function combines all string indexes to comma separated */
-    fun joinToString(source: MutableList<String?>): String {
-      source.removeIf { it == null }
-      val inputString = source.joinToString()
-      val regex = "(?<=^|,)[\\s,]*(\\w[\\w\\s]*)(?=[\\s,]*$|,)".toRegex()
-      return regex.findAll(inputString).joinToString(", ") { it.groupValues[1] }
+    /**
+     * This function combines all string indexes to a list separated by the separator and regex
+     * defined by the content author
+     */
+    @JvmOverloads
+    fun joinToString(
+      sourceString: MutableList<String?>,
+      regex: String = DEFAULT_REGEX,
+      separator: String = DEFAULT_STRING_SEPARATOR
+    ): String {
+      sourceString.removeIf { it == null }
+      val inputString = sourceString.joinToString()
+      return regex.toRegex().findAll(inputString).joinToString(separator) { it.groupValues[1] }
+    }
+
+    /** This function returns a list of resources with a limit of [limit] resources */
+    fun limitTo(source: List<Any>?, limit: Int?): List<Any> {
+      if (limit == null || limit <= 0) {
+        return emptyList()
+      }
+      return source?.take(limit) ?: emptyList()
     }
 
     fun mapResourcesToExtractedValues(
@@ -418,14 +377,84 @@ constructor(
         ?.find { parentResourceId.equals(it.parentResourceId, ignoreCase = true) }
         ?.count
         ?: 0
+
+    /**
+     * This function sorts [resources] by comparing the values extracted by FHIRPath using the
+     * [fhirPathExpression]. The [dataType] is required for ordering of the. You can optionally
+     * specify the [Order] of sorting.
+     */
+    @JvmOverloads
+    fun sortResources(
+      resources: List<Resource>?,
+      fhirPathExpression: String,
+      dataType: Enumerations.DataType,
+      order: Order = Order.ASCENDING
+    ): List<Resource>? {
+      val mappedResources =
+        resources?.mapNotNull {
+          val extractedValue: Base? =
+            fhirPathDataExtractor.extractData(it, fhirPathExpression).firstOrNull()
+          val sortingValue: Comparable<*>? =
+            when (dataType) {
+              Enumerations.DataType.BOOLEAN -> extractedValue?.castToBoolean(extractedValue)?.value
+              Enumerations.DataType.DATE -> extractedValue?.castToDate(extractedValue)?.value
+              Enumerations.DataType.DATETIME ->
+                extractedValue?.castToDateTime(extractedValue)?.value
+              Enumerations.DataType.DECIMAL -> extractedValue?.castToDecimal(extractedValue)?.value
+              Enumerations.DataType.INTEGER -> extractedValue?.castToInteger(extractedValue)?.value
+              Enumerations.DataType.STRING -> extractedValue?.castToString(extractedValue)?.value
+              else -> {
+                Timber.e(
+                  "Sorting only works for primitive types, sorting by the data type $dataType is not allowed. Implement sorting strategy for the data type $dataType."
+                )
+                null
+              }
+            }
+          if (sortingValue != null) Pair(sortingValue, it) else null
+        }
+
+      return when (order) {
+        Order.ASCENDING -> mappedResources?.sortedWith(compareBy { it.first })?.map { it.second }
+        Order.DESCENDING ->
+          mappedResources?.sortedWith(compareByDescending { it.first })?.map { it.second }
+      }
+    }
+
+    fun generateTaskServiceStatus(task: Task): String {
+      val serviceStatus: String
+      if (task.isOverDue()) {
+        serviceStatus = ServiceStatus.OVERDUE.name
+      } else {
+        serviceStatus =
+          when (task.status) {
+            Task.TaskStatus.NULL,
+            Task.TaskStatus.FAILED,
+            Task.TaskStatus.RECEIVED,
+            Task.TaskStatus.ENTEREDINERROR,
+            Task.TaskStatus.ACCEPTED,
+            Task.TaskStatus.REJECTED,
+            Task.TaskStatus.DRAFT,
+            Task.TaskStatus.ONHOLD -> {
+              Timber.e("Task.status is null", Exception())
+              ServiceStatus.UPCOMING.name
+            }
+            Task.TaskStatus.REQUESTED -> ServiceStatus.UPCOMING.name
+            Task.TaskStatus.READY -> ServiceStatus.DUE.name
+            Task.TaskStatus.CANCELLED -> ServiceStatus.EXPIRED.name
+            Task.TaskStatus.INPROGRESS -> ServiceStatus.IN_PROGRESS.name
+            Task.TaskStatus.COMPLETED -> ServiceStatus.COMPLETED.name
+          }
+      }
+      return serviceStatus
+    }
   }
 
   companion object {
-    private const val FHIR_PATH = "fhirPath"
-    private const val DATA = "data"
-    private const val TRUE = "true"
+
     private const val SERVICE = "service"
     private const val INCLUSIVE_SIX_DIGIT_MINIMUM = 100000
     private const val INCLUSIVE_SIX_DIGIT_MAXIMUM = 999999
+    private const val DEFAULT_REGEX = "(?<=^|,)[\\s,]*(\\w[\\w\\s]*)(?=[\\s,]*$|,)"
+    private const val DEFAULT_STRING_SEPARATOR = ", "
   }
 }

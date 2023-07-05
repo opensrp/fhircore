@@ -20,8 +20,9 @@ import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
-import org.smartregister.fhircore.engine.domain.model.ExtractedResource
+import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
 data class ListProperties(
@@ -41,7 +42,14 @@ data class ListProperties(
   val emptyList: NoResultsConfig? = null,
   val orientation: ListOrientation = ListOrientation.VERTICAL,
   val resources: List<ListResource> = emptyList()
-) : ViewProperties()
+) : ViewProperties() {
+  override fun interpolate(computedValuesMap: Map<String, Any>): ListProperties {
+    return this.copy(
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap)
+    )
+  }
+}
 
 enum class ListOrientation {
   VERTICAL,
@@ -50,9 +58,11 @@ enum class ListOrientation {
 
 @Serializable
 data class ListResource(
-  val id: String,
+  val id: String? = null,
   val relatedResourceId: String? = null,
   val resourceType: ResourceType,
   val conditionalFhirPathExpression: String? = null,
-  val relatedResources: List<ExtractedResource> = emptyList()
+  val sortConfig: SortConfig? = null,
+  val fhirPathExpression: String? = null,
+  val relatedResources: List<ListResource> = emptyList()
 )

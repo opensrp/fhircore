@@ -13,7 +13,8 @@ const config = {
   trailingSlash:false,
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/fhircore.png',
+  favicon: 'img/opensrp-logo.png',
+  staticDirectories: ['static'],
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -47,14 +48,14 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'OpenSRP FHIR Core',
+        title: 'OpenSRP',
         logo: {
-          alt: 'OpenSRP FHIR Core Documentation',
-          src: 'img/fhircore.png',
+          alt: 'OpenSRP Documentation',
+          src: 'img/opensrp-logo.png',
         },
         items: [
           {
-            href: 'https://fhircore.smartregister.org/dokka',
+            href: '/dokka',
             label: 'Code Docs',
             position: 'right',
           },

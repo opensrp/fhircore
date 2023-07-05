@@ -17,12 +17,12 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -36,13 +36,13 @@ import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
 import kotlin.time.Duration
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -71,6 +71,7 @@ import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -94,10 +95,6 @@ constructor(
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
 ) : ViewModel() {
 
-  val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
-
-  val questionnaireSubmissionLiveData: MutableLiveData<QuestionnaireSubmission?> = MutableLiveData()
-
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
       appMainUiStateOf(
@@ -109,6 +106,7 @@ constructor(
     )
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
+  private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
@@ -122,7 +120,11 @@ constructor(
     navigationConfiguration
       .clientRegisters
       .asSequence()
-      .filter { it.menuIconConfig != null && it.menuIconConfig?.type == ICON_TYPE_REMOTE }
+      .filter {
+        it.menuIconConfig != null &&
+          it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
+          !it.menuIconConfig!!.reference.isNullOrEmpty()
+      }
       .forEach {
         val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
         viewModelScope.launch(dispatcherProvider.io()) {
@@ -133,7 +135,7 @@ constructor(
       }
   }
 
-  fun retrieveAppMainUiState() {
+  suspend fun retrieveAppMainUiState() {
     appMainUiState.value =
       appMainUiStateOf(
         appTitle = applicationConfiguration.appTitle,
@@ -142,8 +144,16 @@ constructor(
         lastSyncTime = retrieveLastSyncTimestamp() ?: "",
         languages = configurationRegistry.fetchLanguages(),
         navigationConfiguration = navigationConfiguration,
-        registerCountMap = retrieveRegisterCountMap()
+        registerCountMap = registerCountMap
       )
+
+    // Count data for configured registers by populating the register count map
+    viewModelScope.launch {
+      navigationConfiguration.run {
+        clientRegisters.countRegisterData()
+        bottomSheetRegisters?.registers?.countRegisterData()
+      }
+    }
   }
 
   fun onEvent(event: AppMainEvent) {
@@ -156,9 +166,10 @@ constructor(
         }
       }
       is AppMainEvent.SyncData -> {
-        if (event.context.isDeviceOnline()) {
-          syncBroadcaster.runSync(syncSharedFlow)
-        }
+        if (event.context.isDeviceOnline())
+          viewModelScope.launch { syncBroadcaster.runOneTimeSync() }
+        else
+          event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
@@ -170,19 +181,20 @@ constructor(
                 formatLastSyncTimestamp(event.state.timestamp)
               )
             }
-            retrieveAppMainUiState()
+            viewModelScope.launch { retrieveAppMainUiState() }
           }
           else ->
             appMainUiState.value =
               appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: "")
         }
       }
-      is AppMainEvent.TriggerWorkflow ->
+      is AppMainEvent.TriggerWorkflow -> {
         event.navMenu.actions?.handleClickEvent(
           navController = event.navController,
           resourceData = null,
           navMenu = event.navMenu
         )
+      }
       is AppMainEvent.OpenProfile -> {
         val args =
           bundleOf(
@@ -202,21 +214,11 @@ constructor(
           registerCountMap = appMainUiState.value.registerCountMap,
           menuClickListener = {
             onEvent(AppMainEvent.TriggerWorkflow(navController = event.navController, navMenu = it))
-          }
+          },
+          title = event.title
         )
         .run { show(activity.supportFragmentManager, RegisterBottomSheetFragment.TAG) }
     }
-  }
-
-  private fun retrieveRegisterCountMap(): Map<String, Long> {
-    val countsMap = mutableStateMapOf<String, Long>()
-    viewModelScope.launch(dispatcherProvider.io()) {
-      with(navigationConfiguration) {
-        clientRegisters.setRegisterCount(countsMap)
-        bottomSheetRegisters?.registers?.setRegisterCount(countsMap)
-      }
-    }
-    return countsMap
   }
 
   fun launchFamilyRegistrationWithLocationId(
@@ -238,17 +240,13 @@ constructor(
     }
   }
 
-  private suspend fun List<NavigationMenuConfig>.setRegisterCount(
-    countsMap: SnapshotStateMap<String, Long>
-  ) {
+  private suspend fun List<NavigationMenuConfig>.countRegisterData() {
     // Set count for registerId against its value. Use action Id; otherwise default to menu id
-    this.asSequence().filter { it.showCount }.forEach { menuConfig ->
+    return this.filter { it.showCount }.forEach { menuConfig ->
       val countAction =
         menuConfig.actions?.find { actionConfig -> actionConfig.trigger == ActionTrigger.ON_COUNT }
-      if (countAction != null) {
-        countsMap[countAction.id ?: menuConfig.id] =
-          registerRepository.countRegisterData(menuConfig.id)
-      }
+      registerCountMap[countAction?.id ?: menuConfig.id] =
+        registerRepository.countRegisterData(menuConfig.id)
     }
   }
 
@@ -293,10 +291,10 @@ constructor(
 
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
-    // Schedule job that updates the status of the tasks periodically
     workManager.run {
       schedulePeriodically<FhirTaskPlanWorker>(
         workId = FhirTaskPlanWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskStatusUpdateJobDuration),
         requiresNetwork = false
       )
 

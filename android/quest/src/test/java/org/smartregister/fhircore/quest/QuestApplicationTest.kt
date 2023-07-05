@@ -18,7 +18,13 @@ package org.smartregister.fhircore.quest
 
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.spyk
+import io.sentry.Sentry
+import io.sentry.android.core.SentryAndroid
+import io.sentry.android.core.SentryAndroidOptions
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -27,6 +33,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class QuestApplicationTest : RobolectricTest() {
+
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
   private lateinit var application: QuestApplication
 
@@ -37,6 +44,30 @@ class QuestApplicationTest : RobolectricTest() {
     application.referenceUrlResolver = mockk()
     application.xFhirQueryResolver = mockk()
     application.workerFactory = mockk()
+  }
+
+  @Test
+  fun testSentryMonitoringWhenDsnNotBlank() {
+    val sentryDsn = "debb3087-167a-47ff-b6d4-737be3965a4c"
+    val spyApp = spyk(application)
+    val sentryOptions = spyk<SentryAndroidOptions>()
+
+    mockkStatic(SentryAndroid::class) {
+      every {
+        SentryAndroid.init(any(), any<Sentry.OptionsConfiguration<SentryAndroidOptions>>())
+      } answers
+        {
+          val optionsConfiguration = secondArg<Sentry.OptionsConfiguration<SentryAndroidOptions>>()
+          optionsConfiguration.configure(sentryOptions)
+        }
+
+      spyApp.initSentryMonitoring(dsn = sentryDsn)
+
+      Assert.assertEquals(sentryDsn, sentryOptions.dsn)
+      Assert.assertEquals(1.0, sentryOptions.tracesSampleRate)
+      Assert.assertTrue(sentryOptions.isEnableUserInteractionTracing)
+      Assert.assertTrue(sentryOptions.isEnableUserInteractionBreadcrumbs)
+    }
   }
 
   @Test

@@ -34,18 +34,18 @@ import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import java.io.IOException
 import java.net.UnknownHostException
+import java.util.Base64
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.net.ssl.SSLHandshakeException
 import kotlinx.coroutines.runBlocking
-import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.extension.today
-import org.smartregister.fhircore.engine.util.toSha1
+import org.smartregister.fhircore.engine.util.toPasswordHash
 import retrofit2.HttpException
 import timber.log.Timber
 
@@ -63,6 +63,7 @@ constructor(
 
   private val jwtParser = Jwts.parser()
   private val authConfiguration by lazy { configService.provideAuthConfiguration() }
+  private var isLoginPageRendered = false
 
   override fun getAccessToken(): String {
     val account = findAccount()
@@ -92,6 +93,8 @@ constructor(
             // TODO: Should we cancel the sync job to avoid retries when offline?
           }
         }
+      } else {
+        isLoginPageRendered = false
       }
       accessToken
     } else ""
@@ -111,8 +114,9 @@ constructor(
         // Deletes session PIN to allow reset
         secureSharedPreference.deleteSessionPin()
 
-        if (launchIntent != null) {
+        if (launchIntent != null && !isLoginPageRendered) {
           context.startActivity(launchIntent.putExtra(CANCEL_BACKGROUND_SYNC, true))
+          isLoginPageRendered = true
         }
       }
     }
@@ -129,6 +133,8 @@ constructor(
       false
     }
   }
+
+  fun isCurrentRefreshTokenActive() = isTokenActive(accountManager.getPassword(findAccount()))
 
   private fun buildOAuthPayload(grantType: String) =
     mutableMapOf(
@@ -204,9 +210,7 @@ constructor(
         setAuthToken(newAccount, AUTH_TOKEN_TYPE, oAuthResponse.accessToken)
       }
       // Save credentials
-      secureSharedPreference.saveCredentials(
-        AuthCredentials(username, password.concatToString().toSha1())
-      )
+      secureSharedPreference.saveCredentials(username, password)
     }
   }
 
@@ -227,10 +231,13 @@ constructor(
     }
   }
 
-  fun validateSavedLoginCredentials(username: String, password: CharArray): Boolean {
+  fun validateSavedLoginCredentials(username: String, enteredPassword: CharArray): Boolean {
     val credentials = secureSharedPreference.retrieveCredentials()
-    return username.equals(credentials?.username, ignoreCase = true) &&
-      password.concatToString().toSha1().contentEquals(credentials?.password)
+    return if (username.equals(credentials?.username, ignoreCase = true)) {
+      val generatedHash =
+        enteredPassword.toPasswordHash(Base64.getDecoder().decode(credentials!!.salt))
+      generatedHash == credentials.passwordHash
+    } else false
   }
 
   fun findAccount(): Account? {

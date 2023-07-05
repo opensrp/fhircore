@@ -41,7 +41,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.HiltActivityForTest
-import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
@@ -103,7 +102,7 @@ internal class LoginViewModelTest : RobolectricTest() {
           fhirResourceService = fhirResourceService,
           tokenAuthenticator = tokenAuthenticator,
           secureSharedPreference = secureSharedPreference,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
           workManager = workManager
         )
       )
@@ -172,8 +171,12 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSuccessfulOnlineLoginWithActiveSession() {
+  fun testSuccessfulOnlineLoginWithActiveSessionWithSavedPractitionerDetails() {
     updateCredentials()
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+      PractitionerDetails()
+    )
     every { tokenAuthenticator.sessionActive() } returns true
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
@@ -181,9 +184,17 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testSuccessfulOnlineLoginWithActiveSessionWithNoPractitionerDetailsSaved() {
+    updateCredentials()
+    every { tokenAuthenticator.sessionActive() } returns true
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+    Assert.assertFalse(loginViewModel.navigateToHome.value!!)
+  }
+
+  @Test
   fun testUnSuccessfulOnlineLoginUsingDifferentUsername() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(AuthCredentials("nativeUser", "n4t1veP5wd"))
+    secureSharedPreference.saveCredentials("nativeUser", "n4t1veP5wd".toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
@@ -196,7 +207,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testSuccessfulNewOnlineLoginShouldFetchUserInfoAndPractitioner() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(AuthCredentials(thisUsername, thisPassword))
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery {
       tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
@@ -227,7 +238,7 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     // Login was successful savePractitionerDetails was called
     val bundleSlot = slot<Bundle>()
-    verify { loginViewModel.savePractitionerDetails(capture(bundleSlot)) }
+    verify { loginViewModel.savePractitionerDetails(capture(bundleSlot), any()) }
 
     Assert.assertNotNull(bundleSlot.captured)
     Assert.assertTrue(bundleSlot.captured.entry.isNotEmpty())
@@ -237,7 +248,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testUnSuccessfulOnlineLoginUserInfoNotFetched() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(AuthCredentials(thisUsername, thisPassword))
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery {
       tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
@@ -268,7 +279,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testUnSuccessfulOnlineLoginWhenAccessTokenNotReceived() {
     updateCredentials()
-    secureSharedPreference.saveCredentials(AuthCredentials(thisUsername, thisPassword))
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     coEvery {
       tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
@@ -307,7 +318,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     coEvery { defaultRepository.create(true, any()) } returns listOf()
     loginViewModel.savePractitionerDetails(
       Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = practitionerDetails() })
-    )
+    ) {}
     Assert.assertNotNull(
       sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name)
     )
