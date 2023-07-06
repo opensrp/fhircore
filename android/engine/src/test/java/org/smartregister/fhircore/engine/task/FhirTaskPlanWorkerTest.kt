@@ -172,6 +172,27 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
   }
 
   @Test
+  fun `FhirTaskPlanWorker doWork set the correct status when start date is in the future`() {
+    val task =
+      Task().apply {
+        status = Task.TaskStatus.REQUESTED
+        executionPeriod = Period().apply { start = DateTime.now().plusDays(1).toDate() }
+      }
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
+    coEvery { defaultRepository.update(task) } just runs
+    val worker =
+      TestListenableWorkerBuilder<FhirTaskPlanWorker>(context)
+        .setWorkerFactory(
+          FhirTaskPlanWorkerFactory(fhirEngine, sharedPreferencesHelper, configurationRegistry)
+        )
+        .build()
+    val result = worker.startWork().get()
+    coVerify(exactly = 0) { defaultRepository.update(task) }
+    Assert.assertEquals(result, (ListenableWorker.Result.success()))
+    Assert.assertEquals(Task.TaskStatus.REQUESTED, task.status)
+  }
+  
+  @Test
   fun `FhirTaskPlanWorker doWork set the correct status when start date is 2 years ago`() {
     val task =
       Task().apply {

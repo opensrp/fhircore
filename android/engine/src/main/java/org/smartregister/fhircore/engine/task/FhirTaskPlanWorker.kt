@@ -72,7 +72,7 @@ constructor(
             Task.PERIOD,
             {
               prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
-              value = of(DateTimeType(Date().plusDays(-1)))
+              value = of(DateTimeType(Date()))
             }
           )
         }
