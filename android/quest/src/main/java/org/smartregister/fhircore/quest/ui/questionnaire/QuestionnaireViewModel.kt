@@ -297,7 +297,7 @@ constructor(
       try {
         deleteResource(questionnaireConfig.resourceType!!, questionnaireConfig.resourceIdentifier!!)
       } catch (e: ResourceNotFoundException) {
-        Timber.e(e)
+        Timber.e(e, "Resource to delete not found!")
       }
     }
   }
