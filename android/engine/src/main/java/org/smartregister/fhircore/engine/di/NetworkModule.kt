@@ -42,6 +42,7 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverterFactory
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.getCustomJsonParser
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -69,7 +70,10 @@ class NetworkModule {
 
   @Provides
   @WithAuthorizationOkHttpClientQualifier
-  fun provideOkHttpClient(tokenAuthenticator: TokenAuthenticator) =
+  fun provideOkHttpClient(
+    tokenAuthenticator: TokenAuthenticator,
+    sharedPreferencesHelper: SharedPreferencesHelper
+  ) =
     OkHttpClient.Builder()
       .addInterceptor(
         Interceptor { chain: Interceptor.Chain ->
@@ -80,6 +84,9 @@ class NetworkModule {
             val request = chain.request().newBuilder()
             if (accessToken.isNotEmpty()) {
               request.addHeader(AUTHORIZATION, "Bearer $accessToken")
+              sharedPreferencesHelper.retrieveApplicationId()?.let {
+                request.addHeader(APPLICATION_ID, it)
+              }
             }
             chain.proceed(request.build())
           } catch (e: Exception) {
@@ -178,6 +185,7 @@ class NetworkModule {
   companion object {
     const val TIMEOUT_DURATION = 120L
     const val AUTHORIZATION = "Authorization"
+    const val APPLICATION_ID = "App-Id"
     const val COOKIE = "Cookie"
     val JSON_MEDIA_TYPE = "application/json".toMediaType()
   }

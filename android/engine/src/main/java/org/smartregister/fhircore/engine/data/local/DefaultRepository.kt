@@ -152,21 +152,31 @@ constructor(
    */
   suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
-      resource.onEach { currentResource ->
-        currentResource.updateLastUpdated()
-        currentResource.generateMissingId()
-        if (addResourceTags) {
-          val tags = configService.provideResourceTags(sharedPreferencesHelper)
-          tags.forEach {
-            val existingTag = currentResource.meta.getTag(it.system, it.code)
-            if (existingTag == null) {
-              currentResource.meta.addTag(it)
-            }
+      preProcessResources(addResourceTags, *resource)
+      fhirEngine.create(*resource)
+    }
+  }
+
+  suspend fun createRemote(addResourceTags: Boolean = true, vararg resource: Resource) {
+    return withContext(dispatcherProvider.io()) {
+      preProcessResources(addResourceTags, *resource)
+      fhirEngine.createRemote(*resource)
+    }
+  }
+
+  private fun preProcessResources(addResourceTags: Boolean, vararg resource: Resource) {
+    resource.onEach { currentResource ->
+      currentResource.updateLastUpdated()
+      currentResource.generateMissingId()
+      if (addResourceTags) {
+        val tags = configService.provideResourceTags(sharedPreferencesHelper)
+        tags.forEach {
+          val existingTag = currentResource.meta.getTag(it.system, it.code)
+          if (existingTag == null) {
+            currentResource.meta.addTag(it)
           }
         }
       }
-
-      fhirEngine.create(*resource)
     }
   }
 
@@ -236,7 +246,9 @@ constructor(
     val group = fhirEngine.get<Group>(groupId)
     if (managingEntityConfig?.resourceType == ResourceType.Patient) {
       val relatedPerson =
-        if (group.managingEntity.reference != null) {
+        if (group.managingEntity.reference != null &&
+            group.managingEntity.reference.startsWith(ResourceType.RelatedPerson.name)
+        ) {
           fhirEngine.get(group.managingEntity.reference.extractLogicalIdUuid())
         } else {
           RelatedPerson().apply { id = UUID.randomUUID().toString() }
@@ -714,9 +726,12 @@ constructor(
          * 1. The eventResource id value is "pncConditionToClose"
          * 2. Conditions to be closed must have an onset that is more than 28 days in the past
          */
-        if (resourceConfig.id == PNC_CONDITION_TO_CLOSE_RESOURCE_ID) {
+        if (resourceConfig.id == PNC_CONDITION_TO_CLOSE_RESOURCE_ID ||
+            resourceConfig.id == SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID
+        ) {
           val closePncCondition = resource.onset.dateTimeValue().value.daysPassed() > 28
-          if (closePncCondition) {
+          val closeSickChildCondition = resource.onset.dateTimeValue().value.daysPassed() > 7
+          if (closePncCondition || closeSickChildCondition) {
             resource.clinicalStatus =
               CodeableConcept().apply {
                 coding =
@@ -762,5 +777,6 @@ constructor(
     const val PATIENT_CONDITION_RESOLVED_CODE = "370996005"
     const val PATIENT_CONDITION_RESOLVED_DISPLAY = "resolved"
     const val PNC_CONDITION_TO_CLOSE_RESOURCE_ID = "pncConditionToClose"
+    const val SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID = "sickChildConditionToClose"
   }
 }
