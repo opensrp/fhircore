@@ -1007,6 +1007,13 @@
                         },
                         "params": [
                           {
+                            "paramType": "QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE",
+                            "resourceType": "Patient",
+                            "value": "@{patientId}",
+                            "key": "resourcePatient",
+                            "dataType": "STRING"
+                          },
+                          {
                             "paramType": "PREPOPULATE",
                             "linkId": "e215bd25-8962-4ef1-8040-149cbb653781",
                             "dataType": "INTEGER",
@@ -1729,8 +1736,7 @@
             "id": "7f1960ac-81b5-42a2-8813-97222de5745a",
             "resourceIdentifier": "@{patientId}",
             "title": "Remove family member",
-            "saveButtonText": "Update registration",
-            "refreshContent": true
+            "saveButtonText": "Update registration"
           }
         }
       ]

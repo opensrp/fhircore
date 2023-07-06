@@ -56,7 +56,8 @@ class LoginActivityTest : RobolectricTest() {
   @BindValue
   val secureSharedPreference =
     spyk(SecureSharedPreference(ApplicationProvider.getApplicationContext()))
-  private val loginActivityController = Robolectric.buildActivity(LoginActivity::class.java)
+  private val loginActivityController =
+    Robolectric.buildActivity(Faker.TestLoginActivity::class.java)
   private lateinit var loginActivity: LoginActivity
 
   @Before
@@ -66,7 +67,12 @@ class LoginActivityTest : RobolectricTest() {
     every { secureSharedPreference.retrieveSessionPin() } returns null
     every { secureSharedPreference.retrieveSessionUsername() } returns
       Faker.authCredentials.username
-    loginActivity = spyk(loginActivityController.create().resume().get())
+    loginActivity = loginActivityController.create().resume().get()
+  }
+
+  override fun tearDown() {
+    super.tearDown()
+    loginActivityController.destroy()
   }
 
   @Test
@@ -79,8 +85,16 @@ class LoginActivityTest : RobolectricTest() {
 
   @Test
   fun testNavigateToScreenShouldLaunchPinLoginWithSetup() {
+
+    val loginActivityController =
+      Robolectric.buildActivity(Faker.TestLoginActivityInActivePin::class.java)
+    val loginActivity: LoginActivity = loginActivityController.create().resume().get()
+
     // Return a null session pin, pin login is enabled by default
     every { secureSharedPreference.retrieveSessionPin() } returns null
+
+    mockkObject(P2PLibrary)
+    every { P2PLibrary.init(any()) } returns mockk()
 
     loginActivity.loginViewModel.updateNavigateHome(true)
 
@@ -92,13 +106,28 @@ class LoginActivityTest : RobolectricTest() {
 
     val shadowIntent: ShadowIntent = shadowOf(resultIntent)
     Assert.assertEquals(PinLoginActivity::class.java, shadowIntent.intentClass)
+
+    unmockkObject(P2PLibrary)
+  }
+
+  @Test
+  fun testNavigateToScreenShouldInvokeNavigateToPinLoginWithActivePinAndOffline() {
+
+    val resultIntent = shadowOf(loginActivity).nextStartedActivity
+    Assert.assertNotNull(resultIntent)
+    Assert.assertNotNull(resultIntent.extras)
+    Assert.assertTrue(resultIntent.extras!!.containsKey(PinLoginActivity.PIN_SETUP))
+    Assert.assertFalse(resultIntent.extras!!.getBoolean(PinLoginActivity.PIN_SETUP))
+
+    val shadowIntent: ShadowIntent = shadowOf(resultIntent)
+    Assert.assertEquals(PinLoginActivity::class.java, shadowIntent.intentClass)
   }
 
   @Test
   @Ignore("Weird: Cannot set session pin")
   fun testNavigateToScreenShouldLaunchPinLoginWithoutSetup() {
     // Return a session pin, login with pin is enabled by default
-    secureSharedPreference.saveSessionPin("1234")
+    secureSharedPreference.saveSessionPin("1234".toCharArray())
     every { secureSharedPreference.retrieveSessionPin() } returns "1234"
 
     loginActivity.loginViewModel.updateNavigateHome(true)

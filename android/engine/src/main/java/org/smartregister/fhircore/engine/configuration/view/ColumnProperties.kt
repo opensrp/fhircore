@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.configuration.view
 import androidx.compose.foundation.layout.Arrangement
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
 data class ColumnProperties(
@@ -36,7 +37,16 @@ data class ColumnProperties(
   val wrapContent: Boolean = false,
   val arrangement: ColumnArrangement? = null,
   val children: List<ViewProperties> = emptyList(),
-) : ViewProperties()
+  val showDivider: String = "false"
+) : ViewProperties() {
+  override fun interpolate(computedValuesMap: Map<String, Any>): ColumnProperties {
+    return this.copy(
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap),
+      showDivider = showDivider.interpolate(computedValuesMap)
+    )
+  }
+}
 
 enum class ColumnArrangement(val position: Arrangement.Vertical) {
   SPACE_BETWEEN(Arrangement.SpaceBetween),

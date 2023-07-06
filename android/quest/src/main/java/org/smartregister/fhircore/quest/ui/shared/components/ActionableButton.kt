@@ -43,16 +43,17 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.ButtonType
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
-import org.smartregister.fhircore.quest.util.extensions.clickable
 import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
@@ -65,16 +66,19 @@ fun ActionableButton(
   resourceData: ResourceData,
   navController: NavController
 ) {
-  if (buttonProperties.visible.interpolate(resourceData.computedValuesMap).toBoolean()) {
-    val interpolatedButtonProperties = buttonProperties.interpolate(resourceData.computedValuesMap)
-    val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
-    val status = interpolatedButtonProperties.status
-    val backgroundColor = interpolatedButtonProperties.backgroundColor
-    val isButtonEnabled = interpolatedButtonProperties.enabled.toBoolean()
-    val clickable = buttonProperties.clickable(resourceData)
+  if (buttonProperties.visible.toBoolean()) {
+    val status = buttonProperties.status
+    val configuredContentColor = buttonProperties.contentColor.parseColor()
+    val statusColor =
+      if (configuredContentColor == Color.Unspecified)
+        buttonProperties.statusColor(resourceData.computedValuesMap)
+      else if (status == ServiceStatus.COMPLETED.name) DefaultColor else configuredContentColor
+    val backgroundColor = buttonProperties.backgroundColor.parseColor()
+    val isButtonEnabled = buttonProperties.enabled.toBoolean()
+    val clickable = buttonProperties.clickable.toBoolean()
     OutlinedButton(
       onClick = {
-        if (interpolatedButtonProperties.enabled.toBoolean() &&
+        if (buttonProperties.enabled.toBoolean() &&
             (status == ServiceStatus.DUE.name || status == ServiceStatus.OVERDUE.name || clickable)
         ) {
           buttonProperties.actions.handleClickEvent(
@@ -86,9 +90,8 @@ fun ActionableButton(
       colors =
         ButtonDefaults.buttonColors(
           backgroundColor =
-            if (backgroundColor.parseColor() != Color.Unspecified) {
-              backgroundColor.parseColor()
-            } else statusColor.copy(alpha = 0.1f),
+            if (backgroundColor != Color.Unspecified) backgroundColor
+            else statusColor.copy(alpha = 0.1f),
           contentColor = statusColor,
           disabledBackgroundColor = DefaultColor.copy(alpha = 0.1f),
           disabledContentColor = DefaultColor,
@@ -99,26 +102,34 @@ fun ActionableButton(
           .padding(horizontal = 12.dp, vertical = 4.dp)
           .wrapContentHeight()
           .testTag(ACTIONABLE_BUTTON_TEST_TAG),
-      enabled = interpolatedButtonProperties.enabled.toBoolean(),
+      enabled = buttonProperties.enabled.toBoolean(),
       border = BorderStroke(width = 0.5.dp, color = statusColor.copy(alpha = 0.1f)),
       elevation = null
     ) {
       // Each component here uses a new modifier to avoid inheriting the properties of the parent
-      Icon(
-        imageVector =
-          if (status == ServiceStatus.COMPLETED.name) Icons.Filled.Check else Icons.Filled.Add,
-        contentDescription = null,
-        tint =
-          if (isButtonEnabled)
-            when (status) {
-              ServiceStatus.COMPLETED.name -> SuccessColor
-              else -> statusColor
-            }
-          else DefaultColor,
-        modifier = Modifier.size(16.dp)
-      )
+      val iconTintColor =
+        if (isButtonEnabled)
+          when (status) {
+            ServiceStatus.COMPLETED.name -> SuccessColor
+            else -> statusColor
+          }
+        else DefaultColor
+      if (buttonProperties.startIcon != null) {
+        Image(
+          imageProperties = ImageProperties(imageConfig = buttonProperties.startIcon, size = 16),
+          tint = iconTintColor
+        )
+      } else {
+        Icon(
+          imageVector =
+            if (status == ServiceStatus.COMPLETED.name) Icons.Filled.Check else Icons.Filled.Add,
+          contentDescription = null,
+          tint = iconTintColor,
+          modifier = Modifier.size(16.dp)
+        )
+      }
       Text(
-        text = interpolatedButtonProperties.text ?: "",
+        text = buttonProperties.text ?: "",
         fontWeight = FontWeight.Medium,
         color =
           if (isButtonEnabled)
@@ -171,10 +182,12 @@ fun DisabledActionableButtonPreview() {
       buttonProperties =
         ButtonProperties(
           visible = "true",
-          status = ServiceStatus.COMPLETED.name,
-          text = "Issuing of teenage pads and household due on 23-01-2023",
+          status = ServiceStatus.UPCOMING.name,
+          text = "Issue household bed-nets",
+          contentColor = "#700f2b",
           enabled = "true",
-          buttonType = ButtonType.BIG
+          buttonType = ButtonType.BIG,
+          startIcon = ImageConfig(reference = "ic_walk", type = ICON_TYPE_LOCAL)
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController()

@@ -65,6 +65,7 @@ import retrofit2.Response
 
 @HiltAndroidTest
 class AppSettingViewModelTest : RobolectricTest() {
+
   private val defaultRepository = mockk<DefaultRepository>()
   private val fhirResourceDataSource = mockk<FhirResourceDataSource>()
   private val sharedPreferencesHelper =
@@ -83,7 +84,7 @@ class AppSettingViewModelTest : RobolectricTest() {
         sharedPreferencesHelper = sharedPreferencesHelper,
         configService = configService,
         configurationRegistry = Faker.buildTestConfigurationRegistry(),
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider
+        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider
       )
     )
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
@@ -158,11 +159,11 @@ class AppSettingViewModelTest : RobolectricTest() {
                         configType = "register",
                         fhirResource =
                           FhirResourceConfig(
-                            baseResource = ResourceConfig(resource = "Patient"),
+                            baseResource = ResourceConfig(resource = ResourceType.Patient),
                             relatedResources =
                               listOf(
-                                ResourceConfig(resource = "Encounter"),
-                                ResourceConfig(resource = "Task")
+                                ResourceConfig(resource = ResourceType.Encounter),
+                                ResourceConfig(resource = ResourceType.Task)
                               )
                           )
                       )
@@ -171,7 +172,7 @@ class AppSettingViewModelTest : RobolectricTest() {
                 )
           }
       }
-    coEvery { defaultRepository.create(any(), any()) } returns emptyList()
+    coEvery { defaultRepository.createRemote(any(), any()) } just runs
     coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
     coEvery { configService.provideConfigurationSyncPageSize() } returns 20.toString()
 
@@ -184,7 +185,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     coVerify { appSettingViewModel.fetchComposition(any(), any()) }
     coVerify { fhirResourceDataSource.getResource(any()) }
-    coVerify { defaultRepository.create(any(), any()) }
+    coVerify { defaultRepository.createRemote(any(), any()) }
     coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
 
     Assert.assertEquals(

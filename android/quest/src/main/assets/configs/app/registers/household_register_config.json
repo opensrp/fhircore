@@ -2,6 +2,7 @@
   "appId": "app",
   "configType": "register",
   "id": "householdRegister",
+  "pageSize": 20,
   "fhirResource": {
     "baseResource": {
       "resource": "Group",
@@ -42,10 +43,15 @@
     "relatedResources": [
       {
         "resource": "Patient",
-        "fhirPathExpression": "Group.member.entity",
+        "isRevInclude": false,
+        "searchParameter": "member",
         "relatedResources": [
           {
             "resource": "Condition",
+            "searchParameter": "subject"
+          },
+          {
+            "resource": "CarePlan",
             "searchParameter": "subject"
           },
           {
@@ -92,13 +98,22 @@
       }
     ]
   },
+  "activeResourceFilters": [
+    {
+      "resourceType": "Group",
+      "active": "true"
+    },
+    {
+      "resourceType": "Patient",
+      "active": "true"
+    }
+  ],
   "searchBar": {
     "visible": true,
     "display": "{{ search.name.or.id }}",
     "computedRules": [
       "familyName",
-      "familyId",
-      "practitionerId"
+      "familyId"
     ]
   },
   "registerCard": {
@@ -122,13 +137,6 @@
         "condition": "true",
         "actions": [
           "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
-        ]
-      },
-      {
-        "name": "practitionerId",
-        "condition": "true",
-        "actions": [
-          "data.put('practitionerId', fhirPath.extractValue(Practitioner, \"Practitioner.id.split(\"/\")[1]\"))"
         ]
       },
       {

@@ -46,6 +46,7 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
@@ -56,7 +57,7 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.SDF_D_MMM_YYYY_WITH_COMA
@@ -80,15 +81,16 @@ import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGeneratedMeasureReports
 import org.smartregister.fhircore.engine.util.extension.valueCode
-import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPatientsPagingSource
+import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
+import org.smartregister.fhircore.quest.data.report.measure.MeasureReportSubjectsPagingSource
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
-import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDataMapper
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
+import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDataMapper
 import org.smartregister.fhircore.quest.util.nonNullGetOrDefault
 import timber.log.Timber
 
@@ -102,9 +104,9 @@ constructor(
   val dispatcherProvider: DefaultDispatcherProvider,
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
-  val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper,
+  val measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper,
   val defaultRepository: DefaultRepository,
-  val rulesExecutor: RulesExecutor
+  val resourceDataRulesExecutor: ResourceDataRulesExecutor
 ) : ViewModel() {
 
   val measureReportConfigList: MutableList<MeasureReportConfig> = mutableListOf()
@@ -129,7 +131,7 @@ constructor(
 
   val searchTextState: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue())
 
-  val patientsData: MutableStateFlow<Flow<PagingData<MeasureReportPatientViewData>>> =
+  val subjectData: MutableStateFlow<Flow<PagingData<MeasureReportSubjectViewData>>> =
     MutableStateFlow(emptyFlow())
 
   fun defaultDateRangeState() =
@@ -150,7 +152,7 @@ constructor(
           measureReportConfiguration = measureReportConfiguration,
           registerConfiguration = registerConfiguration,
           registerRepository = registerRepository,
-          rulesExecutor = rulesExecutor
+          resourceDataRulesExecutor = resourceDataRulesExecutor
         )
       }
       .flow
@@ -203,27 +205,35 @@ constructor(
         with(event.measureReportType) {
           reportTypeState.value = this
           if (this == MeasureReport.MeasureReportType.INDIVIDUAL) {
-            event.navController.navigate(MeasureReportNavigationScreen.PatientsList.route)
+            event.navController.navigate(MeasureReportNavigationScreen.SubjectsList.route)
           } else {
-            // Reset previously selected patient
+            // Reset previously selected subject
             reportTypeSelectorUiState.value =
-              reportTypeSelectorUiState.value.copy(patientViewData = null)
+              reportTypeSelectorUiState.value.copy(subjectViewData = mutableSetOf())
           }
         }
       }
-      is MeasureReportEvent.OnPatientSelected -> // Reset previously selected patient
+      is MeasureReportEvent.OnSubjectSelected -> // Reset previously selected subject
         //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
       {
         reportTypeSelectorUiState.value =
-          reportTypeSelectorUiState.value.copy(patientViewData = event.patientViewData)
+          reportTypeSelectorUiState.value.copy().apply {
+            subjectViewData.add(event.subjectViewData)
+          }
       }
-      is MeasureReportEvent.OnSearchTextChanged -> // Reset previously selected patient
+      is MeasureReportEvent.OnSubjectRemoved -> {
+        reportTypeSelectorUiState.value =
+          reportTypeSelectorUiState.value.copy().apply {
+            subjectViewData.remove(event.subjectViewData)
+          }
+      }
+      is MeasureReportEvent.OnSearchTextChanged -> // Reset previously selected subject
         //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
       {
-        patientsData.value =
-          retrievePatients(event.reportId).map {
-            pagingData: PagingData<MeasureReportPatientViewData> ->
-            pagingData.filter { it.name.contains(event.searchText, ignoreCase = true) }
+        subjectData.value =
+          retrieveSubjects(event.reportId).map {
+            pagingData: PagingData<MeasureReportSubjectViewData> ->
+            pagingData.filter { it.display.contains(event.searchText, ignoreCase = true) }
           }
       }
     }
@@ -234,31 +244,31 @@ constructor(
     measureReportPopulationResults.value = _measureReportPopulationResultList
   }
 
-  fun retrievePatients(reportId: String): Flow<PagingData<MeasureReportPatientViewData>> {
+  fun retrieveSubjects(reportId: String): Flow<PagingData<MeasureReportSubjectViewData>> {
     val measureReportConfig = retrieveMeasureReportConfiguration(reportId)
     val registerConfiguration =
       configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
         ConfigType.Register,
         measureReportConfig.registerId
       )
-    patientsData.value =
+    subjectData.value =
       Pager(
           config = PagingConfig(DEFAULT_PAGE_SIZE),
           pagingSourceFactory = {
-            MeasureReportPatientsPagingSource(
+            MeasureReportSubjectsPagingSource(
               MeasureReportRepository(
                 measureReportConfiguration = measureReportConfig,
                 registerConfiguration = registerConfiguration,
                 registerRepository = registerRepository,
-                rulesExecutor = rulesExecutor
+                resourceDataRulesExecutor = resourceDataRulesExecutor
               ),
-              measureReportPatientViewDataMapper,
+              measureReportSubjectViewDataMapper,
             )
           }
         )
         .flow
         .cachedIn(viewModelScope)
-    return patientsData.value
+    return subjectData.value
   }
 
   // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
@@ -287,12 +297,14 @@ constructor(
             toggleProgressIndicatorVisibility(true)
             val result =
               measureReportConfigList.flatMap { config ->
+                val subjects = fetchSubjects(config)
                 val existing =
-                  retrievePreviouslyGeneratedMeasureReports<MeasureReport>(
+                  retrievePreviouslyGeneratedMeasureReports(
                     fhirEngine,
                     startDateFormatted,
                     endDateFormatted,
-                    config.url
+                    config.url,
+                    subjects
                   )
 
                 // if report is of current month or does not exist generate a new one and replace
@@ -304,11 +316,12 @@ constructor(
                   withContext(dispatcherProvider.io()) {
                     fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
                   }
+
                   evaluatePopulationMeasure(
                     config.url,
                     startDateFormatted,
                     endDateFormatted,
-                    config.subjectXFhirQuery,
+                    subjects,
                     existing
                   )
                 } else existing
@@ -335,28 +348,36 @@ constructor(
     }
   }
 
-  private suspend fun evaluatePopulationMeasure(
-    measureUrl: String,
-    startDateFormatted: String,
-    endDateFormatted: String,
-    subjectXFhirQuery: String?,
-    existing: List<MeasureReport>
-  ): List<MeasureReport> {
-    val measureReport = mutableListOf<MeasureReport>()
-    withContext(dispatcherProvider.io()) {
-      if (subjectXFhirQuery?.isNotEmpty() == true) {
-        fhirEngine
-          .search(subjectXFhirQuery)
-          .map {
-            val subject = "${it.resourceType}/${it.logicalId}"
+  private suspend fun fetchSubjects(config: MeasureReportConfig): List<String> {
+    return reportTypeSelectorUiState.value.subjectViewData
+      .ifEmpty {
+        if (config.subjectXFhirQuery?.isNotEmpty() == true) {
+          fhirEngine.search(config.subjectXFhirQuery!!).map {
             // TODO a hack to prevent missing subject in case of Group based reports where
             // MeasureEvaluator looks for Group members and skips the Group itself
             if (it is Group && !it.hasMember()) {
               it.addMember(Group.GroupMemberComponent(it.asReference()))
-              fhirEngine.update(it)
+              defaultRepository.update(it)
             }
-            runMeasureReport(measureUrl, SUBJECT, startDateFormatted, endDateFormatted, subject)
+            MeasureReportSubjectViewData(it.resourceType, it.logicalId, it.valueToString())
           }
+        } else emptyList()
+      }
+      .map { "${it.type.name}/${it.logicalId}" }
+  }
+
+  private suspend fun evaluatePopulationMeasure(
+    measureUrl: String,
+    startDateFormatted: String,
+    endDateFormatted: String,
+    subjects: List<String>,
+    existing: List<MeasureReport>
+  ): List<MeasureReport> {
+    val measureReport = mutableListOf<MeasureReport>()
+    withContext(dispatcherProvider.io()) {
+      if (subjects.isNotEmpty()) {
+        subjects
+          .map { runMeasureReport(measureUrl, SUBJECT, startDateFormatted, endDateFormatted, it) }
           .forEach { measureReport.add(it) }
       } else
         runMeasureReport(measureUrl, POPULATION, startDateFormatted, endDateFormatted, null).also {
@@ -434,6 +455,7 @@ constructor(
             when (resource) {
               is Patient -> resource.nameFirstRep.nameAsSingleString
               is Group -> resource.name
+              is Practitioner -> resource.nameFirstRep.nameAsSingleString
               else ->
                 throw UnsupportedOperationException(
                   "${resource.resourceType} as individual subject not allowed"
@@ -587,6 +609,10 @@ constructor(
   /** This function lists the fixed range selection in months for the entire year */
   fun showFixedRangeSelection(reportId: String) =
     retrieveMeasureReportConfiguration(reportId).showFixedRangeSelection == true
+
+  /** This function lists the subject selection in report selector */
+  fun showSubjectSelection(reportId: String) =
+    retrieveMeasureReportConfiguration(reportId).showSubjectSelection == true
 
   fun resetState() {
     reportTypeSelectorUiState.value = ReportTypeSelectorUiState()

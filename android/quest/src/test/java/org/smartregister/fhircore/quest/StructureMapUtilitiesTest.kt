@@ -106,7 +106,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
     structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
 
-    Assert.assertEquals(4, targetResource.entry.size)
+    Assert.assertEquals(7, targetResource.entry.size)
     Assert.assertEquals("Condition", targetResource.entry[0].resource.resourceType.toString())
     Assert.assertEquals("Condition", targetResource.entry[1].resource.resourceType.toString())
   }
@@ -199,7 +199,9 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val immunization = iParser.parseResource(Immunization::class.java, immunizationJson)
     var questionnaireResponse: QuestionnaireResponse
 
-    runBlocking { questionnaireResponse = ResourceMapper.populate(questionnaire, immunization) }
+    runBlocking {
+      questionnaireResponse = ResourceMapper.populate(questionnaire, immunization, Patient())
+    }
 
     val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     val contextR4 =

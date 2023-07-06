@@ -19,18 +19,17 @@ package org.smartregister.fhircore.engine.util.extension
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.search
 import java.time.Duration
 import java.util.Date
 import java.util.LinkedList
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.abs
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
@@ -38,12 +37,13 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.PrimitiveType
 import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Questionnaire
@@ -54,6 +54,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
+import org.joda.time.Instant
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -85,6 +86,14 @@ fun Base?.valueToString(): String {
       this.given.firstOrNull().let {
         (if (it != null) "${it.valueToString()} " else "").plus(this.family)
       }
+    this is Patient ->
+      this.nameFirstRep.nameAsSingleString +
+        ", " +
+        this.gender.name.first() +
+        ", " +
+        this.birthDate.yearsPassed()
+    this is Practitioner -> this.nameFirstRep.nameAsSingleString
+    this is Group -> this.name
     else -> this.toString()
   }
 }
@@ -304,17 +313,14 @@ fun String.resourceClassType(): Class<out Resource> =
  * A function that extracts only the UUID part of a resource logicalId.
  *
  * Examples:
- *
  * 1. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/2" returns
- * "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
  *
+ * ```
+ *    "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
+ * ```
  * 2. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4" returns "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
  */
 fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")
-
-fun Resource.addTags(tags: List<Coding>) {
-  tags.forEach { this.meta.addTag(it) }
-}
 
 /**
  * You provide a suspended function in Kotlin, which updates the due date of a task's dependent
@@ -329,43 +335,36 @@ fun Resource.addTags(tags: List<Coding>) {
  *
  * @param defaultRepository An instance of DefaultRepository
  */
-suspend fun Task.updateDependentTaskDueDate(defaultRepository: DefaultRepository): Task {
+suspend fun Task.updateDependentTaskDueDate(
+  defaultRepository: DefaultRepository,
+  fhirEngine: FhirEngine
+): Task {
   return apply {
-    if (hasPartOf()) {
-      partOf.forEach { task ->
-        val dependentTask =
-          defaultRepository.loadResource<Task>(task.reference.extractLogicalIdUuid())
-        if (dependentTask != null &&
-            dependentTask.hasOutput() &&
-            dependentTask.executionPeriod.hasStart() &&
-            dependentTask.hasInput() &&
-            (dependentTask.isDue() || dependentTask.isOverDue() || dependentTask.isUpcoming())
+    val dependentTasks =
+      fhirEngine.search<Task> {
+        filter(referenceParameter = ReferenceClientParam(PARTOF), { value = id })
+      }
+    dependentTasks.forEach { dependantTask ->
+      dependantTask.partOf.forEach { _ ->
+        if (dependantTask.executionPeriod.hasStart() &&
+            dependantTask.hasInput() &&
+            dependantTask.status.equals(Task.TaskStatus.REQUESTED)
         ) {
-          dependentTask.output?.forEach { dependentTaskOutputValue ->
-            if (dependentTaskOutputValue.hasValue()) {
-              val dependentTaskReference =
-                Reference(
-                  Json.decodeFromString<JsonObject>(dependentTaskOutputValue.value.toString())[
-                      REFERENCE]
-                    ?.jsonPrimitive
-                    ?.content
-                )
-              val encounterResource =
-                defaultRepository.loadResource<Encounter>(
-                  dependentTaskReference.reference.extractLogicalIdUuid()
-                )
-              encounterResource?.partOf?.reference?.let { partOfReference ->
-                try {
-                  val immunizationResource =
-                    defaultRepository.loadResource<Immunization>(
-                      partOfReference.extractLogicalIdUuid()
-                    )
-                  immunizationResource?.occurrenceDateTimeType?.dateTimeValue()
-                    ?.valueAsCalendar
-                    ?.let { immunizationDate ->
-                      val dependentTaskStartDate = dependentTask.executionPeriod.start
-                      dependentTask.input.forEach {
-                        val dependentTaskInputDate = it.value.toString().toInt()
+          this.output.forEach { taskOp ->
+            try {
+              val taskOutReference = taskOp.value as Reference
+              if (taskOp.value != null) {
+                if (taskOutReference.extractType()?.equals(ResourceType.Immunization) == true) {
+                  val immunizationRef = taskOutReference.reference
+                  val immunization =
+                    fhirEngine.get<Immunization>(immunizationRef.extractLogicalIdUuid())
+                  if (immunization.isResource && immunization.hasOccurrence()) {
+                    val dependentTaskStartDate = dependantTask.executionPeriod.start
+                    val immunizationDate =
+                      Instant.parse(immunization.occurrence.valueToString()).toDate()
+                    dependantTask.input.onEach { input ->
+                      if (input.value.isPrimitive) {
+                        val dependentTaskInputDuration = input.value.valueToString().toInt()
                         val difference =
                           abs(
                             Duration.between(
@@ -374,29 +373,27 @@ suspend fun Task.updateDependentTaskDueDate(defaultRepository: DefaultRepository
                               )
                               .toDays()
                           )
-                        if (difference < dependentTaskInputDate &&
-                            dependentTask.executionPeriod.hasStart()
-                        ) {
-                          dependentTask
+                        if (difference < dependentTaskInputDuration) {
+                          dependantTask
                             .apply {
                               executionPeriod.start =
-                                Date.from(immunizationDate.toInstant())
-                                  .plusDays(dependentTaskInputDate)
+                                Date.from(immunizationDate?.toInstant())
+                                  .plusDays(dependentTaskInputDuration)
                             }
                             .run {
                               defaultRepository.addOrUpdate(
                                 addMandatoryTags = true,
-                                resource = dependentTask
+                                resource = dependantTask
                               )
                             }
                         }
                       }
                     }
-                } catch (e: ClassCastException) {
-                  Timber.e(e)
-                  return@forEach
+                  }
                 }
               }
+            } catch (ex: Exception) {
+              Timber.e(ex)
             }
           }
         }
@@ -406,3 +403,5 @@ suspend fun Task.updateDependentTaskDueDate(defaultRepository: DefaultRepository
 }
 
 const val REFERENCE = "reference"
+const val PARTOF = "part-of"
+const val ENCOUNTER = "encounter"

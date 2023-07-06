@@ -16,16 +16,25 @@
 
 package org.smartregister.fhircore.engine.rulesengine
 
+import com.google.android.fhir.search.Order
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Period
+import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
+import org.joda.time.DateTime
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
+import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -33,6 +42,24 @@ class RulesEngineServiceTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @Inject lateinit var rulesFactory: RulesFactory
   private lateinit var rulesEngineService: RulesFactory.RulesEngineService
+  private val tasks =
+    listOf(
+      Task().apply {
+        id = "task1"
+        description = "Issue bed net"
+        executionPeriod = Period().apply { start = DateTime.now().minusDays(2).toDate() }
+      },
+      Task().apply {
+        id = "task2"
+        description = "Malaria vaccination"
+        executionPeriod = Period().apply { start = DateTime.now().toDate() }
+      },
+      Task().apply {
+        id = "task3"
+        description = "Covid vaccination"
+        executionPeriod = Period().apply { start = DateTime.now().minusDays(1).toDate() }
+      }
+    )
 
   @Before
   fun setUp() {
@@ -70,9 +97,9 @@ class RulesEngineServiceTest : RobolectricTest() {
     val totalCount =
       rulesEngineService.computeTotalCount(
         listOf(
-          RelatedResourceCount("abc", 20),
-          RelatedResourceCount("zyx", 40),
-          RelatedResourceCount("xyz", 40)
+          RelatedResourceCount(relatedResourceType = ResourceType.Task, "abc", 20),
+          RelatedResourceCount(relatedResourceType = ResourceType.Task, "zyx", 40),
+          RelatedResourceCount(relatedResourceType = ResourceType.Task, "xyz", 40)
         )
       )
     Assert.assertEquals(100, totalCount)
@@ -85,9 +112,9 @@ class RulesEngineServiceTest : RobolectricTest() {
   fun testRetrieveCountShouldReturnExactCount() {
     val relatedResourceCounts =
       listOf(
-        RelatedResourceCount("abc", 20),
-        RelatedResourceCount("zyx", 40),
-        RelatedResourceCount("xyz", 40)
+        RelatedResourceCount(relatedResourceType = ResourceType.Task, "abc", 20),
+        RelatedResourceCount(relatedResourceType = ResourceType.Task, "zyx", 40),
+        RelatedResourceCount(relatedResourceType = ResourceType.Task, "xyz", 40)
       )
     val theCount = rulesEngineService.retrieveCount("xyz", relatedResourceCounts)
     Assert.assertEquals(40, theCount)
@@ -95,5 +122,159 @@ class RulesEngineServiceTest : RobolectricTest() {
     Assert.assertEquals(0, rulesEngineService.retrieveCount("abz", relatedResourceCounts))
     Assert.assertEquals(0, rulesEngineService.retrieveCount("abc", emptyList()))
     Assert.assertEquals(0, rulesEngineService.retrieveCount("abc", null))
+  }
+
+  @Test
+  fun testSortingResourcesShouldReturnListOfSortedResourcesInAscendingOrder() {
+    val sortedResources =
+      rulesEngineService.sortResources(
+        tasks,
+        "Task.description",
+        Enumerations.DataType.STRING,
+        Order.ASCENDING
+      )
+    Assert.assertEquals(3, sortedResources?.size)
+    Assert.assertTrue(
+      listOf("Covid vaccination", "Issue bed net", "Malaria vaccination").sorted() ==
+        sortedResources?.map { (it as Task).description }
+    )
+    val sortedByDateResources =
+      rulesEngineService.sortResources(
+        resources = tasks,
+        fhirPathExpression = "Task.executionPeriod.start",
+        dataType = Enumerations.DataType.DATETIME,
+        order = Order.ASCENDING
+      )
+    Assert.assertEquals(listOf("task1", "task3", "task2"), sortedByDateResources?.map { it.id })
+  }
+
+  @Test
+  fun testSortingResourcesShouldReturnListOfSortedResourcesInDescendingOrder() {
+    val sortedResources =
+      rulesEngineService.sortResources(
+        tasks,
+        "Task.description",
+        Enumerations.DataType.STRING,
+        Order.DESCENDING
+      )
+    Assert.assertEquals(3, sortedResources?.size)
+    Assert.assertTrue(
+      listOf("Covid vaccination", "Issue bed net", "Malaria vaccination").reversed() ==
+        sortedResources?.map { (it as Task).description }
+    )
+    val sortedByDateResources =
+      rulesEngineService.sortResources(
+        tasks,
+        "Task.executionPeriod.start",
+        Enumerations.DataType.DATETIME,
+        Order.DESCENDING
+      )
+    Assert.assertEquals(
+      listOf("task1", "task3", "task2").reversed(),
+      sortedByDateResources?.map { it.id }
+    )
+  }
+
+  @Test
+  fun `generateTaskServiceStatus() should return UPCOMING when Task#status is NULL`() {
+    val task = Task().apply { status = Task.TaskStatus.NULL }
+
+    Assert.assertEquals(
+      ServiceStatus.UPCOMING.name,
+      rulesEngineService.generateTaskServiceStatus(task)
+    )
+  }
+
+  @Test
+  fun `generateTaskServiceStatus() should return UPCOMING when Task#status is Requested`() {
+    val task = Task().apply { status = Task.TaskStatus.REQUESTED }
+
+    Assert.assertEquals(
+      ServiceStatus.UPCOMING.name,
+      rulesEngineService.generateTaskServiceStatus(task)
+    )
+  }
+
+  @Test
+  fun `generateTaskServiceStatus() should return DUE when Task#status is READY`() {
+    val task = Task().apply { status = Task.TaskStatus.READY }
+
+    Assert.assertEquals(ServiceStatus.DUE.name, rulesEngineService.generateTaskServiceStatus(task))
+  }
+
+  @Test
+  fun `generateTaskServiceStatus() should return INPROGRESS when Task#status is INPROGRESS`() {
+    val task = Task().apply { status = Task.TaskStatus.INPROGRESS }
+
+    Assert.assertEquals(
+      ServiceStatus.IN_PROGRESS.name,
+      rulesEngineService.generateTaskServiceStatus(task)
+    )
+  }
+
+  @Test
+  fun `generateTaskServiceStatus() should return COMPLETED when Task#status is COMPLETED`() {
+    val task = Task().apply { status = Task.TaskStatus.COMPLETED }
+
+    Assert.assertEquals(
+      ServiceStatus.COMPLETED.name,
+      rulesEngineService.generateTaskServiceStatus(task)
+    )
+  }
+
+  @Test
+  fun `generateTaskServiceStatus() should return EXPIRED when Task#status is CANCELLED`() {
+    val task = Task().apply { status = Task.TaskStatus.CANCELLED }
+
+    Assert.assertEquals(
+      ServiceStatus.EXPIRED.name,
+      rulesEngineService.generateTaskServiceStatus(task)
+    )
+  }
+
+  @Test
+  fun `generateTaskServiceStatus() should return OVERDUE when Task#executionPeriod#hasEnd() and Task#executionPeriod#end#before(today())`() {
+
+    val sdf = SimpleDateFormat("dd/MM/yyyy")
+    val startDate: Date? = sdf.parse("01/01/2023")
+    val endDate: Date? = sdf.parse("01/02/2023")
+
+    val task =
+      Task().apply {
+        status = Task.TaskStatus.INPROGRESS
+        executionPeriod =
+          Period().apply {
+            start = startDate
+            end = endDate
+          }
+      }
+
+    Assert.assertEquals(
+      ServiceStatus.OVERDUE.name,
+      rulesEngineService.generateTaskServiceStatus(task)
+    )
+  }
+
+  @Test
+  fun `generateTaskServiceStatus() should not return OVERDUE when Task#executionPeriod#hasEnd() andTask#executionPeriod#end#before(today()) and Task#status is not INPROGRESS or READY`() {
+
+    val sdf = SimpleDateFormat("dd/MM/yyyy")
+    val startDate: Date? = sdf.parse("01/01/2023")
+    val endDate: Date? = sdf.parse("01/02/2023")
+
+    val task =
+      Task().apply {
+        status = Task.TaskStatus.REQUESTED
+        executionPeriod =
+          Period().apply {
+            start = startDate
+            end = endDate
+          }
+      }
+
+    Assert.assertEquals(
+      ServiceStatus.UPCOMING.name,
+      rulesEngineService.generateTaskServiceStatus(task)
+    )
   }
 }

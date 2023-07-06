@@ -167,6 +167,13 @@
       ]
     },
     {
+      "name": "isAdult",
+      "condition": "true",
+      "actions": [
+        "data.put('isAdult', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate <= today() - 12 'years')\"))"
+      ]
+    },
+    {
       "name": "canBearChild",
       "condition": "true",
       "actions": [
@@ -844,6 +851,13 @@
       "actions": [
         "data.put('rdtStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/24dcbee9-a665-4b3e-b97d-61b3ff675589'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
+    },
+    {
+      "name": "latestTask",
+      "condition": "true",
+      "actions": [
+        "data.put('latestTask', service.sortResources(availableTasks, 'Task.executionPeriod.start', 'DATETIME', 'DESCENDING').get(0))"
+      ]
     }
   ],
   "views": [
@@ -973,7 +987,12 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))"
+                  "conditionalFhirPathExpression": "(Task.code.coding.code='840534001' or (Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))",
+                  "sortConfig": {
+                    "dataType": "DATETIME",
+                    "fhirPathExpression": "Task.executionPeriod.start",
+                    "order": "ASCENDING"
+                  }
                 }
               ],
               "emptyList": {
@@ -1061,11 +1080,20 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
+                          "resourceType": "Patient",
                           "resourceIdentifier": "@{taskFor}"
                         },
                         "params": [
+                          {
+                            "paramType": "QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE",
+                            "resourceType": "Patient",
+                            "value": "@{patientId}",
+                            "key": "resourcePatient",
+                            "dataType": "STRING"
+                          },
                           {
                             "paramType": "PREPOPULATE",
                             "linkId": "e215bd25-8962-4ef1-8040-149cbb653781",
@@ -1242,7 +1270,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '0_d' and Task.executionPeriod.start > today() - 7 days"
+                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_birth'"
                 }
               ],
               "emptyList": {
@@ -1330,6 +1358,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -1362,7 +1391,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '6_wk' and Task.executionPeriod.start > today() - 7 days"
+                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_6_weeks'"
                 }
               ],
               "emptyList": {
@@ -1450,6 +1479,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -1482,7 +1512,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '10_wk' and Task.executionPeriod.start > today() - 7 days"
+                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_10_weeks'"
                 }
               ],
               "emptyList": {
@@ -1570,6 +1600,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -1602,7 +1633,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '14_wk' and Task.executionPeriod.start > today() - 7 days"
+                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_14_weeks'"
                 }
               ],
               "emptyList": {
@@ -1690,6 +1721,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -1722,7 +1754,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '9_mo' and Task.executionPeriod.start > today() - 7 days"
+                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_9_months'"
                 }
               ],
               "emptyList": {
@@ -1810,6 +1842,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -1842,7 +1875,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '15_mo' and Task.executionPeriod.start > today() - 7 days"
+                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_15_months'"
                 }
               ],
               "emptyList": {
@@ -1930,6 +1963,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -1962,7 +1996,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '108_mo' and Task.executionPeriod.start > today() - 7 days"
+                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_9_years'"
                 }
               ],
               "emptyList": {
@@ -2049,6 +2083,7 @@
                         "workflow": "LAUNCH_QUESTIONNAIRE",
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
+
                           "title": "@{taskDescription}",
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
@@ -2082,7 +2117,7 @@
                   "id": "availableTasks",
                   "relatedResourceId": "availableTasks",
                   "resourceType": "Task",
-                  "conditionalFhirPathExpression": "Task.groupIdentifier.value = '114_wk' and Task.executionPeriod.start > today() - 7 days"
+                  "conditionalFhirPathExpression": "Task.reasonCode.coding[0].code = 'immunization_at_9_half_years'"
                 }
               ],
               "emptyList": {
@@ -2170,6 +2205,7 @@
                         "questionnaire": {
                           "id": "@{taskQuestionnaireId}",
                           "title": "@{taskDescription}",
+
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
@@ -2636,6 +2672,33 @@
       ]
     },
     {
+      "title": "Record Covid Vaccination",
+      "titleColor": "@{patientTextColor}",
+      "visible": "@{isAdult}",
+      "enabled": "@{patientActive}",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "e8572c86-065d-11ee-be56-0242ac120002",
+            "title": "Record Covid Vaccination",
+            "resourceIdentifier": "@{patientId}",
+            "planDefinitions": [
+              "d959dc24-065d-11ee-be56-0242ac120002"
+            ],
+            "params": [
+              {
+                "key": "familyLogicalId",
+                "value": "@{familyLogicalId}",
+                "paramType": "UPDATE_DATE_ON_EDIT"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
       "title": "Register Pregnancy",
       "titleColor": "@{patientTextColor}",
       "visible": "@{canBearChild}",
@@ -2865,31 +2928,6 @@
       ]
     },
     {
-      "title": "Record All",
-      "titleColor": "@{patientTextColor}",
-      "visible": "true",
-      "enabled": "true",
-      "actions": [
-        {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "questionnaire": {
-            "id": "239954",
-            "resourceIdentifier": "@{patientId}",
-            "title": "Record All",
-            "params": [
-              {
-                "paramType": "UPDATE_DATE_ON_EDIT",
-                "key": "familyLogicalId",
-                "value": "@{familyLogicalId}"
-              }
-            ],
-            "refreshContent": true
-          }
-        }
-      ]
-    },
-    {
       "title": "Register with Disease",
       "titleColor": "@{patientTextColor}",
       "visible": "true",
@@ -2977,8 +3015,7 @@
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}"
               }
-            ],
-            "refreshContent": true
+            ]
           }
         }
       ]

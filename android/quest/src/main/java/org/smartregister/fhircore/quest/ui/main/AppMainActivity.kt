@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -30,6 +31,7 @@ import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
+import io.sentry.android.navigation.SentryNavigationListener
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -43,6 +45,7 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.addDateTimeIndex
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
@@ -64,12 +67,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
   @Inject lateinit var fhirEngine: FhirEngine
   @Inject lateinit var eventBus: EventBus
-
-  val appMainViewModel by viewModels<AppMainViewModel>()
-
-  private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
-
   lateinit var navHostFragment: NavHostFragment
+  val appMainViewModel by viewModels<AppMainViewModel>()
+  private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
+  private val sentryNavListener =
+    SentryNavigationListener(enableNavigationBreadcrumbs = true, enableNavigationTracing = true)
 
   override val startForResult =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
@@ -119,20 +121,29 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
     // Setup the drawer and schedule jobs
     appMainViewModel.run {
-      retrieveAppMainUiState()
+      lifecycleScope.launch {
+        retrieveAppMainUiState()
+        if (isDeviceOnline())
+          syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
+        else showToast(getString(R.string.sync_failed), Toast.LENGTH_LONG)
+      }
       schedulePeriodicJobs()
     }
-
-    runSync(syncBroadcaster)
   }
 
   override fun onResume() {
     super.onResume()
+    navHostFragment.navController.addOnDestinationChangedListener(sentryNavListener)
     syncListenerManager.registerSyncListener(this, lifecycle)
 
     appMainViewModel.viewModelScope.launch(dispatcherProvider.io()) {
       fhirEngine.addDateTimeIndex()
     }
+  }
+
+  override fun onPause() {
+    super.onPause()
+    navHostFragment.navController.removeOnDestinationChangedListener(sentryNavListener)
   }
 
   override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
@@ -185,17 +196,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       }
       else -> {
         /*Do nothing */
-      }
-    }
-  }
-
-  private fun runSync(syncBroadcaster: SyncBroadcaster) {
-    syncBroadcaster.run {
-      if (isDeviceOnline()) {
-        with(appMainViewModel.syncSharedFlow) {
-          runSync(this)
-          schedulePeriodicSync(this)
-        }
       }
     }
   }

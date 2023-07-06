@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
 data class CompoundTextProperties(
@@ -49,7 +50,21 @@ data class CompoundTextProperties(
   val colorOpacity: Float = 1f,
   val textCase: TextCase? = null,
   val overflow: TextOverFlow? = null
-) : ViewProperties()
+) : ViewProperties() {
+  override fun interpolate(computedValuesMap: Map<String, Any>): CompoundTextProperties {
+    return this.copy(
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap),
+      primaryText = primaryText?.interpolate(computedValuesMap),
+      secondaryText = secondaryText?.interpolate(computedValuesMap),
+      primaryTextColor = primaryTextColor?.interpolate(computedValuesMap),
+      primaryTextBackgroundColor = primaryTextBackgroundColor?.interpolate(computedValuesMap),
+      secondaryTextColor = secondaryTextColor?.interpolate(computedValuesMap),
+      secondaryTextBackgroundColor = secondaryTextBackgroundColor?.interpolate(computedValuesMap),
+      separator = separator?.interpolate(computedValuesMap)
+    )
+  }
+}
 
 enum class TextFontWeight(val fontWeight: FontWeight) {
   THIN(FontWeight.Thin),
@@ -67,6 +82,7 @@ enum class TextCase {
   UPPER_CASE,
   LOWER_CASE,
   CAMEL_CASE,
+  TITLE_CASE
 }
 
 enum class TextOverFlow {

@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResult
 import androidx.compose.material.ExperimentalMaterialApi
@@ -32,24 +31,19 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
-import io.mockk.verify
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
@@ -60,7 +54,7 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 @HiltAndroidTest
 class AppMainActivityTest : ActivityRobolectricTest() {
 
-  @get:Rule val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
@@ -218,51 +212,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testRunSyncWhenDeviceIsOnline() {
-
-    mockkStatic(Context::isDeviceOnline)
-
-    every { appMainActivity.isDeviceOnline() } returns true
-
-    val syncBroadcaster =
-      mockk<SyncBroadcaster> {
-        every { runSync(any()) } returns Unit
-        every { schedulePeriodicSync(any()) } returns Unit
-      }
-
-    ReflectionHelpers.callInstanceMethod<Unit>(
-      appMainActivity,
-      "runSync",
-      ReflectionHelpers.ClassParameter(SyncBroadcaster::class.java, syncBroadcaster)
-    )
-
-    verify(exactly = 1) { syncBroadcaster.runSync(any()) }
-    verify(exactly = 1) { syncBroadcaster.schedulePeriodicSync(any()) }
-  }
-
-  @Test
-  fun testDoNotRunSyncWhenDeviceIsOffline() {
-
-    mockkStatic(Context::isDeviceOnline)
-
-    every { appMainActivity.isDeviceOnline() } returns false
-
-    val syncBroadcaster = mockk<SyncBroadcaster>()
-
-    ReflectionHelpers.callInstanceMethod<Unit>(
-      appMainActivity,
-      "runSync",
-      ReflectionHelpers.ClassParameter(SyncBroadcaster::class.java, syncBroadcaster)
-    )
-
-    verify(exactly = 0) { syncBroadcaster.runSync(any()) }
-    verify(exactly = 0) { syncBroadcaster.schedulePeriodicSync(any()) }
-  }
-
-  @Test
   fun testStartForResult() {
     val event = appMainActivity.startForResult
-
     Assert.assertNotNull(event)
   }
 }
