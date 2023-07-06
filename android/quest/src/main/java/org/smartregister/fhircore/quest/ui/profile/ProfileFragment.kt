@@ -98,7 +98,7 @@ class ProfileFragment : Fragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
-        // Each profile should have unique eventId
+        // Each profile should have a unique eventId
         eventBus
           .events
           .getFor(MainNavigationScreen.Profile.eventId(profileFragmentArgs.profileId))
