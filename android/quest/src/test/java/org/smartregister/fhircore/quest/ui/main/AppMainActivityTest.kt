@@ -152,6 +152,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnSubmitQuestionnaireShouldUpdateLiveData() = runTest {
+    every { eventBus.events } returns mockk()
+    coEvery { eventBus.triggerEvent(any()) } just runs
     appMainActivity.onSubmitQuestionnaire(
       ActivityResult(
         -1,
