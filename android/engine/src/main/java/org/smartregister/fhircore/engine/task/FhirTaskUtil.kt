@@ -147,7 +147,7 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
   }
 
   /**
-   * Check in the task is part of another task and if so check if the parent task is
+   * Check if the task is part of another task and if so check if the parent task is
    * completed,cancelled,failed or entered in error.
    */
   private suspend fun Task.preReqConditionSatisfied() =
