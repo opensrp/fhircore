@@ -902,6 +902,43 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertEquals("resolved", capturedCode.display)
   }
 
+  // TODO Refactor/Remove after https://github.com/opensrp/fhircore/issues/2488
+  @Test
+  fun testCloseResourceUpdatesCorrectConditionStatusForCloseSickChildCondition() {
+    val condition =
+      Condition().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        clinicalStatus = null
+        onset =
+          DateTimeType(
+            Date.from(
+              java.time.LocalDate.now()
+                .minusDays(30)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+            )
+          )
+      }
+    coEvery { fhirEngine.update(any()) } just runs
+    val conditionSlot = slot<Condition>()
+
+    runBlocking {
+      defaultRepository.closeResource(
+        condition,
+        ResourceConfig(
+          id = DefaultRepository.SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID,
+          resource = ResourceType.Condition
+        )
+      )
+    }
+    coVerify { fhirEngine.update(capture(conditionSlot)) }
+    val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
+    Assert.assertEquals("370996005", capturedCode.code)
+    Assert.assertEquals("http://www.snomed.org/", capturedCode.system)
+    Assert.assertEquals("resolved", capturedCode.display)
+  }
+
   @Test
   fun `createRemote() should correctly invoke FhirEngine#createRemote`() {
     val resource = spyk(Patient())
