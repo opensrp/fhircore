@@ -72,14 +72,16 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
     savedInstanceState: Bundle?
   ): View? {
     Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
-    geoWidgetConfiguration =
-      configurationRegistry.retrieveConfiguration(
-        ConfigType.GeoWidget,
-        geoWidgetActivityArgs.configId
-      )
+    geoWidgetConfiguration = geoWidgetConfiguration()
 
     return setupViews()
   }
+
+  private fun geoWidgetConfiguration(): GeoWidgetConfiguration =
+    configurationRegistry.retrieveConfiguration(
+      ConfigType.GeoWidget,
+      geoWidgetActivityArgs.configId
+    )
 
   /** Create the fragment views. Add the toolbar and KujakuMapView to a LinearLayout */
   private fun setupViews(): LinearLayout {

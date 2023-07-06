@@ -16,11 +16,14 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.os.Looper
+import android.widget.LinearLayout
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
+import androidx.navigation.NavArgsLazy
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.Point
@@ -50,11 +53,12 @@ import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfig
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.shadows.ShadowConnectivityReceiver
 import org.smartregister.fhircore.geowidget.shadows.ShadowKujakuMapView
+import org.smartregister.fhircore.geowidget.shadows.ShadowMapbox
 
 @RunWith(RobolectricTestRunner::class)
 @Config(
   sdk = [Build.VERSION_CODES.O_MR1],
-  shadows = [ShadowConnectivityReceiver::class, ShadowKujakuMapView::class],
+  shadows = [ShadowConnectivityReceiver::class, ShadowKujakuMapView::class, ShadowMapbox::class],
   application = HiltTestApplication::class
 )
 @HiltAndroidTest
@@ -68,6 +72,7 @@ class GeoWidgetFragmentTest {
   @Before
   fun setup() {
     hiltRule.inject()
+
     Robolectric.buildActivity(GeoWidgetTestActivity::class.java).create().resume().get()
 
     geowidgetFragment = GeoWidgetFragment()
@@ -242,5 +247,89 @@ class GeoWidgetFragmentTest {
     geowidgetFragment.zoomToPointsOnMap(featureCollection)
 
     verify { kujakuMapView.getMapAsync(any()) }
+  }
+
+  @Test
+  fun `onCreateView should call setupViews()`() {
+    val mockedGeoWidgetFragment = spyk(geowidgetFragment, recordPrivateCalls = true)
+    val geowidgetActivityArgs = spyk<GeoWidgetFragmentArgs>()
+    every { mockedGeoWidgetFragment.requireContext() } returns mockk()
+
+    val geowidgetActivityArgs2 = spyk(NavArgsLazy(GeoWidgetFragmentArgs::class) { mockk() })
+
+    every { geowidgetActivityArgs.configId } returns "geowidget-config-id"
+    every { geowidgetActivityArgs2.value } returns geowidgetActivityArgs
+
+    ReflectionHelpers.setField(
+      mockedGeoWidgetFragment,
+      "geoWidgetActivityArgs\$delegate",
+      geowidgetActivityArgs2
+    )
+
+    every { mockedGeoWidgetFragment["setupViews"]() } returns mockk<LinearLayout>()
+    every { mockedGeoWidgetFragment["geoWidgetConfiguration"]() } returns
+      mockk<GeoWidgetConfiguration>()
+
+    mockedGeoWidgetFragment.onCreateView(mockk(), mockk(), mockk())
+
+    verify { mockedGeoWidgetFragment["setupViews"]() }
+  }
+
+  @Test
+  fun `onCreateView should initialise Mapbox()`() {
+    ShadowMapbox.allowMethodRecording()
+
+    val mockedGeoWidgetFragment = spyk(geowidgetFragment)
+    val geowidgetActivityArgs = spyk<GeoWidgetFragmentArgs>()
+    val mockContext = mockk<Context>()
+    every { mockedGeoWidgetFragment.requireContext() } returns mockContext
+
+    val geowidgetActivityArgs2 = spyk(NavArgsLazy(GeoWidgetFragmentArgs::class) { mockk() })
+
+    every { geowidgetActivityArgs.configId } returns "geowidget-config-id"
+    every { geowidgetActivityArgs2.value } returns geowidgetActivityArgs
+
+    ReflectionHelpers.setField(
+      mockedGeoWidgetFragment,
+      "geoWidgetActivityArgs\$delegate",
+      geowidgetActivityArgs2
+    )
+
+    every { mockedGeoWidgetFragment["setupViews"]() } returns mockk<LinearLayout>()
+    every { mockedGeoWidgetFragment["geoWidgetConfiguration"]() } returns
+      mockk<GeoWidgetConfiguration>()
+
+    mockedGeoWidgetFragment.onCreateView(mockk(), mockk(), mockk())
+
+    val methodCallParams = ShadowMapbox.getLastMethodCall()
+    Assert.assertNotNull(methodCallParams["getInstance"])
+    Assert.assertEquals(mockContext, methodCallParams["getInstance"]!![0])
+    Assert.assertEquals("sample", methodCallParams["getInstance"]!![1])
+  }
+
+  @Test
+  fun `onCreateView should fetch geowidget configuration`() {
+    val mockedGeoWidgetFragment = spyk(geowidgetFragment, recordPrivateCalls = true)
+    val geowidgetActivityArgs = spyk<GeoWidgetFragmentArgs>()
+    every { mockedGeoWidgetFragment.requireContext() } returns mockk()
+
+    val geowidgetActivityArgs2 = spyk(NavArgsLazy(GeoWidgetFragmentArgs::class) { mockk() })
+
+    every { geowidgetActivityArgs.configId } returns "geowidget-config-id"
+    every { geowidgetActivityArgs2.value } returns geowidgetActivityArgs
+
+    ReflectionHelpers.setField(
+      mockedGeoWidgetFragment,
+      "geoWidgetActivityArgs\$delegate",
+      geowidgetActivityArgs2
+    )
+
+    every { mockedGeoWidgetFragment["setupViews"]() } returns mockk<LinearLayout>()
+    every { mockedGeoWidgetFragment["geoWidgetConfiguration"]() } returns
+      mockk<GeoWidgetConfiguration>()
+
+    mockedGeoWidgetFragment.onCreateView(mockk(), mockk(), mockk())
+
+    verify { mockedGeoWidgetFragment["geoWidgetConfiguration"]() }
   }
 }
