@@ -323,11 +323,11 @@ fun String.resourceClassType(): Class<out Resource> =
 fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")
 
 /**
- * This suspend function updates the due date of the dependents of the current [Task], based on
- * the date of a related [Immunization] [Task]. The function loops through all the tasks that are
- * part-of the current task, loads the dependent tasks and their related immunization resources from the
- * [DefaultRepository] then updates the start date of the dependent task if it's scheduled to start
- * before the immunization date plus the required number of days.
+ * This suspend function updates the due date of the dependents of the current [Task], based on the
+ * date of a related [Immunization] [Task]. The function loops through all the tasks that are
+ * part-of the current task, loads the dependent tasks and their related immunization resources from
+ * the [DefaultRepository] then updates the start date of the dependent task if it's scheduled to
+ * start before the immunization date plus the required number of days.
  *
  * This function can be extended in future to support other [ResourceType] s.
  */

@@ -27,6 +27,7 @@ import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
@@ -187,6 +188,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     val refreshLiveDataMock = mockk<MutableLiveData<Boolean?>>()
     every { refreshLiveDataMock.postValue(true) } just runs
     every { appMainActivity.appMainViewModel } returns appMainViewModel
+    every { eventBus.events } returns mockk()
+    coEvery { eventBus.triggerEvent(any()) } returns mockk()
 
     appMainActivity.onSubmitQuestionnaire(
       ActivityResult(

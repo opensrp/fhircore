@@ -17,11 +17,13 @@
 package org.smartregister.fhircore.engine.task
 
 import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -36,6 +38,7 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Task
@@ -47,7 +50,9 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.plusDays
+import org.smartregister.fhircore.engine.util.extension.toCoding
 import org.smartregister.fhircore.engine.util.extension.today
 
 @HiltAndroidTest
@@ -165,5 +170,59 @@ class FhirTaskUtilTest : RobolectricTest() {
     assertEquals(0, tasks.size)
 
     coVerify(inverse = true) { defaultRepository.update(any()) }
+  }
+  @Test
+  fun testUpdateTaskStatuses() {
+
+    val task =
+      Task().apply {
+        id = "test-task-id"
+        partOf = listOf(Reference("Task/parent-test-task-id"))
+        executionPeriod =
+          Period().apply {
+            start = Date().plusDays(-5)
+            status = TaskStatus.REQUESTED
+          }
+      }
+
+    coEvery {
+      fhirEngine.search<Task> {
+        filter(
+          Task.STATUS,
+          { value = of(TaskStatus.REQUESTED.toCoding()) },
+          { value = of(TaskStatus.ACCEPTED.toCoding()) },
+          { value = of(TaskStatus.RECEIVED.toCoding()) },
+        )
+        filter(
+          Task.PERIOD,
+          {
+            prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+            value = of(DateTimeType(Date().plusDays(-1)))
+          }
+        )
+      }
+    } returns listOf(task)
+
+    coEvery {
+      fhirEngine
+        .get<Task>(any())
+        .status
+        .isIn(
+          TaskStatus.CANCELLED,
+          TaskStatus.COMPLETED,
+          TaskStatus.FAILED,
+          TaskStatus.ENTEREDINERROR
+        )
+    } returns true
+
+    coEvery { defaultRepository.update(any()) } just runs
+
+    assertEquals(TaskStatus.REQUESTED, task.status)
+
+    runBlocking { fhirTaskUtil.updateTaskStatuses() }
+
+    coVerify { defaultRepository.update(task) }
+
+    assertEquals(TaskStatus.READY, task.status)
   }
 }
