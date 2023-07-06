@@ -274,6 +274,31 @@ constructor(
         performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle = null)
       }
       viewModelScope.launch(dispatcherProvider.main()) { extractionProgress.postValue(true) }
+      triggerRemove(questionnaireConfig)
+    }
+  }
+  private fun triggerRemove(questionnaireConfig: QuestionnaireConfig) {
+    if (questionnaireConfig.groupResource != null) {
+
+      removeGroup(
+        groupId = questionnaireConfig.groupResource!!.groupIdentifier,
+        removeGroup = questionnaireConfig.groupResource?.removeGroup ?: false,
+        deactivateMembers = questionnaireConfig.groupResource!!.deactivateMembers
+      )
+      removeGroupMember(
+        memberId = questionnaireConfig.resourceIdentifier,
+        removeMember = questionnaireConfig.groupResource?.removeMember ?: false,
+        groupIdentifier = questionnaireConfig.groupResource!!.groupIdentifier,
+        memberResourceType = questionnaireConfig.groupResource!!.memberResourceType
+      )
+    } else if (questionnaireConfig.resourceIdentifier != null &&
+        questionnaireConfig.resourceType != null
+    ) {
+      try {
+        deleteResource(questionnaireConfig.resourceType!!, questionnaireConfig.resourceIdentifier!!)
+      } catch (e: ResourceNotFoundException) {
+        Timber.e(e)
+      }
     }
   }
 
