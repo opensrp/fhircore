@@ -191,7 +191,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
     Assert.assertEquals(result, (ListenableWorker.Result.success()))
     Assert.assertEquals(Task.TaskStatus.REQUESTED, task.status)
   }
-  
+
   @Test
   fun `FhirTaskPlanWorker doWork set the correct status when start date is 2 years ago`() {
     val task =
