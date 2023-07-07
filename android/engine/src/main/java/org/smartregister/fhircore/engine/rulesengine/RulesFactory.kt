@@ -26,7 +26,7 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
 import org.hl7.fhir.r4.model.Base
-import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
@@ -387,22 +387,21 @@ constructor(
     fun sortResources(
       resources: List<Resource>?,
       fhirPathExpression: String,
-      dataType: Enumerations.DataType,
-      order: Order = Order.ASCENDING
+      dataType: String,
+      order: String = Order.ASCENDING.name
     ): List<Resource>? {
       val mappedResources =
         resources?.mapNotNull {
           val extractedValue: Base? =
             fhirPathDataExtractor.extractData(it, fhirPathExpression).firstOrNull()
           val sortingValue: Comparable<*>? =
-            when (dataType) {
-              Enumerations.DataType.BOOLEAN -> extractedValue?.castToBoolean(extractedValue)?.value
-              Enumerations.DataType.DATE -> extractedValue?.castToDate(extractedValue)?.value
-              Enumerations.DataType.DATETIME ->
-                extractedValue?.castToDateTime(extractedValue)?.value
-              Enumerations.DataType.DECIMAL -> extractedValue?.castToDecimal(extractedValue)?.value
-              Enumerations.DataType.INTEGER -> extractedValue?.castToInteger(extractedValue)?.value
-              Enumerations.DataType.STRING -> extractedValue?.castToString(extractedValue)?.value
+            when (DataType.valueOf(dataType)) {
+              DataType.BOOLEAN -> extractedValue?.castToBoolean(extractedValue)?.value
+              DataType.DATE -> extractedValue?.castToDate(extractedValue)?.value
+              DataType.DATETIME -> extractedValue?.castToDateTime(extractedValue)?.value
+              DataType.DECIMAL -> extractedValue?.castToDecimal(extractedValue)?.value
+              DataType.INTEGER -> extractedValue?.castToInteger(extractedValue)?.value
+              DataType.STRING -> extractedValue?.castToString(extractedValue)?.value
               else -> {
                 Timber.e(
                   "Sorting only works for primitive types, sorting by the data type $dataType is not allowed. Implement sorting strategy for the data type $dataType."
@@ -413,7 +412,7 @@ constructor(
           if (sortingValue != null) Pair(sortingValue, it) else null
         }
 
-      return when (order) {
+      return when (Order.valueOf(order)) {
         Order.ASCENDING -> mappedResources?.sortedWith(compareBy { it.first })?.map { it.second }
         Order.DESCENDING ->
           mappedResources?.sortedWith(compareByDescending { it.first })?.map { it.second }
