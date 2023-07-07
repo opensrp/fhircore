@@ -313,7 +313,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testUnSuccessfullOnlineLoginWithUnknownHostExceptionEmitsError() {
+  fun testUnsuccessfulOnlineLoginWithUnknownHostExceptionEmitsError() {
     updateCredentials()
     secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
@@ -328,14 +328,32 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testUnsuccessfulOnlineLoginWithHTTPHostExceptionEmitsError() {
+  fun testUnsuccessfulOnlineLoginWithHTTPHostExceptionCode400EmitsErrorFetchingUser() {
     updateCredentials()
     secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
 
     coEvery {
       tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
-    } returns Result.failure(HttpException(mockk()))
+    } returns
+      Result.failure(HttpException(Response.error<OAuthResponse>(400, mockk(relaxed = true))))
+
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertEquals(LoginErrorState.ERROR_FETCHING_USER, loginViewModel.loginErrorState.value!!)
+  }
+
+  @Test
+  fun testUnsuccessfulOnlineLoginWithHTTPHostExceptionCode401EmitsInvalidCredentialsError() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns
+      Result.failure(HttpException(Response.error<OAuthResponse>(401, mockk(relaxed = true))))
 
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
 
