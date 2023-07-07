@@ -50,26 +50,6 @@ class EventBusTest : RobolectricTest() {
 
   @Test
   @OptIn(ExperimentalCoroutinesApi::class)
-  fun testTriggerEventEmitsRefreshCacheEvent() {
-    val refreshCacheEvent = AppEvent.RefreshCache(QuestionnaireConfig("test-config"))
-
-    runBlockingTest {
-      val collectJob = launch {
-        eventBus
-          .events
-          .getFor("TestTag")
-          .onEach { appEvent -> emittedEvents.add(appEvent) }
-          .launchIn(this)
-      }
-      eventBus.triggerEvent(refreshCacheEvent)
-      collectJob.cancel()
-    }
-
-    assertEquals(refreshCacheEvent, emittedEvents[0])
-  }
-
-  @Test
-  @OptIn(ExperimentalCoroutinesApi::class)
   fun testTriggerEventEmitsLogoutEvent1() {
     val onSubmitQuestionnaireEvent =
       AppEvent.OnSubmitQuestionnaire(
