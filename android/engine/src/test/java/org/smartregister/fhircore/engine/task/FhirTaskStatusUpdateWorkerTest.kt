@@ -50,7 +50,7 @@ import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.lastOffset
 
 @HiltAndroidTest
-class FhirTaskPlanWorkerTest : RobolectricTest() {
+class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
