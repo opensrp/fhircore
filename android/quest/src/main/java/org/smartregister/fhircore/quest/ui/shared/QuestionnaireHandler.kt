@@ -53,5 +53,5 @@ interface QuestionnaireHandler {
       )
   }
 
-  fun onSubmitQuestionnaire(activityResult: ActivityResult)
+  suspend fun onSubmitQuestionnaire(activityResult: ActivityResult)
 }

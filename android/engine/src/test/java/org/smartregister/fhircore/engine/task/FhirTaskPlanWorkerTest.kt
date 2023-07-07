@@ -24,12 +24,15 @@ import androidx.work.WorkerParameters
 import androidx.work.testing.TestListenableWorkerBuilder
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.spyk
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Task
 import org.joda.time.DateTime
@@ -46,23 +49,35 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.lastOffset
 
+@HiltAndroidTest
 class FhirTaskPlanWorkerTest : RobolectricTest() {
 
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
+  private lateinit var fhirTaskUtil: FhirTaskUtil
   private lateinit var context: Context
-  val fhirEngine: FhirEngine = mockk()
-  val defaultRepository: DefaultRepository = mockk()
-  val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
-  val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val fhirEngine: FhirEngine = mockk()
+  private val defaultRepository: DefaultRepository = mockk()
+  private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Before
   fun setUp() {
+    hiltAndroidRule.inject()
     context = ApplicationProvider.getApplicationContext()
     every { sharedPreferencesHelper.read(FhirTaskPlanWorker.WORK_ID.lastOffset(), "0") } returns
       "100"
     every { sharedPreferencesHelper.write(FhirTaskPlanWorker.WORK_ID.lastOffset(), "101") } just
       runs
     every { defaultRepository.fhirEngine } returns fhirEngine
+
+    fhirTaskUtil =
+      spyk(
+        FhirTaskUtil(
+          appContext = ApplicationProvider.getApplicationContext(),
+          defaultRepository = defaultRepository
+        )
+      )
   }
 
   @Test
@@ -276,9 +291,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
       return FhirTaskPlanWorker(
         appContext = appContext,
         workerParams = workerParameters,
-        defaultRepository = defaultRepository,
-        sharedPreferencesHelper = sharedPreferencesHelper,
-        configurationRegistry = configurationRegistry,
+        fhirTaskUtil = fhirTaskUtil,
         dispatcherProvider = coroutineTestRule.testDispatcherProvider
       )
     }

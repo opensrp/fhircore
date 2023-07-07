@@ -27,6 +27,7 @@ import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
@@ -34,6 +35,8 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import java.io.Serializable
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
@@ -148,7 +151,9 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSubmitQuestionnaireShouldUpdateLiveData() {
+  fun testOnSubmitQuestionnaireShouldUpdateLiveData() = runTest {
+    every { eventBus.events } returns mockk()
+    coEvery { eventBus.triggerEvent(any()) } just runs
     appMainActivity.onSubmitQuestionnaire(
       ActivityResult(
         -1,
@@ -161,7 +166,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
           )
           putExtra(
             QuestionnaireActivity.QUESTIONNAIRE_CONFIG,
-            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId")
+            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId") as Serializable
           )
         }
       )
@@ -180,11 +185,13 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSubmitQuestionnaireShouldUpdateDataRefreshLivedata() {
+  fun testOnSubmitQuestionnaireShouldUpdateDataRefreshLivedata() = runTest {
     val appMainViewModel = mockk<AppMainViewModel>()
     val refreshLiveDataMock = mockk<MutableLiveData<Boolean?>>()
     every { refreshLiveDataMock.postValue(true) } just runs
     every { appMainActivity.appMainViewModel } returns appMainViewModel
+    every { eventBus.events } returns mockk()
+    coEvery { eventBus.triggerEvent(any()) } returns mockk()
 
     appMainActivity.onSubmitQuestionnaire(
       ActivityResult(
@@ -198,11 +205,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
           )
           putExtra(
             QuestionnaireActivity.QUESTIONNAIRE_CONFIG,
-            QuestionnaireConfig(
-              taskId = "Task/12345",
-              id = "questionnaireId",
-              refreshContent = true
-            )
+            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId") as Serializable
           )
         }
       )
