@@ -76,7 +76,7 @@ constructor(
               startDateFormatted = startDateFormatted,
               endDateFormatted = endDateFormatted,
               measureUrl = config.url,
-              subjects = listOf()
+              subjects = subjects
             )
 
           if (existing.isEmpty()) {

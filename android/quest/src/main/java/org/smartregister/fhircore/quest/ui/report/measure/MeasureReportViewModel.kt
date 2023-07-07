@@ -302,7 +302,7 @@ constructor(
                     startDateFormatted,
                     endDateFormatted,
                     config.url,
-                    listOf()
+                    subjects
                   )
 
                 // if report is of current month or does not exist generate a new one and replace
