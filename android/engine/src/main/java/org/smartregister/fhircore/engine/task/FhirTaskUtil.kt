@@ -29,13 +29,13 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.executionStartIsBeforeOrToday
 import org.smartregister.fhircore.engine.util.extension.expiredConcept
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.isPastExpiry
-import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
@@ -57,11 +57,11 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
         .search<Task> {
           filter(
             Task.STATUS,
-            { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
-            { value = of(Task.TaskStatus.READY.toCoding()) },
-            { value = of(Task.TaskStatus.ACCEPTED.toCoding()) },
-            { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
-            { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
+            { value = of(TaskStatus.REQUESTED.toCoding()) },
+            { value = of(TaskStatus.READY.toCoding()) },
+            { value = of(TaskStatus.ACCEPTED.toCoding()) },
+            { value = of(TaskStatus.INPROGRESS.toCoding()) },
+            { value = of(TaskStatus.RECEIVED.toCoding()) },
           )
 
           filter(
@@ -75,7 +75,7 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
         .filter { it.isPastExpiry() }
         .also { Timber.i("Going to expire ${it.size} tasks") }
         .onEach { task ->
-          task.status = Task.TaskStatus.CANCELLED
+          task.status = TaskStatus.CANCELLED
           task.statusReason = expiredConcept()
 
           task
@@ -118,15 +118,15 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
       defaultRepository.fhirEngine.search<Task> {
         filter(
           Task.STATUS,
-          { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
-          { value = of(Task.TaskStatus.ACCEPTED.toCoding()) },
-          { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
+          { value = of(TaskStatus.REQUESTED.toCoding()) },
+          { value = of(TaskStatus.ACCEPTED.toCoding()) },
+          { value = of(TaskStatus.RECEIVED.toCoding()) },
         )
         filter(
           Task.PERIOD,
           {
             prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
-            value = of(DateTimeType(Date().plusDays(-1)))
+            value = of(DateTimeType(Date()))
           }
         )
       }
@@ -136,11 +136,12 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
     tasks.forEach { task ->
       // expired tasks are handled by other service i.e. FhirTaskExpireWorker
       if (task.executionStartIsBeforeOrToday() &&
-          task.status == Task.TaskStatus.REQUESTED &&
+          task.status == TaskStatus.REQUESTED &&
           task.preReqConditionSatisfied()
       ) {
         Timber.i("Task ${task.id} marked ready")
-        task.status = Task.TaskStatus.READY
+
+        task.status = TaskStatus.READY
         defaultRepository.update(task)
       }
     }
@@ -157,10 +158,10 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
         .get<Task>(it.extractId())
         .status
         .isIn(
-          Task.TaskStatus.CANCELLED,
-          Task.TaskStatus.COMPLETED,
-          Task.TaskStatus.FAILED,
-          Task.TaskStatus.ENTEREDINERROR
+          TaskStatus.CANCELLED,
+          TaskStatus.COMPLETED,
+          TaskStatus.FAILED,
+          TaskStatus.ENTEREDINERROR
         )
     }
       ?: true
