@@ -16,9 +16,12 @@
 
 package org.smartregister.fhircore.engine.configuration
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -27,6 +30,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class QuestionnaireConfig(
   val id: String,
   val title: String? = null,
@@ -44,11 +48,11 @@ data class QuestionnaireConfig(
   val saveDraft: Boolean = false,
   val snackBarMessage: SnackBarMessageConfig? = null,
   val eventWorkflows: List<EventWorkflow> = emptyList(),
-  val refreshContent: Boolean = false,
   val readOnlyLinkIds: List<String>? = emptyList(),
   val configRules: List<RuleConfig>? = null,
-  val extraParams: List<ActionParameter>? = null
-) : java.io.Serializable {
+  val extraParams: List<ActionParameter>? = null,
+  val onSubmitActions: List<ActionConfig>? = null
+) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
     this.copy(
@@ -74,17 +78,19 @@ data class QuestionnaireConfig(
 }
 
 @Serializable
+@Parcelize
 data class ConfirmationDialog(
   val title: String = "",
   val message: String = "",
   val actionButtonText: String = ""
-) : java.io.Serializable
+) : java.io.Serializable, Parcelable
 
 @Serializable
+@Parcelize
 data class GroupResourceConfig(
   val groupIdentifier: String,
   val memberResourceType: String,
   val removeMember: Boolean = false,
   val removeGroup: Boolean = false,
   val deactivateMembers: Boolean = true
-) : java.io.Serializable
+) : java.io.Serializable, Parcelable

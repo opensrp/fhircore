@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.configuration.profile
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.domain.model.Code
@@ -40,6 +42,7 @@ import org.smartregister.fhircore.engine.domain.model.Code
  * they are about to perform
  */
 @Serializable
+@Parcelize
 data class ManagingEntityConfig(
   val nameFhirPathExpression: String? = null,
   val eligibilityCriteriaFhirPathExpression: String? = "",
@@ -50,4 +53,4 @@ data class ManagingEntityConfig(
   val noMembersErrorMessage: String = "",
   val managingEntityReassignedMessage: String = "",
   var relationshipCode: Code? = null
-)
+) : Parcelable, java.io.Serializable

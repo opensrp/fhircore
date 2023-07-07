@@ -273,7 +273,7 @@ constructor(
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
         performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle = null)
       }
-      viewModelScope.launch(dispatcherProvider.main()) { extractionProgress.postValue(true) }
+      extractionProgress.postValue(true)
     }
   }
 
@@ -548,8 +548,8 @@ constructor(
       viewModelScope.launch(dispatcherProvider.io()) {
         try {
           defaultRepository.removeGroup(
-            groupId,
-            deactivateMembers,
+            groupId = groupId,
+            isDeactivateMembers = deactivateMembers,
             configComputedRuleValues = emptyMap()
           )
         } catch (exception: Exception) {
