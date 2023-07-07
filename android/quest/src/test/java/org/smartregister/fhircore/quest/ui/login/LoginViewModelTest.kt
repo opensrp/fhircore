@@ -28,9 +28,11 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import okhttp3.internal.http.RealResponseBody
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Organization
@@ -296,6 +298,100 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertEquals(LoginErrorState.UNKNOWN_HOST, loginViewModel.loginErrorState.value!!)
+  }
+
+  @Test
+  fun `loginViewModel#fetchPractitioner() should call onFetchUserInfo with exception when SocketTimeoutException is thrown`() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+    coEvery { keycloakService.fetchUserInfo() }.throws(SocketTimeoutException())
+
+    val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>) -> Unit = mockk(relaxed = true)
+    val userInfoSlot = slot<Result<UserInfo>>()
+
+    runBlocking {
+      loginViewModel.fetchPractitioner(fetchUserInfoCallback, fetchPractitionerCallback)
+    }
+
+    verify { fetchUserInfoCallback(capture(userInfoSlot)) }
+    verify(exactly = 0) { fetchPractitionerCallback(any()) }
+
+    Assert.assertTrue(userInfoSlot.captured.exceptionOrNull() is SocketTimeoutException)
+  }
+
+  @Test
+  fun `loginViewModel#fetchPractitioner() should call onFetchUserInfo with exception when UnknownHostException is thrown`() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+    coEvery { keycloakService.fetchUserInfo() }.throws(UnknownHostException())
+
+    val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>) -> Unit = mockk(relaxed = true)
+    val userInfoSlot = slot<Result<UserInfo>>()
+
+    runBlocking {
+      loginViewModel.fetchPractitioner(fetchUserInfoCallback, fetchPractitionerCallback)
+    }
+
+    verify { fetchUserInfoCallback(capture(userInfoSlot)) }
+    verify(exactly = 0) { fetchPractitionerCallback(any()) }
+
+    Assert.assertTrue(userInfoSlot.captured.exceptionOrNull() is UnknownHostException)
+  }
+
+  @Test
+  fun `loginViewModel#fetchPractitioner() should call onFetchPractitioner with exception when UnknownHostException is thrown`() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+    coEvery { keycloakService.fetchUserInfo() } returns
+      Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
+    coEvery { fhirResourceService.getResource(any()) }.throws(UnknownHostException())
+
+    val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>) -> Unit = mockk(relaxed = true)
+    val bundleSlot = slot<Result<Bundle>>()
+    val userInfoSlot = slot<Result<UserInfo>>()
+
+    runBlocking {
+      loginViewModel.fetchPractitioner(fetchUserInfoCallback, fetchPractitionerCallback)
+    }
+
+    verify { fetchUserInfoCallback(capture(userInfoSlot)) }
+    verify { fetchPractitionerCallback(capture(bundleSlot)) }
+
+    Assert.assertTrue(userInfoSlot.captured.isSuccess)
+    Assert.assertEquals("awesome_uuid", userInfoSlot.captured.getOrThrow().keycloakUuid)
+    Assert.assertTrue(bundleSlot.captured.exceptionOrNull() is UnknownHostException)
+  }
+
+  @Test
+  fun `loginViewModel#fetchPractitioner() should call onFetchPractitioner with exception when SocketTimeoutException is thrown`() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+    coEvery { keycloakService.fetchUserInfo() } returns
+      Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
+    coEvery { fhirResourceService.getResource(any()) }.throws(SocketTimeoutException())
+
+    val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>) -> Unit = mockk(relaxed = true)
+    val bundleSlot = slot<Result<Bundle>>()
+    val userInfoSlot = slot<Result<UserInfo>>()
+
+    runBlocking {
+      loginViewModel.fetchPractitioner(fetchUserInfoCallback, fetchPractitionerCallback)
+    }
+
+    verify { fetchUserInfoCallback(capture(userInfoSlot)) }
+    verify { fetchPractitionerCallback(capture(bundleSlot)) }
+
+    Assert.assertTrue(userInfoSlot.captured.isSuccess)
+    Assert.assertEquals("awesome_uuid", userInfoSlot.captured.getOrThrow().keycloakUuid)
+    Assert.assertTrue(bundleSlot.captured.exceptionOrNull() is SocketTimeoutException)
   }
 
   private fun practitionerDetails(): PractitionerDetails {
