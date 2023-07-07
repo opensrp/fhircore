@@ -63,7 +63,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   @get:Rule(order = 1)
   val coroutineRule = CoroutineTestRule()
