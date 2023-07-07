@@ -16,15 +16,18 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import android.os.Parcelable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class ImageProperties(
   override val viewType: ViewType = ViewType.IMAGE,
   override val weight: Float = 0f,
@@ -40,7 +43,7 @@ data class ImageProperties(
   val imageConfig: ImageConfig? = null,
   val size: Int? = null,
   val shape: ImageShape? = null
-) : ViewProperties() {
+) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): ViewProperties {
     return this.copy(
       imageConfig =

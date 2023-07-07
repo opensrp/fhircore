@@ -16,7 +16,9 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import android.os.Parcelable
 import androidx.compose.ui.graphics.Color
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
@@ -29,6 +31,7 @@ import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class ButtonProperties(
   override val viewType: ViewType = ViewType.BUTTON,
   override val weight: Float = 0f,
@@ -49,7 +52,7 @@ data class ButtonProperties(
   val actions: List<ActionConfig> = emptyList(),
   val buttonType: ButtonType = ButtonType.MEDIUM,
   val startIcon: ImageConfig? = null
-) : ViewProperties() {
+) : ViewProperties(), Parcelable {
   /**
    * This function determines the status color to display depending on the value of the service
    * status
