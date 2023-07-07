@@ -112,6 +112,13 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
       ?.extractId() == task.logicalId
 
   /**
+   * This function updates upcoming [Task] s (with statuses [TaskStatus.REQUESTED],
+   * [TaskStatus.ACCEPTED] or [TaskStatus.RECEIVED]) to due (updates the status to
+   * [TaskStatus.READY]). If the [Task] is dependent on another [Task] and it's parent [TaskStatus]
+   * is NOT [TaskStatus.COMPLETED], the dependent [Task] status will not be updated to
+   * [TaskStatus.READY]. A [Task] should only be due when the start date of the Tasks
+   * [Task.executionPeriod] is before today and the status is [TaskStatus.REQUESTED] and the
+   * pre-requisite [Task] s are completed.
    */
   suspend fun updateUpcomingTasksToDue() {
     Timber.i("Update upcoming Tasks to due...")
