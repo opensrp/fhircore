@@ -108,7 +108,7 @@ constructor(
     configsJsonMap.values
       .filter {
         try {
-          JSONObject(it).getString("configType").equals(configType.name, ignoreCase = true)
+          JSONObject(it).getString(CONFIG_TYPE).equals(configType.name, ignoreCase = true)
         } catch (e: Exception) {
           Timber.w(e.localizedMessage)
           false
@@ -367,7 +367,7 @@ constructor(
 
             chunkedResourceIdList.forEach {
               val resourceIds =
-                it.joinToString(",") { sectionComponent -> sectionComponent.focus.extractId() }
+                it.joinToString(DEFAULT_STRING_SEPARATOR) { sectionComponent -> sectionComponent.focus.extractId() }
               processCompositionManifestResources(resourceGroup.key, resourceIds)
             }
           }
@@ -439,13 +439,15 @@ constructor(
   companion object {
     const val BASE_CONFIG_PATH = "configs/%s"
     const val COMPOSITION_CONFIG_PATH = "configs/%s/composition_config.json"
-    const val DEBUG_SUFFIX = "/debug"
-    const val ORGANIZATION = "organization"
-    const val ID = "_id"
-    const val COUNT = "count"
-    const val TYPE_REFERENCE_DELIMITER = "/"
     const val CONFIG_SUFFIX = "_config"
+    const val CONFIG_TYPE = "configType"
+    const val COUNT = "count"
+    const val DEBUG_SUFFIX = "/debug"
+    const val DEFAULT_STRING_SEPARATOR = ","
     const val ICON_PREFIX = "ic_"
+    const val ID = "_id"
     const val MANIFEST_PROCESSOR_BATCH_SIZE = 30
+    const val ORGANIZATION = "organization"
+    const val TYPE_REFERENCE_DELIMITER = "/"
   }
 }
