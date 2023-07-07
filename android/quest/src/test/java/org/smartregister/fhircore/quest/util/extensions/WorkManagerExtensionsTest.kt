@@ -49,11 +49,9 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.engine.task.FhirTaskUtil
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -63,8 +61,7 @@ class WorkManagerExtensionsTest : RobolectricTest() {
   @Inject lateinit var fhirEngine: FhirEngine
   @Inject lateinit var defaultRepository: DefaultRepository
   private lateinit var fhirTaskPlanWorker: FhirTaskPlanWorker
-  private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val fhirTaskUtil: FhirTaskUtil = mockk(relaxed = true)
 
   @Before
   fun setup() {
@@ -98,9 +95,7 @@ class WorkManagerExtensionsTest : RobolectricTest() {
       return FhirTaskPlanWorker(
         appContext = appContext,
         workerParams = workerParameters,
-        defaultRepository = defaultRepository,
-        sharedPreferencesHelper = sharedPreferencesHelper,
-        configurationRegistry = configurationRegistry,
+        fhirTaskUtil = fhirTaskUtil,
         dispatcherProvider = this@WorkManagerExtensionsTest.coroutineTestRule.testDispatcherProvider
       )
     }
