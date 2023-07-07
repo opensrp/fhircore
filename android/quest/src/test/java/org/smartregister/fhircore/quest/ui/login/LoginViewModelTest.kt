@@ -40,7 +40,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
@@ -53,11 +52,13 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.quest.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
+import retrofit2.HttpException
 import retrofit2.Response
 
 @ExperimentalCoroutinesApi
@@ -131,8 +132,8 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testSuccessfulOfflineLogin() {
     val activity = mockedActivity()
-
     updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, this.thisPassword.toCharArray())
 
     every {
       accountAuthenticator.validateLoginCredentials(thisUsername, thisPassword.toCharArray())
@@ -154,6 +155,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     val activity = mockedActivity()
 
     updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, this.thisPassword.toCharArray())
 
     every {
       accountAuthenticator.validateLoginCredentials(thisUsername, thisPassword.toCharArray())
@@ -296,6 +298,67 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertEquals(LoginErrorState.UNKNOWN_HOST, loginViewModel.loginErrorState.value!!)
+  }
+  @Test
+  fun testLoginWhileOfflineWithNoUserCredentialsEmitsInvalidOfflineState() {
+    updateCredentials()
+
+    loginViewModel.login(mockedActivity(isDeviceOnline = false))
+
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertEquals(
+      LoginErrorState.INVALID_OFFLINE_STATE,
+      loginViewModel.loginErrorState.value!!
+    )
+  }
+
+  @Test
+  fun testUnsuccessfulOnlineLoginWithUnknownHostExceptionEmitsError() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns Result.failure(UnknownHostException())
+
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertEquals(LoginErrorState.UNKNOWN_HOST, loginViewModel.loginErrorState.value!!)
+  }
+
+  @Test
+  fun testUnsuccessfulOnlineLoginWithHTTPHostExceptionCode400EmitsErrorFetchingUser() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns
+      Result.failure(HttpException(Response.error<OAuthResponse>(400, mockk(relaxed = true))))
+
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertEquals(LoginErrorState.ERROR_FETCHING_USER, loginViewModel.loginErrorState.value!!)
+  }
+
+  @Test
+  fun testUnsuccessfulOnlineLoginWithHTTPHostExceptionCode401EmitsInvalidCredentialsError() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns
+      Result.failure(HttpException(Response.error<OAuthResponse>(401, mockk(relaxed = true))))
+
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertEquals(LoginErrorState.INVALID_CREDENTIALS, loginViewModel.loginErrorState.value!!)
   }
 
   private fun practitionerDetails(): PractitionerDetails {

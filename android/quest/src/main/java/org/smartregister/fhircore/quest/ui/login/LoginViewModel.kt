@@ -29,6 +29,7 @@ import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import io.sentry.protocol.User
+import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -149,9 +150,15 @@ constructor(
             }
           )
         } else {
-          if (accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)) {
+          if (secureSharedPreference.retrieveSessionUsername() == null) {
+            _showProgressBar.postValue(false)
+            _loginErrorState.postValue(LoginErrorState.INVALID_OFFLINE_STATE)
+          } else if (accountAuthenticator.validateLoginCredentials(
+              trimmedUsername,
+              passwordAsCharArray
+            )
+          ) {
             try {
-
               // Configure Sentry scope
               Sentry.configureScope { scope ->
                 scope.setTag("versionCode", BuildConfig.VERSION_CODE.toString())
@@ -161,7 +168,6 @@ constructor(
             } catch (e: Exception) {
               Timber.e(e)
             }
-
             _showProgressBar.postValue(false)
             updateNavigateHome(true)
           } else {
@@ -216,7 +222,17 @@ constructor(
           .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
           .onFailure {
             _showProgressBar.postValue(false)
-            _loginErrorState.postValue(LoginErrorState.UNKNOWN_HOST)
+            var errorState = LoginErrorState.ERROR_FETCHING_USER
+
+            if (it is HttpException) {
+              when (it.code()) {
+                401 -> errorState = LoginErrorState.INVALID_CREDENTIALS
+              }
+            } else if (it is UnknownHostException) {
+              errorState = LoginErrorState.UNKNOWN_HOST
+            }
+
+            _loginErrorState.postValue(errorState)
             Timber.e(it)
           }
       }
@@ -253,13 +269,11 @@ constructor(
     if (bundle.entry.isNullOrEmpty()) return
     viewModelScope.launch {
       val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
-
       val careTeams = practitionerDetails.fhirPractitionerDetails?.careTeams ?: listOf()
       val organizations = practitionerDetails.fhirPractitionerDetails?.organizations ?: listOf()
       val locations = practitionerDetails.fhirPractitionerDetails?.locations ?: listOf()
       val locationHierarchies =
         practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
-
       val careTeamIds =
         withContext(dispatcherProvider.io()) {
           defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
@@ -283,7 +297,6 @@ constructor(
         key = SharedPreferenceKey.PRACTITIONER_ID.name,
         value = practitionerDetails.fhirPractitionerDetails?.practitionerId.valueToString()
       )
-
       sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS.name, practitionerDetails)
       sharedPreferences.write(ResourceType.CareTeam.name, careTeamIds)
       sharedPreferences.write(ResourceType.Organization.name, organizationIds)
