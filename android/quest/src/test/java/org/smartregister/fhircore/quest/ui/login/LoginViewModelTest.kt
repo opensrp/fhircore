@@ -311,6 +311,7 @@ internal class LoginViewModelTest : RobolectricTest() {
       loginViewModel.loginErrorState.value!!
     )
   }
+
   @Test
   fun testUnSuccessfullOnlineLoginWithUnknownHostExceptionEmitsError() {
     updateCredentials()
@@ -326,7 +327,8 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertEquals(LoginErrorState.UNKNOWN_HOST, loginViewModel.loginErrorState.value!!)
   }
 
-  fun testUnSuccessfullOnlineLoginWithHTTPHostExceptionEmitsError() {
+  @Test
+  fun testUnsuccessfulOnlineLoginWithHTTPHostExceptionEmitsError() {
     updateCredentials()
     secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
