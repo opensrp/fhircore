@@ -40,7 +40,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
@@ -53,6 +52,7 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.quest.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest

@@ -367,7 +367,9 @@ constructor(
 
             chunkedResourceIdList.forEach {
               val resourceIds =
-                it.joinToString(DEFAULT_STRING_SEPARATOR) { sectionComponent -> sectionComponent.focus.extractId() }
+                it.joinToString(DEFAULT_STRING_SEPARATOR) { sectionComponent ->
+                  sectionComponent.focus.extractId()
+                }
               processCompositionManifestResources(resourceGroup.key, resourceIds)
             }
           }

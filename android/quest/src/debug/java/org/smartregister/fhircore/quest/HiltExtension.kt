@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine
+package org.smartregister.fhircore.quest
 
 import android.content.ComponentName
 import android.content.Intent
@@ -25,6 +25,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
+import org.smartregister.fhircore.engine.R
 
 /**
  *
