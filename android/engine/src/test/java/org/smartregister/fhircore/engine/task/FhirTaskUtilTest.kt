@@ -35,7 +35,6 @@ import io.mockk.runs
 import io.mockk.spyk
 import java.util.Date
 import java.util.UUID
-import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
@@ -49,7 +48,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.toCoding
@@ -59,7 +57,6 @@ import org.smartregister.fhircore.engine.util.extension.today
 class FhirTaskUtilTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-  @Inject lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var fhirTaskUtil: FhirTaskUtil
   private lateinit var fhirEngine: FhirEngine
   private lateinit var defaultRepository: DefaultRepository
@@ -203,23 +200,13 @@ class FhirTaskUtilTest : RobolectricTest() {
       }
     } returns listOf(task)
 
-    coEvery {
-      fhirEngine
-        .get<Task>(any())
-        .status
-        .isIn(
-          TaskStatus.CANCELLED,
-          TaskStatus.COMPLETED,
-          TaskStatus.FAILED,
-          TaskStatus.ENTEREDINERROR
-        )
-    } returns true
+    coEvery { fhirEngine.get<Task>(any()).status.isIn(TaskStatus.COMPLETED) } returns true
 
     coEvery { defaultRepository.update(any()) } just runs
 
     assertEquals(TaskStatus.REQUESTED, task.status)
 
-    runBlocking { fhirTaskUtil.updateTaskStatuses() }
+    runBlocking { fhirTaskUtil.updateUpcomingTasksToDue() }
 
     coVerify { defaultRepository.update(task) }
 

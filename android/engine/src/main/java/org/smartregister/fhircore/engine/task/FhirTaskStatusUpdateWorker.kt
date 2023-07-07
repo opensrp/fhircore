@@ -25,9 +25,9 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-/** This job runs periodically to update the statuses of Task resources. */
+/** This job runs periodically to update the update upcoming Tasks statuses to due. */
 @HiltWorker
-class FhirTaskPlanWorker
+class FhirTaskStatusUpdateWorker
 @AssistedInject
 constructor(
   @Assisted val appContext: Context,
@@ -38,12 +38,12 @@ constructor(
 
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
-      fhirTaskUtil.updateTaskStatuses()
+      fhirTaskUtil.updateUpcomingTasksToDue()
       Result.success()
     }
   }
 
   companion object {
-    const val WORK_ID = "FhirTaskPlanWorker"
+    const val WORK_ID = "FhirTaskStatusUpdateWorker"
   }
 }
