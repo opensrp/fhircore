@@ -183,7 +183,11 @@ dependencies {
   api(libs.retrofit2.kotlinx.serialization.converter)
   api(libs.okhttp)
   api(libs.okhttp.logging.interceptor)
-  api(libs.easy.rules.jexl) { exclude(group = "commons-logging", module = "commons-logging") }
+  api(libs.commons.jexl3) { exclude(group = "commons-logging", module = "commons-logging") }
+  api(libs.easy.rules.jexl) {
+    exclude(group = "commons-logging", module = "commons-logging")
+    exclude(group = "org.apache.commons", module = "commons-jexl3")
+  }
   api(libs.data.capture) {
     isTransitive = true
     exclude(group = "ca.uhn.hapi.fhir")
