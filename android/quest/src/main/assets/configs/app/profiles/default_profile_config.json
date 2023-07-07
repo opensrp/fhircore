@@ -18,13 +18,7 @@
       {
         "id": "availableTasks",
         "resource": "Task",
-        "searchParameter": "subject",
-        "sortConfigs": [
-          {
-            "paramName": "period",
-            "dataType": "DATE"
-          }
-        ]
+        "searchParameter": "subject"
       }
     ]
   },
