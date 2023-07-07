@@ -111,8 +111,10 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
       ?.lastOrNull()
       ?.extractId() == task.logicalId
 
-  suspend fun updateTaskStatuses() {
-    Timber.i("Update tasks statuses")
+  /**
+   */
+  suspend fun updateUpcomingTasksToDue() {
+    Timber.i("Update upcoming Tasks to due...")
 
     val tasks =
       defaultRepository.fhirEngine.search<Task> {
@@ -131,7 +133,7 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
         )
       }
 
-    Timber.i("Found ${tasks.size} tasks to be updated")
+    Timber.i("Found ${tasks.size} upcoming Tasks to be updated")
 
     tasks.forEach { task ->
       val previousStatus = task.status
@@ -141,7 +143,7 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
 
       if (task.hasPartOf() && !task.preRequisiteConditionSatisfied()) task.status = previousStatus
 
-      defaultRepository.update(task)
+      if (task.status != previousStatus) defaultRepository.update(task)
       Timber.d("Task with ID '${task.id}' status updated to ${task.status}")
     }
   }

@@ -206,7 +206,7 @@ class FhirTaskUtilTest : RobolectricTest() {
 
     assertEquals(TaskStatus.REQUESTED, task.status)
 
-    runBlocking { fhirTaskUtil.updateTaskStatuses() }
+    runBlocking { fhirTaskUtil.updateUpcomingTasksToDue() }
 
     coVerify { defaultRepository.update(task) }
 
