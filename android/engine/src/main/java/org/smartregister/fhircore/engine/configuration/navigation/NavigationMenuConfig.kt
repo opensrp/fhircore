@@ -17,12 +17,15 @@
 package org.smartregister.fhircore.engine.configuration.navigation
 
 import android.graphics.Bitmap
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class NavigationMenuConfig(
   val id: String,
   val visible: Boolean = true,
@@ -31,14 +34,15 @@ data class NavigationMenuConfig(
   val display: String,
   val showCount: Boolean = false,
   val actions: List<ActionConfig>? = null,
-)
+) : Parcelable, java.io.Serializable
 
 @Serializable
+@Parcelize
 data class ImageConfig(
   val type: String = ICON_TYPE_LOCAL,
   val reference: String? = null,
   @Contextual var decodedBitmap: Bitmap? = null
-) {
+) : Parcelable, java.io.Serializable {
   fun interpolate(computedValuesMap: Map<String, Any>): ImageConfig {
     return this.copy(
       reference = this.reference?.interpolate(computedValuesMap),

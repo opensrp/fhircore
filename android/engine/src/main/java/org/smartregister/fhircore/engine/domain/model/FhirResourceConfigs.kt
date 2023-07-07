@@ -103,7 +103,7 @@ data class SortConfig(
   val dataType: Enumerations.DataType,
   val order: Order = Order.ASCENDING,
   val fhirPathExpression: String = ""
-) : Parcelable
+) : Parcelable, java.io.Serializable
 
 @Serializable
 @Parcelize
@@ -111,4 +111,4 @@ data class NestedSearchConfig(
   val resourceType: ResourceType,
   val referenceParam: String,
   val dataQueries: List<DataQuery>? = null
-) : Parcelable
+) : Parcelable, java.io.Serializable
