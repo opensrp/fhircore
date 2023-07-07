@@ -29,6 +29,7 @@ import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import io.sentry.protocol.User
+import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -149,7 +150,15 @@ constructor(
             }
           )
         } else {
-          if (accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)) {
+          if (secureSharedPreference.retrieveSessionUsername() == null) {
+
+            _showProgressBar.postValue(false)
+            _loginErrorState.postValue(LoginErrorState.INVALID_OFFLINE_STATE)
+          } else if (accountAuthenticator.validateLoginCredentials(
+              trimmedUsername,
+              passwordAsCharArray
+            )
+          ) {
             try {
 
               // Configure Sentry scope
@@ -216,7 +225,17 @@ constructor(
           .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
           .onFailure {
             _showProgressBar.postValue(false)
-            _loginErrorState.postValue(LoginErrorState.UNKNOWN_HOST)
+            var errorState = LoginErrorState.ERROR_FETCHING_USER
+
+            if (it is HttpException) {
+              when (it.code()) {
+                401 -> errorState = LoginErrorState.INVALID_CREDENTIALS
+              }
+            } else if (it is UnknownHostException) {
+              errorState = LoginErrorState.UNKNOWN_HOST
+            }
+
+            _loginErrorState.postValue(errorState)
             Timber.e(it)
           }
       }

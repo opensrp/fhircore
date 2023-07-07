@@ -132,4 +132,5 @@
     <string name="dismiss">Rejeter</string>
     <string name="unsynced_resources">Non Synchronisé</string>
     <string name="all_data_synced">Tout synchronisé</string>
+    <string name="invalid_offline_login_state">La configuration de l\'utilisateur est requise. Allumez Internet</string>
 </resources>
