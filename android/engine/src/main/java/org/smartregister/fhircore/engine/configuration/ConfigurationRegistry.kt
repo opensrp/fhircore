@@ -37,7 +37,8 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.R
+
+import org.json.JSONObject
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -103,6 +104,26 @@ constructor(
     configCacheMap[configKey] = decodedConfig
     return decodedConfig
   }
+
+  inline fun <reified T : Configuration> retrieveConfigurations(configType: ConfigType): List<T> =
+    configsJsonMap.values
+      .filter {
+        try {
+          JSONObject(it).getString("configType").equals(configType.name, ignoreCase = true)
+        } catch (e: Exception) {
+          Timber.w(e.localizedMessage)
+          false
+        }
+      }
+      .map {
+        localizationHelper
+          .parseTemplate(
+            bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
+            locale = Locale.getDefault(),
+            template = it
+          )
+          .decodeJson<T>()
+      }
 
   /**
    * This function interpolates the value for the given [configKey] by replacing the string
@@ -343,36 +364,45 @@ constructor(
               )
           }
           .forEach { resourceGroup ->
-            val resourceIds =
-              resourceGroup.value.joinToString(",") { sectionComponent ->
-                sectionComponent.focus.extractId()
-              }
-            val searchPath = resourceGroup.key + "?${Composition.SP_RES_ID}=$resourceIds"
+            val chunkedResourceIdList = resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
 
-            fhirResourceDataSource.getResource(searchPath).entry.forEach { bundleEntryComponent ->
-              when (bundleEntryComponent.resource) {
-                is ListResource -> {
-                  addOrUpdate(bundleEntryComponent.resource)
-                  val list = bundleEntryComponent.resource as ListResource
-                  list.entry.forEach { listEntryComponent ->
-                    val resourceKey = listEntryComponent.item.reference.substringBefore("/")
-                    val resourceId = listEntryComponent.item.reference.extractLogicalIdUuid()
-
-                    val listResourceUrlPath = resourceKey + "?${Composition.SP_RES_ID}=$resourceId"
-                    fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
-                      listEntryResourceBundle ->
-                      addOrUpdate(listEntryResourceBundle.resource)
-                      Timber.d("Fetched and processed list reference $listResourceUrlPath")
-                    }
-                  }
-                }
-                else -> {
-                  addOrUpdate(bundleEntryComponent.resource)
-                  Timber.d("Fetched and processed resources $searchPath")
-                }
-              }
+            chunkedResourceIdList.forEach {
+              val resourceIds =
+                it.joinToString(",") { sectionComponent -> sectionComponent.focus.extractId() }
+              processCompositionManifestResources(resourceGroup.key, resourceIds)
             }
           }
+      }
+    }
+  }
+
+  private suspend fun processCompositionManifestResources(
+    resourceType: String,
+    resourceIds: String
+  ) {
+    val searchPath = resourceType + "?${Composition.SP_RES_ID}=$resourceIds"
+
+    fhirResourceDataSource.getResource(searchPath).entry.forEach { bundleEntryComponent ->
+      when (bundleEntryComponent.resource) {
+        is ListResource -> {
+          addOrUpdate(bundleEntryComponent.resource)
+          val list = bundleEntryComponent.resource as ListResource
+          list.entry.forEach { listEntryComponent ->
+            val resourceKey = listEntryComponent.item.reference.substringBefore("/")
+            val resourceId = listEntryComponent.item.reference.extractLogicalIdUuid()
+
+            val listResourceUrlPath = resourceKey + "?${Composition.SP_RES_ID}=$resourceId"
+            fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
+              listEntryResourceBundle ->
+              addOrUpdate(listEntryResourceBundle.resource)
+              Timber.d("Fetched and processed List reference $listResourceUrlPath")
+            }
+          }
+        }
+        else -> {
+          addOrUpdate(bundleEntryComponent.resource)
+          Timber.d("Fetched and processed resources $searchPath")
+        }
       }
     }
   }
@@ -417,5 +447,6 @@ constructor(
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val CONFIG_SUFFIX = "_config"
     const val ICON_PREFIX = "ic_"
+    const val MANIFEST_PROCESSOR_BATCH_SIZE = 30
   }
 }
