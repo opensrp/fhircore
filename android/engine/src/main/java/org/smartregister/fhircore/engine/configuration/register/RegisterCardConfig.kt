@@ -16,12 +16,15 @@
 
 package org.smartregister.fhircore.engine.configuration.register
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
+@Parcelize
 data class RegisterCardConfig(
   val rules: List<RuleConfig> = emptyList(),
   val views: List<ViewProperties> = emptyList()
-)
+) : Parcelable, java.io.Serializable

@@ -187,8 +187,8 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
       rulesFactory.rulesEngineService.sortResources(
         resources = resources,
         fhirPathExpression = sortConfig.fhirPathExpression,
-        dataType = sortConfig.dataType,
-        order = sortConfig.order
+        dataType = sortConfig.dataType.name,
+        order = sortConfig.order.name
       )
         ?: resources
     else resources

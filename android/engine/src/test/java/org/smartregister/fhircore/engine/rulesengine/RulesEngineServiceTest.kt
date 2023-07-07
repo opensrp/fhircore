@@ -130,8 +130,8 @@ class RulesEngineServiceTest : RobolectricTest() {
       rulesEngineService.sortResources(
         tasks,
         "Task.description",
-        Enumerations.DataType.STRING,
-        Order.ASCENDING
+        Enumerations.DataType.STRING.name,
+        Order.ASCENDING.name
       )
     Assert.assertEquals(3, sortedResources?.size)
     Assert.assertTrue(
@@ -142,8 +142,8 @@ class RulesEngineServiceTest : RobolectricTest() {
       rulesEngineService.sortResources(
         resources = tasks,
         fhirPathExpression = "Task.executionPeriod.start",
-        dataType = Enumerations.DataType.DATETIME,
-        order = Order.ASCENDING
+        dataType = Enumerations.DataType.DATETIME.name,
+        order = Order.ASCENDING.name
       )
     Assert.assertEquals(listOf("task1", "task3", "task2"), sortedByDateResources?.map { it.id })
   }
@@ -154,8 +154,8 @@ class RulesEngineServiceTest : RobolectricTest() {
       rulesEngineService.sortResources(
         tasks,
         "Task.description",
-        Enumerations.DataType.STRING,
-        Order.DESCENDING
+        Enumerations.DataType.STRING.name,
+        Order.DESCENDING.name
       )
     Assert.assertEquals(3, sortedResources?.size)
     Assert.assertTrue(
@@ -166,8 +166,8 @@ class RulesEngineServiceTest : RobolectricTest() {
       rulesEngineService.sortResources(
         tasks,
         "Task.executionPeriod.start",
-        Enumerations.DataType.DATETIME,
-        Order.DESCENDING
+        Enumerations.DataType.DATETIME.name,
+        Order.DESCENDING.name
       )
     Assert.assertEquals(
       listOf("task1", "task3", "task2").reversed(),

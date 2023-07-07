@@ -38,6 +38,7 @@ import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValid
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.Serializable
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -61,7 +62,7 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.callSuspendFunctionOnField
 import org.smartregister.fhircore.engine.util.extension.FieldType
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -80,7 +81,7 @@ import timber.log.Timber
 @AndroidEntryPoint
 open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener {
 
-  @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   @Inject lateinit var parser: IParser
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
   private lateinit var questionnaire: Questionnaire
@@ -140,7 +141,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       if (it) {
         setResult(
           Activity.RESULT_OK,
-          Intent().apply { putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig) }
+          Intent().apply { putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Serializable) }
         )
         finish()
       }
@@ -329,7 +330,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     if (view.id == R.id.btn_edit_qr) {
       questionnaireConfig = questionnaireConfig.copy(type = QuestionnaireType.EDIT)
       val loadProgress = showProgressAlert(this, R.string.loading)
-      lifecycleScope.launch(dispatcherProvider.io()) {
+      lifecycleScope.launch {
         // Reload the questionnaire and reopen the fragment
         questionnaire =
           questionnaireViewModel.loadQuestionnaire(
@@ -446,7 +447,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       Activity.RESULT_OK,
       Intent().apply {
         putExtra(QUESTIONNAIRE_RESPONSE, parcelResponse)
-        putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig)
+        putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Serializable)
       }
     )
     finish()
@@ -496,7 +497,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     )
   }
 
-  /** Calls the QuestionnaireViewModel to extract and save the resources. */
   private fun executeExtraction(
     questionnaireResponse: QuestionnaireResponse,
     questionnaireConfig: QuestionnaireConfig = this.questionnaireConfig
