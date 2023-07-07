@@ -97,15 +97,15 @@ constructor(
             SELECT a.serializedResource
               FROM ResourceEntity a
               LEFT JOIN DateIndexEntity b
-              ON a.resourceType = b.resourceType AND a.resourceUuid = b.resourceUuid 
+              ON a.resourceType = b.resourceType AND a.resourceUuid = b.resourceUuid AND b.index_name = "_lastUpdated"
               LEFT JOIN DateTimeIndexEntity c
-              ON a.resourceType = c.resourceType AND a.resourceUuid = c.resourceUuid
-              WHERE a.resourceUuid IN (
+              ON a.resourceType = c.resourceType AND a.resourceUuid = c.resourceUuid AND c.index_name = "_lastUpdated"
+              WHERE a.resourceType = "${classType.newInstance().resourceType}"
+              AND a.resourceUuid IN (
               SELECT resourceUuid FROM DateTimeIndexEntity
-              WHERE resourceType = '${classType.newInstance().resourceType}' AND index_name = '_lastUpdated' AND index_to >= ?
+              WHERE resourceType = "${classType.newInstance().resourceType}" AND index_name = "_lastUpdated" AND index_to >= ?
               )
-              AND (b.index_name = '_lastUpdated' OR c.index_name = '_lastUpdated')
-              ORDER BY c.index_from ASC, a.id ASC
+              ORDER BY b.index_from ASC, c.index_from ASC
               LIMIT ? OFFSET ?
           """.trimIndent(),
           listOf(lastRecordUpdatedAt, batchSize, offset)
