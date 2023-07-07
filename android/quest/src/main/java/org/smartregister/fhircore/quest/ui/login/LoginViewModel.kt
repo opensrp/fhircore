@@ -225,7 +225,7 @@ constructor(
     }
   }
 
-  private suspend fun fetchPractitioner(
+  suspend fun fetchPractitioner(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>) -> Unit
   ) {
@@ -257,6 +257,15 @@ constructor(
       }
     } catch (httpException: HttpException) {
       onFetchUserInfo(Result.failure(httpException))
+    } catch (unknownHostException: UnknownHostException) {
+      onFetchUserInfo(Result.failure(unknownHostException))
+      Timber.e(unknownHostException, "An error occurred fetching the practitioner details")
+    } catch (socketTimeoutException: SocketTimeoutException) {
+      onFetchUserInfo(Result.failure(socketTimeoutException))
+      Timber.e(socketTimeoutException, "An error occurred fetching the practitioner details")
+    } catch (exception: Exception) {
+      onFetchUserInfo(Result.failure(exception))
+      Timber.e(exception, "An error occurred fetching the practitioner details")
     }
   }
 
