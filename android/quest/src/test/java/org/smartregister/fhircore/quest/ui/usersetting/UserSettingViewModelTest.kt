@@ -22,10 +22,12 @@ import android.widget.Toast
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.Sync
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
@@ -66,17 +68,18 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
-  lateinit var userSettingViewModel: UserSettingViewModel
-  lateinit var accountAuthenticator: AccountAuthenticator
-  lateinit var secureSharedPreference: SecureSharedPreference
   lateinit var fhirEngine: FhirEngine
   private var sharedPreferencesHelper: SharedPreferencesHelper
   private var configService: ConfigService
   private lateinit var syncBroadcaster: SyncBroadcaster
+  private lateinit var userSettingViewModel: UserSettingViewModel
+  private lateinit var accountAuthenticator: AccountAuthenticator
+  private lateinit var secureSharedPreference: SecureSharedPreference
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private val resourceService: FhirResourceService = mockk()
   private val workManager = mockk<WorkManager>(relaxed = true, relaxUnitFun = true)
   private var fhirResourceDataSource: FhirResourceDataSource
+  private val sync = mockk<Sync>(relaxed = true)
 
   init {
     sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
@@ -99,6 +102,7 @@ class UserSettingViewModelTest : RobolectricTest() {
           fhirEngine = mockk(),
           dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
           syncListenerManager = mockk(relaxed = true),
+          sync = sync,
           context = context
         )
       )
@@ -120,9 +124,9 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun testRunSyncWhenDeviceIsOnline() {
-    every { syncBroadcaster.runSync(any()) } returns Unit
+    coEvery { syncBroadcaster.runOneTimeSync() } returns Unit
     userSettingViewModel.onEvent(UserSettingsEvent.SyncData(context))
-    verify(exactly = 1) { syncBroadcaster.runSync(any()) }
+    coVerify(exactly = 1) { syncBroadcaster.runOneTimeSync() }
   }
 
   @Test
@@ -131,10 +135,10 @@ class UserSettingViewModelTest : RobolectricTest() {
 
     val context = mockk<Context>(relaxed = true) { every { isDeviceOnline() } returns false }
 
-    every { syncBroadcaster.runSync(any()) } returns Unit
+    coEvery { syncBroadcaster.runOneTimeSync() } returns Unit
 
     userSettingViewModel.onEvent(UserSettingsEvent.SyncData(context))
-    verify(exactly = 0) { syncBroadcaster.runSync(any()) }
+    coVerify(exactly = 0) { syncBroadcaster.runOneTimeSync() }
 
     val errorMessage = context.getString(R.string.sync_failed)
     coVerify { context.showToast(errorMessage, Toast.LENGTH_LONG) }
@@ -265,5 +269,17 @@ class UserSettingViewModelTest : RobolectricTest() {
     verify { workManager.cancelAllWork() }
     coVerify { fhirEngine.clearDatabase() }
     verify { accountAuthenticator.invalidateSession(any()) }
+  }
+
+  @Test
+  fun testShowInsightsView() {
+    val userSettingViewModelSpy = spyk(userSettingViewModel)
+    every { userSettingViewModelSpy.resetAppData(any()) } just runs
+
+    val userSettingsEvent = UserSettingsEvent.ShowInsightsView(true, context)
+
+    userSettingViewModelSpy.onEvent(userSettingsEvent)
+
+    verify { userSettingViewModelSpy.renderInsightsView(context) }
   }
 }

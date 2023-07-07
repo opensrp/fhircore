@@ -23,7 +23,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
@@ -46,6 +45,7 @@ import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBack
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.extension.spaceByUppercase
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
@@ -68,8 +68,8 @@ constructor(
   val languages by lazy { configurationRegistry.fetchLanguages() }
   val showDBResetConfirmationDialog = MutableLiveData(false)
   val progressBarState = MutableLiveData(Pair(false, 0))
-  val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
-  val applicationConfiguration: ApplicationConfiguration by lazy {
+  val unsyncedResourcesMutableSharedFlow = MutableSharedFlow<List<Pair<String, Int>>>()
+  private val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
@@ -102,9 +102,9 @@ constructor(
         }
       }
       is UserSettingsEvent.SyncData -> {
-        if (event.context.isDeviceOnline()) {
-          syncBroadcaster.runSync(syncSharedFlow)
-        } else
+        if (event.context.isDeviceOnline())
+          viewModelScope.launch(dispatcherProvider.main()) { syncBroadcaster.runOneTimeSync() }
+        else
           event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
       }
       is UserSettingsEvent.SwitchLanguage -> {
@@ -120,6 +120,7 @@ constructor(
       is UserSettingsEvent.ShowLoaderView ->
         updateProgressBarState(event.show, event.messageResourceId)
       is UserSettingsEvent.SwitchToP2PScreen -> startP2PScreen(context = event.context)
+      is UserSettingsEvent.ShowInsightsView -> renderInsightsView(event.context)
     }
   }
 
@@ -147,4 +148,27 @@ constructor(
   }
 
   fun enabledDeviceToDeviceSync(): Boolean = applicationConfiguration.deviceToDeviceSync != null
+
+  fun renderInsightsView(context: Context) {
+    viewModelScope.launch {
+      withContext(dispatcherProvider.io()) {
+        val unsyncedResources =
+          fhirEngine
+            .getUnsyncedLocalChanges()
+            .groupingBy { it.localChange.resourceType.spaceByUppercase() }
+            .eachCount()
+            .map { it.key to it.value }
+
+        if (unsyncedResources.isNullOrEmpty()) {
+          withContext(dispatcherProvider.main()) {
+            context.showToast(context.getString(R.string.all_data_synced))
+          }
+        } else unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
+      }
+    }
+  }
+
+  fun dismissInsightsView() {
+    viewModelScope.launch { unsyncedResourcesMutableSharedFlow.emit(listOf()) }
+  }
 }

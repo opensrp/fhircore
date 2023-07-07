@@ -121,11 +121,14 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
     // Setup the drawer and schedule jobs
     appMainViewModel.run {
-      lifecycleScope.launch { retrieveAppMainUiState() }
+      lifecycleScope.launch {
+        retrieveAppMainUiState()
+        if (isDeviceOnline())
+          syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
+        else showToast(getString(R.string.sync_failed), Toast.LENGTH_LONG)
+      }
       schedulePeriodicJobs()
     }
-
-    runSync(syncBroadcaster)
   }
 
   override fun onResume() {
@@ -194,17 +197,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       else -> {
         /*Do nothing */
       }
-    }
-  }
-
-  private fun runSync(syncBroadcaster: SyncBroadcaster) {
-    syncBroadcaster.run {
-      if (isDeviceOnline()) {
-        with(appMainViewModel.syncSharedFlow) {
-          runSync(this)
-          schedulePeriodicSync(this)
-        }
-      } else context.showToast(context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
     }
   }
 }

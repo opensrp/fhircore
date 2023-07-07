@@ -213,7 +213,7 @@ class FhirExtractionTest : RobolectricTest() {
 
       val administrationEncounter =
         result.entry.last { it.resource is Encounter }.resource as Encounter
-      assertTrue(administrationEncounter.partOf.reference == encounter.id)
+      assertTrue(administrationEncounter.partOf.reference == encounter.referenceValue())
     }
   }
 

@@ -5,8 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.4] - 2023-xx-xx
+## [0.2.4] - 2023-06-24
 ### Added
+- Insights feature to show stats on any _Unsynced_ Resources on the device
+
+### Fixed
+- Incorrect error shown for failed authentication when the credentials are invalid.
+
+### Changed
+- 
+
+
+## [0.2.3] - 2023-06-24
+### Added
+- Allow completion of Overdue Tasks
+- Allow ordering of registers by related resources last updated
+- Invalidation/refresh cache after form completion
+- Button background color app configurability
+- Use _revinclude when fetching related resources to improve performance
+- Refactor handling of questionnaire submission to use generic event bus
+- Refactor register search to support configurable forward or reverse include
 - Add "Record all" feature in card view
 - Functionality to aggregate count for related resources 
 - Incremental rendering of content of LIST widget used mostly on profile screen
@@ -30,31 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a `limitTo` service function that limits lists sizes to a define limit
 - Implement configurable image/icon widget
 - Added functionality to filter related resources for list view
-
-### Fixed
-- Member icons display wrapping; hiding some texts
-- Member icons count on register not tallying with retrieved resources on profile
-- Issue with loading related resources
-- Fix P2P sync progress showing greater than 100%
-- Background worker performance
-- The `requested` to `ready` task status update background worker 
-- Calculate DUE dates for dependent Tasks
-
-### Changed
-- Refactored how the related resources SELECT and COUNT queries search results are represented. 
-- RepositoryResourceData now uses two map to represent SELECT/COUNT SQL query results
-- Retrieve related resources all at once for resources include via _include SEARCH API
-- Enhanced security in Authentication, Authorization and Credentials managagment
-
-## [0.2.3] - 2023-05-11
-### Added
-- Allow completion of Overdue Tasks
-- Allow ordering of registers by related resources last updated
-- Invalidation/refresh cache after form completion
-- Button background color app configurability
-- Use _revinclude when fetching related resources to improve performance
-- Refactor handling of questionnaire submission to use generic event bus
-- Refactor register search to support configurable forward or reverse include
+- Added the sick child workflow automated closure
 
 ### Fixed
 - Logout while offline causes flicker(multiple render) of Login Page
@@ -68,6 +62,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix navigate back from Household registers to practitioner profile
 - Harmonize launching Questionnaires
 - Supply Chain Report Generation fails for some months
+- Member icons display wrapping; hiding some texts
+- Member icons count on register not tallying with retrieved resources on profile
+- Issue with loading related resources
+- Fix P2P sync progress showing greater than 100%
+- Background worker performance
+- The `requested` to `ready` task status update background worker 
+- Calculate DUE dates for dependent Tasks
+- Triggering QuestionnaireResponse extraction for Questionnaires closed via a Confirm Dialog
+- Fix the OVERDUE service status setting on the `RulesFactory#generateTaskServiceStatus()`
+- Fix change HH head breaking if a HH head is not already assigned
+- `Task.status` for tasks created today and DUE today not update to `ready`
+
+### Changed
+- Refactored how the related resources SELECT and COUNT queries search results are represented. 
+- RepositoryResourceData now uses two map to represent SELECT/COUNT SQL query results
+- Retrieve related resources all at once for resources include via _include SEARCH API
+- Enhanced security in Authentication, Authorization and Credentials managagment
 
 ## [0.2.2] - 2023-04-17
 ### Added

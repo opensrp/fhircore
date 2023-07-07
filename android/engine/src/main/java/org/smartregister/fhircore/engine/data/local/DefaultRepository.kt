@@ -65,8 +65,8 @@ import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
@@ -143,17 +143,40 @@ constructor(
       else -> listOf()
     }
 
+  /**
+   * Saves a resource in the database. It also updates the [Resource.meta.lastUpdated] and generates
+   * the [Resource.id] if it is missing before saving the resource.
+   *
+   * By default, mandatory Resource tags for sync are added but this can be disabled through the
+   * param [addResourceTags]
+   */
   suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
-      resource.onEach {
-        it.updateLastUpdated()
-        it.generateMissingId()
-        if (addResourceTags) {
-          it.addTags(configService.provideResourceTags(sharedPreferencesHelper))
+      preProcessResources(addResourceTags, *resource)
+      fhirEngine.create(*resource)
+    }
+  }
+
+  suspend fun createRemote(addResourceTags: Boolean = true, vararg resource: Resource) {
+    return withContext(dispatcherProvider.io()) {
+      preProcessResources(addResourceTags, *resource)
+      fhirEngine.createRemote(*resource)
+    }
+  }
+
+  private fun preProcessResources(addResourceTags: Boolean, vararg resource: Resource) {
+    resource.onEach { currentResource ->
+      currentResource.updateLastUpdated()
+      currentResource.generateMissingId()
+      if (addResourceTags) {
+        val tags = configService.provideResourceTags(sharedPreferencesHelper)
+        tags.forEach {
+          val existingTag = currentResource.meta.getTag(it.system, it.code)
+          if (existingTag == null) {
+            currentResource.meta.addTag(it)
+          }
         }
       }
-
-      fhirEngine.create(*resource)
     }
   }
 
@@ -162,7 +185,19 @@ constructor(
       fhirEngine.delete(resource.resourceType, resource.logicalId)
     }
   }
-
+  /**
+   * Upserts a resource into the database. This function also updates the
+   * [Resource.meta.lastUpdated] and generates the [Resource.id] if it is missing before upserting
+   * the resource. The resource needs to already have a [Resource.id].
+   *
+   * The function benefits since it merges the resource in the database and what is provided. It
+   * does this by filling in properties that are missing in the new resource but available in the
+   * old resource. This is useful such as during form edits where the resource updates might only
+   * contain data generated at this step
+   *
+   * By default, mandatory Resource tags for sync are added but this can be disabled through the
+   * param [addResourceTags]
+   */
   suspend fun <R : Resource> addOrUpdate(addMandatoryTags: Boolean = true, resource: R) {
     return withContext(dispatcherProvider.io()) {
       resource.updateLastUpdated()
@@ -211,7 +246,9 @@ constructor(
     val group = fhirEngine.get<Group>(groupId)
     if (managingEntityConfig?.resourceType == ResourceType.Patient) {
       val relatedPerson =
-        if (group.managingEntity.reference != null) {
+        if (group.managingEntity.reference != null &&
+            group.managingEntity.reference.startsWith(ResourceType.RelatedPerson.name)
+        ) {
           fhirEngine.get(group.managingEntity.reference.extractLogicalIdUuid())
         } else {
           RelatedPerson().apply { id = UUID.randomUUID().toString() }
@@ -647,7 +684,7 @@ constructor(
     val resources = fhirEngine.search<Resource>(search)
     resources.forEach {
       Timber.i("Closing Resource type ${it.resourceType.name} and id ${it.id}")
-      closeResource(it)
+      closeResource(it, resourceConfig)
     }
 
     // recursive related resources
@@ -666,12 +703,12 @@ constructor(
         Timber.i(
           "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}"
         )
-        closeResource(resource)
+        closeResource(resource, resourceConfig)
       }
     }
   }
   @VisibleForTesting
-  suspend fun closeResource(resource: Resource) {
+  suspend fun closeResource(resource: Resource, resourceConfig: ResourceConfig) {
     when (resource) {
       is Task -> {
         if (resource.status != Task.TaskStatus.COMPLETED) {
@@ -681,18 +718,46 @@ constructor(
       }
       is CarePlan -> resource.status = CarePlan.CarePlanStatus.COMPLETED
       is Procedure -> resource.status = Procedure.ProcedureStatus.STOPPED
-      is Condition ->
-        resource.clinicalStatus =
-          CodeableConcept().apply {
-            coding =
-              listOf(
-                Coding().apply {
-                  system = SNOMED_SYSTEM
-                  display = PATIENT_CONDITION_RESOLVED_DISPLAY
-                  code = PATIENT_CONDITION_RESOLVED_CODE
-                }
-              )
+      is Condition -> {
+        // TODO Remove the hardcoded custom logic for closing PNC Condition i.e remove if block
+        // https://github.com/opensrp/fhircore/issues/2488
+        /**
+         * The logic for closing PNC Condition makes 2 assumptions
+         * 1. The eventResource id value is "pncConditionToClose"
+         * 2. Conditions to be closed must have an onset that is more than 28 days in the past
+         */
+        if (resourceConfig.id == PNC_CONDITION_TO_CLOSE_RESOURCE_ID ||
+            resourceConfig.id == SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID
+        ) {
+          val closePncCondition = resource.onset.dateTimeValue().value.daysPassed() > 28
+          val closeSickChildCondition = resource.onset.dateTimeValue().value.daysPassed() > 7
+          if (closePncCondition || closeSickChildCondition) {
+            resource.clinicalStatus =
+              CodeableConcept().apply {
+                coding =
+                  listOf(
+                    Coding().apply {
+                      system = SNOMED_SYSTEM
+                      display = PATIENT_CONDITION_RESOLVED_DISPLAY
+                      code = PATIENT_CONDITION_RESOLVED_CODE
+                    }
+                  )
+              }
           }
+        } else {
+          resource.clinicalStatus =
+            CodeableConcept().apply {
+              coding =
+                listOf(
+                  Coding().apply {
+                    system = SNOMED_SYSTEM
+                    display = PATIENT_CONDITION_RESOLVED_DISPLAY
+                    code = PATIENT_CONDITION_RESOLVED_CODE
+                  }
+                )
+            }
+        }
+      }
       is ServiceRequest -> resource.status = ServiceRequest.ServiceRequestStatus.REVOKED
     }
     fhirEngine.update(resource)
@@ -711,5 +776,7 @@ constructor(
     const val SNOMED_SYSTEM = "http://www.snomed.org/"
     const val PATIENT_CONDITION_RESOLVED_CODE = "370996005"
     const val PATIENT_CONDITION_RESOLVED_DISPLAY = "resolved"
+    const val PNC_CONDITION_TO_CLOSE_RESOURCE_ID = "pncConditionToClose"
+    const val SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID = "sickChildConditionToClose"
   }
 }

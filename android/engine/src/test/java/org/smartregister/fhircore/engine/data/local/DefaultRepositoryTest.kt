@@ -29,6 +29,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -37,6 +38,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import java.time.ZoneId
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,12 +46,15 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.DataRequirement
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Procedure
 import org.hl7.fhir.r4.model.Reference
@@ -96,22 +101,22 @@ class DefaultRepositoryTest : RobolectricTest() {
   private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var defaultRepository: DefaultRepository
   @Inject lateinit var configRulesExecutor: ConfigRulesExecutor
+  private lateinit var spiedConfigService: ConfigService
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    //    runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
-
     dispatcherProvider = DefaultDispatcherProvider()
     fhirEngine = mockk(relaxUnitFun = true)
     sharedPreferenceHelper = SharedPreferencesHelper(application, gson)
+    spiedConfigService = spyk(configService)
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
         dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferenceHelper,
         configurationRegistry = configurationRegistry,
-        configService = configService,
+        configService = spiedConfigService,
         configRulesExecutor = configRulesExecutor
       )
   }
@@ -296,6 +301,32 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
+  fun testCreateShouldNotDuplicateMetaTagsWithSameSystemCode() {
+    val system = "https://smartregister.org/location-tag-id"
+    val code = "86453"
+    val anotherCode = "10200"
+    val coding = Coding(system, code, "Location")
+    val anotherCoding = Coding(system, anotherCode, "Location")
+    val resource = Patient().apply { meta.addTag(coding) }
+
+    // Meta contains 1 tag with code 86453
+    Assert.assertEquals(1, resource.meta.tag.size)
+    val firstTag = resource.meta.tag.first()
+    Assert.assertEquals(code, firstTag.code)
+    Assert.assertEquals(system, firstTag.system)
+
+    coEvery { fhirEngine.create(any()) } returns listOf(resource.id)
+    every { spiedConfigService.provideResourceTags(sharedPreferenceHelper) } returns
+      listOf(coding, anotherCoding)
+    runBlocking { defaultRepository.create(true, resource) }
+
+    // Expecting 2 tags; tag with code 86453 should not be duplicated.
+    Assert.assertEquals(2, resource.meta.tag.size)
+    Assert.assertNotNull(resource.meta.lastUpdated)
+    Assert.assertNotNull(resource.meta.getTag(system, code))
+  }
+
+  @Test
   fun `update() should call Resource#updateLastUpdated and FhirEngine#update`() {
     mockkStatic(Resource::updateLastUpdated)
     val resource = spyk(Patient())
@@ -331,7 +362,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     runBlocking { defaultRepository.addOrUpdate(resource = resource) }
 
-    verify { resource.generateMissingId() }
+    coVerify { resource.generateMissingId() }
 
     unmockkStatic(Resource::generateMissingId)
   }
@@ -429,6 +460,78 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.get<Group>("73847") }
 
     coVerify { defaultRepositorySpy.addOrUpdate(resource = relatedPerson) }
+  }
+
+  @Test
+  fun changeManagingEntityShouldVerifyFhirEngineCallsEvenWithAnOrganizationAsTheCurrentManagingEntity() {
+
+    val patient =
+      Patient().apply {
+        id = "54321"
+        addName().apply {
+          addGiven("Sam")
+          family = "Smith"
+        }
+        addTelecom().apply { value = "ssmith@mail.com" }
+        addAddress().apply {
+          district = "Mawar"
+          city = "Jakarta"
+        }
+        gender = Enumerations.AdministrativeGender.MALE
+      }
+    val relatedPerson =
+      RelatedPerson().apply {
+        active = true
+        name = patient.name
+        birthDate = patient.birthDate
+        telecom = patient.telecom
+        address = patient.address
+        gender = patient.gender
+        this.patient = patient.asReference()
+        id = "testRelatedPersonId"
+      }
+
+    val organization =
+      Organization().apply {
+        id = "12983"
+        name = "Test Organization"
+      }
+
+    val defaultRepositorySpy = spyk(defaultRepository)
+
+    coEvery { fhirEngine.get<Patient>("54321") } returns patient
+    coEvery { fhirEngine.get<Organization>("12983") } returns organization
+    coEvery { fhirEngine.get<RelatedPerson>(any()) } returns relatedPerson
+    coEvery { fhirEngine.create(any()) } returns listOf()
+
+    val group =
+      Group().apply {
+        id = "73847"
+        managingEntity = Reference("Organization/12983")
+        managingEntity.id = "33292"
+      }
+    coEvery { fhirEngine.get<Group>("73847") } returns group
+    coEvery { fhirEngine.update(any()) } just runs
+
+    runBlocking {
+      defaultRepositorySpy.changeManagingEntity(
+        newManagingEntityId = "54321",
+        groupId = "73847",
+        ManagingEntityConfig(
+          resourceType = ResourceType.Patient,
+          relationshipCode =
+            Code().apply {
+              system = "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
+              code = "99990006"
+              display = "Family Head"
+            }
+        )
+      )
+    }
+
+    coVerify { fhirEngine.get<Patient>("54321") }
+    coVerify { fhirEngine.get<Group>("73847") }
+    coVerify(inverse = true) { defaultRepositorySpy.addOrUpdate(resource = relatedPerson) }
   }
 
   @Test
@@ -645,7 +748,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
     val taskSlot = slot<Task>()
 
-    runBlocking { defaultRepository.closeResource(task) }
+    runBlocking {
+      defaultRepository.closeResource(task, ResourceConfig(resource = ResourceType.CarePlan))
+    }
     coVerify { fhirEngine.update(capture(taskSlot)) }
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", taskSlot.captured.id)
     Assert.assertEquals(Task.TaskStatus.CANCELLED, taskSlot.captured.status)
@@ -661,7 +766,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
     val carePlanSlot = slot<CarePlan>()
 
-    runBlocking { defaultRepository.closeResource(carePlan) }
+    runBlocking {
+      defaultRepository.closeResource(carePlan, ResourceConfig(resource = ResourceType.CarePlan))
+    }
     coVerify { fhirEngine.update(capture(carePlanSlot)) }
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", carePlanSlot.captured.id)
     Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
@@ -705,7 +812,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
     val procedureSlot = slot<Procedure>()
 
-    runBlocking { defaultRepository.closeResource(procedure) }
+    runBlocking {
+      defaultRepository.closeResource(procedure, ResourceConfig(resource = ResourceType.Procedure))
+    }
     coVerify { fhirEngine.update(capture(procedureSlot)) }
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", procedureSlot.captured.id)
     Assert.assertEquals(Procedure.ProcedureStatus.STOPPED, procedureSlot.captured.status)
@@ -721,7 +830,12 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
     val serviceRequestSlot = slot<ServiceRequest>()
 
-    runBlocking { defaultRepository.closeResource(serviceRequest) }
+    runBlocking {
+      defaultRepository.closeResource(
+        serviceRequest,
+        ResourceConfig(resource = ResourceType.ServiceRequest)
+      )
+    }
     coVerify { fhirEngine.update(capture(serviceRequestSlot)) }
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", serviceRequestSlot.captured.id)
     Assert.assertEquals(
@@ -740,12 +854,98 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
     val conditionSlot = slot<Condition>()
 
-    runBlocking { defaultRepository.closeResource(condition) }
+    runBlocking {
+      defaultRepository.closeResource(condition, ResourceConfig(resource = ResourceType.Condition))
+    }
     coVerify { fhirEngine.update(capture(conditionSlot)) }
     val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
     Assert.assertEquals("370996005", capturedCode.code)
     Assert.assertEquals("http://www.snomed.org/", capturedCode.system)
     Assert.assertEquals("resolved", capturedCode.display)
+  }
+
+  // TODO Refactor/Remove after https://github.com/opensrp/fhircore/issues/2488
+  @Test
+  fun testCloseResourceUpdatesCorrectConditionStatusForClosePNCCondition() {
+    val condition =
+      Condition().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        clinicalStatus = null
+        onset =
+          DateTimeType(
+            Date.from(
+              java.time.LocalDate.now()
+                .minusDays(30)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+            )
+          )
+      }
+    coEvery { fhirEngine.update(any()) } just runs
+    val conditionSlot = slot<Condition>()
+
+    runBlocking {
+      defaultRepository.closeResource(
+        condition,
+        ResourceConfig(
+          id = DefaultRepository.PNC_CONDITION_TO_CLOSE_RESOURCE_ID,
+          resource = ResourceType.Condition
+        )
+      )
+    }
+    coVerify { fhirEngine.update(capture(conditionSlot)) }
+    val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
+    Assert.assertEquals("370996005", capturedCode.code)
+    Assert.assertEquals("http://www.snomed.org/", capturedCode.system)
+    Assert.assertEquals("resolved", capturedCode.display)
+  }
+
+  // TODO Refactor/Remove after https://github.com/opensrp/fhircore/issues/2488
+  @Test
+  fun testCloseResourceUpdatesCorrectConditionStatusForCloseSickChildCondition() {
+    val condition =
+      Condition().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        clinicalStatus = null
+        onset =
+          DateTimeType(
+            Date.from(
+              java.time.LocalDate.now()
+                .minusDays(30)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+            )
+          )
+      }
+    coEvery { fhirEngine.update(any()) } just runs
+    val conditionSlot = slot<Condition>()
+
+    runBlocking {
+      defaultRepository.closeResource(
+        condition,
+        ResourceConfig(
+          id = DefaultRepository.SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID,
+          resource = ResourceType.Condition
+        )
+      )
+    }
+    coVerify { fhirEngine.update(capture(conditionSlot)) }
+    val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
+    Assert.assertEquals("370996005", capturedCode.code)
+    Assert.assertEquals("http://www.snomed.org/", capturedCode.system)
+    Assert.assertEquals("resolved", capturedCode.display)
+  }
+
+  @Test
+  fun `createRemote() should correctly invoke FhirEngine#createRemote`() {
+    val resource = spyk(Patient())
+    coEvery { fhirEngine.createRemote(resource) } just runs
+
+    runBlocking { defaultRepository.createRemote(false, resource) }
+
+    coVerify { fhirEngine.createRemote(resource) }
   }
 }

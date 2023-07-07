@@ -27,7 +27,6 @@ import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.UploadConfiguration
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 
 @HiltWorker
 class AppSyncWorker
@@ -36,7 +35,7 @@ constructor(
   @Assisted appContext: Context,
   @Assisted workerParams: WorkerParameters,
   val syncListenerManager: SyncListenerManager,
-  val defaultRepository: DefaultRepository,
+  val openSrpFhirEngine: FhirEngine,
   val appTimeStampContext: AppTimeStampContext,
 ) : FhirSyncWorker(appContext, workerParams) {
 
@@ -45,13 +44,12 @@ constructor(
   override fun getDownloadWorkManager(): DownloadWorkManager =
     OpenSrpDownloadManager(
       syncParams = syncListenerManager.loadSyncParams(),
-      context = appTimeStampContext,
-      defaultRepository
+      context = appTimeStampContext
     )
 
   /** Disable ETag for upload */
   override fun getUploadConfiguration(): UploadConfiguration =
     UploadConfiguration(useETagForUpload = false)
 
-  override fun getFhirEngine(): FhirEngine = defaultRepository.fhirEngine
+  override fun getFhirEngine(): FhirEngine = openSrpFhirEngine
 }

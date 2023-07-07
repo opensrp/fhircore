@@ -22,17 +22,14 @@ import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkMana
 import com.google.android.fhir.sync.download.ResourceSearchParams
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 
-/** Created by Ephraim Kigamba - nek.eam@gmail.com on 13-06-2023. */
 class OpenSrpDownloadManager(
   syncParams: ResourceSearchParams,
   val context: ResourceParamsBasedDownloadWorkManager.TimestampContext,
-  val defaultRepository: DefaultRepository
 ) : DownloadWorkManager {
 
-  val downloadWorkManager = ResourceParamsBasedDownloadWorkManager(syncParams, context)
+  private val downloadWorkManager = ResourceParamsBasedDownloadWorkManager(syncParams, context)
 
   override suspend fun getNextRequest(): Request? = downloadWorkManager.getNextRequest()
 
@@ -40,8 +37,6 @@ class OpenSrpDownloadManager(
     downloadWorkManager.getSummaryRequestUrls()
 
   override suspend fun processResponse(response: Resource): Collection<Resource> {
-    return downloadWorkManager.processResponse(response).apply {
-      forEach { it.updateLastUpdated() }
-    }
+    return downloadWorkManager.processResponse(response).onEach { it.updateLastUpdated() }
   }
 }
