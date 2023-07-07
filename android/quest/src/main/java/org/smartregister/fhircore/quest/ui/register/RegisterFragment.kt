@@ -189,19 +189,17 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
   override fun onSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.Started -> {
+      is SyncJobStatus.Started ->
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
             SnackBarMessageConfig(message = getString(R.string.syncing))
           )
         }
-      }
-      is SyncJobStatus.InProgress -> {
+      is SyncJobStatus.InProgress ->
         emitPercentageProgress(
           syncJobStatus.completed * 100 / if (syncJobStatus.total > 0) syncJobStatus.total else 1,
           syncJobStatus.syncOperation == SyncOperation.UPLOAD
         )
-      }
       is SyncJobStatus.Finished -> {
         refreshRegisterData()
         lifecycleScope.launch {
