@@ -53,7 +53,6 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @Inject lateinit var gson: Gson
   private lateinit var configurationRegistry: ConfigurationRegistry
