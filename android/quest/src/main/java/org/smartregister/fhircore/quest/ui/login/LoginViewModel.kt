@@ -29,6 +29,7 @@ import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import io.sentry.protocol.User
+import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -265,6 +266,15 @@ constructor(
       }
     } catch (httpException: HttpException) {
       onFetchUserInfo(Result.failure(httpException))
+    } catch (unknownHostException: UnknownHostException) {
+      onFetchUserInfo(Result.failure(unknownHostException))
+      Timber.e(unknownHostException, "An error occurred fetching the practitioner details")
+    } catch (socketTimeoutException: SocketTimeoutException) {
+      onFetchUserInfo(Result.failure(socketTimeoutException))
+      Timber.e(socketTimeoutException, "An error occurred fetching the practitioner details")
+    } catch (exception: Exception) {
+      onFetchUserInfo(Result.failure(exception))
+      Timber.e(exception, "An error occurred fetching the practitioner details")
     }
   }
 
