@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.executionStartIsBeforeOrToday
 import org.smartregister.fhircore.engine.util.extension.expiredConcept
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.isPastExpiry
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
@@ -133,12 +134,26 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
     Timber.i("Found ${tasks.size} tasks to be updated")
 
     tasks.forEach { task ->
-      // Expired Tasks are handled by other service i.e. FhirTaskExpireWorker
+      val previousStatus = task.status
       if (task.executionStartIsBeforeOrToday() && task.status == TaskStatus.REQUESTED) {
         task.status = TaskStatus.READY
-        defaultRepository.update(task)
-        Timber.d("Task with ID '${task.id}' status updated to READY")
       }
+
+      if (task.hasPartOf() && !task.preRequisiteConditionSatisfied()) task.status = previousStatus
+
+      defaultRepository.update(task)
+      Timber.d("Task with ID '${task.id}' status updated to ${task.status}")
     }
   }
+
+  /**
+   * Check if current [Task] is part of another [Task] then return true if the [Task.TaskStatus] of
+   * the parent [Task](that the current [Task] is part of) is [Task.TaskStatus.COMPLETED], otherwise
+   * return false.
+   */
+  private suspend fun Task.preRequisiteConditionSatisfied() =
+    this.partOf.find { it.reference.startsWith(ResourceType.Task.name + "/") }?.let {
+      defaultRepository.fhirEngine.get<Task>(it.extractId()).status.isIn(TaskStatus.COMPLETED)
+    }
+      ?: false
 }
