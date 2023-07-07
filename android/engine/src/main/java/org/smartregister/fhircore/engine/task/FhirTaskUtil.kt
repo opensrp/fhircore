@@ -29,23 +29,25 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.extension.executionStartIsBeforeOrToday
 import org.smartregister.fhircore.engine.util.extension.expiredConcept
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.isPastExpiry
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
 @Singleton
-class FhirTaskExpireUtil
+class FhirTaskUtil
 @Inject
 constructor(@ApplicationContext val appContext: Context, val defaultRepository: DefaultRepository) {
 
   /**
    * Fetches and returns tasks whose Task.status is either "requested", "ready", "accepted",
    * "in-progress" and "received" and Task.restriction.period.end is <= today. It uses the maximum .
-   * The size of the tasks is between 0 to (tasksCount * 2). It is not guaranteed that the list of
-   * tasks returned will be of size [tasksCount].
+   * The size of the tasks is between 0 to (tasksCount * 2).
    */
   suspend fun expireOverdueTasks(): List<Task> {
     Timber.i("Fetch and expire overdue tasks")
@@ -55,11 +57,11 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
         .search<Task> {
           filter(
             Task.STATUS,
-            { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
-            { value = of(Task.TaskStatus.READY.toCoding()) },
-            { value = of(Task.TaskStatus.ACCEPTED.toCoding()) },
-            { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
-            { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
+            { value = of(TaskStatus.REQUESTED.toCoding()) },
+            { value = of(TaskStatus.READY.toCoding()) },
+            { value = of(TaskStatus.ACCEPTED.toCoding()) },
+            { value = of(TaskStatus.INPROGRESS.toCoding()) },
+            { value = of(TaskStatus.RECEIVED.toCoding()) },
           )
 
           filter(
@@ -73,7 +75,7 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
         .filter { it.isPastExpiry() }
         .also { Timber.i("Going to expire ${it.size} tasks") }
         .onEach { task ->
-          task.status = Task.TaskStatus.CANCELLED
+          task.status = TaskStatus.CANCELLED
           task.statusReason = expiredConcept()
 
           task
@@ -108,4 +110,50 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
       ?.outcomeReference
       ?.lastOrNull()
       ?.extractId() == task.logicalId
+
+  suspend fun updateTaskStatuses() {
+    Timber.i("Update tasks statuses")
+
+    val tasks =
+      defaultRepository.fhirEngine.search<Task> {
+        filter(
+          Task.STATUS,
+          { value = of(TaskStatus.REQUESTED.toCoding()) },
+          { value = of(TaskStatus.ACCEPTED.toCoding()) },
+          { value = of(TaskStatus.RECEIVED.toCoding()) }
+        )
+        filter(
+          Task.PERIOD,
+          {
+            prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+            value = of(DateTimeType(Date()))
+          }
+        )
+      }
+
+    Timber.i("Found ${tasks.size} tasks to be updated")
+
+    tasks.forEach { task ->
+      val previousStatus = task.status
+      if (task.executionStartIsBeforeOrToday() && task.status == TaskStatus.REQUESTED) {
+        task.status = TaskStatus.READY
+      }
+
+      if (task.hasPartOf() && !task.preRequisiteConditionSatisfied()) task.status = previousStatus
+
+      defaultRepository.update(task)
+      Timber.d("Task with ID '${task.id}' status updated to ${task.status}")
+    }
+  }
+
+  /**
+   * Check if current [Task] is part of another [Task] then return true if the [Task.TaskStatus] of
+   * the parent [Task](that the current [Task] is part of) is [Task.TaskStatus.COMPLETED], otherwise
+   * return false.
+   */
+  private suspend fun Task.preRequisiteConditionSatisfied() =
+    this.partOf.find { it.reference.startsWith(ResourceType.Task.name + "/") }?.let {
+      defaultRepository.fhirEngine.get<Task>(it.extractId()).status.isIn(TaskStatus.COMPLETED)
+    }
+      ?: false
 }

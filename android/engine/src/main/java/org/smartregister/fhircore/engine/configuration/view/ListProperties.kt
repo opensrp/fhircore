@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
@@ -25,6 +27,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class ListProperties(
   override val viewType: ViewType,
   override val weight: Float = 0f,
@@ -42,7 +45,7 @@ data class ListProperties(
   val emptyList: NoResultsConfig? = null,
   val orientation: ListOrientation = ListOrientation.VERTICAL,
   val resources: List<ListResource> = emptyList()
-) : ViewProperties() {
+) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): ListProperties {
     return this.copy(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),
@@ -57,6 +60,7 @@ enum class ListOrientation {
 }
 
 @Serializable
+@Parcelize
 data class ListResource(
   val id: String? = null,
   val relatedResourceId: String? = null,
@@ -65,4 +69,4 @@ data class ListResource(
   val sortConfig: SortConfig? = null,
   val fhirPathExpression: String? = null,
   val relatedResources: List<ListResource> = emptyList()
-)
+) : Parcelable, java.io.Serializable

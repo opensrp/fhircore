@@ -37,7 +37,6 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
-import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -63,8 +62,6 @@ import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.event.AppEvent
-import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
@@ -77,7 +74,6 @@ import retrofit2.Response
 @HiltAndroidTest
 class RegisterFragmentTest : RobolectricTest() {
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
-  @Inject lateinit var eventBus: EventBus
 
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
@@ -193,32 +189,6 @@ class RegisterFragmentTest : RobolectricTest() {
   }
 
   @Test
-  fun testHandleRefreshLiveDataCallsRetrieveRegisterUiState() {
-    val registerFragmentSpy = spyk(registerFragment)
-    val registerViewModel = mockk<RegisterViewModel>()
-    every { registerViewModel.retrieveRegisterUiState(any(), any(), any(), any()) } just runs
-    every { registerFragmentSpy getProperty "registerViewModel" } returns registerViewModel
-
-    registerFragmentSpy.handleRefreshLiveData()
-
-    verify {
-      registerViewModel.retrieveRegisterUiState(
-        registerId = "householdRegister",
-        screenTitle = "All HouseHolds",
-        params = emptyArray(),
-        clearCache = true
-      )
-    }
-  }
-
-  @Test
-  fun testOnViewCreatedCallsHandleRefreshLiveData() = runTest {
-    registerFragment.onViewCreated(mockk(), mockk())
-    eventBus.triggerEvent(AppEvent.RefreshCache(QuestionnaireConfig(id = "refresh")))
-    verify { registerViewModel.retrieveRegisterUiState(any(), any(), any(), any()) }
-  }
-
-  @Test
   fun testHandleQuestionnaireSubmissionCallsRegisterViewModelPaginateRegisterDataAndEmitSnackBarState() {
     val snackBarMessageConfig = SnackBarMessageConfig(message = "Family member added")
     val questionnaireConfig =
@@ -233,13 +203,7 @@ class RegisterFragmentTest : RobolectricTest() {
 
     coEvery { registerViewModel.emitSnackBarState(any()) } just runs
     runBlocking { registerFragmentSpy.handleQuestionnaireSubmission(questionnaireSubmission) }
-    coVerify {
-      registerViewModel.paginateRegisterData(
-        registerId = "householdRegister",
-        loadAll = false,
-        clearCache = true
-      )
-    }
+    coVerify { registerFragmentSpy.refreshRegisterData() }
     coVerify { registerViewModel.emitSnackBarState(snackBarMessageConfig) }
   }
 

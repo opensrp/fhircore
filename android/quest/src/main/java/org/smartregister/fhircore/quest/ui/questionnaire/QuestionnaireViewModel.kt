@@ -573,8 +573,8 @@ constructor(
       viewModelScope.launch(dispatcherProvider.io()) {
         try {
           defaultRepository.removeGroup(
-            groupId,
-            deactivateMembers,
+            groupId = groupId,
+            isDeactivateMembers = deactivateMembers,
             configComputedRuleValues = emptyMap()
           )
         } catch (exception: Exception) {

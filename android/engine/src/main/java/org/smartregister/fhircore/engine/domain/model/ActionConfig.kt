@@ -29,6 +29,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkf
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class ActionConfig(
   val trigger: ActionTrigger,
   val workflow: ApplicationWorkflow? = null,
@@ -39,8 +40,9 @@ data class ActionConfig(
   val managingEntity: ManagingEntityConfig? = null,
   val params: List<ActionParameter> = emptyList(),
   val resourceConfig: FhirResourceConfig? = null,
-  val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
-) {
+  val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
+  val popNavigationBackStack: Boolean? = null
+) : Parcelable, java.io.Serializable {
   fun paramsBundle(computedValuesMap: Map<String, Any> = emptyMap()): Bundle =
     Bundle().apply {
       params.filter { !it.paramType?.name.equals(PREPOPULATE_PARAM_TYPE) }.forEach {
