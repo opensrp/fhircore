@@ -26,7 +26,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
  * access.
  */
 @Serializable(with = ViewPropertiesSerializer::class)
-abstract class ViewProperties {
+abstract class ViewProperties : java.io.Serializable {
   abstract val viewType: ViewType
   abstract val weight: Float
   abstract val backgroundColor: String?

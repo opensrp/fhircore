@@ -20,7 +20,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.VisibleForTesting
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
@@ -30,6 +29,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -43,6 +43,7 @@ import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 @AndroidEntryPoint
 class ProfileFragment : Fragment() {
@@ -97,34 +98,44 @@ class ProfileFragment : Fragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+        // Each profile should have a unique eventId
         eventBus
           .events
-          .getFor(MainNavigationScreen.Profile.route.toString())
+          .getFor(MainNavigationScreen.Profile.eventId(profileFragmentArgs.profileId))
           .onEach { appEvent ->
             when (appEvent) {
               is AppEvent.OnSubmitQuestionnaire ->
                 handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
-              else -> {}
             }
           }
-          .launchIn(lifecycleScope)
+          .launchIn(viewLifecycleOwner.lifecycleScope)
       }
     }
   }
 
-  @VisibleForTesting
   suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
-    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+    with(questionnaireSubmission) {
+      val (questionnaireConfig, _) = this
 
-    // Always refresh data when questionnaire is submitted
-    with(profileFragmentArgs) {
-      profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
-    }
+      appMainViewModel.onQuestionnaireSubmission(this)
 
-    // Display SnackBar message
-    val (questionnaireConfig, _) = questionnaireSubmission
-    questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
-      profileViewModel.emitSnackBarState(snackBarMessageConfig)
+      with(profileFragmentArgs) {
+        profileViewModel.retrieveProfileUiState(profileId, resourceId, resourceConfig, params)
+      }
+
+      questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
+        profileViewModel.emitSnackBarState(snackBarMessageConfig)
+      }
+
+      // Perform optional on submit actions
+      val onSubmitActions = questionnaireConfig.onSubmitActions
+      if (onSubmitActions != null) {
+        appMainViewModel.retrieveAppMainUiState(refreshAll = false)
+        onSubmitActions.handleClickEvent(
+          navController = findNavController(),
+          resourceData = profileViewModel.profileUiState.value.resourceData
+        )
+      }
     }
   }
 }

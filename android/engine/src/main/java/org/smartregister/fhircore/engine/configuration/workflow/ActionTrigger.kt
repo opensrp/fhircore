@@ -24,5 +24,8 @@ enum class ActionTrigger {
   ON_CLICK,
 
   /** Action that is triggered to count register items */
-  ON_COUNT
+  ON_COUNT,
+
+  /** Action that is triggered when a Questionnaire has been submitted */
+  ON_QUESTIONNAIRE_SUBMISSION
 }

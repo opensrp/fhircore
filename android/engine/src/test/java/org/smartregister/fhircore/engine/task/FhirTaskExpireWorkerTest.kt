@@ -54,7 +54,6 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 
@@ -64,12 +63,11 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
-
   private val fhirEngine: FhirEngine = mockk(relaxed = true)
   private val defaultRepository: DefaultRepository = mockk(relaxed = true)
   @BindValue
-  var fhirTaskExpireUtil: FhirTaskExpireUtil =
-    FhirTaskExpireUtil(ApplicationProvider.getApplicationContext(), defaultRepository)
+  var fhirTaskUtil: FhirTaskUtil =
+    FhirTaskUtil(ApplicationProvider.getApplicationContext(), defaultRepository)
   private lateinit var fhirTaskExpireWorker: FhirTaskExpireWorker
   private lateinit var tasks: List<Task>
 
@@ -206,7 +204,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
         context = appContext,
         workerParams = workerParameters,
         defaultRepository = defaultRepository,
-        fhirTaskExpireUtil = fhirTaskExpireUtil,
+        fhirTaskUtil = fhirTaskUtil,
         dispatcherProvider = coroutineTestRule.testDispatcherProvider
       )
     }
