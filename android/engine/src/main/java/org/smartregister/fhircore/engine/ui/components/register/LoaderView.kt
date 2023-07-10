@@ -119,7 +119,7 @@ fun LoaderDialog(
     }
   }
   SideEffect {
-    if (currentPercentage > 100) {
+    if (currentPercentage >= 100) {
       openDialog.value = false
     }
   }
