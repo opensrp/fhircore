@@ -38,7 +38,6 @@ import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.json.JSONObject
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -109,7 +108,7 @@ constructor(
     configsJsonMap.values
       .filter {
         try {
-          JSONObject(it).getString("configType").equals(configType.name, ignoreCase = true)
+          JSONObject(it).getString(CONFIG_TYPE).equals(configType.name, ignoreCase = true)
         } catch (e: Exception) {
           Timber.w(e.localizedMessage)
           false
@@ -364,36 +363,47 @@ constructor(
               )
           }
           .forEach { resourceGroup ->
-            val resourceIds =
-              resourceGroup.value.joinToString(",") { sectionComponent ->
-                sectionComponent.focus.extractId()
-              }
-            val searchPath = resourceGroup.key + "?${Composition.SP_RES_ID}=$resourceIds"
+            val chunkedResourceIdList = resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
 
-            fhirResourceDataSource.getResource(searchPath).entry.forEach { bundleEntryComponent ->
-              when (bundleEntryComponent.resource) {
-                is ListResource -> {
-                  addOrUpdate(bundleEntryComponent.resource)
-                  val list = bundleEntryComponent.resource as ListResource
-                  list.entry.forEach { listEntryComponent ->
-                    val resourceKey = listEntryComponent.item.reference.substringBefore("/")
-                    val resourceId = listEntryComponent.item.reference.extractLogicalIdUuid()
-
-                    val listResourceUrlPath = resourceKey + "?${Composition.SP_RES_ID}=$resourceId"
-                    fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
-                      listEntryResourceBundle ->
-                      addOrUpdate(listEntryResourceBundle.resource)
-                      Timber.d("Fetched and processed list reference $listResourceUrlPath")
-                    }
-                  }
+            chunkedResourceIdList.forEach {
+              val resourceIds =
+                it.joinToString(DEFAULT_STRING_SEPARATOR) { sectionComponent ->
+                  sectionComponent.focus.extractId()
                 }
-                else -> {
-                  addOrUpdate(bundleEntryComponent.resource)
-                  Timber.d("Fetched and processed resources $searchPath")
-                }
-              }
+              processCompositionManifestResources(resourceGroup.key, resourceIds)
             }
           }
+      }
+    }
+  }
+
+  private suspend fun processCompositionManifestResources(
+    resourceType: String,
+    resourceIds: String
+  ) {
+    val searchPath = resourceType + "?${Composition.SP_RES_ID}=$resourceIds"
+
+    fhirResourceDataSource.getResource(searchPath).entry.forEach { bundleEntryComponent ->
+      when (bundleEntryComponent.resource) {
+        is ListResource -> {
+          addOrUpdate(bundleEntryComponent.resource)
+          val list = bundleEntryComponent.resource as ListResource
+          list.entry.forEach { listEntryComponent ->
+            val resourceKey = listEntryComponent.item.reference.substringBefore("/")
+            val resourceId = listEntryComponent.item.reference.extractLogicalIdUuid()
+
+            val listResourceUrlPath = resourceKey + "?${Composition.SP_RES_ID}=$resourceId"
+            fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
+              listEntryResourceBundle ->
+              addOrUpdate(listEntryResourceBundle.resource)
+              Timber.d("Fetched and processed List reference $listResourceUrlPath")
+            }
+          }
+        }
+        else -> {
+          addOrUpdate(bundleEntryComponent.resource)
+          Timber.d("Fetched and processed resources $searchPath")
+        }
       }
     }
   }
@@ -431,12 +441,15 @@ constructor(
   companion object {
     const val BASE_CONFIG_PATH = "configs/%s"
     const val COMPOSITION_CONFIG_PATH = "configs/%s/composition_config.json"
-    const val DEBUG_SUFFIX = "/debug"
-    const val ORGANIZATION = "organization"
-    const val ID = "_id"
-    const val COUNT = "count"
-    const val TYPE_REFERENCE_DELIMITER = "/"
     const val CONFIG_SUFFIX = "_config"
+    const val CONFIG_TYPE = "configType"
+    const val COUNT = "count"
+    const val DEBUG_SUFFIX = "/debug"
+    const val DEFAULT_STRING_SEPARATOR = ","
     const val ICON_PREFIX = "ic_"
+    const val ID = "_id"
+    const val MANIFEST_PROCESSOR_BATCH_SIZE = 30
+    const val ORGANIZATION = "organization"
+    const val TYPE_REFERENCE_DELIMITER = "/"
   }
 }

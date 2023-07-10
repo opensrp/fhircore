@@ -59,7 +59,7 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
 import org.smartregister.fhircore.engine.task.FhirTaskExpireWorker
-import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
+import org.smartregister.fhircore.engine.task.FhirTaskStatusUpdateWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -142,17 +142,19 @@ constructor(
       }
   }
 
-  suspend fun retrieveAppMainUiState() {
-    appMainUiState.value =
-      appMainUiStateOf(
-        appTitle = applicationConfiguration.appTitle,
-        currentLanguage = loadCurrentLanguage(),
-        username = secureSharedPreference.retrieveSessionUsername() ?: "",
-        lastSyncTime = retrieveLastSyncTimestamp() ?: "",
-        languages = configurationRegistry.fetchLanguages(),
-        navigationConfiguration = navigationConfiguration,
-        registerCountMap = registerCountMap
-      )
+  suspend fun retrieveAppMainUiState(refreshAll: Boolean = true) {
+    if (refreshAll) {
+      appMainUiState.value =
+        appMainUiStateOf(
+          appTitle = applicationConfiguration.appTitle,
+          currentLanguage = loadCurrentLanguage(),
+          username = secureSharedPreference.retrieveSessionUsername() ?: "",
+          lastSyncTime = retrieveLastSyncTimestamp() ?: "",
+          languages = configurationRegistry.fetchLanguages(),
+          navigationConfiguration = navigationConfiguration,
+          registerCountMap = registerCountMap
+        )
+    }
 
     // Count data for configured registers by populating the register count map
     viewModelScope.launch {
@@ -195,13 +197,12 @@ constructor(
               appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: "")
         }
       }
-      is AppMainEvent.TriggerWorkflow -> {
+      is AppMainEvent.TriggerWorkflow ->
         event.navMenu.actions?.handleClickEvent(
           navController = event.navController,
           resourceData = null,
           navMenu = event.navMenu
         )
-      }
       is AppMainEvent.OpenProfile -> {
         val args =
           bundleOf(
@@ -299,8 +300,8 @@ constructor(
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
     workManager.run {
-      schedulePeriodically<FhirTaskPlanWorker>(
-        workId = FhirTaskPlanWorker.WORK_ID,
+      schedulePeriodically<FhirTaskStatusUpdateWorker>(
+        workId = FhirTaskStatusUpdateWorker.WORK_ID,
         duration = Duration.tryParse(applicationConfiguration.taskStatusUpdateJobDuration),
         requiresNetwork = false
       )
@@ -346,8 +347,12 @@ constructor(
           QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED -> Task.TaskStatus.COMPLETED
           else -> Task.TaskStatus.COMPLETED
         }
+
       withContext(dispatcherProvider.io()) {
-        fhirCarePlanGenerator.updateTaskDetailsByResourceId(taskId.extractLogicalIdUuid(), status)
+        fhirCarePlanGenerator.updateTaskDetailsByResourceId(
+          id = taskId.extractLogicalIdUuid(),
+          status = status
+        )
       }
     }
   }

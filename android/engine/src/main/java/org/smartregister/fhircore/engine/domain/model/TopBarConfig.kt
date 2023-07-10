@@ -16,15 +16,18 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 
 @Serializable
+@Parcelize
 data class TopBarConfig(
   val title: CompoundTextProperties? = null,
   val collapsible: Boolean = true,
   val content: List<ViewProperties> = emptyList(),
   val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
   val showOverflowMenu: Boolean = true
-)
+) : Parcelable, java.io.Serializable

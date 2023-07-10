@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a `limitTo` service function that limits lists sizes to a define limit
 - Implement configurable image/icon widget
 - Added functionality to filter related resources for list view
+- Added the sick child workflow automated closure
 
 ### Fixed
 - Logout while offline causes flicker(multiple render) of Login Page
@@ -70,6 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Calculate DUE dates for dependent Tasks
 - Triggering QuestionnaireResponse extraction for Questionnaires closed via a Confirm Dialog
 - Fix the OVERDUE service status setting on the `RulesFactory#generateTaskServiceStatus()`
+- Fix change HH head breaking if a HH head is not already assigned
+- `Task.status` for tasks created today and DUE today not update to `ready`
 
 ### Changed
 - Refactored how the related resources SELECT and COUNT queries search results are represented. 

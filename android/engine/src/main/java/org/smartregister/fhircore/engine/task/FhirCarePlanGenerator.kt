@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.engine.task
 
 import androidx.annotation.VisibleForTesting
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.util.TerserUtil
 import com.google.android.fhir.FhirEngine
@@ -75,7 +73,7 @@ constructor(
   val fhirPathEngine: FHIRPathEngine,
   val transformSupportServices: TransformSupportServices,
   val defaultRepository: DefaultRepository,
-  val workManager: WorkManager
+  val fhirTaskUtil: FhirTaskUtil
 ) {
   val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
@@ -172,8 +170,7 @@ constructor(
 
     if (carePlanModified) saveCarePlan(output)
 
-    // Schedule onetime immediate job that updates the status of the tasks
-    workManager.enqueue(OneTimeWorkRequestBuilder<FhirTaskPlanWorker>().build())
+    fhirTaskUtil.updateUpcomingTasksToDue()
 
     return if (output.hasActivity()) output else null
   }
