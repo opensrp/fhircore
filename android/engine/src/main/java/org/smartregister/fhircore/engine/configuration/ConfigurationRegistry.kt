@@ -33,8 +33,9 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Bundle.BundleEntryComponent
 import org.hl7.fhir.r4.model.Composition
-import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.json.JSONObject
@@ -47,7 +48,6 @@ import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fileExtension
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.interpolate
@@ -364,14 +364,25 @@ constructor(
               )
           }
           .forEach { resourceGroup ->
-            val chunkedResourceIdList = resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+            if (resourceGroup.key == ResourceType.List.name) {
+              resourceGroup.value.forEach {
+                processCompositionManifestResources(
+                  FHIR_GATEWAY_MODE_HEADER_VALUE,
+                  "${resourceGroup.key}/${it.focus.extractId()}",
+                )
+              }
+            } else {
+              val chunkedResourceIdList = resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
 
-            chunkedResourceIdList.forEach {
-              val resourceIds =
-                it.joinToString(DEFAULT_STRING_SEPARATOR) { sectionComponent ->
-                  sectionComponent.focus.extractId()
-                }
-              processCompositionManifestResources(resourceGroup.key, resourceIds)
+              chunkedResourceIdList.forEach {
+                val resourceIds =
+                  it.joinToString(DEFAULT_STRING_SEPARATOR) { sectionComponent ->
+                    sectionComponent.focus.extractId()
+                  }
+                processCompositionManifestResources(
+                  searchPath = "${resourceGroup.key}?${Composition.SP_RES_ID}=$resourceIds",
+                )
+              }
             }
           }
       }
@@ -379,25 +390,29 @@ constructor(
   }
 
   private suspend fun processCompositionManifestResources(
-    resourceType: String,
-    resourceIds: String,
+    gatewayModeHeaderValue: String? = null,
+    searchPath: String,
   ) {
-    val searchPath = resourceType + "?${Composition.SP_RES_ID}=$resourceIds"
+    val resultBundle =
+      if (gatewayModeHeaderValue.isNullOrEmpty()) {
+        fhirResourceDataSource.getResource(searchPath)
+      } else
+        fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, searchPath)
 
-    fhirResourceDataSource.getResource(searchPath).entry.forEach { bundleEntryComponent ->
+    resultBundle.entry.forEach { bundleEntryComponent ->
       when (bundleEntryComponent.resource) {
-        is ListResource -> {
-          addOrUpdate(bundleEntryComponent.resource)
-          val list = bundleEntryComponent.resource as ListResource
-          list.entry.forEach { listEntryComponent ->
-            val resourceKey = listEntryComponent.item.reference.substringBefore("/")
-            val resourceId = listEntryComponent.item.reference.extractLogicalIdUuid()
-
-            val listResourceUrlPath = resourceKey + "?${Composition.SP_RES_ID}=$resourceId"
-            fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
-              listEntryResourceBundle ->
-              addOrUpdate(listEntryResourceBundle.resource)
-              Timber.d("Fetched and processed List reference $listResourceUrlPath")
+        is Bundle -> {
+          val bundle = bundleEntryComponent.resource as Bundle
+          bundle.entry.forEach { entryComponent ->
+            when (entryComponent.resource) {
+              is Bundle -> {
+                val bundle = entryComponent.resource as Bundle
+                addOrUpdate(bundle)
+                bundle.entry.forEach { innerEntryComponent ->
+                  saveListEntryResource(innerEntryComponent)
+                }
+              }
+              else -> saveListEntryResource(entryComponent)
             }
           }
         }
@@ -407,6 +422,13 @@ constructor(
         }
       }
     }
+  }
+
+  private suspend fun saveListEntryResource(entryComponent: BundleEntryComponent) {
+    addOrUpdate(entryComponent.resource)
+    Timber.d(
+      "Fetched and processed List reference ${entryComponent.resource.resourceType}/${entryComponent.resource.id}",
+    )
   }
 
   /**
@@ -452,5 +474,6 @@ constructor(
     const val MANIFEST_PROCESSOR_BATCH_SIZE = 30
     const val ORGANIZATION = "organization"
     const val TYPE_REFERENCE_DELIMITER = "/"
+    const val FHIR_GATEWAY_MODE_HEADER_VALUE = "list-entries"
   }
 }

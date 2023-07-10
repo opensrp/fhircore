@@ -18,6 +18,8 @@ package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
@@ -35,12 +37,15 @@ import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Bundle.BundleEntryComponent
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Composition.SectionComponent
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -596,5 +601,115 @@ class ConfigurationRegistryTest : RobolectricTest() {
       requestPathArgumentSlot.first(),
     )
     Assert.assertEquals("StructureMap?_id=id-31", requestPathArgumentSlot.last())
+  }
+
+  @Test
+  fun testFetchNonWorkflowConfigListResourcesPersistsActualListEntryResources() {
+    val appId = "theAppId"
+    val compositionSections = mutableListOf<SectionComponent>()
+    compositionSections.add(
+      SectionComponent().apply { focus.reference = "${ResourceType.List.name}/46464" },
+    )
+
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
+    val listJson =
+      context.assets.open("sample_commodities_list_bundle.json").bufferedReader().use {
+        it.readText()
+      }
+    val listResource = iParser.parseResource(listJson) as Bundle
+
+    val composition =
+      Composition().apply {
+        identifier = Identifier().apply { value = appId }
+        section = compositionSections
+      }
+    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+
+    coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
+      listOf(composition)
+
+    coEvery {
+      fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entries", "List/46464")
+    } returns Bundle().apply { entry = listOf(BundleEntryComponent().setResource(listResource)) }
+
+    coEvery { fhirEngine.get(any(), any()) } throws
+      ResourceNotFoundException(ResourceType.Group.name, "some-id")
+
+    coEvery { fhirEngine.createRemote(any()) } just runs
+
+    runTest { configRegistry.fetchNonWorkflowConfigResources() }
+
+    val requestPathArgumentSlot = mutableListOf<Group>()
+
+    coVerify(exactly = 2) { fhirEngine.createRemote(capture(requestPathArgumentSlot)) }
+
+    Assert.assertEquals(2, requestPathArgumentSlot.size)
+
+    Assert.assertEquals("Group/1000001", requestPathArgumentSlot.first().id)
+    Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.first().resourceType)
+
+    Assert.assertEquals("Group/2000001", requestPathArgumentSlot.last().id)
+    Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.last().resourceType)
+  }
+
+  @Test
+  fun testFetchNonWorkflowConfigListResourcesNestedBundlePersistsActualListEntryResources() {
+    val appId = "theAppId"
+    val compositionSections = mutableListOf<SectionComponent>()
+    compositionSections.add(
+      SectionComponent().apply { focus.reference = "${ResourceType.List.name}/46464" },
+    )
+
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
+    val listJson =
+      context.assets.open("sample_commodities_list_bundle.json").bufferedReader().use {
+        it.readText()
+      }
+    val listResource = iParser.parseResource(listJson) as Bundle
+
+    val composition =
+      Composition().apply {
+        identifier = Identifier().apply { value = appId }
+        section = compositionSections
+      }
+    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+
+    coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
+      listOf(composition)
+
+    coEvery {
+      fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entries", "List/46464")
+    } returns
+      Bundle().apply {
+        entry =
+          listOf(
+            BundleEntryComponent()
+              .setResource(
+                Bundle().apply { entry = listOf(BundleEntryComponent().setResource(listResource)) },
+              ),
+          )
+      }
+
+    coEvery { fhirEngine.get(any(), any()) } throws
+      ResourceNotFoundException(ResourceType.Group.name, "some-id-not-found")
+
+    coEvery { fhirEngine.createRemote(any()) } just runs
+
+    runTest { configRegistry.fetchNonWorkflowConfigResources() }
+
+    val requestPathArgumentSlot = mutableListOf<Resource>()
+
+    coVerify(exactly = 3) { fhirEngine.createRemote(capture(requestPathArgumentSlot)) }
+
+    Assert.assertEquals(3, requestPathArgumentSlot.size)
+
+    Assert.assertEquals("Bundle/the-commodities-bundle-id", requestPathArgumentSlot[0].id)
+    Assert.assertEquals(ResourceType.Bundle, requestPathArgumentSlot[0].resourceType)
+
+    Assert.assertEquals("Group/1000001", requestPathArgumentSlot[1].id)
+    Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot[1].resourceType)
+
+    Assert.assertEquals("Group/2000001", requestPathArgumentSlot.last().id)
+    Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.last().resourceType)
   }
 }
