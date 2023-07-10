@@ -57,7 +57,7 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
 import org.smartregister.fhircore.engine.task.FhirTaskExpireWorker
-import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
+import org.smartregister.fhircore.engine.task.FhirTaskStatusUpdateWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -293,8 +293,8 @@ constructor(
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
     workManager.run {
-      schedulePeriodically<FhirTaskPlanWorker>(
-        workId = FhirTaskPlanWorker.WORK_ID,
+      schedulePeriodically<FhirTaskStatusUpdateWorker>(
+        workId = FhirTaskStatusUpdateWorker.WORK_ID,
         duration = Duration.tryParse(applicationConfiguration.taskStatusUpdateJobDuration),
         requiresNetwork = false
       )

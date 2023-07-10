@@ -22,7 +22,6 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
 import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
-import ca.uhn.fhir.i18n.Msg.code
 import com.google.android.fhir.sync.ResourceSyncException
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation

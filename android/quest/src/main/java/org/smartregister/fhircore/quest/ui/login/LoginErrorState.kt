@@ -17,8 +17,9 @@
 package org.smartregister.fhircore.quest.ui.login
 
 enum class LoginErrorState {
-  UNKNOWN_HOST,
+  ERROR_FETCHING_USER,
   INVALID_CREDENTIALS,
+  INVALID_OFFLINE_STATE,
   MULTI_USER_LOGIN_ATTEMPT,
-  ERROR_FETCHING_USER
+  UNKNOWN_HOST
 }
