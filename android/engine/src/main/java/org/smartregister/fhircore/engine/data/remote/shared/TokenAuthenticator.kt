@@ -200,7 +200,8 @@ constructor(
     oAuthResponse: OAuthResponse,
   ) {
     accountManager.run {
-      val account = accounts.find { it.name == username }
+      val account =
+        accounts.find { it.name == username && it.type == authConfiguration.accountType }
       if (account != null) {
         setPassword(account, oAuthResponse.refreshToken)
         setAuthToken(account, AUTH_TOKEN_TYPE, oAuthResponse.accessToken)
