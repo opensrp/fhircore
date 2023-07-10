@@ -291,14 +291,6 @@ constructor(
         groupIdentifier = questionnaireConfig.groupResource!!.groupIdentifier,
         memberResourceType = questionnaireConfig.groupResource!!.memberResourceType
       )
-    } else if (questionnaireConfig.resourceIdentifier != null &&
-        questionnaireConfig.resourceType != null
-    ) {
-      try {
-        deleteResource(questionnaireConfig.resourceType!!, questionnaireConfig.resourceIdentifier!!)
-      } catch (e: ResourceNotFoundException) {
-        Timber.e(e, "Resource to delete not found!")
-      }
     }
   }
 
