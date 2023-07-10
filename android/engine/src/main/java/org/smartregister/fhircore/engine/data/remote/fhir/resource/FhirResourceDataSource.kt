@@ -29,6 +29,12 @@ class FhirResourceDataSource @Inject constructor(private val resourceService: Fh
   suspend fun getResource(path: String): Bundle {
     return resourceService.getResource(path)
   }
+  suspend fun getResourceWithGatewayModeHeader(
+    gatewayModeHeaderValue: String,
+    path: String
+  ): Bundle {
+    return resourceService.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, path)
+  }
 
   suspend fun insert(resourceType: String, resourceId: String, payload: String): Resource {
     return resourceService.insertResource(

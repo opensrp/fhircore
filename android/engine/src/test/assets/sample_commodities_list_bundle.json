@@ -1,0 +1,95 @@
+{
+  "resourceType": "Bundle",
+  "id": "the-commodities-bundle-id",
+  "type": "batch-response",
+  "link": [
+    {
+      "relation": "self",
+      "url": "http://test-localhost.local"
+    }
+  ],
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Group",
+        "id": "1000001",
+        "type": "medication",
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "1000002",
+              "display": "Supply management"
+            }
+          ]
+        },
+        "name": "Albendazole 400mg Tablets",
+        "characteristic": [
+          {
+            "code": {
+              "coding": [
+                {
+                  "system": "http://snomed.info/sct",
+                  "code": "1000003",
+                  "display": "Unit of measure"
+                }
+              ]
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://snomed.info/sct",
+                  "code": "100004",
+                  "display": "Unit"
+                }
+              ],
+              "text": "Tablets"
+            },
+            "exclude": true
+          }
+        ]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Group",
+        "id": "2000001",
+        "type": "medication",
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "2000002",
+              "display": "Supply management"
+            }
+          ]
+        },
+        "name": "Albendazole 400mg Tablets",
+        "characteristic": [
+          {
+            "code": {
+              "coding": [
+                {
+                  "system": "http://snomed.info/sct",
+                  "code": "2000003",
+                  "display": "Unit of measure"
+                }
+              ]
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://snomed.info/sct",
+                  "code": "200004",
+                  "display": "Unit"
+                }
+              ],
+              "text": "Capsules"
+            },
+            "exclude": true
+          }
+        ]
+      }
+    }
+  ]
+}
