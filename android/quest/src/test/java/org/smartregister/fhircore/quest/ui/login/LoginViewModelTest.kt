@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.login
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
-import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -37,10 +36,10 @@ import org.hl7.fhir.r4.model.Organization
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
@@ -53,6 +52,7 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.quest.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -70,7 +70,6 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
   @Inject lateinit var configService: ConfigService
-  @Inject lateinit var gson: Gson
   private lateinit var loginViewModel: LoginViewModel
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
   private val accountAuthenticator: AccountAuthenticator = mockk()
@@ -191,6 +190,19 @@ internal class LoginViewModelTest : RobolectricTest() {
     every { tokenAuthenticator.sessionActive() } returns true
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
     Assert.assertFalse(loginViewModel.navigateToHome.value!!)
+  }
+
+  @Test
+  @Ignore
+  fun testSuccessfulOnlineLoginWithWhitespaceInCredentials() {
+    loginViewModel.run {
+      onUsernameUpdated("$thisUsername \n  \t")
+      onPasswordUpdated("$thisPassword \n  \t")
+    }
+    every { tokenAuthenticator.sessionActive() } returns true
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+
+    // TODO Complete test + Assert
   }
 
   @Test

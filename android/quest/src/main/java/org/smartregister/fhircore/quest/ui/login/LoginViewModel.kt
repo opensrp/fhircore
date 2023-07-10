@@ -121,7 +121,7 @@ constructor(
       _showProgressBar.postValue(true)
 
       val trimmedUsername = username.value!!.trim()
-      val passwordAsCharArray = password.value!!.toCharArray()
+      val passwordAsCharArray = password.value!!.trim().toCharArray()
 
       viewModelScope.launch(dispatcherProvider.io()) {
         if (context.getActivity()!!.isDeviceOnline()) {
