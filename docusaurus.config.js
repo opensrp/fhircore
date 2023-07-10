@@ -39,7 +39,10 @@ const config = {
           editUrl:
             'https://github.com/opensrp/fhircore/tree/main/docs',
         },
-        blog: false
+        blog: false,
+        theme: {
+          customCss: [require.resolve('./static/css/custom.css')],
+        }
       }),
     ],
   ],
