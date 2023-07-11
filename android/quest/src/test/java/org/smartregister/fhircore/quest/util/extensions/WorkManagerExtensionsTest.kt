@@ -49,11 +49,9 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.engine.task.FhirTaskStatusUpdateWorker
+import org.smartregister.fhircore.engine.task.FhirTaskUtil
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -62,15 +60,16 @@ class WorkManagerExtensionsTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @Inject lateinit var fhirEngine: FhirEngine
   @Inject lateinit var defaultRepository: DefaultRepository
-  private lateinit var fhirTaskPlanWorker: FhirTaskPlanWorker
-  private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private lateinit var fhirTaskStatusUpdateWorker: FhirTaskStatusUpdateWorker
+  private val fhirTaskUtil: FhirTaskUtil = mockk(relaxed = true)
 
   @Before
   fun setup() {
     hiltRule.inject()
-    fhirTaskPlanWorker =
-      TestListenableWorkerBuilder<FhirTaskPlanWorker>(ApplicationProvider.getApplicationContext())
+    fhirTaskStatusUpdateWorker =
+      TestListenableWorkerBuilder<FhirTaskStatusUpdateWorker>(
+          ApplicationProvider.getApplicationContext()
+        )
         .setWorkerFactory(FhirTaskPlanWorkerFactory())
         .build()
   }
@@ -78,13 +77,14 @@ class WorkManagerExtensionsTest : RobolectricTest() {
   @Test
   fun schedulePeriodicallyShouldEnqueueWork() {
     val workManager = WorkManager.getInstance(ApplicationProvider.getApplicationContext())
-    workManager.schedulePeriodically<FhirTaskPlanWorker>(
-      workId = FhirTaskPlanWorker.WORK_ID,
+    workManager.schedulePeriodically<FhirTaskStatusUpdateWorker>(
+      workId = FhirTaskStatusUpdateWorker.WORK_ID,
       repeatInterval = 45,
       existingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.REPLACE
     )
 
-    val workInfo = workManager.getWorkInfosForUniqueWork(FhirTaskPlanWorker.WORK_ID).get()[0]
+    val workInfo =
+      workManager.getWorkInfosForUniqueWork(FhirTaskStatusUpdateWorker.WORK_ID).get()[0]
 
     Assert.assertNotNull(workInfo.id)
   }
@@ -95,12 +95,10 @@ class WorkManagerExtensionsTest : RobolectricTest() {
       workerClassName: String,
       workerParameters: WorkerParameters
     ): ListenableWorker {
-      return FhirTaskPlanWorker(
+      return FhirTaskStatusUpdateWorker(
         appContext = appContext,
         workerParams = workerParameters,
-        defaultRepository = defaultRepository,
-        sharedPreferencesHelper = sharedPreferencesHelper,
-        configurationRegistry = configurationRegistry,
+        fhirTaskUtil = fhirTaskUtil,
         dispatcherProvider = this@WorkManagerExtensionsTest.coroutineTestRule.testDispatcherProvider
       )
     }

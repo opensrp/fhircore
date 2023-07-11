@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.engine.task
 
 import androidx.test.core.app.ApplicationProvider
-import androidx.work.WorkManager
-import androidx.work.WorkRequest
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
@@ -115,10 +113,12 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @HiltAndroidTest
 class FhirCarePlanGeneratorTest : RobolectricTest() {
+
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   @Inject lateinit var transformSupportServices: TransformSupportServices
   @Inject lateinit var fhirPathEngine: FHIRPathEngine
+  private lateinit var fhirTaskUtil: FhirTaskUtil
   private lateinit var fhirEngine: FhirEngine
   private lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
   private lateinit var structureMapUtilities: StructureMapUtilities
@@ -134,12 +134,17 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     hiltRule.inject()
     fhirEngine = spyk(FhirEngineProvider.getInstance(ApplicationProvider.getApplicationContext()))
     structureMapUtilities = StructureMapUtilities(transformSupportServices.simpleWorkerContext)
-
-    val workManager = mockk<WorkManager>()
-
     every { defaultRepository.dispatcherProvider } returns coroutineTestRule.testDispatcherProvider
     every { defaultRepository.fhirEngine } returns fhirEngine
-    every { workManager.enqueue(any<WorkRequest>()) } returns mockk()
+    coEvery { fhirEngine.search<Task>(any<Search>()) } returns emptyList()
+
+    fhirTaskUtil =
+      spyk(
+        FhirTaskUtil(
+          appContext = ApplicationProvider.getApplicationContext(),
+          defaultRepository = defaultRepository
+        )
+      )
 
     fhirCarePlanGenerator =
       FhirCarePlanGenerator(
@@ -147,7 +152,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         transformSupportServices = transformSupportServices,
         fhirPathEngine = fhirPathEngine,
         defaultRepository = defaultRepository,
-        workManager = workManager
+        fhirTaskUtil = fhirTaskUtil
       )
 
     immunizationResource =

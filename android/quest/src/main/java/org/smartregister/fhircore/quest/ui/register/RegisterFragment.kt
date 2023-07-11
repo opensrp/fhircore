@@ -20,7 +20,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
@@ -40,6 +39,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.android.fhir.sync.SyncJobStatus
@@ -63,6 +63,7 @@ import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
 import retrofit2.HttpException
@@ -71,11 +72,11 @@ import timber.log.Timber
 @ExperimentalMaterialApi
 @AndroidEntryPoint
 class RegisterFragment : Fragment(), OnSyncListener {
+
   @Inject lateinit var syncListenerManager: SyncListenerManager
   @Inject lateinit var eventBus: EventBus
-  @VisibleForTesting val appMainViewModel by activityViewModels<AppMainViewModel>()
+  val appMainViewModel by activityViewModels<AppMainViewModel>()
   private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
-
   private val registerViewModel by viewModels<RegisterViewModel>()
 
   override fun onCreateView(
@@ -188,19 +189,17 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
   override fun onSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.Started -> {
+      is SyncJobStatus.Started ->
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
             SnackBarMessageConfig(message = getString(R.string.syncing))
           )
         }
-      }
-      is SyncJobStatus.InProgress -> {
+      is SyncJobStatus.InProgress ->
         emitPercentageProgress(
           syncJobStatus.completed * 100 / if (syncJobStatus.total > 0) syncJobStatus.total else 1,
           syncJobStatus.syncOperation == SyncOperation.UPLOAD
         )
-      }
       is SyncJobStatus.Finished -> {
         refreshRegisterData()
         lifecycleScope.launch {
@@ -245,7 +244,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
     }
   }
 
-  private fun refreshRegisterData() {
+  fun refreshRegisterData() {
     with(registerFragmentArgs) {
       registerViewModel.run {
         // Clear pages cache to load new data
@@ -263,14 +262,14 @@ class RegisterFragment : Fragment(), OnSyncListener {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+        // Each register should have unique eventId
         eventBus
           .events
-          .getFor(MainNavigationScreen.Home.route.toString())
+          .getFor(MainNavigationScreen.Home.eventId(registerFragmentArgs.registerId))
           .onEach { appEvent ->
             when (appEvent) {
               is AppEvent.OnSubmitQuestionnaire ->
                 handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
-              is AppEvent.RefreshCache -> handleRefreshLiveData()
             }
           }
           .launchIn(lifecycleScope)
@@ -278,38 +277,23 @@ class RegisterFragment : Fragment(), OnSyncListener {
     }
   }
 
-  @VisibleForTesting
   suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
-    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+    appMainViewModel.run {
+      onQuestionnaireSubmission(questionnaireSubmission)
+      retrieveAppMainUiState(refreshAll = false) // Update register counts
+    }
 
-    // Always refresh data when registration happens
-    registerViewModel.paginateRegisterData(
-      registerId = registerFragmentArgs.registerId,
-      loadAll = false,
-      clearCache = true
-    )
-    // Update side menu counts
-    appMainViewModel.retrieveAppMainUiState()
-
-    // Display SnackBar message
     val (questionnaireConfig, _) = questionnaireSubmission
+
+    refreshRegisterData()
+
     questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
       registerViewModel.emitSnackBarState(snackBarMessageConfig)
     }
+
+    questionnaireConfig.onSubmitActions?.handleClickEvent(navController = findNavController())
   }
 
-  fun handleRefreshLiveData() {
-    with(registerFragmentArgs) {
-      registerViewModel.retrieveRegisterUiState(
-        registerId = registerId,
-        screenTitle = screenTitle,
-        params = params,
-        clearCache = true
-      )
-    }
-  }
-
-  @VisibleForTesting
   fun emitPercentageProgress(percentageProgress: Int, isUploadSync: Boolean) {
     lifecycleScope.launch {
       registerViewModel.emitPercentageProgressState(percentageProgress, isUploadSync)

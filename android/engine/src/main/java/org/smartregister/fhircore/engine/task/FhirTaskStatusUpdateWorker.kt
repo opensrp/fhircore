@@ -23,29 +23,27 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.withContext
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-/** This job runs periodically to mark overdue Tasks as Expired */
+/** This job runs periodically to update the update upcoming Tasks statuses to due. */
 @HiltWorker
-class FhirTaskExpireWorker
+class FhirTaskStatusUpdateWorker
 @AssistedInject
 constructor(
-  @Assisted val context: Context,
+  @Assisted val appContext: Context,
   @Assisted workerParams: WorkerParameters,
-  val defaultRepository: DefaultRepository,
   val fhirTaskUtil: FhirTaskUtil,
   val dispatcherProvider: DispatcherProvider
-) : CoroutineWorker(context, workerParams) {
+) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
-      fhirTaskUtil.expireOverdueTasks()
+      fhirTaskUtil.updateUpcomingTasksToDue()
       Result.success()
     }
   }
 
   companion object {
-    const val WORK_ID = "FhirTaskExpire"
+    const val WORK_ID = "FhirTaskStatusUpdateWorker"
   }
 }

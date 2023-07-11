@@ -27,6 +27,7 @@ import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
@@ -34,6 +35,8 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import java.io.Serializable
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
@@ -86,29 +89,29 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnSyncWithSyncStateInProgress() {
+    val viewModel = appMainActivity.appMainViewModel
     appMainActivity.onSync(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD))
-    Assert.assertTrue(
-      appMainActivity.appMainViewModel.appMainUiState.value.lastSyncTime.contains(
-        "Sync in progress",
-        ignoreCase = true
-      )
-    )
+
+    // Timestamp will only updated for states Glitch, Finished or Failed. Defaults to empty
+    Assert.assertTrue(viewModel.appMainUiState.value.lastSyncTime.isEmpty())
   }
 
   @Test
   fun testOnSyncWithSyncStateGlitch() {
     val viewModel = appMainActivity.appMainViewModel
-    viewModel.sharedPreferencesHelper.write(
-      SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-      "2022-05-19"
-    )
-    appMainActivity.onSync(SyncJobStatus.Glitch(exceptions = emptyList()))
+    val timestamp = "2022-05-19"
+    viewModel.sharedPreferencesHelper.write(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, timestamp)
+
+    val syncJobStatus = SyncJobStatus.Glitch(exceptions = emptyList())
+    val syncJobStatusTimestamp = syncJobStatus.timestamp
+
+    appMainActivity.onSync(syncJobStatus)
     Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
-    Assert.assertTrue(
-      viewModel.appMainUiState.value.lastSyncTime.contains(
-        viewModel.retrieveLastSyncTimestamp()!!,
-        ignoreCase = true
-      )
+
+    // Timestamp updated to the SyncJobStatus timestamp
+    Assert.assertEquals(
+      viewModel.appMainUiState.value.lastSyncTime,
+      viewModel.formatLastSyncTimestamp(syncJobStatusTimestamp)!!,
     )
   }
 
@@ -148,7 +151,9 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSubmitQuestionnaireShouldUpdateLiveData() {
+  fun testOnSubmitQuestionnaireShouldUpdateLiveData() = runTest {
+    every { eventBus.events } returns mockk()
+    coEvery { eventBus.triggerEvent(any()) } just runs
     appMainActivity.onSubmitQuestionnaire(
       ActivityResult(
         -1,
@@ -161,7 +166,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
           )
           putExtra(
             QuestionnaireActivity.QUESTIONNAIRE_CONFIG,
-            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId")
+            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId") as Serializable
           )
         }
       )
@@ -180,11 +185,13 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSubmitQuestionnaireShouldUpdateDataRefreshLivedata() {
+  fun testOnSubmitQuestionnaireShouldUpdateDataRefreshLivedata() = runTest {
     val appMainViewModel = mockk<AppMainViewModel>()
     val refreshLiveDataMock = mockk<MutableLiveData<Boolean?>>()
     every { refreshLiveDataMock.postValue(true) } just runs
     every { appMainActivity.appMainViewModel } returns appMainViewModel
+    every { eventBus.events } returns mockk()
+    coEvery { eventBus.triggerEvent(any()) } returns mockk()
 
     appMainActivity.onSubmitQuestionnaire(
       ActivityResult(
@@ -198,11 +205,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
           )
           putExtra(
             QuestionnaireActivity.QUESTIONNAIRE_CONFIG,
-            QuestionnaireConfig(
-              taskId = "Task/12345",
-              id = "questionnaireId",
-              refreshContent = true
-            )
+            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId") as Serializable
           )
         }
       )

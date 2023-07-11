@@ -16,11 +16,14 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class CardViewProperties(
   override val viewType: ViewType,
   override val weight: Float = 0f,
@@ -40,7 +43,7 @@ data class CardViewProperties(
   val headerAction: CompoundTextProperties? = null,
   val emptyContentMessage: String = "",
   val contentPadding: Int = 16
-) : ViewProperties() {
+) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): CardViewProperties {
     return this.copy(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),

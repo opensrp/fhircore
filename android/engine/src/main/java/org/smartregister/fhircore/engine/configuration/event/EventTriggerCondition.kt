@@ -16,11 +16,14 @@
 
 package org.smartregister.fhircore.engine.configuration.event
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Parcelize
 data class EventTriggerCondition(
   val eventResourceId: String,
   val matchAll: Boolean? = true,
   val conditionalFhirPathExpressions: List<String>? = emptyList()
-) : java.io.Serializable
+) : java.io.Serializable, Parcelable
