@@ -22,11 +22,12 @@ import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.MeasureReport
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
@@ -144,17 +145,22 @@ constructor(
     )
   }
 
-  suspend fun fetchSubjects(config: MeasureReportConfig): List<String> {
-    return if (config.subjectXFhirQuery?.isNotEmpty() == true) {
-      fhirEngine.search(config.subjectXFhirQuery!!).map {
-        // prevent missing subject where MeasureEvaluator looks for Group members and skips the
-        // Group itself
-        if (it is Group && !it.hasMember()) {
-          it.addMember(Group.GroupMemberComponent(it.asReference()))
-          update(it)
+  suspend fun fetchSubjects(config: ReportConfiguration): List<String> {
+    if (config.subjectXFhirQuery?.isNotEmpty() == true) {
+      try {
+        return fhirEngine.search(config.subjectXFhirQuery!!).map {
+          // prevent missing subject where MeasureEvaluator looks for Group members and skips the
+          // Group itself
+          if (it is Group && !it.hasMember()) {
+            it.addMember(Group.GroupMemberComponent(it.asReference()))
+            update(it)
+          }
+          "${it.resourceType.name}/${it.logicalId}"
         }
-        "${it.resourceType.name}/${it.logicalId}"
+      } catch (e: FHIRException) {
+        Timber.e(e, "When fetching subjects for measure report")
       }
-    } else emptyList()
+    }
+    return emptyList()
   }
 }

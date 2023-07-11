@@ -62,7 +62,7 @@ fun MeasureReportResultScreen(
   val uiState = measureReportViewModel.reportTypeSelectorUiState.value
 
   // Previously selected measure from the list of supported measures
-  val measureReportRowData = measureReportViewModel.measureReportConfigList
+  val measureReportRowData = measureReportViewModel.reportConfigurations
 
   MeasureReportResultPage(
     screenTitle = measureReportRowData.firstOrNull()?.module ?: "",

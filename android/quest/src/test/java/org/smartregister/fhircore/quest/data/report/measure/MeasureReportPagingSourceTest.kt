@@ -38,8 +38,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
@@ -107,10 +107,10 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
 
   @Test
   fun testGetRefreshKey() {
-    val measureReportConfig = MeasureReportConfig()
+    val reportConfiguration = ReportConfiguration()
     val page =
-      PagingSource.LoadResult.Page<Int, MeasureReportConfig>(
-        listOf(measureReportConfig),
+      PagingSource.LoadResult.Page<Int, ReportConfiguration>(
+        listOf(reportConfiguration),
         null,
         null
       )

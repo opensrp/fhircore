@@ -51,8 +51,8 @@ import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
@@ -106,29 +106,20 @@ constructor(
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
   private val measureReportRepository: MeasureReportRepository
 ) : ViewModel() {
-
-  val measureReportConfigList: MutableList<MeasureReportConfig> = mutableListOf()
-
-  val measureReportIndividualResult: MutableState<MeasureReportIndividualResult?> =
-    mutableStateOf(null)
-
-  val measureReportPopulationResults: MutableState<List<MeasureReportPopulationResult>?> =
-    mutableStateOf(null)
-
   private val _measureReportPopulationResultList: MutableList<MeasureReportPopulationResult> =
     mutableListOf()
-
-  val reportTypeState: MutableState<MeasureReport.MeasureReportType> =
-    mutableStateOf(MeasureReport.MeasureReportType.SUMMARY)
-
   val dateRange: MutableState<androidx.core.util.Pair<Long, Long>> =
     mutableStateOf(defaultDateRangeState())
-
+  val measureReportIndividualResult: MutableState<MeasureReportIndividualResult?> =
+    mutableStateOf(null)
+  val measureReportPopulationResults: MutableState<List<MeasureReportPopulationResult>?> =
+    mutableStateOf(null)
+  val reportConfigurations: MutableList<ReportConfiguration> = mutableListOf()
   val reportTypeSelectorUiState: MutableState<ReportTypeSelectorUiState> =
     mutableStateOf(ReportTypeSelectorUiState())
-
+  val reportTypeState: MutableState<MeasureReport.MeasureReportType> =
+    mutableStateOf(MeasureReport.MeasureReportType.SUMMARY)
   val searchTextState: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue())
-
   val subjectData: MutableStateFlow<Flow<PagingData<MeasureReportSubjectViewData>>> =
     MutableStateFlow(emptyFlow())
 
@@ -138,7 +129,7 @@ constructor(
       MaterialDatePicker.todayInUtcMilliseconds()
     )
 
-  fun reportMeasuresList(reportId: String): Flow<PagingData<MeasureReportConfig>> {
+  fun reportMeasuresList(reportId: String): Flow<PagingData<ReportConfiguration>> {
     val measureReportConfiguration = retrieveMeasureReportConfiguration(reportId)
     val registerConfiguration =
       configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
@@ -167,14 +158,14 @@ constructor(
 
     when (event) {
       is MeasureReportEvent.OnSelectMeasure -> {
-        event.measureReportConfig?.let {
-          measureReportConfigList.clear()
-          measureReportConfigList.addAll(it)
+        event.reportConfigurations?.let {
+          reportConfigurations.clear()
+          reportConfigurations.addAll(it)
         }
         event.navController.navigate(
           MeasureReportNavigationScreen.ReportTypeSelector.route +
             NavigationArg.bindArgumentsOf(
-              Pair(NavigationArg.SCREEN_TITLE, measureReportConfigList.firstOrNull()?.module ?: "")
+              Pair(NavigationArg.SCREEN_TITLE, reportConfigurations.firstOrNull()?.module ?: "")
             )
         )
       }
@@ -272,7 +263,7 @@ constructor(
   // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
   fun evaluateMeasure(navController: NavController) {
     // Run evaluate measure only for existing report
-    if (measureReportConfigList.isNotEmpty()) {
+    if (reportConfigurations.isNotEmpty()) {
       // Retrieve and parse dates to  (2020-11-16)
       val startDateFormatted =
         reportTypeSelectorUiState
@@ -294,7 +285,7 @@ constructor(
             // Show Progress indicator while evaluating measure
             toggleProgressIndicatorVisibility(true)
             val result =
-              measureReportConfigList.flatMap { config ->
+              reportConfigurations.flatMap { config ->
                 val subjects = measureReportRepository.fetchSubjects(config)
                 val existing =
                   retrievePreviouslyGeneratedMeasureReports(
@@ -326,7 +317,7 @@ constructor(
               }
 
             _measureReportPopulationResultList.addAll(
-              formatPopulationMeasureReports(result, measureReportConfigList)
+              formatPopulationMeasureReports(result, reportConfigurations)
             )
           }
           .onSuccess {
@@ -353,7 +344,7 @@ constructor(
 
   suspend fun formatPopulationMeasureReports(
     measureReports: List<MeasureReport>,
-    indicators: List<MeasureReportConfig> = listOf(),
+    indicators: List<ReportConfiguration> = listOf(),
   ): List<MeasureReportPopulationResult> {
     val data = mutableListOf<MeasureReportPopulationResult>()
 

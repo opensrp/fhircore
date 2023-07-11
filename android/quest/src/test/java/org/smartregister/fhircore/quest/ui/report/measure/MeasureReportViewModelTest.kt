@@ -56,7 +56,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -148,8 +148,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnEventOnSelectMeasure() {
-    val measureReportConfig =
-      MeasureReportConfig(
+    val reportConfiguration =
+      ReportConfiguration(
         id = "measureId",
         title = "Measure 1",
         description = "Measure report for testing",
@@ -158,16 +158,16 @@ class MeasureReportViewModelTest : RobolectricTest() {
       )
     measureReportViewModel.onEvent(
       MeasureReportEvent.OnSelectMeasure(
-        measureReportConfig = listOf(measureReportConfig),
+        reportConfigurations = listOf(reportConfiguration),
         navController = navController
       )
     )
     val routeSlot = slot<String>()
 
     // config updated for the view model
-    val viewModelConfig = measureReportViewModel.measureReportConfigList
-    Assert.assertEquals(viewModelConfig.first().id, measureReportConfig.id)
-    Assert.assertEquals(viewModelConfig.first().module, measureReportConfig.module)
+    val viewModelConfig = measureReportViewModel.reportConfigurations
+    Assert.assertEquals(viewModelConfig.first().id, reportConfiguration.id)
+    Assert.assertEquals(viewModelConfig.first().module, reportConfiguration.module)
 
     verify { navController.navigate(capture(routeSlot)) }
 
@@ -176,8 +176,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnEventOnSelectGenerateReport() {
-    val measureReportConfig =
-      MeasureReportConfig(
+    val reportConfiguration =
+      ReportConfiguration(
         id = "measureId",
         title = "Measure 1",
         description = "Measure report for testing",
@@ -194,7 +194,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
         )
       )
 
-    measureReportViewModel.measureReportConfigList.add(measureReportConfig)
+    measureReportViewModel.reportConfigurations.add(reportConfiguration)
     measureReportViewModel.reportTypeSelectorUiState.value =
       ReportTypeSelectorUiState("21 Jan, 2022", "21 Feb, 2022", false, sampleSubjectViewData)
 

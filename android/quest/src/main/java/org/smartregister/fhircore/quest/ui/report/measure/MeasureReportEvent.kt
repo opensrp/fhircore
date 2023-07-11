@@ -19,12 +19,12 @@ package org.smartregister.fhircore.quest.ui.report.measure
 import android.content.Context
 import androidx.navigation.NavController
 import org.hl7.fhir.r4.model.MeasureReport
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
 sealed class MeasureReportEvent {
   data class OnSelectMeasure(
-    val measureReportConfig: List<MeasureReportConfig>? = emptyList(),
+    val reportConfigurations: List<ReportConfiguration>? = emptyList(),
     val navController: NavController
   ) : MeasureReportEvent()
   data class OnDateRangeSelected(val newDateRange: androidx.core.util.Pair<Long, Long>) :

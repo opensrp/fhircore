@@ -19,21 +19,30 @@ package org.smartregister.fhircore.quest.data.report.measure
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
@@ -63,6 +72,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
   private lateinit var registerRepository: RegisterRepository
 
   @Before
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltAndroidRule.inject()
     rulesFactory =
@@ -107,7 +117,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  @kotlinx.serialization.ExperimentalSerializationApi
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testEvaluatePopulationMeasureHandlesBadMeasureUrl() {
     runBlocking(Dispatchers.Default) {
       val measureReport =
@@ -118,8 +128,85 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           emptyList(),
           emptyList()
         )
-
       assertEquals(measureReport.size, 0)
     }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testRetrieveSubjectsWithResultsEmptySubjectXFhir() {
+    val reportConfiguration = ReportConfiguration()
+    coEvery { fhirEngine.search<Patient>(any<Search>()) } returns listOf(Patient())
+
+    runBlocking(Dispatchers.Default) {
+      val data = measureReportRepository.fetchSubjects(reportConfiguration)
+      assertEquals(0, data.size)
+    }
+
+    coVerify(inverse = true) { fhirEngine.search<Patient>(any<Search>()) }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testRetrieveSubjectsWithResultsInvalidSubjectXFhir() {
+    val reportConfiguration = ReportConfiguration(subjectXFhirQuery = "not-a-resource-type")
+    coEvery { fhirEngine.search<Patient>(any<Search>()) } returns listOf(Patient())
+
+    runBlocking(Dispatchers.Default) {
+      val data = measureReportRepository.fetchSubjects(reportConfiguration)
+      assertEquals(0, data.size)
+    }
+
+    coVerify(inverse = true) { fhirEngine.search<Patient>(any<Search>()) }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testRetrieveSubjectsWithResultsNonEmptySubjectXFhir() {
+    val reportConfiguration = ReportConfiguration(subjectXFhirQuery = "Patient")
+    coEvery { fhirEngine.search<Patient>(any<Search>()) } returns listOf(Patient())
+
+    runBlocking(Dispatchers.Default) {
+      val data = measureReportRepository.fetchSubjects(reportConfiguration)
+      assertEquals(1, data.size)
+    }
+
+    coVerify { fhirEngine.search<Patient>(any<Search>()) }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testRetrieveSubjectsWithResultsNonEmptySubjectXFhirWithGroupUpdates() {
+    val reportConfiguration = ReportConfiguration(subjectXFhirQuery = "Patient")
+    coEvery { fhirEngine.search<Group>(any<Search>()) } returns listOf(Group())
+    coEvery { fhirEngine.update(any<Group>()) } just runs
+
+    runBlocking(Dispatchers.Default) {
+      val data = measureReportRepository.fetchSubjects(reportConfiguration)
+      assertEquals(1, data.size)
+    }
+
+    coVerify { fhirEngine.search<Patient>(any<Search>()) }
+    coVerify { fhirEngine.update(any<Group>()) }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testRetrieveSubjectsWithResultsNonEmptySubjectXFhirWithNonEmptyGroupDoesNotUpdate() {
+    val reportConfiguration = ReportConfiguration(subjectXFhirQuery = "Patient")
+    coEvery { fhirEngine.search<Group>(any<Search>()) } returns
+      listOf(
+        Group()
+          .addMember(Group.GroupMemberComponent().setEntity(Reference().setReference("Patient/1")))
+      )
+    coEvery { fhirEngine.update(any<Group>()) } just runs
+
+    runBlocking(Dispatchers.Default) {
+      val data = measureReportRepository.fetchSubjects(reportConfiguration)
+      assertEquals(1, data.size)
+    }
+
+    coVerify { fhirEngine.search<Patient>(any<Search>()) }
+    coVerify(inverse = true) { fhirEngine.update(any<Group>()) }
   }
 }

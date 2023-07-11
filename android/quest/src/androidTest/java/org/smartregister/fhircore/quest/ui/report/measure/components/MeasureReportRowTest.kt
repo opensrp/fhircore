@@ -26,16 +26,13 @@ import io.mockk.verify
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 
 class MeasureReportRowTest {
-
   private val mockListener: () -> Unit = spyk({})
-
   @get:Rule val composeTestRule = createComposeRule()
-
-  private val measureReportConfig =
-    MeasureReportConfig(
+  private val reportConfiguration =
+    ReportConfiguration(
       id = "101",
       title = "2+ ANC Contacts",
       description = "Pregnant women with at least two ANC Contacts",
@@ -45,14 +42,14 @@ class MeasureReportRowTest {
   @Before
   fun setup() {
     composeTestRule.setContent {
-      MeasureReportRow(title = measureReportConfig.module, onRowClick = mockListener)
+      MeasureReportRow(title = reportConfiguration.module, onRowClick = mockListener)
     }
   }
 
   @Test
   fun testMeasureRowRendersTitleCorrectly() {
     composeTestRule.onNodeWithTag(MEASURE_ROW_TITLE_TEST_TAG, useUnmergedTree = true).assertExists()
-    composeTestRule.onNodeWithText(measureReportConfig.module).assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText(reportConfiguration.module).assertExists().assertIsDisplayed()
   }
 
   @Test
