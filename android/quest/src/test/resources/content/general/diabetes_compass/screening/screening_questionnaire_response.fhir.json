@@ -9,14 +9,14 @@
           "text": "Health Screening"
         },
         {
-          "linkId": "screening-consent-choice"
-        },
-        {
-          "linkId": "screening-consent",
-          "text": "Consent to participating in screening",
+          "linkId": "screening-consent-choice",
           "answer": [
             {
-              "valueBoolean": true
+              "valueCoding": {
+                "system": "urn:uuid:35926220-b6df-4d08-8554-8d3000f37d67",
+                "code": "screening-consent",
+                "display": "I consent to participating in this screening"
+              }
             }
           ]
         }
@@ -30,174 +30,91 @@
           "text": "Age"
         },
         {
-          "linkId": "age-choice",
+          "linkId": "age-val",
           "answer": [
             {
-              "valueCoding": {
-                "id": "c18a76f4-3fa6-44-8c8a-a509acbf37df22",
-                "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
-                "code": "50-59",
-                "display": "50-59 yrs"
-              }
+              "valueInteger": 40
             }
           ]
-        }
-      ]
-    },
-    {
-      "linkId": "page-3",
-      "item": [
+        },
         {
           "linkId": "gender-title",
-          "text": "Birth Sex"
+          "text": "Gender"
         },
         {
-          "linkId": "gender-choice",
+          "linkId": "gender-val",
           "answer": [
             {
-              "valueCoding": {
-                "id": "c18a76f4-3fa6-4164-8c8a-a509acbf37df22",
-                "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
-                "code": "female",
-                "display": "Female"
-              }
+              "valueString": "female"
             }
           ]
-        }
-      ]
-    },
-    {
-      "linkId": "page-4",
-      "item": [
-        {
-          "linkId": "diet-title",
-          "text": "Diet"
         },
-        {
-          "linkId": "diet-choice",
-          "answer": [
-            {
-              "valueCoding": {
-                "id": "c18a76f4-3fa6-4164-8c8a-a509acbf37df222",
-                "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
-                "code": "no",
-                "display": "No"
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "linkId": "page-5",
-      "item": [
         {
           "linkId": "family-history-title",
-          "text": "Family History"
+          "text": "Known family history of diabetes"
         },
         {
           "linkId": "family-history-choice",
           "answer": [
             {
               "valueCoding": {
-                "id": "c18a76f4-3fa6-4164-8c8a-a509acbf37df223334",
+                "id": "abf3ab40-b326-4141-9c69-e09315f21dba112",
                 "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
-                "code": "1st",
-                "display": "1st degree relative"
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "linkId": "page-6",
-      "item": [
-        {
-          "linkId": "physical-activity-title",
-          "text": "Physical Activity"
-        },
-        {
-          "linkId": "physical-activity-choice",
-          "answer": [
-            {
-              "valueCoding": {
-                "id": "c18a76f4-3fa6-4164-8c8a-a509acbf37df223338",
-                "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
-                "code": "no",
-                "display": "No"
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "linkId": "page-7",
-      "item": [
-        {
-          "linkId": "waist-bmi-title",
-          "text": "Waist/BMI"
-        },
-        {
-          "linkId": "waist-choice",
-          "answer": [
-            {
-              "valueCoding": {
-                "id": "c18a76f4-3fa6-4164-8c8a-a509acbf37df2233387",
-                "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
-                "code": "100-109",
-                "display": "100 - 109 cm"
+                "code": "yes",
+                "display": "Yes"
               }
             }
           ]
         },
         {
-          "linkId": "weight-bmi",
-          "text": "Enter Weight (kgs)",
+          "linkId": "systolic-bp-title",
+          "text": "Systolic blood pressure"
+        },
+        {
+          "linkId": "systolic-bp-measurement",
+          "text": "Systolic BP",
           "answer": [
             {
-              "valueDecimal": 90.0
+              "valueInteger": 120
             }
           ]
         },
         {
-          "linkId": "height-bmi",
-          "text": "Enter Height (cms)",
+          "linkId": "diastolic-bp-title",
+          "text": "Diastolic blood pressure"
+        },
+        {
+          "linkId": "diastolic-bp-measurement",
+          "text": "Diastolic BP",
           "answer": [
             {
-              "valueDecimal": 120.0
+              "valueInteger": 80
             }
           ]
         },
         {
-          "linkId": "bmi",
-          "text": "* BMI",
+          "linkId": "waist-title",
+          "text": "Waist circumference"
+        },
+        {
+          "linkId": "waist-measurement",
+          "text": "Waist measurement",
           "answer": [
             {
-              "valueDecimal": 62.5
+              "valueInteger": 32
             }
           ]
-        }
-      ]
-    },
-    {
-      "linkId": "page-8",
-      "item": [
+        },
         {
           "linkId": "results-title",
           "text": "Results"
-        },
-        {
-          "linkId": "results-text",
-          "text": "High Risk \n> 50% \n10 year risk of developing Type II Diabetes\n\n\nWe recommend seeing a doctor for further screening\n"
         },
         {
           "linkId": "score-calculations",
           "text": "Risk Score",
           "answer": [
             {
-              "valueDecimal": 25.0
+              "valueDecimal": 0.17276998582720206
             }
           ]
         },
@@ -206,7 +123,7 @@
           "text": "HLC to refer to",
           "answer": [
             {
-              "valueString": "Sunvalley Clinic"
+              "valueString": "Mama ngina"
             }
           ]
         }

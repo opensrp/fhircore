@@ -669,51 +669,75 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForDiabetesClient() = runTest {
-    val planDefinition = "plans/diabetes_compass/patient_follow_up.fhir.json".readFile().decodeResourceFromString<PlanDefinition>()
+    val planDefinition =
+      "plans/diabetes_compass/patient_follow_up.fhir.json"
+        .readFile()
+        .decodeResourceFromString<PlanDefinition>()
 
-    val questionnaireResponse = "plans/diabetes_compass/phone_call_follow_up_trigger_visit_response.fhir.json".readFile().decodeResourceFromString<QuestionnaireResponse>()
+    val questionnaireResponse =
+      "plans/diabetes_compass/phone_call_follow_up_trigger_visit_response.fhir.json"
+        .readFile()
+        .decodeResourceFromString<QuestionnaireResponse>()
 
-    val patient = "plans/child-routine-visit/sample/patient.json".readFile().decodeResourceFromString<Patient>()
+    val patient =
+      "plans/child-routine-visit/sample/patient.json".readFile().decodeResourceFromString<Patient>()
 
     val structureMapScript = "plans/diabetes_compass/home-visit-follow-up.map".readFile()
-    val structureMap = structureMapUtilities.parse(structureMapScript, "DiabetesIntervention").also {
-      // TODO: IMP - The parser does not recognize the time unit i.e. months and prints as ''
-      //  so use only months and that would have the unit replaced with 'months'
-      println(it.encodeResourceToString().replace("''", "'month'"))
-    }
+    val structureMap =
+      structureMapUtilities.parse(structureMapScript, "DiabetesIntervention").also {
+        // TODO: IMP - The parser does not recognize the time unit i.e. months and prints as ''
+        //  so use only months and that would have the unit replaced with 'months'
+        println(it.encodeResourceToString().replace("''", "'month'"))
+      }
 
     val resourcesSlot = mutableListOf<Resource>()
     val booleanSlot = slot<Boolean>()
-    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns emptyList()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
     coEvery { fhirEngine.get<StructureMap>("dc-home-visit-follow-up-sm") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(planDefinition, patient, Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse }))!!
-            .also { println(it.encodeResourceToString()) }
-            .also { carePlan ->
-              assertNotNull(UUID.fromString(carePlan.id))
-              assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
-              assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
-              assertEquals(patient.logicalId, carePlan.subject.extractId())
-              assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
-              assertEquals(patient.generalPractitionerFirstRep.extractId(), carePlan.author.extractId())
-              assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.period.start.makeItReadable())
-              assertEquals(patient.birthDate.plusYears(5).makeItReadable(), carePlan.period.end.makeItReadable())
-              // 60 - 2  = 58 TODO Fix issue with number of tasks updating relative to today's date
-              assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
+    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        planDefinition,
+        patient,
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
+      )!!
+      .also { println(it.encodeResourceToString()) }
+      .also { carePlan ->
+        assertNotNull(UUID.fromString(carePlan.id))
+        assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
+        assertEquals(CarePlan.CarePlanIntent.PLAN, carePlan.intent)
+        assertEquals(patient.logicalId, carePlan.subject.extractId())
+        assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
+        assertEquals(patient.generalPractitionerFirstRep.extractId(), carePlan.author.extractId())
+        assertEquals(
+          DateTimeType.now().value.makeItReadable(),
+          carePlan.period.start.makeItReadable()
+        )
+        assertEquals(
+          patient.birthDate.plusYears(5).makeItReadable(),
+          carePlan.period.end.makeItReadable()
+        )
+        // 60 - 2  = 58 TODO Fix issue with number of tasks updating relative to today's date
+        assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
 
-              resourcesSlot.filter { res -> res.resourceType == ResourceType.Task }.map { it as Task }.also { list -> assertTrue(list.isNotEmpty()) }.all { task ->
-                // TODO
-                task.status == TaskStatus.REQUESTED && LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
-                  localDate.dayOfMonth == localDate.lengthOfMonth()
-                }
+        resourcesSlot
+          .filter { res -> res.resourceType == ResourceType.Task }
+          .map { it as Task }
+          .also { list -> assertTrue(list.isNotEmpty()) }
+          .all { task ->
+            // TODO
+            task.status == TaskStatus.REQUESTED &&
+              LocalDate.parse(task.executionPeriod.end.asYyyyMmDd()).let { localDate ->
+                localDate.dayOfMonth == localDate.lengthOfMonth()
               }
+          }
 
-              val task1 = resourcesSlot[1] as Task
-              assertEquals(TaskStatus.REQUESTED, task1.status)
-              // TODO Fix issue with task start date updating relative to today's date
-              assertTrue(task1.executionPeriod.start.makeItReadable().isNotEmpty())
-            }
+        val task1 = resourcesSlot[1] as Task
+        assertEquals(TaskStatus.REQUESTED, task1.status)
+        // TODO Fix issue with task start date updating relative to today's date
+        assertTrue(task1.executionPeriod.start.makeItReadable().isNotEmpty())
+      }
   }
 
   @Test

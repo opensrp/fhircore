@@ -28,7 +28,7 @@ group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle
             } "r_enc_cc_cod";
             src -> concept.text = "Elective" "r_enc_prio_text";
         } "r_en_prio";
-        src then ExtractConsent(src, bundle, encounter) "r_extract_cnst";
+        src then ExtractConsent(src, bundle, encounter) "r_extract_csnt";
         src then ExtractObservations(src, bundle, encounter) "r_extract_obs";
     } "r_encounter";
 }
@@ -68,13 +68,10 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle: Bun
     src then
     ExtractAge(src, bundle, encounter),
     ExtractGender(src, bundle, encounter),
-    ExtractDietaryIntake(src, bundle, encounter),
     ExtractFamilyHistory(src, bundle, encounter),
-    ExtractPhysicalActivity(src, bundle, encounter),
+    ExtractSystolicBP(src, bundle, encounter),
+    ExtractDiastolicBP(src, bundle, encounter),
     ExtractWaist(src, bundle, encounter),
-    ExtractWeight(src, bundle, encounter),
-    ExtractHeight(src, bundle, encounter),
-    ExtractBMI(src, bundle, encounter),
     ExtractRiskScore(src, bundle, encounter),
     ExtractReferralServiceRequest(src,bundle,encounter)
     "r_enc_obs";
@@ -82,7 +79,7 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle: Bun
 
 group ExtractAge(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
     src.item as page where(linkId = "page-2") then {
-        page.item as item where(linkId = "age-choice" and answer.count() > 0) then {
+        page.item as item where(linkId = "age-val" and answer.count() > 0) then {
                 src -> bundle.entry as entry,
                 entry.resource = create("Observation") as obs then {
                     src -> obs.id = uuid(),
@@ -93,18 +90,15 @@ group ExtractAge(source src : QuestionnaireResponse, target bundle: Bundle, targ
                         obs.effective = evaluate(src, now()) "r_date_of_measure";
                     src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
                     src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
-                    src->obs.value = create("CodeableConcept") as codeableConcept then {
-                        src->codeableConcept.text = evaluate(item, $this.answer.value.display) "r_obs_value_text_age";
-                        src->codeableConcept.coding = evaluate(item, $this.answer.value.code) "r_obs_value_c_age";
-                    } "r_obs_value";
+                    src->obs.value = evaluate(item, $this.answer.value) "r_obs_value_c_age";
                 } "r_obs_age_item";
         } "r_obs_age";
     } "r_obs_age_pg";
 }
 
 group ExtractGender(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
-    src.item as page where(linkId = "page-3") then {
-        page.item as item where(linkId = "gender-choice" and answer.count() > 0) then {
+    src.item as page where(linkId = "page-2") then {
+        page.item as item where(linkId = "gender-val" and answer.count() > 0) then {
                 src -> bundle.entry as entry,
                 entry.resource = create("Observation") as obs then {
                     src -> obs.id = uuid(),
@@ -116,38 +110,26 @@ group ExtractGender(source src : QuestionnaireResponse, target bundle: Bundle, t
                     src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
                     src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
                     src->obs.value = create("CodeableConcept") as codeableConcept then {
-                        src->codeableConcept.text = evaluate(item, $this.answer.value.display) "r_obs_value_text_gender";
-                        src->codeableConcept.coding = evaluate(item, $this.answer.value.code) "r_obs_value_c_gender";
+                        src->evaluate(item, $this.answer.value) as genderValue then {
+                            src where(genderValue = "male") then {
+                                src->codeableConcept.coding = c("http://hl7.org/fhir/administrative-gender","male") as coding then {
+                                    src->coding.display = "Male" "r_obs_code_display";
+                                } "r_obs_cc_coding";
+                            } "r_obs_code_male";
+                            src where(genderValue = "female") then {
+                                src->codeableConcept.coding = c("http://hl7.org/fhir/administrative-gender","female") as coding then {
+                                    src->coding.display = "Female" "r_obs_code_display";
+                                } "r_obs_cc_coding";
+                            }"r_obs_code_female";
+                        }"r_obs_value_c_gender";
                     } "r_obs_value";
                 } "r_obs_gender_item";
         } "r_obs_gender";
     } "r_obs_gender_pg";
 }
 
-group ExtractDietaryIntake(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
-    src.item as page where(linkId = "page-4") then {
-        page.item as item where(linkId = "diet-choice" and answer.count() > 0) then {
-                src -> bundle.entry as entry,
-                entry.resource = create("Observation") as obs then {
-                    src -> obs.id = uuid(),
-                        obs.status = "final",
-                        obs.code = cc("http://snomed.info/sct","364395008", "Dietary intake"),
-                        obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "social-history"),
-                        obs.encounter = reference(encounter),
-                        obs.effective = evaluate(src, now()) "r_date_of_measure";
-                    src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
-                    src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
-                    src->obs.value = create("CodeableConcept") as codeableConcept then {
-                        src->codeableConcept.text = evaluate(item, $this.answer.value.display) "r_obs_value_text_diet";
-                        src->codeableConcept.coding = evaluate(item, $this.answer.value.code) "r_obs_value_c_diet";
-                    } "r_obs_value";
-                } "r_obs_diet_item";
-        } "r_obs_diet";
-    } "r_obs_diet_pg";
-}
-
 group ExtractFamilyHistory(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
-    src.item as page where(linkId = "page-5") then {
+    src.item as page where(linkId = "page-2") then {
         page.item as item where(linkId = "family-history-choice" and answer.count() > 0) then {
                 src -> bundle.entry as entry,
                 entry.resource = create("Observation") as obs then {
@@ -158,16 +140,11 @@ group ExtractFamilyHistory(source src : QuestionnaireResponse, target bundle: Bu
                         obs.effective = evaluate(src, now()) "r_date_of_measure";
                     src->obs.code = create("CodeableConcept") as concept then {
                     src->evaluate(item, $this.answer.value.code) as famHistoryCode then {
-                            src where(famHistoryCode = "1st") then {
+                            src where(famHistoryCode = "yes") then {
                                 src->concept.coding = c("http://snomed.info/sct","416855002") as coding then {
                                     src->coding.display = "Family history of diabetes mellitus in first degree relative" "r_obs_code_display";
                                 } "r_obs_cc_coding";
                             } "r_obs_code_first";
-                            src where(famHistoryCode = "2nd") then {
-                                src->concept.coding = c("http://snomed.info/sct","430679000") as coding then {
-                                    src->coding.display = "Family history of diabetes mellitus type 2" "r_obs_code_display";
-                                } "r_obs_cc_coding";
-                            } "r_obs_code_second";
 
                             src where(famHistoryCode = "no") then {
                                 src->concept.coding = c("http://snomed.info/sct","160274005") as coding then {
@@ -188,31 +165,47 @@ group ExtractFamilyHistory(source src : QuestionnaireResponse, target bundle: Bu
     } "r_obs_fam_history_pg";
 }
 
-group ExtractPhysicalActivity(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
-    src.item as page where(linkId = "page-6") then {
-        page.item as item where(linkId = "physical-activity-choice" and answer.count() > 0) then {
+group ExtractSystolicBP(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
+    src.item as page where(linkId = "page-2") then {
+        page.item as item where(linkId = "systolic-bp-measurement" and answer.count() > 0) then {
                 src -> bundle.entry as entry,
                 entry.resource = create("Observation") as obs then {
                     src -> obs.id = uuid(),
                         obs.status = "final",
-                        obs.code = cc("http://snomed.info/sct","68130003", "Physical activity"),
+                        obs.code = cc("http://snomed.info/sct","163030003", "O/E - Systolic BP reading"),
                         obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
                         obs.encounter = reference(encounter),
                         obs.effective = evaluate(src, now()) "r_date_of_measure";
                     src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
                     src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
-                    src->obs.value = create("CodeableConcept") as codeableConcept then {
-                        src->codeableConcept.text = evaluate(item, $this.answer.value.display) "r_obs_value_text_physical_activity";
-                        src->codeableConcept.coding = evaluate(item, $this.answer.value.code) "r_obs_value_c_physical_activity";
-                    } "r_obs_value";
-                } "r_obs_physical_activity_item";
-        } "r_obs_physical_activity";
-    } "r_obs_physical_activity_pg";
+                    src->obs.value = evaluate(item, $this.answer.value) "r_obs_value_c_systolic_bp";
+                } "r_obs_systolic_bp_item";
+        } "r_obs_systolic_bp";
+    } "r_obs_systolic_bp_pg";
+}
+
+group ExtractDiastolicBP(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
+    src.item as page where(linkId = "page-2") then {
+        page.item as item where(linkId = "diastolic-bp-measurement" and answer.count() > 0) then {
+                src -> bundle.entry as entry,
+                entry.resource = create("Observation") as obs then {
+                    src -> obs.id = uuid(),
+                        obs.status = "final",
+                        obs.code = cc("http://snomed.info/sct","163030003", "O/E - Diastolic BP reading"),
+                        obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
+                        obs.encounter = reference(encounter),
+                        obs.effective = evaluate(src, now()) "r_date_of_measure";
+                    src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
+                    src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+                    src->obs.value = evaluate(item, $this.answer.value) "r_obs_value_c_diastolic_bp";
+                } "r_obs_diastolic_bp_item";
+        } "r_obs_diastolic_bp";
+    } "r_obs_diastolic_bp_pg";
 }
 
 group ExtractWaist(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
-    src.item as page where(linkId = "page-7") then {
-        page.item as item where(linkId = "waist-choice" and answer.count() > 0) then {
+    src.item as page where(linkId = "page-2") then {
+        page.item as item where(linkId = "waist-measurement" and answer.count() > 0) then {
                 src -> bundle.entry as entry,
                 entry.resource = create("Observation") as obs then {
                     src -> obs.id = uuid(),
@@ -223,74 +216,14 @@ group ExtractWaist(source src : QuestionnaireResponse, target bundle: Bundle, ta
                         obs.effective = evaluate(src, now()) "r_date_of_measure";
                     src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
                     src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
-                    src->obs.value = create("CodeableConcept") as codeableConcept then {
-                        src->codeableConcept.text = evaluate(item, $this.answer.value.display) "r_obs_value_text_waist";
-                        src->codeableConcept.coding = evaluate(item, $this.answer.value.code) "r_obs_value_c_waist";
-                    } "r_obs_value";
+                    src->obs.value = evaluate(item, $this.answer.value) "r_obs_value_c_waist";
                 } "r_obs_waist_item";
         } "r_obs_waist";
     } "r_obs_waist_pg";
 }
 
-group ExtractWeight(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
-    src.item as page where(linkId = "page-7") then {
-        page.item as item where(linkId = "weight-bmi" and answer.count() > 0) then {
-                src -> bundle.entry as entry,
-                entry.resource = create("Observation") as obs then {
-                    src -> obs.id = uuid(),
-                        obs.status = "final",
-                        obs.code = cc("http://snomed.info/sct","363808001", "Body weight measure"),
-                        obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
-                        obs.encounter = reference(encounter),
-                        obs.effective = evaluate(src, now()) "r_date_of_measure";
-                    src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
-                    src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
-                    src -> obs.value =  evaluate(item, $this.answer.value.toString()) "r_obs_value";
-                } "r_obs_weight_item";
-        } "r_obs_weight";
-    } "r_obs_weight_pg";
-}
-
-group ExtractHeight(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
-    src.item as page where(linkId = "page-7") then {
-        page.item as item where(linkId = "height-bmi" and answer.count() > 0) then {
-                src -> bundle.entry as entry,
-                entry.resource = create("Observation") as obs then {
-                    src -> obs.id = uuid(),
-                        obs.status = "final",
-                        obs.code = cc("http://snomed.info/sct","50373000", "Body height measure"),
-                        obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
-                        obs.encounter = reference(encounter),
-                        obs.effective = evaluate(src, now()) "r_date_of_measure";
-                    src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
-                    src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
-                    src -> obs.value =  evaluate(item, $this.answer.value.toString()) "r_obs_value";
-                } "r_obs_height_item";
-        } "r_obs_height";
-    } "r_obs_height_pg";
-}
-
-group ExtractBMI(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
-    src.item as page where(linkId = "page-7") then {
-        page.item as item where(linkId = "bmi" and answer.count() > 0) then {
-                src -> bundle.entry as entry,
-                entry.resource = create("Observation") as obs then {
-                    src -> obs.id = uuid(),
-                        obs.status = "final",
-                        obs.code = cc("http://snomed.info/sct","162859006", "Body mass index"),
-                        obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
-                        obs.encounter = reference(encounter),
-                        obs.effective = evaluate(src, now()) "r_date_of_measure";
-                    src -> obs.subject = evaluate(src, $this.subject) "r_obs_subject";
-                    src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
-                    src -> obs.value =  evaluate(item, $this.answer.value.toString()) "r_obs_value";
-                } "r_obs_bmi_item";
-        } "r_obs_bmi";
-    } "r_obs_bmi_pg";
-}
-
 group ExtractRiskScore(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
-    src.item as page where(linkId = "page-8") then {
+    src.item as page where(linkId = "page-2") then {
         page.item as item where(linkId = "score-calculations" and answer.count() > 0) then {
                 src -> bundle.entry as entry,
                 entry.resource = create("RiskAssessment") as rsk then {
@@ -306,13 +239,13 @@ group ExtractRiskScore(source src : QuestionnaireResponse, target bundle: Bundle
                     src -> rsk.prediction as riskPrediction then {
                         src->riskPrediction.qualitativeRisk = create("CodeableConcept") as concept then {
                                 src->evaluate(item, $this.answer.value) as riskScore then {
-                                    src where(riskScore < 16) then {
+                                    src where(riskScore < 0.163323142) then {
                                         src->concept.coding = c("http://terminology.hl7.org/CodeSystem/risk-probability","low") as coding then {
                                             src->coding.display = "Low likelihood" "r_rsk_code_display";
                                         } "r_rsk_cc_coding";
                                         src->concept.text = "Low" "r_rsk_code_qualitative";
                                     } "r_rsk_code_low";
-                                    src where(riskScore >= 16) then {
+                                    src where(riskScore >= 0.163323142) then {
                                         src->concept.coding = c("http://terminology.hl7.org/CodeSystem/risk-probability","high") as coding then {
                                             src->coding.display = "High likelihood" "r_rsk_code_display";
                                         } "r_rsk_cc_coding";
@@ -327,7 +260,7 @@ group ExtractRiskScore(source src : QuestionnaireResponse, target bundle: Bundle
 }
 
 group ExtractReferralServiceRequest(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
-    src.item as page where(linkId = "page-8") then {
+    src.item as page where(linkId = "page-2") then {
         page.item as item where(linkId="hlc-referred" and answer.count() > 0) then {
             src -> bundle.entry as entry, entry.resource = create("ServiceRequest") as sRequest then {
                 src -> sRequest.id = uuid() "r_sRequest_id";
