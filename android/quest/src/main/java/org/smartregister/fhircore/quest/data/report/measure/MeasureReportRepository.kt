@@ -45,7 +45,7 @@ constructor(
   override val configService: ConfigService,
   override val configRulesExecutor: ConfigRulesExecutor,
   val registerRepository: RegisterRepository,
-  val fhirOperator: FhirOperator
+  private val fhirOperator: FhirOperator
 ) :
   DefaultRepository(
     fhirEngine = fhirEngine,
@@ -76,7 +76,7 @@ constructor(
               it
             )
           }
-          .forEach { measureReport.add(it) }
+          .forEach { subject -> measureReport.add(subject) }
       } else
         runMeasureReport(
           measureUrl,
@@ -102,7 +102,8 @@ constructor(
   }
 
   /**
-   * Run and generate MeasureReport for given measure and subject.
+   * Run and generate MeasureReport for given measure and subject. Not that we do not pass this
+   * practitionerId to MeasureProcessor because this is treated as subject if subject is null.
    *
    * @param measureUrl url of measure to generate report for
    * @param reportType type of report (population | subject)
@@ -124,8 +125,6 @@ constructor(
       reportType = reportType,
       subject = subject,
       practitioner = null
-      /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
-      practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
     )
   }
 

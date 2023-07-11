@@ -41,23 +41,27 @@ import org.smartregister.fhircore.quest.data.report.measure.MeasureReportReposit
 import timber.log.Timber
 
 @HiltWorker
-class MeasureReportConfigWorker
+class MeasureReportMonthPeriodWorker
 @AssistedInject
 constructor(
   @Assisted val context: Context,
   @Assisted workerParams: WorkerParameters,
   val fhirEngine: FhirEngine,
-  val fhirOperator: FhirOperator,
+  private val fhirOperator: FhirOperator,
   val defaultRepository: DefaultRepository,
   val dispatcherProvider: DispatcherProvider,
-  val measureReportRepository: MeasureReportRepository,
+  private val measureReportRepository: MeasureReportRepository,
   val configurationRegistry: ConfigurationRegistry,
 ) : CoroutineWorker(context, workerParams) {
 
+  /**
+   * This method always sets the start and end date of the month to be the first and last day of the
+   * current month. If you are using this worker to generate monthly reports it enqueue a new worker
+   * at least every 24 hours.
+   */
   override suspend fun doWork(): Result {
-
     try {
-      Timber.i("started  / . . . MeasureReportWorker . . ./")
+      Timber.i("started MeasureReportWorker")
 
       inputData
         .getString(MEASURE_REPORT_CONFIG_ID)
@@ -93,7 +97,7 @@ constructor(
             )
           }
         }
-      Timber.i("Result.success  / . . . MeasureReportWorker . . ./")
+      Timber.i("successfully completed MeasureReportWorker")
     } catch (e: Exception) {
       Timber.w(e.localizedMessage)
       Result.failure()

@@ -78,7 +78,7 @@ import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportConfigWorker
+import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMonthPeriodWorker
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -320,13 +320,13 @@ constructor(
 
       measureReportConfigurations.forEach { measureReportConfig ->
         measureReportConfig.scheduledGenerationDuration?.let { scheduledGenerationDuration ->
-          schedulePeriodically<MeasureReportConfigWorker>(
-            workId = MeasureReportConfigWorker.WORK_ID + "-" + measureReportConfig.id,
+          schedulePeriodically<MeasureReportMonthPeriodWorker>(
+            workId = "${MeasureReportMonthPeriodWorker.WORK_ID}-${measureReportConfig.id}",
             duration = Duration.tryParse(scheduledGenerationDuration),
             requiresNetwork = false,
             inputData =
               workDataOf(
-                MeasureReportConfigWorker.MEASURE_REPORT_CONFIG_ID to measureReportConfig.id
+                MeasureReportMonthPeriodWorker.MEASURE_REPORT_CONFIG_ID to measureReportConfig.id
               )
           )
         }
