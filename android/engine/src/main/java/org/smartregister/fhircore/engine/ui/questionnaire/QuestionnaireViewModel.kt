@@ -624,10 +624,10 @@ constructor(
     return bundle
   }
 
-  open suspend fun getPopulationResources(
+  fun getPopulationResourcesFromIntent(
     intent: Intent,
     questionnaireLogicalId: String
-  ): Array<Resource> {
+  ): List<Resource> {
     val resourcesList = mutableListOf<Resource>()
 
     intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
@@ -642,6 +642,16 @@ constructor(
       }
       resourcesList.add(bundle)
     }
+
+    return resourcesList
+  }
+
+  open suspend fun getPopulationResources(
+    intent: Intent,
+    questionnaireLogicalId: String
+  ): Array<Resource> {
+    val resourcesList =
+      getPopulationResourcesFromIntent(intent, questionnaireLogicalId).toMutableList()
 
     intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let { patientId ->
       loadPatient(patientId)?.apply {

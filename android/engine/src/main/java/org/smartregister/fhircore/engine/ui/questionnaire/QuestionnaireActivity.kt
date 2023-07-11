@@ -164,6 +164,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           .getStringExtra(QUESTIONNAIRE_RESPONSE)
           ?.decodeResourceFromString<QuestionnaireResponse>()
           ?.apply { generateMissingItems(this@QuestionnaireActivity.questionnaire) }
+      val resources =
+        questionnaireViewModel.getPopulationResourcesFromIntent(intent, questionnaire.logicalId)
+      questionnaireResponse?.contained = resources
       if (questionnaireType.isReadOnly()) requireNotNull(questionnaireResponse)
     }
 
