@@ -89,6 +89,7 @@ import org.junit.Test
 import org.robolectric.Shadows
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
@@ -1391,7 +1392,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     val memberId = "member-id"
     val groupIdentifier = "group_id"
-    val memberResourceType = "Patient"
+    val memberResourceType = ResourceType.Patient
     val removeMember = true
     Assert.assertFalse(questionnaireViewModel.removeOperation.value!!)
     questionnaireViewModel.removeGroupMember(
@@ -2023,5 +2024,31 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val key = "humanReadableId"
     assertTrue(map.containsKey(key))
     assertNotNull(map[key])
+  }
+
+  @Test
+  fun testTriggerRemoveShouldInvokeRemoveGroup() {
+    val theQuestionnaireConfig =
+      QuestionnaireConfig(
+        id = "the-questionnaire-id",
+        groupResource =
+          GroupResourceConfig(
+            groupIdentifier = "the-group-id",
+            removeGroup = true,
+            removeMember = true,
+            memberResourceType = ResourceType.Patient
+          )
+      )
+    questionnaireViewModel.triggerRemove(theQuestionnaireConfig)
+
+    coVerify {
+      defaultRepo.removeGroup(
+        theQuestionnaireConfig.groupResource?.groupIdentifier!!,
+        true,
+        emptyMap()
+      )
+    }
+
+    assertTrue(questionnaireViewModel.removeOperation.value!!)
   }
 }

@@ -89,7 +89,7 @@ data class ConfirmationDialog(
 @Parcelize
 data class GroupResourceConfig(
   val groupIdentifier: String,
-  val memberResourceType: String,
+  val memberResourceType: ResourceType,
   val removeMember: Boolean = false,
   val removeGroup: Boolean = false,
   val deactivateMembers: Boolean = true

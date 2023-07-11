@@ -277,7 +277,7 @@ constructor(
       triggerRemove(questionnaireConfig)
     }
   }
-  private fun triggerRemove(questionnaireConfig: QuestionnaireConfig) {
+  fun triggerRemove(questionnaireConfig: QuestionnaireConfig) {
     if (questionnaireConfig.groupResource != null) {
       removeGroup(
         groupId = questionnaireConfig.groupResource!!.groupIdentifier,
@@ -579,7 +579,7 @@ constructor(
   fun removeGroupMember(
     memberId: String?,
     groupIdentifier: String?,
-    memberResourceType: String?,
+    memberResourceType: ResourceType?,
     removeMember: Boolean
   ) {
     if (removeMember && !memberId.isNullOrEmpty()) {
