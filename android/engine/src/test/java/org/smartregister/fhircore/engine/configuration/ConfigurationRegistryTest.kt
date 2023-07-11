@@ -77,12 +77,12 @@ class ConfigurationRegistryTest : RobolectricTest() {
   var fhirEngine: FhirEngine = mockk()
   lateinit var context: Context
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
+  private val fhirResourceService = mockk<FhirResourceService>()
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
-    val fhirResourceService = mockk<FhirResourceService>()
     fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
     context = ApplicationProvider.getApplicationContext()
     val sharedPreferencesHelper =
@@ -262,6 +262,61 @@ class ConfigurationRegistryTest : RobolectricTest() {
     }
 
     coVerify { fhirEngine.get(patient.resourceType, patient.logicalId) }
+  }
+
+  // TODO TO DO Remove after migration to PROXY for all projects: Duplication for Backward
+  // Compatibility for NON-PROXY version
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testFetchNonWorkflowConfigResourcesBundleListResourceProxyBackwardCompatible() {
+    val appId = "theAppId"
+    val focusReference = ResourceType.Questionnaire.name
+    val resourceKey = "resourceKey"
+    val resourceId = "resourceId"
+    val testListId = "test-list-id"
+    val listResource =
+      ListResource().apply {
+        id = "test-list-id"
+        entry =
+          listOf(
+            ListResource.ListEntryComponent().apply {
+              item = Reference().apply { reference = "$resourceKey/$resourceId" }
+            },
+          )
+      }
+    val bundle =
+      Bundle().apply {
+        entry = listOf(Bundle.BundleEntryComponent().apply { resource = listResource })
+      }
+
+    val composition =
+      Composition().apply {
+        identifier = Identifier().apply { value = appId }
+        section =
+          listOf(
+            SectionComponent().apply { focus.reference = "${ResourceType.List.name}/$testListId" },
+          )
+      }
+    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+    coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
+    coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
+      listOf(composition)
+    coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") } returns
+      bundle
+    coEvery { fhirEngine.update(any()) } returns Unit
+    coEvery { fhirEngine.get(ResourceType.List, testListId) } returns listResource
+    coEvery { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId") } returns bundle
+    coEvery { fhirResourceService.getResource("List?_id=$testListId") } returns bundle
+
+    runTest {
+      configRegistry.fhirEngine.create(composition)
+      configRegistry.setNonProxy(true)
+      configRegistry.fetchNonWorkflowConfigResources()
+    }
+
+    coVerify { fhirEngine.get(ResourceType.List, testListId) }
+    coVerify { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId") }
+    coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") }
   }
 
   @Test

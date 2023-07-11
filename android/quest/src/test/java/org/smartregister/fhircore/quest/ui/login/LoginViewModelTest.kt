@@ -39,7 +39,6 @@ import org.hl7.fhir.r4.model.Organization
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
@@ -198,19 +197,6 @@ internal class LoginViewModelTest : RobolectricTest() {
     every { tokenAuthenticator.sessionActive() } returns true
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
     Assert.assertFalse(loginViewModel.navigateToHome.value!!)
-  }
-
-  @Test
-  @Ignore
-  fun testSuccessfulOnlineLoginWithWhitespaceInCredentials() {
-    loginViewModel.run {
-      onUsernameUpdated("$thisUsername \n  \t")
-      onPasswordUpdated("$thisPassword \n  \t")
-    }
-    every { tokenAuthenticator.sessionActive() } returns true
-    loginViewModel.login(mockedActivity(isDeviceOnline = true))
-
-    // TODO Complete test + Assert
   }
 
   @Test

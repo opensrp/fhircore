@@ -39,6 +39,7 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -78,6 +79,7 @@ constructor(
   val configCacheMap = mutableMapOf<String, Configuration>()
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
+  private var isNonProxy_ = BuildConfig.IS_NON_PROXY_APK
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -236,9 +238,7 @@ constructor(
             if (iconConfigs.isNotEmpty()) {
               val ids = iconConfigs.joinToString(",") { it.focus.extractId() }
               fhirResourceDataSource
-                .getResource(
-                  "${ResourceType.Binary.name}?${Composition.SP_RES_ID}=$ids",
-                )
+                .getResource("${ResourceType.Binary.name}?$ID=$ids")
                 .entry
                 .forEach { addOrUpdate(it.resource) }
             }
@@ -368,7 +368,7 @@ constructor(
           }
           .forEach { resourceGroup ->
             if (resourceGroup.key == ResourceType.List.name) {
-              if (!BuildConfig.IS_NON_PROXY_APK) {
+              if (!isNonProxy()) {
                 resourceGroup.value.forEach {
                   processCompositionManifestResources(
                     FHIR_GATEWAY_MODE_HEADER_VALUE,
@@ -384,11 +384,8 @@ constructor(
                 chunkedResourceIdList.forEach {
                   val resourceIds =
                     it.joinToString(",") { sectionComponent -> sectionComponent.focus.extractId() }
-
                   fhirResourceDataSource
-                    .getResource(
-                      "${resourceGroup.key}?${Composition.SP_RES_ID}=$resourceIds",
-                    )
+                    .getResource("${resourceGroup.key}?$ID=$resourceIds")
                     .entry
                     .forEach { bundleEntryComponent ->
                       when (bundleEntryComponent.resource) {
@@ -400,8 +397,7 @@ constructor(
                             val resourceId =
                               listEntryComponent.item.reference.extractLogicalIdUuid()
 
-                            val listResourceUrlPath =
-                              resourceKey + "?${Composition.SP_RES_ID}=$resourceId"
+                            val listResourceUrlPath = "$resourceKey?$ID=$resourceId"
                             fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
                               listEntryResourceBundle ->
                               addOrUpdate(listEntryResourceBundle.resource)
@@ -422,7 +418,7 @@ constructor(
                     sectionComponent.focus.extractId()
                   }
                 processCompositionManifestResources(
-                  searchPath = "${resourceGroup.key}?${Composition.SP_RES_ID}=$resourceIds",
+                  searchPath = "${resourceGroup.key}?$ID=$resourceIds",
                 )
               }
             }
@@ -501,6 +497,13 @@ constructor(
       resources.onEach { it.generateMissingId() }
       fhirEngine.createRemote(*resources)
     }
+  }
+
+  @VisibleForTesting fun isNonProxy() = isNonProxy_
+
+  @VisibleForTesting
+  fun setNonProxy(nonProxy: Boolean) {
+    isNonProxy_ = nonProxy
   }
 
   companion object {
