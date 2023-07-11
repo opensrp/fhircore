@@ -32,6 +32,8 @@ import java.util.TimeZone
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Flag
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -83,14 +85,22 @@ constructor(
       )
       .displayName
 
-  fun openForm(context: Context) =
-    Intent(context, QuestionnaireActivity::class.java)
+  fun openForm(context: Context): Intent {
+    val isArtClient = patientRegisterConfiguration.appId.contains("art-client")
+    return Intent(context, QuestionnaireActivity::class.java)
       .putExtras(
         QuestionnaireActivity.intentArgs(
           formName = patientRegisterConfiguration.registrationForm,
-          questionnaireType = QuestionnaireType.DEFAULT
+          questionnaireType = QuestionnaireType.DEFAULT,
+          populationResources =
+            arrayListOf(
+              Flag().apply {
+                code = CodeableConcept().apply { text = if (isArtClient) "ART" else "HIV" }
+              }
+            ),
         )
       )
+  }
 
   fun onEvent(event: AppMainEvent) {
     viewModelScope.launch {
@@ -107,7 +117,9 @@ constructor(
             }
             else ->
               appMainUiState.value =
-                appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: appMainUiState.value.lastSyncTime)
+                appMainUiState.value.copy(
+                  lastSyncTime = event.lastSyncTime ?: appMainUiState.value.lastSyncTime
+                )
           }
         }
         else -> {}
@@ -115,9 +127,7 @@ constructor(
     }
   }
 
-  fun sync() {
-    TODO("Not yet implemented")
-  }
+  fun sync() {}
 
   fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {
     sharedPreferencesHelper.write(

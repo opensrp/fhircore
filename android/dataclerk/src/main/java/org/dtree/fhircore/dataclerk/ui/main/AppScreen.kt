@@ -81,9 +81,7 @@ fun AppScreenBody(
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.SpaceAround,
-    modifier = Modifier
-            .padding(paddingValues)
-            .fillMaxSize()
+    modifier = Modifier.padding(paddingValues).fillMaxSize()
   ) {
     Column(
       horizontalAlignment = Alignment.CenterHorizontally,
