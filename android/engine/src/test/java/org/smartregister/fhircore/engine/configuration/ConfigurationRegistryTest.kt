@@ -27,7 +27,9 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
@@ -46,6 +48,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.MANIFEST_PROCESSOR_BATCH_SIZE
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -298,6 +301,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coVerify { fhirEngine.get(ResourceType.List, "") }
     coVerify { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId") }
   }
+
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testAddOrUpdate() {
@@ -326,7 +330,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val patient = Faker.buildPatient()
     coEvery { fhirEngine.get(patient.resourceType, patient.logicalId) } throws
       ResourceNotFoundException("", "")
-    coEvery { fhirEngine.create(any()) } returns listOf()
+    coEvery { fhirEngine.createRemote(any()) } just runs
 
     runTest {
       val previousLastUpdate = patient.meta.lastUpdated
@@ -335,18 +339,18 @@ class ConfigurationRegistryTest : RobolectricTest() {
     }
 
     coVerify(inverse = true) { fhirEngine.update(any()) }
-    coVerify { fhirEngine.create(patient) }
+    coVerify { fhirEngine.createRemote(patient) }
   }
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testCreate() {
     val patient = Faker.buildPatient()
-    coEvery { fhirEngine.create(patient) } returns listOf(patient.id)
+    coEvery { fhirEngine.createRemote(patient) } just runs
 
     runTest {
-      val result = configRegistry.create(patient)
-      Assert.assertEquals(listOf(patient.id), result)
+      configRegistry.create(patient)
+      coVerify { fhirEngine.createRemote(patient) }
     }
   }
 
@@ -551,5 +555,43 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     Assert.assertNotNull(anotherApplicationConfig)
     Assert.assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
+  }
+
+  @Test
+  fun testFetchNonWorkflowConfigResourcesProcessesManifestEntriesInChunks() {
+    val appId = "theAppId"
+    val compositionSections = mutableListOf<SectionComponent>()
+
+    for (i in 1..MANIFEST_PROCESSOR_BATCH_SIZE + 1) { // We need more than the MAX batch size
+      compositionSections.add(
+        SectionComponent().apply { focus.reference = "${ResourceType.StructureMap.name}/id-$i" }
+      )
+    }
+
+    Assert.assertEquals(31, compositionSections.size)
+
+    val composition =
+      Composition().apply {
+        identifier = Identifier().apply { value = appId }
+        section = compositionSections
+      }
+    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+
+    coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
+      listOf(composition)
+    coEvery { fhirResourceDataSource.getResource(any()) } returns Bundle()
+
+    runTest { configRegistry.fetchNonWorkflowConfigResources() }
+
+    val requestPathArgumentSlot = mutableListOf<String>()
+
+    coVerify(exactly = 2) { fhirResourceDataSource.getResource(capture(requestPathArgumentSlot)) }
+
+    Assert.assertEquals(2, requestPathArgumentSlot.size)
+    Assert.assertEquals(
+      "StructureMap?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30",
+      requestPathArgumentSlot.first()
+    )
+    Assert.assertEquals("StructureMap?_id=id-31", requestPathArgumentSlot.last())
   }
 }

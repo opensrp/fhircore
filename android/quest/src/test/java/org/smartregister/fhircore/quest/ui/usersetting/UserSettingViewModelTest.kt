@@ -44,7 +44,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Shadows
 import org.robolectric.shadows.ShadowLooper
-import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -57,6 +56,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest

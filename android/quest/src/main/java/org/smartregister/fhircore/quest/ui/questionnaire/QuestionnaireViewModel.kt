@@ -290,14 +290,6 @@ constructor(
         groupIdentifier = questionnaireConfig.groupResource!!.groupIdentifier,
         memberResourceType = questionnaireConfig.groupResource!!.memberResourceType
       )
-    } else if (questionnaireConfig.resourceIdentifier != null &&
-        questionnaireConfig.resourceType != null
-    ) {
-      try {
-        deleteResource(questionnaireConfig.resourceType!!, questionnaireConfig.resourceIdentifier!!)
-      } catch (e: ResourceNotFoundException) {
-        Timber.e(e)
-      }
     }
   }
   /* We can remove this after we review why a subject is needed for every questionnaire response in fhir core.
@@ -571,8 +563,8 @@ constructor(
       viewModelScope.launch(dispatcherProvider.io()) {
         try {
           defaultRepository.removeGroup(
-            groupId,
-            deactivateMembers,
+            groupId = groupId,
+            isDeactivateMembers = deactivateMembers,
             configComputedRuleValues = emptyMap()
           )
         } catch (exception: Exception) {

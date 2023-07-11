@@ -124,7 +124,7 @@ constructor(
 
             fhirResourceDataSource.getResource(resourceUrlPath).entry.forEach { bundleEntryComponent
               ->
-              defaultRepository.create(false, bundleEntryComponent.resource)
+              defaultRepository.createRemote(false, bundleEntryComponent.resource)
 
               if (bundleEntryComponent.resource is Binary) {
                 val binary = bundleEntryComponent.resource as Binary
@@ -147,7 +147,7 @@ constructor(
         saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
 
         // Save composition after fetching all the referenced section resources
-        defaultRepository.create(false, compositionResource)
+        defaultRepository.createRemote(false, compositionResource)
         Timber.d("Done fetching application configurations remotely")
         loadConfigurations(context)
       } catch (unknownHostException: UnknownHostException) {

@@ -29,6 +29,8 @@ import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import io.sentry.protocol.User
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -149,9 +151,15 @@ constructor(
             }
           )
         } else {
-          if (accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)) {
+          if (secureSharedPreference.retrieveSessionUsername() == null) {
+            _showProgressBar.postValue(false)
+            _loginErrorState.postValue(LoginErrorState.INVALID_OFFLINE_STATE)
+          } else if (accountAuthenticator.validateLoginCredentials(
+              trimmedUsername,
+              passwordAsCharArray
+            )
+          ) {
             try {
-
               // Configure Sentry scope
               Sentry.configureScope { scope ->
                 scope.setTag("versionCode", BuildConfig.VERSION_CODE.toString())
@@ -161,7 +169,6 @@ constructor(
             } catch (e: Exception) {
               Timber.e(e)
             }
-
             _showProgressBar.postValue(false)
             updateNavigateHome(true)
           } else {
@@ -216,14 +223,24 @@ constructor(
           .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
           .onFailure {
             _showProgressBar.postValue(false)
-            _loginErrorState.postValue(LoginErrorState.UNKNOWN_HOST)
+            var errorState = LoginErrorState.ERROR_FETCHING_USER
+
+            if (it is HttpException) {
+              when (it.code()) {
+                401 -> errorState = LoginErrorState.INVALID_CREDENTIALS
+              }
+            } else if (it is UnknownHostException) {
+              errorState = LoginErrorState.UNKNOWN_HOST
+            }
+
+            _loginErrorState.postValue(errorState)
             Timber.e(it)
           }
       }
     }
   }
 
-  private suspend fun fetchPractitioner(
+  suspend fun fetchPractitioner(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>) -> Unit
   ) {
@@ -238,6 +255,15 @@ constructor(
         } catch (httpException: HttpException) {
           onFetchPractitioner(Result.failure(httpException))
           Timber.e(httpException.response()?.errorBody()?.charStream()?.readText())
+        } catch (unknownHostException: UnknownHostException) {
+          onFetchPractitioner(Result.failure(unknownHostException))
+          Timber.e(unknownHostException, "An error occurred fetching the practitioner details")
+        } catch (socketTimeoutException: SocketTimeoutException) {
+          onFetchPractitioner(Result.failure(socketTimeoutException))
+          Timber.e(socketTimeoutException, "An error occurred fetching the practitioner details")
+        } catch (exception: Exception) {
+          onFetchPractitioner(Result.failure(exception))
+          Timber.e(exception, "An error occurred fetching the practitioner details")
         }
       } else {
         onFetchPractitioner(
@@ -246,6 +272,15 @@ constructor(
       }
     } catch (httpException: HttpException) {
       onFetchUserInfo(Result.failure(httpException))
+    } catch (unknownHostException: UnknownHostException) {
+      onFetchUserInfo(Result.failure(unknownHostException))
+      Timber.e(unknownHostException, "An error occurred fetching the practitioner details")
+    } catch (socketTimeoutException: SocketTimeoutException) {
+      onFetchUserInfo(Result.failure(socketTimeoutException))
+      Timber.e(socketTimeoutException, "An error occurred fetching the practitioner details")
+    } catch (exception: Exception) {
+      onFetchUserInfo(Result.failure(exception))
+      Timber.e(exception, "An error occurred fetching the practitioner details")
     }
   }
 
@@ -253,29 +288,27 @@ constructor(
     if (bundle.entry.isNullOrEmpty()) return
     viewModelScope.launch {
       val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
-
       val careTeams = practitionerDetails.fhirPractitionerDetails?.careTeams ?: listOf()
       val organizations = practitionerDetails.fhirPractitionerDetails?.organizations ?: listOf()
       val locations = practitionerDetails.fhirPractitionerDetails?.locations ?: listOf()
       val locationHierarchies =
         practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
-
       val careTeamIds =
         withContext(dispatcherProvider.io()) {
-          defaultRepository.create(true, *careTeams.toTypedArray()).map {
-            it.extractLogicalIdUuid()
+          defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
+            careTeams.map { it.id.extractLogicalIdUuid() }
           }
         }
       val organizationIds =
         withContext(dispatcherProvider.io()) {
-          defaultRepository.create(true, *organizations.toTypedArray()).map {
-            it.extractLogicalIdUuid()
+          defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
+            organizations.map { it.id.extractLogicalIdUuid() }
           }
         }
       val locationIds =
         withContext(dispatcherProvider.io()) {
-          defaultRepository.create(true, *locations.toTypedArray()).map {
-            it.extractLogicalIdUuid()
+          defaultRepository.createRemote(false, *locations.toTypedArray()).run {
+            locations.map { it.id.extractLogicalIdUuid() }
           }
         }
 
@@ -283,7 +316,6 @@ constructor(
         key = SharedPreferenceKey.PRACTITIONER_ID.name,
         value = practitionerDetails.fhirPractitionerDetails?.practitionerId.valueToString()
       )
-
       sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS.name, practitionerDetails)
       sharedPreferences.write(ResourceType.CareTeam.name, careTeamIds)
       sharedPreferences.write(ResourceType.Organization.name, organizationIds)

@@ -16,13 +16,16 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import android.os.Parcelable
 import androidx.compose.ui.text.font.FontWeight
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class CompoundTextProperties(
   override val viewType: ViewType = ViewType.COMPOUND_TEXT,
   override val weight: Float = 0f,
@@ -50,7 +53,7 @@ data class CompoundTextProperties(
   val colorOpacity: Float = 1f,
   val textCase: TextCase? = null,
   val overflow: TextOverFlow? = null
-) : ViewProperties() {
+) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): CompoundTextProperties {
     return this.copy(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),

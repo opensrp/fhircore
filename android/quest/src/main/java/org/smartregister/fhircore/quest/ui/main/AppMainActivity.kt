@@ -75,7 +75,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override val startForResult =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
-      if (activityResult.resultCode == Activity.RESULT_OK) onSubmitQuestionnaire(activityResult)
+      if (activityResult.resultCode == Activity.RESULT_OK)
+        lifecycleScope.launch { onSubmitQuestionnaire(activityResult) }
     }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -146,7 +147,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     navHostFragment.navController.removeOnDestinationChangedListener(sentryNavListener)
   }
 
-  override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
+  override suspend fun onSubmitQuestionnaire(activityResult: ActivityResult) {
     if (activityResult.resultCode == RESULT_OK) {
       val questionnaireResponse: QuestionnaireResponse? =
         activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE) as
@@ -155,36 +156,22 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as
           QuestionnaireConfig?
 
-      lifecycleScope.launch {
-        if (questionnaireConfig != null && questionnaireResponse != null) {
-          eventBus.triggerEvent(
-            AppEvent.OnSubmitQuestionnaire(
-              QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
+      if (questionnaireConfig != null) {
+        eventBus.triggerEvent(
+          AppEvent.OnSubmitQuestionnaire(
+            QuestionnaireSubmission(
+              questionnaireConfig,
+              questionnaireResponse ?: QuestionnaireResponse()
             )
           )
-        }
-        if (questionnaireConfig != null && questionnaireConfig.refreshContent) {
-          eventBus.triggerEvent(AppEvent.RefreshCache(questionnaireConfig = questionnaireConfig))
-        }
+        )
       }
     }
   }
 
   override fun onSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.InProgress -> {
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(syncJobStatus, getString(R.string.syncing_in_progress))
-        )
-      }
-      is SyncJobStatus.Glitch -> {
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(syncJobStatus, appMainViewModel.retrieveLastSyncTimestamp())
-        )
-        // syncJobStatus.exceptions may be null when worker fails; hence the null safety usage
-        Timber.w(syncJobStatus?.exceptions?.joinToString { it.exception.message.toString() })
-      }
-      is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
+      is SyncJobStatus.Glitch, is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
@@ -192,6 +179,13 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
               formatLastSyncTimestamp(syncJobStatus.timestamp)
             )
           )
+        }
+        if (syncJobStatus is SyncJobStatus.Glitch) {
+          try {
+            Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
+          } catch (nullPointerException: NullPointerException) {
+            Timber.w("No exceptions reported on Sync Failure ", nullPointerException)
+          }
         }
       }
       else -> {

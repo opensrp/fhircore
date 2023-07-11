@@ -307,6 +307,11 @@ fun LoginPage(
                   id = R.string.login_error,
                   stringResource(R.string.error_fetching_user_details)
                 )
+              LoginErrorState.INVALID_OFFLINE_STATE ->
+                stringResource(
+                  id = R.string.login_error,
+                  stringResource(R.string.invalid_offline_login_state)
+                )
             },
           modifier =
             modifier

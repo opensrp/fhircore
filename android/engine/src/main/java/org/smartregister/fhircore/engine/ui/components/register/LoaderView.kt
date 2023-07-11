@@ -28,6 +28,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +56,7 @@ fun LoaderDialog(
   percentageProgressFlow: Flow<Int> = flowOf(0),
   isSyncUploadFlow: Flow<Boolean> = flowOf(false)
 ) {
+  val currentPercentage = percentageProgressFlow.collectAsState(0).value
   val openDialog = remember { mutableStateOf(true) }
   if (openDialog.value) {
     Dialog(
@@ -105,11 +107,7 @@ fun LoaderDialog(
                   Text(
                     fontSize = 15.sp,
                     color = Color.White,
-                    text =
-                      stringResource(
-                        id = R.string.percentage_progress,
-                        percentageProgressFlow.collectAsState(0).value
-                      ),
+                    text = stringResource(id = R.string.percentage_progress, currentPercentage),
                     modifier = modifier.padding(horizontal = 3.dp, vertical = 16.dp),
                   )
                 }
@@ -118,6 +116,11 @@ fun LoaderDialog(
           }
         }
       }
+    }
+  }
+  SideEffect {
+    if (currentPercentage >= 100) {
+      openDialog.value = false
     }
   }
 }

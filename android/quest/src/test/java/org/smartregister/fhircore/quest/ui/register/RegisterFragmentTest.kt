@@ -22,7 +22,6 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
 import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
-import ca.uhn.fhir.i18n.Msg.code
 import com.google.android.fhir.sync.ResourceSyncException
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
@@ -63,7 +62,6 @@ import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -193,32 +191,6 @@ class RegisterFragmentTest : RobolectricTest() {
   }
 
   @Test
-  fun testHandleRefreshLiveDataCallsRetrieveRegisterUiState() {
-    val registerFragmentSpy = spyk(registerFragment)
-    val registerViewModel = mockk<RegisterViewModel>()
-    every { registerViewModel.retrieveRegisterUiState(any(), any(), any(), any()) } just runs
-    every { registerFragmentSpy getProperty "registerViewModel" } returns registerViewModel
-
-    registerFragmentSpy.handleRefreshLiveData()
-
-    verify {
-      registerViewModel.retrieveRegisterUiState(
-        registerId = "householdRegister",
-        screenTitle = "All HouseHolds",
-        params = emptyArray(),
-        clearCache = true
-      )
-    }
-  }
-
-  @Test
-  fun testOnViewCreatedCallsHandleRefreshLiveData() = runTest {
-    registerFragment.onViewCreated(mockk(), mockk())
-    eventBus.triggerEvent(AppEvent.RefreshCache(QuestionnaireConfig(id = "refresh")))
-    verify { registerViewModel.retrieveRegisterUiState(any(), any(), any(), any()) }
-  }
-
-  @Test
   fun testHandleQuestionnaireSubmissionCallsRegisterViewModelPaginateRegisterDataAndEmitSnackBarState() {
     val snackBarMessageConfig = SnackBarMessageConfig(message = "Family member added")
     val questionnaireConfig =
@@ -233,13 +205,7 @@ class RegisterFragmentTest : RobolectricTest() {
 
     coEvery { registerViewModel.emitSnackBarState(any()) } just runs
     runBlocking { registerFragmentSpy.handleQuestionnaireSubmission(questionnaireSubmission) }
-    coVerify {
-      registerViewModel.paginateRegisterData(
-        registerId = "householdRegister",
-        loadAll = false,
-        clearCache = true
-      )
-    }
+    coVerify { registerFragmentSpy.refreshRegisterData() }
     coVerify { registerViewModel.emitSnackBarState(snackBarMessageConfig) }
   }
 

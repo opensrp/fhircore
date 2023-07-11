@@ -24,7 +24,7 @@ For remote data storage and login, the mobile application requires:
 FHIRcore also interoperates well with:
 - [OpenSRP Web](https://github.com/OpenSRP/web) to access healthcare data from the same HAPI FHIR server.
 
-<img align=center width=400 src="docs/assets/fhircore.png">
+<img align=center width=400 src="static/img/fhircore.png">
 
 ## Getting Started
 
