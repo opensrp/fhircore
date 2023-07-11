@@ -13,7 +13,7 @@ const config = {
   trailingSlash:false,
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/opensrp-logo.png',
+  favicon: 'img/opensrp-favicon.png',
   staticDirectories: ['static'],
 
   // GitHub pages deployment config.
@@ -50,15 +50,40 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      colorMode: {
+      defaultMode: 'light',
+      disableSwitch: true,
+      respectPrefersColorScheme: false,
+    },
+      
       navbar: {
-        title: 'OpenSRP',
+        title: '',
         logo: {
           alt: 'OpenSRP Documentation',
           src: 'img/opensrp-logo.png',
+          href: 'https://opensrp.io/',
         },
         items: [
           {
-            href: '/dokka',
+            to: 'https://opensrp.io/',
+            label: 'Home',
+            position: 'right',
+            target: '_self',
+          },
+          {
+            to: 'https://opensrp.io/features/',
+            label: 'How It Works',
+            position: 'right',
+            target: '_self',
+          },
+          {
+            to: 'https://opensrp.io/impact/',
+            label: 'Impact',
+            position: 'right',
+            target: '_self',
+          },
+          {
+            href: '/',
             label: 'Code Docs',
             position: 'right',
           },

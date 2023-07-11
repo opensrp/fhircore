@@ -1,3 +1,45 @@
-.purple-text {
+@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+
+:root {
+  --ifm-font-family-base: 'Inter';
+}
+/*
+.main-wrapper {
+  max-width:1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+*/
+
+#purple-text {
   color: rebeccapurple;
+}
+
+#app-release {
+  color: rebeccapurple;
+}
+
+.navbar {
+  min-height: 80px;
+}
+
+.navbar__logo {
+  width: 142px;
+  height: 19.41px;
+}
+
+h1 {
+  font-size: 2em;
+}
+
+:root {
+  --ifm-color-primary: #2289f1;
+  --ifm-code-font-size: 95%;
+  --ifm-navbar-padding-horizontal: 20px;
+}
+
+article {
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
 }
