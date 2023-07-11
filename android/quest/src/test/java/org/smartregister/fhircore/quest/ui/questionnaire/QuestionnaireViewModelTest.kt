@@ -1414,18 +1414,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testDeleteResourceCallsDefaultRepositoryDelete() {
-    val resourceType = ResourceType.Patient
-    val resourceIdentifier = "rdsfjkdfh-dfdf-dfsd"
-    questionnaireViewModel.deleteResource(
-      resourceType = resourceType,
-      resourceIdentifier = resourceIdentifier
-    )
-
-    coVerify { defaultRepo.delete(resourceType = resourceType, resourceId = resourceIdentifier) }
-  }
-
-  @Test
   fun testGenerateMissingItemsForQuestionnaire() {
     val patientRegistrationQuestionnaire =
       "patient-registration-questionnaire/sample/missingitem-questionnaire.json".readFile()
@@ -2039,7 +2027,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
             memberResourceType = ResourceType.Patient
           )
       )
-    questionnaireViewModel.triggerRemove(theQuestionnaireConfig)
+
+    questionnaireViewModel.triggerRemoveResources(theQuestionnaireConfig)
 
     coVerify {
       defaultRepo.removeGroup(
@@ -2048,7 +2037,23 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         emptyMap()
       )
     }
+  }
 
-    assertTrue(questionnaireViewModel.removeOperation.value!!)
+  @Test
+  fun testTriggerRemoveShouldSoftDeleteResource() {
+    val patient = Faker.buildPatient()
+    val theQuestionnaireConfig =
+      QuestionnaireConfig(
+        id = "the-questionnaire-id",
+        resourceIdentifier = patient.id,
+        resourceType = ResourceType.Patient,
+        removeResource = true
+      )
+    coEvery { fhirEngine.get(ResourceType.Patient, patient.id) } returns patient
+    questionnaireViewModel.triggerRemoveResources(theQuestionnaireConfig)
+
+    // Soft delete sets Patient.active to false
+    assertFalse(patient.active)
+    coVerify { defaultRepo.addOrUpdate(true, patient) }
   }
 }

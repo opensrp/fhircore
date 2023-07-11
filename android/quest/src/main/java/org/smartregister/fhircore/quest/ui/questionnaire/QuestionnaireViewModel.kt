@@ -274,10 +274,15 @@ constructor(
         performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle = null)
       }
       viewModelScope.launch(dispatcherProvider.main()) { extractionProgress.postValue(true) }
-      triggerRemove(questionnaireConfig)
+      triggerRemoveResources(questionnaireConfig)
     }
   }
-  fun triggerRemove(questionnaireConfig: QuestionnaireConfig) {
+
+  /**
+   * This function triggers removal of [Resource] s as per the [QuestionnaireConfig.groupResource]
+   * or [QuestionnaireConfig.removeResource] config properties.
+   */
+  fun triggerRemoveResources(questionnaireConfig: QuestionnaireConfig) {
     if (questionnaireConfig.groupResource != null) {
       removeGroup(
         groupId = questionnaireConfig.groupResource!!.groupIdentifier,
@@ -290,6 +295,19 @@ constructor(
         groupIdentifier = questionnaireConfig.groupResource!!.groupIdentifier,
         memberResourceType = questionnaireConfig.groupResource!!.memberResourceType
       )
+    }
+
+    if (questionnaireConfig.removeResource == true &&
+        questionnaireConfig.resourceType != null &&
+        !questionnaireConfig.resourceIdentifier.isNullOrEmpty()
+    ) {
+      viewModelScope.launch {
+        defaultRepository.delete(
+          resourceType = questionnaireConfig.resourceType!!,
+          resourceId = questionnaireConfig.resourceIdentifier!!,
+          softDelete = true
+        )
+      }
     }
   }
   /* We can remove this after we review why a subject is needed for every questionnaire response in fhir core.
@@ -597,12 +615,6 @@ constructor(
           removeOperation.postValue(true)
         }
       }
-    }
-  }
-
-  fun deleteResource(resourceType: ResourceType, resourceIdentifier: String) {
-    viewModelScope.launch {
-      defaultRepository.delete(resourceType = resourceType, resourceId = resourceIdentifier)
     }
   }
 
