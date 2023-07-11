@@ -77,7 +77,6 @@ import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDat
 
 @HiltAndroidTest
 class MeasureReportViewModelTest : RobolectricTest() {
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
   @Inject lateinit var measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
