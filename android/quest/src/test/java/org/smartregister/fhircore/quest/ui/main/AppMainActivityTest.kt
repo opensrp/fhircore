@@ -89,29 +89,29 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnSyncWithSyncStateInProgress() {
+    val viewModel = appMainActivity.appMainViewModel
     appMainActivity.onSync(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD))
-    Assert.assertTrue(
-      appMainActivity.appMainViewModel.appMainUiState.value.lastSyncTime.contains(
-        "Sync in progress",
-        ignoreCase = true
-      )
-    )
+
+    // Timestamp will only updated for states Glitch, Finished or Failed. Defaults to empty
+    Assert.assertTrue(viewModel.appMainUiState.value.lastSyncTime.isEmpty())
   }
 
   @Test
   fun testOnSyncWithSyncStateGlitch() {
     val viewModel = appMainActivity.appMainViewModel
-    viewModel.sharedPreferencesHelper.write(
-      SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-      "2022-05-19"
-    )
-    appMainActivity.onSync(SyncJobStatus.Glitch(exceptions = emptyList()))
+    val timestamp = "2022-05-19"
+    viewModel.sharedPreferencesHelper.write(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, timestamp)
+
+    val syncJobStatus = SyncJobStatus.Glitch(exceptions = emptyList())
+    val syncJobStatusTimestamp = syncJobStatus.timestamp
+
+    appMainActivity.onSync(syncJobStatus)
     Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
-    Assert.assertTrue(
-      viewModel.appMainUiState.value.lastSyncTime.contains(
-        viewModel.retrieveLastSyncTimestamp()!!,
-        ignoreCase = true
-      )
+
+    // Timestamp updated to the SyncJobStatus timestamp
+    Assert.assertEquals(
+      viewModel.appMainUiState.value.lastSyncTime,
+      viewModel.formatLastSyncTimestamp(syncJobStatusTimestamp)!!,
     )
   }
 
