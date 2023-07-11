@@ -37,4 +37,20 @@ object DateService {
         )
     }
   }
+
+  @JvmOverloads
+  fun addOrSubtractDayFromCurrentDate(
+    days: Int,
+    operation: String,
+    dateFormat: String = SDF_YYYY_MM_DD,
+  ): String {
+    return when (operation) {
+      "-" -> LocalDate.now().minusDays(days).toDate().formatDate(dateFormat)
+      "+" -> LocalDate.now().plusDays(days).toDate().formatDate(dateFormat)
+      else ->
+        throw NotImplementedException(
+          "Operation not supported. Operations supported operation are '+' or '-'"
+        )
+    }
+  }
 }
