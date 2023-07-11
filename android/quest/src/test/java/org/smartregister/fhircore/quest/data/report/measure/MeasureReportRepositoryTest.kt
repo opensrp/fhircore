@@ -16,35 +16,100 @@
 
 package org.smartregister.fhircore.quest.data.report.measure
 
+import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.context.FhirContext
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.mockk
+import io.mockk.spyk
 import javax.inject.Inject
-import kotlin.test.assertNotNull
-import kotlinx.coroutines.test.runTest
+import kotlin.test.assertEquals
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.RulesFactory
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.lastDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.today
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class MeasureReportRepositoryTest : RobolectricTest() {
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+  private val fhirEngine: FhirEngine = mockk()
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-  @Inject lateinit var measureReportRepository: MeasureReportRepository
+  private lateinit var measureReportConfiguration: MeasureReportConfiguration
+  private lateinit var measureReportRepository: MeasureReportRepository
+  private val registerId = "register id"
+  private lateinit var rulesFactory: RulesFactory
+  private lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  private lateinit var registerRepository: RegisterRepository
 
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
+    rulesFactory =
+      spyk(
+        RulesFactory(
+          context = ApplicationProvider.getApplicationContext(),
+          configurationRegistry = configurationRegistry,
+          fhirPathDataExtractor = fhirPathDataExtractor,
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider
+        )
+      )
+    resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)
+
+    val appId = "appId"
+    val id = "id"
+    val fhirResource = FhirResourceConfig(ResourceConfig(resource = ResourceType.Patient))
+
+    measureReportConfiguration = MeasureReportConfiguration(appId, id = id, registerId = registerId)
+    registerRepository =
+      spyk(
+        RegisterRepository(
+          fhirEngine = fhirEngine,
+          dispatcherProvider = DefaultDispatcherProvider(),
+          sharedPreferencesHelper = mockk(),
+          configurationRegistry = configurationRegistry,
+          configService = mockk(),
+          configRulesExecutor = mockk()
+        )
+      )
+
+    measureReportRepository =
+      MeasureReportRepository(
+        fhirEngine,
+        DefaultDispatcherProvider(),
+        mockk(),
+        configurationRegistry,
+        mockk(),
+        mockk(),
+        registerRepository,
+        FhirOperator(FhirContext.forR4(), fhirEngine),
+      )
   }
 
   @Test
   @kotlinx.serialization.ExperimentalSerializationApi
-  fun testEvaluatePopulationMeasure() {
-    runTest {
+  fun testEvaluatePopulationMeasureHandlesBadMeasureUrl() {
+    runBlocking(Dispatchers.Default) {
       val measureReport =
         measureReportRepository.evaluatePopulationMeasure(
           "bad-measure-url",
@@ -54,7 +119,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           emptyList()
         )
 
-      assertNotNull(measureReport)
+      assertEquals(measureReport.size, 0)
     }
   }
 }

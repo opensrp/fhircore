@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
+import timber.log.Timber
 
 class MeasureReportRepository
 @Inject
@@ -56,6 +57,17 @@ constructor(
     configRulesExecutor = configRulesExecutor
   ) {
 
+  /**
+   * If running a measure for any subject throws a null pointer exception the measures for
+   * unevaluated subjects are discarded and the method returns a list of any reports added so far.
+   *
+   * @param measureUrl url of measure report to generate
+   * @param startDateFormatted start date of measure period with format yyyy-MM-dd
+   * @param endDateFormatted end date of measure period with format yyyy-MM-dd
+   * @param subjects list of subjects to generate report for, can be empty
+   * @param existing list of existing measure reports, can be empty
+   * @return list of generated measure reports
+   */
   suspend fun evaluatePopulationMeasure(
     measureUrl: String,
     startDateFormatted: String,
@@ -64,28 +76,30 @@ constructor(
     existing: List<MeasureReport>
   ): List<MeasureReport> {
     val measureReport = mutableListOf<MeasureReport>()
-    withContext(dispatcherProvider.io()) {
-      if (subjects.isNotEmpty()) {
-        subjects
-          .map {
-            runMeasureReport(
-              measureUrl,
-              MeasureReportViewModel.SUBJECT,
-              startDateFormatted,
-              endDateFormatted,
-              it
-            )
-          }
-          .forEach { subject -> measureReport.add(subject) }
-      } else
-        runMeasureReport(
-          measureUrl,
-          MeasureReportViewModel.POPULATION,
-          startDateFormatted,
-          endDateFormatted,
-          null
-        )
-          .also { measureReport.add(it) }
+    try {
+      withContext(dispatcherProvider.io()) {
+        if (subjects.isNotEmpty()) {
+          subjects
+            .map {
+              runMeasureReport(
+                measureUrl,
+                MeasureReportViewModel.SUBJECT,
+                startDateFormatted,
+                endDateFormatted,
+                it
+              )
+            }
+            .forEach { subject -> measureReport.add(subject) }
+        } else
+          runMeasureReport(
+            measureUrl,
+            MeasureReportViewModel.POPULATION,
+            startDateFormatted,
+            endDateFormatted,
+            null
+          )
+            .also { measureReport.add(it) }
+      }
 
       measureReport.forEach { report ->
         // if report exists override instead of creating a new one
@@ -97,6 +111,8 @@ constructor(
           ?.let { existing -> report.id = existing.id }
         addOrUpdate(resource = report)
       }
+    } catch (exception: NullPointerException) {
+      Timber.e(exception, "Exception thrown with measureUrl: $measureUrl.")
     }
     return measureReport
   }
