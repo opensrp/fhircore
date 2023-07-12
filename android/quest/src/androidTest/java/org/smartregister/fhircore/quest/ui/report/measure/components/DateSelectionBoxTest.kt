@@ -41,7 +41,7 @@ class DateSelectionBoxTest {
         startDate = "Start date",
         endDate = "End date",
         onDateRangeSelected = {},
-        dateRange = dateRange
+        dateRange = dateRange,
       )
     }
   }

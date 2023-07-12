@@ -29,5 +29,5 @@ enum class SharedPreferenceKey {
   LOGIN_CREDENTIAL_KEY,
   LOGIN_PIN_KEY,
   LOGIN_PIN_SALT,
-  LAST_OFFSET
+  LAST_OFFSET,
 }

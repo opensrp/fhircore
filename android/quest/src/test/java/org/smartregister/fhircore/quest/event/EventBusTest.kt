@@ -37,6 +37,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 class EventBusTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @Inject lateinit var eventQueue: EventQueue<AppEvent>
   private lateinit var eventBus: EventBus
   lateinit var emittedEvents: MutableList<AppEvent>
@@ -55,14 +56,13 @@ class EventBusTest : RobolectricTest() {
       AppEvent.OnSubmitQuestionnaire(
         QuestionnaireSubmission(
           questionnaireConfig = QuestionnaireConfig(id = "submit-questionnaire"),
-          QuestionnaireResponse()
-        )
+          QuestionnaireResponse(),
+        ),
       )
 
     runBlockingTest {
       val collectJob = launch {
-        eventBus
-          .events
+        eventBus.events
           .getFor("TestTag")
           .onEach { appEvent -> emittedEvents.add(appEvent) }
           .launchIn(this)

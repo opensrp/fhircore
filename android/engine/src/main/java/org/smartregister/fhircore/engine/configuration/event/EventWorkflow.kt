@@ -26,5 +26,5 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 data class EventWorkflow(
   val eventType: EventType = EventType.RESOURCE_CLOSURE,
   val triggerConditions: List<EventTriggerCondition> = emptyList(),
-  val eventResources: List<ResourceConfig> = emptyList()
+  val eventResources: List<ResourceConfig> = emptyList(),
 ) : java.io.Serializable, Parcelable

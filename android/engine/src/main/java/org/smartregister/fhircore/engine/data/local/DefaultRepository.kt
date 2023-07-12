@@ -86,7 +86,7 @@ constructor(
   open val sharedPreferencesHelper: SharedPreferencesHelper,
   open val configurationRegistry: ConfigurationRegistry,
   open val configService: ConfigService,
-  open val configRulesExecutor: ConfigRulesExecutor
+  open val configRulesExecutor: ConfigRulesExecutor,
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
@@ -108,7 +108,7 @@ constructor(
     subjectType: ResourceType = ResourceType.Patient,
     subjectParam: ReferenceClientParam,
     filters: List<DataQuery>? = null,
-    configComputedRuleValues: Map<String, Any> = emptyMap()
+    configComputedRuleValues: Map<String, Any> = emptyMap(),
   ): List<T> =
     withContext(dispatcherProvider.io()) {
       fhirEngine.search {
@@ -122,7 +122,7 @@ constructor(
     subjectType: ResourceType,
     subjectId: String,
     filters: List<DataQuery> = listOf(),
-    configComputedRuleValues: Map<String, Any>
+    configComputedRuleValues: Map<String, Any>,
   ): List<T> =
     withContext(dispatcherProvider.io()) {
       fhirEngine.search {
@@ -185,6 +185,7 @@ constructor(
       fhirEngine.delete(resource.resourceType, resource.logicalId)
     }
   }
+
   /**
    * Upserts a resource into the database. This function also updates the
    * [Resource.meta.lastUpdated] and generates the [Resource.id] if it is missing before upserting
@@ -221,18 +222,18 @@ constructor(
   suspend fun loadManagingEntity(group: Group, configComputedRuleValues: Map<String, Any>) =
     group.managingEntity?.let { reference ->
       searchResourceFor<RelatedPerson>(
-        token = RelatedPerson.RES_ID,
-        subjectType = ResourceType.RelatedPerson,
-        subjectId = reference.extractId(),
-        configComputedRuleValues = configComputedRuleValues
-      )
+          token = RelatedPerson.RES_ID,
+          subjectType = ResourceType.RelatedPerson,
+          subjectId = reference.extractId(),
+          configComputedRuleValues = configComputedRuleValues,
+        )
         .firstOrNull()
         ?.let { relatedPerson ->
           searchResourceFor<Patient>(
               token = Patient.RES_ID,
               subjectType = ResourceType.Patient,
               subjectId = relatedPerson.patient.extractId(),
-              configComputedRuleValues = configComputedRuleValues
+              configComputedRuleValues = configComputedRuleValues,
             )
             .firstOrNull()
         }
@@ -241,12 +242,13 @@ constructor(
   suspend fun changeManagingEntity(
     newManagingEntityId: String,
     groupId: String,
-    managingEntityConfig: ManagingEntityConfig?
+    managingEntityConfig: ManagingEntityConfig?,
   ) {
     val group = fhirEngine.get<Group>(groupId)
     if (managingEntityConfig?.resourceType == ResourceType.Patient) {
       val relatedPerson =
-        if (group.managingEntity.reference != null &&
+        if (
+          group.managingEntity.reference != null &&
             group.managingEntity.reference.startsWith(ResourceType.RelatedPerson.name)
         ) {
           fhirEngine.get(group.managingEntity.reference.extractLogicalIdUuid())
@@ -267,7 +269,7 @@ constructor(
   private fun updateRelatedPersonDetails(
     existingPerson: RelatedPerson,
     newPatient: Patient,
-    relationshipCode: Code?
+    relationshipCode: Code?,
   ) {
     existingPerson.apply {
       active = true
@@ -286,18 +288,17 @@ constructor(
   suspend fun removeGroup(
     groupId: String,
     isDeactivateMembers: Boolean?,
-    configComputedRuleValues: Map<String, Any>
+    configComputedRuleValues: Map<String, Any>,
   ) {
     loadResource<Group>(groupId)?.let { group ->
       if (!group.active) throw IllegalStateException("Group already deleted")
-      group
-        .managingEntity
+      group.managingEntity
         ?.let { reference ->
           searchResourceFor<RelatedPerson>(
             token = RelatedPerson.RES_ID,
             subjectType = ResourceType.RelatedPerson,
             subjectId = reference.extractId(),
-            configComputedRuleValues = configComputedRuleValues
+            configComputedRuleValues = configComputedRuleValues,
           )
         }
         ?.firstOrNull()
@@ -327,7 +328,7 @@ constructor(
     memberId: String,
     groupId: String?,
     groupMemberResourceType: String?,
-    configComputedRuleValues: Map<String, Any>
+    configComputedRuleValues: Map<String, Any>,
   ) {
     val memberResourceType =
       groupMemberResourceType?.resourceClassType()?.newInstance()?.resourceType
@@ -348,14 +349,13 @@ constructor(
 
       if (groupId != null) {
         loadResource<Group>(groupId)?.let { group ->
-          group
-            .managingEntity
+          group.managingEntity
             ?.let { reference ->
               searchResourceFor<RelatedPerson>(
                 token = RelatedPerson.RES_ID,
                 subjectType = ResourceType.RelatedPerson,
                 subjectId = reference.extractId(),
-                configComputedRuleValues = configComputedRuleValues
+                configComputedRuleValues = configComputedRuleValues,
               )
             }
             ?.firstOrNull()
@@ -382,7 +382,7 @@ constructor(
     resourceConfig: ResourceConfig,
     filterActiveResources: List<ActiveResourceFilterConfig>? = null,
     sortData: Boolean,
-    configComputedRuleValues: Map<String, Any>
+    configComputedRuleValues: Map<String, Any>,
   ) {
     val activeResource = filterActiveResources?.find { it.resourceType == resourceConfig.resource }
     if (!filterActiveResources.isNullOrEmpty() && activeResource?.active == true) {
@@ -416,7 +416,7 @@ constructor(
             sort(StringClientParam(sortConfig.paramName), sortConfig.order)
           else ->
             Timber.e(
-              "Unsupported data type: '${sortConfig.dataType}'. Only ${listOf(Enumerations.DataType.INTEGER, Enumerations.DataType.DATE, Enumerations.DataType.STRING)} types are supported for DB level sorting."
+              "Unsupported data type: '${sortConfig.dataType}'. Only ${listOf(Enumerations.DataType.INTEGER, Enumerations.DataType.DATE, Enumerations.DataType.STRING)} types are supported for DB level sorting.",
             )
         }
       }
@@ -427,9 +427,8 @@ constructor(
     resources: List<Resource>,
     relatedResourcesConfigs: List<ResourceConfig>?,
     relatedResourceWrapper: RelatedResourceWrapper,
-    configComputedRuleValues: Map<String, Any>
+    configComputedRuleValues: Map<String, Any>,
   ): RelatedResourceWrapper {
-
     // Forward include related resources e.g. Members (Patient) referenced in Group resource
     val forwardIncludeResourceConfigs =
       relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(false)
@@ -439,7 +438,7 @@ constructor(
         relatedResourcesConfigs = forwardIncludeResourceConfigs,
         resources = resources,
         relatedResourceWrapper = relatedResourceWrapper,
-        configComputedRuleValues = configComputedRuleValues
+        configComputedRuleValues = configComputedRuleValues,
       )
     }
 
@@ -465,7 +464,7 @@ constructor(
               applyConfiguredSortAndFilters(
                 resourceConfig = resourceConfig,
                 sortData = false,
-                configComputedRuleValues = configComputedRuleValues
+                configComputedRuleValues = configComputedRuleValues,
               )
             }
           val key = resourceConfig.id ?: resourceConfig.resource.name
@@ -477,16 +476,16 @@ constructor(
             onFailure = {
               Timber.e(
                 it,
-                "Error retrieving total count for all related resourced identified by $key"
+                "Error retrieving total count for all related resourced identified by $key",
               )
-            }
+            },
           )
         } else {
           computeCountForEachRelatedResource(
             resources = resources,
             resourceConfig = resourceConfig,
             relatedResourceWrapper = relatedResourceWrapper,
-            configComputedRuleValues = configComputedRuleValues
+            configComputedRuleValues = configComputedRuleValues,
           )
         }
       }
@@ -501,7 +500,7 @@ constructor(
         relatedResourcesConfigs = reverseIncludeResourceConfigs,
         resources = resources,
         relatedResourceWrapper = relatedResourceWrapper,
-        configComputedRuleValues = configComputedRuleValues
+        configComputedRuleValues = configComputedRuleValues,
       )
     }
 
@@ -510,7 +509,7 @@ constructor(
 
   protected suspend fun Search.count(
     onSuccess: (Long) -> Unit = {},
-    onFailure: (Throwable) -> Unit = { throwable -> Timber.e(throwable, "Error counting data") }
+    onFailure: (Throwable) -> Unit = { throwable -> Timber.e(throwable, "Error counting data") },
   ): Long =
     kotlin
       .runCatching { withContext(dispatcherProvider.io()) { fhirEngine.count(this@count) } }
@@ -522,7 +521,7 @@ constructor(
     resources: List<Resource>,
     resourceConfig: ResourceConfig,
     relatedResourceWrapper: RelatedResourceWrapper,
-    configComputedRuleValues: Map<String, Any>
+    configComputedRuleValues: Map<String, Any>,
   ) {
     val relatedResourceCountLinkedList = LinkedList<RelatedResourceCount>()
     val key = resourceConfig.id ?: resourceConfig.resource.name
@@ -531,12 +530,12 @@ constructor(
         Search(type = resourceConfig.resource).apply {
           filter(
             ReferenceClientParam(resourceConfig.searchParameter),
-            { value = baseResource.logicalId.asReference(baseResource.resourceType).reference }
+            { value = baseResource.logicalId.asReference(baseResource.resourceType).reference },
           )
           applyConfiguredSortAndFilters(
             resourceConfig = resourceConfig,
             sortData = false,
-            configComputedRuleValues = configComputedRuleValues
+            configComputedRuleValues = configComputedRuleValues,
           )
         }
       search.count(
@@ -545,16 +544,16 @@ constructor(
             RelatedResourceCount(
               relatedResourceType = resourceConfig.resource,
               parentResourceId = baseResource.logicalId,
-              count = it
-            )
+              count = it,
+            ),
           )
         },
         onFailure = {
           Timber.e(
             it,
-            "Error retrieving count for ${baseResource.logicalId.asReference(baseResource.resourceType)} for related resource identified ID $key"
+            "Error retrieving count for ${baseResource.logicalId.asReference(baseResource.resourceType)} for related resource identified ID $key",
           )
-        }
+        },
       )
     }
 
@@ -573,7 +572,7 @@ constructor(
     relatedResourcesConfigs: List<ResourceConfig>?,
     resources: List<Resource>,
     relatedResourceWrapper: RelatedResourceWrapper,
-    configComputedRuleValues: Map<String, Any>
+    configComputedRuleValues: Map<String, Any>,
   ) {
     val relatedResourcesConfigsMap = relatedResourcesConfigs?.groupBy { it.resource }
 
@@ -596,12 +595,12 @@ constructor(
           applyConfiguredSortAndFilters(
             resourceConfig = resourceConfig,
             sortData = true,
-            configComputedRuleValues = configComputedRuleValues
+            configComputedRuleValues = configComputedRuleValues,
           )
           if (isRevInclude) {
             revInclude(
               resourceConfig.resource,
-              ReferenceClientParam(resourceConfig.searchParameter)
+              ReferenceClientParam(resourceConfig.searchParameter),
             )
           } else {
             include(ReferenceClientParam(resourceConfig.searchParameter), resourceConfig.resource)
@@ -614,7 +613,7 @@ constructor(
         search = search,
         relatedResourcesConfigsMap = relatedResourcesConfigsMap,
         relatedResourceWrapper = relatedResourceWrapper,
-        configComputedRuleValues = configComputedRuleValues
+        configComputedRuleValues = configComputedRuleValues,
       )
     }
   }
@@ -624,7 +623,7 @@ constructor(
     search: Search,
     relatedResourcesConfigsMap: Map<ResourceType, List<ResourceConfig>>,
     relatedResourceWrapper: RelatedResourceWrapper,
-    configComputedRuleValues: Map<String, Any>
+    configComputedRuleValues: Map<String, Any>,
   ) {
     kotlin
       .runCatching { fhirEngine.searchWithRevInclude<Resource>(isRevInclude, search) }
@@ -640,19 +639,19 @@ constructor(
 
             // All nested resources flattened to one map by adding to existing list
             relatedResourceWrapper.relatedResourceMap[key] =
-              relatedResourceWrapper
-                .relatedResourceMap
+              relatedResourceWrapper.relatedResourceMap
                 .getOrPut(key) { LinkedList() }
                 .plus(entry.value)
 
             currentResourceConfigs?.forEach { resourceConfig ->
-              if (resourceConfig.relatedResources.isNotEmpty())
+              if (resourceConfig.relatedResources.isNotEmpty()) {
                 retrieveRelatedResources(
                   resources = entry.value,
                   relatedResourcesConfigs = resourceConfig.relatedResources,
                   relatedResourceWrapper = relatedResourceWrapper,
-                  configComputedRuleValues = configComputedRuleValues
+                  configComputedRuleValues = configComputedRuleValues,
                 )
+              }
             }
           }
         }
@@ -663,8 +662,9 @@ constructor(
   }
 
   private fun List<ResourceConfig>.revIncludeRelatedResourceConfigs(isRevInclude: Boolean) =
-    if (isRevInclude) this.filter { it.isRevInclude && !it.resultAsCount }
-    else this.filter { !it.isRevInclude && !it.resultAsCount }
+    if (isRevInclude) {
+      this.filter { it.isRevInclude && !it.resultAsCount }
+    } else this.filter { !it.isRevInclude && !it.resultAsCount }
 
   suspend fun updateResourcesRecursively(resourceConfig: ResourceConfig, subject: Resource) {
     val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())
@@ -678,7 +678,7 @@ constructor(
           resourceConfig = resourceConfig,
           sortData = false,
           filterActiveResources = null,
-          configComputedRuleValues = computedValuesMap
+          configComputedRuleValues = computedValuesMap,
         )
       }
     val resources = fhirEngine.search<Resource>(search)
@@ -694,19 +694,20 @@ constructor(
           resources = resources,
           relatedResourcesConfigs = resourceConfig.relatedResources,
           relatedResourceWrapper = RelatedResourceWrapper(),
-          configComputedRuleValues = emptyMap()
+          configComputedRuleValues = emptyMap(),
         )
       }
 
     retrievedRelatedResources.relatedResourceMap.forEach { resourcesMap ->
       resourcesMap.value.forEach { resource ->
         Timber.i(
-          "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}"
+          "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}",
         )
         closeResource(resource, resourceConfig)
       }
     }
   }
+
   @VisibleForTesting
   suspend fun closeResource(resource: Resource, resourceConfig: ResourceConfig) {
     when (resource) {
@@ -726,7 +727,8 @@ constructor(
          * 1. The eventResource id value is "pncConditionToClose"
          * 2. Conditions to be closed must have an onset that is more than 28 days in the past
          */
-        if (resourceConfig.id == PNC_CONDITION_TO_CLOSE_RESOURCE_ID ||
+        if (
+          resourceConfig.id == PNC_CONDITION_TO_CLOSE_RESOURCE_ID ||
             resourceConfig.id == SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID
         ) {
           val closePncCondition = resource.onset.dateTimeValue().value.daysPassed() > 28
@@ -740,7 +742,7 @@ constructor(
                       system = SNOMED_SYSTEM
                       display = PATIENT_CONDITION_RESOLVED_DISPLAY
                       code = PATIENT_CONDITION_RESOLVED_CODE
-                    }
+                    },
                   )
               }
           }
@@ -753,7 +755,7 @@ constructor(
                     system = SNOMED_SYSTEM
                     display = PATIENT_CONDITION_RESOLVED_DISPLAY
                     code = PATIENT_CONDITION_RESOLVED_CODE
-                  }
+                  },
                 )
             }
         }
@@ -769,7 +771,7 @@ constructor(
    */
   data class RelatedResourceWrapper(
     val relatedResourceMap: MutableMap<String, List<Resource>> = mutableMapOf(),
-    val relatedResourceCountMap: MutableMap<String, List<RelatedResourceCount>> = mutableMapOf()
+    val relatedResourceCountMap: MutableMap<String, List<RelatedResourceCount>> = mutableMapOf(),
   )
 
   companion object {

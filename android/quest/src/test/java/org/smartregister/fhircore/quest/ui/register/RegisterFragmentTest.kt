@@ -75,6 +75,7 @@ import retrofit2.Response
 @HiltAndroidTest
 class RegisterFragmentTest : RobolectricTest() {
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+
   @Inject lateinit var eventBus: EventBus
 
   @BindValue
@@ -88,8 +89,8 @@ class RegisterFragmentTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         sharedPreferencesHelper = mockk(relaxed = true),
         dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
-        resourceDataRulesExecutor = mockk()
-      )
+        resourceDataRulesExecutor = mockk(),
+      ),
     )
 
   private lateinit var navController: TestNavHostController
@@ -116,10 +117,10 @@ class RegisterFragmentTest : RobolectricTest() {
                 ResourceData(
                   baseResourceId = "patient",
                   baseResourceType = ResourceType.Patient,
-                  computedValuesMap = emptyMap()
-                )
-              )
-            )
+                  computedValuesMap = emptyMap(),
+                ),
+              ),
+            ),
           )
       }
 
@@ -158,7 +159,7 @@ class RegisterFragmentTest : RobolectricTest() {
         message = "Household member has been added",
         actionLabel = "UNDO",
         duration = SnackbarDuration.Short,
-        snackBarActions = emptyList()
+        snackBarActions = emptyList(),
       )
     val registerViewModel = mockk<RegisterViewModel>()
     this.coroutineTestRule.launch {
@@ -199,7 +200,7 @@ class RegisterFragmentTest : RobolectricTest() {
     val questionnaireSubmission =
       QuestionnaireSubmission(
         questionnaireConfig = questionnaireConfig,
-        questionnaireResponse = questionnaireResponse
+        questionnaireResponse = questionnaireResponse,
       )
     val registerFragmentSpy = spyk(registerFragment)
 
@@ -213,7 +214,7 @@ class RegisterFragmentTest : RobolectricTest() {
   fun testOnSyncWithFailedJobStatusNonAuthErrorRendersSyncFailedMessage() {
     val syncJobStatus =
       SyncJobStatus.Failed(
-        listOf(ResourceSyncException(ResourceType.Patient, Exception("Sync For Patient Failed")))
+        listOf(ResourceSyncException(ResourceType.Patient, Exception("Sync For Patient Failed"))),
       )
     val registerFragmentSpy = spyk(registerFragment)
     registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)
@@ -223,7 +224,6 @@ class RegisterFragmentTest : RobolectricTest() {
 
   @Test
   fun testOnSyncWithFailedJobStatusNonAuthErrorNullExceptionsRendersSyncFailedMessage() {
-
     val syncJobStatus: SyncJobStatus.Failed = mockk()
 
     every { syncJobStatus.exceptions } throws NullPointerException()
@@ -249,11 +249,11 @@ class RegisterFragmentTest : RobolectricTest() {
                   .message("Your credentials are undesirable")
                   .protocol(Protocol.HTTP_1_1)
                   .request(Request.Builder().url("http://fhircore.org/fhir/").build())
-                  .build()
-              )
-            )
-          )
-        )
+                  .build(),
+              ),
+            ),
+          ),
+        ),
       )
     val registerFragmentSpy = spyk(registerFragment)
     registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)

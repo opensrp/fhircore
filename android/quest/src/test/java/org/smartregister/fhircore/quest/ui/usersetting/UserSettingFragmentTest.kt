@@ -48,6 +48,7 @@ import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 @HiltAndroidTest
 class UserSettingFragmentTest : RobolectricTest() {
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
   private val navController = TestNavHostController(ApplicationProvider.getApplicationContext())
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
@@ -81,7 +82,7 @@ class UserSettingFragmentTest : RobolectricTest() {
         dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
         syncListenerManager = mockk(relaxed = true),
         sync = mockk(relaxed = true),
-        context = application
+        context = application,
       )
 
     userSettingViewModel =
@@ -93,7 +94,7 @@ class UserSettingFragmentTest : RobolectricTest() {
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         workManager = mockk(relaxed = true),
-        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider
+        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
       )
   }
 

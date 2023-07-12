@@ -47,6 +47,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 @HiltAndroidTest
 class RegisterViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var registerViewModel: RegisterViewModel
@@ -68,8 +69,8 @@ class RegisterViewModelTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           sharedPreferencesHelper = sharedPreferencesHelper,
           dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
-          resourceDataRulesExecutor = resourceDataRulesExecutor
-        )
+          resourceDataRulesExecutor = resourceDataRulesExecutor,
+        ),
       )
 
     every { registerViewModel.retrieveRegisterConfiguration(any()) } returns
@@ -77,10 +78,8 @@ class RegisterViewModelTest : RobolectricTest() {
         appId = "app",
         id = registerId,
         fhirResource =
-          FhirResourceConfig(
-            baseResource = ResourceConfig(resource = ResourceType.Patient),
-          ),
-        pageSize = 10
+          FhirResourceConfig(baseResource = ResourceConfig(resource = ResourceType.Patient)),
+        pageSize = 10,
       )
     every {
       sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
@@ -104,7 +103,7 @@ class RegisterViewModelTest : RobolectricTest() {
       registerId = registerId,
       screenTitle = screenTitle,
       params = null,
-      clearCache = false
+      clearCache = false,
     )
     val registerUiState = registerViewModel.registerUiState.value
     Assert.assertNotNull(registerUiState)

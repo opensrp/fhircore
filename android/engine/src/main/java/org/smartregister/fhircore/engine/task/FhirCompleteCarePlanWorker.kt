@@ -47,13 +47,13 @@ constructor(
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
 ) : CoroutineWorker(context, workerParams) {
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
       val applicationConfiguration =
         configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-          ConfigType.Application
+          ConfigType.Application,
         )
       val batchSize = applicationConfiguration.taskBackgroundWorkerBatchSize.div(BATCH_SIZE_FACTOR)
 
@@ -63,14 +63,14 @@ constructor(
       val carePlans = getCarePlans(batchSize = batchSize, lastOffset = lastOffset)
 
       carePlans.forEach carePlanLoop@{ carePlan ->
-        carePlan
-          .activity
+        carePlan.activity
           .flatMap { it.outcomeReference }
           .filter { it.reference.startsWith(ResourceType.Task.name) }
           .mapNotNull { fhirCarePlanGenerator.getTask(it.extractId()) }
           .forEach { task ->
-            if (task.status !in listOf(Task.TaskStatus.CANCELLED, Task.TaskStatus.COMPLETED))
+            if (task.status !in listOf(Task.TaskStatus.CANCELLED, Task.TaskStatus.COMPLETED)) {
               return@carePlanLoop
+            }
           }
 
         // complete CarePlan
@@ -83,7 +83,7 @@ constructor(
 
       sharedPreferencesHelper.write(
         key = WORK_ID.lastOffset(),
-        value = updatedLastOffset.toString()
+        value = updatedLastOffset.toString(),
       )
       Result.success()
     }
@@ -97,7 +97,7 @@ constructor(
         { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) },
         { value = of(CarePlan.CarePlanStatus.ONHOLD.toCode()) },
         { value = of(CarePlan.CarePlanStatus.ENTEREDINERROR.toCode()) },
-        { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) }
+        { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) },
       )
       count = batchSize
       from = if (lastOffset > 0) lastOffset + 1 else 0

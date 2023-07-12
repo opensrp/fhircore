@@ -62,8 +62,8 @@ class ReferenceUrlResolverTest : RobolectricTest() {
       Assert.assertEquals(
         binary,
         referenceUrlResolver.resolveBinaryResource(
-          "https://fhir-server.org/Binary/sample-binary-image"
-        )
+          "https://fhir-server.org/Binary/sample-binary-image",
+        ),
       )
     }
   }
@@ -89,14 +89,15 @@ class ReferenceUrlResolverTest : RobolectricTest() {
             override fun contentType(): MediaType? = null
 
             override fun source(): BufferedSource = mockk()
-          }
+          },
         )
 
       every { mockResponseBody.byteStream() } returns
         (ByteArrayInputStream(
-          "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7".toByteArray(
-            Charset.forName("UTF-8")
-          )
+          "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+            .toByteArray(
+              Charset.forName("UTF-8"),
+            ),
         ))
 
       coEvery { fhirResourceService.fetchImage(any()) } returns mockResponseBody

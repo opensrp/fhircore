@@ -21,5 +21,5 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 
 data class QuestionnaireSubmission(
   val questionnaireConfig: QuestionnaireConfig,
-  val questionnaireResponse: QuestionnaireResponse
+  val questionnaireResponse: QuestionnaireResponse,
 )

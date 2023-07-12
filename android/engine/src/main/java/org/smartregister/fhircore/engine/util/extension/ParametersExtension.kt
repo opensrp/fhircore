@@ -24,5 +24,5 @@ fun Parameters.addResourceParameter(name: String, resource: Resource) =
     Parameters.ParametersParameterComponent().apply {
       this.name = name
       this.resource = resource
-    }
+    },
   )

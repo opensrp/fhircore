@@ -63,7 +63,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configService: ConfigService,
   val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
 
   val showProgressBar = MutableLiveData(false)
@@ -122,7 +122,8 @@ constructor(
 
             Timber.d("Fetching config: $resourceUrlPath")
 
-            fhirResourceDataSource.getResource(resourceUrlPath).entry.forEach { bundleEntryComponent
+            fhirResourceDataSource.getResource(resourceUrlPath).entry.forEach {
+              bundleEntryComponent,
               ->
               defaultRepository.createRemote(false, bundleEntryComponent.resource)
 
@@ -154,9 +155,11 @@ constructor(
         _error.postValue(context.getString(R.string.error_loading_config_no_internet))
         showProgressBar.postValue(false)
       } catch (httpException: HttpException) {
-        if ((400..503).contains(httpException.response()!!.code()))
+        if ((400..503).contains(httpException.response()!!.code())) {
           _error.postValue(context.getString(R.string.error_loading_config_general))
-        else _error.postValue(context.getString(R.string.error_loading_config_http_error))
+        } else {
+          _error.postValue(context.getString(R.string.error_loading_config_http_error))
+        }
         showProgressBar.postValue(false)
       }
     }
@@ -194,7 +197,7 @@ constructor(
   fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) =
     sharedPreferencesHelper.write(
       SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-      resourceTypes.distinctBy { it.name }
+      resourceTypes.distinctBy { it.name },
     )
 
   private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {

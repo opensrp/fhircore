@@ -22,6 +22,6 @@ package org.smartregister.fhircore.engine.util.annotation
   AnnotationTarget.CONSTRUCTOR,
   AnnotationTarget.FUNCTION,
   AnnotationTarget.PROPERTY,
-  AnnotationTarget.TYPE
+  AnnotationTarget.TYPE,
 )
 annotation class ExcludeFromJacocoGeneratedReport

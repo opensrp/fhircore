@@ -22,5 +22,5 @@ import kotlinx.serialization.Serializable
 data class SnackBarThemeConfig(
   val messageTextColor: String = "#FFFFFF",
   val actionTextColor: String = "#FFE400",
-  val backgroundColor: String = "#2c2c2c"
+  val backgroundColor: String = "#2c2c2c",
 ) : java.io.Serializable

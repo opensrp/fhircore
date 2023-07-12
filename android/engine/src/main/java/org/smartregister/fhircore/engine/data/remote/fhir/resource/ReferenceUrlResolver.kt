@@ -39,6 +39,8 @@ constructor(val fhirEngine: FhirEngine, val fhirResourceService: FhirResourceSer
     val response = fhirResourceService.fetchImage(url)
     return if (response != null) {
       BitmapFactory.decodeStream(response.byteStream())
-    } else null
+    } else {
+      null
+    }
   }
 }

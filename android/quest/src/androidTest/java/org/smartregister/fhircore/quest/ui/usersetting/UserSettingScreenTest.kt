@@ -103,7 +103,6 @@ class UserSettingScreenTest {
 
   @Test
   fun testWhenShowDatabaseResetConfirmationFalseHidesConfirmationDialog() {
-
     initComposable(isShowDatabaseResetConfirmation = false)
     composeRule
       .onNodeWithText(activity.getString(R.string.clear_database_message))
@@ -118,7 +117,6 @@ class UserSettingScreenTest {
 
   @Test
   fun testWhenShowDatabaseResetConfirmationTrueRendersConfirmationDialog() {
-
     initComposable(isShowDatabaseResetConfirmation = true)
     composeRule.onNodeWithText(activity.getString(R.string.clear_database_message)).assertExists()
   }
@@ -155,6 +153,7 @@ class UserSettingScreenTest {
     composeRule.onNodeWithText("Encounters").assertExists()
     composeRule.onNodeWithText("5").assertExists()
   }
+
   @Test
   fun testOnClickingInsightsAllDataSavedToastShown() {
     initComposable()
@@ -169,7 +168,7 @@ class UserSettingScreenTest {
     isShowDatabaseResetConfirmation: Boolean = false,
     isDebugVariant: Boolean = false,
     isP2PAvailable: Boolean = false,
-    unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>> = MutableSharedFlow()
+    unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>> = MutableSharedFlow(),
   ) {
     scenario.onActivity { activity ->
       activity.setContent {
