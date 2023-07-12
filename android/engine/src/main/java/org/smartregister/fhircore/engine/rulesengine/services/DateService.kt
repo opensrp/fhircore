@@ -39,18 +39,56 @@ object DateService {
   }
 
   @JvmOverloads
-  fun addOrSubtractDayFromCurrentDate(
-    days: Int,
+  fun addOrSubtractTimeUnitFromCurrentDate(
+    timeUnitCount: Int,
     operation: String,
+    timeUnit: String = TimeUnit.YEAR.name,
     dateFormat: String = SDF_YYYY_MM_DD,
   ): String {
-    return when (operation) {
-      "-" -> LocalDate.now().minusDays(days).toDate().formatDate(dateFormat)
-      "+" -> LocalDate.now().plusDays(days).toDate().formatDate(dateFormat)
-      else ->
-        throw NotImplementedException(
-          "Operation not supported. Operations supported operation are '+' or '-'"
-        )
+    when (TimeUnit.valueOf(timeUnit)) {
+      TimeUnit.DAY ->
+        return when (operation) {
+          "-" -> LocalDate.now().minusDays(timeUnitCount).toDate().formatDate(dateFormat)
+          "+" -> LocalDate.now().plusDays(timeUnitCount).toDate().formatDate(dateFormat)
+          else ->
+            throw NotImplementedException(
+              "Operation not supported. Operations supported operation are '+' or '-'"
+            )
+        }
+      TimeUnit.WEEK ->
+        return when (operation) {
+          "-" -> LocalDate.now().minusWeeks(timeUnitCount).toDate().formatDate(dateFormat)
+          "+" -> LocalDate.now().plusWeeks(timeUnitCount).toDate().formatDate(dateFormat)
+          else ->
+            throw NotImplementedException(
+              "Operation not supported. Operations supported operation are '+' or '-'"
+            )
+        }
+      TimeUnit.MONTH ->
+        return when (operation) {
+          "-" -> LocalDate.now().minusMonths(timeUnitCount).toDate().formatDate(dateFormat)
+          "+" -> LocalDate.now().plusMonths(timeUnitCount).toDate().formatDate(dateFormat)
+          else ->
+            throw NotImplementedException(
+              "Operation not supported. Operations supported operation are '+' or '-'"
+            )
+        }
+      TimeUnit.YEAR ->
+        return when (operation) {
+          "-" -> LocalDate.now().minusYears(timeUnitCount).toDate().formatDate(dateFormat)
+          "+" -> LocalDate.now().plusYears(timeUnitCount).toDate().formatDate(dateFormat)
+          else ->
+            throw NotImplementedException(
+              "Operation not supported. Operations supported operation are '+' or '-'"
+            )
+        }
     }
+  }
+
+  enum class TimeUnit {
+    DAY,
+    WEEK,
+    MONTH,
+    YEAR
   }
 }
