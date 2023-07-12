@@ -24,22 +24,6 @@ import org.smartregister.fhircore.engine.util.extension.formatDate
 
 object DateService {
   @JvmOverloads
-  fun addOrSubtractYearFromCurrentDate(
-    years: Int,
-    operation: String,
-    dateFormat: String = SDF_YYYY_MM_DD,
-  ): String {
-    return when (operation) {
-      "-" -> LocalDate.now().minusYears(years).toDate().formatDate(dateFormat)
-      "+" -> LocalDate.now().plusYears(years).toDate().formatDate(dateFormat)
-      else ->
-        throw NotImplementedException(
-          "Operation not supported. Operations supported operation are '+' or '-'",
-        )
-    }
-  }
-
-  @JvmOverloads
   fun addOrSubtractTimeUnitFromCurrentDate(
     timeUnitCount: Int,
     operation: String,
