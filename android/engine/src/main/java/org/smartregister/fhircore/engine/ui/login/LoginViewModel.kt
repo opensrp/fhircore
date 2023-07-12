@@ -146,9 +146,8 @@ constructor(
 
       val trimmedUsername = _username.value!!.trim()
       val passwordAsCharArray = _password.value!!.toCharArray()
-
-      if (context.getActivity()!!.isDeviceOnline()) {
-        viewModelScope.launch(dispatcherProvider.io()) {
+      viewModelScope.launch(dispatcherProvider.io()) {
+        if (context.getActivity()!!.isDeviceOnline()) {
           fetchToken(
             username = trimmedUsername,
             password = passwordAsCharArray,
@@ -176,14 +175,14 @@ constructor(
               }
             }
           )
-        }
-      } else {
-        if (accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)) {
-          _showProgressBar.postValue(false)
-          updateNavigateHome(true)
         } else {
-          _showProgressBar.postValue(false)
-          _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
+          if (accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)) {
+            _showProgressBar.postValue(false)
+            updateNavigateHome(true)
+          } else {
+            _showProgressBar.postValue(false)
+            _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
+          }
         }
       }
     }
