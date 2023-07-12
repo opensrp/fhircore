@@ -42,10 +42,14 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    setContent { AppTheme() { AppScreen(appMainViewModel) } }
+    setContent {
+      AppTheme() { AppScreen(appMainViewModel) { appMainViewModel.sync(syncBroadcaster) } }
+    }
 
     syncBroadcaster.registerSyncListener(this, lifecycleScope)
     appMainViewModel.run { lifecycleScope.launch { retrieveAppMainUiState() } }
+
+    syncBroadcaster.runSync()
   }
 
   override fun onSync(state: SyncJobStatus) {
@@ -74,6 +78,7 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
             state.exceptions.first().resourceType == ResourceType.Flag
         ) {
           showToast(state.exceptions.first().exception.message!!)
+          appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state, lastSyncTime = null))
           return
         }
         showToast(getString(org.smartregister.fhircore.engine.R.string.sync_failed_text))

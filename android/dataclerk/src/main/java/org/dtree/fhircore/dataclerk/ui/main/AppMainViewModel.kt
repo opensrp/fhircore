@@ -33,11 +33,13 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Flag
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -87,6 +89,11 @@ constructor(
 
   fun openForm(context: Context): Intent {
     val isArtClient = patientRegisterConfiguration.appId.contains("art-client")
+    val artCode =
+      Coding().apply {
+        code = if (isArtClient) "client-already-on-art" else "exposed-infant"
+        display = if (isArtClient) "Person Already on ART" else "Exposed Infant"
+      }
     return Intent(context, QuestionnaireActivity::class.java)
       .putExtras(
         QuestionnaireActivity.intentArgs(
@@ -95,7 +102,11 @@ constructor(
           populationResources =
             arrayListOf(
               Flag().apply {
-                code = CodeableConcept().apply { text = if (isArtClient) "ART" else "HIV" }
+                code =
+                  CodeableConcept().apply {
+                    text = if (isArtClient) "client-already-on-art" else "exposed-infant"
+                    addCoding(artCode)
+                  }
               }
             ),
         )
@@ -127,7 +138,9 @@ constructor(
     }
   }
 
-  fun sync() {}
+  fun sync(syncBroadcaster: SyncBroadcaster) {
+    syncBroadcaster.runSync()
+  }
 
   fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {
     sharedPreferencesHelper.write(

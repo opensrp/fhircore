@@ -18,12 +18,10 @@ package org.dtree.fhircore.dataclerk.di
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.material.ExperimentalMaterialApi
 import javax.inject.Inject
 import org.dtree.fhircore.dataclerk.ui.main.AppMainActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 
-@OptIn(ExperimentalMaterialApi::class)
 class DataClerkLoginService @Inject constructor() : LoginService {
 
   override lateinit var loginActivity: AppCompatActivity

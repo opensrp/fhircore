@@ -42,7 +42,7 @@ import com.google.android.fhir.sync.SyncJobStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppScreen(appMainViewModel: AppMainViewModel) {
+fun AppScreen(appMainViewModel: AppMainViewModel, sync: () -> Unit) {
   val appState by appMainViewModel.appMainUiState
   val context = LocalContext.current
   val patientRegistrationLauncher =
@@ -66,7 +66,7 @@ fun AppScreen(appMainViewModel: AppMainViewModel) {
       paddingValues = paddingValues,
       appState = appState,
       syncState = syncState,
-      sync = { appMainViewModel.sync() }
+      sync = sync,
     )
   }
 }
