@@ -50,7 +50,7 @@ fun AppScreen(appMainViewModel: AppMainViewModel, sync: () -> Unit) {
       contract = ActivityResultContracts.StartActivityForResult(),
       onResult = {}
     )
-  val syncState by appMainViewModel.syncSharedFlow.collectAsState(initial = SyncJobStatus.Started())
+  val syncState by appMainViewModel.syncSharedFlow.collectAsState(initial = null)
 
   Scaffold(
     topBar = { TopAppBar(title = { Text(text = appState.appTitle) }) },
@@ -75,7 +75,7 @@ fun AppScreen(appMainViewModel: AppMainViewModel, sync: () -> Unit) {
 fun AppScreenBody(
   paddingValues: PaddingValues,
   appState: AppMainUiState,
-  syncState: SyncJobStatus,
+  syncState: SyncJobStatus?,
   sync: (() -> Unit)
 ) {
   Column(
@@ -102,16 +102,18 @@ fun AppScreenBody(
         }
         is SyncJobStatus.Finished -> {
           Text(text = "Sync finished")
-          Button(onClick = sync) { Text(text = "Run Sync") }
         }
         is SyncJobStatus.Glitch, is SyncJobStatus.Failed -> {
           Text(text = "Sync failed")
-          Button(onClick = sync) { Text(text = "Run Sync") }
         }
         else -> {
           Text(text = "Synced")
         }
       }
+      Button(
+        onClick = sync,
+        enabled = !(syncState is SyncJobStatus.InProgress || syncState is SyncJobStatus.Started)
+      ) { Text(text = "Run Sync") }
     }
 
     Text(text = "Last Sync: ${appState.lastSyncTime}")
