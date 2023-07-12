@@ -60,7 +60,6 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.event.EventBus
@@ -82,15 +81,13 @@ class RegisterFragmentTest : RobolectricTest() {
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-
   @BindValue
   val registerViewModel =
     spyk(
       RegisterViewModel(
         registerRepository = mockk(relaxed = true),
         configurationRegistry = configurationRegistry,
-        sharedPreferencesHelper = sharedPreferencesHelper,
+        sharedPreferencesHelper = Faker.buildSharedPreferencesHelper(),
         dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
         resourceDataRulesExecutor = mockk(),
       ),
