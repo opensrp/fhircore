@@ -222,7 +222,7 @@ constructor(
     // For appId that ends with suffix /debug e.g. app/debug, we load configurations from assets
     // extract appId by removing the suffix e.g. app from above example
     val loadFromAssets = appId.endsWith(DEBUG_SUFFIX, ignoreCase = true)
-    val parsedAppId = appId.substringBefore("/").trim()
+    val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
     if (loadFromAssets) {
       try {
         context.assets
@@ -236,7 +236,7 @@ constructor(
                 it.focus.hasIdentifier() && isIconConfig(it.focus.identifier.value)
               }
             if (iconConfigs.isNotEmpty()) {
-              val ids = iconConfigs.joinToString(",") { it.focus.extractId() }
+              val ids = iconConfigs.joinToString(DEFAULT_STRING_SEPARATOR) { it.focus.extractId() }
               fhirResourceDataSource
                 .getResource("${ResourceType.Binary.name}?$ID=$ids")
                 .entry
@@ -292,7 +292,7 @@ constructor(
       composition.retrieveCompositionSections().forEach {
         if (it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier()) {
           val configIdentifier = it.focus.identifier.value
-          val referenceResourceType = it.focus.reference.substringBefore("/")
+          val referenceResourceType = it.focus.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
           if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
             val configBinary = fhirEngine.get<Binary>(it.focus.extractId())
             configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
@@ -368,22 +368,14 @@ constructor(
           }
           .forEach { resourceGroup ->
             if (resourceGroup.key == ResourceType.List.name) {
-              if (!isNonProxy()) {
-                resourceGroup.value.forEach {
-                  processCompositionManifestResources(
-                    FHIR_GATEWAY_MODE_HEADER_VALUE,
-                    "${resourceGroup.key}/${it.focus.extractId()}",
-                  )
-                }
-              } else {
-                // TODO Duplication for Backward Compatibility for NON-PROXY version
-                // Refactor to strip out this after all projects migrate to the proxy implementation
-
+              if (isNonProxy()) { // Backward compatibility for NON-PROXY version
                 val chunkedResourceIdList =
                   resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
                 chunkedResourceIdList.forEach {
                   val resourceIds =
-                    it.joinToString(",") { sectionComponent -> sectionComponent.focus.extractId() }
+                    it.joinToString(DEFAULT_STRING_SEPARATOR) { sectionComponent ->
+                      sectionComponent.focus.extractId()
+                    }
                   fhirResourceDataSource
                     .getResource("${resourceGroup.key}?$ID=$resourceIds")
                     .entry
@@ -393,7 +385,10 @@ constructor(
                           addOrUpdate(bundleEntryComponent.resource)
                           val list = bundleEntryComponent.resource as ListResource
                           list.entry.forEach { listEntryComponent ->
-                            val resourceKey = listEntryComponent.item.reference.substringBefore("/")
+                            val resourceKey =
+                              listEntryComponent.item.reference.substringBefore(
+                                TYPE_REFERENCE_DELIMITER,
+                              )
                             val resourceId =
                               listEntryComponent.item.reference.extractLogicalIdUuid()
 
@@ -407,6 +402,13 @@ constructor(
                         }
                       }
                     }
+                }
+              } else {
+                resourceGroup.value.forEach {
+                  processCompositionManifestResources(
+                    FHIR_GATEWAY_MODE_HEADER_VALUE,
+                    "${resourceGroup.key}/${it.focus.extractId()}",
+                  )
                 }
               }
             } else {
@@ -514,11 +516,11 @@ constructor(
     const val COUNT = "count"
     const val DEBUG_SUFFIX = "/debug"
     const val DEFAULT_STRING_SEPARATOR = ","
+    const val FHIR_GATEWAY_MODE_HEADER_VALUE = "list-entries"
     const val ICON_PREFIX = "ic_"
     const val ID = "_id"
     const val MANIFEST_PROCESSOR_BATCH_SIZE = 30
     const val ORGANIZATION = "organization"
     const val TYPE_REFERENCE_DELIMITER = "/"
-    const val FHIR_GATEWAY_MODE_HEADER_VALUE = "list-entries"
   }
 }
