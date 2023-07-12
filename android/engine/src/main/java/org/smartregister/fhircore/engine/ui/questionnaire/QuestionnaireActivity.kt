@@ -153,7 +153,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   private suspend fun renderFragment() {
     tracer.startTrace(QUESTIONNAIRE_TRACE)
     val questionnaireString = parser.encodeResourceToString(questionnaire)
-    val questionnaireResponse: QuestionnaireResponse?
+    var questionnaireResponse: QuestionnaireResponse?
     if (clientIdentifier != null) {
       setBarcode(questionnaire, clientIdentifier!!, true)
       questionnaireResponse =
@@ -164,10 +164,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           .getStringExtra(QUESTIONNAIRE_RESPONSE)
           ?.decodeResourceFromString<QuestionnaireResponse>()
           ?.apply { generateMissingItems(this@QuestionnaireActivity.questionnaire) }
-      val resources =
-        questionnaireViewModel.getPopulationResourcesFromIntent(intent, questionnaire.logicalId)
-      questionnaireResponse?.contained = resources
-      if (questionnaireType.isReadOnly()) requireNotNull(questionnaireResponse)
+      if (questionnaireType.isReadOnly()) {
+        requireNotNull(questionnaireResponse)
+      } else {
+        questionnaireResponse =
+          questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
+      }
     }
 
     val questionnaireFragmentBuilder =
