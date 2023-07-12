@@ -993,13 +993,17 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       val questionnaire = Questionnaire()
       val questionnaireResponse = QuestionnaireResponse()
       val questionnaireConfig = questionnaireConfig
+
+      coEvery { questionnaireViewModel.extractCqlOutput(any(), any(), any()) } just runs
+      coEvery { questionnaireViewModel.extractCarePlan(any(), any(), any()) } just runs
+
       questionnaireViewModel.performExtraction(
         questionnaireResponse,
         questionnaireConfig,
         questionnaire,
         bundle,
       )
-      coVerifyOrder(inverse = true) {
+      coVerifyOrder {
         questionnaireViewModel.extractCqlOutput(questionnaire, questionnaireResponse, bundle)
         questionnaireViewModel.extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
       }

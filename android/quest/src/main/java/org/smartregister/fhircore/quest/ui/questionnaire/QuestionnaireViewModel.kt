@@ -293,7 +293,7 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     questionnaireConfig: QuestionnaireConfig,
     questionnaire: Questionnaire,
-    bundle: Bundle = Bundle()
+    bundle: Bundle = Bundle(),
   ) {
     extractCqlOutput(questionnaire, questionnaireResponse, bundle)
     extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
