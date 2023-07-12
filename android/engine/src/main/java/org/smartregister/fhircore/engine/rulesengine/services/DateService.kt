@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.rulesengine.services
 
+import android.icu.util.TimeUnit
 import org.apache.commons.lang3.NotImplementedException
 import org.joda.time.LocalDate
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
@@ -42,11 +43,11 @@ object DateService {
   fun addOrSubtractTimeUnitFromCurrentDate(
     timeUnitCount: Int,
     operation: String,
-    timeUnit: String = TimeUnit.YEAR.name,
+    timeUnit: String = TimeUnit.YEAR.type,
     dateFormat: String = SDF_YYYY_MM_DD,
   ): String {
-    when (TimeUnit.valueOf(timeUnit)) {
-      TimeUnit.DAY ->
+    return when (timeUnit) {
+      TimeUnit.DAY.subtype.uppercase() ->
         return when (operation) {
           "-" -> LocalDate.now().minusDays(timeUnitCount).toDate().formatDate(dateFormat)
           "+" -> LocalDate.now().plusDays(timeUnitCount).toDate().formatDate(dateFormat)
@@ -55,7 +56,7 @@ object DateService {
               "Operation not supported. Operations supported operation are '+' or '-'",
             )
         }
-      TimeUnit.WEEK ->
+      TimeUnit.WEEK.subtype.uppercase() ->
         return when (operation) {
           "-" -> LocalDate.now().minusWeeks(timeUnitCount).toDate().formatDate(dateFormat)
           "+" -> LocalDate.now().plusWeeks(timeUnitCount).toDate().formatDate(dateFormat)
@@ -64,7 +65,7 @@ object DateService {
               "Operation not supported. Operations supported operation are '+' or '-'",
             )
         }
-      TimeUnit.MONTH ->
+      TimeUnit.MONTH.subtype.uppercase() ->
         return when (operation) {
           "-" -> LocalDate.now().minusMonths(timeUnitCount).toDate().formatDate(dateFormat)
           "+" -> LocalDate.now().plusMonths(timeUnitCount).toDate().formatDate(dateFormat)
@@ -73,7 +74,7 @@ object DateService {
               "Operation not supported. Operations supported operation are '+' or '-'",
             )
         }
-      TimeUnit.YEAR ->
+      TimeUnit.YEAR.subtype.uppercase() ->
         return when (operation) {
           "-" -> LocalDate.now().minusYears(timeUnitCount).toDate().formatDate(dateFormat)
           "+" -> LocalDate.now().plusYears(timeUnitCount).toDate().formatDate(dateFormat)
@@ -82,13 +83,11 @@ object DateService {
               "Operation not supported. Operations supported operation are '+' or '-'",
             )
         }
+      else -> {
+        throw NotImplementedException(
+          "Operation not supported. Operations supported operation are '+' or '-'",
+        )
+      }
     }
-  }
-
-  enum class TimeUnit {
-    DAY,
-    WEEK,
-    MONTH,
-    YEAR,
   }
 }

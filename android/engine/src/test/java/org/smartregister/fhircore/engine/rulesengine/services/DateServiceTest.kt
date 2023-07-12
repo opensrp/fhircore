@@ -165,14 +165,19 @@ class DateServiceTest : RobolectricTest() {
   @Test
   fun testGenericSubtractingYearsFromCurrentDate() {
     val result =
-      DateService.addOrSubtractTimeUnitFromCurrentDate(5, "-", dateFormat = SDF_DD_MMM_YYYY)
+      DateService.addOrSubtractTimeUnitFromCurrentDate(
+        5,
+        "-",
+        timeUnit = "YEAR",
+        dateFormat = SDF_DD_MMM_YYYY,
+      )
     val expected = LocalDate.now().minusYears(5).toDate().formatDate(SDF_DD_MMM_YYYY)
     assertEquals(expected, result)
   }
 
   @Test
   fun testGenericAddingYearsToCurrentDate() {
-    val result = DateService.addOrSubtractTimeUnitFromCurrentDate(3, "+")
+    val result = DateService.addOrSubtractTimeUnitFromCurrentDate(3, "+", timeUnit = "YEAR")
     val expected = LocalDate.now().plusYears(3).toDate().formatDate(SDF_YYYY_MM_DD)
     assertEquals(expected, result)
   }
@@ -180,7 +185,7 @@ class DateServiceTest : RobolectricTest() {
   @Test
   fun testUnsupportedOperationThrowExceptionWhenTimeUnitIsYear() {
     assertThrows(NotImplementedException::class.java) {
-      DateService.addOrSubtractTimeUnitFromCurrentDate(2, "*")
+      DateService.addOrSubtractTimeUnitFromCurrentDate(2, "*", timeUnit = "YEAR")
     }
   }
 }
