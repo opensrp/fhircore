@@ -309,7 +309,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
   ): Int {
     val totalRecordsOverall =
       registerViewModel.sharedPreferencesHelper.read(
-        SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL,
+        SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
+          progressSyncJobStatus.syncOperation.name,
         1L,
       )
     val isProgressTotalLess = progressSyncJobStatus.total <= totalRecordsOverall
@@ -322,7 +323,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
         totalRecordsOverall.toInt()
       } else {
         registerViewModel.sharedPreferencesHelper.write(
-          SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL,
+          SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
+            progressSyncJobStatus.syncOperation.name,
           progressSyncJobStatus.total.toLong(),
         )
         currentProgress = progressSyncJobStatus.completed
