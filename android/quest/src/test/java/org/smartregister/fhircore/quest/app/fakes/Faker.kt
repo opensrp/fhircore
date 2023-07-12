@@ -16,7 +16,9 @@
 
 package org.smartregister.fhircore.quest.app.fakes
 
+import android.app.Application
 import androidx.test.core.app.ApplicationProvider
+import com.google.gson.Gson
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
@@ -33,6 +35,7 @@ import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 
 object Faker {
@@ -75,6 +78,12 @@ object Faker {
 
     return configurationRegistry
   }
+
+  fun buildSharedPreferencesHelper() =
+    SharedPreferencesHelper(
+      ApplicationProvider.getApplicationContext<Application>(),
+      Gson(),
+    )
 
   fun buildPatient(
     id: String = "sampleId",
