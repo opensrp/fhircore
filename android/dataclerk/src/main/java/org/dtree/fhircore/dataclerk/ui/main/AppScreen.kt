@@ -57,7 +57,7 @@ fun AppScreen(appMainViewModel: AppMainViewModel) {
     bottomBar = {
       Button(
         onClick = { patientRegistrationLauncher.launch(appMainViewModel.openForm(context)) },
-        enabled = syncState is SyncJobStatus.Finished,
+        // enabled = syncState is SyncJobStatus.Finished,
         modifier = Modifier.fillMaxWidth()
       ) { Text(text = "Create New Patient") }
     }
