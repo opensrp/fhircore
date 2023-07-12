@@ -30,4 +30,5 @@ enum class ActionParameterType {
   @JsonNames("update_date_on_edit", "UpdateDateOnEdit") UPDATE_DATE_ON_EDIT,
   @JsonNames("qr_population_resource", "QRPopulateResource")
   QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE,
+  @JsonNames("resource_id", "ResourceId") RESOURCE_ID,
 }
