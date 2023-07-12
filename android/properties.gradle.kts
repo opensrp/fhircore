@@ -1,6 +1,7 @@
 import java.io.FileInputStream
 import java.io.InputStreamReader
 import java.util.Properties
+import java.io.FileNotFoundException
 
 fun Project.readProperties(file: String): Properties {
   val properties = Properties()
@@ -10,7 +11,7 @@ fun Project.readProperties(file: String): Properties {
       ->
       properties.load(reader)
     }
-  } else println("FILE_NOT_FOUND_EXCEPTION: File $file not found")
+  } else throw FileNotFoundException("File $file not found")
 
   return properties
 }
