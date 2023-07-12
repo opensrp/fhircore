@@ -16,12 +16,15 @@
 
 package org.smartregister.fhircore.engine.configuration.event
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 
 @Serializable
+@Parcelize
 data class EventWorkflow(
   val eventType: EventType = EventType.RESOURCE_CLOSURE,
   val triggerConditions: List<EventTriggerCondition> = emptyList(),
-  val eventResources: List<ResourceConfig> = emptyList()
-) : java.io.Serializable
+  val eventResources: List<ResourceConfig> = emptyList(),
+) : java.io.Serializable, Parcelable

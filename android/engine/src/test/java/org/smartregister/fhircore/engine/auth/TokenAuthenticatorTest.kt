@@ -62,8 +62,11 @@ import retrofit2.Response
 class TokenAuthenticatorTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
+
   @ExperimentalCoroutinesApi @get:Rule val coroutineRule = CoroutineTestRule()
+
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
   @Inject lateinit var configService: ConfigService
   private val oAuthService: OAuthService = mockk()
   private lateinit var tokenAuthenticator: TokenAuthenticator
@@ -83,8 +86,8 @@ class TokenAuthenticatorTest : RobolectricTest() {
           oAuthService = oAuthService,
           dispatcherProvider = coroutineRule.testDispatcherProvider,
           accountManager = accountManager,
-          context = context
-        )
+          context = context,
+        ),
       )
   }
 
@@ -180,8 +183,8 @@ class TokenAuthenticatorTest : RobolectricTest() {
           oAuthService = oAuthService,
           dispatcherProvider = coroutineRule.testDispatcherProvider,
           accountManager = accountManager,
-          context = context
-        )
+          context = context,
+        ),
       )
 
     val oAuthResponse =
@@ -190,7 +193,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         refreshToken = refreshToken,
         tokenType = "",
         expiresIn = 3600,
-        scope = SCOPE
+        scope = SCOPE,
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
 
@@ -216,7 +219,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
     Assert.assertEquals(
       charArrayOf('P', '4', '5', '5', 'W', '4', '0').toPasswordHash(passwordSalt),
-      credentials?.passwordHash
+      credentials?.passwordHash,
     )
   }
 
@@ -234,7 +237,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         refreshToken = refreshToken,
         tokenType = "",
         expiresIn = 3600,
-        scope = SCOPE
+        scope = SCOPE,
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
     every { accountManager.accounts } returns arrayOf(account)
@@ -283,6 +286,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
       Assert.assertEquals(Result.failure<SSLHandshakeException>(sslHandshakeException), result)
     }
   }
+
   @Test
   fun testLogout() {
     val account = Account(sampleUsername, PROVIDER)
@@ -331,7 +335,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         refreshToken = "soRefreshingRefreshToken",
         tokenType = "",
         expiresIn = 3600,
-        scope = SCOPE
+        scope = SCOPE,
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
 
@@ -358,8 +362,8 @@ class TokenAuthenticatorTest : RobolectricTest() {
           oAuthService = oAuthService,
           dispatcherProvider = coroutineRule.testDispatcherProvider,
           accountManager = accountManager,
-          context = context
-        )
+          context = context,
+        ),
       )
 
     val result =
@@ -415,6 +419,17 @@ class TokenAuthenticatorTest : RobolectricTest() {
       accountManager.removeAccountExplicitly(account)
       onSessionInvalidated()
     }
+  }
+
+  @Test
+  fun testsCurrentRefreshTokenActiveWithInActiveToken() {
+    val account = Account(sampleUsername, PROVIDER)
+    val token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ik1hcnRpbiBOZGVnd2EiLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MzMyNDI4OTMyMzF9.sYnHKVkXrku7X4X92zsidrZeKyd6nbOvsM5qgck3kiA"
+    every { tokenAuthenticator.findAccount() } returns account
+    every { accountManager.getPassword(account) } returns token
+
+    Assert.assertTrue(tokenAuthenticator.isCurrentRefreshTokenActive())
   }
 
   companion object {

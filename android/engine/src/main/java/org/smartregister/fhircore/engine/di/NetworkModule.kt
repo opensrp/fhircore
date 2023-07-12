@@ -32,6 +32,9 @@ import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.Protocol
+import okhttp3.Response
+import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
@@ -39,9 +42,11 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverterFactory
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.getCustomJsonParser
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import timber.log.Timber
 
 @InstallIn(SingletonComponent::class)
 @Module
@@ -56,7 +61,7 @@ class NetworkModule {
           level = HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)
-        }
+        },
       )
       .connectTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .readTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
@@ -65,25 +70,43 @@ class NetworkModule {
 
   @Provides
   @WithAuthorizationOkHttpClientQualifier
-  fun provideOkHttpClient(tokenAuthenticator: TokenAuthenticator) =
+  fun provideOkHttpClient(
+    tokenAuthenticator: TokenAuthenticator,
+    sharedPreferencesHelper: SharedPreferencesHelper,
+  ) =
     OkHttpClient.Builder()
       .addInterceptor(
         Interceptor { chain: Interceptor.Chain ->
-          val accessToken = tokenAuthenticator.getAccessToken()
-          // NB: Build new request before setting Auth header; otherwise the header will be bypassed
-          val request = chain.request().newBuilder()
-          if (accessToken.isNotEmpty()) {
-            request.addHeader(AUTHORIZATION, "Bearer $accessToken")
+          try {
+            val accessToken = tokenAuthenticator.getAccessToken()
+            // NB: Build new request before setting Auth header; otherwise the header will be
+            // bypassed
+            val request = chain.request().newBuilder()
+            if (accessToken.isNotEmpty()) {
+              request.addHeader(AUTHORIZATION, "Bearer $accessToken")
+              sharedPreferencesHelper.retrieveApplicationId()?.let {
+                request.addHeader(APPLICATION_ID, it)
+              }
+            }
+            chain.proceed(request.build())
+          } catch (e: Exception) {
+            Timber.e(e)
+            Response.Builder()
+              .request(chain.request())
+              .protocol(Protocol.HTTP_1_1)
+              .code(900)
+              .message(e.message ?: "Failed to complete request successfully")
+              .body("{$e}".toResponseBody(null))
+              .build()
           }
-          chain.proceed(request.build())
-        }
+        },
       )
       .addInterceptor(
         HttpLoggingInterceptor().apply {
           level = HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)
-        }
+        },
       )
       .connectTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .readTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
@@ -109,7 +132,7 @@ class NetworkModule {
   fun provideAuthRetrofit(
     @NoAuthorizationOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
-    gson: Gson
+    gson: Gson,
   ): Retrofit =
     Retrofit.Builder()
       .baseUrl(configService.provideAuthConfiguration().oauthServerBaseUrl)
@@ -123,7 +146,7 @@ class NetworkModule {
   fun provideKeycloakRetrofit(
     @WithAuthorizationOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
-    json: Json
+    json: Json,
   ): Retrofit =
     Retrofit.Builder()
       .baseUrl(configService.provideAuthConfiguration().oauthServerBaseUrl)
@@ -137,7 +160,7 @@ class NetworkModule {
     @WithAuthorizationOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
     gson: Gson,
-    parser: IParser
+    parser: IParser,
   ): Retrofit =
     Retrofit.Builder()
       .baseUrl(configService.provideAuthConfiguration().fhirServerBaseUrl)
@@ -162,6 +185,7 @@ class NetworkModule {
   companion object {
     const val TIMEOUT_DURATION = 120L
     const val AUTHORIZATION = "Authorization"
+    const val APPLICATION_ID = "App-Id"
     const val COOKIE = "Cookie"
     val JSON_MEDIA_TYPE = "application/json".toMediaType()
   }

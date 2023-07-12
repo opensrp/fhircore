@@ -63,7 +63,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configService: ConfigService,
   val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
 
   val showProgressBar = MutableLiveData(false)
@@ -122,9 +122,10 @@ constructor(
 
             Timber.d("Fetching config: $resourceUrlPath")
 
-            fhirResourceDataSource.getResource(resourceUrlPath).entry.forEach { bundleEntryComponent
+            fhirResourceDataSource.getResource(resourceUrlPath).entry.forEach {
+              bundleEntryComponent,
               ->
-              defaultRepository.create(false, bundleEntryComponent.resource)
+              defaultRepository.createRemote(false, bundleEntryComponent.resource)
 
               if (bundleEntryComponent.resource is Binary) {
                 val binary = bundleEntryComponent.resource as Binary
@@ -147,16 +148,18 @@ constructor(
         saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
 
         // Save composition after fetching all the referenced section resources
-        defaultRepository.create(false, compositionResource)
+        defaultRepository.createRemote(false, compositionResource)
         Timber.d("Done fetching application configurations remotely")
         loadConfigurations(context)
       } catch (unknownHostException: UnknownHostException) {
         _error.postValue(context.getString(R.string.error_loading_config_no_internet))
         showProgressBar.postValue(false)
       } catch (httpException: HttpException) {
-        if ((400..503).contains(httpException.response()!!.code()))
+        if ((400..503).contains(httpException.response()!!.code())) {
           _error.postValue(context.getString(R.string.error_loading_config_general))
-        else _error.postValue(context.getString(R.string.error_loading_config_http_error))
+        } else {
+          _error.postValue(context.getString(R.string.error_loading_config_http_error))
+        }
         showProgressBar.postValue(false)
       }
     }
@@ -176,12 +179,16 @@ constructor(
   }
 
   fun loadConfigurations(context: Context) {
-    viewModelScope.launch(dispatcherProvider.io()) {
-      appId.value?.let { thisAppId ->
-        configurationRegistry.loadConfigurations(thisAppId, context) {
+    appId.value?.let { thisAppId ->
+      viewModelScope.launch(dispatcherProvider.io()) {
+        configurationRegistry.loadConfigurations(thisAppId, context) { loadConfigSuccessful ->
           showProgressBar.postValue(false)
-          sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, thisAppId)
-          context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
+          if (loadConfigSuccessful) {
+            sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, thisAppId)
+            context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
+          } else {
+            _error.postValue(context.getString(R.string.application_not_supported, appId.value))
+          }
         }
       }
     }
@@ -190,7 +197,7 @@ constructor(
   fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) =
     sharedPreferencesHelper.write(
       SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-      resourceTypes.distinctBy { it.name }
+      resourceTypes.distinctBy { it.name },
     )
 
   private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {

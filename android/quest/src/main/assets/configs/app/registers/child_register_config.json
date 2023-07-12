@@ -120,7 +120,7 @@
         "name": "serviceStatus",
         "condition": "true",
         "actions": [
-          "data.put('serviceStatus', service.evaluateToBoolean(Task, \"Task.status = 'failed' \", false) ? 'OVERDUE' : 'DUE')"
+          "data.put('serviceStatus', service.generateTaskServiceStatus(Task.get(0)) )"
         ]
       },
       {

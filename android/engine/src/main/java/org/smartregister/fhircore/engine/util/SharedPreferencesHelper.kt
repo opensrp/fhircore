@@ -73,20 +73,21 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
 
   /** Read any JSON object with type T */
   inline fun <reified T> read(key: String, decodeWithGson: Boolean = true): T? =
-    if (decodeWithGson)
+    if (decodeWithGson) {
       try {
         gson.fromJson(this.read(key, null), T::class.java)
       } catch (jsonIoException: JsonIOException) {
         Timber.e(jsonIoException)
         null
       }
-    else
+    } else {
       try {
         this.read(key, null)?.decodeJson<T>()
       } catch (serializationException: SerializationException) {
         Timber.e(serializationException)
         null
       }
+    }
 
   /** Write any object by saving it as JSON */
   inline fun <reified T> write(key: String, value: T?, encodeWithGson: Boolean = true) {
@@ -104,6 +105,8 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   fun resetSharedPrefs() {
     prefs.edit()?.clear()?.apply()
   }
+
+  fun retrieveApplicationId() = read(SharedPreferenceKey.APP_ID.name, null)
 
   companion object {
     const val PREFS_NAME = "params"

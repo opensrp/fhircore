@@ -18,14 +18,18 @@ package org.smartregister.fhircore.engine.rulesengine
 
 import android.content.Context
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Order
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
+import org.hl7.fhir.r4.model.Base
+import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.Task
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
 import org.jeasy.rules.api.Rules
@@ -37,12 +41,14 @@ import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
+import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.isOverDue
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
@@ -56,7 +62,7 @@ constructor(
   @ApplicationContext val context: Context,
   val configurationRegistry: ConfigurationRegistry,
   val fhirPathDataExtractor: FhirPathDataExtractor,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
   private var facts: Facts = Facts()
@@ -68,20 +74,22 @@ constructor(
    * [RepositoryResourceData.relatedResourcesCountMap]. All related resources of same type are
    * flattened in a map for ease of usage in the rule engine.
    */
-  fun fireRules(rules: Rules, repositoryResourceData: RepositoryResourceData): Map<String, Any> {
-    with(repositoryResourceData) {
-      // Initialize new facts and fire rules in background
-      facts =
-        Facts().apply {
-          put(FHIR_PATH, fhirPathDataExtractor)
-          put(DATA, mutableMapOf<String, Any>())
-          put(SERVICE, rulesEngineService)
+  fun fireRules(rules: Rules, repositoryResourceData: RepositoryResourceData?): Map<String, Any> {
+    facts =
+      Facts().apply {
+        put(FHIR_PATH, fhirPathDataExtractor)
+        put(DATA, mutableMapOf<String, Any>())
+        put(SERVICE, rulesEngineService)
+      }
+    if (repositoryResourceData != null) {
+      with(repositoryResourceData) {
+        facts.apply {
           put(resourceRulesEngineFactId ?: resource.resourceType.name, resource)
-
           relatedResourcesMap.addToFacts(this)
           relatedResourcesCountMap.addToFacts(this)
 
-          // Populate the facts map with secondary resource data flatten base and related resources
+          // Populate the facts map with secondary resource data flatten base and related
+          // resources
           secondaryRepositoryResourceData
             ?.groupBy { it.resourceRulesEngineFactId ?: it.resource.resourceType.name }
             ?.forEach { entry -> put(entry.key, entry.value.map { it.resource }) }
@@ -105,12 +113,12 @@ constructor(
             }
           }
         }
-
-      if (BuildConfig.DEBUG) {
-        val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
-        Timber.d("Rule executed in $timeToFireRules millisecond(s)")
-      } else rulesEngine.fire(rules, facts)
+      }
     }
+    if (BuildConfig.DEBUG) {
+      val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
+      Timber.d("Rule executed in $timeToFireRules millisecond(s)")
+    } else rulesEngine.fire(rules, facts)
     return facts.get(DATA) as Map<String, Any>
   }
 
@@ -125,7 +133,7 @@ constructor(
       configurationRegistry.localizationHelper.parseTemplate(
         LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
         Locale.getDefault(),
-        "{{${value.translationPropertyKey()}}}"
+        "{{${value.translationPropertyKey()}}}",
       )
 
     /**
@@ -137,7 +145,7 @@ constructor(
      * @param resource The parent resource for which the related resources will be retrieved
      * @param relatedResourceKey The key representing the relatedResources in the map
      * @param referenceFhirPathExpression A fhir path expression used to retrieve the subject
-     * reference Id from the related resources
+     *   reference Id from the related resources
      */
     @Suppress("UNCHECKED_CAST")
     @JvmOverloads
@@ -145,13 +153,15 @@ constructor(
       resource: Resource,
       relatedResourceKey: String,
       referenceFhirPathExpression: String,
-      relatedResourcesMap: Map<String, List<Resource>>? = null
+      relatedResourcesMap: Map<String, List<Resource>>? = null,
     ): List<Resource> {
       val value: List<Resource> =
         relatedResourcesMap?.get(relatedResourceKey)
-          ?: if (facts.getFact(relatedResourceKey) != null)
+          ?: if (facts.getFact(relatedResourceKey) != null) {
             facts.getFact(relatedResourceKey).value as List<Resource>
-          else emptyList()
+          } else {
+            emptyList()
+          }
 
       return value.filter {
         resource.logicalId ==
@@ -172,7 +182,7 @@ constructor(
     fun retrieveParentResource(
       childResource: Resource,
       parentResourceType: String,
-      fhirPathExpression: String
+      fhirPathExpression: String,
     ): Resource? {
       val value = facts.getFact(parentResourceType).value as List<Resource>
       val parentResourceId =
@@ -196,7 +206,7 @@ constructor(
     fun evaluateToBoolean(
       resources: List<Resource>?,
       fhirPathExpression: String,
-      matchAll: Boolean = false
+      matchAll: Boolean = false,
     ): Boolean =
       if (matchAll) {
         resources?.all { base ->
@@ -225,16 +235,19 @@ constructor(
     fun mapResourcesToLabeledCSV(
       resources: List<Resource>?,
       fhirPathExpression: String,
-      label: String
+      label: String,
     ): String =
       resources
         ?.mapNotNull {
-          if (fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
+          if (
+            fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
               base.isBooleanPrimitive && base.primitiveValue().toBoolean()
             }
-          )
+          ) {
             label
-          else null
+          } else {
+            null
+          }
         }
         ?.distinctBy { it }
         ?.joinToString(",")
@@ -249,7 +262,7 @@ constructor(
     fun mapResourceToLabeledCSV(
       resource: Resource,
       fhirPathExpression: String,
-      label: String
+      label: String,
     ): String = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
 
     /** This function extracts the patient's age from the patient resource */
@@ -289,7 +302,7 @@ constructor(
     fun formatDate(
       inputDate: String,
       inputDateFormat: String,
-      expectedFormat: String = SDF_E_MMM_DD_YYYY
+      expectedFormat: String = SDF_E_MMM_DD_YYYY,
     ): String? = inputDate.parseDate(inputDateFormat)?.formatDate(expectedFormat)
 
     /**
@@ -332,16 +345,24 @@ constructor(
     fun joinToString(
       sourceString: MutableList<String?>,
       regex: String = DEFAULT_REGEX,
-      separator: String = DEFAULT_STRING_SEPARATOR
+      separator: String = DEFAULT_STRING_SEPARATOR,
     ): String {
       sourceString.removeIf { it == null }
       val inputString = sourceString.joinToString()
       return regex.toRegex().findAll(inputString).joinToString(separator) { it.groupValues[1] }
     }
 
+    /** This function returns a list of resources with a limit of [limit] resources */
+    fun limitTo(source: List<Any>?, limit: Int?): List<Any> {
+      if (limit == null || limit <= 0) {
+        return emptyList()
+      }
+      return source?.take(limit) ?: emptyList()
+    }
+
     fun mapResourcesToExtractedValues(
       resources: List<Resource>?,
-      fhirPathExpression: String
+      fhirPathExpression: String,
     ): List<Any> {
       if (fhirPathExpression.isEmpty()) {
         return emptyList()
@@ -355,12 +376,81 @@ constructor(
 
     fun retrieveCount(
       parentResourceId: String,
-      relatedResourceCounts: List<RelatedResourceCount>?
+      relatedResourceCounts: List<RelatedResourceCount>?,
     ): Long =
       relatedResourceCounts
         ?.find { parentResourceId.equals(it.parentResourceId, ignoreCase = true) }
         ?.count
         ?: 0
+
+    /**
+     * This function sorts [resources] by comparing the values extracted by FHIRPath using the
+     * [fhirPathExpression]. The [dataType] is required for ordering of the. You can optionally
+     * specify the [Order] of sorting.
+     */
+    @JvmOverloads
+    fun sortResources(
+      resources: List<Resource>?,
+      fhirPathExpression: String,
+      dataType: String,
+      order: String = Order.ASCENDING.name,
+    ): List<Resource>? {
+      val mappedResources =
+        resources?.mapNotNull {
+          val extractedValue: Base? =
+            fhirPathDataExtractor.extractData(it, fhirPathExpression).firstOrNull()
+          val sortingValue: Comparable<*>? =
+            when (DataType.valueOf(dataType)) {
+              DataType.BOOLEAN -> extractedValue?.castToBoolean(extractedValue)?.value
+              DataType.DATE -> extractedValue?.castToDate(extractedValue)?.value
+              DataType.DATETIME -> extractedValue?.castToDateTime(extractedValue)?.value
+              DataType.DECIMAL -> extractedValue?.castToDecimal(extractedValue)?.value
+              DataType.INTEGER -> extractedValue?.castToInteger(extractedValue)?.value
+              DataType.STRING -> extractedValue?.castToString(extractedValue)?.value
+              else -> {
+                Timber.e(
+                  "Sorting only works for primitive types, sorting by the data type $dataType is not allowed. Implement sorting strategy for the data type $dataType.",
+                )
+                null
+              }
+            }
+          if (sortingValue != null) Pair(sortingValue, it) else null
+        }
+
+      return when (Order.valueOf(order)) {
+        Order.ASCENDING -> mappedResources?.sortedWith(compareBy { it.first })?.map { it.second }
+        Order.DESCENDING ->
+          mappedResources?.sortedWith(compareByDescending { it.first })?.map { it.second }
+      }
+    }
+
+    fun generateTaskServiceStatus(task: Task): String {
+      val serviceStatus: String
+      if (task.isOverDue()) {
+        serviceStatus = ServiceStatus.OVERDUE.name
+      } else {
+        serviceStatus =
+          when (task.status) {
+            Task.TaskStatus.NULL,
+            Task.TaskStatus.FAILED,
+            Task.TaskStatus.RECEIVED,
+            Task.TaskStatus.ENTEREDINERROR,
+            Task.TaskStatus.ACCEPTED,
+            Task.TaskStatus.REJECTED,
+            Task.TaskStatus.DRAFT,
+            Task.TaskStatus.ONHOLD, -> {
+              Timber.e("Task.status is null", Exception())
+              ServiceStatus.UPCOMING.name
+            }
+            Task.TaskStatus.REQUESTED -> ServiceStatus.UPCOMING.name
+            Task.TaskStatus.READY -> ServiceStatus.DUE.name
+            Task.TaskStatus.CANCELLED -> ServiceStatus.EXPIRED.name
+            Task.TaskStatus.INPROGRESS -> ServiceStatus.IN_PROGRESS.name
+            Task.TaskStatus.COMPLETED -> ServiceStatus.COMPLETED.name
+          }
+      }
+      return serviceStatus
+    }
   }
 
   companion object {

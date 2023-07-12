@@ -88,19 +88,19 @@ fun AppSettingScreen(
   Column(modifier = modifier.fillMaxSize()) {
     Column(
       verticalArrangement = Arrangement.Center,
-      modifier = modifier.weight(1f).padding(horizontal = 20.dp)
+      modifier = modifier.weight(1f).padding(horizontal = 20.dp),
     ) {
       Text(
         text = stringResource(R.string.fhir_core_app),
         fontWeight = FontWeight.Bold,
         textAlign = TextAlign.Center,
         fontSize = 32.sp,
-        modifier = modifier.padding(vertical = 8.dp).align(Alignment.CenterHorizontally)
+        modifier = modifier.padding(vertical = 8.dp).align(Alignment.CenterHorizontally),
       )
       Spacer(modifier = modifier.height(80.dp))
       Text(
         text = stringResource(R.string.application_id),
-        modifier = modifier.padding(vertical = 4.dp)
+        modifier = modifier.padding(vertical = 4.dp),
       )
       OutlinedTextField(
         onValueChange = onAppIdChanged,
@@ -108,10 +108,7 @@ fun AppSettingScreen(
         maxLines = 1,
         singleLine = true,
         placeholder = {
-          Text(
-            color = Color.LightGray,
-            text = stringResource(R.string.app_id_sample),
-          )
+          Text(color = Color.LightGray, text = stringResource(R.string.app_id_sample))
         },
         modifier =
           modifier
@@ -121,9 +118,9 @@ fun AppSettingScreen(
             .onFocusEvent { event ->
               if (event.isFocused) coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
             }
-            .focusRequester(focusRequester)
+            .focusRequester(focusRequester),
       )
-      if (error.isNotEmpty())
+      if (error.isNotEmpty()) {
         Text(
           fontSize = 14.sp,
           color = MaterialTheme.colors.error,
@@ -133,12 +130,13 @@ fun AppSettingScreen(
               .wrapContentWidth()
               .padding(vertical = 10.dp)
               .align(Alignment.Start)
-              .testTag(LOGIN_ERROR_TEXT_TAG)
+              .testTag(LOGIN_ERROR_TEXT_TAG),
         )
+      }
       Spacer(modifier = modifier.height(30.dp))
       Box(
         contentAlignment = Alignment.Center,
-        modifier = modifier.bringIntoViewRequester(bringIntoViewRequester).fillMaxWidth()
+        modifier = modifier.bringIntoViewRequester(bringIntoViewRequester).fillMaxWidth(),
       ) {
         Button(
           onClick = { fetchConfiguration(context) },
@@ -147,20 +145,20 @@ fun AppSettingScreen(
           colors =
             ButtonDefaults.buttonColors(
               disabledContentColor = Color.Gray,
-              contentColor = Color.White
+              contentColor = Color.White,
             ),
-          elevation = null
+          elevation = null,
         ) {
           Text(
             text = if (!showProgressBar) stringResource(id = R.string.load_configurations) else "",
-            modifier = modifier.padding(8.dp)
+            modifier = modifier.padding(8.dp),
           )
         }
         if (showProgressBar) {
           CircularProgressIndicator(
             modifier = modifier.align(Alignment.Center).size(18.dp),
             strokeWidth = 1.6.dp,
-            color = Color.White
+            color = Color.White,
           )
         }
       }
@@ -182,7 +180,7 @@ private fun AppSettingScreenWithErrorPreview() {
     onAppIdChanged = {},
     fetchConfiguration = {},
     appVersionPair = Pair(1, "0.0.1"),
-    error = "Application not found"
+    error = "Application not found",
   )
 }
 
@@ -194,6 +192,6 @@ private fun AppSettingScreenWithNoErrorPreview() {
     onAppIdChanged = {},
     fetchConfiguration = {},
     appVersionPair = Pair(1, "0.0.1"),
-    error = ""
+    error = "",
   )
 }

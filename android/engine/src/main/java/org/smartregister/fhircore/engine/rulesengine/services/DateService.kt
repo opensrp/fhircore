@@ -33,7 +33,7 @@ object DateService {
       "+" -> LocalDate.now().plusYears(years).toDate().formatDate(dateFormat)
       else ->
         throw NotImplementedException(
-          "Operation not supported. Operations supported operation are '+' or '-'"
+          "Operation not supported. Operations supported operation are '+' or '-'",
         )
     }
   }

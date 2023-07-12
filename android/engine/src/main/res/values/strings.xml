@@ -146,4 +146,9 @@
     <string name="username_sample" translatable="false">e.g JohnDoe</string>
     <string name="percentage_progress" translatable="false">%1$d%%</string>
     <string name="error_occurred" translatable="false">Something went wrong...</string>
+    <string name="insights">Insights</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="unsynced_resources">Unsynced Resources</string>
+    <string name="all_data_synced">All data synced</string>
+    <string name="invalid_offline_login_state">User set up required. Enable your internet connection </string>
 </resources>

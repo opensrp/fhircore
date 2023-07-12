@@ -31,7 +31,10 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.DataCaptureConfig
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -51,10 +54,12 @@ import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.junit.After
 import org.junit.Assert
@@ -67,14 +72,19 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.ConfirmationDialog
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
@@ -85,26 +95,34 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.C
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
+
   @Inject lateinit var jsonParser: IParser
-  private val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
+
+  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
   private lateinit var questionnaireActivity: QuestionnaireActivity
   private lateinit var questionnaireFragment: QuestionnaireFragment
   private lateinit var intent: Intent
   private lateinit var questionnaireConfig: QuestionnaireConfig
+  private val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
+  private val fhirEngine: FhirEngine = mockk()
+  private val defaultRepository: DefaultRepository =
+    DefaultRepository(fhirEngine, dispatcherProvider, mockk(), mockk(), mockk(), mockk())
 
   @BindValue
   val questionnaireViewModel: QuestionnaireViewModel =
     spyk(
       QuestionnaireViewModel(
-        defaultRepository = mockk(),
+        defaultRepository = defaultRepository,
         configurationRegistry = mockk(),
         transformSupportServices = mockk(),
         dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = mockk(),
         libraryEvaluator = mockk(),
         fhirCarePlanGenerator = mockk(),
-      )
+        resourceDataRulesExecutor = mockk(),
+      ),
     )
 
   @Before
@@ -112,12 +130,32 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     // TODO Proper set up
     hiltRule.inject()
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
+    val questionnaireConfigRules =
+      listOf(
+        RuleConfig(
+          name = "humanReadableId",
+          description = "Generate OpenSRP ID",
+          condition = "true",
+          actions = listOf("data.put('humanReadableId', service.generateRandomSixDigitInt())"),
+        ),
+      )
     questionnaireConfig =
       QuestionnaireConfig(
         id = "patient-registration",
         title = "Patient registration",
         "form",
-        resourceIdentifier = "@{familyLogicalId}",
+        resourceIdentifier = "Patient/P1",
+        extraParams =
+          listOf(
+            ActionParameter(
+              paramType = ActionParameterType.PREPOPULATE,
+              linkId = "household.id",
+              dataType = DataType.INTEGER,
+              key = "opensrpId",
+              value = "@{humanReadableId}",
+            ),
+          ),
+        configRules = questionnaireConfigRules,
       )
     val actionParams =
       listOf(
@@ -126,29 +164,36 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
           linkId = "25cc8d26-ac42-475f-be79-6f1d62a44881",
           dataType = DataType.INTEGER,
           key = "maleCondomPreviousBalance",
-          value = "100"
-        )
+          value = "100",
+        ),
       )
     intent =
       Intent()
         .putExtras(
           bundleOf(
             Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, questionnaireConfig),
-            Pair(QuestionnaireActivity.QUESTIONNAIRE_ACTION_PARAMETERS, actionParams)
-          )
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_ACTION_PARAMETERS, actionParams),
+          ),
         )
 
+    coEvery {
+      questionnaireViewModel.computeQuestionnaireConfigRules(questionnaireConfigRules)
+    } returns mapOf("humanReadableId" to "199290")
     coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
       Questionnaire().apply { id = "12345" }
 
+    buildActivity(buildQuestionnaireWithConstraints(), questionnaireConfig)
+  }
+
+  private fun buildActivity(
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
+  ) {
     questionnaireFragment = spyk()
 
     questionnaireFragment.apply {
-      arguments =
-        bundleOf(
-          Pair("questionnaire", buildQuestionnaireWithConstraints().encodeResourceToString())
-        )
+      arguments = bundleOf(Pair("questionnaire", questionnaire.encodeResourceToString()))
     }
 
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
@@ -184,7 +229,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
           QuestionnaireConfig(
             id = "my-form",
             resourceIdentifier = "1234",
-            type = QuestionnaireType.READ_ONLY
+            type = QuestionnaireType.READ_ONLY,
           ),
         actionParams =
           listOf(
@@ -193,16 +238,16 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
               linkId = "my-param",
               dataType = DataType.INTEGER,
               key = "my-key",
-              value = "100"
-            )
-          )
+              value = "100",
+            ),
+          ),
       )
 
     val actualQuestionnaireConfig =
       result.getSerializable(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as QuestionnaireConfig
     val actualActionParams =
-      result.getSerializable(QuestionnaireActivity.QUESTIONNAIRE_ACTION_PARAMETERS) as
-        List<ActionParameter>
+      result.getSerializable(QuestionnaireActivity.QUESTIONNAIRE_ACTION_PARAMETERS)
+        as List<ActionParameter>
     Assert.assertEquals("my-form", actualQuestionnaireConfig.id)
     Assert.assertEquals("1234", actualQuestionnaireConfig.resourceIdentifier)
     Assert.assertEquals(1, actualActionParams.size)
@@ -212,11 +257,11 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       FhirContext.forCached(FhirVersionEnum.R4)
         .newJsonParser()
         .encodeResourceToString(questionnaireResponse),
-      result.getString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
+      result.getString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE),
     )
     Assert.assertEquals(
       FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(patient),
-      result.getStringArrayList(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.get(0)
+      result.getStringArrayList(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.get(0),
     )
     Assert.assertEquals(1, actualActionParams.size)
     Assert.assertEquals("my-param", actualActionParams[0].linkId)
@@ -229,7 +274,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       QuestionnaireConfig(
         id = "patient-registration",
         title = "Patient registration",
-        type = QuestionnaireType.READ_ONLY
+        type = QuestionnaireType.READ_ONLY,
       )
     val actionParams =
       listOf(
@@ -238,16 +283,16 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
           linkId = "my-param",
           dataType = DataType.INTEGER,
           key = "my-key",
-          value = "100"
-        )
+          value = "100",
+        ),
       )
     intent =
       Intent()
         .putExtras(
           bundleOf(
             Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig),
-            Pair(QuestionnaireActivity.QUESTIONNAIRE_ACTION_PARAMETERS, actionParams)
-          )
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_ACTION_PARAMETERS, actionParams),
+          ),
         )
 
     val questionnaireFragment = spyk<QuestionnaireFragment>()
@@ -268,7 +313,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       QuestionnaireConfig(
         id = "patient-registration",
         title = "Patient registration",
-        type = QuestionnaireType.READ_ONLY
+        type = QuestionnaireType.READ_ONLY,
       )
     val actionParams =
       listOf(
@@ -277,31 +322,31 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
           linkId = "my-param1",
           dataType = DataType.INTEGER,
           key = "my-key",
-          value = "100"
+          value = "100",
         ),
         ActionParameter(
           paramType = ActionParameterType.PREPOPULATE,
           linkId = "my-param2",
           dataType = DataType.STRING,
           key = "my-key",
-          value = "@{value}"
+          value = "@{value}",
         ),
         ActionParameter(
           paramType = ActionParameterType.PREPOPULATE,
           linkId = "my-param2",
           dataType = DataType.STRING,
           key = "my-key",
-          value = ""
+          value = "",
         ),
-        ActionParameter(key = "patientId", value = "patient-id")
+        ActionParameter(key = "patientId", value = "patient-id"),
       )
     intent =
       Intent()
         .putExtras(
           bundleOf(
             Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig),
-            Pair(QuestionnaireActivity.QUESTIONNAIRE_ACTION_PARAMETERS, actionParams)
-          )
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_ACTION_PARAMETERS, actionParams),
+          ),
         )
 
     val questionnaireFragment = spyk<QuestionnaireFragment>()
@@ -315,7 +360,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val prePopulationParams =
       ReflectionHelpers.getField<List<ActionParameter>>(
         questionnaireActivity,
-        "prePopulationParams"
+        "prePopulationParams",
       )
     Assert.assertEquals(4, updatedActionParams.size)
     Assert.assertEquals(1, prePopulationParams.size)
@@ -337,7 +382,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     Assert.assertNotNull(questionnaireResponse.authored)
     Assert.assertEquals(
       "Patient/${questionnaireConfig.resourceIdentifier}",
-      questionnaireResponse.subject.reference
+      questionnaireResponse.subject.reference,
     )
     Assert.assertEquals("Questionnaire/12345", questionnaireResponse.questionnaire)
   }
@@ -351,11 +396,11 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     Assert.assertEquals(
       getString(R.string.questionnaire_alert_back_pressed_message),
-      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text,
     )
     Assert.assertEquals(
       getString(R.string.questionnaire_alert_back_pressed_button_title),
-      alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
+      alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text,
     )
   }
 
@@ -370,11 +415,11 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     Assert.assertEquals(
       getString(R.string.questionnaire_in_progress_alert_back_pressed_message),
-      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text,
     )
     Assert.assertEquals(
       getString(R.string.questionnaire_alert_back_pressed_save_draft_button_title),
-      alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
+      alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text,
     )
   }
 
@@ -393,7 +438,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     Assert.assertEquals(
       getString(R.string.form_progress_message),
-      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text,
     )
 
     verify(timeout = 2000) { questionnaireActivity.handlePartialQuestionnaireResponse(any()) }
@@ -422,14 +467,41 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     questionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
 
-    verify {
-      questionnaireViewModel.extractAndSaveResources(
-        any(),
-        any(),
-        any(),
-        any(),
+    verify { questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any()) }
+  }
+
+  // TODO: https://github.com/opensrp/fhircore/issues/2494 - fix this test.
+  @Ignore
+  @Test
+  fun testHandleQuestionnaireResponseThroughADialogShouldCallExtractAndSaveResources() {
+    val questionnaireResponseId = "patient-registration-response"
+    val questionnaireResponse = QuestionnaireResponse().apply { id = questionnaireResponseId }
+    questionnaireConfig =
+      QuestionnaireConfig(
+        id = questionnaireResponseId,
+        title = "Patient registration",
+        "form",
+        confirmationDialog =
+          ConfirmationDialog(
+            title = "title",
+            message = "message",
+            actionButtonText = "Save changes",
+          ),
       )
-    }
+
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", Questionnaire())
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaireConfig", questionnaireConfig)
+
+    questionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
+
+    coEvery { fhirEngine.get(any(), any()) } returns questionnaireResponse
+    coEvery { fhirEngine.update(any()) } returns Unit
+
+    verify { questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any()) }
   }
 
   @Test
@@ -446,7 +518,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     Assert.assertEquals(
       getString(R.string.form_progress_message),
-      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text,
     )
 
     verify(timeout = 2000) {
@@ -473,7 +545,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     Assert.assertEquals(
       getString(R.string.questionnaire_alert_invalid_message),
-      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text,
     )
 
     verify(inverse = true) {
@@ -543,8 +615,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         addExtension(
           Extension(
             "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-            BooleanType(false)
-          )
+            BooleanType(false),
+          ),
         )
       }
     }
@@ -651,6 +723,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       Assert.assertEquals("title", questionnaireActivity.supportActionBar?.title)
     }
   }
+
   @Test
   fun testQuestionnaireSubmitButtonDisplayCorrectTitle() {
     with(questionnaireActivity) {
@@ -686,8 +759,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         addExtension(
           Extension(
             "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-            BooleanType(true)
-          )
+            BooleanType(true),
+          ),
         )
       }
     }
@@ -696,7 +769,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @Ignore("Needs fixing")
   @Test
   fun testFragmentQuestionnaireSubmitHandlesQuestionnaireSubmit() {
-
     every { questionnaireActivity.getQuestionnaireConfig() } returns QuestionnaireConfig(id = "123")
     every { questionnaireActivity.getQuestionnaireObject() } returns Questionnaire()
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
@@ -720,6 +792,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     verify { questionnaireActivity.finish() }
   }
+
   @Ignore("Needs fixing")
   @Test
   fun testFragmentQuestionnaireSubmitWithExperimentalModeFinishesActivity() {
@@ -745,12 +818,12 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       QuestionnaireConfig(
         id = "patient-registration",
         title = "Patient registration",
-        type = QuestionnaireType.DEFAULT
+        type = QuestionnaireType.DEFAULT,
       )
     intent =
       Intent()
         .putExtras(
-          bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig))
+          bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig)),
         )
 
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
@@ -770,12 +843,12 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       QuestionnaireConfig(
         id = "patient-registration",
         title = "Patient registration",
-        type = QuestionnaireType.DEFAULT
+        type = QuestionnaireType.DEFAULT,
       )
     intent =
       Intent()
         .putExtras(
-          bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig))
+          bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig)),
         )
 
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns null
@@ -795,12 +868,12 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         id = "patient-registration",
         title = "Patient registration",
         resourceIdentifier = "1234",
-        type = QuestionnaireType.DEFAULT
+        type = QuestionnaireType.DEFAULT,
       )
     intent =
       Intent()
         .putExtras(
-          bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig))
+          bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, expectedQuestionnaireConfig)),
         )
 
     coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns
@@ -818,11 +891,11 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     Assert.assertTrue(
       "Barcode initial not found with ID 1234",
       questionnaire.find(QUESTIONNAIRE_ARG_BARCODE)!!.initial.first().valueStringType.value ==
-        "1234"
+        "1234",
     )
     Assert.assertTrue(
       "Barcode not in read only mode",
-      questionnaire.find(QUESTIONNAIRE_ARG_BARCODE)!!.readOnly
+      questionnaire.find(QUESTIONNAIRE_ARG_BARCODE)!!.readOnly,
     )
   }
 
@@ -833,7 +906,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       QuestionnaireConfig(
         id = questionnaireId,
         title = "Patient registration",
-        type = QuestionnaireType.EDIT
+        type = QuestionnaireType.EDIT,
       )
     val baseResourceId = "Patient/1122"
     val baseResourceType = "Patient"
@@ -843,8 +916,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
           bundleOf(
             Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, questionnaireConfig),
             Pair(QuestionnaireActivity.BASE_RESOURCE_ID, baseResourceId),
-            Pair(QuestionnaireActivity.BASE_RESOURCE_TYPE, baseResourceType)
-          )
+            Pair(QuestionnaireActivity.BASE_RESOURCE_TYPE, baseResourceType),
+          ),
         )
 
     val questionnaireResponseId = "patient-registration-response"
@@ -860,7 +933,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         QuestionnaireResponse().apply {
           id = questionnaireResponseId
           meta.lastUpdated = Date()
-        }
+        },
       )
 
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
@@ -869,7 +942,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val questionnaireResponse =
       ReflectionHelpers.getField<QuestionnaireResponse>(
         questionnaireActivity,
-        "questionnaireResponse"
+        "questionnaireResponse",
       )
     Assert.assertNotNull("Questionnaire Response is null", questionnaireResponse)
   }
@@ -881,7 +954,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       QuestionnaireConfig(
         id = questionnaireId,
         title = "Patient registration",
-        type = QuestionnaireType.READ_ONLY
+        type = QuestionnaireType.READ_ONLY,
       )
     val baseResourceId = "Patient/1122"
     val baseResourceType = "Patient"
@@ -891,8 +964,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
           bundleOf(
             Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, questionnaireConfig),
             Pair(QuestionnaireActivity.BASE_RESOURCE_ID, baseResourceId),
-            Pair(QuestionnaireActivity.BASE_RESOURCE_TYPE, baseResourceType)
-          )
+            Pair(QuestionnaireActivity.BASE_RESOURCE_TYPE, baseResourceType),
+          ),
         )
 
     val questionnaireResponseId = "patient-registration-response"
@@ -908,7 +981,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         QuestionnaireResponse().apply {
           id = questionnaireResponseId
           meta.lastUpdated = Date()
-        }
+        },
       )
 
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
@@ -917,9 +990,107 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val questionnaireResponse =
       ReflectionHelpers.getField<QuestionnaireResponse>(
         questionnaireActivity,
-        "questionnaireResponse"
+        "questionnaireResponse",
       )
     Assert.assertNotNull("Questionnaire Response is null", questionnaireResponse)
+  }
+
+  @Test
+  fun `test covid 19 vaccines questionnaire on followup`() = runTest {
+    ReflectionHelpers.loadClass(
+        QuestionnaireFragment.javaClass.classLoader,
+        "com.google.android.fhir.datacapture.DataCapture",
+      )
+      .let {
+        it
+          .getDeclaredField("configuration")
+          .also { it.isAccessible = true }
+          .set(null, DataCaptureConfig(xFhirQueryResolver = { fhirEngine.search(it) }))
+      }
+    val questionnaire =
+      "covid-19/questionnaire.json".readFile().decodeResourceFromString<Questionnaire>()
+    val data =
+      "covid-19/resource_data_bundle.json"
+        .readFile()
+        .decodeResourceFromString<org.hl7.fhir.r4.model.Bundle>()
+
+    coEvery { fhirEngine.get(ResourceType.Patient, "P1") } returns
+      Patient().apply {
+        id = "P1"
+        birthDate = Date()
+      }
+    coEvery { fhirEngine.search<Resource>(any<Search>()) } returns
+      data.entry.map { it.resource as Immunization }
+    coEvery { questionnaireViewModel.loadQuestionnaire(any(), any()) } returns questionnaire
+
+    buildActivity(questionnaire, questionnaireConfig)
+
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
+
+    questionnaireActivity.fragment = questionnaireFragment
+
+    val questionnaireResponse = questionnaireActivity.getQuestionnaireResponse()
+    questionnaireActivity.setInitialExpression(questionnaire)
+
+    Assert.assertNotNull(questionnaireResponse.id)
+    Assert.assertNotNull(questionnaireResponse.authored)
+    Assert.assertEquals(
+      "Patient/${questionnaireConfig.resourceIdentifier}",
+      questionnaireResponse.subject.reference,
+    )
+    Assert.assertEquals(2, questionnaire.item.elementAt(1).initial.size)
+  }
+
+  fun testGetResourcesFromParamsForQR_shouldFilterQuestionnaireResponsePopulationParam() {
+    val questionnaireConfig =
+      QuestionnaireConfig(
+        id = "patient-registration",
+        title = "Patient registration",
+        type = QuestionnaireType.EDIT,
+      )
+    val actionParams =
+      listOf(
+        ActionParameter(
+          paramType = ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE,
+          resourceType = ResourceType.Patient,
+          key = "resourcePatient",
+          value = "patient-1",
+          dataType = DataType.STRING,
+        ),
+        ActionParameter(
+          key = "paramName",
+          paramType = ActionParameterType.PARAMDATA,
+          value = "testing",
+          dataType = DataType.STRING,
+          linkId = null,
+        ),
+        ActionParameter(
+          key = "paramName2",
+          paramType = ActionParameterType.PREPOPULATE,
+          value = "testing2",
+          dataType = DataType.STRING,
+          linkId = null,
+        ),
+      )
+    intent =
+      Intent()
+        .putExtras(
+          bundleOf(
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_CONFIG, questionnaireConfig),
+            Pair(QuestionnaireActivity.QUESTIONNAIRE_ACTION_PARAMETERS, actionParams),
+          ),
+        )
+
+    val questionnaireFragment = spyk<QuestionnaireFragment>()
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+
+    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    questionnaireActivity = controller.create().resume().get()
+
+    val resourceMap = questionnaireActivity.getResourcesFromParamsForQR()
+
+    Assert.assertEquals(1, resourceMap.size)
+    Assert.assertTrue(resourceMap.containsKey(ResourceType.Patient))
   }
 
   override fun getActivity(): Activity {

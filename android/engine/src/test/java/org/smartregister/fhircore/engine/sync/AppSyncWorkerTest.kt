@@ -51,5 +51,6 @@ class AppSyncWorkerTest : RobolectricTest() {
 
     Assert.assertEquals(AcceptLocalConflictResolver, appSyncWorker.getConflictResolver())
     Assert.assertEquals(fhirEngine, appSyncWorker.getFhirEngine())
+    Assert.assertEquals(false, appSyncWorker.getUploadConfiguration().useETagForUpload)
   }
 }

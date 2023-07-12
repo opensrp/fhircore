@@ -1,6 +1,9 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
-buildscript { apply(from = "../jacoco.gradle.kts") }
+buildscript {
+  apply(from = "../jacoco.gradle.kts")
+  apply(from = "../ktlint.gradle.kts")
+}
 
 plugins {
   id("com.android.library")
@@ -66,8 +69,8 @@ android {
         "META-INF/LGPL-3.0.txt",
         "META-INF/sun-jaxb.episode",
         "META-INF/*.kotlin_module",
-        "META-INF/INDEX.LIST"
-      )
+        "META-INF/INDEX.LIST",
+      ),
     )
   }
 
@@ -180,7 +183,11 @@ dependencies {
   api(libs.retrofit2.kotlinx.serialization.converter)
   api(libs.okhttp)
   api(libs.okhttp.logging.interceptor)
-  api(libs.easy.rules.jexl) { exclude(group = "commons-logging", module = "commons-logging") }
+  api(libs.commons.jexl3) { exclude(group = "commons-logging", module = "commons-logging") }
+  api(libs.easy.rules.jexl) {
+    exclude(group = "commons-logging", module = "commons-logging")
+    exclude(group = "org.apache.commons", module = "commons-jexl3")
+  }
   api(libs.data.capture) {
     isTransitive = true
     exclude(group = "ca.uhn.hapi.fhir")
@@ -246,4 +253,9 @@ dependencies {
   androidTestImplementation(libs.runner)
   androidTestImplementation(libs.ui.test.junit4)
   androidTestImplementation(libs.hilt.android.testing)
+
+  ktlint(libs.ktlint.main) {
+    attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
+  }
+  ktlint(project(":linting"))
 }

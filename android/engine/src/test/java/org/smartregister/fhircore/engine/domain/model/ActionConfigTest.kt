@@ -40,31 +40,31 @@ class ActionConfigTest : RobolectricTest() {
           linkId = "my-param1",
           dataType = DataType.INTEGER,
           key = "my-key",
-          value = "100"
+          value = "100",
         ),
         ActionParameter(
           paramType = ActionParameterType.PREPOPULATE,
           linkId = "my-param2",
           dataType = DataType.STRING,
           key = "my-key",
-          value = "@{value}"
+          value = "@{value}",
         ),
         ActionParameter(
           paramType = ActionParameterType.PREPOPULATE,
           linkId = "my-param2",
           dataType = DataType.STRING,
           key = "my-key",
-          value = ""
+          value = "",
         ),
         ActionParameter(key = "patientId", value = "patient-id"),
-        ActionParameter(key = "patientName", value = "@{patientName}")
+        ActionParameter(key = "patientName", value = "@{patientName}"),
       )
     val actionConfig =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
         questionnaire = QuestionnaireConfig(id = "444"),
-        params = actionParams
+        params = actionParams,
       )
 
     val result = actionConfig.paramsBundle(computedValuesMap)
@@ -82,7 +82,7 @@ class ActionConfigTest : RobolectricTest() {
         "dialogContentMessage" to "Changing head",
         "noMembersErrorMessage" to "No members found",
         "managingEntityReassignedMessage" to "Head reassigned successfully",
-        "testDisplay" to "This is a test Display"
+        "testDisplay" to "This is a test Display",
       )
     val actionConfig =
       ActionConfig(
@@ -97,7 +97,7 @@ class ActionConfigTest : RobolectricTest() {
             dialogContentMessage = "@{dialogContentMessage}",
             noMembersErrorMessage = "@{noMembersErrorMessage}",
             managingEntityReassignedMessage = "@{managingEntityReassignedMessage}",
-          )
+          ),
       )
 
     val interpolatedActionConfig = actionConfig.interpolate(computedValuesMap)
@@ -126,7 +126,7 @@ class ActionConfigTest : RobolectricTest() {
             dialogContentMessage = "@{dialogContentMessage}",
             noMembersErrorMessage = "@{noMembersErrorMessage}",
             managingEntityReassignedMessage = "@{managingEntityReassignedMessage}",
-          )
+          ),
       )
     val oldActionConfig = actionConfig.copy()
 

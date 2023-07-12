@@ -62,31 +62,31 @@ fun DateSelectionBox(
   endDate: String = "",
   showDateRangePicker: Boolean = true,
   dateRange: MutableState<Pair<Long, Long>>,
-  onDateRangeSelected: (Pair<Long, Long>) -> Unit
+  onDateRangeSelected: (Pair<Long, Long>) -> Unit,
 ) {
   val context = LocalContext.current
 
   Column(
     modifier = modifier.fillMaxWidth(),
     verticalArrangement = Arrangement.Top,
-    horizontalAlignment = Alignment.Start
+    horizontalAlignment = Alignment.Start,
   ) {
     Text(
       text = stringResource(id = R.string.date_range),
       fontWeight = FontWeight.Bold,
       fontSize = 18.sp,
-      modifier = modifier.wrapContentWidth().testTag(DATE_RANGE_TITLE_TEST_TAG)
+      modifier = modifier.wrapContentWidth().testTag(DATE_RANGE_TITLE_TEST_TAG),
     )
     Spacer(modifier = modifier.height(16.dp))
     Row(
       horizontalArrangement = Arrangement.SpaceAround,
-      verticalAlignment = Alignment.CenterVertically
+      verticalAlignment = Alignment.CenterVertically,
     ) {
       DateRangeItem(text = startDate)
       Text(
         "-",
         fontSize = 18.sp,
-        modifier = modifier.padding(horizontal = 8.dp).testTag(DATE_RANGE_SEPARATOR_TEST_TAG)
+        modifier = modifier.padding(horizontal = 8.dp).testTag(DATE_RANGE_SEPARATOR_TEST_TAG),
       )
       DateRangeItem(text = endDate)
       if (showDateRangePicker) {
@@ -99,11 +99,11 @@ fun DateSelectionBox(
                 showDateRangePicker(
                   context = context,
                   dateRange = dateRange,
-                  onDateRangeSelected = onDateRangeSelected
+                  onDateRangeSelected = onDateRangeSelected,
                 )
               }
               .padding(8.dp)
-              .testTag(CALENDAR_ICON_TEST_TAG)
+              .testTag(CALENDAR_ICON_TEST_TAG),
         )
       }
     }
@@ -113,7 +113,7 @@ fun DateSelectionBox(
 fun showDateRangePicker(
   context: Context,
   dateRange: MutableState<Pair<Long, Long>>,
-  onDateRangeSelected: (Pair<Long, Long>) -> Unit
+  onDateRangeSelected: (Pair<Long, Long>) -> Unit,
 ) {
   val constraintsBuilder =
     CalendarConstraints.Builder().setValidator(DateValidatorPointBackward.now()).build()
@@ -143,6 +143,6 @@ private fun DateRangeSelectedPreview() {
     startDate = "Start date",
     endDate = "End date",
     onDateRangeSelected = {},
-    dateRange = dateRange
+    dateRange = dateRange,
   )
 }

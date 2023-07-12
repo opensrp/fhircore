@@ -32,7 +32,7 @@ import org.hl7.fhir.r4.model.ResourceType
 @Parcelize
 data class FhirResourceConfig(
   val baseResource: ResourceConfig,
-  val relatedResources: List<ResourceConfig> = emptyList()
+  val relatedResources: List<ResourceConfig> = emptyList(),
 ) : Parcelable, java.io.Serializable
 
 /**
@@ -87,9 +87,9 @@ data class ResourceConfig(
   val resultAsCount: Boolean = false,
   val countResultConfig: CountResultConfig? = CountResultConfig(),
   val nestedSearchResources: List<NestedSearchConfig>? = null,
-  val configRules: @RawValue List<RuleConfig>? = null,
+  val configRules: @RawValue List<RuleConfig>? = emptyList(),
   val planDefinitions: List<String>? = null,
-  val attributesToUpdate: List<KeyValueConfig>? = emptyList()
+  val attributesToUpdate: List<KeyValueConfig>? = emptyList(),
 ) : Parcelable, java.io.Serializable
 
 @Serializable
@@ -99,15 +99,16 @@ data class CountResultConfig(val sumCounts: Boolean = true) : Parcelable, java.i
 @Serializable
 @Parcelize
 data class SortConfig(
-  val paramName: String,
+  val paramName: String? = null,
   val dataType: Enumerations.DataType,
-  val order: Order = Order.ASCENDING
-) : Parcelable
+  val order: Order = Order.ASCENDING,
+  val fhirPathExpression: String = "",
+) : Parcelable, java.io.Serializable
 
 @Serializable
 @Parcelize
 data class NestedSearchConfig(
   val resourceType: ResourceType,
   val referenceParam: String,
-  val dataQueries: List<DataQuery>? = null
-) : Parcelable
+  val dataQueries: List<DataQuery>? = null,
+) : Parcelable, java.io.Serializable

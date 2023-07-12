@@ -28,13 +28,14 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 class RegisterBottomSheetFragment(
   val navigationMenuConfigs: List<NavigationMenuConfig>? = emptyList(),
   val registerCountMap: Map<String, Long> = emptyMap(),
-  val menuClickListener: (NavigationMenuConfig) -> Unit
+  val title: String? = null,
+  val menuClickListener: (NavigationMenuConfig) -> Unit,
 ) : BottomSheetDialogFragment() {
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?
+    savedInstanceState: Bundle?,
   ): View {
     return ComposeView(requireContext()).apply {
       setContent {
@@ -43,7 +44,8 @@ class RegisterBottomSheetFragment(
             navigationMenuConfigs = navigationMenuConfigs,
             registerCountMap = registerCountMap,
             menuClickListener = menuClickListener,
-            onDismiss = { dismiss() }
+            onDismiss = { dismiss() },
+            title = title,
           )
         }
       }

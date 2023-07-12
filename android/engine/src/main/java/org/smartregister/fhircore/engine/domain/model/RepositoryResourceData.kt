@@ -36,7 +36,7 @@ data class RepositoryResourceData(
   val resource: Resource,
   val relatedResourcesMap: Map<String, List<Resource>> = emptyMap(),
   val relatedResourcesCountMap: Map<String, List<RelatedResourceCount>> = emptyMap(),
-  val secondaryRepositoryResourceData: List<RepositoryResourceData>? = null
+  val secondaryRepositoryResourceData: List<RepositoryResourceData>? = null,
 )
 
 /**
@@ -51,5 +51,5 @@ data class RepositoryResourceData(
 data class RelatedResourceCount(
   val relatedResourceType: ResourceType? = null,
   val parentResourceId: String? = null,
-  val count: Long
+  val count: Long,
 )

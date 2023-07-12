@@ -58,7 +58,7 @@ fun SubjectSelector(
   subjects: Set<MeasureReportSubjectViewData>,
   onAddSubject: () -> Unit,
   onRemoveSubject: (MeasureReportSubjectViewData) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   LazyVerticalGrid(columns = GridCells.Adaptive(130.dp), modifier = modifier.fillMaxWidth()) {
     subjects.forEach { subject ->
@@ -70,7 +70,7 @@ fun SubjectSelector(
               .background(color = Color.LightGray.copy(alpha = 0.4f))
               .wrapContentWidth()
               .padding(8.dp),
-          verticalAlignment = Alignment.CenterVertically
+          verticalAlignment = Alignment.CenterVertically,
         ) {
           Text(
             text = subject.display,
@@ -88,7 +88,7 @@ fun SubjectSelector(
                 .clip(RoundedCornerShape(8.dp))
                 .background(color = Color.LightGray)
                 .wrapContentWidth()
-                .clickable { onRemoveSubject(subject) }
+                .clickable { onRemoveSubject(subject) },
           ) {
             Box(
               modifier =
@@ -98,12 +98,12 @@ fun SubjectSelector(
                   .background(color = Color.DarkGray.copy(alpha = 0.4f))
                   .wrapContentWidth()
                   .padding(4.dp),
-              contentAlignment = Alignment.Center
+              contentAlignment = Alignment.Center,
             ) {
               Icon(
                 Icons.Filled.Close,
                 contentDescription = "Back arrow",
-                modifier = modifier.size(20.dp).testTag(CLOSE_ICON_TEST_TAG)
+                modifier = modifier.size(20.dp).testTag(CLOSE_ICON_TEST_TAG),
               )
             }
           }
@@ -116,7 +116,7 @@ fun SubjectSelector(
         textAlign = TextAlign.Center,
         color = InfoColor,
         fontSize = 16.sp,
-        modifier = modifier.testTag(CHANGE_TEXT_TEST_TAG).clickable { onAddSubject() }
+        modifier = modifier.testTag(CHANGE_TEXT_TEST_TAG).clickable { onAddSubject() },
       )
     }
   }
@@ -132,9 +132,9 @@ fun SelectedSubjectPreview() {
         MeasureReportSubjectViewData(ResourceType.Patient, "2", "Jane Doe"),
         MeasureReportSubjectViewData(ResourceType.Patient, "3", "John Doe"),
         MeasureReportSubjectViewData(ResourceType.Patient, "4", "Lorem Ipsm"),
-        MeasureReportSubjectViewData(ResourceType.Patient, "5", "Mary Magdalene")
+        MeasureReportSubjectViewData(ResourceType.Patient, "5", "Mary Magdalene"),
       ),
     onAddSubject = {},
-    onRemoveSubject = {}
+    onRemoveSubject = {},
   )
 }

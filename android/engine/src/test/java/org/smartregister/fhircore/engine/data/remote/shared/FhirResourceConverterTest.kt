@@ -38,6 +38,7 @@ class FhirResourceConverterTest {
   @MockK lateinit var retrofit: Retrofit
 
   lateinit var annotations: Array<Annotation>
+
   @Before
   fun setUp() {
     MockKAnnotations.init(this, relaxed = true, relaxUnitFun = true)
@@ -62,10 +63,8 @@ class FhirResourceConverterTest {
     val input = parser.encodeResourceToString(buildPatient()).toByteArray().toResponseBody()
 
     val result =
-      FhirConverterFactory(parser)
-        .responseBodyConverter(type, annotations, retrofit)
-        .convert(input) as
-        Patient
+      FhirConverterFactory(parser).responseBodyConverter(type, annotations, retrofit).convert(input)
+        as Patient
     Assert.assertEquals("John", result.nameFirstRep.given[0].value)
     Assert.assertEquals("Doe", result.nameFirstRep.family)
     Assert.assertEquals("12345", result.logicalId)

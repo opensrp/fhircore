@@ -27,7 +27,9 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
@@ -51,8 +53,8 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @Inject lateinit var gson: Gson
   private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var fhirEngine: FhirEngine
@@ -77,9 +79,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
         sharedPreferencesHelper = sharedPreferencesHelper,
         dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
         configService = configService,
-        json = Faker.json
+        json = Faker.json,
       )
-    coEvery { fhirEngine.create(any()) } answers { listOf() }
+    coEvery { fhirEngine.createRemote(any()) } just runs
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
   }
 

@@ -28,6 +28,8 @@ import timber.log.Timber
 
 const val DEFAULT_PLACEHOLDER_PREFIX = "@{"
 const val DEFAULT_PLACEHOLDER_SUFFIX = "}"
+const val BLACK_COLOR_HEX_CODE = "#000000"
+const val TRUE = "true"
 
 /**
  * Sample template string: { "saveFamilyButtonText" : {{ family.button.save }} } Sample properties
@@ -35,16 +37,16 @@ const val DEFAULT_PLACEHOLDER_SUFFIX = "}"
  *
  * @param lookupMap The Map with the key value items to be used for interpolation
  * @param prefix The prefix of the key variable to interpolate. In the above example it is {{.
- * Default is @{
+ *   Default is @{
  * @param suffix The prefix of the key/variable to interpolate. In the above example it is }}.
- * Default is }
+ *   Default is }
  * @return String with the interpolated value. For the sample case above this would be: {
- * "saveFamilyButtonText" : "Save Family" }
+ *   "saveFamilyButtonText" : "Save Family" }
  */
 fun String.interpolate(
   lookupMap: Map<String, Any>,
   prefix: String = DEFAULT_PLACEHOLDER_PREFIX,
-  suffix: String = DEFAULT_PLACEHOLDER_SUFFIX
+  suffix: String = DEFAULT_PLACEHOLDER_SUFFIX,
 ): String =
   try {
     StringSubstitutor.replace(
@@ -53,12 +55,13 @@ fun String.interpolate(
       },
       lookupMap,
       prefix,
-      suffix
+      suffix,
     )
   } catch (e: IllegalStateException) {
     Timber.e(e)
     this
   }
+
 /**
  * Wrapper method around the Java text formatter
  *
@@ -67,7 +70,7 @@ fun String.interpolate(
  * @param locale this is the Locale to use e.g. Locale.ENGLISH
  * @param arguments this is a variable number of values to replace placeholders in order
  * @return the interpolated string with the placeholder variables replaced with the arguments
- * values.
+ *   values.
  *
  * In the example above, the result for passing arguments John, Doe, 35 would be: Name John Doe, Age
  * 35
@@ -117,3 +120,6 @@ fun String.compare(anotherString: String): Boolean =
   this.toSortedSet().containsAll(anotherString.toSortedSet())
 
 fun String.lastOffset() = this.uppercase() + "_" + SharedPreferenceKey.LAST_OFFSET.name
+
+fun String.spaceByUppercase() =
+  this.split(Regex("(?=\\p{Upper})")).joinToString(separator = " ").trim()

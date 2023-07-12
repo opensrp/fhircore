@@ -51,7 +51,7 @@ fun CardView(
   modifier: Modifier = Modifier,
   viewProperties: CardViewProperties,
   resourceData: ResourceData,
-  navController: NavController
+  navController: NavController,
 ) {
   val headerActionVisible = viewProperties.headerAction?.visible.toBoolean()
   Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
@@ -60,7 +60,7 @@ fun CardView(
     Row(
       modifier = modifier.fillMaxWidth(),
       verticalAlignment = Alignment.Top,
-      horizontalArrangement = Arrangement.SpaceBetween
+      horizontalArrangement = Arrangement.SpaceBetween,
     ) {
       if (viewProperties.header != null) {
         CompoundText(
@@ -70,14 +70,14 @@ fun CardView(
               .wrapContentWidth(Alignment.Start),
           compoundTextProperties = viewProperties.header!!.copy(textCase = TextCase.UPPER_CASE),
           resourceData = resourceData,
-          navController = navController
+          navController = navController,
         )
         if (viewProperties.headerAction != null && headerActionVisible) {
           CompoundText(
             modifier = modifier.wrapContentWidth(Alignment.End).weight(0.4f),
             compoundTextProperties = viewProperties.headerAction!!,
             resourceData = resourceData,
-            navController = navController
+            navController = navController,
           )
         }
       }
@@ -90,13 +90,13 @@ fun CardView(
         modifier
           .padding(horizontal = viewProperties.padding.dp)
           .fillMaxWidth()
-          .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
+          .clip(RoundedCornerShape(viewProperties.cornerSize.dp)),
     ) {
       Column(modifier = modifier.padding(viewProperties.contentPadding.dp)) {
         ViewRenderer(
           viewProperties = viewProperties.content,
           resourceData = resourceData,
-          navController = navController
+          navController = navController,
         )
       }
     }
@@ -116,7 +116,7 @@ private fun CardViewWithoutPaddingPreview() {
               CompoundTextProperties(
                 primaryText = "Richard Brown, M, 21",
                 primaryTextColor = "#000000",
-              )
+              ),
             ),
           header =
             CompoundTextProperties(
@@ -129,11 +129,11 @@ private fun CardViewWithoutPaddingPreview() {
               primaryText = "Record All",
               primaryTextColor = "infoColor",
               clickable = "true",
-              visible = "true"
-            )
+              visible = "true",
+            ),
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-      navController = rememberNavController()
+      navController = rememberNavController(),
     )
   }
 }
@@ -156,26 +156,21 @@ private fun CardViewWithPaddingPreview() {
                     ButtonProperties(
                       status = "OVERDUE",
                       viewType = ViewType.BUTTON,
-                      text = "Sick child followup"
+                      text = "Sick child followup",
                     ),
                     ButtonProperties(
                       status = "COMPLETED",
                       viewType = ViewType.BUTTON,
-                      text = "COVID Vaccination"
-                    )
-                  )
-              )
+                      text = "COVID Vaccination",
+                    ),
+                  ),
+              ),
             ),
           header =
-            CompoundTextProperties(
-              primaryText = "VISITS",
-              fontSize = 18.0f,
-              primaryTextColor = "#6F7274",
-              padding = 16
-            )
+            CompoundTextProperties(fontSize = 18.0f, primaryTextColor = "#6F7274", padding = 16),
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-      navController = rememberNavController()
+      navController = rememberNavController(),
     )
   }
 }
@@ -193,11 +188,11 @@ private fun CardViewWithoutPaddingAndHeaderPreview() {
               CompoundTextProperties(
                 primaryText = "Richard Brown, M, 21",
                 primaryTextColor = "#000000",
-              )
+              ),
             ),
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-      navController = rememberNavController()
+      navController = rememberNavController(),
     )
   }
 }

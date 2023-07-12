@@ -51,6 +51,7 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -62,9 +63,13 @@ class LibraryEvaluatorTest : RobolectricTest() {
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
+
   @Inject lateinit var gson: Gson
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
+
   @Inject lateinit var configService: ConfigService
+
+  @Inject lateinit var configRulesExecutor: ConfigRulesExecutor
 
   var evaluator: LibraryEvaluator? = null
   var libraryData = ""
@@ -115,7 +120,7 @@ class LibraryEvaluatorTest : RobolectricTest() {
         fhirContext,
         evaluatorId,
         context,
-        contextLabel
+        contextLabel,
       )
     Assert.assertEquals(result, auxResult)
   }
@@ -159,24 +164,21 @@ class LibraryEvaluatorTest : RobolectricTest() {
     val cqlLibrary =
       parser.parseResource(
         FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/library.json")
-          .replace("#library-elm.json", Base64.getEncoder().encodeToString(cqlElm.toByteArray()))
-      ) as
-        Library
+          .replace("#library-elm.json", Base64.getEncoder().encodeToString(cqlElm.toByteArray())),
+      ) as Library
     val fhirHelpersLibrary =
       parser.parseResource(
-        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/helper.json")
-      ) as
-        Library
+        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/helper.json"),
+      ) as Library
 
     val dataBundle =
       parser.parseResource(
-        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/patient.json")
-      ) as
-        Bundle
+        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/patient.json"),
+      ) as Bundle
 
     val patient =
-      dataBundle.entry.first { it.resource.resourceType == ResourceType.Patient }.resource as
-        Patient
+      dataBundle.entry.first { it.resource.resourceType == ResourceType.Patient }.resource
+        as Patient
 
     val fhirEngine = mockk<FhirEngine>()
     val sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
@@ -186,7 +188,8 @@ class LibraryEvaluatorTest : RobolectricTest() {
         DefaultDispatcherProvider(),
         sharedPreferencesHelper,
         configurationRegistry,
-        configService
+        configService,
+        configRulesExecutor,
       )
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
@@ -200,7 +203,7 @@ class LibraryEvaluatorTest : RobolectricTest() {
         patient,
         dataBundle.apply { entry.removeIf { it.resource.resourceType == ResourceType.Patient } },
         defaultRepository,
-        true
+        true,
       )
     }
 
@@ -219,24 +222,21 @@ class LibraryEvaluatorTest : RobolectricTest() {
     val cqlLibrary =
       parser.parseResource(
         FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/library.json")
-          .replace("#library-elm.json", Base64.getEncoder().encodeToString(cqlElm.toByteArray()))
-      ) as
-        Library
+          .replace("#library-elm.json", Base64.getEncoder().encodeToString(cqlElm.toByteArray())),
+      ) as Library
     val fhirHelpersLibrary =
       parser.parseResource(
-        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/helper.json")
-      ) as
-        Library
+        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/helper.json"),
+      ) as Library
 
     val dataBundle =
       parser.parseResource(
-        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/patient.json")
-      ) as
-        Bundle
+        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/patient.json"),
+      ) as Bundle
 
     val patient =
-      dataBundle.entry.first { it.resource.resourceType == ResourceType.Patient }.resource as
-        Patient
+      dataBundle.entry.first { it.resource.resourceType == ResourceType.Patient }.resource
+        as Patient
 
     val fhirEngine = mockk<FhirEngine>()
     val sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
@@ -246,7 +246,8 @@ class LibraryEvaluatorTest : RobolectricTest() {
         DefaultDispatcherProvider(),
         sharedPreferencesHelper,
         configurationRegistry,
-        configService
+        configService,
+        configRulesExecutor,
       )
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
@@ -260,12 +261,13 @@ class LibraryEvaluatorTest : RobolectricTest() {
         patient,
         dataBundle.apply { entry.removeIf { it.resource.resourceType == ResourceType.Patient } },
         defaultRepository,
-        false
+        false,
       )
     }
 
     Assert.assertEquals(0, result.size)
   }
+
   @Test
   fun processCqlPatientBundleTest() {
     val results = evaluator!!.processCqlPatientBundle(testData)

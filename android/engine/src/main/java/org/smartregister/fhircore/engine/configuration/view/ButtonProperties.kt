@@ -16,8 +16,11 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import android.os.Parcelable
 import androidx.compose.ui.graphics.Color
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.domain.model.ViewType
@@ -28,6 +31,7 @@ import org.smartregister.fhircore.engine.ui.theme.WarningColor
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class ButtonProperties(
   override val viewType: ViewType = ViewType.BUTTON,
   override val weight: Float = 0f,
@@ -39,6 +43,7 @@ data class ButtonProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   override val visible: String = "true",
+  val contentColor: String? = null,
   val enabled: String = "true",
   val text: String? = null,
   val status: String,
@@ -46,7 +51,8 @@ data class ButtonProperties(
   val fontSize: Float = 14.0f,
   val actions: List<ActionConfig> = emptyList(),
   val buttonType: ButtonType = ButtonType.MEDIUM,
-) : ViewProperties() {
+  val startIcon: ImageConfig? = null,
+) : ViewProperties(), Parcelable {
   /**
    * This function determines the status color to display depending on the value of the service
    * status
@@ -60,33 +66,33 @@ data class ButtonProperties(
       ServiceStatus.UPCOMING -> DefaultColor
       ServiceStatus.COMPLETED -> DefaultColor
       ServiceStatus.IN_PROGRESS -> WarningColor
+      ServiceStatus.EXPIRED -> DefaultColor
     }
   }
+
   override fun interpolate(computedValuesMap: Map<String, Any>): ButtonProperties {
-    val interpolatedBackgroundColor = backgroundColor?.interpolate(computedValuesMap)
     return this.copy(
-      backgroundColor =
-        if (!interpolatedBackgroundColor.isNullOrEmpty()) {
-          interpolatedBackgroundColor
-        } else Color.Unspecified.toString(),
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
       visible = visible.interpolate(computedValuesMap),
       status = interpolateStatus(computedValuesMap).name,
       text = text?.interpolate(computedValuesMap),
       enabled = enabled.interpolate(computedValuesMap),
-      clickable = clickable.interpolate(computedValuesMap)
+      clickable = clickable.interpolate(computedValuesMap),
+      contentColor = contentColor?.interpolate(computedValuesMap),
+      startIcon = startIcon?.interpolate(computedValuesMap),
     )
   }
 
   private fun interpolateStatus(computedValuesMap: Map<String, Any>): ServiceStatus {
     val interpolated = this.status.interpolate(computedValuesMap)
-    return if (ServiceStatus.values().map { it.name }.contains(interpolated))
+    return if (ServiceStatus.values().map { it.name }.contains(interpolated)) {
       ServiceStatus.valueOf(interpolated)
-    else ServiceStatus.UPCOMING
+    } else ServiceStatus.UPCOMING
   }
 }
 
 enum class ButtonType {
   TINY,
   MEDIUM,
-  BIG
+  BIG,
 }

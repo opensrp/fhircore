@@ -565,6 +565,7 @@
             "setOrganizationDetails": true,
             "type": "EDIT",
             "resourceIdentifier": "@{familyLogicalId}",
+            "resourceType": "Group",
             "params": [
               {
                 "key": "familyLogicalId",
@@ -653,7 +654,15 @@
               "message": "Removing @{familyName} will remove their entire health record from your device. This action can’t be undone.",
               "actionButtonText": "Remove household"
             },
-            "refreshContent": true
+            "onSubmitActions": [
+              {
+                "trigger": "ON_QUESTIONNAIRE_SUBMISSION",
+                "workflow": "LAUNCH_REGISTER",
+                "id": "householdRegister",
+                "display": "All Households",
+                "popNavigationBackStack": true
+              }
+            ]
           }
         }
       ]
