@@ -306,27 +306,27 @@ class RegisterFragment : Fragment(), OnSyncListener {
     completed * 100 / if (total > 0) total else 1
 
   private fun calculateActualPercentageProgress(
-    progressSyncJobStatus: SyncJobStatus.InProgress
+    progressSyncJobStatus: SyncJobStatus.InProgress,
   ): Int {
     val totalRecordsOverall =
       registerViewModel.sharedPreferencesHelper.read(
-        SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL,
-        1L
+        SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
+          progressSyncJobStatus.syncOperation.name,
+        1L,
       )
     val isProgressTotalLess = progressSyncJobStatus.total <= totalRecordsOverall
     var currentProgress: Int
     var currentTotalRecords =
       if (isProgressTotalLess) {
-
         currentProgress =
           totalRecordsOverall.toInt() - progressSyncJobStatus.total +
             progressSyncJobStatus.completed
         totalRecordsOverall.toInt()
       } else {
-
         registerViewModel.sharedPreferencesHelper.write(
-          SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL,
-          progressSyncJobStatus.total.toLong()
+          SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
+            progressSyncJobStatus.syncOperation.name,
+          progressSyncJobStatus.total.toLong(),
         )
         currentProgress = progressSyncJobStatus.completed
         progressSyncJobStatus.total
