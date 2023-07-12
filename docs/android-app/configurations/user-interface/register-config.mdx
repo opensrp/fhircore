@@ -24,7 +24,7 @@ Below is a JSON config that shows how to execute rules.Refer to working with rul
       "name": "under5",
       "condition": "true",
       "actions": [
-        "data.put('under5', dateService.addOrSubtractYearFromCurrentDate(5,'-'))"
+        "data.put('under5', dateService.addOrSubtractTimeUnitFromCurrentDate(5,'-','YEAR'))"
       ]
     }
   ]
