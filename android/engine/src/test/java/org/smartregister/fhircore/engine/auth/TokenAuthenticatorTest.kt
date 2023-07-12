@@ -226,7 +226,8 @@ class TokenAuthenticatorTest : RobolectricTest() {
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun testFetchTokenShouldSetPasswordAndAuthTokenForExistingAccount() = runTest {
-    val account = Account(sampleUsername, PROVIDER)
+    val testAPKApplicationId = "org.smartregister.fhircore.engine.test"
+    val account = Account(sampleUsername, testAPKApplicationId)
     val password = charArrayOf('P', '4', '5', '5', 'W', '4', '0')
     val token = "goodToken"
     val refreshToken = "refreshToken"

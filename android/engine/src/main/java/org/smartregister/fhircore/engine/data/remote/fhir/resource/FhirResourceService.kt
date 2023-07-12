@@ -25,6 +25,7 @@ import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -35,6 +36,12 @@ import retrofit2.http.Url
 interface FhirResourceService {
 
   @GET suspend fun getResource(@Url url: String): Bundle
+
+  @GET
+  suspend fun getResourceWithGatewayModeHeader(
+    @Header("FHIR-Gateway-Mode") fhirGatewayMode: String? = null,
+    @Url url: String,
+  ): Bundle
 
   @PUT("{resourceType}/{id}")
   suspend fun insertResource(
