@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.4] - 2023-06-24
 ### Added
 - Insights feature to show stats on any _Unsynced_ Resources on the device
+- Generic date service function to add or subtract days, weeks, months or years from/to current date 
 
 ### Fixed
 - Incorrect error shown for failed authentication when the credentials are invalid.
