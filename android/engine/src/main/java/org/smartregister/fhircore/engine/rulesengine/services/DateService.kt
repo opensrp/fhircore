@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.rulesengine.services
 
+import android.icu.util.TimeUnit
 import org.apache.commons.lang3.NotImplementedException
 import org.joda.time.LocalDate
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
@@ -23,18 +24,54 @@ import org.smartregister.fhircore.engine.util.extension.formatDate
 
 object DateService {
   @JvmOverloads
-  fun addOrSubtractYearFromCurrentDate(
-    years: Int,
+  fun addOrSubtractTimeUnitFromCurrentDate(
+    timeUnitCount: Int,
     operation: String,
+    timeUnit: String = TimeUnit.YEAR.type,
     dateFormat: String = SDF_YYYY_MM_DD,
   ): String {
-    return when (operation) {
-      "-" -> LocalDate.now().minusYears(years).toDate().formatDate(dateFormat)
-      "+" -> LocalDate.now().plusYears(years).toDate().formatDate(dateFormat)
-      else ->
+    return when (timeUnit) {
+      TimeUnit.DAY.subtype.uppercase() ->
+        return when (operation) {
+          "-" -> LocalDate.now().minusDays(timeUnitCount).toDate().formatDate(dateFormat)
+          "+" -> LocalDate.now().plusDays(timeUnitCount).toDate().formatDate(dateFormat)
+          else ->
+            throw NotImplementedException(
+              "Operation not supported. Operations supported operation are '+' or '-'",
+            )
+        }
+      TimeUnit.WEEK.subtype.uppercase() ->
+        return when (operation) {
+          "-" -> LocalDate.now().minusWeeks(timeUnitCount).toDate().formatDate(dateFormat)
+          "+" -> LocalDate.now().plusWeeks(timeUnitCount).toDate().formatDate(dateFormat)
+          else ->
+            throw NotImplementedException(
+              "Operation not supported. Operations supported operation are '+' or '-'",
+            )
+        }
+      TimeUnit.MONTH.subtype.uppercase() ->
+        return when (operation) {
+          "-" -> LocalDate.now().minusMonths(timeUnitCount).toDate().formatDate(dateFormat)
+          "+" -> LocalDate.now().plusMonths(timeUnitCount).toDate().formatDate(dateFormat)
+          else ->
+            throw NotImplementedException(
+              "Operation not supported. Operations supported operation are '+' or '-'",
+            )
+        }
+      TimeUnit.YEAR.subtype.uppercase() ->
+        return when (operation) {
+          "-" -> LocalDate.now().minusYears(timeUnitCount).toDate().formatDate(dateFormat)
+          "+" -> LocalDate.now().plusYears(timeUnitCount).toDate().formatDate(dateFormat)
+          else ->
+            throw NotImplementedException(
+              "Operation not supported. Operations supported operation are '+' or '-'",
+            )
+        }
+      else -> {
         throw NotImplementedException(
           "Operation not supported. Operations supported operation are '+' or '-'",
         )
+      }
     }
   }
 }
