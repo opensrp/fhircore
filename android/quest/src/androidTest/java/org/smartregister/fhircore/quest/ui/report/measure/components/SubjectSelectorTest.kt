@@ -41,7 +41,7 @@ class SubjectSelectorTest {
       SubjectSelector(
         subjects = setOf(MeasureReportSubjectViewData(ResourceType.Patient, "1", "Mary Magdalene")),
         onAddSubject = mockListener,
-        onRemoveSubject = {}
+        onRemoveSubject = {},
       )
     }
   }

@@ -64,34 +64,38 @@ fun ActionableButton(
   modifier: Modifier = Modifier,
   buttonProperties: ButtonProperties,
   resourceData: ResourceData,
-  navController: NavController
+  navController: NavController,
 ) {
   if (buttonProperties.visible.toBoolean()) {
     val status = buttonProperties.status
     val configuredContentColor = buttonProperties.contentColor.parseColor()
     val statusColor =
-      if (configuredContentColor == Color.Unspecified)
+      if (configuredContentColor == Color.Unspecified) {
         buttonProperties.statusColor(resourceData.computedValuesMap)
-      else if (status == ServiceStatus.COMPLETED.name) DefaultColor else configuredContentColor
+      } else if (status == ServiceStatus.COMPLETED.name) DefaultColor else configuredContentColor
     val backgroundColor = buttonProperties.backgroundColor.parseColor()
     val isButtonEnabled = buttonProperties.enabled.toBoolean()
     val clickable = buttonProperties.clickable.toBoolean()
     OutlinedButton(
       onClick = {
-        if (buttonProperties.enabled.toBoolean() &&
+        if (
+          buttonProperties.enabled.toBoolean() &&
             (status == ServiceStatus.DUE.name || status == ServiceStatus.OVERDUE.name || clickable)
         ) {
           buttonProperties.actions.handleClickEvent(
             navController = navController,
-            resourceData = resourceData
+            resourceData = resourceData,
           )
         }
       },
       colors =
         ButtonDefaults.buttonColors(
           backgroundColor =
-            if (backgroundColor != Color.Unspecified) backgroundColor
-            else statusColor.copy(alpha = 0.1f),
+            if (backgroundColor != Color.Unspecified) {
+              backgroundColor
+            } else {
+              statusColor.copy(alpha = 0.1f)
+            },
           contentColor = statusColor,
           disabledBackgroundColor = DefaultColor.copy(alpha = 0.1f),
           disabledContentColor = DefaultColor,
@@ -104,20 +108,22 @@ fun ActionableButton(
           .testTag(ACTIONABLE_BUTTON_TEST_TAG),
       enabled = buttonProperties.enabled.toBoolean(),
       border = BorderStroke(width = 0.5.dp, color = statusColor.copy(alpha = 0.1f)),
-      elevation = null
+      elevation = null,
     ) {
       // Each component here uses a new modifier to avoid inheriting the properties of the parent
       val iconTintColor =
-        if (isButtonEnabled)
+        if (isButtonEnabled) {
           when (status) {
             ServiceStatus.COMPLETED.name -> SuccessColor
             else -> statusColor
           }
-        else DefaultColor
+        } else {
+          DefaultColor
+        }
       if (buttonProperties.startIcon != null) {
         Image(
           imageProperties = ImageProperties(imageConfig = buttonProperties.startIcon, size = 16),
-          tint = iconTintColor
+          tint = iconTintColor,
         )
       } else {
         Icon(
@@ -125,26 +131,28 @@ fun ActionableButton(
             if (status == ServiceStatus.COMPLETED.name) Icons.Filled.Check else Icons.Filled.Add,
           contentDescription = null,
           tint = iconTintColor,
-          modifier = Modifier.size(16.dp)
+          modifier = Modifier.size(16.dp),
         )
       }
       Text(
         text = buttonProperties.text ?: "",
         fontWeight = FontWeight.Medium,
         color =
-          if (isButtonEnabled)
+          if (isButtonEnabled) {
             when (status) {
               ServiceStatus.COMPLETED.name -> DefaultColor.copy(0.9f)
               else -> statusColor
             }
-          else DefaultColor.copy(0.9f),
+          } else {
+            DefaultColor.copy(0.9f)
+          },
         textAlign = TextAlign.Start,
         overflow = TextOverflow.Ellipsis,
         maxLines = 1,
         modifier =
           Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
             .conditional(status == ServiceStatus.COMPLETED.name, { weight(1f) }),
-        fontSize = buttonProperties.fontSize.sp
+        fontSize = buttonProperties.fontSize.sp,
       )
       if (status == ServiceStatus.COMPLETED.name) {
         Icon(
@@ -167,10 +175,10 @@ fun ActionableButtonPreview() {
         visible = "true",
         status = ServiceStatus.IN_PROGRESS.name,
         text = "ANC Visit",
-        buttonType = ButtonType.TINY
+        buttonType = ButtonType.TINY,
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-    navController = rememberNavController()
+    navController = rememberNavController(),
   )
 }
 
@@ -187,10 +195,10 @@ fun DisabledActionableButtonPreview() {
           contentColor = "#700f2b",
           enabled = "true",
           buttonType = ButtonType.BIG,
-          startIcon = ImageConfig(reference = "ic_walk", type = ICON_TYPE_LOCAL)
+          startIcon = ImageConfig(reference = "ic_walk", type = ICON_TYPE_LOCAL),
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-      navController = rememberNavController()
+      navController = rememberNavController(),
     )
   }
 }
@@ -206,10 +214,10 @@ fun SmallActionableButtonPreview() {
           status = "DUE",
           text = "Due Task",
           fillMaxWidth = true,
-          buttonType = ButtonType.TINY
+          buttonType = ButtonType.TINY,
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-      navController = rememberNavController()
+      navController = rememberNavController(),
     )
     ActionableButton(
       modifier = Modifier.weight(1.0f),
@@ -218,10 +226,10 @@ fun SmallActionableButtonPreview() {
           status = "COMPLETED",
           text = "Completed Task",
           fillMaxWidth = true,
-          buttonType = ButtonType.TINY
+          buttonType = ButtonType.TINY,
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-      navController = rememberNavController()
+      navController = rememberNavController(),
     )
   }
 }

@@ -41,7 +41,7 @@ class LoaderViewTest {
     composeRule
       .onNodeWithTag(LOADER_DIALOG_PROGRESS_MSG_TAG)
       .assertTextEquals(
-        ApplicationProvider.getApplicationContext<Application>().getString(R.string.syncing_down)
+        ApplicationProvider.getApplicationContext<Application>().getString(R.string.syncing_down),
       )
   }
 
@@ -56,7 +56,7 @@ class LoaderViewTest {
     composeRule
       .onNodeWithTag(LOADER_DIALOG_PROGRESS_MSG_TAG)
       .assertTextEquals(
-        ApplicationProvider.getApplicationContext<Application>().getString(R.string.syncing_up)
+        ApplicationProvider.getApplicationContext<Application>().getString(R.string.syncing_up),
       )
   }
 }

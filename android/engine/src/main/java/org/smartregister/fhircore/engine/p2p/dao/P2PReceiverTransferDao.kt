@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.p2p.dao
 
-import androidx.annotation.NonNull
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import java.util.TreeSet
@@ -37,12 +36,12 @@ constructor(
   fhirEngine: FhirEngine,
   dispatcherProvider: DispatcherProvider,
   configurationRegistry: ConfigurationRegistry,
-  val defaultRepository: DefaultRepository
+  val defaultRepository: DefaultRepository,
 ) : BaseP2PTransferDao(fhirEngine, dispatcherProvider, configurationRegistry), ReceiverTransferDao {
 
   override fun getP2PDataTypes(): TreeSet<DataType> = getDataTypes()
 
-  override fun receiveJson(@NonNull type: DataType, @NonNull jsonArray: JSONArray): Long {
+  override fun receiveJson(type: DataType, jsonArray: JSONArray): Long {
     var maxLastUpdated = 0L
     Timber.i("saving resources from base dai ${type.name} -> ${jsonArray.length()}")
     (0 until jsonArray.length()).forEach {

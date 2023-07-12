@@ -51,8 +51,10 @@ import org.smartregister.p2p.P2PLibrary
 class LoginActivityTest : RobolectricTest() {
 
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+
   @BindValue
   val configurationRegistry: ConfigurationRegistry = spyk(Faker.buildTestConfigurationRegistry())
+
   @BindValue
   val secureSharedPreference =
     spyk(SecureSharedPreference(ApplicationProvider.getApplicationContext()))
@@ -85,7 +87,6 @@ class LoginActivityTest : RobolectricTest() {
 
   @Test
   fun testNavigateToScreenShouldLaunchPinLoginWithSetup() {
-
     val loginActivityController =
       Robolectric.buildActivity(Faker.TestLoginActivityInActivePin::class.java)
     val loginActivity: LoginActivity = loginActivityController.create().resume().get()
@@ -112,7 +113,6 @@ class LoginActivityTest : RobolectricTest() {
 
   @Test
   fun testNavigateToScreenShouldInvokeNavigateToPinLoginWithActivePinAndOffline() {
-
     val resultIntent = shadowOf(loginActivity).nextStartedActivity
     Assert.assertNotNull(resultIntent)
     Assert.assertNotNull(resultIntent.extras)

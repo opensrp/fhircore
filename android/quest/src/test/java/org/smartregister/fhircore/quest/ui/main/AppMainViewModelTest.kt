@@ -82,7 +82,9 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 class AppMainViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @Inject lateinit var gson: Gson
+
   @Inject lateinit var workManager: WorkManager
 
   @BindValue
@@ -118,7 +120,7 @@ class AppMainViewModelTest : RobolectricTest() {
           dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
           workManager = workManager,
           fhirCarePlanGenerator = fhirCarePlanGenerator,
-        )
+        ),
       )
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
   }
@@ -128,7 +130,7 @@ class AppMainViewModelTest : RobolectricTest() {
     val appMainEvent =
       AppMainEvent.SwitchLanguage(
         Language("en", "English"),
-        mockkClass(Activity::class, relaxed = true)
+        mockkClass(Activity::class, relaxed = true),
       )
 
     appMainViewModel.onEvent(appMainEvent)
@@ -176,7 +178,7 @@ class AppMainViewModelTest : RobolectricTest() {
     appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(stateFinished, "Some timestamp"))
     Assert.assertEquals(
       appMainViewModel.formatLastSyncTimestamp(timestamp),
-      sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+      sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null),
     )
     coVerify { appMainViewModel.retrieveAppMainUiState() }
   }
@@ -189,8 +191,8 @@ class AppMainViewModelTest : RobolectricTest() {
         navController = navController,
         profileId = "profileId",
         resourceId = "resourceId",
-        resourceConfig = resourceConfig
-      )
+        resourceConfig = resourceConfig,
+      ),
     )
 
     val intSlot = slot<Int>()
@@ -203,7 +205,7 @@ class AppMainViewModelTest : RobolectricTest() {
     Assert.assertEquals("resourceId", bundleSlot.captured.getString(NavigationArg.RESOURCE_ID))
     Assert.assertEquals(
       resourceConfig,
-      bundleSlot.captured.getParcelable(NavigationArg.RESOURCE_CONFIG)
+      bundleSlot.captured.getParcelable(NavigationArg.RESOURCE_CONFIG),
     )
   }
 
@@ -214,13 +216,13 @@ class AppMainViewModelTest : RobolectricTest() {
         listOf(
           ActionConfig(
             trigger = ActionTrigger.ON_CLICK,
-            workflow = ApplicationWorkflow.LAUNCH_SETTINGS
-          )
-        )
+            workflow = ApplicationWorkflow.LAUNCH_SETTINGS,
+          ),
+        ),
       )
     val navMenu = spyk(NavigationMenuConfig(id = "menuId", display = "Menu Item", actions = action))
     appMainViewModel.onEvent(
-      AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navMenu)
+      AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navMenu),
     )
     // We have triggered workflow for launching report
     val intSlot = slot<Int>()
@@ -236,8 +238,8 @@ class AppMainViewModelTest : RobolectricTest() {
     appMainViewModel.onEvent(
       AppMainEvent.OpenRegistersBottomSheet(
         navController = navController,
-        registersList = emptyList()
-      )
+        registersList = emptyList(),
+      ),
     )
 
     // Assert fragment that was launched is RegisterBottomSheetFragment
@@ -257,7 +259,7 @@ class AppMainViewModelTest : RobolectricTest() {
     val questionnaireSubmission =
       QuestionnaireSubmission(
         questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
-        questionnaireResponse = QuestionnaireResponse()
+        questionnaireResponse = QuestionnaireResponse(),
       )
     appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
@@ -269,57 +271,57 @@ class AppMainViewModelTest : RobolectricTest() {
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testOnSubmitQuestionnaireShouldSetTaskStatusToInProgressWhenQuestionnaireIsInProgress() =
-      runTest {
-    coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
+    runTest {
+      coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
 
-    val questionnaireSubmission =
-      QuestionnaireSubmission(
-        questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
-        questionnaireResponse =
-          QuestionnaireResponse().apply {
-            status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
-          }
-      )
-    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+      val questionnaireSubmission =
+        QuestionnaireSubmission(
+          questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
+          questionnaireResponse =
+            QuestionnaireResponse().apply {
+              status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
+            },
+        )
+      appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
-    coVerify {
-      fhirCarePlanGenerator.updateTaskDetailsByResourceId("12345", Task.TaskStatus.INPROGRESS)
+      coVerify {
+        fhirCarePlanGenerator.updateTaskDetailsByResourceId("12345", Task.TaskStatus.INPROGRESS)
+      }
     }
-  }
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testOnSubmitQuestionnaireShouldSetTaskStatusToCompletedWhenQuestionnaireIsCompleted() =
-      runTest {
-    coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
-    val questionnaireSubmission =
-      QuestionnaireSubmission(
-        questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
-        questionnaireResponse =
-          QuestionnaireResponse().apply {
-            status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
-          }
-      )
-    appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
+    runTest {
+      coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
+      val questionnaireSubmission =
+        QuestionnaireSubmission(
+          questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
+          questionnaireResponse =
+            QuestionnaireResponse().apply {
+              status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
+            },
+        )
+      appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 
-    coVerify {
-      fhirCarePlanGenerator.updateTaskDetailsByResourceId("12345", Task.TaskStatus.COMPLETED)
+      coVerify {
+        fhirCarePlanGenerator.updateTaskDetailsByResourceId("12345", Task.TaskStatus.COMPLETED)
+      }
     }
-  }
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testOnSubmitQuestionnaireShouldNeverUpdateTaskStatusWhenQuestionnaireTaskIdIsNull() =
-      runTest {
-    coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
+    runTest {
+      coEvery { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) } just runs
 
-    appMainViewModel.onQuestionnaireSubmission(
-      QuestionnaireSubmission(
-        questionnaireResponse = QuestionnaireResponse(),
-        questionnaireConfig = QuestionnaireConfig(taskId = null, id = "qId")
+      appMainViewModel.onQuestionnaireSubmission(
+        QuestionnaireSubmission(
+          questionnaireResponse = QuestionnaireResponse(),
+          questionnaireConfig = QuestionnaireConfig(taskId = null, id = "qId"),
+        ),
       )
-    )
 
-    coVerify(inverse = true) { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) }
-  }
+      coVerify(inverse = true) { fhirCarePlanGenerator.updateTaskDetailsByResourceId(any(), any()) }
+    }
 }

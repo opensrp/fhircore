@@ -22,5 +22,5 @@ enum class ServiceStatus {
   UPCOMING,
   COMPLETED,
   IN_PROGRESS,
-  EXPIRED
+  EXPIRED,
 }

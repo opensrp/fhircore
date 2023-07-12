@@ -69,8 +69,8 @@ android {
         "META-INF/LGPL-3.0.txt",
         "META-INF/sun-jaxb.episode",
         "META-INF/*.kotlin_module",
-        "META-INF/INDEX.LIST"
-      )
+        "META-INF/INDEX.LIST",
+      ),
     )
   }
 

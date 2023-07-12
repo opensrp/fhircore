@@ -38,6 +38,7 @@ import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
 
 class AppDrawerTest {
   private val mockAppMainEventListener: (AppMainEvent) -> Unit = spyk({})
+
   @get:Rule val composeTestRule = createComposeRule()
 
   private val navigationConfiguration =
@@ -48,17 +49,17 @@ class AppDrawerTest {
       clientRegisters =
         listOf(
           NavigationMenuConfig(id = "id3", visible = true, display = "Register 1"),
-          NavigationMenuConfig(id = "id4", visible = false, display = "Register 2")
+          NavigationMenuConfig(id = "id4", visible = false, display = "Register 2"),
         ),
       bottomSheetRegisters =
         NavigationBottomSheetRegisterConfig(
           visible = true,
           display = "My Register",
           registers =
-            listOf(NavigationMenuConfig(id = "id2", visible = true, display = "Title My Register"))
+            listOf(NavigationMenuConfig(id = "id2", visible = true, display = "Title My Register")),
         ),
       menuActionButton =
-        NavigationMenuConfig(id = "id1", visible = true, display = "Register Household")
+        NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
     )
 
   @Test
@@ -89,7 +90,7 @@ class AppDrawerTest {
       .assertIsDisplayed()
     composeTestRule
       .onNodeWithText(
-        navigationConfiguration.menuActionButton?.display?.uppercase() ?: "Register new client"
+        navigationConfiguration.menuActionButton?.display?.uppercase() ?: "Register new client",
       )
       .assertExists()
       .assertIsDisplayed()
@@ -169,6 +170,7 @@ class AppDrawerTest {
     sideMenuItem[0].performClick()
     verify { mockAppMainEventListener(any()) }
   }
+
   private fun setContent(name: String) {
     composeTestRule.setContent {
       AppDrawer(
@@ -182,13 +184,13 @@ class AppDrawerTest {
             navigationConfiguration =
               navigationConfiguration.copy(
                 bottomSheetRegisters =
-                  navigationConfiguration.bottomSheetRegisters?.copy(display = name)
-              )
+                  navigationConfiguration.bottomSheetRegisters?.copy(display = name),
+              ),
           ),
         navController = rememberNavController(),
         openDrawer = {},
         onSideMenuClick = mockAppMainEventListener,
-        appVersionPair = Pair(1, "0.0.1")
+        appVersionPair = Pair(1, "0.0.1"),
       )
     }
   }

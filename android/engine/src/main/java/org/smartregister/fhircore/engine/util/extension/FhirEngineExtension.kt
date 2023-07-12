@@ -63,23 +63,27 @@ suspend fun FhirEngine.loadLibraryAtPath(fhirOperator: FhirOperator, path: Strin
 
 suspend fun FhirEngine.loadLibraryAtPath(
   fhirOperator: FhirOperator,
-  relatedArtifact: RelatedArtifact
+  relatedArtifact: RelatedArtifact,
 ) {
-  if (relatedArtifact.type.isIn(
+  if (
+    relatedArtifact.type.isIn(
       RelatedArtifact.RelatedArtifactType.COMPOSEDOF,
-      RelatedArtifact.RelatedArtifactType.DEPENDSON
+      RelatedArtifact.RelatedArtifactType.DEPENDSON,
     )
-  )
+  ) {
     loadLibraryAtPath(fhirOperator, relatedArtifact.resource)
+  }
 }
 
 suspend fun FhirEngine.loadCqlLibraryBundle(fhirOperator: FhirOperator, measurePath: String) =
   try {
     // resource path could be Measure/123 OR something like http://fhir.labs.common/Measure/123
     val measure: Measure? =
-      if (UrlUtil.isValid(measurePath))
+      if (UrlUtil.isValid(measurePath)) {
         search<Measure> { filter(Measure.URL, { value = measurePath }) }.firstOrNull()
-      else get(measurePath)
+      } else {
+        get(measurePath)
+      }
 
     measure?.apply {
       relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }
@@ -94,7 +98,7 @@ suspend fun FhirEngine.addDateTimeIndex() {
     val addDateTimeIndexEntityIndexFromIndexQuery =
       SearchQuery(
         "CREATE INDEX IF NOT EXISTS `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
-        emptyList()
+        emptyList(),
       )
     search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)
   } catch (ex: SQLException) {

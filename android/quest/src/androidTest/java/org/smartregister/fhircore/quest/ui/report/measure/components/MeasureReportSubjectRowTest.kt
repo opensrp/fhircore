@@ -40,7 +40,7 @@ class MeasureReportSubjectRowTest {
       type = ResourceType.Patient,
       logicalId = "10101",
       display = "John Test, M, 45",
-      family = "Test Family"
+      family = "Test Family",
     )
 
   @Before
@@ -48,7 +48,7 @@ class MeasureReportSubjectRowTest {
     composeTestRule.setContent {
       MeasureReportSubjectRow(
         measureReportSubjectViewData = measureReportSubjectViewData,
-        onRowClick = mockListener
+        onRowClick = mockListener,
       )
     }
   }

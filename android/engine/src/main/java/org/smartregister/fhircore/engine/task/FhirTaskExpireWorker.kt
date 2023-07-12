@@ -35,7 +35,7 @@ constructor(
   @Assisted workerParams: WorkerParameters,
   val defaultRepository: DefaultRepository,
   val fhirTaskUtil: FhirTaskUtil,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
 ) : CoroutineWorker(context, workerParams) {
 
   override suspend fun doWork(): Result {

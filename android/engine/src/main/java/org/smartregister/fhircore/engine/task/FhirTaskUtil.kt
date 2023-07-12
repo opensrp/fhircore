@@ -69,7 +69,7 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
             {
               prefix = ParamPrefixEnum.ENDS_BEFORE
               value = of(DateTimeType(Date()))
-            }
+            },
           )
         }
         .filter { it.isPastExpiry() }
@@ -78,8 +78,7 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
           task.status = TaskStatus.CANCELLED
           task.statusReason = expiredConcept()
 
-          task
-            .basedOn
+          task.basedOn
             .find { it.reference.startsWith(ResourceType.CarePlan.name) }
             ?.extractId()
             ?.takeIf { it.isNotBlank() }
@@ -136,7 +135,7 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
           {
             prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
             value = of(DateTimeType(Date()))
-          }
+          },
         )
       }
 
@@ -161,8 +160,10 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
    * return false.
    */
   private suspend fun Task.preRequisiteConditionSatisfied() =
-    this.partOf.find { it.reference.startsWith(ResourceType.Task.name + "/") }?.let {
-      defaultRepository.fhirEngine.get<Task>(it.extractId()).status.isIn(TaskStatus.COMPLETED)
-    }
+    this.partOf
+      .find { it.reference.startsWith(ResourceType.Task.name + "/") }
+      ?.let {
+        defaultRepository.fhirEngine.get<Task>(it.extractId()).status.isIn(TaskStatus.COMPLETED)
+      }
       ?: false
 }

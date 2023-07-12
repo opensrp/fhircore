@@ -78,7 +78,7 @@ class ConfigExtensionsTest : RobolectricTest() {
         id = "profileId",
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_PROFILE,
-        resourceConfig = resourceConfig
+        resourceConfig = resourceConfig,
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
@@ -90,7 +90,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     Assert.assertEquals(patient.logicalId, slotBundle.captured.getString(NavigationArg.RESOURCE_ID))
     Assert.assertEquals(
       resourceConfig,
-      slotBundle.captured.getParcelable(NavigationArg.RESOURCE_CONFIG)
+      slotBundle.captured.getParcelable(NavigationArg.RESOURCE_CONFIG),
     )
   }
 
@@ -102,7 +102,7 @@ class ConfigExtensionsTest : RobolectricTest() {
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_REGISTER,
         display = "menu",
-        toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK
+        toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
       )
     every { navController.currentDestination } returns NavDestination(navigatorName = "navigating")
     every { navController.previousBackStackEntry } returns null
@@ -124,7 +124,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     Assert.assertEquals("menu", slotBundle.captured.getString(NavigationArg.SCREEN_TITLE))
     Assert.assertEquals(
       ToolBarHomeNavigation.NAVIGATE_BACK,
-      slotBundle.captured.getSerializable(NavigationArg.TOOL_BAR_HOME_NAVIGATION)
+      slotBundle.captured.getSerializable(NavigationArg.TOOL_BAR_HOME_NAVIGATION),
     )
     Assert.assertFalse(navOptions.captured.isPopUpToInclusive())
     Assert.assertTrue(navOptions.captured.shouldLaunchSingleTop())
@@ -146,7 +146,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "reportId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_REPORT
+        workflow = ApplicationWorkflow.LAUNCH_REPORT,
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
@@ -163,7 +163,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "geoWidgetId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_MAP
+        workflow = ApplicationWorkflow.LAUNCH_MAP,
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
@@ -174,6 +174,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     Assert.assertEquals(1, slotBundle.captured.size())
     Assert.assertEquals("geoWidgetId", slotBundle.captured.getString(NavigationArg.CONFIG_ID))
   }
+
   @Test
   fun testNavigateBackToHomeWhenCurrentAndPreviousDestinationIdsAreNull() {
     val clickAction =
@@ -182,7 +183,7 @@ class ConfigExtensionsTest : RobolectricTest() {
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_REGISTER,
         display = null,
-        toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK
+        toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
       )
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
@@ -206,7 +207,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     val clickAction =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC
+        workflow = ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC,
       )
     listOf(clickAction).handleClickEvent(navController, resourceData)
     verify { context.startActivity(any()) }
@@ -218,14 +219,14 @@ class ConfigExtensionsTest : RobolectricTest() {
       mockk<Context>(
         moreInterfaces = arrayOf(QuestionnaireHandler::class),
         relaxUnitFun = true,
-        relaxed = true
+        relaxed = true,
       )
     val navController = NavController(context)
     val clickAction =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
-        questionnaire = QuestionnaireConfig(id = "qid", title = "Form")
+        questionnaire = QuestionnaireConfig(id = "qid", title = "Form"),
       )
     listOf(clickAction).handleClickEvent(navController, resourceData)
     verify {
@@ -235,7 +236,7 @@ class ConfigExtensionsTest : RobolectricTest() {
         questionnaireConfig = any(),
         actionParams = emptyList(),
         baseResourceId = patient.logicalId,
-        baseResourceType = patient.resourceType.name
+        baseResourceType = patient.resourceType.name,
       )
     }
   }
@@ -250,24 +251,24 @@ class ConfigExtensionsTest : RobolectricTest() {
             ActionParameter(
               key = "param1",
               value = "@{practitionerId-1}",
-              paramType = ActionParameterType.PARAMDATA
+              paramType = ActionParameterType.PARAMDATA,
             ),
             ActionParameter(
               key = "param2",
               value = "@{practitionerId-2}",
-              paramType = ActionParameterType.PARAMDATA
+              paramType = ActionParameterType.PARAMDATA,
             ),
             ActionParameter(
               key = "param3",
               value = "@{practitionerId-3}",
-              paramType = ActionParameterType.PARAMDATA
+              paramType = ActionParameterType.PARAMDATA,
             ),
             ActionParameter(
               key = "param4",
               value = "@{practitionerId-4}",
-              paramType = ActionParameterType.PARAMDATA
-            )
-          )
+              paramType = ActionParameterType.PARAMDATA,
+            ),
+          ),
       )
     val resourceData =
       ResourceData(
@@ -278,8 +279,8 @@ class ConfigExtensionsTest : RobolectricTest() {
             "practitionerId-1" to "1234",
             "practitionerId-2" to "1235",
             "practitionerId-3" to "1236",
-            "practitionerId-4" to "1237"
-          )
+            "practitionerId-4" to "1237",
+          ),
       )
     val resultOfInterpolatedValues = interpolateActionParamsValue(actionConfig, resourceData)
     assertEquals(4, resultOfInterpolatedValues.size)
@@ -298,30 +299,31 @@ class ConfigExtensionsTest : RobolectricTest() {
             ActionParameter(
               key = "param1",
               value = "@{practitionerId-1}",
-              paramType = ActionParameterType.PARAMDATA
+              paramType = ActionParameterType.PARAMDATA,
             ),
             ActionParameter(
               key = "param2",
               value = "@{practitionerId-2}",
-              paramType = ActionParameterType.PARAMDATA
+              paramType = ActionParameterType.PARAMDATA,
             ),
             ActionParameter(
               key = "param3",
               value = "@{practitionerId-3}",
-              paramType = ActionParameterType.PARAMDATA
+              paramType = ActionParameterType.PARAMDATA,
             ),
             ActionParameter(
               key = "param4",
               value = "@{practitionerId-4}",
-              paramType = ActionParameterType.PARAMDATA
-            )
-          )
+              paramType = ActionParameterType.PARAMDATA,
+            ),
+          ),
       )
     val resourceData =
       ResourceData(baseResourceId = "test", ResourceType.Task, computedValuesMap = emptyMap())
     val resultOfInterpolatedValues = interpolateActionParamsValue(actionConfig, resourceData)
     assertEquals("@{practitionerId-4}", resultOfInterpolatedValues[3].value)
   }
+
   fun testConvertActionParameterArrayToMapShouldReturnEmptyMapIfNoParamData() {
     val array = arrayOf(ActionParameter(key = "k", value = "v"))
     Assert.assertEquals(emptyMap<String, String>(), array.toParamDataMap())

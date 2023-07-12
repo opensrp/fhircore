@@ -35,7 +35,7 @@ import org.smartregister.p2p.utils.startP2PScreen
 fun List<ActionConfig>.handleClickEvent(
   navController: NavController,
   resourceData: ResourceData? = null,
-  navMenu: NavigationMenuConfig? = null
+  navMenu: NavigationMenuConfig? = null,
 ) {
   val onClickAction =
     this.find { it.trigger.isIn(ActionTrigger.ON_CLICK, ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION) }
@@ -53,7 +53,7 @@ fun List<ActionConfig>.handleClickEvent(
               questionnaireConfig = questionnaireConfigInterpolated,
               actionParams = interpolateActionParamsValue(actionConfig, resourceData).toList(),
               baseResourceId = resourceData?.baseResourceId,
-              baseResourceType = resourceData?.baseResourceType?.name
+              baseResourceType = resourceData?.baseResourceType?.name,
             )
           }
         }
@@ -65,7 +65,7 @@ fun List<ActionConfig>.handleClickEvent(
               NavigationArg.PROFILE_ID to id,
               NavigationArg.RESOURCE_ID to resourceData?.baseResourceId,
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
-              NavigationArg.PARAMS to interpolateActionParamsValue(actionConfig, resourceData)
+              NavigationArg.PARAMS to interpolateActionParamsValue(actionConfig, resourceData),
             )
           navController.navigate(MainNavigationScreen.Profile.route, args)
         }
@@ -76,7 +76,7 @@ fun List<ActionConfig>.handleClickEvent(
             Pair(NavigationArg.REGISTER_ID, actionConfig.id ?: navMenu?.id),
             Pair(NavigationArg.SCREEN_TITLE, actionConfig.display ?: navMenu?.display ?: ""),
             Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
-            Pair(NavigationArg.PARAMS, interpolateActionParamsValue(actionConfig, resourceData))
+            Pair(NavigationArg.PARAMS, interpolateActionParamsValue(actionConfig, resourceData)),
           )
 
         // If value != null, we are navigating FROM a register; disallow same register navigation
@@ -86,15 +86,16 @@ fun List<ActionConfig>.handleClickEvent(
           args.getString(NavigationArg.REGISTER_ID) ==
             navController.previousBackStackEntry?.arguments?.getString(NavigationArg.REGISTER_ID)
 
-        if (!currentRegisterId.isNullOrEmpty() && sameRegisterNavigation) return
-        else {
+        if (!currentRegisterId.isNullOrEmpty() && sameRegisterNavigation) {
+          return
+        } else {
           navController.navigate(
             resId = MainNavigationScreen.Home.route,
             args = args,
             navOptions =
               navController.currentDestination?.id?.let {
                 navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
-              }
+              },
           )
         }
       }
@@ -108,7 +109,7 @@ fun List<ActionConfig>.handleClickEvent(
       ApplicationWorkflow.LAUNCH_MAP ->
         navController.navigate(
           MainNavigationScreen.GeoWidget.route,
-          bundleOf(NavigationArg.CONFIG_ID to actionConfig.id)
+          bundleOf(NavigationArg.CONFIG_ID to actionConfig.id),
         )
       else -> return
     }
@@ -116,8 +117,7 @@ fun List<ActionConfig>.handleClickEvent(
 }
 
 fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =
-  actionConfig
-    .params
+  actionConfig.params
     .map { it.interpolate(resourceData?.computedValuesMap ?: emptyMap()) }
     .toTypedArray()
 
@@ -132,7 +132,7 @@ fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = tr
  * to a map of [ActionParameter.key] against [ActionParameter](value).
  */
 fun Array<ActionParameter>?.toParamDataMap(): Map<String, String> =
-  this?.asSequence()?.filter { it.paramType == ActionParameterType.PARAMDATA }?.associate {
-    it.key to it.value
-  }
+  this?.asSequence()
+    ?.filter { it.paramType == ActionParameterType.PARAMDATA }
+    ?.associate { it.key to it.value }
     ?: emptyMap()

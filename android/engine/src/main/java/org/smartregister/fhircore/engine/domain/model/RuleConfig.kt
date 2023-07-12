@@ -27,5 +27,5 @@ data class RuleConfig(
   val description: String = "",
   val priority: Int = 1,
   val condition: String = "true", // Default to always execute the action
-  val actions: List<String>
+  val actions: List<String>,
 ) : java.io.Serializable, Parcelable

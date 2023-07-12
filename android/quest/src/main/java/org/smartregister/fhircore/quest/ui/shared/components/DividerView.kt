@@ -28,14 +28,11 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
 const val HORIZONTAL_DIVIDER_TEST_TAG = "horizontalDividerTestTag"
 
 @Composable
-fun DividerView(
-  modifier: Modifier = Modifier,
-  dividerProperties: DividerProperties,
-) {
+fun DividerView(modifier: Modifier = Modifier, dividerProperties: DividerProperties) {
   Divider(
     color = DividerColor,
     thickness = dividerProperties.thickness.dp,
-    modifier = modifier.testTag(HORIZONTAL_DIVIDER_TEST_TAG)
+    modifier = modifier.testTag(HORIZONTAL_DIVIDER_TEST_TAG),
   )
 }
 

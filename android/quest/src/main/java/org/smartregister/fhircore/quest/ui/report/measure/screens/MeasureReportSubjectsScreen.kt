@@ -54,7 +54,7 @@ fun MeasureReportSubjectsScreen(
   reportId: String,
   navController: NavController,
   measureReportViewModel: MeasureReportViewModel,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   LaunchedEffect(Unit) { measureReportViewModel.retrieveSubjects(reportId) }
 
@@ -67,21 +67,21 @@ fun MeasureReportSubjectsScreen(
         SearchBar(
           onTextChanged = { text ->
             measureReportViewModel.onEvent(
-              MeasureReportEvent.OnSearchTextChanged(reportId = reportId, searchText = text)
+              MeasureReportEvent.OnSearchTextChanged(reportId = reportId, searchText = text),
             )
           },
           onBackPress = { navController.popBackStack() },
-          searchTextState = measureReportViewModel.searchTextState
+          searchTextState = measureReportViewModel.searchTextState,
         )
         Text(
           color = SubtitleTextColor,
           text = stringResource(id = R.string.select_subject),
           fontSize = 14.sp,
-          modifier = modifier.wrapContentWidth().padding(16.dp)
+          modifier = modifier.wrapContentWidth().padding(16.dp),
         )
         Divider(color = DividerColor)
       }
-    }
+    },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       LazyColumn {
@@ -91,7 +91,7 @@ fun MeasureReportSubjectsScreen(
             onRowClick = { subjectViewData ->
               measureReportViewModel.onEvent(MeasureReportEvent.OnSubjectSelected(subjectViewData))
               navController.popBackStack()
-            }
+            },
           )
           Divider(color = DividerColor, thickness = 1.dp)
         }
@@ -106,7 +106,7 @@ fun MeasureReportSubjectsScreen(
               item {
                 ErrorMessage(
                   message = loadStateError.error.also { Timber.e(it) }.localizedMessage!!,
-                  onClickRetry = { retry() }
+                  onClickRetry = { retry() },
                 )
               }
             }

@@ -42,7 +42,7 @@ fun RegisterHeader(modifier: Modifier = Modifier, resultCount: Int) {
         .testTag(SEARCH_HEADER_TEXT_TAG)
         .background(SearchHeaderColor)
         .padding(horizontal = 16.dp, vertical = 16.dp)
-        .fillMaxWidth()
+        .fillMaxWidth(),
   )
 }
 

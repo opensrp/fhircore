@@ -25,7 +25,7 @@ class StringExtensionTest {
   fun practitionerEndpointUrlShouldMatch() {
     Assert.assertEquals(
       "practitioner-details?keycloak-uuid=my-keycloak-id",
-      "my-keycloak-id".practitionerEndpointUrl()
+      "my-keycloak-id".practitionerEndpointUrl(),
     )
   }
 
@@ -46,7 +46,7 @@ class StringExtensionTest {
 
     Assert.assertEquals(
       "{ \"saveFamilyButtonText\" : Save Family }",
-      templateString.interpolate(lookupMap)
+      templateString.interpolate(lookupMap),
     )
   }
 
@@ -57,7 +57,7 @@ class StringExtensionTest {
     val lookupMap =
       mapOf<String, Any>(
         "family.button.save" to "@{family.button.save}",
-        "family.button.delete" to "delete"
+        "family.button.delete" to "delete",
       )
 
     Assert.assertEquals(templateString, templateString.interpolate(lookupMap))

@@ -26,8 +26,15 @@ data class MeasureReportConfiguration(
   override var configType: String = ConfigType.MeasureReport.name,
   val id: String,
   val registerId: String,
-  val registerDate: String? = null,
+  val startPeriod: String? = DEFAULT_START_PERIOD,
   val showFixedRangeSelection: Boolean? = null,
   val showSubjectSelection: Boolean? = null,
-  val reports: List<MeasureReportConfig> = emptyList()
+  val scheduledGenerationDuration: String? = null,
+  val reports: List<ReportConfiguration> = emptyList(),
 ) : Configuration()
+
+/**
+ * The list of months will show as far back as this date. This cannot be null. Consider setting
+ * through configuration if this must be varied.
+ */
+const val DEFAULT_START_PERIOD = "2023-01-01"

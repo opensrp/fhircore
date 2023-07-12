@@ -26,17 +26,16 @@ class LocalizationHelper(val configurationRegistry: ConfigurationRegistry) {
   /**
    * @param bundleName base name of the bundle e.g. strings
    * @param locale the specific Locale, e.g. Locale.FRENCH. The language tag returned for French
-   * locale is fr
+   *   locale is fr
    * @param template the input string with placeholder variables to be replaced with translated
-   * values
-   *
+   *   values
    * @return String of the interpolated template string
    */
   fun parseTemplate(bundleName: String, locale: Locale, template: String): String {
     return try {
       val bundle =
         configurationRegistry.retrieveResourceBundleConfiguration(
-          getLocaleSpecificFileName(bundleName, locale)
+          getLocaleSpecificFileName(bundleName, locale),
         )
           ?: ResourceBundle.getBundle(bundleName, locale)
       val lookup = mutableMapOf<String, Any>()
@@ -50,7 +49,6 @@ class LocalizationHelper(val configurationRegistry: ConfigurationRegistry) {
   /**
    * @param baseBundle base name of the bundle e.g. strings
    * @param locale the specific locale. The tag returned for French locale is fr
-   *
    * @return The locale specific filename, in this case will be: strings_fr
    */
   private fun getLocaleSpecificFileName(baseBundle: String, locale: Locale) =

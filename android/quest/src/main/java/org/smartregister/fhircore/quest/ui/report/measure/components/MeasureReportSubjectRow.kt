@@ -47,7 +47,7 @@ const val SUBJECT_ROW_TEST_TAG = "subjectRowTestTag"
 fun MeasureReportSubjectRow(
   measureReportSubjectViewData: MeasureReportSubjectViewData,
   onRowClick: (MeasureReportSubjectViewData) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -57,18 +57,18 @@ fun MeasureReportSubjectRow(
         .fillMaxWidth()
         .height(IntrinsicSize.Min)
         .clickable { onRowClick(measureReportSubjectViewData) }
-        .testTag(SUBJECT_ROW_TEST_TAG)
+        .testTag(SUBJECT_ROW_TEST_TAG),
   ) {
     Column(
       modifier =
-        modifier.wrapContentWidth(Alignment.Start).padding(horizontal = 16.dp, vertical = 16.dp)
+        modifier.wrapContentWidth(Alignment.Start).padding(horizontal = 16.dp, vertical = 16.dp),
     ) {
       Text(
         text = measureReportSubjectViewData.display,
         fontSize = 18.sp,
         modifier = modifier.wrapContentWidth().testTag(SUBJECT_DETAILS_TEST_TAG),
         maxLines = 1,
-        overflow = TextOverflow.Ellipsis
+        overflow = TextOverflow.Ellipsis,
       )
       Spacer(modifier = modifier.height(8.dp))
       if (measureReportSubjectViewData.family != null) {
@@ -78,7 +78,7 @@ fun MeasureReportSubjectRow(
           fontSize = 14.sp,
           modifier = modifier.wrapContentWidth().testTag(FAMILY_NAME_TEST_TAG),
           maxLines = 1,
-          overflow = TextOverflow.Ellipsis
+          overflow = TextOverflow.Ellipsis,
         )
       }
     }
@@ -94,8 +94,8 @@ private fun MeasureReportSubjectRowPreview() {
         type = ResourceType.Patient,
         logicalId = "1291029",
         display = "John Jared, M, 56",
-        family = "Oduor"
+        family = "Oduor",
       ),
-    onRowClick = {}
+    onRowClick = {},
   )
 }

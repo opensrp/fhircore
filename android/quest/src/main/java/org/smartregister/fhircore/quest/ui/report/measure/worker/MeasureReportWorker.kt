@@ -75,29 +75,33 @@ constructor(
     val campaignDate = inputData.getString(APP_CONFIG)
     try {
       val monthList = campaignDate?.let { getMonthRangeList(it) }
-      Timber.w("started  / . . . MeasureReportWorker . . ./")
+      Timber.w("started MeasureReportWorker")
 
-      fhirEngine.search<Measure> {}.forEach {
-        monthList?.forEachIndexed { index, date ->
-          val startDateFormatted = date.firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)
-          val endDateFormatted = date.lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
-          if (retrievePreviouslyGeneratedMeasureReports(
-                fhirEngine = fhirEngine,
-                startDateFormatted = startDateFormatted,
-                endDateFormatted = endDateFormatted,
-                measureUrl = it.url,
-                subjects = emptyList(),
-              )
-              .isEmpty()
-          ) {
-            evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted)
-          } else {
-            if (index == 0 && lastDayOfMonth(endDateFormatted.parseDate(SDF_YYYY_MM_DD)))
+      fhirEngine
+        .search<Measure> {}
+        .forEach {
+          monthList?.forEachIndexed { index, date ->
+            val startDateFormatted = date.firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)
+            val endDateFormatted = date.lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
+            if (
+              retrievePreviouslyGeneratedMeasureReports(
+                  fhirEngine = fhirEngine,
+                  startDateFormatted = startDateFormatted,
+                  endDateFormatted = endDateFormatted,
+                  measureUrl = it.url,
+                  subjects = emptyList(),
+                )
+                .isEmpty()
+            ) {
               evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted)
+            } else {
+              if (index == 0 && lastDayOfMonth(endDateFormatted.parseDate(SDF_YYYY_MM_DD))) {
+                evaluatePopulationMeasure(it.url, startDateFormatted, endDateFormatted)
+              }
+            }
           }
         }
-      }
-      Timber.w("Result.success  / . . . MeasureReportWorker . . ./")
+      Timber.w("successfully completed MeasureReportMonthPeriodWorker")
     } catch (e: Exception) {
       Timber.w(e.localizedMessage)
       Result.failure()
@@ -112,9 +116,9 @@ constructor(
   private suspend fun evaluatePopulationMeasure(
     measureUrl: String,
     startDateFormatted: String,
-    endDateFormatted: String
+    endDateFormatted: String,
   ) {
-    Timber.w("evaluatePopulationMeasure  / . . . MeasureReportWorker . . ./")
+    Timber.w("evaluatePopulationMeasure in MeasureReportWorker")
 
     withContext(dispatcherProvider.io()) {
       fhirEngine.loadCqlLibraryBundle(fhirOperator, measureUrl)
@@ -128,9 +132,9 @@ constructor(
             end = endDateFormatted,
             reportType = MeasureReportViewModel.POPULATION,
             subject = null,
-            practitioner = null
+            practitioner = null,
             /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
-            practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
+            practitionerId?.asReference(ResourceType.Practitioner)?.reference*/
           )
         } catch (exception: IllegalArgumentException) {
           Timber.e(exception)
@@ -138,7 +142,9 @@ constructor(
         }
       }
     if (measureReport != null) {
-      Timber.w("measureReport  / . . . MeasureReportWorker . . ./${measureReport.period.end}")
+      Timber.w(
+        "saving measureReport in MeasureReportWorker with period.end ${measureReport.period.end}",
+      )
 
       val result =
         retrievePreviouslyGeneratedMeasureReports(
@@ -146,7 +152,7 @@ constructor(
           startDateFormatted,
           endDateFormatted,
           measureUrl,
-          emptyList()
+          emptyList(),
         )
       if (result.isNotEmpty()) defaultRepository.delete(result.last())
       defaultRepository.addOrUpdate(resource = measureReport)
@@ -164,6 +170,7 @@ constructor(
     }
     return yearMonths.toList()
   }
+
   companion object {
     private const val WORK_ID = "fhirMeasureReportWorker"
     private const val APP_CONFIG = "appConfig"

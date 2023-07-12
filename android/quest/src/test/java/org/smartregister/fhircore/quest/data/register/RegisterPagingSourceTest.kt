@@ -39,6 +39,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 class RegisterPagingSourceTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
   private val registerRepository = mockk<RegisterRepository>()
   private lateinit var registerPagingSource: RegisterPagingSource
@@ -61,7 +62,7 @@ class RegisterPagingSourceTest : RobolectricTest() {
     runBlocking {
       registerPagingSource.run {
         setPatientPagingSourceState(
-          RegisterPagingSourceState(registerId = registerId, currentPage = 0, loadAll = false)
+          RegisterPagingSourceState(registerId = registerId, currentPage = 0, loadAll = false),
         )
         val result = load(loadParams)
         Assert.assertNotNull(result)

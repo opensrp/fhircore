@@ -68,7 +68,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val dispatcherProvider: DispatcherProvider,
   val configService: ConfigService,
-  val json: Json
+  val json: Json,
 ) {
 
   val configsJsonMap = mutableMapOf<String, String>()
@@ -86,18 +86,19 @@ constructor(
   inline fun <reified T : Configuration> retrieveConfiguration(
     configType: ConfigType,
     configId: String? = null,
-    paramsMap: Map<String, String>? = emptyMap()
+    paramsMap: Map<String, String>? = emptyMap(),
   ): T {
     require(!configType.parseAsResource) { "Configuration MUST be a template" }
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
-    if (configCacheMap.contains(configKey) && paramsMap?.isEmpty() == true)
+    if (configCacheMap.contains(configKey) && paramsMap?.isEmpty() == true) {
       return configCacheMap[configKey] as T
+    }
     val decodedConfig =
       localizationHelper
         .parseTemplate(
           bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
           locale = Locale.getDefault(),
-          template = getConfigValueWithParam(paramsMap, configKey)
+          template = getConfigValueWithParam(paramsMap, configKey),
         )
         .decodeJson<T>(jsonInstance = json)
     configCacheMap[configKey] = decodedConfig
@@ -119,7 +120,7 @@ constructor(
           .parseTemplate(
             bundleName = LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
             locale = Locale.getDefault(),
-            template = it
+            template = it,
           )
           .decodeJson<T>()
       }
@@ -155,7 +156,7 @@ constructor(
     }
     if (bundleName.contains("_")) {
       return retrieveResourceBundleConfiguration(
-        bundleName.substring(0, bundleName.lastIndexOf('_'))
+        bundleName.substring(0, bundleName.lastIndexOf('_')),
       )
     }
     return null
@@ -211,7 +212,7 @@ constructor(
   suspend fun loadConfigurations(
     appId: String,
     context: Context,
-    configsLoadedCallback: (Boolean) -> Unit = {}
+    configsLoadedCallback: (Boolean) -> Unit = {},
   ) {
     // For appId that ends with suffix /debug e.g. app/debug, we load configurations from assets
     // extract appId by removing the suffix e.g. app from above example
@@ -219,8 +220,7 @@ constructor(
     val parsedAppId = appId.substringBefore("/").trim()
     if (loadFromAssets) {
       try {
-        context
-          .assets
+        context.assets
           .open(String.format(COMPOSITION_CONFIG_PATH, parsedAppId))
           .bufferedReader()
           .readText()
@@ -232,8 +232,9 @@ constructor(
               }
             if (iconConfigs.isNotEmpty()) {
               val ids = iconConfigs.joinToString(",") { it.focus.extractId() }
-              fhirResourceDataSource.getResource(
-                  "${ResourceType.Binary.name}?${Composition.SP_RES_ID}=$ids"
+              fhirResourceDataSource
+                .getResource(
+                  "${ResourceType.Binary.name}?${Composition.SP_RES_ID}=$ids",
                 )
                 .entry
                 .forEach { addOrUpdate(it.resource) }
@@ -243,7 +244,7 @@ constructor(
               loadFromAssets = true,
               appId = parsedAppId,
               configsLoadedCallback = configsLoadedCallback,
-              context = context
+              context = context,
             )
           }
       } catch (fileNotFoundException: FileNotFoundException) {
@@ -262,7 +263,7 @@ constructor(
     composition: Composition,
     loadFromAssets: Boolean,
     appId: String,
-    configsLoadedCallback: (Boolean) -> Unit
+    configsLoadedCallback: (Boolean) -> Unit,
   ) {
     if (loadFromAssets) {
       retrieveAssetConfigs(context, appId).forEach { fileName ->
@@ -276,7 +277,7 @@ constructor(
               .lowercase(Locale.ENGLISH)
               .substring(
                 fileName.indexOfLast { it == '/' }.plus(1),
-                fileName.lastIndexOf(CONFIG_SUFFIX)
+                fileName.lastIndexOf(CONFIG_SUFFIX),
               )
               .camelCase()
 
@@ -314,16 +315,16 @@ constructor(
     val filesQueue = LinkedList<String>()
     val configFiles = mutableListOf<String>()
     context.assets.list(String.format(BASE_CONFIG_PATH, appId))?.onEach {
-      if (!supportedFileExtensions.contains(it.fileExtension))
+      if (!supportedFileExtensions.contains(it.fileExtension)) {
         filesQueue.addLast(String.format(BASE_CONFIG_PATH, appId) + "/$it")
-      else configFiles.add(String.format(BASE_CONFIG_PATH, appId) + "/$it")
+      } else configFiles.add(String.format(BASE_CONFIG_PATH, appId) + "/$it")
     }
     while (filesQueue.isNotEmpty()) {
       val currentPath = filesQueue.removeFirst()
       context.assets.list(currentPath)?.onEach {
-        if (!supportedFileExtensions.contains(it.fileExtension))
+        if (!supportedFileExtensions.contains(it.fileExtension)) {
           filesQueue.addLast("$currentPath/$it")
-        else configFiles.add("$currentPath/$it")
+        } else configFiles.add("$currentPath/$it")
       }
     }
     return configFiles
@@ -359,7 +360,7 @@ constructor(
                 ResourceType.List.name,
                 ResourceType.PlanDefinition.name,
                 ResourceType.Library.name,
-                ResourceType.Measure.name
+                ResourceType.Measure.name,
               )
           }
           .forEach { resourceGroup ->
@@ -379,7 +380,7 @@ constructor(
 
   private suspend fun processCompositionManifestResources(
     resourceType: String,
-    resourceIds: String
+    resourceIds: String,
   ) {
     val searchPath = resourceType + "?${Composition.SP_RES_ID}=$resourceIds"
 

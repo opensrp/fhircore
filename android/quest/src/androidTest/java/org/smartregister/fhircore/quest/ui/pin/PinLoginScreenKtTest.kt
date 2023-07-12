@@ -46,10 +46,10 @@ class PinLoginScreenKtTest {
             appName = "MOH eCBIS",
             setupPin = true,
             pinLength = 4,
-            showLogo = true
+            showLogo = true,
           ),
         onShowPinError = {},
-        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
+        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
       )
     }
 
@@ -76,10 +76,10 @@ class PinLoginScreenKtTest {
             appName = "MOH eCBIS",
             setupPin = false,
             pinLength = 4,
-            showLogo = true
+            showLogo = true,
           ),
         onShowPinError = {},
-        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
+        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
       )
     }
     composeRule.onNodeWithText("MOH eCBIS", ignoreCase = true).assertExists().assertIsDisplayed()
@@ -113,14 +113,15 @@ class PinLoginScreenKtTest {
             setupPin = false,
             pinLength = 4,
             showLogo = true,
-            showProgressBar = true
+            showProgressBar = true,
           ),
         onShowPinError = {},
-        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
+        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
       )
     }
     composeRule.onNodeWithText(errorMessage, ignoreCase = true).assertExists().assertIsDisplayed()
   }
+
   @Test
   fun testThatPinSetupPageShowsCircularProgressIndicator() {
     composeRule.setContent {
@@ -136,10 +137,10 @@ class PinLoginScreenKtTest {
             setupPin = true,
             pinLength = 4,
             showLogo = false,
-            showProgressBar = true
+            showProgressBar = true,
           ),
         onShowPinError = {},
-        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
+        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
       )
     }
 
@@ -147,6 +148,7 @@ class PinLoginScreenKtTest {
     composeRule.onAllNodesWithTag(PIN_CELL_TEST_TAG).assertCountEquals(4)
     composeRule.onNodeWithTag(CIRCULAR_PROGRESS_INDICATOR).assertExists().assertIsDisplayed()
   }
+
   @Test
   fun testThatPinLoginPageWithShowLogoFalseHidesLogoImage() {
     val pinStateMessage = "Provider will use this PIN to login"
@@ -163,10 +165,10 @@ class PinLoginScreenKtTest {
             setupPin = false,
             pinLength = 1,
             showLogo = false,
-            showProgressBar = true
+            showProgressBar = true,
           ),
         onShowPinError = {},
-        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
+        onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
       )
     }
 
