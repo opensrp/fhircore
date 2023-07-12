@@ -59,6 +59,11 @@ For example, to build the eCHIS release from the terminal you can run the comman
 ./gradlew assembleEchisRelease --stacktrace -PlocalPropertiesFile=/Abolute/Path/To/echis.local.properties -PkeystorePropertiesFile=/Absolute/Path/To/echis.keystore.properties 
 ```
 
+**Note:** The app supports a variant mode that does not require the FHIR Gateway/Proxy to be integrated. To build the same APK as a NON-PROXY variant set the `isNonProxy` gradle property to `true` e.g.
+```sh
+./gradlew assembleEchisRelease --stacktrace -PisNonProxy=true -PlocalPropertiesFile=/Abolute/Path/To/proxy.echis.local.properties -PkeystorePropertiesFile=/Absolute/Path/To/echis.keystore.properties 
+```
+
 Refer to the following links for more details:
 
 - [Java Key and Certificate Management Tool](https://docs.oracle.com/javase/6/docs/technotes/tools/windows/keytool.html)
