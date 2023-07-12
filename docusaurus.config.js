@@ -61,7 +61,7 @@ const config = {
         logo: {
           alt: 'OpenSRP Documentation',
           src: 'img/opensrp-logo.png',
-          href: 'https://opensrp.io/',
+          href: '/',
         },
         items: [
           {
