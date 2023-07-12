@@ -87,7 +87,7 @@ class RegisterFragmentTest : RobolectricTest() {
       RegisterViewModel(
         registerRepository = mockk(relaxed = true),
         configurationRegistry = configurationRegistry,
-        sharedPreferencesHelper = mockk(relaxed = true),
+        sharedPreferencesHelper = Faker.buildSharedPreferencesHelper(),
         dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
         resourceDataRulesExecutor = mockk(),
       ),
@@ -174,22 +174,56 @@ class RegisterFragmentTest : RobolectricTest() {
   @Test
   @OptIn(ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class)
   fun `test On Sync Progress emits progress percentage`() = runTest {
-    val downloadProgressSyncStatus: SyncJobStatus =
+    val downloadProgressSyncStatus: SyncJobStatus.InProgress =
       SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 1000, 300)
-    val uploadProgressSyncStatus: SyncJobStatus =
+    val uploadProgressSyncStatus: SyncJobStatus.InProgress =
       SyncJobStatus.InProgress(SyncOperation.UPLOAD, 100, 85)
-    val registerFragment = mockk<RegisterFragment>()
+
+    val registerFragment = spyk(registerFragment)
 
     coEvery { registerFragment.onSync(downloadProgressSyncStatus) } answers { callOriginal() }
     coEvery { registerFragment.onSync(uploadProgressSyncStatus) } answers { callOriginal() }
-    coEvery { registerFragment.emitPercentageProgress(any(), any()) } just runs
 
     registerFragment.onSync(downloadProgressSyncStatus)
     registerFragment.onSync(uploadProgressSyncStatus)
 
-    coVerify(exactly = 1) { registerFragment.emitPercentageProgress(30, false) }
-    coVerify(exactly = 1) { registerFragment.emitPercentageProgress(85, true) }
+    coVerify(exactly = 1) { registerViewModel.emitPercentageProgressState(30, false) }
+
+    coVerify(exactly = 1) { registerViewModel.emitPercentageProgressState(85, true) }
+
+    coVerify(exactly = 1) {
+      registerFragment.emitPercentageProgress(downloadProgressSyncStatus, false)
+    }
+    coVerify(exactly = 1) {
+      registerFragment.emitPercentageProgress(uploadProgressSyncStatus, true)
+    }
   }
+
+  @Test
+  @OptIn(ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class)
+  fun `test On Sync Progress emits correct download progress percentage after a glitch`() =
+    runTest {
+      val downloadProgressSyncStatus: SyncJobStatus.InProgress =
+        SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 1000, 300)
+      val downloadProgressSyncStatusAfterGlitchReset: SyncJobStatus.InProgress =
+        SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 200, 100)
+
+      val registerFragment = spyk(registerFragment)
+
+      registerFragment.onSync(downloadProgressSyncStatus)
+      registerFragment.onSync(downloadProgressSyncStatusAfterGlitchReset)
+
+      coVerify(exactly = 1) {
+        registerFragment.emitPercentageProgress(downloadProgressSyncStatus, false)
+      }
+
+      coVerify(exactly = 1) {
+        registerFragment.emitPercentageProgress(downloadProgressSyncStatusAfterGlitchReset, false)
+      }
+
+      coVerify(exactly = 1) { registerViewModel.emitPercentageProgressState(30, false) }
+      coVerify(exactly = 1) { registerViewModel.emitPercentageProgressState(90, false) }
+    }
 
   @Test
   fun testHandleQuestionnaireSubmissionCallsRegisterViewModelPaginateRegisterDataAndEmitSnackBarState() {
