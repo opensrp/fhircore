@@ -61,7 +61,7 @@ class DateServiceTest : RobolectricTest() {
         5,
         "-",
         timeUnit = "DAY",
-        dateFormat = SDF_DD_MMM_YYYY
+        dateFormat = SDF_DD_MMM_YYYY,
       )
     val expected = LocalDate.now().minusDays(5).toDate().formatDate(SDF_DD_MMM_YYYY)
     assertEquals(expected, result)
@@ -97,7 +97,7 @@ class DateServiceTest : RobolectricTest() {
         5,
         "-",
         timeUnit = "WEEK",
-        dateFormat = SDF_DD_MMM_YYYY
+        dateFormat = SDF_DD_MMM_YYYY,
       )
     val expected = LocalDate.now().minusWeeks(5).toDate().formatDate(SDF_DD_MMM_YYYY)
     assertEquals(expected, result)
@@ -133,7 +133,7 @@ class DateServiceTest : RobolectricTest() {
         5,
         "-",
         timeUnit = "MONTH",
-        dateFormat = SDF_DD_MMM_YYYY
+        dateFormat = SDF_DD_MMM_YYYY,
       )
     val expected = LocalDate.now().minusMonths(5).toDate().formatDate(SDF_DD_MMM_YYYY)
     assertEquals(expected, result)

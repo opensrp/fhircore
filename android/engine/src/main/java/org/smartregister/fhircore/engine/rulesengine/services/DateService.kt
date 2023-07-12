@@ -52,7 +52,7 @@ object DateService {
           "+" -> LocalDate.now().plusDays(timeUnitCount).toDate().formatDate(dateFormat)
           else ->
             throw NotImplementedException(
-              "Operation not supported. Operations supported operation are '+' or '-'"
+              "Operation not supported. Operations supported operation are '+' or '-'",
             )
         }
       TimeUnit.WEEK ->
@@ -61,7 +61,7 @@ object DateService {
           "+" -> LocalDate.now().plusWeeks(timeUnitCount).toDate().formatDate(dateFormat)
           else ->
             throw NotImplementedException(
-              "Operation not supported. Operations supported operation are '+' or '-'"
+              "Operation not supported. Operations supported operation are '+' or '-'",
             )
         }
       TimeUnit.MONTH ->
@@ -70,7 +70,7 @@ object DateService {
           "+" -> LocalDate.now().plusMonths(timeUnitCount).toDate().formatDate(dateFormat)
           else ->
             throw NotImplementedException(
-              "Operation not supported. Operations supported operation are '+' or '-'"
+              "Operation not supported. Operations supported operation are '+' or '-'",
             )
         }
       TimeUnit.YEAR ->
@@ -79,7 +79,7 @@ object DateService {
           "+" -> LocalDate.now().plusYears(timeUnitCount).toDate().formatDate(dateFormat)
           else ->
             throw NotImplementedException(
-              "Operation not supported. Operations supported operation are '+' or '-'"
+              "Operation not supported. Operations supported operation are '+' or '-'",
             )
         }
     }
@@ -89,6 +89,6 @@ object DateService {
     DAY,
     WEEK,
     MONTH,
-    YEAR
+    YEAR,
   }
 }
