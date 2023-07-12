@@ -71,8 +71,14 @@ const config = {
             target: '_self',
           },
           {
+            to: 'https://opensrp.io/about/',
+            label: 'About',
+            position: 'right',
+            target: '_self',
+          },
+          {
             to: 'https://opensrp.io/features/',
-            label: 'How It Works',
+            label: 'Features',
             position: 'right',
             target: '_self',
           },
@@ -84,12 +90,7 @@ const config = {
           },
           {
             href: '/',
-            label: 'Code Docs',
-            position: 'right',
-          },
-          {
-            href: 'https://github.com/opensrp/fhircore',
-            label: 'GitHub',
+            label: 'Docs',
             position: 'right',
           },
         ],
