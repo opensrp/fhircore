@@ -34,7 +34,7 @@ class FhirResourceDataSource @Inject constructor(private val resourceService: Fh
     return resourceService.insertResource(
       resourceType,
       resourceId,
-      payload.toRequestBody("application/fhir+json".toMediaType())
+      payload.toRequestBody("application/fhir+json".toMediaType()),
     )
   }
 
@@ -42,7 +42,7 @@ class FhirResourceDataSource @Inject constructor(private val resourceService: Fh
     return resourceService.updateResource(
       resourceType,
       resourceId,
-      payload.toRequestBody("application/json-patch+json".toMediaType())
+      payload.toRequestBody("application/json-patch+json".toMediaType()),
     )
   }
 

@@ -62,10 +62,15 @@ import timber.log.Timber
 open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, OnSyncListener {
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
+
   @Inject lateinit var configService: ConfigService
+
   @Inject lateinit var syncListenerManager: SyncListenerManager
+
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
+
   @Inject lateinit var fhirEngine: FhirEngine
+
   @Inject lateinit var eventBus: EventBus
   lateinit var navHostFragment: NavHostFragment
   val appMainViewModel by viewModels<AppMainViewModel>()
@@ -75,8 +80,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override val startForResult =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
-      if (activityResult.resultCode == Activity.RESULT_OK)
+      if (activityResult.resultCode == Activity.RESULT_OK) {
         lifecycleScope.launch { onSubmitQuestionnaire(activityResult) }
+      }
     }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,8 +96,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         R.navigation.application_nav_graph,
         bundleOf(
           NavigationArg.SCREEN_TITLE to topMenuConfig.display,
-          NavigationArg.REGISTER_ID to topMenuConfigId
-        )
+          NavigationArg.REGISTER_ID to topMenuConfigId,
+        ),
       )
 
     supportFragmentManager
@@ -106,13 +112,13 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
           appMainViewModel.launchProfileFromGeoWidget(
             navHostFragment.navController,
             geoWidgetEvent.geoWidgetConfiguration.id,
-            geoWidgetEvent.data
+            geoWidgetEvent.data,
           )
         is GeoWidgetEvent.RegisterClient ->
           appMainViewModel.launchFamilyRegistrationWithLocationId(
             context = this,
             locationId = geoWidgetEvent.data,
-            questionnaireConfig = geoWidgetEvent.questionnaire
+            questionnaireConfig = geoWidgetEvent.questionnaire,
           )
       }
     }
@@ -124,9 +130,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     appMainViewModel.run {
       lifecycleScope.launch {
         retrieveAppMainUiState()
-        if (isDeviceOnline())
+        if (isDeviceOnline()) {
           syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
-        else showToast(getString(R.string.sync_failed), Toast.LENGTH_LONG)
+        } else {
+          showToast(getString(R.string.sync_failed), Toast.LENGTH_LONG)
+        }
       }
       schedulePeriodicJobs()
     }
@@ -150,20 +158,20 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   override suspend fun onSubmitQuestionnaire(activityResult: ActivityResult) {
     if (activityResult.resultCode == RESULT_OK) {
       val questionnaireResponse: QuestionnaireResponse? =
-        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE) as
-          QuestionnaireResponse?
+        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
+          as QuestionnaireResponse?
       val questionnaireConfig =
-        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as
-          QuestionnaireConfig?
+        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG)
+          as QuestionnaireConfig?
 
       if (questionnaireConfig != null) {
         eventBus.triggerEvent(
           AppEvent.OnSubmitQuestionnaire(
             QuestionnaireSubmission(
               questionnaireConfig,
-              questionnaireResponse ?: QuestionnaireResponse()
-            )
-          )
+              questionnaireResponse ?: QuestionnaireResponse(),
+            ),
+          ),
         )
       }
     }
@@ -171,13 +179,15 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override fun onSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.Glitch, is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
+      is SyncJobStatus.Glitch,
+      is SyncJobStatus.Finished,
+      is SyncJobStatus.Failed, -> {
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
               syncJobStatus,
-              formatLastSyncTimestamp(syncJobStatus.timestamp)
-            )
+              formatLastSyncTimestamp(syncJobStatus.timestamp),
+            ),
           )
         }
         if (syncJobStatus is SyncJobStatus.Glitch) {
@@ -189,7 +199,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         }
       }
       else -> {
-        /*Do nothing */
+        // Do nothing
       }
     }
   }

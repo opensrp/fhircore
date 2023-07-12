@@ -27,5 +27,5 @@ enum class ActionTrigger {
   ON_COUNT,
 
   /** Action that is triggered when a Questionnaire has been submitted */
-  ON_QUESTIONNAIRE_SUBMISSION
+  ON_QUESTIONNAIRE_SUBMISSION,
 }

@@ -45,7 +45,8 @@ val Location.hasBoundaryGeoJsonExt
       if (boundaryGeoJsonFeature.value is Attachment) {
         val attachment = boundaryGeoJsonFeature.value as Attachment
 
-        if (attachment.contentType != null && attachment.contentType.equals("application/geo+json")
+        if (
+          attachment.contentType != null && attachment.contentType.equals("application/geo+json")
         ) {
           return true
         }
@@ -104,9 +105,9 @@ fun generateLocation(featureJSONObject: JSONObject, coordinates: Coordinate): Lo
             Attachment().apply {
               contentType = "application/geo+json"
               data = Base64.encodeBase64(featureJSONObject.toString().encodeToByteArray())
-            }
+            },
           )
-        }
+        },
       )
   }
 }

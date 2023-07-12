@@ -41,7 +41,7 @@ class MeasureReportIndividualResultViewTest {
     MeasureReportSubjectViewData(
       type = ResourceType.Patient,
       display = "Jacky Coughlin, F, 27",
-      logicalId = "12444"
+      logicalId = "12444",
     )
 
   @Before
@@ -70,7 +70,7 @@ class MeasureReportIndividualResultViewTest {
         AppTheme {
           MeasureReportIndividualResultView(
             subjectViewData = subjectViewData,
-            isMatchedIndicator = isMatchedIndicator
+            isMatchedIndicator = isMatchedIndicator,
           )
         }
       }

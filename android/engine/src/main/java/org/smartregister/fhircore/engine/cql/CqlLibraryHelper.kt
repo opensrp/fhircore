@@ -37,7 +37,7 @@ class CqlLibraryHelper @Inject constructor(@ApplicationContext private val conte
 
   fun loadMeasureEvaluateLibrary(
     fileNameMeasureLibraryCql: String,
-    dirCqlDirRoot: String
+    dirCqlDirRoot: String,
   ): IBaseBundle {
     return libraryMeasure.get()
       ?: kotlin.run {
@@ -54,13 +54,13 @@ class CqlLibraryHelper @Inject constructor(@ApplicationContext private val conte
   fun writeMeasureEvaluateLibraryData(
     measureEvaluateLibraryData: String,
     fileNameMeasureLibraryCql: String,
-    dirCqlDirRoot: String
+    dirCqlDirRoot: String,
   ) {
     FileUtil.writeFileOnInternalStorage(
       context,
       fileNameMeasureLibraryCql,
       measureEvaluateLibraryData,
-      dirCqlDirRoot
+      dirCqlDirRoot,
     )
   }
 }

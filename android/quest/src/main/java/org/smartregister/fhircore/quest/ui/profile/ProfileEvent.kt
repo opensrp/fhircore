@@ -34,6 +34,6 @@ sealed class ProfileEvent {
   data class OnChangeManagingEntity(
     val context: Context,
     val eligibleManagingEntity: EligibleManagingEntity,
-    val managingEntityConfig: ManagingEntityConfig?
+    val managingEntityConfig: ManagingEntityConfig?,
   ) : ProfileEvent()
 }

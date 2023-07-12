@@ -40,13 +40,13 @@ data class ColumnProperties(
   val wrapContent: Boolean = false,
   val arrangement: ColumnArrangement? = null,
   val children: List<ViewProperties> = emptyList(),
-  val showDivider: String = "false"
+  val showDivider: String = "false",
 ) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): ColumnProperties {
     return this.copy(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),
       visible = visible.interpolate(computedValuesMap),
-      showDivider = showDivider.interpolate(computedValuesMap)
+      showDivider = showDivider.interpolate(computedValuesMap),
     )
   }
 }
@@ -57,5 +57,5 @@ enum class ColumnArrangement(val position: Arrangement.Vertical) {
   SPACE_EVENLY(Arrangement.SpaceEvenly),
   CENTER(Arrangement.Center),
   TOP(Arrangement.Top),
-  BOTTOM(Arrangement.Bottom)
+  BOTTOM(Arrangement.Bottom),
 }

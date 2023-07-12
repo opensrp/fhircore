@@ -19,11 +19,11 @@ package org.smartregister.fhircore.engine.configuration.report.measure
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class MeasureReportConfig(
+data class ReportConfiguration(
   val id: String = "",
   val title: String = "",
   val description: String = "",
   val url: String = "",
   val module: String = "",
-  val subjectXFhirQuery: String? = null
+  val subjectXFhirQuery: String? = null,
 )

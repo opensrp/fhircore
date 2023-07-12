@@ -23,6 +23,7 @@ import org.robolectric.util.inject.Injector
 
 internal class FhircoreTestRunner : RobolectricTestRunner {
   constructor(testClass: Class<*>?) : super(testClass) {}
+
   constructor(testClass: Class<*>?, injector: Injector?) : super(testClass, injector) {}
 
   override fun createClassLoaderConfig(method: FrameworkMethod): InstrumentationConfiguration {

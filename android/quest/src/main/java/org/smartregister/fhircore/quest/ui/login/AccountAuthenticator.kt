@@ -38,12 +38,12 @@ class AccountAuthenticator
 constructor(
   @ApplicationContext val context: Context,
   val accountManager: AccountManager,
-  val tokenAuthenticator: TokenAuthenticator
+  val tokenAuthenticator: TokenAuthenticator,
 ) : AbstractAccountAuthenticator(context) {
 
   override fun editProperties(
     response: AccountAuthenticatorResponse?,
-    accountType: String?
+    accountType: String?,
   ): Bundle = bundleOf()
 
   override fun addAccount(
@@ -51,7 +51,7 @@ constructor(
     accountType: String?,
     authTokenType: String?,
     requiredFeatures: Array<out String>?,
-    options: Bundle?
+    options: Bundle?,
   ): Bundle {
     val intent = loginIntent(accountType, authTokenType, response)
     return bundleOf(AccountManager.KEY_INTENT to intent)
@@ -60,7 +60,7 @@ constructor(
   override fun confirmCredentials(
     response: AccountAuthenticatorResponse?,
     account: Account?,
-    options: Bundle?
+    options: Bundle?,
   ): Bundle {
     return bundleOf()
   }
@@ -69,7 +69,7 @@ constructor(
     response: AccountAuthenticatorResponse?,
     account: Account,
     authTokenType: String?,
-    options: Bundle?
+    options: Bundle?,
   ): Bundle {
     var authToken = accountManager.peekAuthToken(account, authTokenType)
 
@@ -83,7 +83,8 @@ constructor(
           } catch (ex: Exception) {
             Timber.e(ex)
             when (ex) {
-              is HttpException, is UnknownHostException -> ""
+              is HttpException,
+              is UnknownHostException, -> ""
               else -> throw ex
             }
           }
@@ -95,7 +96,7 @@ constructor(
       return bundleOf(
         AccountManager.KEY_ACCOUNT_NAME to account.name,
         AccountManager.KEY_ACCOUNT_TYPE to account.type,
-        AccountManager.KEY_AUTHTOKEN to authToken
+        AccountManager.KEY_AUTHTOKEN to authToken,
       )
     }
 
@@ -107,7 +108,7 @@ constructor(
   private fun loginIntent(
     accountType: String?,
     authTokenType: String?,
-    response: AccountAuthenticatorResponse?
+    response: AccountAuthenticatorResponse?,
   ): Intent {
     return Intent(context, LoginActivity::class.java).apply {
       putExtra(ACCOUNT_TYPE, accountType)
@@ -127,19 +128,20 @@ constructor(
     response: AccountAuthenticatorResponse?,
     account: Account?,
     authTokenType: String?,
-    options: Bundle?
+    options: Bundle?,
   ): Bundle = bundleOf()
 
   override fun hasFeatures(
     response: AccountAuthenticatorResponse?,
     account: Account?,
-    features: Array<out String>?
+    features: Array<out String>?,
   ): Bundle = bundleOf()
 
   fun logout(onLogout: () -> Unit) {
-    tokenAuthenticator.logout().onSuccess { loggedOut -> if (loggedOut) onLogout() }.onFailure {
-      onLogout()
-    }
+    tokenAuthenticator
+      .logout()
+      .onSuccess { loggedOut -> if (loggedOut) onLogout() }
+      .onFailure { onLogout() }
   }
 
   fun validateLoginCredentials(username: String, password: CharArray) =

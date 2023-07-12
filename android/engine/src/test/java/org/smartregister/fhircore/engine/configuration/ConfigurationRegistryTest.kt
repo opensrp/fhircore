@@ -63,9 +63,11 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   @get:Rule(order = 1)
   val coroutineRule = CoroutineTestRule()
+
   @Inject lateinit var configRegistry: ConfigurationRegistry
   var fhirEngine: FhirEngine = mockk()
   lateinit var context: Context
@@ -87,7 +89,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         sharedPreferencesHelper,
         coroutineRule.testDispatcherProvider,
         AppConfigService(context),
-        Faker.json
+        Faker.json,
       )
     Assert.assertNotNull(configRegistry)
   }
@@ -270,7 +272,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
           listOf(
             ListResource.ListEntryComponent().apply {
               item = Reference().apply { reference = "$resourceKey/$resourceId" }
-            }
+            },
           )
       }
     val bundle =
@@ -402,7 +404,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
                   identifier = Identifier().apply { id = "identifierId" }
                   reference = "referenceId"
                 }
-            }
+            },
           )
       }
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
@@ -432,7 +434,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
                     }
                   reference = "Binary/$referenceId"
                 }
-            }
+            },
           )
       }
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
@@ -464,7 +466,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
                     }
                   reference = "Binary/$referenceId"
                 }
-            }
+            },
           )
       }
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
@@ -484,7 +486,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertFalse(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
     val applicationConfiguration =
       configRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        configType = ConfigType.Application
+        configType = ConfigType.Application,
       )
 
     Assert.assertNotNull(applicationConfiguration)
@@ -495,13 +497,14 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     val anotherApplicationConfig =
       configRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        configType = ConfigType.Application
+        configType = ConfigType.Application,
       )
     Assert.assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
     Assert.assertNotNull(anotherApplicationConfig)
     Assert.assertEquals("thisApp", anotherApplicationConfig.appId)
     Assert.assertNotNull(ConfigType.Application.name, anotherApplicationConfig.configType)
   }
+
   @Test
   fun testRetrieveConfigurationWithParamsCachesTheSecondTime() {
     configRegistry.configsJsonMap[ConfigType.Application.name] =
@@ -513,21 +516,21 @@ class ConfigurationRegistryTest : RobolectricTest() {
           paramType = ActionParameterType.PARAMDATA,
           value = "testing1",
           dataType = Enumerations.DataType.STRING,
-          linkId = null
+          linkId = null,
         ),
         ActionParameter(
           key = "paramName2",
           paramType = ActionParameterType.PARAMDATA,
           value = "testing2",
           dataType = Enumerations.DataType.STRING,
-          linkId = null
+          linkId = null,
         ),
         ActionParameter(
           key = "paramName3",
           paramType = ActionParameterType.PREPOPULATE,
           value = "testing3",
           dataType = Enumerations.DataType.STRING,
-          linkId = null
+          linkId = null,
         ),
       )
     val paramsMap =
@@ -541,7 +544,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val applicationConfiguration =
       configRegistry.retrieveConfiguration<ApplicationConfiguration>(
         configType = ConfigType.Application,
-        paramsMap = paramsMap
+        paramsMap = paramsMap,
       )
 
     Assert.assertNotNull(applicationConfiguration)
@@ -551,7 +554,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     val anotherApplicationConfig =
       configRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        configType = ConfigType.Application
+        configType = ConfigType.Application,
       )
     Assert.assertNotNull(anotherApplicationConfig)
     Assert.assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
@@ -564,7 +567,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     for (i in 1..MANIFEST_PROCESSOR_BATCH_SIZE + 1) { // We need more than the MAX batch size
       compositionSections.add(
-        SectionComponent().apply { focus.reference = "${ResourceType.StructureMap.name}/id-$i" }
+        SectionComponent().apply { focus.reference = "${ResourceType.StructureMap.name}/id-$i" },
       )
     }
 
@@ -590,7 +593,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertEquals(2, requestPathArgumentSlot.size)
     Assert.assertEquals(
       "StructureMap?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30",
-      requestPathArgumentSlot.first()
+      requestPathArgumentSlot.first(),
     )
     Assert.assertEquals("StructureMap?_id=id-31", requestPathArgumentSlot.last())
   }

@@ -62,9 +62,11 @@ import org.smartregister.fhircore.engine.util.extension.referenceValue
 class FhirTaskExpireWorkerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   private val fhirEngine: FhirEngine = mockk(relaxed = true)
   private val defaultRepository: DefaultRepository = mockk(relaxed = true)
+
   @BindValue
   var fhirTaskUtil: FhirTaskUtil =
     FhirTaskUtil(ApplicationProvider.getApplicationContext(), defaultRepository)
@@ -94,7 +96,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
             Task.TaskRestrictionComponent().apply {
               period = Period().apply { end = DateTime().plusDays(-2).toDate() }
             }
-        }
+        },
       )
 
     coEvery { defaultRepository.fhirEngine } returns fhirEngine
@@ -139,7 +141,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
           listOf(
             CarePlan.CarePlanActivityComponent().apply {
               outcomeReference = listOf(tasks.first().asReference())
-            }
+            },
           )
         status = CarePlan.CarePlanStatus.ACTIVE
       }
@@ -164,7 +166,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
             CarePlan.CarePlanActivityComponent().apply {
               outcomeReference =
                 listOf(Reference().apply { reference = tasks.first().referenceValue() })
-            }
+            },
           )
       }
     tasks.forEach { it.basedOn = listOf(carePlan.asReference()) }
@@ -190,7 +192,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
     // Initialize WorkManager for instrumentation tests.
     WorkManagerTestInitHelper.initializeTestWorkManager(
       ApplicationProvider.getApplicationContext(),
-      config
+      config,
     )
   }
 
@@ -198,14 +200,14 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
     override fun createWorker(
       appContext: Context,
       workerClassName: String,
-      workerParameters: WorkerParameters
+      workerParameters: WorkerParameters,
     ): ListenableWorker {
       return FhirTaskExpireWorker(
         context = appContext,
         workerParams = workerParameters,
         defaultRepository = defaultRepository,
         fhirTaskUtil = fhirTaskUtil,
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider
+        dispatcherProvider = coroutineTestRule.testDispatcherProvider,
       )
     }
   }

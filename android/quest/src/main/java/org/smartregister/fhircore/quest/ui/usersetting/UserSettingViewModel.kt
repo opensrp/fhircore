@@ -62,7 +62,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val workManager: WorkManager,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
 
   val languages by lazy { configurationRegistry.fetchLanguages() }
@@ -83,7 +83,7 @@ constructor(
   fun loadSelectedLanguage(): String =
     Locale.forLanguageTag(
         sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
-          ?: Locale.ENGLISH.toLanguageTag()
+          ?: Locale.ENGLISH.toLanguageTag(),
       )
       .displayName
 
@@ -98,14 +98,17 @@ constructor(
               updateProgressBarState(false, R.string.logging_out)
               activity.launchActivityWithNoBackStackHistory<LoginActivity>()
             }
-          } else activity.launchActivityWithNoBackStackHistory<LoginActivity>()
+          } else {
+            activity.launchActivityWithNoBackStackHistory<LoginActivity>()
+          }
         }
       }
       is UserSettingsEvent.SyncData -> {
-        if (event.context.isDeviceOnline())
+        if (event.context.isDeviceOnline()) {
           viewModelScope.launch(dispatcherProvider.main()) { syncBroadcaster.runOneTimeSync() }
-        else
+        } else {
           event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
+        }
       }
       is UserSettingsEvent.SwitchLanguage -> {
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
@@ -163,7 +166,9 @@ constructor(
           withContext(dispatcherProvider.main()) {
             context.showToast(context.getString(R.string.all_data_synced))
           }
-        } else unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
+        } else {
+          unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
+        }
       }
     }
   }

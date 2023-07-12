@@ -31,7 +31,7 @@ object FilterCriterionSerializer :
   private const val DATA_TYPE = "dataType"
 
   override fun selectDeserializer(
-    element: JsonElement
+    element: JsonElement,
   ): DeserializationStrategy<out FilterCriterionConfig> {
     val jsonObject = element.jsonObject
     val dataType = jsonObject[DATA_TYPE]?.jsonPrimitive?.content
@@ -39,19 +39,23 @@ object FilterCriterionSerializer :
       """`The dataType $dataType` property missing in the JSON .
          Supported types: ${DataType.values()}
          Parsed JSON: $jsonObject
-          """.trimMargin()
+            """
+        .trimMargin()
     }
     return when (DataType.valueOf(dataType)) {
       DataType.QUANTITY -> FilterCriterionConfig.QuantityFilterCriterionConfig.serializer()
-      DataType.DATETIME, DataType.DATE, DataType.TIME ->
-        FilterCriterionConfig.DateFilterCriterionConfig.serializer()
-      DataType.DECIMAL, DataType.INTEGER ->
-        FilterCriterionConfig.NumberFilterCriterionConfig.serializer()
+      DataType.DATETIME,
+      DataType.DATE,
+      DataType.TIME, -> FilterCriterionConfig.DateFilterCriterionConfig.serializer()
+      DataType.DECIMAL,
+      DataType.INTEGER, -> FilterCriterionConfig.NumberFilterCriterionConfig.serializer()
       DataType.STRING -> FilterCriterionConfig.StringFilterCriterionConfig.serializer()
-      DataType.URI, DataType.URL -> FilterCriterionConfig.UriFilterCriterionConfig.serializer()
+      DataType.URI,
+      DataType.URL, -> FilterCriterionConfig.UriFilterCriterionConfig.serializer()
       DataType.REFERENCE -> FilterCriterionConfig.ReferenceFilterCriterionConfig.serializer()
-      DataType.CODING, DataType.CODEABLECONCEPT, DataType.CODE ->
-        FilterCriterionConfig.TokenFilterCriterionConfig.serializer()
+      DataType.CODING,
+      DataType.CODEABLECONCEPT,
+      DataType.CODE, -> FilterCriterionConfig.TokenFilterCriterionConfig.serializer()
       else -> {
         throw NotImplementedException("Data type `$dataType` is not supported for data filtering ")
       }

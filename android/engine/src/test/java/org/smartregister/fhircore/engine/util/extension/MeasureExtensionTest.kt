@@ -58,7 +58,7 @@ class MeasureExtensionTest : RobolectricTest() {
   fun `findPopulation should return correct population component for stratum with given type`() {
     val result =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPopulation(
-        MeasurePopulationType.DENOMINATOR
+        MeasurePopulationType.DENOMINATOR,
       )!!
 
     assertEquals(4, result.count)
@@ -194,14 +194,14 @@ class MeasureExtensionTest : RobolectricTest() {
       addGroup().apply {
         this.addPopulation().apply {
           this.code.addCoding(
-            MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) }
+            MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) },
           )
           this.count = 1
         }
 
         this.addPopulation().apply {
           this.code.addCoding(
-            MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) }
+            MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) },
           )
           this.count = 2
         }
@@ -209,14 +209,14 @@ class MeasureExtensionTest : RobolectricTest() {
         this.addStratifier().addStratum().apply {
           this.addPopulation().apply {
             this.code.addCoding(
-              MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) }
+              MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) },
             )
             this.count = 3
           }
 
           this.addPopulation().apply {
             this.code.addCoding(
-              MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) }
+              MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) },
             )
             this.count = 4
           }
@@ -234,7 +234,7 @@ class MeasureExtensionTest : RobolectricTest() {
           "2022-02-02",
           "2022-04-04",
           "http://nourl.com",
-          emptyList()
+          emptyList(),
         )
       assertTrue(result.isNullOrEmpty())
     }

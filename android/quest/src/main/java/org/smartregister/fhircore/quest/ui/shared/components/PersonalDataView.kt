@@ -40,16 +40,16 @@ fun PersonalDataView(
   modifier: Modifier = Modifier,
   personalDataCardProperties: PersonalDataProperties,
   resourceData: ResourceData,
-  navController: NavController
+  navController: NavController,
 ) {
   FlowRow(
     modifier =
-      modifier.clip(RoundedCornerShape(size = 8.dp)).background(PersonalDataBackgroundColor)
+      modifier.clip(RoundedCornerShape(size = 8.dp)).background(PersonalDataBackgroundColor),
   ) {
     PersonalDataItem(
       personalDataCardProperties = personalDataCardProperties,
       resourceData = resourceData,
-      navController = navController
+      navController = navController,
     )
   }
 }
@@ -59,19 +59,19 @@ private fun PersonalDataItem(
   personalDataCardProperties: PersonalDataProperties,
   modifier: Modifier = Modifier,
   resourceData: ResourceData,
-  navController: NavController
+  navController: NavController,
 ) {
   personalDataCardProperties.personalDataItems.forEach {
     Column(modifier = modifier.padding(vertical = 16.dp, horizontal = 24.dp)) {
       CompoundText(
         compoundTextProperties = it.label,
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
       CompoundText(
         compoundTextProperties = it.displayValue,
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
   }
@@ -80,34 +80,16 @@ private fun PersonalDataItem(
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun PersonalDataViewPreview() {
-  val genderLabel =
-    CompoundTextProperties(
-      primaryText = "Sex",
-    )
-  val genderValue =
-    CompoundTextProperties(
-      primaryText = "Female",
-    )
+  val genderLabel = CompoundTextProperties(primaryText = "Sex")
+  val genderValue = CompoundTextProperties(primaryText = "Female")
   val genderDataItem = PersonalDataItem(label = genderLabel, displayValue = genderValue)
 
-  val dobLabel =
-    CompoundTextProperties(
-      primaryText = "DOB",
-    )
-  val dobValue =
-    CompoundTextProperties(
-      primaryText = "01 2000",
-    )
+  val dobLabel = CompoundTextProperties(primaryText = "DOB")
+  val dobValue = CompoundTextProperties(primaryText = "01 2000")
   val dobDataItem = PersonalDataItem(label = dobLabel, displayValue = dobValue)
 
-  val ageTitle =
-    CompoundTextProperties(
-      primaryText = "Age",
-    )
-  val ageValue =
-    CompoundTextProperties(
-      primaryText = "22y",
-    )
+  val ageTitle = CompoundTextProperties(primaryText = "Age")
+  val ageValue = CompoundTextProperties(primaryText = "22y")
   val ageDataItem = PersonalDataItem(label = ageTitle, displayValue = ageValue)
 
   val personaDataItems = listOf(genderDataItem, dobDataItem, ageDataItem)
@@ -116,6 +98,6 @@ fun PersonalDataViewPreview() {
   PersonalDataView(
     personalDataCardProperties = personalDataCardProperties,
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-    navController = rememberNavController()
+    navController = rememberNavController(),
   )
 }

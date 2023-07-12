@@ -89,8 +89,8 @@ class GeoWidgetViewModelTest {
           sharedPreferencesHelper,
           configurationRegistry,
           configService,
-          configRulesExecutor
-        )
+          configRulesExecutor,
+        ),
       )
     geoWidgetViewModel =
       spyk(GeoWidgetViewModel(defaultRepository, coroutinesTestRule.testDispatcherProvider))
@@ -100,7 +100,6 @@ class GeoWidgetViewModelTest {
 
   @Test
   fun getFamiliesFeatureCollectionShouldCallGetFamiliesAndGenerateFeatureCollection() {
-
     val families: List<Pair<Group, Location>> = emptyList()
     coEvery { geoWidgetViewModel.getFamilies() } returns families
     val featureCollection = runBlocking { geoWidgetViewModel.getFamiliesFeatureCollection(context) }
