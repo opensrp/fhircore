@@ -178,11 +178,11 @@ class RegisterFragmentTest : RobolectricTest() {
       SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 1000, 300)
     val uploadProgressSyncStatus: SyncJobStatus.InProgress =
       SyncJobStatus.InProgress(SyncOperation.UPLOAD, 100, 85)
-    val registerFragment = mockk<RegisterFragment>()
+
+    val registerFragment = spyk(registerFragment)
 
     coEvery { registerFragment.onSync(downloadProgressSyncStatus) } answers { callOriginal() }
     coEvery { registerFragment.onSync(uploadProgressSyncStatus) } answers { callOriginal() }
-    coEvery { registerFragment.emitPercentageProgress(any(), any()) } just runs
 
     registerFragment.onSync(downloadProgressSyncStatus)
     registerFragment.onSync(uploadProgressSyncStatus)
@@ -205,16 +205,12 @@ class RegisterFragmentTest : RobolectricTest() {
     runTest {
       val downloadProgressSyncStatus: SyncJobStatus.InProgress =
         SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 1000, 300)
+      val downloadProgressSyncStatusAfterGlitchReset: SyncJobStatus.InProgress =
+        SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 200, 100)
 
-      val registerFragment = mockk<RegisterFragment>()
-
-      coEvery { registerFragment.onSync(downloadProgressSyncStatus) } answers { callOriginal() }
-      coEvery { registerFragment.emitPercentageProgress(any(), any()) } just runs
+      val registerFragment = spyk(registerFragment)
 
       registerFragment.onSync(downloadProgressSyncStatus)
-
-      val downloadProgressSyncStatusAfterGlitchReset: SyncJobStatus.InProgress =
-        SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 100, 200)
       registerFragment.onSync(downloadProgressSyncStatusAfterGlitchReset)
 
       coVerify(exactly = 1) {
@@ -225,6 +221,7 @@ class RegisterFragmentTest : RobolectricTest() {
         registerFragment.emitPercentageProgress(downloadProgressSyncStatusAfterGlitchReset, false)
       }
 
+      coVerify(exactly = 1) { registerViewModel.emitPercentageProgressState(30, false) }
       coVerify(exactly = 1) { registerViewModel.emitPercentageProgressState(90, false) }
     }
 
