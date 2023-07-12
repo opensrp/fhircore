@@ -36,19 +36,21 @@ inline fun <reified W : ListenableWorker> WorkManager.schedulePeriodically(
   timeUnit: TimeUnit = TimeUnit.MINUTES,
   existingPeriodicWorkPolicy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP,
   requiresNetwork: Boolean = true,
-  inputData: Data = workDataOf()
+  inputData: Data = workDataOf(),
 ) {
-
   val constraint =
     Constraints.Builder()
       .setRequiredNetworkType(
-        if (requiresNetwork) NetworkType.CONNECTED else NetworkType.NOT_REQUIRED
+        if (requiresNetwork) NetworkType.CONNECTED else NetworkType.NOT_REQUIRED,
       )
       .build()
 
   val workRequestBuilder =
-    if (duration == null) PeriodicWorkRequestBuilder<W>(repeatInterval, timeUnit)
-    else PeriodicWorkRequestBuilder<W>(duration)
+    if (duration == null) {
+      PeriodicWorkRequestBuilder<W>(repeatInterval, timeUnit)
+    } else {
+      PeriodicWorkRequestBuilder<W>(duration)
+    }
   enqueueUniquePeriodicWork(
     workId,
     existingPeriodicWorkPolicy,
@@ -57,6 +59,6 @@ inline fun <reified W : ListenableWorker> WorkManager.schedulePeriodically(
       .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
       .setConstraints(constraint)
       .setInputData(inputData)
-      .build()
+      .build(),
   )
 }

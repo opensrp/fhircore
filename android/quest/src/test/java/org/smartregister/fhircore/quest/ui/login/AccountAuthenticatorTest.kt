@@ -51,9 +51,13 @@ import retrofit2.HttpException
 class AccountAuthenticatorTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @Inject lateinit var configService: ConfigService
+
   @BindValue var secureSharedPreference: SecureSharedPreference = mockk()
+
   @BindValue var tokenAuthenticator: TokenAuthenticator = mockk()
+
   @Inject lateinit var dispatcherProvider: DispatcherProvider
   private lateinit var accountAuthenticator: AccountAuthenticator
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
@@ -68,8 +72,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
         AccountAuthenticator(
           context = context,
           accountManager = accountManager,
-          tokenAuthenticator = tokenAuthenticator
-        )
+          tokenAuthenticator = tokenAuthenticator,
+        ),
       )
   }
 
@@ -148,7 +152,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
         mockk {
           every { code() } returns 0
           every { message() } returns ""
-        }
+        },
       )
 
     val authTokenBundle: Bundle =
@@ -193,14 +197,14 @@ class AccountAuthenticatorTest : RobolectricTest() {
     val authTokenLabel = "auth_token_label"
     Assert.assertEquals(
       authTokenLabel.uppercase(),
-      accountAuthenticator.getAuthTokenLabel(authTokenLabel)
+      accountAuthenticator.getAuthTokenLabel(authTokenLabel),
     )
   }
 
   @Test
   fun testUpdateCredentialsShouldReturnEmptyBundle() {
     Assert.assertTrue(
-      accountAuthenticator.updateCredentials(mockk(), mockk(), authTokenType, bundleOf()).isEmpty
+      accountAuthenticator.updateCredentials(mockk(), mockk(), authTokenType, bundleOf()).isEmpty,
     )
   }
 

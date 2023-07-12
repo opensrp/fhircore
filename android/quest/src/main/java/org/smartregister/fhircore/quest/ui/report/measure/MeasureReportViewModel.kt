@@ -104,7 +104,7 @@ constructor(
   val measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper,
   val defaultRepository: DefaultRepository,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
-  private val measureReportRepository: MeasureReportRepository
+  private val measureReportRepository: MeasureReportRepository,
 ) : ViewModel() {
   private val _measureReportPopulationResultList: MutableList<MeasureReportPopulationResult> =
     mutableListOf()
@@ -126,7 +126,7 @@ constructor(
   fun defaultDateRangeState() =
     androidx.core.util.Pair(
       MaterialDatePicker.thisMonthInUtcMilliseconds(),
-      MaterialDatePicker.todayInUtcMilliseconds()
+      MaterialDatePicker.todayInUtcMilliseconds(),
     )
 
   fun reportMeasuresList(reportId: String): Flow<PagingData<ReportConfiguration>> {
@@ -134,14 +134,14 @@ constructor(
     val registerConfiguration =
       configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
         ConfigType.Register,
-        measureReportConfiguration.registerId
+        measureReportConfiguration.registerId,
       )
     return Pager(PagingConfig(DEFAULT_PAGE_SIZE)) {
         MeasureReportPagingSource(
           measureReportConfiguration = measureReportConfiguration,
           registerConfiguration = registerConfiguration,
           registerRepository = registerRepository,
-          resourceDataRulesExecutor = resourceDataRulesExecutor
+          resourceDataRulesExecutor = resourceDataRulesExecutor,
         )
       }
       .flow
@@ -151,11 +151,10 @@ constructor(
   private fun retrieveMeasureReportConfiguration(reportId: String): MeasureReportConfiguration =
     configurationRegistry.retrieveConfiguration(
       configType = ConfigType.MeasureReport,
-      configId = reportId
+      configId = reportId,
     )
 
   fun onEvent(event: MeasureReportEvent, selectedDate: Date? = null) {
-
     when (event) {
       is MeasureReportEvent.OnSelectMeasure -> {
         event.reportConfigurations?.let {
@@ -165,8 +164,8 @@ constructor(
         event.navController.navigate(
           MeasureReportNavigationScreen.ReportTypeSelector.route +
             NavigationArg.bindArgumentsOf(
-              Pair(NavigationArg.SCREEN_TITLE, reportConfigurations.firstOrNull()?.module ?: "")
-            )
+              Pair(NavigationArg.SCREEN_TITLE, reportConfigurations.firstOrNull()?.module ?: ""),
+            ),
         )
       }
       is MeasureReportEvent.GenerateReport -> {
@@ -175,7 +174,7 @@ constructor(
           reportTypeSelectorUiState.value =
             reportTypeSelectorUiState.value.copy(
               startDate = selectedDate.firstDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA),
-              endDate = selectedDate.lastDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA)
+              endDate = selectedDate.lastDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA),
             )
         }
         refreshData()
@@ -187,7 +186,7 @@ constructor(
         reportTypeSelectorUiState.value =
           reportTypeSelectorUiState.value.copy(
             startDate = Date(dateRange.value.first).formatDate(SDF_D_MMM_YYYY_WITH_COMA),
-            endDate = Date(dateRange.value.second).formatDate(SDF_D_MMM_YYYY_WITH_COMA)
+            endDate = Date(dateRange.value.second).formatDate(SDF_D_MMM_YYYY_WITH_COMA),
           )
       }
       is MeasureReportEvent.OnReportTypeChanged -> {
@@ -238,7 +237,7 @@ constructor(
     val registerConfiguration =
       configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
         ConfigType.Register,
-        measureReportConfig.registerId
+        measureReportConfig.registerId,
       )
     subjectData.value =
       Pager(
@@ -249,11 +248,11 @@ constructor(
                 measureReportConfiguration = measureReportConfig,
                 registerConfiguration = registerConfiguration,
                 registerRepository = registerRepository,
-                resourceDataRulesExecutor = resourceDataRulesExecutor
+                resourceDataRulesExecutor = resourceDataRulesExecutor,
               ),
               measureReportSubjectViewDataMapper,
             )
-          }
+          },
         )
         .flow
         .cachedIn(viewModelScope)
@@ -266,16 +265,12 @@ constructor(
     if (reportConfigurations.isNotEmpty()) {
       // Retrieve and parse dates to  (2020-11-16)
       val startDateFormatted =
-        reportTypeSelectorUiState
-          .value
-          .startDate
+        reportTypeSelectorUiState.value.startDate
           .parseDate(SDF_D_MMM_YYYY_WITH_COMA)
           ?.formatDate(SDF_YYYY_MM_DD)!!
 
       val endDateFormatted =
-        reportTypeSelectorUiState
-          .value
-          .endDate
+        reportTypeSelectorUiState.value.endDate
           .parseDate(SDF_D_MMM_YYYY_WITH_COMA)
           ?.formatDate(SDF_YYYY_MM_DD)!!
 
@@ -293,12 +288,14 @@ constructor(
                     startDateFormatted,
                     endDateFormatted,
                     config.url,
-                    listOf()
+                    listOf(),
                   )
 
                 // if report is of current month or does not exist generate a new one and replace
                 // existing
-                if (endDateFormatted.parseDate(SDF_YYYY_MM_DD)!!
+                if (
+                  endDateFormatted
+                    .parseDate(SDF_YYYY_MM_DD)!!
                     .formatDate(SDF_YYYY_MMM)
                     .contentEquals(Date().formatDate(SDF_YYYY_MMM)) || existing.isEmpty()
                 ) {
@@ -311,13 +308,15 @@ constructor(
                     startDateFormatted,
                     endDateFormatted,
                     subjects,
-                    existing
+                    existing,
                   )
-                } else existing
+                } else {
+                  existing
+                }
               }
 
             _measureReportPopulationResultList.addAll(
-              formatPopulationMeasureReports(result, reportConfigurations)
+              formatPopulationMeasureReports(result, reportConfigurations),
             )
           }
           .onSuccess {
@@ -369,7 +368,7 @@ constructor(
               is Practitioner -> resource.nameFirstRep.nameAsSingleString
               else ->
                 throw UnsupportedOperationException(
-                  "${resource.resourceType} as individual subject not allowed"
+                  "${resource.resourceType} as individual subject not allowed",
                 )
             }
           }
@@ -378,22 +377,23 @@ constructor(
           entry.value.flatMap { report ->
             val formatted = formatSupplementalData(report.contained, report.type)
             val title = nonNullGetOrDefault(indicatorUrlToTitleMap, report.measure, "")
-            if (formatted.isEmpty())
+            if (formatted.isEmpty()) {
               listOf(MeasureReportIndividualResult(title = title, count = "0"))
-            else if (formatted.size == 1)
+            } else if (formatted.size == 1) {
               listOf(
                 MeasureReportIndividualResult(
                   title = title,
-                  count = formatted.first().measureReportDenominator?.toString() ?: "0"
-                )
+                  count = formatted.first().measureReportDenominator?.toString() ?: "0",
+                ),
               )
-            else
+            } else {
               formatted.map {
                 MeasureReportIndividualResult(
                   title = it.title,
-                  count = it.measureReportDenominator.toString()
+                  count = it.measureReportDenominator.toString(),
                 )
               }
+            }
           }
 
         data.add(
@@ -402,8 +402,8 @@ constructor(
             indicatorTitle = subject,
             measureReportDenominator =
               if (theIndicators.size == 1) theIndicators.first().count.toInt() else null,
-            dataList = if (theIndicators.size > 1) theIndicators else emptyList()
-          )
+            dataList = if (theIndicators.size > 1) theIndicators else emptyList(),
+          ),
         )
       }
 
@@ -416,13 +416,11 @@ constructor(
 
         data.addAll(formatSupplementalData(report.contained, report.type))
 
-        report
-          .group
+        report.group
           .map { group ->
             val denominator = group.findPopulation(MeasurePopulationType.NUMERATOR)?.count
             group to
-              group
-                .stratifier
+              group.stratifier
                 .asSequence()
                 .flatMap { it.stratum }
                 .filter { it.hasValue() && it.value.hasText() }
@@ -431,7 +429,7 @@ constructor(
                     title = stratifier.value.text,
                     percentage = stratifier.findPercentage(denominator!!).toString(),
                     count = stratifier.findRatio(denominator),
-                    description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
+                    description = stratifier.id?.replace("-", " ")?.uppercase() ?: "",
                   )
                 }
           }
@@ -440,7 +438,7 @@ constructor(
               MeasureReportPopulationResult(
                 title = it.first.id.replace("-", " "),
                 indicatorTitle = nonNullGetOrDefault(indicatorUrlToTitleMap, report.measure, ""),
-                measureReportDenominator = count.count
+                measureReportDenominator = count.count,
               )
             }
           }
@@ -462,7 +460,7 @@ constructor(
    */
   private fun formatSupplementalData(
     list: List<Resource>,
-    type: MeasureReport.MeasureReportType
+    type: MeasureReport.MeasureReportType,
   ): List<MeasureReportPopulationResult> {
     // handle extracted supplemental data for values
     return list
@@ -474,18 +472,20 @@ constructor(
           .filter { it.key.isNullOrBlank().not() }
           .map { entry ->
             entry.key!! to
-              if (type == MeasureReport.MeasureReportType.INDIVIDUAL)
-              // for subject specific reports it is key value map with exact value
-              entry.value.joinToString { it.valueCode() ?: "" }
-              // for multiple subjects it is a number for each which should be counted by entries
-              else entry.value.count().toString()
+              if (type == MeasureReport.MeasureReportType.INDIVIDUAL) {
+                // for subject specific reports it is key value map with exact value
+                entry.value.joinToString { it.valueCode() ?: "" }
+              } // for multiple subjects it is a number for each which should be counted by entries
+              else {
+                entry.value.count().toString()
+              }
           }
       }
       .map {
         MeasureReportPopulationResult(
           title = it.first,
           indicatorTitle = it.first,
-          measureReportDenominator = it.second.toBigDecimal().toInt()
+          measureReportDenominator = it.second.toBigDecimal().toInt(),
         )
       }
   }
@@ -493,23 +493,22 @@ constructor(
   /** This function @returns a map of year-month for all months falling in given measure period */
   fun getReportGenerationRange(
     reportId: String,
-    startDate: Date? = null
+    startDate: Date? = null,
   ): Map<String, List<ReportRangeSelectionData>> {
-
     val reportConfiguration = retrieveMeasureReportConfiguration(reportId)
     val yearMonths = mutableListOf<ReportRangeSelectionData>()
     val endDate = Calendar.getInstance().time.formatDate(SDF_YYYY_MM_DD).parseDate(SDF_YYYY_MM_DD)
     var lastDate = endDate?.firstDayOfMonth()
 
-    while (lastDate!!.after(
-      startDate ?: reportConfiguration.startPeriod?.parseDate(SDF_YYYY_MM_DD)
-    )) {
+    while (
+      lastDate!!.after(startDate ?: reportConfiguration.startPeriod?.parseDate(SDF_YYYY_MM_DD))
+    ) {
       yearMonths.add(
         ReportRangeSelectionData(
           lastDate.formatDate(SDF_MMMM),
           lastDate.formatDate(SDF_YYYY),
-          lastDate
-        )
+          lastDate,
+        ),
       )
 
       lastDate = lastDate.plusMonths(-1)

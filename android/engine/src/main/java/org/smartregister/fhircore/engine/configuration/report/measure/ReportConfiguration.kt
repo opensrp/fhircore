@@ -25,5 +25,5 @@ data class ReportConfiguration(
   val description: String = "",
   val url: String = "",
   val module: String = "",
-  val subjectXFhirQuery: String? = null
+  val subjectXFhirQuery: String? = null,
 )

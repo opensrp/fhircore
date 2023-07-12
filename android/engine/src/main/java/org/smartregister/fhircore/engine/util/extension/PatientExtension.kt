@@ -31,7 +31,9 @@ fun Patient.extractGender(context: Context): String? =
       AdministrativeGender.UNKNOWN -> context.getString(R.string.unknown)
       AdministrativeGender.NULL -> ""
     }
-  } else null
+  } else {
+    null
+  }
 
 fun Patient.extractAge(context: Context): String {
   if (!hasBirthDate()) return ""

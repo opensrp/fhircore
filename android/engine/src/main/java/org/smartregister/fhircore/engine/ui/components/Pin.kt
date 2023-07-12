@@ -69,7 +69,7 @@ fun PinInput(
   inputMode: Boolean = true,
   onPinSet: (CharArray) -> Unit,
   onShowPinError: (Boolean) -> Unit,
-  onPinEntered: (CharArray, (Boolean) -> Unit) -> Unit
+  onPinEntered: (CharArray, (Boolean) -> Unit) -> Unit,
 ) {
   val keyboard = LocalSoftwareKeyboardController.current
   val focusRequester = remember { FocusRequester() }
@@ -94,8 +94,9 @@ fun PinInput(
           nextCellIndex = enteredPin.size
           keyboard?.hide()
 
-          if (inputMode) onPinSet(enteredPin)
-          else {
+          if (inputMode) {
+            onPinSet(enteredPin)
+          } else {
             onPinEntered(enteredPin) { isValid ->
               isValidPin = isValid
               if (!isValid) {
@@ -109,8 +110,9 @@ fun PinInput(
           isValidPin = null
           keyboard?.show()
           enteredPin =
-            if (it.length < enteredPin.size) enteredPin.safeRemoveLast()
-            else enteredPin.safePlus(it.last())
+            if (it.length < enteredPin.size) {
+              enteredPin.safeRemoveLast()
+            } else enteredPin.safePlus(it.last())
           nextCellIndex = enteredPin.size
           onPinSet(enteredPin)
           onShowPinError(false)
@@ -146,7 +148,7 @@ fun PinInput(
           keyboard?.show()
           clearPasswordInMemory(enteredPin)
           onShowPinError(false)
-        }
+        },
       )
     }
   }
@@ -159,7 +161,7 @@ fun PinCell(
   backgroundColor: Color = Color.LightGray,
   inputMode: Boolean = true,
   number: String,
-  onPinCellClick: () -> Unit
+  onPinCellClick: () -> Unit,
 ) {
   Box(
     modifier =
@@ -172,17 +174,18 @@ fun PinCell(
         .border(
           width = if (inputMode) 1.dp else 0.dp,
           color = borderColor,
-          shape = RoundedCornerShape(8.dp)
+          shape = RoundedCornerShape(8.dp),
         )
         .clickable { onPinCellClick() },
-    contentAlignment = Alignment.Center
+    contentAlignment = Alignment.Center,
   ) {
-    if (inputMode)
+    if (inputMode) {
       Text(
         modifier = modifier.testTag(PIN_CELL_TEXT_TEST_TAG),
         text = number,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
       )
+    }
   }
 }
 
@@ -194,7 +197,7 @@ private fun PinViewWithActiveInputModePreview() {
     inputMode = true,
     onPinSet = {},
     onShowPinError = {},
-    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
+    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
   )
 }
 
@@ -206,6 +209,6 @@ private fun PinViewWithInActiveInputModePreview() {
     inputMode = false,
     onPinSet = {},
     onShowPinError = {},
-    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
+    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
   )
 }

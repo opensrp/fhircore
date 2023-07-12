@@ -54,9 +54,9 @@ class RegisterScreenNoResultViewTest {
           NoResultsConfig(
             title = "Title",
             message = "This is message",
-            actionButton = NavigationMenuConfig(display = "Button Text", id = "1")
+            actionButton = NavigationMenuConfig(display = "Button Text", id = "1"),
           ),
-        onClick = mockListener
+        onClick = mockListener,
       )
     }
     composeTestRule

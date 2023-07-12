@@ -42,7 +42,9 @@ import timber.log.Timber
 @HiltAndroidApp
 class QuestApplication : Application(), DataCaptureConfig.Provider, Configuration.Provider {
   @Inject lateinit var workerFactory: HiltWorkerFactory
+
   @Inject lateinit var referenceUrlResolver: ReferenceUrlResolver
+
   @Inject lateinit var xFhirQueryResolver: QuestXFhirQueryResolver
   private var configuration: DataCaptureConfig? = null
 
@@ -74,7 +76,6 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
   @VisibleForTesting
   fun initSentryMonitoring(dsn: String = BuildConfig.SENTRY_DSN) {
     if (dsn.isNotBlank()) {
-
       val sentryConfiguration = { options: SentryAndroidOptions ->
         options.dsn = dsn.trim { it <= ' ' }
         // To set a uniform sample rate
@@ -85,8 +86,8 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
           FragmentLifecycleIntegration(
             this,
             enableFragmentLifecycleBreadcrumbs = true,
-            enableAutoFragmentLifecycleTracing = true
-          )
+            enableAutoFragmentLifecycleTracing = true,
+          ),
         )
         try {
           options.environment = URL(BuildConfig.FHIR_BASE_URL)?.getSubDomain()?.replace('-', '.')
@@ -106,7 +107,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
           urlResolver = referenceUrlResolver,
           xFhirQueryResolver = xFhirQueryResolver,
           questionnaireItemViewHolderFactoryMatchersProviderFactory =
-            QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
+            QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl,
         )
     return configuration as DataCaptureConfig
   }

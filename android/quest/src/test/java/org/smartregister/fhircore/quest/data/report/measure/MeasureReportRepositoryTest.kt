@@ -61,8 +61,10 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 @HiltAndroidTest
 class MeasureReportRepositoryTest : RobolectricTest() {
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val fhirEngine: FhirEngine = mockk()
+
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   private lateinit var measureReportConfiguration: MeasureReportConfiguration
   private lateinit var measureReportRepository: MeasureReportRepository
@@ -81,8 +83,8 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           context = ApplicationProvider.getApplicationContext(),
           configurationRegistry = configurationRegistry,
           fhirPathDataExtractor = fhirPathDataExtractor,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider
-        )
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+        ),
       )
     resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)
 
@@ -99,8 +101,8 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
-          configRulesExecutor = mockk()
-        )
+          configRulesExecutor = mockk(),
+        ),
       )
 
     measureReportRepository =
@@ -126,7 +128,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           today().firstDayOfMonth().formatDate(SDF_YYYY_MM_DD),
           today().lastDayOfMonth().formatDate(SDF_YYYY_MM_DD),
           emptyList(),
-          emptyList()
+          emptyList(),
         )
       assertEquals(measureReport.size, 0)
     }
@@ -197,7 +199,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Group>(any<Search>()) } returns
       listOf(
         Group()
-          .addMember(Group.GroupMemberComponent().setEntity(Reference().setReference("Patient/1")))
+          .addMember(Group.GroupMemberComponent().setEntity(Reference().setReference("Patient/1"))),
       )
     coEvery { fhirEngine.update(any<Group>()) } just runs
 

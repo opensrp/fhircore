@@ -68,7 +68,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val baseElement =
       iParser.parseResource(
         QuestionnaireResponse::class.java,
-        registrationQuestionnaireResponseString
+        registrationQuestionnaireResponseString,
       )
 
     structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
@@ -101,7 +101,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val baseElement =
       iParser.parseResource(
         QuestionnaireResponse::class.java,
-        immunizationQuestionnaireResponseString
+        immunizationQuestionnaireResponseString,
       )
 
     structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
@@ -263,7 +263,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val baseElement =
       iParser.parseResource(
         QuestionnaireResponse::class.java,
-        patientRegistrationQuestionnaireResponse
+        patientRegistrationQuestionnaireResponse,
       )
     structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
 
@@ -404,14 +404,14 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val structureMap =
       structureMapUtilities.parse(
         physicalInventoryCountStructureMap,
-        "Physical Inventory Count and Stock Supply"
+        "Physical Inventory Count and Stock Supply",
       )
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val targetResource = Bundle()
     val baseElement =
       iParser.parseResource(
         QuestionnaireResponse::class.java,
-        physicalInventoryCountQuestionnaireResponseString
+        physicalInventoryCountQuestionnaireResponseString,
       )
 
     structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)

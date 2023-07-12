@@ -50,9 +50,9 @@ fun RegisterFooter(
   pagesCount: Int,
   previousButtonClickListener: () -> Unit,
   nextButtonClickListener: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
-  if (resultCount > 0)
+  if (resultCount > 0) {
     Row(modifier = modifier.fillMaxWidth().testTag(SEARCH_FOOTER_TAG)) {
       Box(
         modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.Start),
@@ -60,11 +60,11 @@ fun RegisterFooter(
         if (currentPage > 1) {
           TextButton(
             onClick = previousButtonClickListener,
-            modifier = modifier.testTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG)
+            modifier = modifier.testTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG),
           ) {
             Icon(
               painter = painterResource(id = R.drawable.ic_chevron_left),
-              contentDescription = stringResource(R.string.str_next)
+              contentDescription = stringResource(R.string.str_next),
             )
             Text(
               fontSize = 14.sp,
@@ -82,7 +82,7 @@ fun RegisterFooter(
           modifier
             .testTag(SEARCH_FOOTER_PAGINATION_TAG)
             .padding(4.dp)
-            .align(Alignment.CenterVertically)
+            .align(Alignment.CenterVertically),
       )
       Box(
         modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.End),
@@ -90,7 +90,7 @@ fun RegisterFooter(
         if (currentPage < pagesCount) {
           TextButton(
             onClick = nextButtonClickListener,
-            modifier = modifier.testTag(SEARCH_FOOTER_NEXT_BUTTON_TAG)
+            modifier = modifier.testTag(SEARCH_FOOTER_NEXT_BUTTON_TAG),
           ) {
             Text(
               fontSize = 14.sp,
@@ -99,12 +99,13 @@ fun RegisterFooter(
             )
             Icon(
               painter = painterResource(id = R.drawable.ic_chevron_right),
-              contentDescription = stringResource(R.string.str_next)
+              contentDescription = stringResource(R.string.str_next),
             )
           }
         }
       }
     }
+  }
 }
 
 @PreviewWithBackgroundExcludeGenerated

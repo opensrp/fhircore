@@ -29,7 +29,7 @@ fun SnackBarMessage(
   snackBarHostState: SnackbarHostState,
   backgroundColorHex: String,
   actionColorHex: String,
-  contentColorHex: String
+  contentColorHex: String,
 ) {
   SnackbarHost(
     hostState = snackBarHostState,
@@ -39,8 +39,8 @@ fun SnackBarMessage(
         backgroundColor = backgroundColorHex.parseColor(),
         contentColor = contentColorHex.parseColor(),
         actionColor = actionColorHex.parseColor(),
-        modifier = modifier
+        modifier = modifier,
       )
-    }
+    },
   )
 }

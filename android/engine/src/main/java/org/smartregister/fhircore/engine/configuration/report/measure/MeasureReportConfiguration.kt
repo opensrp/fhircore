@@ -30,7 +30,7 @@ data class MeasureReportConfiguration(
   val showFixedRangeSelection: Boolean? = null,
   val showSubjectSelection: Boolean? = null,
   val scheduledGenerationDuration: String? = null,
-  val reports: List<ReportConfiguration> = emptyList()
+  val reports: List<ReportConfiguration> = emptyList(),
 ) : Configuration()
 
 /**

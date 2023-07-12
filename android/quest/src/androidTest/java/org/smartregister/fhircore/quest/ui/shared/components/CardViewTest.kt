@@ -33,6 +33,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 class CardViewTest {
   private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
   private val resourceData = ResourceData("id", ResourceType.Patient, emptyMap())
+
   @get:Rule val composeTestRule = createComposeRule()
 
   @Test
@@ -42,7 +43,7 @@ class CardViewTest {
       CardView(
         viewProperties = viewProperties,
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
     composeTestRule.onNodeWithText("IMMUNIZATIONS").assertIsDisplayed()
@@ -51,7 +52,7 @@ class CardViewTest {
 
   private fun initTestCardViewProperties(
     clickable: String = "false",
-    visible: String = "true"
+    visible: String = "true",
   ): CardViewProperties {
     return CardViewProperties(
       viewType = ViewType.CARD,
@@ -60,15 +61,15 @@ class CardViewTest {
           primaryText = "IMMUNIZATIONS",
           fontSize = 18.0f,
           primaryTextColor = "#6F7274",
-          visible = visible
+          visible = visible,
         ),
       headerAction =
         CompoundTextProperties(
           primaryText = "Record all",
           primaryTextColor = "infoColor",
           clickable = clickable,
-          visible = visible
-        )
+          visible = visible,
+        ),
     )
   }
 }

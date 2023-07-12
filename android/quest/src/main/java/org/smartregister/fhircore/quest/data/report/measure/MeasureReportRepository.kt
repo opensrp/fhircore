@@ -47,7 +47,7 @@ constructor(
   override val configService: ConfigService,
   override val configRulesExecutor: ConfigRulesExecutor,
   val registerRepository: RegisterRepository,
-  private val fhirOperator: FhirOperator
+  private val fhirOperator: FhirOperator,
 ) :
   DefaultRepository(
     fhirEngine = fhirEngine,
@@ -55,7 +55,7 @@ constructor(
     sharedPreferencesHelper = sharedPreferencesHelper,
     configurationRegistry = configurationRegistry,
     configService = configService,
-    configRulesExecutor = configRulesExecutor
+    configRulesExecutor = configRulesExecutor,
   ) {
 
   /**
@@ -74,7 +74,7 @@ constructor(
     startDateFormatted: String,
     endDateFormatted: String,
     subjects: List<String>,
-    existing: List<MeasureReport>
+    existing: List<MeasureReport>,
   ): List<MeasureReport> {
     val measureReport = mutableListOf<MeasureReport>()
     try {
@@ -87,19 +87,20 @@ constructor(
                 MeasureReportViewModel.SUBJECT,
                 startDateFormatted,
                 endDateFormatted,
-                it
+                it,
               )
             }
             .forEach { subject -> measureReport.add(subject) }
-        } else
+        } else {
           runMeasureReport(
-            measureUrl,
-            MeasureReportViewModel.POPULATION,
-            startDateFormatted,
-            endDateFormatted,
-            null
-          )
+              measureUrl,
+              MeasureReportViewModel.POPULATION,
+              startDateFormatted,
+              endDateFormatted,
+              null,
+            )
             .also { measureReport.add(it) }
+        }
       }
 
       measureReport.forEach { report ->
@@ -133,7 +134,7 @@ constructor(
     reportType: String,
     startDateFormatted: String,
     endDateFormatted: String,
-    subject: String?
+    subject: String?,
   ): MeasureReport {
     return fhirOperator.evaluateMeasure(
       measureUrl = measureUrl,
@@ -141,10 +142,17 @@ constructor(
       end = endDateFormatted,
       reportType = reportType,
       subject = subject,
-      practitioner = null
+      practitioner = null,
     )
   }
 
+  /**
+   * Fetch subjects based on subjectXFhirQuery in passed [ReportConfiguration]. If empty or
+   * FHIRException thrown return an empty list.
+   *
+   * @param config [ReportConfiguration] with subjectXFhirQuery to fetch subjects based on
+   * @return list of subjects or empty list
+   */
   suspend fun fetchSubjects(config: ReportConfiguration): List<String> {
     if (config.subjectXFhirQuery?.isNotEmpty() == true) {
       try {

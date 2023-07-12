@@ -71,6 +71,7 @@ class FhirExtractionTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   val fhirEngine: FhirEngine = mockk()
   val context = ApplicationProvider.getApplicationContext<Context>()
+
   @Inject lateinit var transformSupportServices: TransformSupportServices
   lateinit var structureMapUtilities: StructureMapUtilities
   private val defaultRepository: DefaultRepository = mockk()
@@ -101,71 +102,79 @@ class FhirExtractionTest : RobolectricTest() {
             StructureMapExtractionContext(
               context = context,
               structureMapProvider = { _, _ -> resources.structureMap },
-              transformSupportServices = transformSupportServices
-            )
+              transformSupportServices = transformSupportServices,
+            ),
         )
         .also { println(it.encodeResourceToString()) }
     val encounter = result.entry.find { it.resource is Encounter }!!.resource as Encounter
-    result.entry.filter { it.resource is Task }.also { taskList ->
-      assertTrue(taskList.size == 3)
+    result.entry
+      .filter { it.resource is Task }
+      .also { taskList ->
+        assertTrue(taskList.size == 3)
 
-      questionnaireResponse.item.find { it.linkId == "vaccines" }!!.answer
-        .map { it.value as Reference }
-        .forEach { taskReference ->
-          val outputTask =
-            taskList
-              .find { (it.resource as Task).id.extractLogicalIdUuid() == taskReference.extractId() }
-              ?.resource as?
-              Task
-          assertNotNull(outputTask)
-          assertTrue(outputTask!!.output.size == 3)
-          assertNotNull(
-            outputTask.output.find {
-              it.castToReference(it.value).reference.startsWith(ResourceType.Immunization.name)
-            }
-          )
-          assertNotNull(
-            outputTask.output.find {
-              it.castToReference(it.value).reference.startsWith(ResourceType.Encounter.name)
-            }
-          )
-        }
+        questionnaireResponse.item
+          .find { it.linkId == "vaccines" }!!
+          .answer
+          .map { it.value as Reference }
+          .forEach { taskReference ->
+            val outputTask =
+              taskList
+                .find {
+                  (it.resource as Task).id.extractLogicalIdUuid() == taskReference.extractId()
+                }
+                ?.resource as? Task
+            assertNotNull(outputTask)
+            assertTrue(outputTask!!.output.size == 3)
+            assertNotNull(
+              outputTask.output.find {
+                it.castToReference(it.value).reference.startsWith(ResourceType.Immunization.name)
+              },
+            )
+            assertNotNull(
+              outputTask.output.find {
+                it.castToReference(it.value).reference.startsWith(ResourceType.Encounter.name)
+              },
+            )
+          }
 
-      val firstTask = taskList.first().resource as Task
-      assertTrue(
-        firstTask.output.first().type.coding.first().code ==
-          encounter.type.first().coding.first().code
-      )
-      assertTrue(!firstTask.output.first().value.isEmpty)
+        val firstTask = taskList.first().resource as Task
+        assertTrue(
+          firstTask.output.first().type.coding.first().code ==
+            encounter.type.first().coding.first().code,
+        )
+        assertTrue(!firstTask.output.first().value.isEmpty)
 
-      val administrationEncounter =
-        result.entry.filter { it.resource is Encounter }.last().resource as Encounter
-      assertTrue(administrationEncounter.partOf.reference == encounter.id)
-    }
-    result.entry.filter { it.resource is Immunization }.map { it.resource as Immunization }.also {
-      assertEquals(3, it.size)
-      assertTrue(it.all { it.encounter.reference == encounter.referenceValue() })
-      assertTrue(it.all { it.status == Immunization.ImmunizationStatus.COMPLETED })
-      assertTrue(it.all { it.recorded.makeItReadable() == Date().makeItReadable() })
-      val bcg = it[0]
-      assertEquals(bcg.occurrenceDateTimeType.value.makeItReadable(), "14-Apr-2023")
-      assertEquals(bcg.vaccineCode.text, "BCG")
-      assertEquals(bcg.vaccineCode.codingFirstRep.code, "42284007")
-      assertEquals(bcg.vaccineCode.codingFirstRep.display, "BCG vaccine")
-      assertEquals(bcg.vaccineCode.codingFirstRep.system, "http://snomed.info/sct")
-      val opv1 = it[1]
-      assertEquals(opv1.occurrenceDateTimeType.value.makeItReadable(), "21-Apr-2023")
-      assertEquals(opv1.vaccineCode.text, "OPV 1")
-      assertEquals(opv1.vaccineCode.codingFirstRep.code, "111164008")
-      assertEquals(opv1.vaccineCode.codingFirstRep.display, "Poliovirus vaccine")
-      assertEquals(opv1.vaccineCode.codingFirstRep.system, "http://snomed.info/sct")
-      val rota1 = it[2]
-      assertEquals(rota1.occurrenceDateTimeType.value.makeItReadable(), "28-Apr-2023")
-      assertEquals(rota1.vaccineCode.text, "ROTA 1")
-      assertEquals(rota1.vaccineCode.codingFirstRep.code, "415354003")
-      assertEquals(rota1.vaccineCode.codingFirstRep.display, "Rotavirus vaccine")
-      assertEquals(rota1.vaccineCode.codingFirstRep.system, "http://snomed.info/sct")
-    }
+        val administrationEncounter =
+          result.entry.filter { it.resource is Encounter }.last().resource as Encounter
+        assertTrue(administrationEncounter.partOf.reference == encounter.id)
+      }
+    result.entry
+      .filter { it.resource is Immunization }
+      .map { it.resource as Immunization }
+      .also {
+        assertEquals(3, it.size)
+        assertTrue(it.all { it.encounter.reference == encounter.referenceValue() })
+        assertTrue(it.all { it.status == Immunization.ImmunizationStatus.COMPLETED })
+        assertTrue(it.all { it.recorded.makeItReadable() == Date().makeItReadable() })
+        val bcg = it[0]
+        assertEquals(bcg.occurrenceDateTimeType.value.makeItReadable(), "14-Apr-2023")
+        assertEquals(bcg.vaccineCode.text, "BCG")
+        assertEquals(bcg.vaccineCode.codingFirstRep.code, "42284007")
+        assertEquals(bcg.vaccineCode.codingFirstRep.display, "BCG vaccine")
+        assertEquals(bcg.vaccineCode.codingFirstRep.system, "http://snomed.info/sct")
+        val opv1 = it[1]
+        assertEquals(opv1.occurrenceDateTimeType.value.makeItReadable(), "21-Apr-2023")
+        assertEquals(opv1.vaccineCode.text, "OPV 1")
+        assertEquals(opv1.vaccineCode.codingFirstRep.code, "111164008")
+        assertEquals(opv1.vaccineCode.codingFirstRep.display, "Poliovirus vaccine")
+        assertEquals(opv1.vaccineCode.codingFirstRep.system, "http://snomed.info/sct")
+        val rota1 = it[2]
+        assertEquals(rota1.occurrenceDateTimeType.value.makeItReadable(), "28-Apr-2023")
+        assertEquals(rota1.vaccineCode.text, "ROTA 1")
+        assertEquals(rota1.vaccineCode.codingFirstRep.code, "415354003")
+        assertEquals(rota1.vaccineCode.codingFirstRep.display, "Rotavirus vaccine")
+        assertEquals(rota1.vaccineCode.codingFirstRep.system, "http://snomed.info/sct")
+      }
   }
 
   @Test
@@ -183,38 +192,43 @@ class FhirExtractionTest : RobolectricTest() {
             StructureMapExtractionContext(
               context = context,
               structureMapProvider = { _, _ -> resources.structureMap },
-              transformSupportServices = transformSupportServices
-            )
+              transformSupportServices = transformSupportServices,
+            ),
         )
         .also { println(it.encodeResourceToString()) }
     val encounter = result.entry.find { it.resource is Encounter }!!.resource as Encounter
-    result.entry.filter { it.resource is Task }.also { taskList ->
-      questionnaireResponse.item.find { it.linkId == "previous_vaccine" }!!.answer
-        .map { it.value as Reference }
-        .forEach { taskReference ->
-          val outputTask =
-            taskList
-              .find { (it.resource as Task).id.extractLogicalIdUuid() == taskReference.extractId() }
-              ?.resource as?
-              Task
-          assertNotNull(outputTask)
-          assertTrue(outputTask!!.output.size == 3)
-          assertNotNull(
-            outputTask.output.find {
-              it.castToReference(it.value).reference.startsWith(ResourceType.Immunization.name)
-            }
-          )
-          assertNotNull(
-            outputTask.output.find {
-              it.castToReference(it.value).reference.startsWith(ResourceType.Encounter.name)
-            }
-          )
-        }
+    result.entry
+      .filter { it.resource is Task }
+      .also { taskList ->
+        questionnaireResponse.item
+          .find { it.linkId == "previous_vaccine" }!!
+          .answer
+          .map { it.value as Reference }
+          .forEach { taskReference ->
+            val outputTask =
+              taskList
+                .find {
+                  (it.resource as Task).id.extractLogicalIdUuid() == taskReference.extractId()
+                }
+                ?.resource as? Task
+            assertNotNull(outputTask)
+            assertTrue(outputTask!!.output.size == 3)
+            assertNotNull(
+              outputTask.output.find {
+                it.castToReference(it.value).reference.startsWith(ResourceType.Immunization.name)
+              },
+            )
+            assertNotNull(
+              outputTask.output.find {
+                it.castToReference(it.value).reference.startsWith(ResourceType.Encounter.name)
+              },
+            )
+          }
 
-      val administrationEncounter =
-        result.entry.last { it.resource is Encounter }.resource as Encounter
-      assertTrue(administrationEncounter.partOf.reference == encounter.referenceValue())
-    }
+        val administrationEncounter =
+          result.entry.last { it.resource is Encounter }.resource as Encounter
+        assertTrue(administrationEncounter.partOf.reference == encounter.referenceValue())
+      }
   }
 
   data class ExtractionResources(
@@ -222,7 +236,7 @@ class FhirExtractionTest : RobolectricTest() {
     val patient: Patient,
     val questionnaireResponse: QuestionnaireResponse,
     val structureMap: StructureMap,
-    val resourcesSlot: MutableList<Resource>
+    val resourcesSlot: MutableList<Resource>,
   )
 
   private fun loadExtractionResources(name: String): ExtractionResources {
@@ -240,7 +254,7 @@ class FhirExtractionTest : RobolectricTest() {
         .let {
           structureMapUtilities.parse(
             it,
-            "${name.uppercase().replace("-", "").replace(" ", "")}Extraction"
+            "${name.uppercase().replace("-", "").replace(" ", "")}Extraction",
           )
         }
         .also { println(it.encodeResourceToString()) }
@@ -254,7 +268,7 @@ class FhirExtractionTest : RobolectricTest() {
       patient,
       questionnaireResponse,
       structureMap,
-      resourcesSlot
+      resourcesSlot,
     )
   }
 }

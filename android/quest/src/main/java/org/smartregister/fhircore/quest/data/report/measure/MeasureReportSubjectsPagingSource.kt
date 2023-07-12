@@ -23,17 +23,17 @@ import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDat
 
 class MeasureReportSubjectsPagingSource(
   private val measureReportPagingSource: MeasureReportPagingSource,
-  val measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
+  private val measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper,
 ) : PagingSource<Int, MeasureReportSubjectViewData>() {
 
   override suspend fun load(
-    params: LoadParams<Int>
+    params: LoadParams<Int>,
   ): LoadResult<Int, MeasureReportSubjectViewData> {
     return try {
       val currentPage = params.key ?: 0
       val pageSize = params.loadSize
       val data =
-        measureReportPagingSource.retrieveSubjects(currentPage).map { resourceData ->
+        measureReportPagingSource.retrieveSubjects().map { resourceData ->
           measureReportSubjectViewDataMapper.transformInputToOutputModel(resourceData)
         }
       val prevKey = if (currentPage == 0) null else currentPage - 1

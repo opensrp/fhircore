@@ -61,7 +61,7 @@ constructor(
    */
   override suspend fun doWork(): Result {
     try {
-      Timber.i("started MeasureReportWorker")
+      Timber.i("started MeasureReportMonthPeriodWorker")
 
       inputData
         .getString(MEASURE_REPORT_CONFIG_ID)
@@ -80,7 +80,7 @@ constructor(
               startDateFormatted = startDateFormatted,
               endDateFormatted = endDateFormatted,
               measureUrl = config.url,
-              subjects = listOf()
+              subjects = listOf(),
             )
 
           if (existing.isEmpty()) {
@@ -93,11 +93,11 @@ constructor(
               startDateFormatted,
               endDateFormatted,
               subjects,
-              existing
+              existing,
             )
           }
         }
-      Timber.i("successfully completed MeasureReportWorker")
+      Timber.i("successfully completed MeasureReportMonthPeriodWorker")
     } catch (e: Exception) {
       Timber.w(e.localizedMessage)
       Result.failure()

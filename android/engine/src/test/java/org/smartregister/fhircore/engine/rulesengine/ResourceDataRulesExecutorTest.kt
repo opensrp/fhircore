@@ -53,9 +53,11 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 @HiltAndroidTest
 class ResourceDataRulesExecutorTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   @get:Rule(order = 1)
   val coroutineRule = CoroutineTestRule()
+
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var rulesFactory: RulesFactory
@@ -71,8 +73,8 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
           context = ApplicationProvider.getApplicationContext(),
           configurationRegistry = configurationRegistry,
           fhirPathDataExtractor = fhirPathDataExtractor,
-          dispatcherProvider = coroutineRule.testDispatcherProvider
-        )
+          dispatcherProvider = coroutineRule.testDispatcherProvider,
+        ),
       )
     resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)
   }
@@ -87,7 +89,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
       RuleConfig(
         name = "patientName",
         description = "Retrieve patient name",
-        actions = listOf("data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))")
+        actions = listOf("data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))"),
       )
     val ruleConfigs = listOf(ruleConfig)
 
@@ -98,10 +100,10 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
             RepositoryResourceData(
               resourceRulesEngineFactId = null,
               resource = baseResource,
-              relatedResourcesMap = relatedRepositoryResourceData
+              relatedResourcesMap = relatedRepositoryResourceData,
             ),
           ruleConfigs = ruleConfigs,
-          params = emptyMap()
+          params = emptyMap(),
         )
 
       Assert.assertEquals(patientId, resourceData.baseResourceId)
@@ -124,7 +126,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
         listProperties = listProperties,
         relatedResourcesMap = relatedRepositoryResourceData,
         computedValuesMap = computedValuesMap,
-        listResourceDataStateMap = listResourceDataStateMap
+        listResourceDataStateMap = listResourceDataStateMap,
       )
       Assert.assertEquals(0, listResourceDataStateMap.size)
     }
@@ -146,14 +148,14 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
           sortConfig =
             SortConfig(
               dataType = Enumerations.DataType.STRING,
-              fhirPathExpression = "Patient.name.given"
-            )
+              fhirPathExpression = "Patient.name.given",
+            ),
         )
       val listProperties =
         ListProperties(
           registerCard = registerCard,
           viewType = viewType,
-          resources = listOf(listResource)
+          resources = listOf(listResource),
         )
       val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
       val computedValuesMap: Map<String, List<Resource>> = emptyMap()
@@ -168,7 +170,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
         listProperties = listProperties,
         relatedResourcesMap = relatedRepositoryResourceData,
         computedValuesMap = computedValuesMap,
-        listResourceDataStateMap = listResourceDataStateMap
+        listResourceDataStateMap = listResourceDataStateMap,
       )
       val snapshotStateList = listResourceDataStateMap[listProperties.id]
       Assert.assertNotNull(snapshotStateList)
@@ -196,7 +198,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
         ListResource(
           "id",
           resourceType = ResourceType.Patient,
-          conditionalFhirPathExpression = "Patient.active"
+          conditionalFhirPathExpression = "Patient.active",
         )
       val resources = listOf(listResource)
       val listProperties =
@@ -214,7 +216,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
         listProperties = listProperties,
         relatedResourcesMap = relatedRepositoryResourceData,
         computedValuesMap = computedValuesMap,
-        listResourceDataStateMap = listResourceDataStateMap
+        listResourceDataStateMap = listResourceDataStateMap,
       )
 
       val snapshotStateList = listResourceDataStateMap[listProperties.id]
@@ -245,15 +247,15 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
               ListResource(
                 null,
                 resourceType = ResourceType.Task,
-                fhirPathExpression = "Task.for.reference"
-              )
-            )
+                fhirPathExpression = "Task.for.reference",
+              ),
+            ),
         )
       val listProperties =
         ListProperties(
           registerCard = registerCard,
           viewType = viewType,
-          resources = listOf(listResource)
+          resources = listOf(listResource),
         )
 
       val relatedRepositoryResourceData = mutableMapOf<String, LinkedList<Resource>>()
@@ -267,7 +269,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
         listProperties = listProperties,
         relatedResourcesMap = relatedRepositoryResourceData,
         computedValuesMap = emptyMap(),
-        listResourceDataStateMap = listResourceDataStateMap
+        listResourceDataStateMap = listResourceDataStateMap,
       )
 
       val snapshotStateList = listResourceDataStateMap[listProperties.id]
@@ -293,10 +295,10 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
                 name = "taskId",
                 actions =
                   listOf(
-                    "data.put('taskId', fhirPath.extractValue(patientReadyTasks.get(0), 'Task.id'))"
-                  )
-              )
-            )
+                    "data.put('taskId', fhirPath.extractValue(patientReadyTasks.get(0), 'Task.id'))",
+                  ),
+              ),
+            ),
         )
 
       val patient = Faker.buildPatient()
@@ -312,16 +314,16 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
                 resourceType = ResourceType.Task,
                 conditionalFhirPathExpression = "Task.status = 'ready'",
                 fhirPathExpression = "Task.for.reference",
-                relatedResourceId = allTasks
-              )
-            )
+                relatedResourceId = allTasks,
+              ),
+            ),
         )
       val listProperties =
         ListProperties(
           id = "listId",
           registerCard = registerCard,
           viewType = ViewType.LIST,
-          resources = listOf(listResource)
+          resources = listOf(listResource),
         )
 
       val tasks =
@@ -340,7 +342,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
             id = "task3"
             `for` = anotherPatient.id.asReference(ResourceType.Patient)
             status = Task.TaskStatus.READY
-          }
+          },
         )
       val relatedRepositoryResourceData = mutableMapOf<String, List<Resource>>()
       relatedRepositoryResourceData.apply {
@@ -354,7 +356,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
         listProperties = listProperties,
         relatedResourcesMap = relatedRepositoryResourceData,
         computedValuesMap = emptyMap(),
-        listResourceDataStateMap = listResourceDataStateMap
+        listResourceDataStateMap = listResourceDataStateMap,
       )
 
       val snapshotStateList = listResourceDataStateMap[listProperties.id]

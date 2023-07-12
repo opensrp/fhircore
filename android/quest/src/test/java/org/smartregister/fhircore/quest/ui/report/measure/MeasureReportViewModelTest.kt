@@ -78,11 +78,17 @@ import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDat
 @HiltAndroidTest
 class MeasureReportViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
+
   @Inject lateinit var measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
+
   @Inject lateinit var registerRepository: RegisterRepository
+
   @Inject lateinit var defaultRepository: DefaultRepository
+
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+
   @Inject lateinit var measureReportRepository: MeasureReportRepository
   private val fhirEngine: FhirEngine = mockk()
   private val fhirOperator: FhirOperator = mockk()
@@ -98,13 +104,13 @@ class MeasureReportViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    coEvery { measureReportPagingSource.retrieveSubjects(0) } returns
+    coEvery { measureReportPagingSource.retrieveSubjects() } returns
       listOf(
         ResourceData(
           baseResourceId = Faker.buildPatient().id,
           baseResourceType = ResourceType.Patient,
           computedValuesMap = emptyMap(),
-        )
+        ),
       )
 
     measureReportViewModel =
@@ -119,8 +125,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
           registerRepository = registerRepository,
           defaultRepository = defaultRepository,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
-          measureReportRepository = measureReportRepository
-        )
+          measureReportRepository = measureReportRepository,
+        ),
       )
   }
 
@@ -154,13 +160,13 @@ class MeasureReportViewModelTest : RobolectricTest() {
         title = "Measure 1",
         description = "Measure report for testing",
         url = "http://nourl.com",
-        module = "Module1"
+        module = "Module1",
       )
     measureReportViewModel.onEvent(
       MeasureReportEvent.OnSelectMeasure(
         reportConfigurations = listOf(reportConfiguration),
-        navController = navController
-      )
+        navController = navController,
+      ),
     )
     val routeSlot = slot<String>()
 
@@ -182,7 +188,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
         title = "Measure 1",
         description = "Measure report for testing",
         url = "http://nourl.com",
-        module = "Module1"
+        module = "Module1",
       )
     val sampleSubjectViewData =
       mutableSetOf(
@@ -190,8 +196,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
           type = ResourceType.Patient,
           logicalId = "member1",
           display = "Willy Mark, M, 28",
-          family = "Orion"
-        )
+          family = "Orion",
+        ),
       )
 
     measureReportViewModel.reportConfigurations.add(reportConfiguration)
@@ -200,7 +206,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
     measureReportViewModel.onEvent(
       MeasureReportEvent.GenerateReport(context = application, navController = navController),
-      "2022-10-31".parseDate(SDF_YYYY_MM_DD)
+      "2022-10-31".parseDate(SDF_YYYY_MM_DD),
     )
 
     verify { measureReportViewModel.evaluateMeasure(navController) }
@@ -222,7 +228,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   private fun dateTimestamp(startTimeString: String) =
     LocalDateTime.parse(
         startTimeString,
-        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH)
+        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH),
       )
       .atZone(ZoneId.systemDefault())
       .toInstant()
@@ -232,7 +238,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   fun testOnEventOnReportTypeChanged() {
     // Test with report type INDIVIDUAL
     measureReportViewModel.onEvent(
-      MeasureReportEvent.OnReportTypeChanged(MeasureReportType.INDIVIDUAL, navController)
+      MeasureReportEvent.OnReportTypeChanged(MeasureReportType.INDIVIDUAL, navController),
     )
     Assert.assertEquals(MeasureReportType.INDIVIDUAL, measureReportViewModel.reportTypeState.value)
     val routeSlot = slot<String>()
@@ -241,11 +247,11 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
     // Test with report type other than INDIVIDUAL
     measureReportViewModel.onEvent(
-      MeasureReportEvent.OnReportTypeChanged(MeasureReportType.SUMMARY, navController)
+      MeasureReportEvent.OnReportTypeChanged(MeasureReportType.SUMMARY, navController),
     )
     Assert.assertEquals(
       0,
-      measureReportViewModel.reportTypeSelectorUiState.value.subjectViewData.size
+      measureReportViewModel.reportTypeSelectorUiState.value.subjectViewData.size,
     )
   }
 
@@ -256,7 +262,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
         type = ResourceType.Patient,
         logicalId = "member1",
         display = "Willy Mark, M, 28",
-        family = "Orion"
+        family = "Orion",
       )
     measureReportViewModel.onEvent(MeasureReportEvent.OnSubjectSelected(sampleSubjectViewData))
     val subjectViewData =
@@ -283,14 +289,14 @@ class MeasureReportViewModelTest : RobolectricTest() {
         this.id = "report-group-1"
         this.addPopulation().apply {
           this.code.addCoding(
-            MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) }
+            MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) },
           )
           this.count = 3
         }
 
         this.addPopulation().apply {
           this.code.addCoding(
-            MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) }
+            MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) },
           )
           this.count = 4
         }
@@ -299,14 +305,14 @@ class MeasureReportViewModelTest : RobolectricTest() {
           this.value = CodeableConcept().apply { text = "Stratum #1" }
           this.addPopulation().apply {
             this.code.addCoding(
-              MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) }
+              MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) },
             )
             this.count = 1
           }
 
           this.addPopulation().apply {
             this.code.addCoding(
-              MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) }
+              MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) },
             )
             this.count = 2
           }
@@ -332,19 +338,19 @@ class MeasureReportViewModelTest : RobolectricTest() {
       Observation().apply {
         code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code")) }
         value = StringType("ABC")
-      }
+      },
     )
     measureReport.contained.add(
       Observation().apply {
         code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code")) }
         value = StringType("CDE")
-      }
+      },
     )
     measureReport.contained.add(
       Observation().apply {
         code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code")) }
         value = StringType("EFG")
-      }
+      },
     )
 
     val result = measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport))
@@ -369,19 +375,19 @@ class MeasureReportViewModelTest : RobolectricTest() {
       Observation().apply {
         code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code 1")) }
         value = CodeableConcept().apply { addCoding().code = "2" }
-      }
+      },
     )
     measureReport.contained.add(
       Observation().apply {
         code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code 2")) }
         value = CodeableConcept().apply { addCoding().code = "4" }
-      }
+      },
     )
     measureReport.contained.add(
       Observation().apply {
         code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code 3")) }
         value = CodeableConcept().apply { addCoding().code = "6" }
-      }
+      },
     )
 
     measureReport.subject = Reference().apply { reference = "Group/1" }

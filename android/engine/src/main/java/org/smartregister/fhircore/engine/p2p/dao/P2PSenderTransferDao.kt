@@ -35,7 +35,7 @@ class P2PSenderTransferDao
 constructor(
   fhirEngine: FhirEngine,
   dispatcherProvider: DefaultDispatcherProvider,
-  configurationRegistry: ConfigurationRegistry
+  configurationRegistry: ConfigurationRegistry,
 ) : BaseP2PTransferDao(fhirEngine, dispatcherProvider, configurationRegistry), SenderTransferDao {
 
   override fun getP2PDataTypes(): TreeSet<DataType> = getDataTypes()
@@ -48,7 +48,7 @@ constructor(
     dataType: DataType,
     lastUpdated: Long,
     batchSize: Int,
-    offset: Int
+    offset: Int,
   ): JsonData? {
     // TODO: complete  retrieval of data implementation
     Timber.e("Last updated at value is $lastUpdated")
@@ -60,22 +60,28 @@ constructor(
           lastRecordUpdatedAt = highestRecordId,
           batchSize = batchSize,
           offset = offset,
-          classType
+          classType,
         )
       }
     }
 
     Timber.e("Fetching resources from base dao of type  $dataType.name")
     highestRecordId =
-      (if (records.isNotEmpty()) records.last().meta?.lastUpdated?.time ?: highestRecordId
-      else lastUpdated)
+      (if (records.isNotEmpty()) {
+        records.last().meta?.lastUpdated?.time ?: highestRecordId
+      } else {
+        lastUpdated
+      })
 
     val jsonArray = JSONArray()
     records.forEach {
       jsonArray.put(jsonParser.encodeResourceToString(it))
       highestRecordId =
-        if (it.meta?.lastUpdated?.time!! > highestRecordId) it.meta?.lastUpdated?.time!!
-        else highestRecordId
+        if (it.meta?.lastUpdated?.time!! > highestRecordId) {
+          it.meta?.lastUpdated?.time!!
+        } else {
+          highestRecordId
+        }
       Timber.e("Sending ${it.resourceType} with id ====== ${it.logicalId}")
     }
 

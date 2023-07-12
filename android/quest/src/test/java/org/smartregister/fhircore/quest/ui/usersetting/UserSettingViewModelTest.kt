@@ -67,6 +67,7 @@ import org.smartregister.fhircore.quest.ui.login.LoginActivity
 class UserSettingViewModelTest : RobolectricTest() {
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
+
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
   lateinit var fhirEngine: FhirEngine
   private var sharedPreferencesHelper: SharedPreferencesHelper
@@ -103,8 +104,8 @@ class UserSettingViewModelTest : RobolectricTest() {
           dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
           syncListenerManager = mockk(relaxed = true),
           sync = sync,
-          context = context
-        )
+          context = context,
+        ),
       )
 
     userSettingViewModel =
@@ -117,8 +118,8 @@ class UserSettingViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           workManager = workManager,
-          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider
-        )
+          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+        ),
       )
   }
 

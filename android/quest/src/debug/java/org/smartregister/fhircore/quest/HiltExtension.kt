@@ -28,7 +28,6 @@ import androidx.test.core.app.ApplicationProvider
 import org.smartregister.fhircore.engine.R
 
 /**
- *
  * Inspired by the Hilt Extension in the Android Architectural samples here
  * https://github.com/android/architecture-samples/blob/views-hilt/app/src/androidTest/java/com/example/android/architecture/blueprints/todoapp/HiltExt.kt#L37
  *
@@ -44,15 +43,15 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
   fragmentArgs: Bundle? = null,
   @StyleRes themeResId: Int = R.style.AppTheme,
   navHostController: TestNavHostController? = null,
-  crossinline action: Fragment.() -> Unit = {}
+  crossinline action: Fragment.() -> Unit = {},
 ) {
   val startActivityIntent =
     Intent.makeMainActivity(
-        ComponentName(ApplicationProvider.getApplicationContext(), HiltActivityForTest::class.java)
+        ComponentName(ApplicationProvider.getApplicationContext(), HiltActivityForTest::class.java),
       )
       .putExtra(
         "androidx.fragment.app.testing.FragmentScenario.EmptyFragmentActivity.THEME_EXTRAS_BUNDLE_KEY",
-        themeResId
+        themeResId,
       )
 
   ActivityScenario.launch<HiltActivityForTest>(startActivityIntent).use { scenario ->
@@ -60,7 +59,7 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
       val fragment: Fragment =
         activity.supportFragmentManager.fragmentFactory.instantiate(
           checkNotNull(T::class.java.classLoader),
-          T::class.java.name
+          T::class.java.name,
         )
       fragment.arguments = fragmentArgs
 
@@ -73,8 +72,7 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
         }
       }
 
-      activity
-        .supportFragmentManager
+      activity.supportFragmentManager
         .beginTransaction()
         .add(android.R.id.content, fragment, "")
         .commitNow()

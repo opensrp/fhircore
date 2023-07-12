@@ -32,7 +32,7 @@ class MeasureReportPagingSource(
   private val measureReportConfiguration: MeasureReportConfiguration,
   private val registerConfiguration: RegisterConfiguration,
   private val registerRepository: RegisterRepository,
-  private val resourceDataRulesExecutor: ResourceDataRulesExecutor
+  private val resourceDataRulesExecutor: ResourceDataRulesExecutor,
 ) : PagingSource<Int, ReportConfiguration>() {
 
   override fun getRefreshKey(state: PagingState<Int, ReportConfiguration>): Int? {
@@ -47,7 +47,7 @@ class MeasureReportPagingSource(
     }
   }
 
-  suspend fun retrieveSubjects(count: Int): List<ResourceData> {
+  suspend fun retrieveSubjects(): List<ResourceData> {
     val xFhirQuery =
       measureReportConfiguration.reports.firstOrNull()?.subjectXFhirQuery
         ?: ResourceType.Patient.name
@@ -56,7 +56,7 @@ class MeasureReportPagingSource(
         repositoryResourceData =
           RepositoryResourceData(resourceRulesEngineFactId = it.resourceType.name, resource = it),
         ruleConfigs = registerConfiguration.registerCard.rules,
-        params = emptyMap()
+        params = emptyMap(),
       )
     }
   }

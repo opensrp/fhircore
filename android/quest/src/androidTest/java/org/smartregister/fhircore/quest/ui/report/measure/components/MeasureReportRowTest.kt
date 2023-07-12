@@ -30,6 +30,7 @@ import org.smartregister.fhircore.engine.configuration.report.measure.ReportConf
 
 class MeasureReportRowTest {
   private val mockListener: () -> Unit = spyk({})
+
   @get:Rule val composeTestRule = createComposeRule()
   private val reportConfiguration =
     ReportConfiguration(

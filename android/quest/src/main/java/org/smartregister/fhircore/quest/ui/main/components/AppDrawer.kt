@@ -97,7 +97,7 @@ fun AppDrawer(
   navController: NavController,
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit,
-  appVersionPair: Pair<Int, String>? = null
+  appVersionPair: Pair<Int, String>? = null,
 ) {
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
@@ -112,7 +112,7 @@ fun AppDrawer(
         MenuActionButton(
           modifier = modifier,
           navigationConfiguration = appUiState.navigationConfiguration,
-          navController = navController
+          navController = navController,
         )
 
         Divider(color = DividerColor)
@@ -121,7 +121,7 @@ fun AppDrawer(
     bottomBar = { // Display bottom section of the nav (sync)
       NavBottomSection(modifier, appUiState, onSideMenuClick, openDrawer)
     },
-    backgroundColor = SideMenuDarkColor
+    backgroundColor = SideMenuDarkColor,
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       Column {
@@ -131,7 +131,7 @@ fun AppDrawer(
             Text(
               text = stringResource(id = R.string.registers).uppercase(),
               fontSize = 14.sp,
-              color = MenuItemColor
+              color = MenuItemColor,
             )
           }
           Spacer(modifier = modifier.height(8.dp))
@@ -139,16 +139,16 @@ fun AppDrawer(
             appUiState = appUiState,
             navController = navController,
             openDrawer = openDrawer,
-            onSideMenuClick = onSideMenuClick
+            onSideMenuClick = onSideMenuClick,
           )
-          if (appUiState.navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() ==
-              true
+          if (
+            appUiState.navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() == true
           ) {
             OtherPatientsItem(
               navigationConfiguration = appUiState.navigationConfiguration,
               onSideMenuClick = onSideMenuClick,
               openDrawer = openDrawer,
-              navController = navController
+              navController = navController,
             )
           }
         }
@@ -162,7 +162,7 @@ fun AppDrawer(
           navController = navController,
           openDrawer = openDrawer,
           onSideMenuClick = onSideMenuClick,
-          appUiState = appUiState
+          appUiState = appUiState,
         )
       }
     }
@@ -174,7 +174,7 @@ private fun NavBottomSection(
   modifier: Modifier,
   appUiState: AppMainUiState,
   onSideMenuClick: (AppMainEvent) -> Unit,
-  openDrawer: (Boolean) -> Unit
+  openDrawer: (Boolean) -> Unit,
 ) {
   val context = LocalContext.current
   Box(
@@ -182,7 +182,7 @@ private fun NavBottomSection(
       modifier
         .testTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
         .background(SideMenuBottomItemDarkColor)
-        .padding(horizontal = 16.dp, vertical = 4.dp)
+        .padding(horizontal = 16.dp, vertical = 4.dp),
   ) {
     SideMenuItem(
       modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
@@ -190,7 +190,7 @@ private fun NavBottomSection(
       title = stringResource(R.string.sync),
       endText = appUiState.lastSyncTime,
       showEndText = true,
-      endTextColor = SubtitleTextColor
+      endTextColor = SubtitleTextColor,
     ) {
       openDrawer(false)
       onSideMenuClick(AppMainEvent.SyncData(context))
@@ -203,7 +203,7 @@ private fun OtherPatientsItem(
   navigationConfiguration: NavigationConfiguration,
   onSideMenuClick: (AppMainEvent) -> Unit,
   openDrawer: (Boolean) -> Unit,
-  navController: NavController
+  navController: NavController,
 ) {
   val context = LocalContext.current
   SideMenuItem(
@@ -227,8 +227,8 @@ private fun OtherPatientsItem(
             context.getString(R.string.other_patients)
           } else {
             navigationConfiguration.bottomSheetRegisters?.display
-          }
-      )
+          },
+      ),
     )
   }
 }
@@ -238,7 +238,7 @@ private fun NavTopSection(
   modifier: Modifier,
   appUiState: AppMainUiState,
   versionCode: Int,
-  versionName: String?
+  versionName: String?,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -247,7 +247,7 @@ private fun NavTopSection(
         .fillMaxWidth()
         .background(SideMenuTopItemDarkColor)
         .padding(horizontal = 16.dp)
-        .testTag(NAV_TOP_SECTION_TEST_TAG)
+        .testTag(NAV_TOP_SECTION_TEST_TAG),
   ) {
     Text(
       text = appUiState.appTitle,
@@ -255,7 +255,7 @@ private fun NavTopSection(
       color = AppTitleColor,
       modifier = modifier.padding(top = 16.dp, bottom = 16.dp, end = 8.dp),
       maxLines = 1,
-      overflow = TextOverflow.Ellipsis
+      overflow = TextOverflow.Ellipsis,
     )
     Text(
       text = "$versionCode($versionName)",
@@ -263,7 +263,7 @@ private fun NavTopSection(
       color = AppTitleColor,
       modifier = modifier.padding(vertical = 16.dp),
       maxLines = 1,
-      overflow = TextOverflow.Ellipsis
+      overflow = TextOverflow.Ellipsis,
     )
   }
 }
@@ -273,7 +273,7 @@ private fun ClientRegisterMenus(
   appUiState: AppMainUiState,
   navController: NavController,
   openDrawer: (Boolean) -> Unit,
-  onSideMenuClick: (AppMainEvent) -> Unit
+  onSideMenuClick: (AppMainEvent) -> Unit,
 ) {
   LazyColumn(modifier = Modifier.testTag(NAV_CLIENT_REGISTER_MENUS_LIST)) {
     items(appUiState.navigationConfiguration.clientRegisters, { it.id }) { navigationMenu ->
@@ -281,11 +281,11 @@ private fun ClientRegisterMenus(
         imageConfig = navigationMenu.menuIconConfig,
         title = navigationMenu.display,
         endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
-        showEndText = navigationMenu.showCount
+        showEndText = navigationMenu.showCount,
       ) {
         openDrawer(false)
         onSideMenuClick(
-          AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navigationMenu)
+          AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navigationMenu),
         )
       }
     }
@@ -299,7 +299,7 @@ private fun StaticMenus(
   navController: NavController,
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit,
-  appUiState: AppMainUiState
+  appUiState: AppMainUiState,
 ) {
   LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
     items(navigationConfiguration.staticMenu, { it.id }) { navigationMenu ->
@@ -307,11 +307,11 @@ private fun StaticMenus(
         imageConfig = navigationMenu.menuIconConfig,
         title = navigationMenu.display,
         endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
-        showEndText = navigationMenu.showCount
+        showEndText = navigationMenu.showCount,
       ) {
         openDrawer(false)
         onSideMenuClick(
-          AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navigationMenu)
+          AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navigationMenu),
         )
       }
     }
@@ -322,9 +322,10 @@ private fun StaticMenus(
 private fun MenuActionButton(
   modifier: Modifier = Modifier,
   navigationConfiguration: NavigationConfiguration,
-  navController: NavController
+  navController: NavController,
 ) {
-  if (navigationConfiguration.menuActionButton != null &&
+  if (
+    navigationConfiguration.menuActionButton != null &&
       navigationConfiguration.menuActionButton?.visible == true
   ) {
     Row(
@@ -336,11 +337,11 @@ private fun MenuActionButton(
           }
           .padding(16.dp)
           .testTag(MENU_BUTTON_TEST_TAG),
-      verticalAlignment = Alignment.CenterVertically
+      verticalAlignment = Alignment.CenterVertically,
     ) {
       Box(
         modifier.background(MenuActionButtonTextColor).size(16.dp).clip(RoundedCornerShape(2.dp)),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
       ) {
         Icon(
           imageVector = Icons.Filled.Add,
@@ -354,7 +355,7 @@ private fun MenuActionButton(
         text = navigationConfiguration.menuActionButton?.display?.uppercase()
             ?: stringResource(id = R.string.register_new_client),
         color = MenuActionButtonTextColor,
-        fontSize = 18.sp
+        fontSize = 18.sp,
       )
     }
   }
@@ -369,7 +370,7 @@ private fun SideMenuItem(
   endTextColor: Color = Color.White,
   showEndText: Boolean,
   endImageVector: ImageVector? = null,
-  onSideMenuClick: () -> Unit
+  onSideMenuClick: () -> Unit,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -382,12 +383,12 @@ private fun SideMenuItem(
   ) {
     Row(
       modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).padding(vertical = 16.dp),
-      verticalAlignment = Alignment.CenterVertically
+      verticalAlignment = Alignment.CenterVertically,
     ) {
       Image(
         paddingEnd = 10,
         imageProperties = ImageProperties(imageConfig = imageConfig, size = 32),
-        tint = MenuItemColor
+        tint = MenuItemColor,
       )
       SideMenuItemText(title = title, textColor = Color.White)
     }
@@ -399,7 +400,7 @@ private fun SideMenuItem(
         imageVector = imageVector,
         contentDescription = null,
         tint = MenuItemColor,
-        modifier = modifier.padding(0.dp).testTag(SIDE_MENU_ITEM_END_ICON_TEST_TAG)
+        modifier = modifier.padding(0.dp).testTag(SIDE_MENU_ITEM_END_ICON_TEST_TAG),
       )
     }
   }
@@ -411,7 +412,7 @@ private fun SideMenuItemText(title: String, textColor: Color) {
     text = title,
     color = textColor,
     fontSize = 18.sp,
-    modifier = Modifier.testTag(SIDE_MENU_ITEM_TEXT_TEST_TAG)
+    modifier = Modifier.testTag(SIDE_MENU_ITEM_TEXT_TEST_TAG),
   )
 }
 
@@ -433,12 +434,12 @@ fun AppDrawerPreview() {
             staticMenu = listOf(),
             clientRegisters = listOf(),
             menuActionButton =
-              NavigationMenuConfig(id = "id1", visible = true, display = "Register Household")
-          )
+              NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
+          ),
       ),
     navController = rememberNavController(),
     openDrawer = {},
     onSideMenuClick = {},
-    appVersionPair = Pair(1, "0.0.1")
+    appVersionPair = Pair(1, "0.0.1"),
   )
 }

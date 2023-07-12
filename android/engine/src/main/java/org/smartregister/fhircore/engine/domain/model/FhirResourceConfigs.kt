@@ -32,7 +32,7 @@ import org.hl7.fhir.r4.model.ResourceType
 @Parcelize
 data class FhirResourceConfig(
   val baseResource: ResourceConfig,
-  val relatedResources: List<ResourceConfig> = emptyList()
+  val relatedResources: List<ResourceConfig> = emptyList(),
 ) : Parcelable, java.io.Serializable
 
 /**
@@ -89,7 +89,7 @@ data class ResourceConfig(
   val nestedSearchResources: List<NestedSearchConfig>? = null,
   val configRules: @RawValue List<RuleConfig>? = emptyList(),
   val planDefinitions: List<String>? = null,
-  val attributesToUpdate: List<KeyValueConfig>? = emptyList()
+  val attributesToUpdate: List<KeyValueConfig>? = emptyList(),
 ) : Parcelable, java.io.Serializable
 
 @Serializable
@@ -102,7 +102,7 @@ data class SortConfig(
   val paramName: String? = null,
   val dataType: Enumerations.DataType,
   val order: Order = Order.ASCENDING,
-  val fhirPathExpression: String = ""
+  val fhirPathExpression: String = "",
 ) : Parcelable, java.io.Serializable
 
 @Serializable
@@ -110,5 +110,5 @@ data class SortConfig(
 data class NestedSearchConfig(
   val resourceType: ResourceType,
   val referenceParam: String,
-  val dataQueries: List<DataQuery>? = null
+  val dataQueries: List<DataQuery>? = null,
 ) : Parcelable, java.io.Serializable

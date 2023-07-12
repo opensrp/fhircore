@@ -47,8 +47,8 @@ class PatientExtensionTest : RobolectricTest() {
       calculateAge(
         getDateFromDaysAgo(365, LocalDate.of(2023, 4, 4)),
         context,
-        LocalDate.of(2023, 4, 4)
-      )
+        LocalDate.of(2023, 4, 4),
+      ),
     )
 
     val expectedAge2 = "1y 1m"
@@ -58,8 +58,8 @@ class PatientExtensionTest : RobolectricTest() {
       calculateAge(
         getDateFromDaysAgo(399, LocalDate.of(2023, 4, 4)),
         context,
-        LocalDate.of(2023, 4, 4)
-      )
+        LocalDate.of(2023, 4, 4),
+      ),
     )
 
     val expectedAge3 = "1y"
@@ -69,8 +69,8 @@ class PatientExtensionTest : RobolectricTest() {
       calculateAge(
         getDateFromDaysAgo(372, LocalDate.of(2023, 4, 4)),
         context,
-        LocalDate.of(2023, 4, 4)
-      )
+        LocalDate.of(2023, 4, 4),
+      ),
     )
 
     val expectedAge4 = "1m"
@@ -79,8 +79,8 @@ class PatientExtensionTest : RobolectricTest() {
       calculateAge(
         getDateFromDaysAgo(32, LocalDate.of(2023, 4, 4)),
         context,
-        LocalDate.of(2023, 4, 4)
-      )
+        LocalDate.of(2023, 4, 4),
+      ),
     )
 
     val expectedAge6 = "1w"
@@ -89,8 +89,8 @@ class PatientExtensionTest : RobolectricTest() {
       calculateAge(
         getDateFromDaysAgo(7, LocalDate.of(2023, 4, 4)),
         context,
-        LocalDate.of(2023, 4, 4)
-      )
+        LocalDate.of(2023, 4, 4),
+      ),
     )
 
     val expectedAge7 = "1w 2d"
@@ -99,8 +99,8 @@ class PatientExtensionTest : RobolectricTest() {
       calculateAge(
         getDateFromDaysAgo(9, LocalDate.of(2023, 4, 4)),
         context,
-        LocalDate.of(2023, 4, 4)
-      )
+        LocalDate.of(2023, 4, 4),
+      ),
     )
 
     val expectedAge8 = "3d"
@@ -109,8 +109,8 @@ class PatientExtensionTest : RobolectricTest() {
       calculateAge(
         getDateFromDaysAgo(3, LocalDate.of(2023, 4, 4)),
         context,
-        LocalDate.of(2023, 4, 4)
-      )
+        LocalDate.of(2023, 4, 4),
+      ),
     )
 
     val expectedAge9 = "1y 2m"
@@ -119,8 +119,8 @@ class PatientExtensionTest : RobolectricTest() {
       calculateAge(
         getDateFromDaysAgo(450, LocalDate.of(2023, 4, 4)),
         context,
-        LocalDate.of(2023, 4, 4)
-      )
+        LocalDate.of(2023, 4, 4),
+      ),
     )
 
     val expectedAge10 = "40y 3m"
@@ -129,8 +129,8 @@ class PatientExtensionTest : RobolectricTest() {
       calculateAge(
         getDateFromDaysAgo(14700, LocalDate.of(2023, 4, 4)),
         context,
-        LocalDate.of(2023, 4, 4)
-      )
+        LocalDate.of(2023, 4, 4),
+      ),
     )
 
     val expectedAge11 = "40y"
@@ -139,8 +139,8 @@ class PatientExtensionTest : RobolectricTest() {
       calculateAge(
         getDateFromDaysAgo(14700, LocalDate.of(2023, 4, 4)),
         context,
-        LocalDate.of(2023, 4, 4)
-      )
+        LocalDate.of(2023, 4, 4),
+      ),
     )
 
     val expectedAge12 = "0d"
@@ -150,8 +150,8 @@ class PatientExtensionTest : RobolectricTest() {
       calculateAge(
         getDateFromDaysAgo(0, LocalDate.of(2023, 4, 4)),
         context,
-        LocalDate.of(2023, 4, 4)
-      )
+        LocalDate.of(2023, 4, 4),
+      ),
     )
 
     val expectedAge13 = "1y 6m"
@@ -161,8 +161,8 @@ class PatientExtensionTest : RobolectricTest() {
       calculateAge(
         getDateFromDaysAgo(550, LocalDate.of(2023, 4, 4)),
         context,
-        LocalDate.of(2023, 4, 4)
-      )
+        LocalDate.of(2023, 4, 4),
+      ),
     )
 
     val expectedAge14 = "5y"
@@ -172,8 +172,8 @@ class PatientExtensionTest : RobolectricTest() {
       calculateAge(
         getDateFromDaysAgo(1826, LocalDate.of(2023, 4, 4)),
         context,
-        LocalDate.of(2023, 4, 4)
-      )
+        LocalDate.of(2023, 4, 4),
+      ),
     )
   }
 
@@ -185,8 +185,8 @@ class PatientExtensionTest : RobolectricTest() {
       calculateAge(
         getDateFromDaysAgo(49, LocalDate.of(2023, 4, 4)),
         context,
-        LocalDate.of(2023, 4, 4)
-      )
+        LocalDate.of(2023, 4, 4),
+      ),
     )
   }
 
@@ -204,7 +204,7 @@ class PatientExtensionTest : RobolectricTest() {
 
     Assert.assertEquals(
       (ApplicationProvider.getApplicationContext() as Application).getString(R.string.male),
-      patient.extractGender(ApplicationProvider.getApplicationContext())
+      patient.extractGender(ApplicationProvider.getApplicationContext()),
     )
   }
 
@@ -214,7 +214,7 @@ class PatientExtensionTest : RobolectricTest() {
 
     Assert.assertEquals(
       (ApplicationProvider.getApplicationContext() as Application).getString(R.string.female),
-      patient.extractGender(ApplicationProvider.getApplicationContext())
+      patient.extractGender(ApplicationProvider.getApplicationContext()),
     )
   }
 
@@ -226,7 +226,7 @@ class PatientExtensionTest : RobolectricTest() {
 
     Assert.assertEquals(
       applicationContext.getString(R.string.other),
-      patient.extractGender(applicationContext)
+      patient.extractGender(applicationContext),
     )
   }
 
@@ -236,7 +236,7 @@ class PatientExtensionTest : RobolectricTest() {
 
     Assert.assertEquals(
       (ApplicationProvider.getApplicationContext() as Application).getString(R.string.unknown),
-      patient.extractGender(ApplicationProvider.getApplicationContext())
+      patient.extractGender(ApplicationProvider.getApplicationContext()),
     )
   }
 
@@ -269,7 +269,7 @@ class PatientExtensionTest : RobolectricTest() {
     val patient = Patient().apply { gender = Enumerations.AdministrativeGender.MALE }
     Assert.assertEquals(
       "Male",
-      patient.gender.translateGender(ApplicationProvider.getApplicationContext())
+      patient.gender.translateGender(ApplicationProvider.getApplicationContext()),
     )
   }
 
@@ -278,7 +278,7 @@ class PatientExtensionTest : RobolectricTest() {
     val patient = Patient().apply { gender = Enumerations.AdministrativeGender.FEMALE }
     Assert.assertEquals(
       "Female",
-      patient.gender.translateGender(ApplicationProvider.getApplicationContext())
+      patient.gender.translateGender(ApplicationProvider.getApplicationContext()),
     )
   }
 
@@ -287,7 +287,7 @@ class PatientExtensionTest : RobolectricTest() {
     val patient = Patient().apply { gender = Enumerations.AdministrativeGender.OTHER }
     Assert.assertEquals(
       "Unknown",
-      patient.gender.translateGender(ApplicationProvider.getApplicationContext())
+      patient.gender.translateGender(ApplicationProvider.getApplicationContext()),
     )
   }
 }

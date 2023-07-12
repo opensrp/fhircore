@@ -71,10 +71,11 @@ class AppSettingViewModelTest : RobolectricTest() {
   private val sharedPreferencesHelper =
     SharedPreferencesHelper(
       ApplicationProvider.getApplicationContext(),
-      GsonBuilder().setLenient().create()
+      GsonBuilder().setLenient().create(),
     )
 
   private val configService = mockk<ConfigService>()
+
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   private val appSettingViewModel =
     spyk(
@@ -84,8 +85,8 @@ class AppSettingViewModelTest : RobolectricTest() {
         sharedPreferencesHelper = sharedPreferencesHelper,
         configService = configService,
         configurationRegistry = Faker.buildTestConfigurationRegistry(),
-        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider
-      )
+        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+      ),
     )
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
@@ -134,65 +135,65 @@ class AppSettingViewModelTest : RobolectricTest() {
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun `fetchConfigurations() should save shared preferences for patient related resource types`() =
-      runTest {
-    coEvery { appSettingViewModel.fetchComposition(any(), any()) } returns
-      Composition().apply {
-        addSection().apply {
-          this.focus =
-            Reference().apply {
-              reference = "Binary/123"
-              identifier = Identifier().apply { value = "register-test" }
+    runTest {
+      coEvery { appSettingViewModel.fetchComposition(any(), any()) } returns
+        Composition().apply {
+          addSection().apply {
+            this.focus =
+              Reference().apply {
+                reference = "Binary/123"
+                identifier = Identifier().apply { value = "register-test" }
+              }
+          }
+        }
+      coEvery { fhirResourceDataSource.getResource(any()) } returns
+        Bundle().apply {
+          addEntry().resource =
+            Binary().apply {
+              data =
+                Base64.getEncoder()
+                  .encode(
+                    JsonUtil.serialize(
+                        RegisterConfiguration(
+                          id = "1",
+                          appId = "a",
+                          configType = "register",
+                          fhirResource =
+                            FhirResourceConfig(
+                              baseResource = ResourceConfig(resource = ResourceType.Patient),
+                              relatedResources =
+                                listOf(
+                                  ResourceConfig(resource = ResourceType.Encounter),
+                                  ResourceConfig(resource = ResourceType.Task),
+                                ),
+                            ),
+                        ),
+                      )
+                      .encodeToByteArray(),
+                  )
             }
         }
-      }
-    coEvery { fhirResourceDataSource.getResource(any()) } returns
-      Bundle().apply {
-        addEntry().resource =
-          Binary().apply {
-            data =
-              Base64.getEncoder()
-                .encode(
-                  JsonUtil.serialize(
-                      RegisterConfiguration(
-                        id = "1",
-                        appId = "a",
-                        configType = "register",
-                        fhirResource =
-                          FhirResourceConfig(
-                            baseResource = ResourceConfig(resource = ResourceType.Patient),
-                            relatedResources =
-                              listOf(
-                                ResourceConfig(resource = ResourceType.Encounter),
-                                ResourceConfig(resource = ResourceType.Task)
-                              )
-                          )
-                      )
-                    )
-                    .encodeToByteArray()
-                )
-          }
-      }
-    coEvery { defaultRepository.createRemote(any(), any()) } just runs
-    coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
-    coEvery { configService.provideConfigurationSyncPageSize() } returns 20.toString()
+      coEvery { defaultRepository.createRemote(any(), any()) } just runs
+      coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
+      coEvery { configService.provideConfigurationSyncPageSize() } returns 20.toString()
 
-    appSettingViewModel.run {
-      onApplicationIdChanged("app")
-      fetchConfigurations(context)
+      appSettingViewModel.run {
+        onApplicationIdChanged("app")
+        fetchConfigurations(context)
+      }
+
+      val slot = slot<List<ResourceType>>()
+
+      coVerify { appSettingViewModel.fetchComposition(any(), any()) }
+      coVerify { fhirResourceDataSource.getResource(any()) }
+      coVerify { defaultRepository.createRemote(any(), any()) }
+      coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
+
+      Assert.assertEquals(
+        listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),
+        slot.captured,
+      )
     }
-
-    val slot = slot<List<ResourceType>>()
-
-    coVerify { appSettingViewModel.fetchComposition(any(), any()) }
-    coVerify { fhirResourceDataSource.getResource(any()) }
-    coVerify { defaultRepository.createRemote(any(), any()) }
-    coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
-
-    Assert.assertEquals(
-      listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),
-      slot.captured
-    )
-  }
 
   @Test(expected = HttpException::class)
   @kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -205,8 +206,8 @@ class AppSettingViewModelTest : RobolectricTest() {
       HttpException(
         Response.error<ResponseBody>(
           500,
-          "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull())
-        )
+          "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull()),
+        ),
       )
     fhirResourceDataSource.getResource(anyString())
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
@@ -216,7 +217,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     coVerify { (appSettingViewModel.fetchComposition(appId, any())) }
     Assert.assertEquals(
       context.getString(R.string.error_loading_config_http_error),
-      appSettingViewModel.error.value
+      appSettingViewModel.error.value,
     )
     Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
@@ -235,7 +236,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     coVerify { (appSettingViewModel.fetchComposition(appId, any())) }
     Assert.assertEquals(
       context.getString(R.string.error_loading_config_no_internet),
-      appSettingViewModel.error.value
+      appSettingViewModel.error.value,
     )
     Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
@@ -255,7 +256,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     coVerify { (appSettingViewModel.fetchComposition(appId, any())) }
     Assert.assertEquals(
       context.getString(R.string.error_loading_config_no_internet),
-      appSettingViewModel.error.value
+      appSettingViewModel.error.value,
     )
     Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
@@ -280,7 +281,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     val result =
       appSettingViewModel.fetchComposition(
         "Composition?identifier=test-app",
-        ApplicationProvider.getApplicationContext()
+        ApplicationProvider.getApplicationContext(),
       )
 
     coVerify { fhirResourceDataSource.getResource(any()) }
@@ -319,7 +320,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     val result =
       sharedPreferencesHelper.read<List<ResourceType>>(
-        SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name
+        SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
       )!!
 
     Assert.assertEquals(2, result.size)

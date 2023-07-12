@@ -37,7 +37,7 @@ class EventQueue<T> @Inject constructor() : SharedEvent<T> {
   override fun getFor(consumerId: String): Flow<T> = innerQueue.filterNotHandledBy(consumerId)
 
   private fun <T> Flow<OneTimeEvent<T>>.filterNotHandledBy(consumerId: String): Flow<T> =
-      transform { event ->
-    event.getIfNotHandled(consumerId)?.let { emit(it) }
-  }
+    transform { event ->
+      event.getIfNotHandled(consumerId)?.let { emit(it) }
+    }
 }

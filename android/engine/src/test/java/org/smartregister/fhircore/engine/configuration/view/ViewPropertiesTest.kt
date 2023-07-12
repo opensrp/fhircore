@@ -37,7 +37,7 @@ class ViewPropertiesTest {
                   ListProperties(
                     id = "list2",
                     viewType = ViewType.LIST,
-                    registerCard = RegisterCardConfig()
+                    registerCard = RegisterCardConfig(),
                   ),
                   ColumnProperties(
                     viewType = ViewType.COLUMN,
@@ -46,14 +46,14 @@ class ViewPropertiesTest {
                         ListProperties(
                           id = "list3",
                           viewType = ViewType.LIST,
-                          registerCard = RegisterCardConfig()
-                        )
-                      )
-                  )
-                )
-            )
+                          registerCard = RegisterCardConfig(),
+                        ),
+                      ),
+                  ),
+                ),
+            ),
         ),
-        ListProperties(id = "list1", viewType = ViewType.LIST, registerCard = RegisterCardConfig())
+        ListProperties(id = "list1", viewType = ViewType.LIST, registerCard = RegisterCardConfig()),
       )
 
     val retrievedListProperties = listProperties.retrieveListProperties()
