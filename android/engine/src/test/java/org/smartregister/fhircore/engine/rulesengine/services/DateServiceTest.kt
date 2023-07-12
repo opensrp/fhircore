@@ -34,27 +34,6 @@ class DateServiceTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Test
-  fun testSubtractingYearsFromCurrentDate() {
-    val result = DateService.addOrSubtractYearFromCurrentDate(5, "-", dateFormat = SDF_DD_MMM_YYYY)
-    val expected = LocalDate.now().minusYears(5).toDate().formatDate(SDF_DD_MMM_YYYY)
-    assertEquals(expected, result)
-  }
-
-  @Test
-  fun testAddingYearsToCurrentDate() {
-    val result = DateService.addOrSubtractYearFromCurrentDate(3, "+")
-    val expected = LocalDate.now().plusYears(3).toDate().formatDate(SDF_YYYY_MM_DD)
-    assertEquals(expected, result)
-  }
-
-  @Test
-  fun testUnsupportedOperation() {
-    assertThrows(NotImplementedException::class.java) {
-      DateService.addOrSubtractYearFromCurrentDate(2, "*")
-    }
-  }
-
-  @Test
   fun testSubtractingDaysFromCurrentDate() {
     val result =
       DateService.addOrSubtractTimeUnitFromCurrentDate(
