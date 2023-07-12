@@ -38,7 +38,7 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
       SECURE_STORAGE_FILE_NAME,
       getMasterKey(),
       EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-      EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+      EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
     )
 
   private fun getMasterKey() =
@@ -53,9 +53,9 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
         AuthCredentials(
             username = username,
             salt = Base64.getEncoder().encodeToString(randomSaltBytes),
-            passwordHash = password.toPasswordHash(randomSaltBytes)
+            passwordHash = password.toPasswordHash(randomSaltBytes),
           )
-          .encodeJson()
+          .encodeJson(),
       )
     }
     clearPasswordInMemory(password)
@@ -76,12 +76,14 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     secureSharedPreferences.edit {
       putString(
         SharedPreferenceKey.LOGIN_PIN_SALT.name,
-        Base64.getEncoder().encodeToString(randomSaltBytes)
+        Base64.getEncoder().encodeToString(randomSaltBytes),
       )
       putString(SharedPreferenceKey.LOGIN_PIN_KEY.name, pin.toPasswordHash(randomSaltBytes))
     }
   }
+
   @VisibleForTesting fun get256RandomBytes() = 256.getRandomBytesOfSize()
+
   fun retrievePinSalt() =
     secureSharedPreferences.getString(SharedPreferenceKey.LOGIN_PIN_SALT.name, null)
 

@@ -50,7 +50,7 @@ class FhirEngineModule {
   fun provideFhirEngine(
     @ApplicationContext context: Context,
     tokenAuthenticator: TokenAuthenticator,
-    configService: ConfigService
+    configService: ConfigService,
   ): FhirEngine {
     FhirEngineProvider.init(
       FhirEngineConfiguration(
@@ -64,18 +64,20 @@ class FhirEngineModule {
               connectionTimeOut = TIMEOUT_DURATION,
               readTimeOut = TIMEOUT_DURATION,
               writeTimeOut = TIMEOUT_DURATION,
-              uploadWithGzip = true
+              uploadWithGzip = true,
             ),
           httpLogger =
             HttpLogger(
               HttpLogger.Configuration(
                 level = HttpLogger.Level.BASIC,
-                headersToIgnore = listOf(AUTHORIZATION, COOKIE)
-              )
-            ) { Timber.tag(QUEST_OKHTTP_CLIENT_TAG).d(it) }
+                headersToIgnore = listOf(AUTHORIZATION, COOKIE),
+              ),
+            ) {
+              Timber.tag(QUEST_OKHTTP_CLIENT_TAG).d(it)
+            },
         ),
-        customSearchParameters = configService.provideCustomSearchParameters()
-      )
+        customSearchParameters = configService.provideCustomSearchParameters(),
+      ),
     )
     return FhirEngineProvider.getInstance(context)
   }

@@ -47,7 +47,6 @@ class RegisterCardListTest {
 
   @Test
   fun testRegisterCardListShouldHaveProgressNodeIfNotData() {
-
     composeTestRule.setContent {
       val pagingItems = flowOf(PagingData.from(listOf<ResourceData>())).collectAsLazyPagingItems()
 
@@ -58,7 +57,7 @@ class RegisterCardListTest {
         lazyListState = rememberLazyListState(),
         onEvent = {},
         registerUiState = RegisterUiState(),
-        currentPage = mutableStateOf(1)
+        currentPage = mutableStateOf(1),
       )
     }
 
@@ -67,7 +66,6 @@ class RegisterCardListTest {
 
   @Test
   fun testRegisterCardListShouldHaveTwoItems() {
-
     composeTestRule.setContent {
       val config =
         RegisterCardConfig(views = listOf(CompoundTextProperties(primaryText = "Patient 1")))
@@ -83,7 +81,7 @@ class RegisterCardListTest {
         lazyListState = rememberLazyListState(),
         onEvent = {},
         registerUiState = RegisterUiState(),
-        currentPage = mutableStateOf(1)
+        currentPage = mutableStateOf(1),
       )
     }
 
@@ -121,7 +119,7 @@ class RegisterCardListTest {
         onEvent = {},
         registerUiState = RegisterUiState(),
         currentPage = mutableStateOf(1),
-        showPagination = true
+        showPagination = true,
       )
     }
 

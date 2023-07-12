@@ -30,7 +30,7 @@ sealed class AppMainEvent {
   data class OpenRegistersBottomSheet(
     val title: String? = "",
     val navController: NavController,
-    val registersList: List<NavigationMenuConfig>?
+    val registersList: List<NavigationMenuConfig>?,
   ) : AppMainEvent()
 
   data class UpdateSyncState(val state: SyncJobStatus, val lastSyncTime: String?) : AppMainEvent()
@@ -46,7 +46,7 @@ sealed class AppMainEvent {
     val navController: NavController,
     val profileId: String,
     val resourceId: String,
-    val resourceConfig: FhirResourceConfig? = null
+    val resourceConfig: FhirResourceConfig? = null,
   ) : AppMainEvent()
 
   data class SyncData(val context: Context) : AppMainEvent()

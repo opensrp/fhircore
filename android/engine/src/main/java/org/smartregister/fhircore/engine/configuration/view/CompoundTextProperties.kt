@@ -52,7 +52,7 @@ data class CompoundTextProperties(
   val maxLines: Int = Int.MAX_VALUE,
   val colorOpacity: Float = 1f,
   val textCase: TextCase? = null,
-  val overflow: TextOverFlow? = null
+  val overflow: TextOverFlow? = null,
 ) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): CompoundTextProperties {
     return this.copy(
@@ -64,7 +64,7 @@ data class CompoundTextProperties(
       primaryTextBackgroundColor = primaryTextBackgroundColor?.interpolate(computedValuesMap),
       secondaryTextColor = secondaryTextColor?.interpolate(computedValuesMap),
       secondaryTextBackgroundColor = secondaryTextBackgroundColor?.interpolate(computedValuesMap),
-      separator = separator?.interpolate(computedValuesMap)
+      separator = separator?.interpolate(computedValuesMap),
     )
   }
 }
@@ -85,11 +85,11 @@ enum class TextCase {
   UPPER_CASE,
   LOWER_CASE,
   CAMEL_CASE,
-  TITLE_CASE
+  TITLE_CASE,
 }
 
 enum class TextOverFlow {
   CLIP,
   ELLIPSIS,
-  VISIBLE
+  VISIBLE,
 }

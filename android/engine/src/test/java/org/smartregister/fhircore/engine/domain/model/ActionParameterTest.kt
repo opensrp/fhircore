@@ -29,7 +29,7 @@ class ActionParameterTest {
         paramType = ActionParameterType.PREPOPULATE,
         value = "@{title}",
         dataType = Enumerations.DataType.STRING,
-        linkId = "@{id}"
+        linkId = "@{id}",
       )
     val interpolatedConfig =
       actionParameter.interpolate(mapOf("taskId" to "333", "title" to "New Title", "id" to "123"))

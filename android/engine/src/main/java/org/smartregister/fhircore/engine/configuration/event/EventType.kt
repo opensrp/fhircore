@@ -17,5 +17,5 @@
 package org.smartregister.fhircore.engine.configuration.event
 
 enum class EventType {
-  RESOURCE_CLOSURE
+  RESOURCE_CLOSURE,
 }

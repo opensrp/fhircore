@@ -69,9 +69,13 @@ import retrofit2.Response
 internal class LoginViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
   @Inject lateinit var configService: ConfigService
+
   @Inject lateinit var gson: Gson
   private lateinit var loginViewModel: LoginViewModel
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
@@ -106,8 +110,8 @@ internal class LoginViewModelTest : RobolectricTest() {
           tokenAuthenticator = tokenAuthenticator,
           secureSharedPreference = secureSharedPreference,
           dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
-          workManager = workManager
-        )
+          workManager = workManager,
+        ),
       )
   }
 
@@ -179,7 +183,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     updateCredentials()
     sharedPreferencesHelper.write(
       SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-      PractitionerDetails()
+      PractitionerDetails(),
     )
     every { tokenAuthenticator.sessionActive() } returns true
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
@@ -204,7 +208,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertEquals(
       LoginErrorState.MULTI_USER_LOGIN_ATTEMPT,
-      loginViewModel.loginErrorState.value!!
+      loginViewModel.loginErrorState.value!!,
     )
   }
 
@@ -222,8 +226,8 @@ internal class LoginViewModelTest : RobolectricTest() {
           tokenType = "you_guess_it",
           refreshToken = "another_very_refreshing_token",
           refreshExpiresIn = 540000,
-          scope = "open_my_guy"
-        )
+          scope = "open_my_guy",
+        ),
       )
 
     // Mock result for fetch user info via keycloak endpoint
@@ -263,8 +267,8 @@ internal class LoginViewModelTest : RobolectricTest() {
           tokenType = "you_guess_it",
           refreshToken = "another_very_refreshing_token",
           refreshExpiresIn = 540000,
-          scope = "open_my_guy"
-        )
+          scope = "open_my_guy",
+        ),
       )
 
     // Mock result for fetch user info via keycloak endpoint
@@ -301,6 +305,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertEquals(LoginErrorState.UNKNOWN_HOST, loginViewModel.loginErrorState.value!!)
   }
+
   @Test
   fun testLoginWhileOfflineWithNoUserCredentialsEmitsInvalidOfflineState() {
     updateCredentials()
@@ -310,7 +315,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertEquals(
       LoginErrorState.INVALID_OFFLINE_STATE,
-      loginViewModel.loginErrorState.value!!
+      loginViewModel.loginErrorState.value!!,
     )
   }
 
@@ -466,7 +471,7 @@ internal class LoginViewModelTest : RobolectricTest() {
               Organization().apply {
                 name = "the.org"
                 id = "the.org.id"
-              }
+              },
             )
         }
     }
@@ -476,10 +481,10 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testSavePractitionerDetails() {
     coEvery { defaultRepository.create(true, any()) } returns listOf()
     loginViewModel.savePractitionerDetails(
-      Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = practitionerDetails() })
+      Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = practitionerDetails() }),
     ) {}
     Assert.assertNotNull(
-      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name)
+      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
     )
   }
 

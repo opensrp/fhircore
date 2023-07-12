@@ -72,8 +72,8 @@ class P2PReceiverTransferDaoTest : RobolectricTest() {
           fhirEngine,
           DefaultDispatcherProvider(),
           configurationRegistry,
-          defaultRepository
-        )
+          defaultRepository,
+        ),
       )
   }
 
@@ -82,24 +82,26 @@ class P2PReceiverTransferDaoTest : RobolectricTest() {
     val actualDataTypes = p2PReceiverTransferDao.getDataTypes()
     Assert.assertEquals(9, actualDataTypes.size)
     Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0))
+      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0)),
     )
     Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1))
-    )
-    Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2))
+      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)),
     )
     Assert.assertTrue(
       actualDataTypes.contains(
-        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3)
-      )
+        DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2),
+      ),
     )
     Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4))
+      actualDataTypes.contains(
+        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3),
+      ),
     )
     Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5))
+      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4)),
+    )
+    Assert.assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5)),
     )
   }
 
@@ -136,14 +138,14 @@ class P2PReceiverTransferDaoTest : RobolectricTest() {
             Address().apply {
               city = "Nairobi"
               country = "Kenya"
-            }
+            },
           )
         name =
           listOf(
             HumanName().apply {
               given = mutableListOf(StringType("Kiptoo"))
               family = "Maina"
-            }
+            },
           )
         telecom = listOf(ContactPoint().apply { value = "12345" })
         meta = Meta().apply { lastUpdated = currentDate }

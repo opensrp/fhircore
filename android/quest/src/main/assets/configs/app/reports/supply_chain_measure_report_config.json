@@ -1,7 +1,7 @@
 {
   "appId": "app",
   "configType": "measureReport",
-  "registerDate": "2020-10-27",
+  "startPeriod": "2020-10-27",
   "showFixedRangeSelection": true,
   "id": "supplyChainMeasureReport",
   "registerId": "inventoryRegister",

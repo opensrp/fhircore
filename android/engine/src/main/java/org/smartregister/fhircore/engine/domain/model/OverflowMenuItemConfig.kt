@@ -36,7 +36,7 @@ data class OverflowMenuItemConfig(
   val visible: String,
   val showSeparator: Boolean = false,
   val enabled: String = TRUE,
-  val actions: List<ActionConfig> = emptyList()
+  val actions: List<ActionConfig> = emptyList(),
 ) : Parcelable, java.io.Serializable {
   fun interpolate(computedValuesMap: Map<String, Any>): OverflowMenuItemConfig {
     return this.copy(
@@ -45,7 +45,7 @@ data class OverflowMenuItemConfig(
       visible = visible.interpolate(computedValuesMap),
       titleColor = titleColor.interpolate(computedValuesMap),
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),
-      icon = icon?.interpolate(computedValuesMap)
+      icon = icon?.interpolate(computedValuesMap),
     )
   }
 }

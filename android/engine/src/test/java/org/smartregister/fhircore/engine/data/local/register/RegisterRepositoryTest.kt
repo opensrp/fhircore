@@ -74,7 +74,9 @@ private const val SECONDARY_RESOURCE_CARE_PLAN_ID = "secondaryResourceCarePlanId
 @HiltAndroidTest
 class RegisterRepositoryTest : RobolectricTest() {
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
+
   @Inject lateinit var rulesFactory: RulesFactory
   private val fhirEngine: FhirEngine = mockk()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
@@ -92,8 +94,8 @@ class RegisterRepositoryTest : RobolectricTest() {
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
-          configRulesExecutor = mockk()
-        )
+          configRulesExecutor = mockk(),
+        ),
       )
 
     // Simulate count for Encounter & Observation resources
@@ -131,14 +133,14 @@ class RegisterRepositoryTest : RobolectricTest() {
             paramType = ActionParameterType.PARAMDATA,
             value = "testing1",
             dataType = DataType.STRING,
-            linkId = null
+            linkId = null,
           ),
           ActionParameter(
             key = "paramName2",
             paramType = ActionParameterType.PARAMDATA,
             value = "testing2",
             dataType = DataType.STRING,
-            linkId = null
+            linkId = null,
           ),
         )
       paramsList
@@ -169,7 +171,7 @@ class RegisterRepositoryTest : RobolectricTest() {
           Group().apply {
             id = "inactiveGroup"
             active = false
-          }
+          },
         )
 
       // Mock search for Group member (Patient) with forward include
@@ -178,7 +180,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       } returns
         mutableMapOf(
           retrievedGroup to
-            mapOf<ResourceType, List<Resource>>(ResourceType.Patient to listOf(patient))
+            mapOf<ResourceType, List<Resource>>(ResourceType.Patient to listOf(patient)),
         )
 
       // Mock searchWithRevInclude for CarePlan and Task related resources for the Patient
@@ -258,11 +260,11 @@ class RegisterRepositoryTest : RobolectricTest() {
                     ResourceConfig(
                       resource = ResourceType.Encounter,
                       searchParameter = "encounter",
-                      isRevInclude = false
-                    )
-                  )
-              )
-            )
+                      isRevInclude = false,
+                    ),
+                  ),
+              ),
+            ),
         )
 
       // Mock search for Groups; should return list of Group resources
@@ -274,7 +276,7 @@ class RegisterRepositoryTest : RobolectricTest() {
         fhirEngine.searchWithRevInclude<Resource>(false, Search(ResourceType.Group, null, null))
       } returns
         mutableMapOf(
-          group to mapOf<ResourceType, List<Resource>>(ResourceType.Patient to listOf(patient))
+          group to mapOf<ResourceType, List<Resource>>(ResourceType.Patient to listOf(patient)),
         )
 
       // Mock searchWithRevInclude for CarePlan and Task related resources for the Patient
@@ -289,7 +291,7 @@ class RegisterRepositoryTest : RobolectricTest() {
         fhirEngine.searchWithRevInclude<Resource>(false, Search(ResourceType.Task, null, null))
       } returns
         mutableMapOf(
-          task to mapOf(ResourceType.Task to listOf(Task().apply { id = PART_OF_TASK_ID }))
+          task to mapOf(ResourceType.Task to listOf(Task().apply { id = PART_OF_TASK_ID })),
         )
 
       // Mock search for secondary resources
@@ -311,8 +313,8 @@ class RegisterRepositoryTest : RobolectricTest() {
         mutableMapOf(
           carePlan to
             mapOf<ResourceType, List<Resource>>(
-              ResourceType.Encounter to listOf(Encounter().apply { id = encounterId })
-            )
+              ResourceType.Encounter to listOf(Encounter().apply { id = encounterId }),
+            ),
         )
 
       val repositoryResourceData =
@@ -320,7 +322,7 @@ class RegisterRepositoryTest : RobolectricTest() {
           profileId = profileId,
           resourceId = group.id,
           fhirResourceConfig = null,
-          paramsList = null
+          paramsList = null,
         )
       Assert.assertTrue(repositoryResourceData.resource is Group)
       Assert.assertEquals(THE_GROUP_ID, repositoryResourceData.resource.id)
@@ -343,13 +345,15 @@ class RegisterRepositoryTest : RobolectricTest() {
       Assert.assertTrue(secondaryRepositoryResourceData?.resource is CarePlan)
       Assert.assertEquals(
         SECONDARY_RESOURCE_CARE_PLAN_ID,
-        secondaryRepositoryResourceData?.resource?.id
+        secondaryRepositoryResourceData?.resource?.id,
       )
       Assert.assertFalse(secondaryRepositoryResourceData?.relatedResourcesMap.isNullOrEmpty())
       Assert.assertTrue(
-        secondaryRepositoryResourceData?.relatedResourcesMap?.containsKey(
-          ResourceType.Encounter.name
-        )!!
+        secondaryRepositoryResourceData
+          ?.relatedResourcesMap
+          ?.containsKey(
+            ResourceType.Encounter.name,
+          )!!,
       )
 
       // Assert Observation and Encounter resource counts
@@ -358,7 +362,7 @@ class RegisterRepositoryTest : RobolectricTest() {
   }
 
   private fun assertRepositoryResourceDataContainsCounts(
-    repositoryResourceData: RepositoryResourceData
+    repositoryResourceData: RepositoryResourceData,
   ) {
     val relatedResourceCountMap = repositoryResourceData.relatedResourcesCountMap
     Assert.assertEquals(2, relatedResourceCountMap.size)
@@ -369,7 +373,7 @@ class RegisterRepositoryTest : RobolectricTest() {
     Assert.assertNotNull(encounterRepositoryResourceCount)
     Assert.assertEquals(
       ResourceType.Encounter,
-      encounterRepositoryResourceCount?.relatedResourceType
+      encounterRepositoryResourceCount?.relatedResourceType,
     )
     Assert.assertEquals(patient.id, encounterRepositoryResourceCount?.parentResourceId)
     Assert.assertEquals(2L, encounterRepositoryResourceCount?.count)
@@ -380,7 +384,7 @@ class RegisterRepositoryTest : RobolectricTest() {
     Assert.assertNotNull(observationRelatedResourceCount)
     Assert.assertEquals(
       ResourceType.Observation,
-      observationRelatedResourceCount?.relatedResourceType
+      observationRelatedResourceCount?.relatedResourceType,
     )
     Assert.assertEquals(patient.id, observationRelatedResourceCount?.parentResourceId)
     Assert.assertEquals(5L, observationRelatedResourceCount?.count)
@@ -403,7 +407,7 @@ class RegisterRepositoryTest : RobolectricTest() {
                   resource = ResourceType.Encounter,
                   searchParameter = SUBJECT,
                   countResultConfig = CountResultConfig(sumCounts = false),
-                  resultAsCount = true
+                  resultAsCount = true,
                 ),
                 ResourceConfig(
                   id = OBSERVATIONS_COUNT,
@@ -422,24 +426,24 @@ class RegisterRepositoryTest : RobolectricTest() {
                         id = ALL_TASKS, // Referenced task
                         resource = ResourceType.Task,
                         searchParameter = PART_OF,
-                        isRevInclude = false
+                        isRevInclude = false,
                       ),
-                    )
+                    ),
                 ),
                 ResourceConfig(
                   id = MEMBER_CARE_PLANS,
                   resource = ResourceType.CarePlan,
-                  searchParameter = SUBJECT
-                )
-              )
-          )
-        )
+                  searchParameter = SUBJECT,
+                ),
+              ),
+          ),
+        ),
     )
 
   private fun retrieveRelatedResourcesMap(): Map<ResourceType, List<Resource>> =
     mapOf(
       ResourceType.Task to listOf(retrieveTask()),
-      ResourceType.CarePlan to listOf(CarePlan().apply { id = "carePlan" })
+      ResourceType.CarePlan to listOf(CarePlan().apply { id = "carePlan" }),
     )
 
   private fun retrieveTask() =

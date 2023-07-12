@@ -25,8 +25,9 @@ class ImagePropertiesTest {
   private val imageProperties =
     ImageProperties(
       tint = "@{taskStatusColorCodeToTint}",
-      imageConfig = ImageConfig("@{taskStatusIcon}", ICON_TYPE_LOCAL)
+      imageConfig = ImageConfig("@{taskStatusIcon}", ICON_TYPE_LOCAL),
     )
+
   @Test
   fun testInterpolateInImageProperties() {
     val computedValuesMap = mutableMapOf<String, String>()

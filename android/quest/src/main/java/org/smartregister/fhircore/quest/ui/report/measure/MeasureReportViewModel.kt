@@ -28,8 +28,6 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -53,8 +51,8 @@ import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
@@ -65,7 +63,6 @@ import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
-import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.codingOf
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -81,7 +78,7 @@ import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGeneratedMeasureReports
 import org.smartregister.fhircore.engine.util.extension.valueCode
-import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportSubjectsPagingSource
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
@@ -106,53 +103,45 @@ constructor(
   val registerRepository: RegisterRepository,
   val measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper,
   val defaultRepository: DefaultRepository,
-  val resourceDataRulesExecutor: ResourceDataRulesExecutor
+  val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  private val measureReportRepository: MeasureReportRepository,
 ) : ViewModel() {
-
-  val measureReportConfigList: MutableList<MeasureReportConfig> = mutableListOf()
-
-  val measureReportIndividualResult: MutableState<MeasureReportIndividualResult?> =
-    mutableStateOf(null)
-
-  val measureReportPopulationResults: MutableState<List<MeasureReportPopulationResult>?> =
-    mutableStateOf(null)
-
   private val _measureReportPopulationResultList: MutableList<MeasureReportPopulationResult> =
     mutableListOf()
-
-  val reportTypeState: MutableState<MeasureReport.MeasureReportType> =
-    mutableStateOf(MeasureReport.MeasureReportType.SUMMARY)
-
   val dateRange: MutableState<androidx.core.util.Pair<Long, Long>> =
     mutableStateOf(defaultDateRangeState())
-
+  val measureReportIndividualResult: MutableState<MeasureReportIndividualResult?> =
+    mutableStateOf(null)
+  val measureReportPopulationResults: MutableState<List<MeasureReportPopulationResult>?> =
+    mutableStateOf(null)
+  val reportConfigurations: MutableList<ReportConfiguration> = mutableListOf()
   val reportTypeSelectorUiState: MutableState<ReportTypeSelectorUiState> =
     mutableStateOf(ReportTypeSelectorUiState())
-
+  val reportTypeState: MutableState<MeasureReport.MeasureReportType> =
+    mutableStateOf(MeasureReport.MeasureReportType.SUMMARY)
   val searchTextState: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue())
-
   val subjectData: MutableStateFlow<Flow<PagingData<MeasureReportSubjectViewData>>> =
     MutableStateFlow(emptyFlow())
 
   fun defaultDateRangeState() =
     androidx.core.util.Pair(
       MaterialDatePicker.thisMonthInUtcMilliseconds(),
-      MaterialDatePicker.todayInUtcMilliseconds()
+      MaterialDatePicker.todayInUtcMilliseconds(),
     )
 
-  fun reportMeasuresList(reportId: String): Flow<PagingData<MeasureReportConfig>> {
+  fun reportMeasuresList(reportId: String): Flow<PagingData<ReportConfiguration>> {
     val measureReportConfiguration = retrieveMeasureReportConfiguration(reportId)
     val registerConfiguration =
       configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
         ConfigType.Register,
-        measureReportConfiguration.registerId
+        measureReportConfiguration.registerId,
       )
     return Pager(PagingConfig(DEFAULT_PAGE_SIZE)) {
-        MeasureReportRepository(
+        MeasureReportPagingSource(
           measureReportConfiguration = measureReportConfiguration,
           registerConfiguration = registerConfiguration,
           registerRepository = registerRepository,
-          resourceDataRulesExecutor = resourceDataRulesExecutor
+          resourceDataRulesExecutor = resourceDataRulesExecutor,
         )
       }
       .flow
@@ -162,22 +151,21 @@ constructor(
   private fun retrieveMeasureReportConfiguration(reportId: String): MeasureReportConfiguration =
     configurationRegistry.retrieveConfiguration(
       configType = ConfigType.MeasureReport,
-      configId = reportId
+      configId = reportId,
     )
 
   fun onEvent(event: MeasureReportEvent, selectedDate: Date? = null) {
-
     when (event) {
       is MeasureReportEvent.OnSelectMeasure -> {
-        event.measureReportConfig?.let {
-          measureReportConfigList.clear()
-          measureReportConfigList.addAll(it)
+        event.reportConfigurations?.let {
+          reportConfigurations.clear()
+          reportConfigurations.addAll(it)
         }
         event.navController.navigate(
           MeasureReportNavigationScreen.ReportTypeSelector.route +
             NavigationArg.bindArgumentsOf(
-              Pair(NavigationArg.SCREEN_TITLE, measureReportConfigList.firstOrNull()?.module ?: "")
-            )
+              Pair(NavigationArg.SCREEN_TITLE, reportConfigurations.firstOrNull()?.module ?: ""),
+            ),
         )
       }
       is MeasureReportEvent.GenerateReport -> {
@@ -186,7 +174,7 @@ constructor(
           reportTypeSelectorUiState.value =
             reportTypeSelectorUiState.value.copy(
               startDate = selectedDate.firstDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA),
-              endDate = selectedDate.lastDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA)
+              endDate = selectedDate.lastDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA),
             )
         }
         refreshData()
@@ -198,7 +186,7 @@ constructor(
         reportTypeSelectorUiState.value =
           reportTypeSelectorUiState.value.copy(
             startDate = Date(dateRange.value.first).formatDate(SDF_D_MMM_YYYY_WITH_COMA),
-            endDate = Date(dateRange.value.second).formatDate(SDF_D_MMM_YYYY_WITH_COMA)
+            endDate = Date(dateRange.value.second).formatDate(SDF_D_MMM_YYYY_WITH_COMA),
           )
       }
       is MeasureReportEvent.OnReportTypeChanged -> {
@@ -249,22 +237,22 @@ constructor(
     val registerConfiguration =
       configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
         ConfigType.Register,
-        measureReportConfig.registerId
+        measureReportConfig.registerId,
       )
     subjectData.value =
       Pager(
           config = PagingConfig(DEFAULT_PAGE_SIZE),
           pagingSourceFactory = {
             MeasureReportSubjectsPagingSource(
-              MeasureReportRepository(
+              MeasureReportPagingSource(
                 measureReportConfiguration = measureReportConfig,
                 registerConfiguration = registerConfiguration,
                 registerRepository = registerRepository,
-                resourceDataRulesExecutor = resourceDataRulesExecutor
+                resourceDataRulesExecutor = resourceDataRulesExecutor,
               ),
               measureReportSubjectViewDataMapper,
             )
-          }
+          },
         )
         .flow
         .cachedIn(viewModelScope)
@@ -274,19 +262,15 @@ constructor(
   // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
   fun evaluateMeasure(navController: NavController) {
     // Run evaluate measure only for existing report
-    if (measureReportConfigList.isNotEmpty()) {
+    if (reportConfigurations.isNotEmpty()) {
       // Retrieve and parse dates to  (2020-11-16)
       val startDateFormatted =
-        reportTypeSelectorUiState
-          .value
-          .startDate
+        reportTypeSelectorUiState.value.startDate
           .parseDate(SDF_D_MMM_YYYY_WITH_COMA)
           ?.formatDate(SDF_YYYY_MM_DD)!!
 
       val endDateFormatted =
-        reportTypeSelectorUiState
-          .value
-          .endDate
+        reportTypeSelectorUiState.value.endDate
           .parseDate(SDF_D_MMM_YYYY_WITH_COMA)
           ?.formatDate(SDF_YYYY_MM_DD)!!
 
@@ -296,20 +280,22 @@ constructor(
             // Show Progress indicator while evaluating measure
             toggleProgressIndicatorVisibility(true)
             val result =
-              measureReportConfigList.flatMap { config ->
-                val subjects = fetchSubjects(config)
+              reportConfigurations.flatMap { config ->
+                val subjects = measureReportRepository.fetchSubjects(config)
                 val existing =
                   retrievePreviouslyGeneratedMeasureReports(
                     fhirEngine,
                     startDateFormatted,
                     endDateFormatted,
                     config.url,
-                    subjects
+                    listOf(),
                   )
 
                 // if report is of current month or does not exist generate a new one and replace
                 // existing
-                if (endDateFormatted.parseDate(SDF_YYYY_MM_DD)!!
+                if (
+                  endDateFormatted
+                    .parseDate(SDF_YYYY_MM_DD)!!
                     .formatDate(SDF_YYYY_MMM)
                     .contentEquals(Date().formatDate(SDF_YYYY_MMM)) || existing.isEmpty()
                 ) {
@@ -317,18 +303,20 @@ constructor(
                     fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
                   }
 
-                  evaluatePopulationMeasure(
+                  measureReportRepository.evaluatePopulationMeasure(
                     config.url,
                     startDateFormatted,
                     endDateFormatted,
                     subjects,
-                    existing
+                    existing,
                   )
-                } else existing
+                } else {
+                  existing
+                }
               }
 
             _measureReportPopulationResultList.addAll(
-              formatPopulationMeasureReports(result, measureReportConfigList)
+              formatPopulationMeasureReports(result, reportConfigurations),
             )
           }
           .onSuccess {
@@ -348,84 +336,6 @@ constructor(
     }
   }
 
-  private suspend fun fetchSubjects(config: MeasureReportConfig): List<String> {
-    return reportTypeSelectorUiState.value.subjectViewData
-      .ifEmpty {
-        if (config.subjectXFhirQuery?.isNotEmpty() == true) {
-          fhirEngine.search(config.subjectXFhirQuery!!).map {
-            // TODO a hack to prevent missing subject in case of Group based reports where
-            // MeasureEvaluator looks for Group members and skips the Group itself
-            if (it is Group && !it.hasMember()) {
-              it.addMember(Group.GroupMemberComponent(it.asReference()))
-              defaultRepository.update(it)
-            }
-            MeasureReportSubjectViewData(it.resourceType, it.logicalId, it.valueToString())
-          }
-        } else emptyList()
-      }
-      .map { "${it.type.name}/${it.logicalId}" }
-  }
-
-  private suspend fun evaluatePopulationMeasure(
-    measureUrl: String,
-    startDateFormatted: String,
-    endDateFormatted: String,
-    subjects: List<String>,
-    existing: List<MeasureReport>
-  ): List<MeasureReport> {
-    val measureReport = mutableListOf<MeasureReport>()
-    withContext(dispatcherProvider.io()) {
-      if (subjects.isNotEmpty()) {
-        subjects
-          .map { runMeasureReport(measureUrl, SUBJECT, startDateFormatted, endDateFormatted, it) }
-          .forEach { measureReport.add(it) }
-      } else
-        runMeasureReport(measureUrl, POPULATION, startDateFormatted, endDateFormatted, null).also {
-          measureReport.add(it)
-        }
-
-      measureReport.forEach { report ->
-        // if report exists override instead of creating a new one
-        existing
-          .find {
-            it.measure == report.measure &&
-              (!it.hasSubject() || it.subject.reference == report.subject.reference)
-          }
-          ?.let { existing -> report.id = existing.id }
-        defaultRepository.addOrUpdate(resource = report)
-      }
-    }
-    return measureReport
-  }
-
-  /**
-   * Run and generate MeasureReport for given measure and subject.
-   *
-   * @param measureUrl url of measure to generate report for
-   * @param reportType type of report (population | subject)
-   * @param startDateFormatted start date of measure period with format yyyy-MM-dd
-   * @param endDateFormatted end date of measure period with format yyyy-MM-dd
-   * @param subject the individual subject reference (ResourceType/id) to run report for
-   */
-  private fun runMeasureReport(
-    measureUrl: String,
-    reportType: String,
-    startDateFormatted: String,
-    endDateFormatted: String,
-    subject: String?
-  ): MeasureReport {
-    return fhirOperator.evaluateMeasure(
-      measureUrl = measureUrl,
-      start = startDateFormatted,
-      end = endDateFormatted,
-      reportType = reportType,
-      subject = subject,
-      practitioner = null
-      /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
-      practitionerId?.asReference(ResourceType.Practitioner)?.reference*/ ,
-    )
-  }
-
   fun toggleProgressIndicatorVisibility(showProgressIndicator: Boolean = false) {
     reportTypeSelectorUiState.value =
       reportTypeSelectorUiState.value.copy(showProgressIndicator = showProgressIndicator)
@@ -433,7 +343,7 @@ constructor(
 
   suspend fun formatPopulationMeasureReports(
     measureReports: List<MeasureReport>,
-    indicators: List<MeasureReportConfig> = listOf(),
+    indicators: List<ReportConfiguration> = listOf(),
   ): List<MeasureReportPopulationResult> {
     val data = mutableListOf<MeasureReportPopulationResult>()
 
@@ -458,7 +368,7 @@ constructor(
               is Practitioner -> resource.nameFirstRep.nameAsSingleString
               else ->
                 throw UnsupportedOperationException(
-                  "${resource.resourceType} as individual subject not allowed"
+                  "${resource.resourceType} as individual subject not allowed",
                 )
             }
           }
@@ -467,22 +377,23 @@ constructor(
           entry.value.flatMap { report ->
             val formatted = formatSupplementalData(report.contained, report.type)
             val title = nonNullGetOrDefault(indicatorUrlToTitleMap, report.measure, "")
-            if (formatted.isEmpty())
+            if (formatted.isEmpty()) {
               listOf(MeasureReportIndividualResult(title = title, count = "0"))
-            else if (formatted.size == 1)
+            } else if (formatted.size == 1) {
               listOf(
                 MeasureReportIndividualResult(
                   title = title,
-                  count = formatted.first().measureReportDenominator?.toString() ?: "0"
-                )
+                  count = formatted.first().measureReportDenominator?.toString() ?: "0",
+                ),
               )
-            else
+            } else {
               formatted.map {
                 MeasureReportIndividualResult(
                   title = it.title,
-                  count = it.measureReportDenominator.toString()
+                  count = it.measureReportDenominator.toString(),
                 )
               }
+            }
           }
 
         data.add(
@@ -491,8 +402,8 @@ constructor(
             indicatorTitle = subject,
             measureReportDenominator =
               if (theIndicators.size == 1) theIndicators.first().count.toInt() else null,
-            dataList = if (theIndicators.size > 1) theIndicators else emptyList()
-          )
+            dataList = if (theIndicators.size > 1) theIndicators else emptyList(),
+          ),
         )
       }
 
@@ -505,13 +416,11 @@ constructor(
 
         data.addAll(formatSupplementalData(report.contained, report.type))
 
-        report
-          .group
+        report.group
           .map { group ->
             val denominator = group.findPopulation(MeasurePopulationType.NUMERATOR)?.count
             group to
-              group
-                .stratifier
+              group.stratifier
                 .asSequence()
                 .flatMap { it.stratum }
                 .filter { it.hasValue() && it.value.hasText() }
@@ -520,7 +429,7 @@ constructor(
                     title = stratifier.value.text,
                     percentage = stratifier.findPercentage(denominator!!).toString(),
                     count = stratifier.findRatio(denominator),
-                    description = stratifier.id?.replace("-", " ")?.uppercase() ?: ""
+                    description = stratifier.id?.replace("-", " ")?.uppercase() ?: "",
                   )
                 }
           }
@@ -529,7 +438,7 @@ constructor(
               MeasureReportPopulationResult(
                 title = it.first.id.replace("-", " "),
                 indicatorTitle = nonNullGetOrDefault(indicatorUrlToTitleMap, report.measure, ""),
-                measureReportDenominator = count.count
+                measureReportDenominator = count.count,
               )
             }
           }
@@ -551,7 +460,7 @@ constructor(
    */
   private fun formatSupplementalData(
     list: List<Resource>,
-    type: MeasureReport.MeasureReportType
+    type: MeasureReport.MeasureReportType,
   ): List<MeasureReportPopulationResult> {
     // handle extracted supplemental data for values
     return list
@@ -563,18 +472,20 @@ constructor(
           .filter { it.key.isNullOrBlank().not() }
           .map { entry ->
             entry.key!! to
-              if (type == MeasureReport.MeasureReportType.INDIVIDUAL)
-              // for subject specific reports it is key value map with exact value
-              entry.value.joinToString { it.valueCode() ?: "" }
-              // for multiple subjects it is a number for each which should be counted by entries
-              else entry.value.count().toString()
+              if (type == MeasureReport.MeasureReportType.INDIVIDUAL) {
+                // for subject specific reports it is key value map with exact value
+                entry.value.joinToString { it.valueCode() ?: "" }
+              } // for multiple subjects it is a number for each which should be counted by entries
+              else {
+                entry.value.count().toString()
+              }
           }
       }
       .map {
         MeasureReportPopulationResult(
           title = it.first,
           indicatorTitle = it.first,
-          measureReportDenominator = it.second.toBigDecimal().toInt()
+          measureReportDenominator = it.second.toBigDecimal().toInt(),
         )
       }
   }
@@ -582,23 +493,22 @@ constructor(
   /** This function @returns a map of year-month for all months falling in given measure period */
   fun getReportGenerationRange(
     reportId: String,
-    startDate: Date? = null
+    startDate: Date? = null,
   ): Map<String, List<ReportRangeSelectionData>> {
-
     val reportConfiguration = retrieveMeasureReportConfiguration(reportId)
     val yearMonths = mutableListOf<ReportRangeSelectionData>()
     val endDate = Calendar.getInstance().time.formatDate(SDF_YYYY_MM_DD).parseDate(SDF_YYYY_MM_DD)
     var lastDate = endDate?.firstDayOfMonth()
 
-    while (lastDate!!.after(
-      startDate ?: reportConfiguration.registerDate?.parseDate(SDF_YYYY_MM_DD)
-    )) {
+    while (
+      lastDate!!.after(startDate ?: reportConfiguration.startPeriod?.parseDate(SDF_YYYY_MM_DD))
+    ) {
       yearMonths.add(
         ReportRangeSelectionData(
           lastDate.formatDate(SDF_MMMM),
           lastDate.formatDate(SDF_YYYY),
-          lastDate
-        )
+          lastDate,
+        ),
       )
 
       lastDate = lastDate.plusMonths(-1)
@@ -622,7 +532,7 @@ constructor(
   }
 
   companion object {
-    private const val SUBJECT = "subject"
+    const val SUBJECT = "subject"
     const val POPULATION = "population"
     private const val POPULATION_OBS_URL = "populationId"
     private const val DEFAULT_PAGE_SIZE = 20

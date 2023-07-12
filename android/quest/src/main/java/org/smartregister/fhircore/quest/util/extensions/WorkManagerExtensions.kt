@@ -18,11 +18,13 @@ package org.smartregister.fhircore.quest.util.extensions
 
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
+import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ListenableWorker
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.workDataOf
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
@@ -33,19 +35,22 @@ inline fun <reified W : ListenableWorker> WorkManager.schedulePeriodically(
   duration: Duration? = null,
   timeUnit: TimeUnit = TimeUnit.MINUTES,
   existingPeriodicWorkPolicy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP,
-  requiresNetwork: Boolean = true
+  requiresNetwork: Boolean = true,
+  inputData: Data = workDataOf(),
 ) {
-
   val constraint =
     Constraints.Builder()
       .setRequiredNetworkType(
-        if (requiresNetwork) NetworkType.CONNECTED else NetworkType.NOT_REQUIRED
+        if (requiresNetwork) NetworkType.CONNECTED else NetworkType.NOT_REQUIRED,
       )
       .build()
 
   val workRequestBuilder =
-    if (duration == null) PeriodicWorkRequestBuilder<W>(repeatInterval, timeUnit)
-    else PeriodicWorkRequestBuilder<W>(duration)
+    if (duration == null) {
+      PeriodicWorkRequestBuilder<W>(repeatInterval, timeUnit)
+    } else {
+      PeriodicWorkRequestBuilder<W>(duration)
+    }
   enqueueUniquePeriodicWork(
     workId,
     existingPeriodicWorkPolicy,
@@ -53,6 +58,7 @@ inline fun <reified W : ListenableWorker> WorkManager.schedulePeriodically(
       .setInitialDelay(repeatInterval, timeUnit)
       .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
       .setConstraints(constraint)
-      .build()
+      .setInputData(inputData)
+      .build(),
   )
 }

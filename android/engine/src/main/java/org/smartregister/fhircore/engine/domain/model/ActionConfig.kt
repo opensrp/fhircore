@@ -41,13 +41,13 @@ data class ActionConfig(
   val params: List<ActionParameter> = emptyList(),
   val resourceConfig: FhirResourceConfig? = null,
   val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
-  val popNavigationBackStack: Boolean? = null
+  val popNavigationBackStack: Boolean? = null,
 ) : Parcelable, java.io.Serializable {
   fun paramsBundle(computedValuesMap: Map<String, Any> = emptyMap()): Bundle =
     Bundle().apply {
-      params.filter { !it.paramType?.name.equals(PREPOPULATE_PARAM_TYPE) }.forEach {
-        putString(it.key, it.value.interpolate(computedValuesMap))
-      }
+      params
+        .filter { !it.paramType?.name.equals(PREPOPULATE_PARAM_TYPE) }
+        .forEach { putString(it.key, it.value.interpolate(computedValuesMap)) }
     }
 
   fun interpolate(computedValuesMap: Map<String, Any>): ActionConfig =
@@ -63,8 +63,8 @@ data class ActionConfig(
           noMembersErrorMessage =
             managingEntity.noMembersErrorMessage.interpolate(computedValuesMap),
           managingEntityReassignedMessage =
-            managingEntity.managingEntityReassignedMessage.interpolate(computedValuesMap)
-        )
+            managingEntity.managingEntityReassignedMessage.interpolate(computedValuesMap),
+        ),
     )
 
   companion object {
@@ -80,13 +80,13 @@ data class ActionParameter(
   val dataType: Enumerations.DataType? = null,
   val value: String,
   val linkId: String? = null,
-  val resourceType: ResourceType? = null
+  val resourceType: ResourceType? = null,
 ) : Parcelable, java.io.Serializable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
     this.copy(
       value = value.interpolate(computedValuesMap),
       key = key.interpolate(computedValuesMap),
-      linkId = linkId?.interpolate(computedValuesMap)
+      linkId = linkId?.interpolate(computedValuesMap),
     )
 }

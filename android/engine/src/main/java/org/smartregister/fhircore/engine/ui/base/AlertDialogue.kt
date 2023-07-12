@@ -36,7 +36,7 @@ enum class AlertIntent {
   PROGRESS,
   CONFIRM,
   ERROR,
-  INFO
+  INFO,
 }
 
 data class AlertDialogListItem(val key: String, val value: String)
@@ -47,8 +47,11 @@ object AlertDialogue {
   fun AlertDialog.getSingleChoiceSelectedKey() = getSingleChoiceSelectedItem()?.key
 
   private fun AlertDialog.getSingleChoiceSelectedItem() =
-    if (this.listView.checkedItemCount != 1) null
-    else getListItems()!![this.listView.checkedItemPosition]
+    if (this.listView.checkedItemCount != 1) {
+      null
+    } else {
+      getListItems()!![this.listView.checkedItemPosition]
+    }
 
   private fun AlertDialog.getListItems() =
     this.ownerActivity?.intent?.getSerializableExtra(ITEMS_LIST_KEY) as Array<AlertDialogListItem>?
@@ -63,7 +66,7 @@ object AlertDialogue {
     neutralButtonListener: ((d: DialogInterface) -> Unit)? = null,
     @StringRes neutralButtonText: Int = R.string.questionnaire_alert_neutral_button_title,
     cancellable: Boolean = false,
-    options: Array<AlertDialogListItem>? = null
+    options: Array<AlertDialogListItem>? = null,
   ): AlertDialog {
     val dialog =
       AlertDialog.Builder(context, R.style.AlertDialogTheme)
@@ -106,7 +109,7 @@ object AlertDialogue {
     message: String,
     title: String? = null,
     confirmButtonListener: ((d: DialogInterface) -> Unit) = { d -> d.dismiss() },
-    @StringRes confirmButtonText: Int = R.string.questionnaire_alert_ack_button_title
+    @StringRes confirmButtonText: Int = R.string.questionnaire_alert_ack_button_title,
   ): AlertDialog {
     return showAlert(
       context = context,
@@ -114,7 +117,7 @@ object AlertDialogue {
       message = message,
       title = title,
       confirmButtonListener = confirmButtonListener,
-      confirmButtonText = confirmButtonText
+      confirmButtonText = confirmButtonText,
     )
   }
 
@@ -125,19 +128,19 @@ object AlertDialogue {
       message = message,
       title = title,
       confirmButtonListener = { d -> d.dismiss() },
-      confirmButtonText = R.string.questionnaire_alert_ack_button_title
+      confirmButtonText = R.string.questionnaire_alert_ack_button_title,
     )
   }
 
   fun showErrorAlert(
     context: Activity,
     @StringRes message: Int,
-    @StringRes title: Int? = null
+    @StringRes title: Int? = null,
   ): AlertDialog {
     return showErrorAlert(
       context = context,
       message = context.getString(message),
-      title = title?.let { context.getString(it) }
+      title = title?.let { context.getString(it) },
     )
   }
 
@@ -151,7 +154,7 @@ object AlertDialogue {
     @StringRes title: Int? = null,
     confirmButtonListener: ((d: DialogInterface) -> Unit),
     @StringRes confirmButtonText: Int,
-    options: List<AlertDialogListItem>? = null
+    options: List<AlertDialogListItem>? = null,
   ): AlertDialog {
     return showAlert(
       context = context,
@@ -163,7 +166,7 @@ object AlertDialogue {
       neutralButtonListener = { d -> d.dismiss() },
       neutralButtonText = R.string.questionnaire_alert_neutral_button_title,
       cancellable = false,
-      options = options?.toTypedArray()
+      options = options?.toTypedArray(),
     )
   }
 
@@ -176,7 +179,7 @@ object AlertDialogue {
     neutralButtonListener: ((d: DialogInterface) -> Unit),
     @StringRes neutralButtonText: Int,
     cancellable: Boolean = true,
-    options: List<AlertDialogListItem>? = null
+    options: List<AlertDialogListItem>? = null,
   ): AlertDialog {
     return showAlert(
       context = context,
@@ -188,7 +191,7 @@ object AlertDialogue {
       neutralButtonListener = neutralButtonListener,
       neutralButtonText = neutralButtonText,
       cancellable = cancellable,
-      options = options?.toTypedArray()
+      options = options?.toTypedArray(),
     )
   }
 
@@ -215,7 +218,7 @@ object AlertDialogue {
           TextView(context).apply {
             this.text = it
             this.setPadding(20)
-          }
+          },
         )
       }
 
@@ -230,10 +233,11 @@ object AlertDialogue {
 
     dateDialog.create()
 
-    if (dangerActionColor)
+    if (dangerActionColor) {
       dateDialog
         .getButton(DialogInterface.BUTTON_POSITIVE)
         .setTextColor(context.resources.getColor(R.color.colorError))
+    }
 
     dateDialog.show()
 

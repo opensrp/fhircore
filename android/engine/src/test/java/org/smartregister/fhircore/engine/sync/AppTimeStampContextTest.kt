@@ -33,6 +33,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 class AppTimeStampContextTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
   @Inject lateinit var sharedPreference: SharedPreferencesHelper
   private lateinit var appTimeStampContext: AppTimeStampContext
 
@@ -52,7 +53,7 @@ class AppTimeStampContextTest : RobolectricTest() {
       appTimeStampContext.saveLastUpdatedTimestamp(ResourceType.Patient, currentTimestamp)
       Assert.assertEquals(
         currentTimestamp,
-        appTimeStampContext.getLasUpdateTimestamp(ResourceType.Patient)
+        appTimeStampContext.getLasUpdateTimestamp(ResourceType.Patient),
       )
     }
   }
@@ -64,7 +65,7 @@ class AppTimeStampContextTest : RobolectricTest() {
       appTimeStampContext.saveLastUpdatedTimestamp(ResourceType.CarePlan, currentTimestamp)
       Assert.assertEquals(
         currentTimestamp,
-        sharedPreference.read("CAREPLAN_LAST_SYNC_TIMESTAMP", null)
+        sharedPreference.read("CAREPLAN_LAST_SYNC_TIMESTAMP", null),
       )
     }
   }

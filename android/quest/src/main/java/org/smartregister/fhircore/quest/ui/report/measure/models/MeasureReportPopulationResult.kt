@@ -26,5 +26,5 @@ data class MeasureReportPopulationResult(
   val count: String = "",
   val dataList: List<MeasureReportIndividualResult> = emptyList(),
   val indicatorTitle: String = "",
-  val measureReportDenominator: Int? = null
+  val measureReportDenominator: Int? = null,
 )

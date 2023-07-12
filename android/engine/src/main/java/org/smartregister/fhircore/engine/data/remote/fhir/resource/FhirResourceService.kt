@@ -40,20 +40,20 @@ interface FhirResourceService {
   suspend fun insertResource(
     @Path("resourceType") resourceType: String,
     @Path("id") id: String,
-    @Body body: RequestBody
+    @Body body: RequestBody,
   ): Resource
 
   @PATCH("{resourceType}/{id}")
   suspend fun updateResource(
     @Path("resourceType") resourceType: String,
     @Path("id") id: String,
-    @Body body: RequestBody
+    @Body body: RequestBody,
   ): OperationOutcome
 
   @DELETE("{resourceType}/{id}")
   suspend fun deleteResource(
     @Path("resourceType") resourceType: String,
-    @Path("id") id: String
+    @Path("id") id: String,
   ): OperationOutcome
 
   @GET suspend fun fetchImage(@Url url: String): ResponseBody?
@@ -61,6 +61,6 @@ interface FhirResourceService {
   @GET("{resourceType}/_search")
   suspend fun searchResource(
     @Path("resourceType") resourceType: String,
-    @QueryMap(encoded = false) searchParameters: Map<String, String>
+    @QueryMap(encoded = false) searchParameters: Map<String, String>,
   ): Bundle
 }

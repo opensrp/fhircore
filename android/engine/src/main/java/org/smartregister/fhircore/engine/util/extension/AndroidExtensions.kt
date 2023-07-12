@@ -87,7 +87,7 @@ fun Context.appVersion(): Pair<Int, String> =
   Pair(
     this.packageManager.getPackageInfo(this.packageName, 0)?.versionCode ?: 1,
     this.packageManager.getPackageInfo(this.packageName, 0).versionName?.substringBefore("-")
-      ?: "0.0.1"
+      ?: "0.0.1",
   )
 
 fun Context.retrieveResourceId(resourceName: String?, resourceType: String = "drawable"): Int? {
@@ -133,7 +133,7 @@ fun Context.getActivity(): AppCompatActivity? =
  * is applied after the setContent function of the activity is called.
  */
 fun Activity.applyWindowInsetListener() {
-  ViewCompat.setOnApplyWindowInsetsListener(this.findViewById(android.R.id.content)) { view, insets
+  ViewCompat.setOnApplyWindowInsetsListener(this.findViewById(android.R.id.content)) { view, insets,
     ->
     val bottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
     view.updatePadding(bottom = bottom)
@@ -148,7 +148,7 @@ fun Activity.applyWindowInsetListener() {
  */
 inline fun <reified A : Activity> Activity.launchActivityWithNoBackStackHistory(
   finishLauncherActivity: Boolean = true,
-  bundle: Bundle = bundleOf()
+  bundle: Bundle = bundleOf(),
 ) {
   startActivity(
     Intent(this, A::class.java).apply {
@@ -156,7 +156,7 @@ inline fun <reified A : Activity> Activity.launchActivityWithNoBackStackHistory(
       addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
       addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
       putExtras(bundle)
-    }
+    },
   )
   if (finishLauncherActivity) finish()
 }
@@ -174,7 +174,7 @@ fun Context.isDeviceOnline(): Boolean {
       NetworkCapabilities.TRANSPORT_ETHERNET,
       NetworkCapabilities.TRANSPORT_CELLULAR,
       NetworkCapabilities.TRANSPORT_WIFI,
-      NetworkCapabilities.TRANSPORT_VPN
+      NetworkCapabilities.TRANSPORT_VPN,
     )
 
   return transports.any { capabilities.hasTransport(it) }

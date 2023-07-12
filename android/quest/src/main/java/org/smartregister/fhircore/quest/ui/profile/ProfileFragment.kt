@@ -49,6 +49,7 @@ import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 class ProfileFragment : Fragment() {
 
   @Inject lateinit var eventBus: EventBus
+
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
   val profileFragmentArgs by navArgs<ProfileFragmentArgs>()
   val profileViewModel by viewModels<ProfileViewModel>()
@@ -57,9 +58,8 @@ class ProfileFragment : Fragment() {
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?
+    savedInstanceState: Bundle?,
   ): View {
-
     with(profileFragmentArgs) {
       lifecycleScope.launch {
         profileViewModel.run {
@@ -88,7 +88,7 @@ class ProfileFragment : Fragment() {
             navController = findNavController(),
             profileUiState = profileViewModel.profileUiState.value,
             onEvent = profileViewModel::onEvent,
-            snackStateFlow = profileViewModel.snackBarStateFlow
+            snackStateFlow = profileViewModel.snackBarStateFlow,
           )
         }
       }
@@ -99,8 +99,7 @@ class ProfileFragment : Fragment() {
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
         // Each profile should have a unique eventId
-        eventBus
-          .events
+        eventBus.events
           .getFor(MainNavigationScreen.Profile.eventId(profileFragmentArgs.profileId))
           .onEach { appEvent ->
             when (appEvent) {
@@ -133,7 +132,7 @@ class ProfileFragment : Fragment() {
         appMainViewModel.retrieveAppMainUiState(refreshAll = false)
         onSubmitActions.handleClickEvent(
           navController = findNavController(),
-          resourceData = profileViewModel.profileUiState.value.resourceData
+          resourceData = profileViewModel.profileUiState.value.resourceData,
         )
       }
     }

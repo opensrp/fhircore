@@ -24,7 +24,6 @@ import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 class ProfileBottomSheetFragmentTest {
   @Test
   fun testOnSaveClick() {
-
     val mockCallback = mock(Function1::class.java) as (EligibleManagingEntity) -> Unit
     val fragment = ProfileBottomSheetFragment(onSaveClick = mockCallback)
 

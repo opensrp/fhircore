@@ -73,8 +73,7 @@ constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: Di
       }
 
     val familiesWithLocations =
-      defaultRepository
-        .fhirEngine
+      defaultRepository.fhirEngine
         .search<Group> { filter(Group.TYPE, { value = of(coding) }) }
         .asSequence()
         .filter {
@@ -101,7 +100,8 @@ constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: Di
   }
 
   private fun familyLocationId(family: Group) =
-    family.characteristic.firstOrNull { characteristic ->
+    family.characteristic
+      .firstOrNull { characteristic ->
         characteristic.value is Reference &&
           characteristic.valueReference.reference.contains("Location")
       }!!
