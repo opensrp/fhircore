@@ -18,6 +18,7 @@ coverage:
       default:
         enabled: true
         target: auto
+        threshold: 0.05%
 flag_management:
   default_rules:
     carryforward: true
