@@ -42,14 +42,14 @@ data class CardViewProperties(
   val headerBackgroundColor: String = "#F2F4F7",
   val headerAction: CompoundTextProperties? = null,
   val emptyContentMessage: String = "",
-  val contentPadding: Int = 16
+  val contentPadding: Int = 16,
 ) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): CardViewProperties {
     return this.copy(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),
       visible = visible.interpolate(computedValuesMap),
       headerAction = headerAction?.interpolate(computedValuesMap),
-      header = header?.interpolate(computedValuesMap)
+      header = header?.interpolate(computedValuesMap),
     )
   }
 }

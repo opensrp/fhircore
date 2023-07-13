@@ -29,5 +29,5 @@ data class GeoWidgetConfiguration(
   val id: String,
   val profileId: String,
   val registrationQuestionnaire: QuestionnaireConfig,
-  val resourceConfig: FhirResourceConfig? = null
+  val resourceConfig: FhirResourceConfig? = null,
 ) : Configuration()

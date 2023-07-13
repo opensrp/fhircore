@@ -43,11 +43,11 @@ fun CircularProgressBar(modifier: Modifier = Modifier, text: String? = null) {
     Column(
       modifier = modifier.testTag(CIRCULAR_PROGRESS_BAR).padding(8.dp),
       verticalArrangement = Arrangement.Center,
-      horizontalAlignment = Alignment.CenterHorizontally
+      horizontalAlignment = Alignment.CenterHorizontally,
     ) {
       CircularProgressIndicator(
         modifier = modifier.align(Alignment.CenterHorizontally).size(24.dp),
-        strokeWidth = 1.8.dp
+        strokeWidth = 1.8.dp,
       )
       if (text != null) {
         Text(text = text, modifier = modifier.testTag(PROGRESS_MSG_TAG))

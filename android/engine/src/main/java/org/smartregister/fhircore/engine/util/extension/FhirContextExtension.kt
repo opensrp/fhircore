@@ -32,8 +32,8 @@ fun FhirContext.getCustomJsonParser(): IParser {
           FhirPractitionerDetails::class.java,
           LocationHierarchy::class.java,
           KeycloakUserDetails::class.java,
-          UserBioData::class.java
-        )
+          UserBioData::class.java,
+        ),
       )
     }
     .newJsonParser()

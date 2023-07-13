@@ -52,7 +52,7 @@ data class QuestionnaireConfig(
   val readOnlyLinkIds: List<String>? = emptyList(),
   val configRules: List<RuleConfig>? = null,
   val extraParams: List<ActionParameter>? = null,
-  val onSubmitActions: List<ActionConfig>? = null
+  val onSubmitActions: List<ActionConfig>? = null,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
@@ -65,16 +65,16 @@ data class QuestionnaireConfig(
       groupResource =
         groupResource?.copy(
           groupIdentifier =
-            groupResource.groupIdentifier.interpolate(computedValuesMap).extractLogicalIdUuid()
+            groupResource.groupIdentifier.interpolate(computedValuesMap).extractLogicalIdUuid(),
         ),
       confirmationDialog =
         confirmationDialog?.copy(
           title = confirmationDialog.title.interpolate(computedValuesMap),
           message = confirmationDialog.message.interpolate(computedValuesMap),
-          actionButtonText = confirmationDialog.actionButtonText.interpolate(computedValuesMap)
+          actionButtonText = confirmationDialog.actionButtonText.interpolate(computedValuesMap),
         ),
       planDefinitions = planDefinitions?.map { it.interpolate(computedValuesMap) },
-      readOnlyLinkIds = readOnlyLinkIds?.map { it.interpolate(computedValuesMap) }
+      readOnlyLinkIds = readOnlyLinkIds?.map { it.interpolate(computedValuesMap) },
     )
 }
 
@@ -83,7 +83,7 @@ data class QuestionnaireConfig(
 data class ConfirmationDialog(
   val title: String = "",
   val message: String = "",
-  val actionButtonText: String = ""
+  val actionButtonText: String = "",
 ) : java.io.Serializable, Parcelable
 
 @Serializable
@@ -93,5 +93,5 @@ data class GroupResourceConfig(
   val memberResourceType: ResourceType,
   val removeMember: Boolean = false,
   val removeGroup: Boolean = false,
-  val deactivateMembers: Boolean = true
+  val deactivateMembers: Boolean = true,
 ) : java.io.Serializable, Parcelable

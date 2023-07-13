@@ -33,7 +33,7 @@ class RegisterBottomSheetFragmentViewTest {
   private val navigationMenuConfigs =
     listOf(
       NavigationMenuConfig(id = "UniqueTag1", display = "Menu 1"),
-      NavigationMenuConfig(id = "UniqueTag2", display = "Menu 2")
+      NavigationMenuConfig(id = "UniqueTag2", display = "Menu 2"),
     )
 
   @Test
@@ -47,6 +47,7 @@ class RegisterBottomSheetFragmentViewTest {
     composeRule.onNodeWithText("Menu 1", useUnmergedTree = true).assertExists().assertIsDisplayed()
     composeRule.onNodeWithText("Menu 2", useUnmergedTree = true).assertExists().assertIsDisplayed()
   }
+
   @Test
   fun testTitleShowsWithGivenName() {
     setContent("Other services")
@@ -55,13 +56,14 @@ class RegisterBottomSheetFragmentViewTest {
       .assertExists()
       .assertIsDisplayed()
   }
+
   private fun setContent(title: String) {
     composeRule.setContent {
       RegisterBottomSheetView(
         menuClickListener = mockListener,
         navigationMenuConfigs = navigationMenuConfigs,
         onDismiss = {},
-        title = title
+        title = title,
       )
     }
   }

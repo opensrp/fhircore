@@ -23,8 +23,9 @@ fun Reference.extractId(): String =
   if (this.reference.isNullOrEmpty()) "" else this.reference.extractLogicalIdUuid()
 
 fun Reference.extractType(): ResourceType? =
-  if (this.reference.isNullOrEmpty()) null
-  else
+  if (this.reference.isNullOrEmpty()) {
+    null
+  } else
     this.reference.substringBefore("/" + this.extractId()).substringAfterLast("/").let {
       ResourceType.fromCode(it)
     }

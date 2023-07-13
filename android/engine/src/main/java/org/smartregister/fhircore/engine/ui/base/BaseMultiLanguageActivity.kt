@@ -60,7 +60,7 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
    */
   protected open fun inject() {
     throw UnsupportedOperationException(
-      "Annotate $this with @AndroidEntryPoint annotation. The inject method should be overridden by the Hilt generated class."
+      "Annotate $this with @AndroidEntryPoint annotation. The inject method should be overridden by the Hilt generated class.",
     )
   }
 }

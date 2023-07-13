@@ -40,7 +40,7 @@ data class DividerProperties(
   override fun interpolate(computedValuesMap: Map<String, Any>): DividerProperties {
     return this.copy(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),
-      visible = visible.interpolate(computedValuesMap)
+      visible = visible.interpolate(computedValuesMap),
     )
   }
 }

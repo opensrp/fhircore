@@ -37,8 +37,11 @@ class LoginScreenTest {
     object {
       // Imitate click action by doing nothing
       fun onUsernameUpdated() {}
+
       fun onPasswordUpdated() {}
+
       fun forgotPassword() {}
+
       fun attemptRemoteLogin() {}
     }
 
@@ -46,7 +49,7 @@ class LoginScreenTest {
     ApplicationConfiguration(
       appTitle = "My app",
       appId = "app/debug",
-      loginConfig = LoginConfig(showLogo = true)
+      loginConfig = LoginConfig(showLogo = true),
     )
 
   @Test
@@ -60,7 +63,7 @@ class LoginScreenTest {
         onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
         forgotPassword = { listenerObjectSpy.forgotPassword() },
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
-        appVersionPair = Pair(1, "1.0.1")
+        appVersionPair = Pair(1, "1.0.1"),
       )
     }
     if (applicationConfiguration.loginConfig.showLogo) {
@@ -91,7 +94,7 @@ class LoginScreenTest {
         onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
         forgotPassword = { listenerObjectSpy.forgotPassword() },
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
-        appVersionPair = Pair(1, "1.0.1")
+        appVersionPair = Pair(1, "1.0.1"),
       )
     }
     composeRule

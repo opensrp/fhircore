@@ -25,7 +25,7 @@ object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
   QuestionnaireItemViewHolderFactoryMatchersProviderFactory {
 
   override fun get(
-    provider: String
+    provider: String,
   ): QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatchersProvider {
     return QuestionnaireItemViewHolderFactoryMatchersProviderImpl
   }
@@ -39,12 +39,12 @@ object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
     override fun get(): List<QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher> {
       return listOf(
         QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
-          BarCodeReaderViewHolderFactory
+          BarCodeReaderViewHolderFactory,
         ) { questionnaireItem ->
           questionnaireItem.getExtensionByUrl(BARCODE_URL).let {
             if (it == null) false else it.value.asStringValue() == BARCODE_NAME
           }
-        }
+        },
       )
     }
   }

@@ -42,12 +42,12 @@ data class NavigationMenuConfig(
 data class ImageConfig(
   val type: String = ICON_TYPE_LOCAL,
   val reference: String? = null,
-  @Contextual var decodedBitmap: Bitmap? = null
+  @Contextual var decodedBitmap: Bitmap? = null,
 ) : Parcelable, java.io.Serializable {
   fun interpolate(computedValuesMap: Map<String, Any>): ImageConfig {
     return this.copy(
       reference = this.reference?.interpolate(computedValuesMap),
-      type = this.type.interpolate(computedValuesMap)
+      type = this.type.interpolate(computedValuesMap),
     )
   }
 }

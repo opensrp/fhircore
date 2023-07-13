@@ -61,7 +61,7 @@ class PinViewModelTest : RobolectricTest() {
         secureSharedPreference = secureSharedPreference,
         sharedPreferences = sharedPreferenceHelper,
         configurationRegistry = configurationRegistry,
-        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider
+        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
       )
   }
 
@@ -155,7 +155,6 @@ class PinViewModelTest : RobolectricTest() {
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun testPinLogin() {
-
     mockkStatic(::passwordHashString)
 
     coEvery { passwordHashString(any(), any()) } returns "currentStoredPinHash"

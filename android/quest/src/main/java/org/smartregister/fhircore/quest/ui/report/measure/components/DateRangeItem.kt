@@ -46,18 +46,18 @@ fun DateRangeItem(text: String, showBackground: Boolean = true, modifier: Modifi
         modifier
           .clip(RoundedCornerShape(if (showBackground) 12.dp else 0.dp))
           .background(
-            color = if (showBackground) Color.LightGray.copy(alpha = 0.4f) else Color.Transparent
+            color = if (showBackground) Color.LightGray.copy(alpha = 0.4f) else Color.Transparent,
           )
           .wrapContentWidth()
           .padding(horizontal = 16.dp, vertical = 4.dp),
-      contentAlignment = Alignment.Center
+      contentAlignment = Alignment.Center,
     ) {
       Text(
         text = text,
         textAlign = TextAlign.Start,
         fontSize = 16.sp,
         color = SubtitleTextColor,
-        modifier = modifier.testTag(DATE_RANGE_TEXT_TEST_TAG)
+        modifier = modifier.testTag(DATE_RANGE_TEXT_TEST_TAG),
       )
     }
   }
