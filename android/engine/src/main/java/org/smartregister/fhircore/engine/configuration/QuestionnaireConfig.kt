@@ -35,9 +35,6 @@ data class QuestionnaireConfig(
   val id: String,
   val title: String? = null,
   val saveButtonText: String? = null,
-  val setPractitionerDetails: Boolean = true,
-  val setOrganizationDetails: Boolean = true,
-  val setAppVersion: Boolean = true,
   val planDefinitions: List<String>? = null,
   var type: QuestionnaireType = QuestionnaireType.DEFAULT,
   val resourceIdentifier: String? = null,
@@ -52,6 +49,13 @@ data class QuestionnaireConfig(
   val configRules: List<RuleConfig>? = null,
   val extraParams: List<ActionParameter>? = null,
   val onSubmitActions: List<ActionConfig>? = null,
+  val questionnaireSubjects: List<ResourceType> =
+    listOf(
+      ResourceType.Patient,
+      ResourceType.Group,
+      ResourceType.Practitioner,
+      ResourceType.Location,
+    ),
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =

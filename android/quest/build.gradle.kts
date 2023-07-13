@@ -139,6 +139,7 @@ android {
   buildFeatures {
     compose = true
     viewBinding = true
+    dataBinding = true
   }
 
   composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }

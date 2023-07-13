@@ -33,13 +33,6 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     inject()
     super.onCreate(savedInstanceState)
-    val themePref =
-      sharedPreferencesHelper.read(key = SharedPreferenceKey.THEME.name, defaultValue = "")!!
-
-    if (themePref.isNotEmpty()) {
-      val resourceId = this.resources.getIdentifier(themePref, "style", packageName)
-      if (resourceId != 0) theme.applyStyle(resourceId, true)
-    }
   }
 
   override fun attachBaseContext(baseContext: Context) {

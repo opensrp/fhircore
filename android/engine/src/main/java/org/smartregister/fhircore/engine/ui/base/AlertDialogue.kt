@@ -16,11 +16,12 @@
 
 package org.smartregister.fhircore.engine.ui.base
 
-import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
+import android.content.Context
 import android.content.DialogInterface
 import android.content.res.Resources
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.StringRes
@@ -29,6 +30,7 @@ import androidx.core.view.setPadding
 import java.util.Calendar
 import java.util.Date
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.show
 
@@ -44,20 +46,8 @@ data class AlertDialogListItem(val key: String, val value: String)
 object AlertDialogue {
   private val ITEMS_LIST_KEY = "alert_dialog_items_list"
 
-  fun AlertDialog.getSingleChoiceSelectedKey() = getSingleChoiceSelectedItem()?.key
-
-  private fun AlertDialog.getSingleChoiceSelectedItem() =
-    if (this.listView.checkedItemCount != 1) {
-      null
-    } else {
-      getListItems()!![this.listView.checkedItemPosition]
-    }
-
-  private fun AlertDialog.getListItems() =
-    this.ownerActivity?.intent?.getSerializableExtra(ITEMS_LIST_KEY) as Array<AlertDialogListItem>?
-
   fun showAlert(
-    context: Activity,
+    context: Context,
     alertIntent: AlertIntent,
     message: CharSequence,
     title: String? = null,
@@ -71,7 +61,7 @@ object AlertDialogue {
     val dialog =
       AlertDialog.Builder(context, R.style.AlertDialogTheme)
         .apply {
-          val view = context.layoutInflater.inflate(R.layout.alert_dialog, null)
+          val view = LayoutInflater.from(context).inflate(R.layout.alert_dialog, null)
           setView(view)
           title?.let { setTitle(it) }
           setCancelable(cancellable)
@@ -97,15 +87,17 @@ object AlertDialogue {
     dialog.findViewById<TextView>(R.id.tv_alert_message)?.apply { this.text = message }
 
     options?.let {
-      context.intent.putExtra(ITEMS_LIST_KEY, it)
-      dialog.setOwnerActivity(context)
+      context.getActivity()?.run {
+        intent?.putExtra(ITEMS_LIST_KEY, it)
+        dialog.setOwnerActivity(this)
+      }
     }
 
     return dialog
   }
 
   fun showInfoAlert(
-    context: Activity,
+    context: Context,
     message: String,
     title: String? = null,
     confirmButtonListener: ((d: DialogInterface) -> Unit) = { d -> d.dismiss() },
@@ -121,7 +113,7 @@ object AlertDialogue {
     )
   }
 
-  fun showErrorAlert(context: Activity, message: String, title: String? = null): AlertDialog {
+  fun showErrorAlert(context: Context, message: String, title: String? = null): AlertDialog {
     return showAlert(
       context = context,
       alertIntent = AlertIntent.ERROR,
@@ -133,7 +125,7 @@ object AlertDialogue {
   }
 
   fun showErrorAlert(
-    context: Activity,
+    context: Context,
     @StringRes message: Int,
     @StringRes title: Int? = null,
   ): AlertDialog {
@@ -144,12 +136,12 @@ object AlertDialogue {
     )
   }
 
-  fun showProgressAlert(context: Activity, @StringRes message: Int): AlertDialog {
+  fun showProgressAlert(context: Context, @StringRes message: Int): AlertDialog {
     return showAlert(context, AlertIntent.PROGRESS, context.getString(message))
   }
 
   fun showConfirmAlert(
-    context: Activity,
+    context: Context,
     @StringRes message: Int,
     @StringRes title: Int? = null,
     confirmButtonListener: ((d: DialogInterface) -> Unit),
@@ -171,7 +163,7 @@ object AlertDialogue {
   }
 
   fun showCancelAlert(
-    context: Activity,
+    context: Context,
     @StringRes message: Int,
     @StringRes title: Int? = null,
     confirmButtonListener: ((d: DialogInterface) -> Unit),
@@ -196,11 +188,10 @@ object AlertDialogue {
   }
 
   fun showDatePickerAlert(
-    context: Activity,
-    confirmButtonListener: ((d: Date) -> Unit),
+    context: Context,
+    confirmButtonListener: (d: Date) -> Unit,
     confirmButtonText: String,
     max: Date?,
-    default: Date = Date(),
     title: String?,
     dangerActionColor: Boolean = true,
   ): DatePickerDialog {
@@ -229,18 +220,14 @@ object AlertDialogue {
           }
         confirmButtonListener.invoke(date.time)
       }
-    }
-
-    dateDialog.create()
+    }.create()
 
     if (dangerActionColor) {
       dateDialog
         .getButton(DialogInterface.BUTTON_POSITIVE)
         .setTextColor(context.resources.getColor(R.color.colorError))
     }
-
     dateDialog.show()
-
     return dateDialog
   }
 }

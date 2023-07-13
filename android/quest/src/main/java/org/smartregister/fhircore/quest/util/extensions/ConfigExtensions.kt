@@ -29,7 +29,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
 
 fun List<ActionConfig>.handleClickEvent(
@@ -47,6 +46,7 @@ fun List<ActionConfig>.handleClickEvent(
         actionConfig.questionnaire?.let { questionnaireConfig ->
           val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
 
+          /*
           if (navController.context is QuestionnaireHandler) {
             (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
               context = navController.context,
@@ -55,7 +55,12 @@ fun List<ActionConfig>.handleClickEvent(
               baseResourceId = resourceData?.baseResourceId,
               baseResourceType = resourceData?.baseResourceType?.name,
             )
-          }
+          }*/
+          val args =
+            bundleOf(
+              NavigationArg.QUESTIONNAIRE_CONFIG to questionnaireConfigInterpolated,
+            )
+          navController.navigate(MainNavigationScreen.Questionnaire.route, args)
         }
       }
       ApplicationWorkflow.LAUNCH_PROFILE -> {

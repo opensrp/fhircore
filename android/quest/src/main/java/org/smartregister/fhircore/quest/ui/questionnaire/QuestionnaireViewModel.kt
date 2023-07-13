@@ -218,16 +218,10 @@ constructor(
             questionnaireResponse.subject = bundleEntry.resource.asReference()
           }
 
-          if (questionnaireConfig.setPractitionerDetails) {
-            appendPractitionerInfo(bundleEntry.resource)
-          }
-          if (questionnaireConfig.setOrganizationDetails) {
-            appendOrganizationInfo(bundleEntry.resource)
-          }
+          appendPractitionerInfo(bundleEntry.resource)
+          appendOrganizationInfo(bundleEntry.resource)
+          appendAppVersion(context, bundleEntry.resource)
 
-          if (questionnaireConfig.setAppVersion) {
-            appendAppVersion(context, bundleEntry.resource)
-          }
           if (bundleEntry.hasResource()) bundleEntry.resource.updateLastUpdated()
           if (
             questionnaireConfig.type != QuestionnaireType.EDIT &&
