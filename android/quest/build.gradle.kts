@@ -72,6 +72,8 @@ android {
     buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
 
     testInstrumentationRunner = "org.smartregister.fhircore.quest.QuestTestRunner"
+    testInstrumentationRunnerArguments["additionalTestOutputDir"] = "/sdcard/Download"
+    testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] = "ACTIVITY-MISSING,CODE-COVERAGE,DEBUGGABLE,UNLOCKED,EMULATOR"
   }
 
   signingConfigs {
@@ -361,6 +363,7 @@ dependencies {
   androidTestImplementation(libs.ui.test.junit4)
   androidTestImplementation(libs.hilt.android.testing)
   androidTestImplementation(libs.mockk.android)
+  androidTestImplementation("androidx.benchmark:benchmark-junit4:1.1.1")
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }

@@ -107,7 +107,11 @@ constructor(
         .runCatching {
           withContext(dispatcherProvider.io()) { fhirEngine.search<Resource>(search) }
         }
-        .onFailure { Timber.e(it, "Error retrieving resources. Empty list returned by default") }
+        .onFailure {
+            Timber.e(it, "Error retrieving resources. Empty list returned by default")
+            System.out.println("Error occurred")
+            it.printStackTrace()
+        }
         .getOrDefault(emptyList())
 
     return baseFhirResources.map { baseFhirResource ->

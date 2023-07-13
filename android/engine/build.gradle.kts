@@ -253,6 +253,7 @@ dependencies {
   androidTestImplementation(libs.runner)
   androidTestImplementation(libs.ui.test.junit4)
   androidTestImplementation(libs.hilt.android.testing)
+  androidTestImplementation("androidx.benchmark:benchmark-junit4:1.1.1")
 
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
