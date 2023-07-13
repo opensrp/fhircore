@@ -73,7 +73,6 @@ import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
-import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import timber.log.Timber
@@ -180,16 +179,38 @@ constructor(
     }
   }
 
-  suspend fun delete(resource: Resource) {
-    return withContext(dispatcherProvider.io()) {
-      fhirEngine.delete(resource.resourceType, resource.logicalId)
+  suspend fun delete(resourceType: ResourceType, resourceId: String, softDelete: Boolean = false) {
+    withContext(dispatcherProvider.io()) {
+      if (softDelete) {
+        val resource = fhirEngine.get(resourceType, resourceId)
+        softDelete(resource)
+      } else fhirEngine.delete(resourceType, resourceId)
     }
   }
 
+  suspend fun delete(resource: Resource, softDelete: Boolean = false) {
+    withContext(dispatcherProvider.io()) {
+      if (softDelete) {
+        softDelete(resource)
+      } else fhirEngine.delete(resource.resourceType, resource.logicalId)
+    }
+  }
+
+  private suspend fun softDelete(resource: Resource) {
+    when (resource.resourceType) {
+      ResourceType.Patient -> (resource as Patient).active = false
+      ResourceType.Group -> (resource as Group).active = false
+      else -> {
+        /** TODO implement soft delete for other resource types */
+      }
+    }
+    addOrUpdate(true, resource)
+  }
+
   /**
-   * Upserts a resource into the database. This function also updates the
-   * [Resource.meta.lastUpdated] and generates the [Resource.id] if it is missing before upserting
-   * the resource. The resource needs to already have a [Resource.id].
+   * This function upserts a resource into the database. This function also updates the
+   * [Resource.meta] and generates the [Resource.id] if it is missing before upserting the resource.
+   * The resource needs to already have a [Resource.id].
    *
    * The function benefits since it merges the resource in the database and what is provided. It
    * does this by filling in properties that are missing in the new resource but available in the
@@ -197,7 +218,7 @@ constructor(
    * contain data generated at this step
    *
    * By default, mandatory Resource tags for sync are added but this can be disabled through the
-   * param [addResourceTags]
+   * param [addMandatoryTags]
    */
   suspend fun <R : Resource> addOrUpdate(addMandatoryTags: Boolean = true, resource: R) {
     return withContext(dispatcherProvider.io()) {
@@ -327,18 +348,15 @@ constructor(
   suspend fun removeGroupMember(
     memberId: String,
     groupId: String?,
-    groupMemberResourceType: String?,
+    groupMemberResourceType: ResourceType?,
     configComputedRuleValues: Map<String, Any>,
   ) {
-    val memberResourceType =
-      groupMemberResourceType?.resourceClassType()?.newInstance()?.resourceType
     val fhirResource: Resource? =
       try {
-        if (memberResourceType == null) {
-          return
-        }
-        fhirEngine.get(memberResourceType, memberId.extractLogicalIdUuid())
+        if (groupMemberResourceType == null) return
+        fhirEngine.get(groupMemberResourceType, memberId.extractLogicalIdUuid())
       } catch (resourceNotFoundException: ResourceNotFoundException) {
+        Timber.e("Group member with ID $memberId not found!")
         null
       }
 
@@ -372,10 +390,6 @@ constructor(
       }
       addOrUpdate(resource = resource)
     }
-  }
-
-  suspend fun delete(resourceType: ResourceType, resourceId: String) {
-    fhirEngine.delete(resourceType, resourceId)
   }
 
   protected fun Search.applyConfiguredSortAndFilters(
