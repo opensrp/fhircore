@@ -60,7 +60,9 @@ fun List<ActionConfig>.handleClickEvent(
       }
       ApplicationWorkflow.LAUNCH_PROFILE -> {
         val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
-        val resourceId = interpolatedParams.find{it.paramType == ActionParameterType.RESOURCE_ID}?.value ?: resourceData?.baseResourceId
+        val resourceId =
+          interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
+            ?: resourceData?.baseResourceId
         actionConfig.id?.let { id ->
           val args =
             bundleOf(
