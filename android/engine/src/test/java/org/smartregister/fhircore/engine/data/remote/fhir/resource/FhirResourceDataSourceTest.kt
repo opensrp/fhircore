@@ -17,7 +17,9 @@
 package org.smartregister.fhircore.engine.data.remote.fhir.resource
 
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.spyk
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
@@ -27,6 +29,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 
 class FhirResourceDataSourceTest {
 
@@ -48,6 +51,29 @@ class FhirResourceDataSourceTest {
       val bundle = Bundle()
       coEvery { resourceService.getResource(any()) } returns bundle
       Assert.assertEquals(bundle, fhirResourceDataSource.getResource("http://fake.url"))
+    }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testGetResourceWithGatewayModeHeaderShouldRetrieveResource() {
+    runTest {
+      val bundle = Bundle()
+      coEvery { resourceService.getResourceWithGatewayModeHeader(any(), any()) } returns bundle
+
+      val headerSlot = slot<String>()
+      val requestSlot = slot<String>()
+      fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entries", "http://fake.url")
+
+      coVerify {
+        fhirResourceDataSource.getResourceWithGatewayModeHeader(
+          capture(headerSlot),
+          capture(requestSlot),
+        )
+      }
+
+      Assert.assertEquals(ConfigurationRegistry.FHIR_GATEWAY_MODE_HEADER_VALUE, headerSlot.captured)
+      Assert.assertEquals("http://fake.url", requestSlot.captured)
     }
   }
 
