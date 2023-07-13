@@ -25,7 +25,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlin.math.max
 import kotlinx.coroutines.launch
-import org.dtree.fhircore.dataclerk.R
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -38,7 +37,7 @@ import timber.log.Timber
 class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
   private val appMainViewModel by viewModels<AppMainViewModel>()
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
-
+  var lastSyncState: SyncJobStatus? = null
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
@@ -47,16 +46,18 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     }
 
     syncBroadcaster.registerSyncListener(this, lifecycleScope)
-    appMainViewModel.run { lifecycleScope.launch { retrieveAppMainUiState() } }
+    appMainViewModel.run { lifecycleScope.launch { retrieveAppMainUiState(syncBroadcaster) } }
 
     syncBroadcaster.runSync()
   }
 
   override fun onSync(state: SyncJobStatus) {
-    Timber.i("Sync state received is $state")
+    Timber.i("Sync state received is $state, last state is $lastSyncState")
     when (state) {
       is SyncJobStatus.Started -> {
-        showToast(getString(org.smartregister.fhircore.engine.R.string.syncing))
+        if (lastSyncState !is SyncJobStatus.Failed) {
+          showToast(getString(org.smartregister.fhircore.engine.R.string.syncing))
+        }
         appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state, null))
       }
       is SyncJobStatus.InProgress -> {
@@ -77,11 +78,16 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         if (!state?.exceptions.isNullOrEmpty() &&
             state.exceptions.first().resourceType == ResourceType.Flag
         ) {
-          showToast(state.exceptions.first().exception.message!!)
+          if (lastSyncState !is SyncJobStatus.Failed) {
+            showToast(state.exceptions.first().exception.message!!)
+          }
           appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state, lastSyncTime = null))
           return
         }
-        showToast(getString(org.smartregister.fhircore.engine.R.string.sync_failed_text))
+        if (lastSyncState !is SyncJobStatus.Failed) {
+          showToast(getString(org.smartregister.fhircore.engine.R.string.sync_failed_text))
+        }
+
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(
             state,
@@ -96,7 +102,9 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         )
       }
       is SyncJobStatus.Finished -> {
-        showToast(getString(org.smartregister.fhircore.engine.R.string.sync_completed))
+        if (lastSyncState !is SyncJobStatus.Finished) {
+          showToast(getString(org.smartregister.fhircore.engine.R.string.sync_completed))
+        }
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
@@ -111,5 +119,6 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         }
       }
     }
+    lastSyncState = state
   }
 }

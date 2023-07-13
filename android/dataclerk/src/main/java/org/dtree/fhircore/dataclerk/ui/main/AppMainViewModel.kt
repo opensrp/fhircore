@@ -61,13 +61,12 @@ constructor(
   }
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
   val appMainUiState: MutableState<AppMainUiState> = mutableStateOf(appMainUiStateOf())
-
   val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
 
   private val applicationConfiguration: ApplicationConfiguration =
     configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
 
-  suspend fun retrieveAppMainUiState() {
+  suspend fun retrieveAppMainUiState(syncBroadcaster: SyncBroadcaster) {
     appMainUiState.value =
       appMainUiStateOf(
         appTitle = applicationConfiguration.applicationName,
@@ -75,6 +74,7 @@ constructor(
         username = secureSharedPreference.retrieveSessionUsername() ?: "",
         lastSyncTime = retrieveLastSyncTimestamp() ?: "",
         languages = configurationRegistry.fetchLanguages(),
+        isInitialSync = syncBroadcaster.isInitialSync()
       )
   }
 
@@ -116,14 +116,15 @@ constructor(
   fun onEvent(event: AppMainEvent) {
     viewModelScope.launch {
       syncSharedFlow.emit(event.state)
-
       when (event) {
         is AppMainEvent.UpdateSyncState -> {
           when (event.state) {
             is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
+              val lastSyncTime = event.lastSyncTime ?: (retrieveLastSyncTimestamp() ?: "")
               appMainUiState.value =
                 appMainUiState.value.copy(
-                  lastSyncTime = event.lastSyncTime ?: (retrieveLastSyncTimestamp() ?: ""),
+                  lastSyncTime = lastSyncTime,
+                  isInitialSync = lastSyncTime.isEmpty()
                 )
             }
             else ->

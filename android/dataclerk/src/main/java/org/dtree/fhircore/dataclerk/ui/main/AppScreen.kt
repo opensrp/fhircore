@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package org.dtree.fhircore.dataclerk.ui.main
 
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -55,11 +57,12 @@ fun AppScreen(appMainViewModel: AppMainViewModel, sync: () -> Unit) {
   Scaffold(
     topBar = { TopAppBar(title = { Text(text = appState.appTitle) }) },
     bottomBar = {
-      Button(
-        onClick = { patientRegistrationLauncher.launch(appMainViewModel.openForm(context)) },
-        // enabled = syncState is SyncJobStatus.Finished,
-        modifier = Modifier.fillMaxWidth()
-      ) { Text(text = "Create New Patient") }
+      if (!appState.isInitialSync)
+        Button(
+          onClick = { patientRegistrationLauncher.launch(appMainViewModel.openForm(context)) },
+          // enabled = syncState is SyncJobStatus.Finished,
+          modifier = Modifier.fillMaxWidth()
+        ) { Text(text = "Create New Patient") }
     }
   ) { paddingValues ->
     AppScreenBody(
@@ -80,7 +83,8 @@ fun AppScreenBody(
 ) {
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.SpaceAround,
+    verticalArrangement =
+      if (appState.isInitialSync) Arrangement.Center else Arrangement.SpaceAround,
     modifier = Modifier.padding(paddingValues).fillMaxSize()
   ) {
     Column(
@@ -97,7 +101,9 @@ fun AppScreenBody(
           )
           CircularProgressIndicator()
           if (syncState is SyncJobStatus.InProgress) {
-            Text(text = "Synced ${syncState.completed}% - ${syncState.total}")
+            Text(
+              text = "${syncState.syncOperation} ${syncState.completed} out of ${syncState.total}"
+            )
           }
         }
         is SyncJobStatus.Finished -> {

@@ -25,6 +25,7 @@ data class AppMainUiState(
   val lastSyncTime: String,
   val currentLanguage: String,
   val languages: List<Language>,
+  val isInitialSync: Boolean,
 )
 
 fun appMainUiStateOf(
@@ -33,6 +34,7 @@ fun appMainUiStateOf(
   lastSyncTime: String = "",
   currentLanguage: String = Locale.ENGLISH.displayName,
   languages: List<Language> = emptyList(),
+  isInitialSync: Boolean = false,
 ): AppMainUiState {
   return AppMainUiState(
     appTitle = appTitle,
@@ -40,5 +42,6 @@ fun appMainUiStateOf(
     lastSyncTime = lastSyncTime,
     currentLanguage = currentLanguage,
     languages = languages,
+    isInitialSync = isInitialSync
   )
 }
