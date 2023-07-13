@@ -282,7 +282,42 @@ constructor(
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
         performExtraction(questionnaireResponse, questionnaireConfig, questionnaire)
       }
-      extractionProgress.postValue(true)
+      viewModelScope.launch(dispatcherProvider.main()) { extractionProgress.postValue(true) }
+      triggerRemoveResources(questionnaireConfig)
+    }
+  }
+
+  /**
+   * This function triggers removal of [Resource] s as per the [QuestionnaireConfig.groupResource]
+   * or [QuestionnaireConfig.removeResource] config properties.
+   */
+  fun triggerRemoveResources(questionnaireConfig: QuestionnaireConfig) {
+    if (questionnaireConfig.groupResource != null) {
+      removeGroup(
+        groupId = questionnaireConfig.groupResource!!.groupIdentifier,
+        removeGroup = questionnaireConfig.groupResource?.removeGroup ?: false,
+        deactivateMembers = questionnaireConfig.groupResource!!.deactivateMembers,
+      )
+      removeGroupMember(
+        memberId = questionnaireConfig.resourceIdentifier,
+        removeMember = questionnaireConfig.groupResource?.removeMember ?: false,
+        groupIdentifier = questionnaireConfig.groupResource!!.groupIdentifier,
+        memberResourceType = questionnaireConfig.groupResource!!.memberResourceType,
+      )
+    }
+
+    if (
+      questionnaireConfig.removeResource == true &&
+        questionnaireConfig.resourceType != null &&
+        !questionnaireConfig.resourceIdentifier.isNullOrEmpty()
+    ) {
+      viewModelScope.launch {
+        defaultRepository.delete(
+          resourceType = questionnaireConfig.resourceType!!,
+          resourceId = questionnaireConfig.resourceIdentifier!!,
+          softDelete = true,
+        )
+      }
     }
   }
 
@@ -578,7 +613,7 @@ constructor(
   fun removeGroupMember(
     memberId: String?,
     groupIdentifier: String?,
-    memberResourceType: String?,
+    memberResourceType: ResourceType?,
     removeMember: Boolean,
   ) {
     if (removeMember && !memberId.isNullOrEmpty()) {
@@ -588,7 +623,7 @@ constructor(
             memberId = memberId,
             groupId = groupIdentifier,
             groupMemberResourceType = memberResourceType,
-            emptyMap(),
+            configComputedRuleValues = emptyMap(),
           )
         } catch (exception: Exception) {
           Timber.e(exception)
@@ -596,12 +631,6 @@ constructor(
           removeOperation.postValue(true)
         }
       }
-    }
-  }
-
-  fun deleteResource(resourceType: ResourceType, resourceIdentifier: String) {
-    viewModelScope.launch {
-      defaultRepository.delete(resourceType = resourceType, resourceId = resourceIdentifier)
     }
   }
 
