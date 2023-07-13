@@ -591,10 +591,10 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.get(patientMemberRep.resourceType, memberId) } returns patientMemberRep
 
     defaultRepositorySpy.removeGroupMember(
-      memberId,
-      null,
-      patientMemberRep.resourceType.name,
-      emptyMap(),
+      memberId = memberId,
+      groupId = null,
+      groupMemberResourceType = patientMemberRep.resourceType,
+      configComputedRuleValues = emptyMap(),
     )
     Assert.assertFalse(patientMemberRep.active)
     coVerify { defaultRepositorySpy.addOrUpdate(resource = patientMemberRep) }
@@ -614,10 +614,10 @@ class DefaultRepositoryTest : RobolectricTest() {
       .throws(ResourceNotFoundException("type", "id"))
 
     defaultRepositorySpy.removeGroupMember(
-      memberId,
-      null,
-      patientMemberRep.resourceType.name,
-      emptyMap(),
+      memberId = memberId,
+      groupId = null,
+      groupMemberResourceType = patientMemberRep.resourceType,
+      configComputedRuleValues = emptyMap(),
     )
     Assert.assertTrue(patientMemberRep.active)
   }
@@ -639,7 +639,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     defaultRepository.delete(resourceType = ResourceType.Patient, resourceId = "123")
 
-    coVerify { fhirEngine.delete(any<ResourceType>(), any<String>()) }
+    coVerify { fhirEngine.delete(any(), any()) }
   }
 
   @Test
@@ -678,7 +678,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     defaultRepository = spyk(defaultRepository)
     val groupId = "73847"
     val memberId = "6745"
-    val groupMemberResourceType: String = ResourceType.Patient.name
+    val groupMemberResourceType = ResourceType.Patient
     val patient =
       Patient().apply {
         id = memberId

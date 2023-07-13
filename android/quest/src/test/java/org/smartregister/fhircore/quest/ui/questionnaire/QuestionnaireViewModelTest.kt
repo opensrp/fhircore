@@ -89,6 +89,7 @@ import org.junit.Test
 import org.robolectric.Shadows
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
@@ -1399,7 +1400,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testRemoveGroupMemberCallsDefaultRepositoryRemoveGroupMember() {
     val memberId = "member-id"
     val groupIdentifier = "group_id"
-    val memberResourceType = "Patient"
+    val memberResourceType = ResourceType.Patient
     val removeMember = true
     Assert.assertFalse(questionnaireViewModel.removeOperation.value!!)
     questionnaireViewModel.removeGroupMember(
@@ -1418,18 +1419,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
     }
     assertTrue(questionnaireViewModel.removeOperation.value!!)
-  }
-
-  @Test
-  fun testDeleteResourceCallsDefaultRepositoryDelete() {
-    val resourceType = ResourceType.Patient
-    val resourceIdentifier = "rdsfjkdfh-dfdf-dfsd"
-    questionnaireViewModel.deleteResource(
-      resourceType = resourceType,
-      resourceIdentifier = resourceIdentifier,
-    )
-
-    coVerify { defaultRepo.delete(resourceType = resourceType, resourceId = resourceIdentifier) }
   }
 
   @Test
@@ -2033,5 +2022,48 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val key = "humanReadableId"
     assertTrue(map.containsKey(key))
     assertNotNull(map[key])
+  }
+
+  @Test
+  fun testTriggerRemoveShouldInvokeRemoveGroup() {
+    val theQuestionnaireConfig =
+      QuestionnaireConfig(
+        id = "the-questionnaire-id",
+        groupResource =
+          GroupResourceConfig(
+            groupIdentifier = "the-group-id",
+            removeGroup = true,
+            removeMember = true,
+            memberResourceType = ResourceType.Patient,
+          ),
+      )
+
+    questionnaireViewModel.triggerRemoveResources(theQuestionnaireConfig)
+
+    coVerify {
+      defaultRepo.removeGroup(
+        theQuestionnaireConfig.groupResource?.groupIdentifier!!,
+        true,
+        emptyMap(),
+      )
+    }
+  }
+
+  @Test
+  fun testTriggerRemoveShouldSoftDeleteResource() {
+    val patient = Faker.buildPatient()
+    val theQuestionnaireConfig =
+      QuestionnaireConfig(
+        id = "the-questionnaire-id",
+        resourceIdentifier = patient.id,
+        resourceType = ResourceType.Patient,
+        removeResource = true,
+      )
+    coEvery { fhirEngine.get(ResourceType.Patient, patient.id) } returns patient
+    questionnaireViewModel.triggerRemoveResources(theQuestionnaireConfig)
+
+    // Soft delete sets Patient.active to false
+    assertFalse(patient.active)
+    coVerify { defaultRepo.addOrUpdate(true, patient) }
   }
 }
