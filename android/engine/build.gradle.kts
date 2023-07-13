@@ -24,6 +24,11 @@ android {
     targetSdk = 33
     testInstrumentationRunner = "org.smartregister.fhircore.engine.EngineTestRunner"
     consumerProguardFiles("consumer-rules.pro")
+    buildConfigField(
+      "boolean",
+      "IS_NON_PROXY_APK",
+      "${project.hasProperty("isNonProxy") && property("isNonProxy").toString().toBoolean()}",
+    )
   }
 
   buildTypes {
