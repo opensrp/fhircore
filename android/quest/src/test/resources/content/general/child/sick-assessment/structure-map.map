@@ -1,0 +1,2071 @@
+map "http://hl7.org/fhir/StructureMap/0e0b015e-eef7-489e-aef8-14ad6683fcdc" = "Sick Child Assessment"
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+uses "http://hl7.org/fhir/StructureDefinition/Encounter" as target
+uses "http://hl7.org/fhir/StructureDefinition/Observation" as target
+uses "http://hl7.org/fhir/StructureDefinition/careplan" as target
+
+
+group SickChildAssessment(source src: QuestionnaireResponse, target bundle: Bundle) {
+    src->bundle.id = uuid(),
+    bundle.type = "collection" then
+        ExtractEncounter(src, bundle) "r_bundle_data";
+}
+group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle){
+    src ->bundle.entry as entry,
+        entry.resource = create("Encounter") as encounter then {
+            src->encounter.id = uuid(),
+                encounter.status = "finished",
+                encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH","home health"),
+                encounter.serviceType= cc("http://terminology.hl7.org/CodeSystem/service-type", "497","Home Visits- Sick Child Assessment") "r_enc_data";
+
+            src.subject as subj -> encounter.subject = subj "rule_subj";
+
+            src then ExtractObservations(src, bundle, encounter) "r_extract_obs";
+
+        } "r_encounter";
+}
+
+group ExtractObservations(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
+    src then
+    ExtractChildAge(src, bundle, encounter),
+    AnyDangerSigns(src, bundle, encounter),
+    ExtractDangerSignsPresent(src,bundle,encounter),
+    ExtractIdentifyProblems(src,bundle,encounter),
+    ExtractChildHasCough(src,bundle,encounter),
+    ExtractChildHasRunningStomach(src,bundle,encounter),
+    ExtractChildHasFever(src,bundle,encounter),
+    ExtractPrereferralTreatment(src,bundle,encounter),
+    ExtractORSAvailable(src,bundle,encounter),
+    ExtractAmoxicillinRedPackAvailable(src,bundle,encounter),
+    ExtractAmoxicillinGreenPackAvailable(src,bundle,encounter),
+    ExtractAntiMalariACTYellowPackAvailable(src,bundle,encounter),
+    ExtractAntiMalariACTBluePackAvailable(src,bundle,encounter),
+    ExtractArtesunateAvailable(src,bundle,encounter),
+    ExtractCheckForMalaria(src,bundle,encounter),
+    ExtractRDTKitsAvailable(src,bundle,encounter),
+    ExtractTreatAndAdvice(src,bundle,encounter),
+    ExtractCoughTreatmentAmoxicillinRedPackAvailable(src,bundle,encounter),
+    ExtractCoughTreatmentAmoxicillinGreenPackAvailable(src,bundle,encounter),
+    ExtractORSDiarrhoeaTreatmentAvailable(src,bundle,encounter),
+    ExtractFeverTreatmentAvailable(src,bundle,encounter),
+    ExtractChildReferral(src,bundle,encounter),
+    ExtractSickChildCondition(src,bundle,encounter),
+    ExtractSickChildTreatment(src, bundle, encounter)
+    "r_enc_obs";
+
+    src -> evaluate(src, $this.subject) as refPatient then ExtractCommodityObservation(src, bundle, refPatient) "r_commodities";
+}
+
+group ExtractChildAge(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="ea4f140b-7b40-4763-82a2-b79cc6b0402e") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144002","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144002' "r_obs_c_coding_code";
+                    src -> coding.display = 'Child Age' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.toInteger()) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group AnyDangerSigns(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
+    //Any Danger Signs
+    src -> evaluate(src, $this.subject) as refPatient,
+           evaluate(src, 0) as count,
+           evaluate(src, $this.item.where(linkId ='f95df2a7-7d43-45c4-9bdf-a94e5aa2d29a').answer.value.count()) as answerSize
+           then ExtractAnyDangerSigns(count, answerSize, src, bundle, encounter, refPatient) "r_params";
+
+    //NewBorn Danger Signs
+    src -> evaluate(src, $this.subject) as refPatient,
+               evaluate(src, 0) as count,
+               evaluate(src, $this.item.where(linkId ='f73d8b1a-25e7-4b57-8fff-8018beab9ab5').answer.value.count()) as answerSize
+               then ExtractNewBornDangerSigns(count, answerSize, src, bundle, encounter, refPatient) "r_params";
+}
+
+group ExtractAnyDangerSigns(source count: Integer, source answerSize: Integer, source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter, source refPatient : Reference){
+    src where(count < answerSize) -> bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144004","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144004' "r_obs_c_coding_code";
+                    src -> coding.display = 'Danger Signs' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(src, $this.answer.value.display) "r_obs_value_date_ws";
+
+            src -> evaluate(src, count + 1) as nextCount then ExtractAnyDangerSigns(nextCount, answerSize, src, bundle, encounter, refPatient) "r_repeat";
+        }
+        "r_obs_date_ws";
+}
+
+group ExtractNewBornDangerSigns(source count: Integer, source answerSize: Integer, source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter, source refPatient : Reference){
+    src where(count < answerSize) -> bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144005","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144005' "r_obs_c_coding_code";
+                    src -> coding.display = 'New Born Danger Signs' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(src, $this.answer.value.display) "r_obs_value_date_ws";
+
+            src -> evaluate(src, count + 1) as nextCount then ExtractAnyDangerSigns(nextCount, answerSize, src, bundle, encounter, refPatient) "r_repeat";
+        }
+        "r_obs_date_ws";
+        src then ExtractUrgentChildReferral(src, bundle, encounter) "r_item_answer";
+}
+
+group ExtractUrgentChildReferral(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="7596a2fe-08f8-4a36-81b5-b17611f4cf4b") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144006","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144006' "r_obs_c_coding_code";
+                    src -> coding.display = 'Urgent Child Referral' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractDangerSignsPresent(source src : QuestionnaireReponse, target bundle : Bundle, target encounter : Encounter) {
+
+    src.item as signsItem where(linkId = '585475b2-929d-4f77-d919-20d4c84feb6f') then {
+        signsItem.answer as signAnswers -> evaluate(signAnswers, $this.value) as signAnswerCoding,
+            evaluate(signAnswerCoding, signAnswerCoding.code) as answerCode,
+            evaluate(signAnswerCoding, signAnswerCoding.display) as answerDisplay,
+            bundle.entry as entry,
+            entry.resource = create("Condition") as cnd
+            then {
+                src -> cnd.id = uuid() "r_cnd_id";
+                src -> cnd.recordedDate = evaluate(src, now()) "r_cnd_onset_date_val";
+                src -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_cnd_clinical_st";
+                src -> cnd.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_cnd_verif_st";
+                src -> cnd.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "encounter-diagnosis", "Encounter Diagnosis") "r_cnd_category";
+                src -> cnd.recordedDate = evaluate(src, now()) "r_cnd_recorded";
+                src ->cnd.encounter = reference(encounter) "r_cnd_enc";
+                src.subject as subj -> cnd.subject = subj "rule_subj";
+                src -> cnd.code = create("CodeableConcept") as ccSick then {
+                    src -> ccSick.coding = c("http://snomed.info/sct", answerCode, answerDisplay) "r_cnd_code_coding";
+                    src -> ccSick.text = answerDisplay "r_cnd_code_text";
+                } "r_cnd_code";
+            }
+            "r_extract_conditions";
+    } "r_signs_item_conditions";
+}
+
+group ExtractIdentifyProblems(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="ebcd11ba-3a75-41a5-9ce9-aa7f728ee369") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144007","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144007' "r_obs_c_coding_code";
+                    src -> coding.display = 'Identify Problems' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+ group ExtractChildHasCough(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+     src.item first as item where(linkId="45561753-7aef-4f99-b8ad-8e182ae34f89") and answer.count()>0 then{
+         src->bundle.entry as entry,
+         entry.resource = create("Observation") as obs then {
+             src->obs.id = uuid(),
+                 //obs.code = cc("http://www.snomed.org/", "424144008","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144008' "r_obs_c_coding_code";
+                    src -> coding.display = 'Child has Cough' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+             src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+         }
+         "r_obs_date_ws";
+         item.answer as itemAnswer then ExtractDaysChildcoughed(itemAnswer, bundle, encounter),ExtractBreathBelow2M(itemAnswer, bundle, encounter),ExtractBreathBelow11M(itemAnswer, bundle, encounter),ExtractBreathBelow59M(itemAnswer, bundle, encounter) "r_item_answer";
+
+    }
+    "r_obs_item_date_ws";
+}
+
+ group ExtractDaysChildcoughed(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+     src.item first as item where(linkId="e42001a8-3854-4cba-8e5e-1928e579afe6") and answer.count()>0 then{
+         src->bundle.entry as entry,
+         entry.resource = create("Observation") as obs then {
+             src->obs.id = uuid(),
+                 //obs.code = cc("http://www.snomed.org/", "424144022","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144022' "r_obs_c_coding_code";
+                    src -> coding.display = 'Days child has cough' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+             src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+         }
+         "r_obs_date_ws";
+     }
+     "r_obs_item_date_ws";
+ }
+
+ group ExtractBreathBelow2M(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+     src.item first as item where(linkId="287913e9-dabe-4741-88d2-03edc3095053") and answer.count()>0 then{
+         src->bundle.entry as entry,
+         entry.resource = create("Observation") as obs then {
+             src->obs.id = uuid(),
+                 //obs.code = cc("http://www.snomed.org/", "424144022","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144022' "r_obs_c_coding_code";
+                    src -> coding.display = 'Breath Below 2M' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+             src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+         }
+         "r_obs_date_ws";
+     }
+     "r_obs_item_date_ws";
+ }
+
+ group ExtractBreathBelow11M(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+     src.item first as item where(linkId="489611f7-9b23-426c-90c5-2c0e5577c719") and answer.count()>0 then{
+         src->bundle.entry as entry,
+         entry.resource = create("Observation") as obs then {
+             src->obs.id = uuid(),
+                 //obs.code = cc("http://www.snomed.org/", "424144023","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144023' "r_obs_c_coding_code";
+                    src -> coding.display = 'Breath Below 11M' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+             src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+         }
+         "r_obs_date_ws";
+     }
+     "r_obs_item_date_ws";
+ }
+
+ group ExtractBreathBelow59M(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+     src.item first as item where(linkId="050e03de-7753-4ce2-85c1-2dcb956d2eaf") and answer.count()>0 then{
+         src->bundle.entry as entry,
+         entry.resource = create("Observation") as obs then {
+             src->obs.id = uuid(),
+                 //obs.code = cc("http://www.snomed.org/", "424144024","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144024' "r_obs_c_coding_code";
+                    src -> coding.display = 'Breath Below 59M' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+             src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+         }
+         "r_obs_date_ws";
+     }
+     "r_obs_item_date_ws";
+ }
+
+group ExtractChildHasRunningStomach(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="8bf016c9-39c7-4967-920c-b2252e21dd5f") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144025","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144025' "r_obs_c_coding_code";
+                    src -> coding.display = 'Child has Running Stomach' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractDaysChildHadRunningStomach(itemAnswer, bundle, encounter) "r_item_answer";
+
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractDaysChildHadRunningStomach(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="5ca69038-38ca-40aa-a341-c462616d92b2") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144026","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144026' "r_obs_c_coding_code";
+                    src -> coding.display = 'Days child has Running Stomach' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractChildHasFever(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="bff8b978-9e91-45f6-8b81-22b32c61ead2") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144027","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144027' "r_obs_c_coding_code";
+                    src -> coding.display = 'Child has Fever' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractDaysChildHadFever(itemAnswer, bundle, encounter) "r_item_answer";
+
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractDaysChildHadFever(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="0819ef4e-f02e-4df7-9572-5713bf495f89") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144026","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144026' "r_obs_c_coding_code";
+                    src -> coding.display = 'Days child had Fever' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractPrereferralTreatment(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="affe3f74-e4e6-43af-90c2-88ca0ee6df2b") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144028","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144028' "r_obs_c_coding_code";
+                    src -> coding.display = 'Prereferral Treatment' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractORSAvailable(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="58206937-1e54-4383-e752-045b1430a904") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144005","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144005' "r_obs_c_coding_code";
+                    src -> coding.display = 'ORS Available' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractORSGivenToChild(itemAnswer, bundle, encounter) "r_item_answer";
+
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractORSGivenToChild(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="1ecdf2a2-aa11-4c85-b772-15ce92e63327") and answer.value.toInteger > 0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144005","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144005' "r_obs_c_coding_code";
+                    src -> coding.display = 'ORS given to Child' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+
+group ExtractAmoxicillinRedPackAvailable(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="997c9ab4-eb51-426d-8d6b-b264f30ec0a1") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144030","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144030' "r_obs_c_coding_code";
+                    src -> coding.display = 'Amoxicilling Red Pack' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractAmoxicillinRedPackGiven(itemAnswer, bundle, encounter), ExtractAmoxicillinGreenPackGiven(itemAnswer, bundle, encounter) "r_item_answer";
+
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractAmoxicillinGreenPackAvailable(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="4a564178-de55-4757-c263-5b3db851b8d6") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144030","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144030' "r_obs_c_coding_code";
+                    src -> coding.display = 'Amoxicilling Green Pack' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractAmoxicillinGreenPackGiven(itemAnswer, bundle, encounter), ExtractAmoxicillinGreenPackGiven(itemAnswer, bundle, encounter) "r_item_answer";
+
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractAmoxicillinRedPackGiven(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="b7dbb174-578b-4c28-f7ad-50b6225dadc0") and answer.value.toInteger > 0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144031","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144031' "r_obs_c_coding_code";
+                    src -> coding.display = 'Amoxicilling Red Pack Given' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractAmoxicillinGreenPackGiven(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="80a02272-4ed9-4a1a-9cd7-242e18ef0358") and answer.value.toInteger > 0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144031","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144031' "r_obs_c_coding_code";
+                    src -> coding.display = 'Amoxicilling Green Pack Given' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractAntiMalariACTYellowPackAvailable(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="04b9d905-412d-4733-a87a-e27afb2b14ad") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144032","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144032' "r_obs_c_coding_code";
+                    src -> coding.display = 'AntiMalariaCTYellowPack' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractAntiMalarialACTYellowPackGiven(itemAnswer, bundle, encounter) "r_item_answer";
+
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractAntiMalariACTBluePackAvailable(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="77d24ae3-5e6f-43ee-db38-c635023c3d1d") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144032","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144032' "r_obs_c_coding_code";
+                    src -> coding.display = 'AntiMalariaCTBluePack' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractAntiMalarialACTBluePackGiven(itemAnswer, bundle, encounter) "r_item_answer";
+
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractAntiMalarialACTYellowPackGiven(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="eff9d3f4-ca73-4f63-83c9-edcb039023b4") and answer.value.toInteger > 0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144033","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144033' "r_obs_c_coding_code";
+                    src -> coding.display = 'AntiMalarialACTYellowPackGiven' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractAntiMalarialACTBluePackGiven(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="dad2ff62-d294-48c9-91aa-40e7d29f90a6") and answer.value.toInteger > 0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144033","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144033' "r_obs_c_coding_code";
+                    src -> coding.display = 'AntiMalarialACTBluePackGiven' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractArtesunateAvailable(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="d9908403-8eb1-45cf-cf97-1e6d14992adc") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144035","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144035' "r_obs_c_coding_code";
+                    src -> coding.display = 'ArtesunateAvailable' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractOneArtesunateGiven(itemAnswer, bundle, encounter), ExtractTwoArtesunateGiven(itemAnswer, bundle, encounter) "r_item_answer";
+
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractOneArtesunateGiven(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="6af59255-ddfd-486f-a359-a966c4439261") and answer.value.toInteger > 0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144036","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144036' "r_obs_c_coding_code";
+                    src -> coding.display = 'OneArtesunateGiven' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractTwoArtesunateGiven(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="8dbb50d7-152e-4a1c-8192-67b1a81904cf") and answer.value.toInteger > 0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144037","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144037' "r_obs_c_coding_code";
+                    src -> coding.display = 'TwoArtesunateGiven' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractCheckForMalaria(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="9031430f-5f9b-44e9-8c9b-e1e2b41fcead") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144038","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144038' "r_obs_c_coding_code";
+                    src -> coding.display = 'CheckForMalaria' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractRDTKitsAvailable(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="7333e864-3f99-4ddf-dedd-4894f5893c2a") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144039","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144039' "r_obs_c_coding_code";
+                    src -> coding.display = 'RDTKitsAvailable' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractRDTConducted(itemAnswer, bundle, encounter), ExtractMalariaTestResults(itemAnswer, bundle, encounter) "r_item_answer";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractRDTConducted(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="312d9dcf-1382-499b-bf05-7edf1b52fbb8") and answer.value.toInteger > 0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144050","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144050' "r_obs_c_coding_code";
+                    src -> coding.display = 'RDTConducted' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractMalariaTestResults(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="3678835c-07ad-4e82-c2ad-9ff0889c59bb") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144051","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144051' "r_obs_c_coding_code";
+                    src -> coding.display = 'MalariaTestResults' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractRetestConducted(itemAnswer, bundle, encounter) "r_item_answer";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractRetestConducted(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="10e5c5a8-49d6-47ab-94f9-16f6b46b5f74") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144051","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144051' "r_obs_c_coding_code";
+                    src -> coding.display = 'RetestConducted' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractTreatAndAdvice(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="a0abd1b6-f54d-45d6-8815-c9961b95dee9") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144052","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144052' "r_obs_c_coding_code";
+                    src -> coding.display = 'TreatAndAdvice' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractCoughTreatmentAmoxicillinRedPackAvailable(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="4befc9e8-babd-4418-b41b-00f062a1badf") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144053","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144053' "r_obs_c_coding_code";
+                    src -> coding.display = 'CoughTreatmentAmoxicillinRedPackAvailable' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractTenAmoxicillin250mgRedPackGiven(itemAnswer, bundle, encounter), ExtractAmoxicillin250mgGreenPack(itemAnswer, bundle, encounter) "r_item_answer";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractCoughTreatmentAmoxicillinGreenPackAvailable(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="d507461b-f109-46b5-9370-5be49d932d98") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144053","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144053' "r_obs_c_coding_code";
+                    src -> coding.display = 'CoughTreatmentAmoxicillinGreenPackAvailable' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractAmoxicillin250mgRedPack(itemAnswer, bundle, encounter), ExtractTwentyAmoxicillin250mgGreenPack(itemAnswer, bundle, encounter) "r_item_answer";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractTenAmoxicillin250mgRedPackGiven(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="096ba5cb-51cb-4c70-830e-c9bc981bc9bb") and answer.value.toInteger > 0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144054","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144054' "r_obs_c_coding_code";
+                    src -> coding.display = 'TenAmoxicillin250mgRedPackGiven' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractTwentyAmoxicillin250mgGreenPack(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="781b656c-e948-409d-da79-da7bdbaeffb8") and answer.value.toInteger > 0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144055","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144055' "r_obs_c_coding_code";
+                    src -> coding.display = 'TwentyAmoxicillin250mgGreenPack' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+
+group ExtractORSDiarrhoeaTreatmentAvailable(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="dbb3d5b6-2aba-4630-e204-c3cc23e9f17c") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144056","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144056' "r_obs_c_coding_code";
+                    src -> coding.display = 'ORSDiarrhoeaTreatmentAvailable' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractORSForDrinkingGiven(itemAnswer, bundle, encounter),
+        ExtractORSPackGiven(itemAnswer, bundle, encounter),
+        ExtractZincAvailable(itemAnswer, bundle, encounter),
+        ExtractFiveZincGiven(itemAnswer, bundle, encounter),
+        Extract10ZincTabsGiven(itemAnswer, bundle, encounter) "r_item_answer";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractORSForDrinkingGiven(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="6541e3d7-84ca-43c2-a9a2-ac30bf36e123") and answer.value.toInteger > 0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144057","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144057' "r_obs_c_coding_code";
+                    src -> coding.display = 'ORSForDrinkingGiven' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractORSPackGiven(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="fc09d9fd-e074-403e-8b42-75d6e8ea28da") and answer.value.toInteger > 0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144058","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144058' "r_obs_c_coding_code";
+                    src -> coding.display = 'ORSPackGiven' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+
+group ExtractZincAvailable(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="07462718-6b27-4a8e-8a7a-9eb7777f0393") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144058","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144058' "r_obs_c_coding_code";
+                    src -> coding.display = 'ZincAvailable' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractFiveZincGiven(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="453ed178-e19f-4b2a-884e-35bd37465210") and answer.value.toInteger > 0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144059","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144059' "r_obs_c_coding_code";
+                    src -> coding.display = 'FiveZincGiven' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group Extract10ZincTabsGiven(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="373376e5-6efc-40d6-83d9-0f6d7ff9f1f9") and answer.value.toInteger > 0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144060","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144060' "r_obs_c_coding_code";
+                    src -> coding.display = '10ZincTabsGiven' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractFeverTreatmentAvailable(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="32e2cabf-a1d6-42f9-8f5d-1ebd261627fd") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144061","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144061' "r_obs_c_coding_code";
+                    src -> coding.display = 'FeverTreatmentAvailable' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractSixTabsACTYellowPackGiven(itemAnswer, bundle, encounter), ExtractTwelveTabsACTBluePackGiven(itemAnswer, bundle, encounter)"r_item_answer";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractSixTabsACTYellowPackGiven(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="58964a9a-e2a3-4f8f-cee1-c7f2afbfe070") and answer.value.toInteger > 0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144062","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144062' "r_obs_c_coding_code";
+                    src -> coding.display = 'SixTabsACTYellowPackGiven' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractTwelveTabsACTBluePackGiven(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="9e864c6d-b877-4395-beaf-726b30e67a9a") and answer.value.toInteger > 0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144063","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144063' "r_obs_c_coding_code";
+                    src -> coding.display = 'TwelveTabsACTBluePackGiven' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractChildReferral(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="5b6c0d64-94de-4bab-c9e9-3c97b6d82e75") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144064","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144064' "r_obs_c_coding_code";
+                    src -> coding.display = 'ChildReferral' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractWasChildReferred(itemAnswer, bundle, encounter)"r_item_answer";
+
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractWasChildReferred(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="c487ad82-5544-49c2-8ece-332497d27f18") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144063","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144063' "r_obs_c_coding_code";
+                    src -> coding.display = 'WasChildReferred' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.display) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+
+group ExtractSickChildTreatment(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src.item first as item where(((linkId="1ecdf2a2-aa11-4c85-b772-15ce92e63327") or
+    (linkId="b7dbb174-578b-4c28-f7ad-50b6225dadc0") or (linkId="80a02272-4ed9-4a1a-9cd7-242e18ef0358") or
+    (linkId="eff9d3f4-ca73-4f63-83c9-edcb039023b4") or (linkId="dad2ff62-d294-48c9-91aa-40e7d29f90a6") or
+    (linkId="6af59255-ddfd-486f-a359-a966c4439261") or (linkId="8dbb50d7-152e-4a1c-8192-67b1a81904cf") or
+    (linkId="096ba5cb-51cb-4c70-830e-c9bc981bc9bb") or (linkId="312d9dcf-1382-499b-bf05-7edf1b52fbb8") or
+    (linkId="4befc9e8-babd-4418-b41b-00f062a1badf") or (linkId="096ba5cb-51cb-4c70-830e-c9bc981bc9bb") or
+    (linkId="781b656c-e948-409d-da79-da7bdbaeffb8") or (linkId="6541e3d7-84ca-43c2-a9a2-ac30bf36e123") or
+    (linkId="fc09d9fd-e074-403e-8b42-75d6e8ea28da") or (linkId="453ed178-e19f-4b2a-884e-35bd37465210") or
+    (linkId="373376e5-6efc-40d6-83d9-0f6d7ff9f1f9") or (linkId="58964a9a-e2a3-4f8f-cee1-c7f2afbfe070") or
+    (linkId="9e864c6d-b877-4395-beaf-726b30e67a9a"))
+    and answer.count()>0)then{
+
+    src -> bundle.entry as entry, entry.resource = create("Procedure") as proc then {
+    	src -> proc.id = uuid() "r_proc_id";
+        src ->proc.status = 'in-progress' "r_proc_status";
+    	src -> proc.performed = evaluate(src, now()) "r_proc_onset_date_val";
+        src -> proc.encounter = reference(encounter) "r_proc_enc";
+    	src -> proc.category = cc("http://snomed.info/sct", "410606002", "Social service procedure") "r_proc_category";
+    	//src -> proc.subject = create("Reference") as ref then {
+        //    src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+        //} "r_proc_sbjct";
+        src.subject as subj -> proc.subject = subj "rule_subj";
+    	src -> proc.code = create("CodeableConcept") as ccProc then {
+             src -> ccProc.coding = c("http://snomed.info/sct", "18629005", "Administration of drug or medicament") as coding, coding.display = 'Sick Child Treatment' "r_proc_code_coding";
+             src -> ccProc.text = "Sick Child Treatment" "r_proc_code_text";
+        } "r_proc_code";
+    } "r_proc";
+} "r_proc_flt";
+}
+
+group ExtractSickChildCondition(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src.item first as item where(((linkId="45561753-7aef-4f99-b8ad-8e182ae34f89") and answer.count()>0) or
+    ((linkId="8bf016c9-39c7-4967-920c-b2252e21dd5f") and answer.count()>0) or
+    ((linkId="bff8b978-9e91-45f6-8b81-22b32c61ead2") and answer.count()>0))then{
+
+    src -> bundle.entry as entry, entry.resource = create("Condition") as cnd then {
+    	src -> cnd.id = uuid() "r_cnd_id";
+
+    	src -> cnd.onset = evaluate(src, now()) "r_cnd_onset_date_val";
+        src -> cnd.encounter = reference(encounter) "r_cnd_enc";
+    	src -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_cnd_clinical_st";
+    	src -> cnd.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_cnd_verif_st";
+    	src -> cnd.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "problem-list-item", "Problem List Item") "r_cnd_category";
+    	//src -> cnd.subject = create("Reference") as ref then {
+        //    src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+        //}"r_cnd_sbjct";
+        src.subject as subj -> cnd.subject = subj "rule_subj";
+    	src -> cnd.recordedDate = evaluate(src, now()) "r_cnd_recorded";
+
+    	src -> cnd.code = create("CodeableConcept") as ccSick then {
+             src -> ccSick.coding = c("http://snomed.info/sct", "275142008", "Sick Child") as coding, coding.display = 'Sick Child' "r_cnd_code_coding";
+             src -> ccSick.text = "Sick Child" "r_cnd_code_text";
+        } "r_cnd_code";
+    } "r_cnd";
+} "r_cnd_flt";
+}
+
+group ExtractCommodityObservation(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+        src.item as ors where((linkId ='58206937-1e54-4383-e752-045b1430a904' or linkId = 'dbb3d5b6-2aba-4630-e204-c3cc23e9f17c') and answer.value.exists() and answer.value.code = 'yes') then {
+            src.item as given where((linkId ='1ecdf2a2-aa11-4c85-b772-15ce92e63327' or linkId = '6541e3d7-84ca-43c2-a9a2-ac30bf36e123' or linkId = 'fc09d9fd-e074-403e-8b42-75d6e8ea28da') and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> create('string') as noCommodityFlag, create('string') as latestObservationId, create('integer') as previousBalance then {
+                    //Stock balance
+                    src -> previousBalance.value = '0' "rule_initialize_stock balance";
+                    src.item where(linkId = '206c5a5b-dc64-41cb-97a3-d6aa262f5ccf' and answer.value.exists()) then {
+                        src -> previousBalance.value = evaluate(src, $this.item.where(linkId = '206c5a5b-dc64-41cb-97a3-d6aa262f5ccf').answer.value.toString()) "rule_previous_balance";
+                    } "rule_check_previous_balance";
+
+                    //No Stock Flag
+                    src.item where(linkId = '1b63f92e-c48b-468a-ab53-d7db5d423b99' and answer.value.exists()) then {
+                        src -> noCommodityFlag.value = evaluate(src, $this.item.where(linkId = '1b63f92e-c48b-468a-ab53-d7db5d423b99').answer.value.toString()) "rule_commodity_flag";
+                    } "rule_check_commodity_flag";
+
+                    //Create the latest observation
+                    src.item where(linkId = '1e96f619-32b4-4b54-8635-8a263f01f74d' and answer.value.exists()) then {
+                        src -> latestObservationId.value = evaluate(src, $this.item.where(linkId = '1e96f619-32b4-4b54-8635-8a263f01f74d').answer.value.toString()) "rule_latest_observation";
+                    } "rule_check_latest_observation";
+
+                    src -> evaluate(src, 1) as qtyValue, evaluate(src, "Pieces") as qtyUnit, evaluate(src, "Group/6a59c142-1c87-11ed-861d-0242ac120002") as refSubject
+                            then extractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit, previousBalance, noCommodityFlag, latestObservationId) "r_obs";
+                } "rule_previous_balance_no_commodity_flag_latest_observation_id";
+
+            } "r_given";
+        } "r_ors";
+
+        src.item as orsDrinking where(linkId = 'dbb3d5b6-2aba-4630-e204-c3cc23e9f17c' and answer.value.exists() and answer.value.code = 'yes') then {
+            src.item as given where(linkId = '6541e3d7-84ca-43c2-a9a2-ac30bf36e123' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> create('string') as noCommodityFlag, create('string') as latestObservationId, create('integer') as previousBalance then {
+                    //Stock balance
+                    src -> previousBalance.value = '0' "rule_initialize_stock balance";
+                    src.item where(linkId = 'b18c0ba5-c346-4546-b6c0-b99cca81845b' and answer.value.exists()) then {
+                        src -> previousBalance.value = evaluate(src, $this.item.where(linkId = 'b18c0ba5-c346-4546-b6c0-b99cca81845b').answer.value.toString()) "rule_previous_balance";
+                    } "rule_check_previous_balance";
+
+                    //No Stock Flag
+                    src.item where(linkId = '841445f8-9734-4215-9a9e-d6e9084e73cd' and answer.value.exists()) then {
+                        src -> noCommodityFlag.value = evaluate(src, $this.item.where(linkId = '841445f8-9734-4215-9a9e-d6e9084e73cd').answer.value.toString()) "rule_commodity_flag";
+                    } "rule_check_commodity_flag";
+
+                    //Create the latest observation
+                    src.item where(linkId = '9a47ed7f-8939-461d-8da7-f0ab636b77af' and answer.value.exists()) then {
+                        src -> latestObservationId.value = evaluate(src, $this.item.where(linkId = '9a47ed7f-8939-461d-8da7-f0ab636b77af').answer.value.toString()) "rule_latest_observation";
+                    } "rule_check_latest_observation";
+
+                    src -> evaluate(src, 1) as qtyValue, evaluate(src, "Pieces") as qtyUnit, evaluate(src, "Group/6a59c142-1c87-11ed-861d-0242ac120002") as refSubject
+                            then extractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit, previousBalance, noCommodityFlag, latestObservationId) "r_obs";
+                } "rule_previous_balance_no_commodity_flag_latest_observation_id";
+
+            } "r_given";
+        } "r_ors";
+
+        src.item as orsGiven where(linkId = 'dbb3d5b6-2aba-4630-e204-c3cc23e9f17c' and answer.value.exists() and answer.value.code = 'yes') then {
+            src.item as given where(linkId ='fc09d9fd-e074-403e-8b42-75d6e8ea28da' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> create('string') as noCommodityFlag, create('string') as latestObservationId, create('integer') as previousBalance then {
+                    //Stock balance
+                    src -> previousBalance.value = '0' "rule_initialize_stock balance";
+                    src.item where(linkId = '5084d5d1-0a52-436f-85e2-9fc47f6625fe' and answer.value.exists()) then {
+                        src -> previousBalance.value = evaluate(src, $this.item.where(linkId = '5084d5d1-0a52-436f-85e2-9fc47f6625fe').answer.value.toString()) "rule_previous_balance";
+                    } "rule_check_previous_balance";
+
+                    //No Stock Flag
+                    src.item where(linkId = '2c4389d9-c3a7-4532-9f4b-7c3e81b2cdd9' and answer.value.exists()) then {
+                        src -> noCommodityFlag.value = evaluate(src, $this.item.where(linkId = '2c4389d9-c3a7-4532-9f4b-7c3e81b2cdd9').answer.value.toString()) "rule_commodity_flag";
+                    } "rule_check_commodity_flag";
+
+                    //Create the latest observation
+                    src.item where(linkId = 'cab147f6-05f6-4276-9811-03c4685590f9' and answer.value.exists()) then {
+                        src -> latestObservationId.value = evaluate(src, $this.item.where(linkId = 'cab147f6-05f6-4276-9811-03c4685590f9').answer.value.toString()) "rule_latest_observation";
+                    } "rule_check_latest_observation";
+
+                    src -> evaluate(src, 1) as qtyValue, evaluate(src, "Pieces") as qtyUnit, evaluate(src, "Group/6a59c142-1c87-11ed-861d-0242ac120002") as refSubject
+                            then extractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit, previousBalance, noCommodityFlag, latestObservationId) "r_obs";
+                } "rule_previous_balance_no_commodity_flag_latest_observation_id";
+
+            } "r_given";
+        } "r_ors";
+
+
+        src.item as amoxicillinRed where(linkId ='997c9ab4-eb51-426d-8d6b-b264f30ec0a1' and answer.value.exists() and answer.value.code = 'yes') then {
+            src.item as given where(linkId ='b7dbb174-578b-4c28-f7ad-50b6225dadc0' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> create('string') as noCommodityFlag, create('string') as latestObservationId, create('integer') as previousBalance then {
+                    //Stock balance
+                    src -> previousBalance.value = '0' "rule_initialize_stock balance";
+                    src.item where(linkId = '254fe48e-dd6c-4428-b59c-10c8079dc8d5' and answer.value.exists()) then {
+                        src -> previousBalance.value = evaluate(src, $this.item.where(linkId = '254fe48e-dd6c-4428-b59c-10c8079dc8d5').answer.value.toString()) "rule_previous_balance";
+                    } "rule_check_previous_balance";
+
+                    //No Stock Flag
+                    src.item where(linkId = '829c3eff-4903-4123-b21c-e4f613c1f01d' and answer.value.exists()) then {
+                        src -> noCommodityFlag.value = evaluate(src, $this.item.where(linkId = '829c3eff-4903-4123-b21c-e4f613c1f01d').answer.value.toString()) "rule_commodity_flag";
+                    } "rule_check_commodity_flag";
+
+                    //Create the latest observation
+                    src.item where(linkId = '19f9be52-cce5-442a-9f87-d6894a57b6ff' and answer.value.exists()) then {
+                        src -> latestObservationId.value = evaluate(src, $this.item.where(linkId = '19f9be52-cce5-442a-9f87-d6894a57b6ff').answer.value.toString()) "rule_latest_observation";
+                    } "rule_check_latest_observation";
+
+                    src -> evaluate(src, 1) as qtyValue, evaluate(src, "Tablets") as qtyUnit, evaluate(src, "Group/cf046178-03e9-41ec-b9b4-46b4783f01ae") as refSubject
+                            then extractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit, previousBalance, noCommodityFlag, latestObservationId) "r_obs";
+
+                } "rule_previous_balance_no_commodity_flag_latest_observation_id";
+
+            } "r_given";
+        } "r_amoxicillin_red";
+
+        src.item as amoxicillinRedTenTabs where(linkId ='4befc9e8-babd-4418-b41b-00f062a1badf' and answer.value.exists() and answer.value.code = 'yes') then {
+            src.item as given where(linkId ='096ba5cb-51cb-4c70-830e-c9bc981bc9bb' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> create('string') as noCommodityFlag, create('string') as latestObservationId, create('integer') as previousBalance then {
+                    //Stock balance
+                    src -> previousBalance.value = '0' "rule_initialize_stock balance";
+                    src.item where(linkId = '9ed5fdf4-dde5-4ac2-abe3-bd2a7858a5a6' and answer.value.exists()) then {
+                        src -> previousBalance.value = evaluate(src, $this.item.where(linkId = '9ed5fdf4-dde5-4ac2-abe3-bd2a7858a5a6').answer.value.toString()) "rule_previous_balance";
+                    } "rule_check_previous_balance";
+
+                    //No Stock Flag
+                    src.item where(linkId = '04456994-8f00-43f3-b47b-b33f55b385c9' and answer.value.exists()) then {
+                        src -> noCommodityFlag.value = evaluate(src, $this.item.where(linkId = '04456994-8f00-43f3-b47b-b33f55b385c9').answer.value.toString()) "rule_commodity_flag";
+                    } "rule_check_commodity_flag";
+
+                    //Create the latest observation
+                    src.item where(linkId = '6be08186-8e82-4d9b-8e3a-1b7a3a7dfe2b' and answer.value.exists()) then {
+                        src -> latestObservationId.value = evaluate(src, $this.item.where(linkId = '6be08186-8e82-4d9b-8e3a-1b7a3a7dfe2b').answer.value.toString()) "rule_latest_observation";
+                    } "rule_check_latest_observation";
+
+                    src -> evaluate(src, 10) as qtyValue, evaluate(src, "Tablets") as qtyUnit, evaluate(src, "Group/cf046178-03e9-41ec-b9b4-46b4783f01ae") as refSubject
+                            then extractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit, previousBalance, noCommodityFlag, latestObservationId) "r_obs";
+
+                } "rule_previous_balance_no_commodity_flag_latest_observation_id";
+
+            } "r_given";
+        } "r_amoxicillin_red_ten";
+
+
+        src.item as amoxicillinGreenTwo where(linkId ='4a564178-de55-4757-c263-5b3db851b8d6' and answer.value.exists() and answer.value.code = 'yes') then {
+            src.item as given where(linkId ='80a02272-4ed9-4a1a-9cd7-242e18ef0358' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> create('string') as noCommodityFlag, create('string') as latestObservationId, create('integer') as previousBalance then {
+                    //Stock balance
+                    src -> previousBalance.value = '0' "rule_initialize_stock balance";
+                    src.item where(linkId = '7be1c8e4-e7d0-445b-8a71-d600263a0063' and answer.value.exists()) then {
+                        src -> previousBalance.value = evaluate(src, $this.item.where(linkId = '7be1c8e4-e7d0-445b-8a71-d600263a0063').answer.value.toString()) "rule_previous_balance";
+                    } "rule_check_previous_balance";
+
+                    //No Stock Flag
+                    src.item where(linkId = '32eebd31-8edc-43eb-a620-d4a30b33bc52' and answer.value.exists()) then {
+                        src -> noCommodityFlag.value = evaluate(src, $this.item.where(linkId = '32eebd31-8edc-43eb-a620-d4a30b33bc52').answer.value.toString()) "rule_commodity_flag";
+                    } "rule_check_commodity_flag";
+
+                    //Create the latest observation
+                    src.item where(linkId = '7f1b86c6-313b-42a3-ae77-541cae12b27e' and answer.value.exists()) then {
+                        src -> latestObservationId.value = evaluate(src, $this.item.where(linkId = '7f1b86c6-313b-42a3-ae77-541cae12b27e').answer.value.toString()) "rule_latest_observation";
+                    } "rule_check_latest_observation";
+
+                    src -> evaluate(src, 2) as qtyValue, evaluate(src, "Tablets") as qtyUnit, evaluate(src, "Group/e50eb835-7827-4001-b233-e1dda721d4e8") as refSubject
+                            then extractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit, previousBalance, noCommodityFlag, latestObservationId) "r_obs";
+                } "rule_previous_balance_no_commodity_flag_latest_observation_id";
+
+            } "r_given";
+        } "r_amoxicilin_green";
+
+        src.item as amoxicillinGreenTwenty where(linkId ='d507461b-f109-46b5-9370-5be49d932d98' and answer.value.exists() and answer.value.code = 'yes') then {
+            src.item as given where(linkId ='781b656c-e948-409d-da79-da7bdbaeffb8' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> create('string') as noCommodityFlag, create('string') as latestObservationId, create('integer') as previousBalance then {
+                    //Stock balance
+                    src -> previousBalance.value = '0' "rule_initialize_stock balance";
+                    src.item where(linkId = '55969ae5-65cf-4d9b-90eb-c198e7bc558e' and answer.value.exists()) then {
+                        src -> previousBalance.value = evaluate(src, $this.item.where(linkId = '55969ae5-65cf-4d9b-90eb-c198e7bc558e').answer.value.toString()) "rule_previous_balance";
+                    } "rule_check_previous_balance";
+
+                    //No Stock Flag
+                    src.item where(linkId = 'bba7fbc4-6566-4a03-871b-7955553da13a' and answer.value.exists()) then {
+                        src -> noCommodityFlag.value = evaluate(src, $this.item.where(linkId = 'bba7fbc4-6566-4a03-871b-7955553da13a').answer.value.toString()) "rule_commodity_flag";
+                    } "rule_check_commodity_flag";
+
+                    //Create the latest observation
+                    src.item where(linkId = '1b9994ec-6024-44d5-92ad-f6190c95cf4d' and answer.value.exists()) then {
+                        src -> latestObservationId.value = evaluate(src, $this.item.where(linkId = '1b9994ec-6024-44d5-92ad-f6190c95cf4d').answer.value.toString()) "rule_latest_observation";
+                    } "rule_check_latest_observation";
+
+                    src -> evaluate(src, 20) as qtyValue, evaluate(src, "Tablets") as qtyUnit, evaluate(src, "Group/e50eb835-7827-4001-b233-e1dda721d4e8") as refSubject
+                            then extractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit, previousBalance, noCommodityFlag, latestObservationId) "r_obs";
+                } "rule_previous_balance_no_commodity_flag_latest_observation_id";
+
+            } "r_given";
+        } "r_amoxicilin_green_twenty";
+
+
+        src.item as antiMalariaACTYellow where(linkId ='04b9d905-412d-4733-a87a-e27afb2b14ad' and answer.value.exists() and answer.value.code = 'yes') then {
+            src.item as given where(linkId ='eff9d3f4-ca73-4f63-83c9-edcb039023b4' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> create('string') as noCommodityFlag, create('string') as latestObservationId, create('integer') as previousBalance then {
+                    //Stock balance
+                    src -> previousBalance.value = '0' "rule_initialize_stock balance";
+                    src.item where(linkId = 'bc8d3591-421a-42ad-9cfc-6af427581555' and answer.value.exists()) then {
+                        src -> previousBalance.value = evaluate(src, $this.item.where(linkId = 'bc8d3591-421a-42ad-9cfc-6af427581555').answer.value.toString()) "rule_previous_balance";
+                    } "rule_check_previous_balance";
+
+                    //No Stock Flag
+                    src.item where(linkId = 'b5706956-e601-4dfe-ae7a-97e6c9f4a8ba' and answer.value.exists()) then {
+                        src -> noCommodityFlag.value = evaluate(src, $this.item.where(linkId = 'b5706956-e601-4dfe-ae7a-97e6c9f4a8ba').answer.value.toString()) "rule_commodity_flag";
+                    } "rule_check_commodity_flag";
+
+                    //Create the latest observation
+                    src.item where(linkId = 'a8583691-021f-414c-9252-519ac05bc7c8' and answer.value.exists()) then {
+                        src -> latestObservationId.value = evaluate(src, $this.item.where(linkId = '7f1b86c6-313b-42a3-ae77-541cae12b27e').answer.value.toString()) "rule_latest_observation";
+                    } "rule_check_latest_observation";
+
+                    src -> evaluate(src, 1) as qtyValue, evaluate(src, "Tablets") as qtyUnit, evaluate(src, "Group/643cf9dc-f574-4a18-a392-46ff9852795a") as refSubject
+                            then extractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit, previousBalance, noCommodityFlag, latestObservationId) "r_obs";
+                } "rule_previous_balance_no_commodity_flag_latest_observation_id";
+
+            } "r_given";
+        } "r_ACT_yellow";
+
+
+        src.item as antiMalariaACTBlue where(linkId ='77d24ae3-5e6f-43ee-db38-c635023c3d1d' and answer.value.exists() and answer.value.code = 'yes') then {
+            src.item as given where(linkId ='dad2ff62-d294-48c9-91aa-40e7d29f90a6' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> create('string') as noCommodityFlag, create('string') as latestObservationId, create('integer') as previousBalance then {
+                    //Stock balance
+                    src -> previousBalance.value = '0' "rule_initialize_stock balance";
+                    src.item where(linkId = 'e8b84321-ed5c-495d-905e-3e81083320f4' and answer.value.exists()) then {
+                        src -> previousBalance.value = evaluate(src, $this.item.where(linkId = 'e8b84321-ed5c-495d-905e-3e81083320f4').answer.value.toString()) "rule_previous_balance";
+                    } "rule_check_previous_balance";
+
+                    //No Stock Flag
+                    src.item where(linkId = 'cd83576c-6297-47e7-b857-fa6bb824a379' and answer.value.exists()) then {
+                        src -> noCommodityFlag.value = evaluate(src, $this.item.where(linkId = 'cd83576c-6297-47e7-b857-fa6bb824a379').answer.value.toString()) "rule_commodity_flag";
+                    } "rule_check_commodity_flag";
+
+                    //Create the latest observation
+                    src.item where(linkId = '827ac1a1-16dd-4a0c-87c4-bbe9916ceb2b' and answer.value.exists()) then {
+                        src -> latestObservationId.value = evaluate(src, $this.item.where(linkId = '827ac1a1-16dd-4a0c-87c4-bbe9916ceb2b').answer.value.toString()) "rule_latest_observation";
+                    } "rule_check_latest_observation";
+
+                    src -> evaluate(src, 1) as qtyValue, evaluate(src, "Tablets") as qtyUnit, evaluate(src, "Group/a563f5ee-ae92-4604-a019-4309b3b495c6") as refSubject
+                            then extractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit, previousBalance, noCommodityFlag, latestObservationId) "r_obs";
+                } "rule_previous_balance_no_commodity_flag_latest_observation_id";
+
+            } "r_given";
+        } "r_ACT_blue";
+
+        src.item as antiMalariaACTYellowSixTabs where(linkId ='32e2cabf-a1d6-42f9-8f5d-1ebd261627fd' and answer.value.exists() and answer.value.code = 'yes') then {
+            src.item as given where(linkId ='58964a9a-e2a3-4f8f-cee1-c7f2afbfe070' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> create('string') as noCommodityFlag, create('string') as latestObservationId, create('integer') as previousBalance then {
+                    //Stock balance
+                    src -> previousBalance.value = '0' "rule_initialize_stock balance";
+                    src.item where(linkId = '71e22d2f-34ae-4a65-b61c-a0fac432adea' and answer.value.exists()) then {
+                        src -> previousBalance.value = evaluate(src, $this.item.where(linkId = '71e22d2f-34ae-4a65-b61c-a0fac432adea').answer.value.toString()) "rule_previous_balance";
+                    } "rule_check_previous_balance";
+
+                    //No Stock Flag
+                    src.item where(linkId = '93b19b07-b2d5-4498-8bff-56d2b616c1d4' and answer.value.exists()) then {
+                        src -> noCommodityFlag.value = evaluate(src, $this.item.where(linkId = '93b19b07-b2d5-4498-8bff-56d2b616c1d4').answer.value.toString()) "rule_commodity_flag";
+                    } "rule_check_commodity_flag";
+
+                    //Create the latest observation
+                    src.item where(linkId = '9050d789-ecde-4940-8cb2-1c55109ce24f' and answer.value.exists()) then {
+                        src -> latestObservationId.value = evaluate(src, $this.item.where(linkId = '9050d789-ecde-4940-8cb2-1c55109ce24f').answer.value.toString()) "rule_latest_observation";
+                    } "rule_check_latest_observation";
+
+                    src -> evaluate(src, 6) as qtyValue, evaluate(src, "Tablets") as qtyUnit, evaluate(src, "Group/643cf9dc-f574-4a18-a392-46ff9852795a") as refSubject
+                            then extractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit, previousBalance, noCommodityFlag, latestObservationId) "r_obs";
+                } "rule_previous_balance_no_commodity_flag_latest_observation_id";
+
+            } "r_given";
+        } "r_ACT_yellow-six";
+
+        src.item as antiMalariaACTBlueTwelveTabs where(linkId ='32e2cabf-a1d6-42f9-8f5d-1ebd261627fd' and answer.value.exists() and answer.value.code = 'yes') then {
+            src.item as given where(linkId ='9e864c6d-b877-4395-beaf-726b30e67a9a' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> create('string') as noCommodityFlag, create('string') as latestObservationId, create('integer') as previousBalance then {
+                    //Stock balance
+                    src -> previousBalance.value = '0' "rule_initialize_stock balance";
+                    src.item where(linkId = '31d6fde5-eda4-4295-96cd-1c8361d74b52' and answer.value.exists()) then {
+                        src -> previousBalance.value = evaluate(src, $this.item.where(linkId = '31d6fde5-eda4-4295-96cd-1c8361d74b52').answer.value.toString()) "rule_previous_balance";
+                    } "rule_check_previous_balance";
+
+                    //No Stock Flag
+                    src.item where(linkId = '8f143d4a-70d3-42ac-8745-ff283cac1cf6' and answer.value.exists()) then {
+                        src -> noCommodityFlag.value = evaluate(src, $this.item.where(linkId = '8f143d4a-70d3-42ac-8745-ff283cac1cf6').answer.value.toString()) "rule_commodity_flag";
+                    } "rule_check_commodity_flag";
+
+                    //Create the latest observation
+                    src.item where(linkId = '12d9b975-c8b5-40e7-b766-cb7f7ffe1ed8' and answer.value.exists()) then {
+                        src -> latestObservationId.value = evaluate(src, $this.item.where(linkId = '12d9b975-c8b5-40e7-b766-cb7f7ffe1ed8').answer.value.toString()) "rule_latest_observation";
+                    } "rule_check_latest_observation";
+
+                    src -> evaluate(src, 12) as qtyValue, evaluate(src, "Tablets") as qtyUnit, evaluate(src, "Group/a563f5ee-ae92-4604-a019-4309b3b495c6") as refSubject
+                            then extractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit, previousBalance, noCommodityFlag, latestObservationId) "r_obs";
+                } "rule_previous_balance_no_commodity_flag_latest_observation_id";
+
+            } "r_given";
+        } "r_ACT_blue";
+
+
+        src.item as artesunateOne where(linkId ='d9908403-8eb1-45cf-cf97-1e6d14992adc' and answer.value.exists() and answer.value.code = 'yes') then {
+            src.item as given where(linkId ='6af59255-ddfd-486f-a359-a966c4439261' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> create('string') as noCommodityFlag, create('string') as latestObservationId, create('integer') as previousBalance then {
+                    //Stock balance
+                    src -> previousBalance.value = '0' "rule_initialize_stock balance";
+                    src.item where(linkId = 'ec66a7cc-d1f6-4d5e-b161-61eb61c2922e' and answer.value.exists()) then {
+                        src -> previousBalance.value = evaluate(src, $this.item.where(linkId = 'ec66a7cc-d1f6-4d5e-b161-61eb61c2922e').answer.value.toString()) "rule_previous_balance";
+                    } "rule_check_previous_balance";
+
+                    //No Stock Flag
+                    src.item where(linkId = '6b1ed271-28a8-4dc2-8521-f3498befc981' and answer.value.exists()) then {
+                        src -> noCommodityFlag.value = evaluate(src, $this.item.where(linkId = '6b1ed271-28a8-4dc2-8521-f3498befc981').answer.value.toString()) "rule_commodity_flag";
+                    } "rule_check_commodity_flag";
+
+                    //Create the latest observation
+                    src.item where(linkId = 'cb032c71-465b-43d1-aeef-efe7241f22bb' and answer.value.exists()) then {
+                        src -> latestObservationId.value = evaluate(src, $this.item.where(linkId = 'cb032c71-465b-43d1-aeef-efe7241f22bb').answer.value.toString()) "rule_latest_observation";
+                    } "rule_check_latest_observation";
+
+                    src -> evaluate(src, 1) as qtyValue, evaluate(src, "Strips") as qtyUnit, evaluate(src, "Group/592181bc-0a68-47bc-8275-ac853bba1b09") as refSubject
+                            then extractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit, previousBalance, noCommodityFlag, latestObservationId) "r_obs";
+                } "rule_previous_balance_no_commodity_flag_latest_observation_id";
+
+            } "r_given";
+        } "r_artesunate";
+
+        src.item as artesunateTwo where(linkId ='d9908403-8eb1-45cf-cf97-1e6d14992adc' and answer.value.exists() and answer.value.code = 'yes') then {
+            src.item as given where(linkId ='8dbb50d7-152e-4a1c-8192-67b1a81904cf' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> create('string') as noCommodityFlag, create('string') as latestObservationId, create('integer') as previousBalance then {
+                     //Stock balance
+                    src -> previousBalance.value = '0' "rule_initialize_stock balance";
+                    src.item where(linkId = '8b404865-2651-4ba6-8b4d-c2de0aae55f6' and answer.value.exists()) then {
+                        src -> previousBalance.value = evaluate(src, $this.item.where(linkId = '8b404865-2651-4ba6-8b4d-c2de0aae55f6').answer.value.toString()) "rule_previous_balance";
+                    } "rule_check_previous_balance";
+
+                    //No Stock Flag
+                    src.item where(linkId = '30ca82bd-bd6e-4b14-931d-0b6d79db5350' and answer.value.exists()) then {
+                        src -> noCommodityFlag.value = evaluate(src, $this.item.where(linkId = '30ca82bd-bd6e-4b14-931d-0b6d79db5350').answer.value.toString()) "rule_commodity_flag";
+                    } "rule_check_commodity_flag";
+
+                    //Create the latest observation
+                    src.item where(linkId = 'caf9de81-51ca-4f4c-a523-b862f1ef22ef' and answer.value.exists()) then {
+                        src -> latestObservationId.value = evaluate(src, $this.item.where(linkId = 'caf9de81-51ca-4f4c-a523-b862f1ef22ef').answer.value.toString()) "rule_latest_observation";
+                    } "rule_check_latest_observation";
+
+                    src -> evaluate(src, 2) as qtyValue, evaluate(src, "Strips") as qtyUnit, evaluate(src, "Group/592181bc-0a68-47bc-8275-ac853bba1b09") as refSubject
+                            then extractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit, previousBalance, noCommodityFlag, latestObservationId) "r_obs";
+                } "rule_previous_balance_no_commodity_flag_latest_observation_id";
+
+            } "r_given";
+        } "r_artesunate";
+
+        src.item as malariaRDT where(linkId ='7333e864-3f99-4ddf-dedd-4894f5893c2a' and answer.value.exists() and answer.value.code = 'yes') then {
+            src.item as given where(linkId ='312d9dcf-1382-499b-bf05-7edf1b52fbb8' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> create('string') as noCommodityFlag, create('string') as latestObservationId, create('integer') as previousBalance then {
+                    //Stock balance
+                    src -> previousBalance.value = '0' "rule_initialize_stock balance";
+                    src.item where(linkId = 'ee160de1-7e74-4a7a-82da-9edc320bbcac' and answer.value.exists()) then {
+                        src -> previousBalance.value = evaluate(src, $this.item.where(linkId = 'ee160de1-7e74-4a7a-82da-9edc320bbcac').answer.value.toString()) "rule_previous_balance";
+                    } "rule_check_previous_balance";
+
+                    //No Stock Flag
+                    src.item where(linkId = 'd602ecad-be25-4687-99e6-b0fe81126440' and answer.value.exists()) then {
+                        src -> noCommodityFlag.value = evaluate(src, $this.item.where(linkId = 'd602ecad-be25-4687-99e6-b0fe81126440').answer.value.toString()) "rule_commodity_flag";
+                    } "rule_check_commodity_flag";
+
+                    //Create the latest observation
+                    src.item where(linkId = '05a19a6c-7378-4d0e-a299-17770b3378a3' and answer.value.exists()) then {
+                        src -> latestObservationId.value = evaluate(src, $this.item.where(linkId = '05a19a6c-7378-4d0e-a299-17770b3378a3').answer.value.toString()) "rule_latest_observation";
+                    } "rule_check_latest_observation";
+
+                    src -> evaluate(src, 1) as qtyValue, evaluate(src, "Tests") as qtyUnit, evaluate(src, "Group/24dcbee9-a665-4b3e-b97d-61b3ff675589") as refSubject
+                            then extractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit, previousBalance, noCommodityFlag, latestObservationId) "r_obs";
+                } "rule_previous_balance_no_commodity_flag_latest_observation_id";
+
+            } "r_given";
+        } "r_malaria_act";
+
+        src.item as zincFive where(linkId ='07462718-6b27-4a8e-8a7a-9eb7777f0393' and answer.value.exists() and answer.value.code = 'yes') then {
+            src.item as given where(linkId ='453ed178-e19f-4b2a-884e-35bd37465210' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> create('string') as noCommodityFlag, create('string') as latestObservationId, create('integer') as previousBalance then {
+                    //Stock balance
+                    src -> previousBalance.value = '0' "rule_initialize_stock balance";
+                    src.item where(linkId = '802f1153-6d00-4b8e-a889-48dcc20e991d' and answer.value.exists()) then {
+                        src -> previousBalance.value = evaluate(src, $this.item.where(linkId = '802f1153-6d00-4b8e-a889-48dcc20e991d').answer.value.toString()) "rule_previous_balance";
+                    } "rule_check_previous_balance";
+
+                    //No Stock Flag
+                    src.item where(linkId = '827a1d6f-1482-4f14-b925-17efc5120fb3' and answer.value.exists()) then {
+                        src -> noCommodityFlag.value = evaluate(src, $this.item.where(linkId = '827a1d6f-1482-4f14-b925-17efc5120fb3').answer.value.toString()) "rule_commodity_flag";
+                    } "rule_check_commodity_flag";
+
+                    //Create the latest observation
+                    src.item where(linkId = '60b4c42c-aeaa-483e-b075-6db3b3dc5cb1' and answer.value.exists()) then {
+                        src -> latestObservationId.value = evaluate(src, $this.item.where(linkId = '60b4c42c-aeaa-483e-b075-6db3b3dc5cb1').answer.value.toString()) "rule_latest_observation";
+                    } "rule_check_latest_observation";
+
+                    src -> evaluate(src, 5) as qtyValue, evaluate(src, "Tablets") as qtyUnit, evaluate(src, "Group/c7f60dc4-6a48-11ed-a1eb-0242ac120002") as refSubject
+                            then extractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit, previousBalance, noCommodityFlag, latestObservationId) "r_obs";
+                } "rule_previous_balance_no_commodity_flag_latest_observation_id";
+
+            } "r_given";
+        } "r_zinc_five";
+
+        src.item as zincTen where(linkId ='07462718-6b27-4a8e-8a7a-9eb7777f0393' and answer.value.exists() and answer.value.code = '20mg_zinc') then {
+            src.item as given where(linkId ='373376e5-6efc-40d6-83d9-0f6d7ff9f1f9' and answer.value.exists() and answer.value.code = 'yes') then {
+                src -> create('string') as noCommodityFlag, create('string') as latestObservationId, create('integer') as previousBalance then {
+                    //Stock balance
+                    src -> previousBalance.value = '0' "rule_initialize_stock balance";
+                    src.item where(linkId = '0805d783-7ae8-4de4-99c4-21e59afb5954' and answer.value.exists()) then {
+                        src -> previousBalance.value = evaluate(src, $this.item.where(linkId = '0805d783-7ae8-4de4-99c4-21e59afb5954').answer.value.toString()) "rule_previous_balance";
+                    } "rule_check_previous_balance";
+
+                    //No Stock Flag
+                    src.item where(linkId = 'fd988e7f-262c-408a-8f06-5f139b6b05e2' and answer.value.exists()) then {
+                        src -> noCommodityFlag.value = evaluate(src, $this.item.where(linkId = 'fd988e7f-262c-408a-8f06-5f139b6b05e2').answer.value.toString()) "rule_commodity_flag";
+                    } "rule_check_commodity_flag";
+
+                    //Create the latest observation
+                    src.item where(linkId = 'dd2ecdae-b029-4297-9513-f0c5b0eaebe4' and answer.value.exists()) then {
+                        src -> latestObservationId.value = evaluate(src, $this.item.where(linkId = 'dd2ecdae-b029-4297-9513-f0c5b0eaebe4').answer.value.toString()) "rule_latest_observation";
+                    } "rule_check_latest_observation";
+
+                    src -> evaluate(src, 10) as qtyValue, evaluate(src, "Tablets") as qtyUnit, evaluate(src, "Group/c7f60dc4-6a48-11ed-a1eb-0242ac120002") as refSubject
+                            then extractSpecificObservation(src, bundle, refPatient, refSubject, qtyValue, qtyUnit, previousBalance, noCommodityFlag, latestObservationId) "r_obs";
+                } "rule_previous_balance_no_commodity_flag_latest_observation_id";
+
+            } "r_given";
+        } "r_zinc_ten";
+
+
+}
+
+group extractSpecificObservation(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference, source refSubject: String,
+    source qtyValue: Integer, source qtyUnit: String, source previousBalance: Integer, source noCommodityFlag: String, source latestObservationId: String) {
+    src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+        src -> obs.id = uuid() "r_obs_id";
+        src -> obs.status = 'preliminary' "r_obs_status";
+        src -> obs.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_obs_category_1";
+        src -> obs.category = cc('http://hl7.org/fhir/inventoryreport-counttype', 'subtraction', 'subtraction')"r_obs_category_2";
+        src -> obs.code = create('CodeableConcept') as code then {
+            src -> code.coding = create('Coding') as coding then {
+                src -> coding.system = 'https://smartregister.org/' "r_obs_coding_system";
+                src -> coding.code = 'consumption' "r_obs_c_coding_code";
+                src -> coding.display = 'consumption' "r_obs_c_coding_display";
+            } "r_obs_c_coding";
+            src -> code.text = 'consumption' "r_obs_c_text";
+        } "r_obs_code";
+        src -> obs.subject = create('Reference') as ref then {
+            src -> ref.reference = refSubject "r_ref_subject";
+        } "r_obs_ref";
+        src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+        src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+        src -> obs.value = create('Quantity') as qty then {
+            src -> qty.value = qtyValue,
+            qty.unit = qtyUnit,
+            qty.system = 'http://snomed.info/sct',
+            qty.code = '767525000' "r_obs_qty";
+        } "r_obs_value";
+
+
+        src -> evaluate(src, (previousBalance - qtyValue)) as runningTotal  then {
+            src -> obs.component as component then extractRunningBalance(src, component, runningTotal) "r_obs_running_total_component";
+
+            //create stockout flag if none exists and total balance is Zero or less
+            src as stockOut where (runningTotal <= 0) then {
+                src as noFlag where (noCommodityFlag.empty()) then {
+                    src then createStockOutFlag(src, bundle, refSubject) "r_create_stockout_flag";
+                } "r_no_flag";
+            } "r_bal_is_zero";
+
+        } "rule_running_total_compute";
+
+        src where(latestObservationId.exists()) then updateLatestObservation(src, bundle, latestObservationId) "rule_update_latest_observation_check";
+    } "r_obs";
+}
+
+group extractRunningBalance(source src: QuestionnaireResponse, target component: BackboneElement, source runningTotal : Integer){
+    src -> component.code = create('CodeableConcept') as runningTotalCC then {
+        src -> runningTotalCC.coding = create('Coding') as runningTotalCCCoding then {
+            src -> runningTotalCCCoding.system = 'http://snomed.info/sct' "r_obs_runing_total_cc_coding_system";
+            src -> runningTotalCCCoding.code = '255619001' "r_obs_runing_total_cc_coding_code";
+            src -> runningTotalCCCoding.display = 'Total' "r_obs_runing_total_cc_coding_display";
+        } "r_obs_running_total_cc_coding";
+        src -> runningTotalCC.text = 'Running total/Cumulative sum' "r_obs_runing_total_cc_text";
+    } "r_obs_running_total_code";
+
+    src -> component.value = create('Quantity') as runningTotalQuantity then {
+        src -> runningTotalQuantity.value = runningTotal "r_obs__running_total_qty";
+    } "r_obs_running_total_quantity";
+}
+
+group updateLatestObservation(source src: QuestionnaireResponse, target bundle : Bundle, source latestObservationId : String){
+    src -> bundle.entry as entry, entry.resource = create('Observation') as observation then {
+        src -> observation.id = create('id') as id then {
+            src -> id.value = latestObservationId "r_update_obs_id_value";
+        } "r_update_obs_id";
+        src -> observation.status = 'final' "r_update_latest_obs_to_final";
+    } "r_update_latest_obs";
+}
+
+group createStockOutFlag(source src: QuestionnaireResponse, target bundle : Bundle, source refSubject: String){
+    src -> bundle.entry as entry, entry.resource = create('Flag') as flag then {
+        src -> flag.id = uuid() "r_flag_id";
+        src -> flag.status = 'active' "r_flag_status";
+        src -> flag.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_flag_category";
+        src -> flag.code = cc('http://snomed.info/sct','419182006', ' Supplies not available')  "r_flag_code";
+        src -> flag.subject = create('Reference') as ref then {
+            src -> ref.reference = refSubject "r_ref_subject";
+        } "r_flag_ref";
+        src -> flag.period = create('Period') as period then {
+            src -> period.start = evaluate(src, now()) "r_flag_period_start";
+        } "r_flag_period";
+    } "r_flag";
+}

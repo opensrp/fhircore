@@ -1,0 +1,474 @@
+map "http://hl7.org/fhir/StructureMap/a2489ffa-ccbf-40bd-87bc-dae5f47094ea" = "ChildRoutine Visit Task"
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+uses "http://hl7.org/fhir/StructureDefinition/Encounter" as target
+uses "http://hl7.org/fhir/StructureDefinition/Observation" as target
+
+group ChildRoutineVisit(source src: QuestionnaireResponse, target bundle: Bundle) {
+    src->bundle.id = uuid(),
+    bundle.type = "collection" then
+        ExtractEncounter(src, bundle) "r_bundle_data";
+}
+
+
+group ExtractEncounter(source src : QuestionnaireReponse, target bundle: Bundle){
+    src ->bundle.entry as entry,
+        entry.resource = create("Encounter") as encounter then {
+            src->encounter.id = uuid(),
+                encounter.status = "finished",
+                encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH","home health"),
+                encounter.serviceType= cc("http://terminology.hl7.org/CodeSystem/service-type", "497","Home Visits- Child Routine Visit") "r_enc_data";
+
+            src.subject as subj -> encounter.subject = subj "rule_subj";
+
+            src then ExtractObservations(src, bundle, encounter) "r_extract_obs";
+        } "r_encounter";
+}
+group ExtractObservations(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
+    src then
+    ExtractChildAge(src, bundle, encounter),
+    ExtractChildFeeling(src,bundle,encounter),
+    ExtractVCardRecieved(src,bundle,encounter),
+    ExtractRecievedVitaminA(src,bundle,encounter),
+    ExtractRecieveDewormingTab(src,bundle,encounter),
+    ExtractChildMUAC(src,bundle,encounter),
+    ExtractChildReferred(src,bundle,encounter),
+    ExtractChildSwelling(src,bundle,encounter)
+
+    "r_enc_obs";
+}
+
+group ExtractChildAge(source src: QuestionnaireReponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="cb18b6e3-3670-4108-8fd1-278646209e6a") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "424144002","Current chronological age"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '424144002' "r_obs_c_coding_code";
+                    src -> coding.display = 'Current chronological age' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Current chronological age' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractChildFeeling(source src: QuestionnaireReponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="171089e0-de77-494b-86d1-0ae3f9a769be") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "275142008","Sick child (situation)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '275142008' "r_obs_c_coding_code";
+                    src -> coding.display = 'Sick child (situation)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Sick child (situation)' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+
+        item.answer as itemAnswer then {
+            itemAnswer then ExtractPerformSickChildAst(src, bundle, encounter) "r_item_answer";
+            itemAnswer.value where(code = 'not-well,-has-sick-symptoms') then ExtractSickChildCondition(src, bundle, encounter) "_item_answer_cond_not_well";
+        } "r_item_answer_cond";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractPerformSickChildAst(source src: QuestionnaireReponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="6b7f0a30-98c2-44c7-990c-5317dd1f9ada")  then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "408990008","Child care assessment (procedure)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '408990008' "r_obs_c_coding_code";
+                    src -> coding.display = 'Child care assessment (procedure)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Child care assessment (procedure)' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+/* Create the sick child Condition */
+group ExtractSickChildCondition(source src : QuestionnaireReponse, target bundle : Bundle, target encounter : Encounter) {
+    src -> bundle.entry as entry, entry.resource = create("Condition") as cnd then {
+        src -> cnd.id = uuid() "r_cnd_id";
+     	src -> cnd.recordedDate = evaluate(src, now()) "r_cnd_onset_date_val";
+     	src -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_cnd_clinical_st";
+        src -> cnd.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_cnd_verif_st";
+        src -> cnd.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "encounter-diagnosis",
+        "Encounter Diagnosis") "r_cnd_category";
+        src -> cnd.recordedDate = evaluate(src, now()) "r_cnd_recorded";
+        src ->cnd.encounter = reference(encounter) "r_cnd_enc";
+        src.subject as subj -> cnd.subject = subj "rule_cnd_subj";
+           src -> cnd.code = create("CodeableConcept") as ccSick then {
+                   src -> ccSick.coding = c("http://snomed.info/sct", "234234234", "Child") "r_cnd_code_coding";
+                   src -> ccSick.text = "Sick child Condition" "r_cnd_code_text";
+              } "r_cnd_code";
+          } "r_cnd";
+}
+
+group ExtractVCardRecieved(source src: QuestionnaireReponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="a527807a-e07a-4e8e-8b14-87d96b2f41d5") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "713404003","Vaccination given (situation)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '713404003' "r_obs_c_coding_code";
+                    src -> coding.display = 'Vaccination given (situation)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Vaccination given (situation)' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer then ExtractImmunizationUpdated(src, bundle, encounter) "r_item_answer";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractImmunizationUpdated(source src: QuestionnaireReponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="b2b9a9ce-7469-49fb-a04b-35dd352cc06f") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "408864009","Vaccination status (observable entity)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '408864009' "r_obs_c_coding_code";
+                    src -> coding.display = 'Vaccination status (observable entity)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Vaccination status (observable entity)' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+group ExtractRecievedVitaminA(source src: QuestionnaireReponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="72ef4f12-9fc0-43b5-878d-8e77c5f78e80") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "82622003","Vitamin A"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '408864009' "r_obs_c_coding_code";
+                    src -> coding.display = 'Vaccination status (observable entity)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Vaccination status (observable entity)' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer then ExtractVitaminAStatusKnown(src, bundle, encounter),ExtractDateOfImmunization(src, bundle, encounter) "r_item_answer";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractVitaminAStatusKnown(source src: QuestionnaireReponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="7eee40f6-7c5a-4bbb-8977-ed4a4c33e953") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "408864009","Vaccination status (observable entity)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '408864009' "r_obs_c_coding_code";
+                    src -> coding.display = 'Vaccination status (observable entity)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Vaccination status (observable entity)' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+
+group ExtractDateOfImmunization(source src: QuestionnaireReponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="31a9c69d-11b7-45b4-b34b-ec939cbe3747") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "7241000122103","Date of immunization"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '408864009' "r_obs_c_coding_code";
+                    src -> coding.display = 'Vaccination status (observable entity)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Vaccination status (observable entity)' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src -> obs.value = evaluate(item, $this.answer.value.toString() + ' 00:00:00') "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractRecieveDewormingTab(source src: QuestionnaireReponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="2c82b0c2-007f-4293-85f3-5db6364554a1") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "14369007","Deworming"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '408864009' "r_obs_c_coding_code";
+                    src -> coding.display = 'Vaccination status (observable entity)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Vaccination status (observable entity)' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer then ExtractDateDewormStatus(src, bundle, encounter) , ExtractDateDewormKnown(src, bundle, encounter) "r_item_answer";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractDateDewormStatus(source src: QuestionnaireReponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="e4ab3765-c501-4972-f43f-195b7a8c272c") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "408864009","Vaccination status (observable entity)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '408864009' "r_obs_c_coding_code";
+                    src -> coding.display = 'Vaccination status (observable entity)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Vaccination status (observable entity)' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractDateDewormKnown(source src: QuestionnaireReponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="0adfc67d-f1b2-49b7-84b3-f9886e1c274b") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "7241000122103","Date of immunization"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '408864009' "r_obs_c_coding_code";
+                    src -> coding.display = 'Vaccination status (observable entity)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Vaccination status (observable entity)' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src -> obs.value = evaluate(item, $this.answer.value.toString() + ' 00:00:00')  "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractChildMUAC(source src: QuestionnaireReponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="8f59975b-5eff-4eb9-fb79-6c44ff09946d") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "284473002","Mid upper arm circumference (observable entity)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '408864009' "r_obs_c_coding_code";
+                    src -> coding.display = 'Vaccination status (observable entity)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Vaccination status (observable entity)' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then {
+            itemAnswer.value where(code = 'yellow' or code = "red") then ExtractReferencedCondition(src, bundle, encounter) "r_item_answer_cond";
+        } "r_item_answer";
+    }
+    "r_obs_item_date_ws";
+}
+/* Create the child referral Condition */
+group ExtractReferencedCondition(source src : QuestionnaireReponse, target bundle : Bundle, target encounter : Encounter) {
+    src -> bundle.entry as entry, entry.resource = create("Condition") as cnd then {
+        src -> cnd.id = uuid() "r_cnd_id";
+     	src -> cnd.recordedDate = evaluate(src, now()) "r_cnd_onset_date_val";
+     	src -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_cnd_clinical_st";
+        src -> cnd.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_cnd_verif_st";
+        src -> cnd.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "encounter-diagnosis",
+        "Encounter Diagnosis") "r_cnd_category";
+        src -> cnd.recordedDate = evaluate(src, now()) "r_cnd_recorded";
+        src ->cnd.encounter = reference(encounter) "r_cnd_enc";
+        src.subject as subj -> cnd.subject = subj "rule_cnd_subj";
+           src -> cnd.code = create("CodeableConcept") as ccRef then {
+                   src -> ccRef.coding = c("http://snomed.info/sct", "234234234", "Child") "r_cnd_code_coding";
+                   src -> ccRef.text = "Child Referral Condition" "r_cnd_code_text";
+              } "r_cnd_code";
+          } "r_cnd";
+}
+
+
+group ExtractChildReferred(source src: QuestionnaireReponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="5855576f-5d96-41e5-ca9e-6c45cf7ad97d") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "439980006","Referral placed (situation)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '408864009' "r_obs_c_coding_code";
+                    src -> coding.display = 'Vaccination status (observable entity)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Vaccination status (observable entity)' "r_obs_c_text";
+            } "r_obs_code";
+
+            src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
+
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+group ExtractChildSwelling(source src: QuestionnaireReponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="948d7341-c6d4-48c5-9bfa-ac4686c2da99") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                obs.code = cc("http://www.snomed.org/", "284473002","Body especially hands, feet, ankles or legs (observable entity)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then {
+            itemAnswer.value where(code = 'yellow' or code = "red") then ExtractReferencedCondition(src, bundle, encounter) "r_item_answer_cond";
+        } "r_item_answer";
+    }
+    "r_obs_item_date_ws";
+}

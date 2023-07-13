@@ -1,0 +1,431 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "f22c0646-995b-44dc-ac79-8a2964d00c81",
+  "meta": {
+    "lastUpdated": "2023-07-12T15:25:13.675+05:00",
+    "tag": [
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655"
+      },
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655"
+      },
+      {
+        "system": "https://smartregister.org/care-team-tag-id",
+        "code": "146934",
+        "display": "Practitioner CareTeam"
+      },
+      {
+        "system": "https://smartregister.org/location-tag-id",
+        "code": "54842",
+        "display": "Practitioner Location"
+      },
+      {
+        "system": "https://smartregister.org/organisation-tag-id",
+        "code": "146872",
+        "display": "Practitioner Organization"
+      },
+      {
+        "system": "https://smartregister.org/practitioner-tag-id",
+        "code": "146871",
+        "display": "Practitioner"
+      }
+    ]
+  },
+  "contained": [
+    {
+      "resourceType": "Encounter",
+      "id": "61dd3099-8171-40ba-85dd-447a2ba395b4",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.4-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "status": "finished",
+      "class": {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        "code": "HH"
+      },
+      "serviceType": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/service-type",
+            "code": "425"
+          }
+        ]
+      },
+      "participant": [
+        {
+          "individual": {
+            "reference": "Practitioner/146871"
+          }
+        }
+      ],
+      "serviceProvider": {
+        "reference": "Organization/146872"
+      }
+    },
+    {
+      "resourceType": "Observation",
+      "id": "f02e1451-cef8-41f6-9dcb-9682906a87b3",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.4-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "710562003"
+          }
+        ]
+      },
+      "encounter": {
+        "reference": "Encounter/61dd3099-8171-40ba-85dd-447a2ba395b4"
+      },
+      "effectiveDateTime": "2023-07-12T15:25:13+05:00",
+      "valueString": "yes"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "0bff83e8-a7a7-46eb-93e0-b05227d8128b",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.4-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "424144002"
+          }
+        ]
+      },
+      "encounter": {
+        "reference": "Encounter/61dd3099-8171-40ba-85dd-447a2ba395b4"
+      },
+      "effectiveDateTime": "2023-07-12T15:25:13+05:00",
+      "valueString": "test"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "01b9c518-87cb-4852-a1b1-7ad3f5ae0e70",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.4-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "424144002"
+          }
+        ]
+      },
+      "encounter": {
+        "reference": "Encounter/61dd3099-8171-40ba-85dd-447a2ba395b4"
+      },
+      "effectiveDateTime": "2023-07-12T15:25:13+05:00",
+      "valueString": "tt"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "4beff26d-1464-4b32-a0e0-d630607d9210",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.4-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "424144002"
+          }
+        ]
+      },
+      "encounter": {
+        "reference": "Encounter/61dd3099-8171-40ba-85dd-447a2ba395b4"
+      },
+      "effectiveDateTime": "2023-07-12T15:25:13+05:00",
+      "valueString": "n"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "0bca6a69-e15a-4241-b94b-980fdff4c023",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.4-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "7241000122103"
+          }
+        ]
+      },
+      "encounter": {
+        "reference": "Encounter/61dd3099-8171-40ba-85dd-447a2ba395b4"
+      },
+      "effectiveDateTime": "2023-07-12T15:25:13+05:00",
+      "valueString": "2023-07-14 00:00:00"
+    }
+  ],
+  "questionnaire": "Questionnaire/eb26579a-2f37-4f75-9783-85987704fa61",
+  "status": "completed",
+  "subject": {
+    "reference": "Patient/6a889060-8a87-4276-81ac-f6a07c1dd3a2"
+  },
+  "authored": "2023-07-12T15:25:13+05:00",
+  "item": [
+    {
+      "linkId": "86297006-6e4a-4f23-851e-b2c623e5c088",
+      "text": "Did the patient go to the health facility?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "c0a21f37-fa9f-4d6e-92f6-78ccd4bae40b",
+            "system": "urn:uuid:e41bf9f7-d278-4a0f-a3f1-976740865f68",
+            "code": "yes",
+            "display": "Yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "7a0d8865-6c85-4466-a8e9-0844c6063349",
+      "text": "Name of Health facility referred to",
+      "answer": [
+        {
+          "valueString": "test"
+        }
+      ]
+    },
+    {
+      "linkId": "b8f14da9-09a8-4a87-8273-50ad89d1b496",
+      "text": "Diagnosis",
+      "answer": [
+        {
+          "valueString": "tt"
+        }
+      ]
+    },
+    {
+      "linkId": "59524c70-57ea-4aa9-ee0e-c81bc6c1230e",
+      "text": "Follow-up care needed",
+      "answer": [
+        {
+          "valueString": "n"
+        }
+      ]
+    },
+    {
+      "linkId": "860ba2ba-208f-4e41-ee40-04cc3ff72a9f",
+      "text": "Date when patient should return to the health unit",
+      "answer": [
+        {
+          "valueDate": "2023-07-14"
+        }
+      ]
+    }
+  ]
+}
