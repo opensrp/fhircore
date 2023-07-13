@@ -59,13 +59,17 @@ fun List<ActionConfig>.handleClickEvent(
         }
       }
       ApplicationWorkflow.LAUNCH_PROFILE -> {
+        val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
+        val resourceId =
+          interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
+            ?: resourceData?.baseResourceId
         actionConfig.id?.let { id ->
           val args =
             bundleOf(
               NavigationArg.PROFILE_ID to id,
-              NavigationArg.RESOURCE_ID to resourceData?.baseResourceId,
+              NavigationArg.RESOURCE_ID to resourceId,
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
-              NavigationArg.PARAMS to interpolateActionParamsValue(actionConfig, resourceData),
+              NavigationArg.PARAMS to interpolatedParams,
             )
           navController.navigate(MainNavigationScreen.Profile.route, args)
         }

@@ -3,21 +3,6 @@
 :root {
   --ifm-font-family-base: 'Inter';
 }
-/*
-.main-wrapper {
-  max-width:1200px;
-  margin-left: auto;
-  margin-right: auto;
-}
-*/
-
-#purple-text {
-  color: rebeccapurple;
-}
-
-#app-release {
-  color: rebeccapurple;
-}
 
 .navbar {
   min-height: 80px;

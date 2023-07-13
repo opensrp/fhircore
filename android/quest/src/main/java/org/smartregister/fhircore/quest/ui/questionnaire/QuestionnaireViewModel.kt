@@ -280,9 +280,44 @@ constructor(
         performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle)
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
-        performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle = null)
+        performExtraction(questionnaireResponse, questionnaireConfig, questionnaire)
       }
-      extractionProgress.postValue(true)
+      viewModelScope.launch(dispatcherProvider.main()) { extractionProgress.postValue(true) }
+      triggerRemoveResources(questionnaireConfig)
+    }
+  }
+
+  /**
+   * This function triggers removal of [Resource] s as per the [QuestionnaireConfig.groupResource]
+   * or [QuestionnaireConfig.removeResource] config properties.
+   */
+  fun triggerRemoveResources(questionnaireConfig: QuestionnaireConfig) {
+    if (questionnaireConfig.groupResource != null) {
+      removeGroup(
+        groupId = questionnaireConfig.groupResource!!.groupIdentifier,
+        removeGroup = questionnaireConfig.groupResource?.removeGroup ?: false,
+        deactivateMembers = questionnaireConfig.groupResource!!.deactivateMembers,
+      )
+      removeGroupMember(
+        memberId = questionnaireConfig.resourceIdentifier,
+        removeMember = questionnaireConfig.groupResource?.removeMember ?: false,
+        groupIdentifier = questionnaireConfig.groupResource!!.groupIdentifier,
+        memberResourceType = questionnaireConfig.groupResource!!.memberResourceType,
+      )
+    }
+
+    if (
+      questionnaireConfig.removeResource == true &&
+        questionnaireConfig.resourceType != null &&
+        !questionnaireConfig.resourceIdentifier.isNullOrEmpty()
+    ) {
+      viewModelScope.launch {
+        defaultRepository.delete(
+          resourceType = questionnaireConfig.resourceType!!,
+          resourceId = questionnaireConfig.resourceIdentifier!!,
+          softDelete = true,
+        )
+      }
     }
   }
 
@@ -293,12 +328,10 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     questionnaireConfig: QuestionnaireConfig,
     questionnaire: Questionnaire,
-    bundle: Bundle?,
+    bundle: Bundle = Bundle(),
   ) {
-    if (bundle?.entry?.isNotEmpty() == true) {
-      extractCqlOutput(questionnaire, questionnaireResponse, bundle)
-      extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
-    }
+    extractCqlOutput(questionnaire, questionnaireResponse, bundle)
+    extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
   }
 
   fun savePartialQuestionnaireResponse(
@@ -393,7 +426,11 @@ constructor(
     bundle: Bundle?,
   ) {
     withContext(dispatcherProvider.default()) {
-      val data = bundle ?: Bundle().apply { addEntry().apply { resource = questionnaireResponse } }
+      val data =
+        Bundle().apply {
+          bundle?.entry?.map { this.addEntry(it) }
+          addEntry().resource = questionnaireResponse
+        }
       questionnaire
         .cqfLibraryIds()
         .map {
@@ -576,7 +613,7 @@ constructor(
   fun removeGroupMember(
     memberId: String?,
     groupIdentifier: String?,
-    memberResourceType: String?,
+    memberResourceType: ResourceType?,
     removeMember: Boolean,
   ) {
     if (removeMember && !memberId.isNullOrEmpty()) {
@@ -586,7 +623,7 @@ constructor(
             memberId = memberId,
             groupId = groupIdentifier,
             groupMemberResourceType = memberResourceType,
-            emptyMap(),
+            configComputedRuleValues = emptyMap(),
           )
         } catch (exception: Exception) {
           Timber.e(exception)
@@ -594,12 +631,6 @@ constructor(
           removeOperation.postValue(true)
         }
       }
-    }
-  }
-
-  fun deleteResource(resourceType: ResourceType, resourceIdentifier: String) {
-    viewModelScope.launch {
-      defaultRepository.delete(resourceType = resourceType, resourceId = resourceIdentifier)
     }
   }
 

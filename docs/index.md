@@ -50,4 +50,4 @@ In addition to the Android App, Admin Dashboard, and Analytics Dashboard, OpenSR
 
 ![](/img/opensrp-platform-flow.png)
 
-For more detail, continue to reading [Android App Engineering](/android-app)
+For more detail, continue to reading [Android App Engineering](/engineering-android-app/introduction)
