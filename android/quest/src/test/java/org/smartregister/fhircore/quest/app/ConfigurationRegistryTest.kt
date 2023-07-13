@@ -118,6 +118,39 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
+  fun testFetchListResourceNonProxy() = runBlocking {
+    val composition =
+      Composition().apply {
+        addSection().apply {
+          this.focus =
+            Reference().apply {
+              reference = "List/123456"
+              identifier = Identifier().apply { value = "012345" }
+            }
+        }
+      }
+
+    val bundle =
+      org.hl7.fhir.r4.model.Bundle().apply {
+        addEntry().apply {
+          this.resource = ListResource().apply { ListResource@ this.id = "123456" }
+        }
+      }
+
+    configurationRegistry.setNonProxy(true)
+    every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
+
+    coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
+    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+
+    configurationRegistry.fetchNonWorkflowConfigResources()
+    coVerify { configurationRegistry.fhirResourceDataSource.getResource(any()) }
+    coVerify { configurationRegistry.create(any()) }
+  }
+
+  @Test
   fun testFetchListResource() = runBlocking {
     val composition =
       Composition().apply {
@@ -140,12 +173,18 @@ class ConfigurationRegistryTest : RobolectricTest() {
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
-
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
+    coEvery {
+      fhirResourceService.getResourceWithGatewayModeHeader(
+        ConfigurationRegistry.FHIR_GATEWAY_MODE_HEADER_VALUE,
+        "List/123456",
+      )
+    } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
 
     configurationRegistry.fetchNonWorkflowConfigResources()
-    coVerify { configurationRegistry.fhirResourceDataSource.getResource(any()) }
+
+    coVerify { fhirResourceService.getResourceWithGatewayModeHeader(any(), any()) }
     coVerify { configurationRegistry.create(any()) }
   }
 }
