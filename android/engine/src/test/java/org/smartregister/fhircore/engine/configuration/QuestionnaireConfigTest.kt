@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration
 
 import dagger.hilt.android.testing.HiltAndroidTest
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
@@ -62,7 +63,7 @@ class QuestionnaireConfigTest : RobolectricTest() {
         groupResource =
           GroupResourceConfig(
             groupIdentifier = "@{groupIdentifier}",
-            memberResourceType = "Condition",
+            memberResourceType = ResourceType.Condition,
             removeMember = true,
             removeGroup = true,
             deactivateMembers = false,
@@ -131,7 +132,7 @@ class QuestionnaireConfigTest : RobolectricTest() {
   @Test
   fun testDefaultGroupResourceConfig() {
     val groupIdentifier = "groupIdentifier"
-    val memberResourceType = "Condition"
+    val memberResourceType = ResourceType.Condition
     val groupResourceConfig = GroupResourceConfig(groupIdentifier, memberResourceType)
     groupResourceConfig.apply {
       Assert.assertEquals(groupIdentifier, this.groupIdentifier)

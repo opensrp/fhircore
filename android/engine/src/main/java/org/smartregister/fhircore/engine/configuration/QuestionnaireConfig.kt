@@ -41,6 +41,7 @@ data class QuestionnaireConfig(
   val planDefinitions: List<String>? = null,
   var type: QuestionnaireType = QuestionnaireType.DEFAULT,
   val resourceIdentifier: String? = null,
+  val removeResource: Boolean? = null,
   val resourceType: ResourceType? = null,
   val confirmationDialog: ConfirmationDialog? = null,
   val groupResource: GroupResourceConfig? = null,
@@ -89,7 +90,7 @@ data class ConfirmationDialog(
 @Parcelize
 data class GroupResourceConfig(
   val groupIdentifier: String,
-  val memberResourceType: String,
+  val memberResourceType: ResourceType,
   val removeMember: Boolean = false,
   val removeGroup: Boolean = false,
   val deactivateMembers: Boolean = true,

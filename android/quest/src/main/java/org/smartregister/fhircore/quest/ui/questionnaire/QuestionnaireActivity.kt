@@ -474,10 +474,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     if (questionnaireConfig.confirmationDialog != null) {
       dismissSaveProcessing()
-      confirmationDialog(
-        questionnaireConfig = questionnaireConfig,
-        questionnaireResponse = questionnaireResponse,
-      )
+      confirmationDialog(questionnaireResponse)
     } else {
       executeExtraction(questionnaireResponse)
     }
@@ -488,47 +485,21 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     questionnaireViewModel.savePartialQuestionnaireResponse(questionnaire, questionnaireResponse)
   }
 
-  private fun confirmationDialog(
-    questionnaireConfig: QuestionnaireConfig,
-    questionnaireResponse: QuestionnaireResponse,
-  ) {
+  private fun confirmationDialog(questionnaireResponse: QuestionnaireResponse) {
     AlertDialogue.showAlert(
       context = this,
       alertIntent = AlertIntent.CONFIRM,
       title = questionnaireConfig.confirmationDialog!!.title,
       message = questionnaireConfig.confirmationDialog!!.message,
       confirmButtonListener = { dialog ->
-        if (
-          questionnaireConfig.resourceIdentifier != null && questionnaireConfig.resourceType != null
-        ) {
-          questionnaireViewModel.deleteResource(
-            questionnaireConfig.resourceType!!,
-            questionnaireConfig.resourceIdentifier!!,
-          )
-        } else if (questionnaireConfig.groupResource != null) {
-          questionnaireViewModel.removeGroup(
-            groupId = questionnaireConfig.groupResource!!.groupIdentifier,
-            removeGroup = questionnaireConfig.groupResource?.removeGroup ?: false,
-            deactivateMembers = questionnaireConfig.groupResource!!.deactivateMembers,
-          )
-          questionnaireViewModel.removeGroupMember(
-            memberId = questionnaireConfig.resourceIdentifier,
-            removeMember = questionnaireConfig.groupResource?.removeMember ?: false,
-            groupIdentifier = questionnaireConfig.groupResource!!.groupIdentifier,
-            memberResourceType = questionnaireConfig.groupResource!!.memberResourceType,
-          )
-        }
-        executeExtraction(questionnaireResponse, questionnaireConfig)
+        executeExtraction(questionnaireResponse)
         dialog.dismiss()
       },
       neutralButtonListener = { dialog -> dialog.dismiss() },
     )
   }
 
-  private fun executeExtraction(
-    questionnaireResponse: QuestionnaireResponse,
-    questionnaireConfig: QuestionnaireConfig = this.questionnaireConfig,
-  ) {
+  private fun executeExtraction(questionnaireResponse: QuestionnaireResponse) {
     questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
 
     questionnaireViewModel.extractAndSaveResources(
