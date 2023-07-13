@@ -280,7 +280,7 @@ constructor(
         performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle)
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
-        performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle = null)
+        performExtraction(questionnaireResponse, questionnaireConfig, questionnaire)
       }
       viewModelScope.launch(dispatcherProvider.main()) { extractionProgress.postValue(true) }
       triggerRemoveResources(questionnaireConfig)
@@ -328,12 +328,10 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     questionnaireConfig: QuestionnaireConfig,
     questionnaire: Questionnaire,
-    bundle: Bundle?,
+    bundle: Bundle = Bundle(),
   ) {
-    if (bundle?.entry?.isNotEmpty() == true) {
-      extractCqlOutput(questionnaire, questionnaireResponse, bundle)
-      extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
-    }
+    extractCqlOutput(questionnaire, questionnaireResponse, bundle)
+    extractCarePlan(questionnaireResponse, bundle, questionnaireConfig)
   }
 
   fun savePartialQuestionnaireResponse(
@@ -428,7 +426,11 @@ constructor(
     bundle: Bundle?,
   ) {
     withContext(dispatcherProvider.default()) {
-      val data = bundle ?: Bundle().apply { addEntry().apply { resource = questionnaireResponse } }
+      val data =
+        Bundle().apply {
+          bundle?.entry?.map { this.addEntry(it) }
+          addEntry().resource = questionnaireResponse
+        }
       questionnaire
         .cqfLibraryIds()
         .map {
