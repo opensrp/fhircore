@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.appsetting
 
 import android.content.Context
+import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.util.JsonUtil
 import com.google.gson.GsonBuilder
@@ -32,6 +33,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import java.net.UnknownHostException
+import java.nio.charset.StandardCharsets
 import java.util.Base64
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -42,14 +44,16 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -57,6 +61,7 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.second
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -114,22 +119,24 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Fix failing test")
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchConfigurations() = runTest {
-    coEvery { appSettingViewModel.fhirResourceDataSource.getResource(any()) } returns
+    val appId = "test_app_id"
+    appSettingViewModel.onApplicationIdChanged(appId)
+
+    coEvery { fhirResourceDataSource.getResource(any()) } returns
       Bundle().apply {
         addEntry().resource =
           Composition().apply {
             addSection().apply { this.focus = Reference().apply { reference = "Binary/123" } }
           }
       }
-    coEvery { appSettingViewModel.defaultRepository.create(any()) } returns emptyList()
+    coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
 
     appSettingViewModel.fetchConfigurations(context)
 
-    coVerify { appSettingViewModel.fhirResourceDataSource.getResource(any()) }
-    coVerify { appSettingViewModel.defaultRepository.create(any()) }
+    coVerify { fhirResourceDataSource.getResource(any()) }
+    coVerify { appSettingViewModel.defaultRepository.createRemote(any(), any()) }
   }
 
   @Test
@@ -175,7 +182,6 @@ class AppSettingViewModelTest : RobolectricTest() {
         }
       coEvery { defaultRepository.createRemote(any(), any()) } just runs
       coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
-      coEvery { configService.provideConfigurationSyncPageSize() } returns 20.toString()
 
       appSettingViewModel.run {
         onApplicationIdChanged("app")
@@ -326,5 +332,101 @@ class AppSettingViewModelTest : RobolectricTest() {
     Assert.assertEquals(2, result.size)
     Assert.assertEquals(ResourceType.Task.name, result.first())
     Assert.assertEquals(ResourceType.Patient.name, result.last())
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testFetchConfigurationsChunking() = runTest {
+    val appId = "test_app_id"
+    val compositionSections = mutableListOf<Composition.SectionComponent>()
+
+    for (i in
+      1..ConfigurationRegistry.MANIFEST_PROCESSOR_BATCH_SIZE +
+          1) { // We need more than the MAX batch size
+      compositionSections.add(
+        Composition.SectionComponent().apply {
+          focus.reference = "${ResourceType.Binary.name}/id-$i"
+          focus.identifier = Identifier().apply { id = "${ResourceType.Binary.name}/id-$i" }
+        },
+      )
+    }
+
+    Assert.assertEquals(31, compositionSections.size)
+
+    val composition =
+      Composition().apply {
+        identifier = Identifier().apply { value = appId }
+        section = compositionSections
+      }
+
+    coEvery { appSettingViewModel.loadConfigurations(any()) } just runs
+    coEvery { appSettingViewModel.appId } returns MutableLiveData(appId)
+    coEvery { fhirResourceDataSource.getResource("Composition?identifier=test_app_id") } returns
+      Bundle().apply { addEntry().resource = composition }
+    coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
+    coEvery {
+      fhirResourceDataSource.getResource(
+        "Binary?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30",
+      )
+    } returns
+      Bundle().apply {
+        entry =
+          listOf(
+            Bundle.BundleEntryComponent().apply {
+              resource =
+                Binary().apply {
+                  data =
+                    RegisterConfiguration(id = "1", appId = appId, fhirResource = mockk())
+                      .apply {}
+                      .toString()
+                      .toByteArray(StandardCharsets.UTF_8)
+                }
+            },
+          )
+      }
+    coEvery { fhirResourceDataSource.getResource("Binary?_id=id-31") } returns
+      Bundle().apply {
+        entry =
+          listOf(
+            Bundle.BundleEntryComponent().apply {
+              resource =
+                Binary().apply {
+                  data =
+                    ProfileConfiguration(id = "2", appId = appId, fhirResource = mockk())
+                      .apply {}
+                      .toString()
+                      .toByteArray(StandardCharsets.UTF_8)
+                }
+            },
+          )
+      }
+
+    appSettingViewModel.fetchConfigurations(context)
+
+    val resourceArgumentSlot = mutableListOf<Resource>()
+
+    coVerify(exactly = 3) {
+      appSettingViewModel.defaultRepository.createRemote(any(), capture(resourceArgumentSlot))
+    }
+
+    val capturedResources: List<Resource> = resourceArgumentSlot
+    Assert.assertEquals(3, capturedResources.size)
+
+    Assert.assertTrue(capturedResources.first() is Binary)
+    Assert.assertTrue(capturedResources.second() is Binary)
+    Assert.assertTrue(capturedResources.last() is Composition)
+
+    val requestPathArgumentSlot = mutableListOf<String>()
+
+    coVerify { fhirResourceDataSource.getResource(capture(requestPathArgumentSlot)) }
+
+    Assert.assertEquals(3, requestPathArgumentSlot.size)
+
+    Assert.assertEquals("Composition?identifier=test_app_id", requestPathArgumentSlot.first())
+    Assert.assertEquals(
+      "Binary?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30",
+      requestPathArgumentSlot.second(),
+    )
+    Assert.assertEquals("Binary?_id=id-31", requestPathArgumentSlot.last())
   }
 }
