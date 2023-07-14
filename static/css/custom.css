@@ -28,3 +28,7 @@ article {
   margin-left: auto;
   margin-right: auto;
 }
+
+.nav-active {
+  color: #045CB4;
+}
