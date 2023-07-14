@@ -57,7 +57,7 @@ const config = {
     },
       
       navbar: {
-        title: '',
+        title: 'Docs',
         logo: {
           alt: 'OpenSRP Documentation',
           src: 'img/opensrp-logo.png',
@@ -102,7 +102,7 @@ const config = {
             items: [
               {
                 label: 'OpenSRP',
-                href: 'https://smartregister.org',
+                href: 'https://opensrp.io',
               },
               {
                 label: 'Ona',
