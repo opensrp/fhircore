@@ -64,6 +64,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.second
 
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
@@ -712,11 +713,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     Assert.assertEquals(3, requestPathArgumentSlot.size)
 
-    Assert.assertEquals("Bundle/the-commodities-bundle-id", requestPathArgumentSlot[0].id)
-    Assert.assertEquals(ResourceType.Bundle, requestPathArgumentSlot[0].resourceType)
+    Assert.assertEquals("Bundle/the-commodities-bundle-id", requestPathArgumentSlot.first().id)
+    Assert.assertEquals(ResourceType.Bundle, requestPathArgumentSlot.first().resourceType)
 
-    Assert.assertEquals("Group/1000001", requestPathArgumentSlot[1].id)
-    Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot[1].resourceType)
+    Assert.assertEquals("Group/1000001", requestPathArgumentSlot.second().id)
+    Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.second().resourceType)
 
     Assert.assertEquals("Group/2000001", requestPathArgumentSlot.last().id)
     Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.last().resourceType)
