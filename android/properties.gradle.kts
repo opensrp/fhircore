@@ -11,7 +11,8 @@ fun Project.readProperties(file: String): Properties {
       ->
       properties.load(reader)
     }
-  } else throw FileNotFoundException("File $file not found")
+  } else if(file.toString().contains(File.separator)) throw FileNotFoundException("\u001B[32mFile $file not found\u001B[0m")
+  else  println("\u001B[34mFILE_NOT_FOUND_EXCEPTION: File $file not found\u001B[0m")
 
   return properties
 }

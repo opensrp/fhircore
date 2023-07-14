@@ -44,6 +44,12 @@ jobs:
       - name: Setup Gradle cache
         uses: gradle/gradle-build-action@v2
 
+      - name: Decode & Generate local.properties file
+        run: echo $LOCAL_PROPERTIES | base64 -di > local.properties
+        working-directory: android
+        env:
+          LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
+
       - name: Spotless check engine module
         run: ./gradlew :engine:spotlessCheck --stacktrace && ./gradlew :engine:ktlintCheck --stacktrace
         working-directory: android 
@@ -112,6 +118,12 @@ jobs:
       
       - name: Copy CI gradle.properties
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
+
+      - name: Decode & Generate local.properties file
+        run: echo $LOCAL_PROPERTIES | base64 -di > local.properties
+        working-directory: android
+        env:
+          LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
 
       - name: Setup Gradle cache
         uses: gradle/gradle-build-action@v2
@@ -186,6 +198,12 @@ jobs:
 
       - name: Setup Gradle cache
         uses: gradle/gradle-build-action@v2
+
+      - name: Decode & Generate local.properties file
+        run: echo $LOCAL_PROPERTIES | base64 -di > local.properties
+        working-directory: android
+        env:
+          LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
  
       - name: Spotless check quest application
         run: ./gradlew :quest:spotlessCheck --stacktrace && ./gradlew :quest:ktlintCheck --stacktrace
