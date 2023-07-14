@@ -5,11 +5,13 @@ sidebar_label: Overview
 
 # Overview
 
-OpenSRP is a FHIR-native medical record system for health workers to manage their patients for child health, maternal health and more. It has been used in projects ranging from single location research studies to national health systems caring for over a hundred million patients.
+OpenSRP is a FHIR-native medical record system for health workers to manage their patients for child health, maternal health and more. OpenSRP is developed by Ona, a Kenyan social enterprise, with contributions from organizations around the world.
 
-OpenSRP has three parts: a mobile app for Android devices, a web-based Admin Dashboard, and an Analytics Dashboard.
+OpenSRP 2, released in 2023, combines WHO health workflows with FHIR to transform how healthcare is delivered and managed.
 
-### OpenSRP Android App
+OpenSRP 2 has three parts: a mobile app for Android devices, a web-based Admin Dashboard, and an Analytics Dashboard.
+
+#### OpenSRP Android App
 
 ![](/img/overview-app.png)
 
@@ -23,7 +25,7 @@ The OpenSRP Android app is used by health workers to:
 [Android App features](/about-opensrp/app-features)
 
 
-### OpenSRP Admin Dashboard
+#### OpenSRP Admin Dashboard
 
 The OpenSRP Admin Dashboard is used by health administrators and project managers to:
 1. Add, edit and remove health worker user accounts.
@@ -32,13 +34,13 @@ The OpenSRP Admin Dashboard is used by health administrators and project manager
 
 [Admin Dashboard features](/about-opensrp/admin-dashboard-features)
 
-### OpenSRP Analytics Dashboard
+#### OpenSRP Analytics Dashboard
 
 The OpenSRP Analytics Dashboard is used by health administrators, project managers, and M&E analysts to:
 1. View reporting at many aggregation levels, from system wide down to a single health worker.
 2. Access to data warehouse.
 
-### Technology
+#### Technology
 
 The Android app is primarily written in Kotlin​, architected as a FHIR-native platform, and powered by [Android FHIR SDK](https://github.com/google/android-fhir).
 
@@ -49,5 +51,3 @@ OpenSRP on Github:
 In addition to the Android App, Admin Dashboard, and Analytics Dashboard, OpenSRP uses a number of tools as described in the diagram below:
 
 ![](/img/opensrp-platform-flow.png)
-
-For more detail, continue to reading [Android App Engineering](/engineering-android-app/introduction)
