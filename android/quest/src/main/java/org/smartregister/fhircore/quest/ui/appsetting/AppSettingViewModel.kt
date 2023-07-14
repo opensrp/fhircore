@@ -23,7 +23,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.net.UnknownHostException
-import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -120,11 +120,7 @@ constructor(
               entry.value.chunked(ConfigurationRegistry.MANIFEST_PROCESSOR_BATCH_SIZE)
             chunkedResourceIdList.forEach { parentIt ->
               val ids = parentIt.joinToString(",") { it.focus.extractId() }
-              val resourceUrlPath =
-                entry.key +
-                  "?${Composition.SP_RES_ID}=$ids" +
-                  "&_count=${configService.provideConfigurationSyncPageSize()}"
-
+              val resourceUrlPath = "${entry.key}?${Composition.SP_RES_ID}=$ids"
               Timber.d("Fetching config: $resourceUrlPath")
               fhirResourceDataSource.getResource(resourceUrlPath).entry.forEach {
                 bundleEntryComponent ->
@@ -132,22 +128,18 @@ constructor(
 
                 if (bundleEntryComponent.resource is Binary) {
                   val binary = bundleEntryComponent.resource as Binary
-                  binary.data
-                    .decodeToString()
-                    .decodeBase64()
-                    ?.string(Charset.defaultCharset())
-                    ?.let {
-                      val config =
-                        it.tryDecodeJson<RegisterConfiguration>()
-                          ?: it.tryDecodeJson<ProfileConfiguration>()
+                  binary.data.decodeToString().decodeBase64()?.string(StandardCharsets.UTF_8)?.let {
+                    val config =
+                      it.tryDecodeJson<RegisterConfiguration>()
+                        ?: it.tryDecodeJson<ProfileConfiguration>()
 
-                      when (config) {
-                        is RegisterConfiguration ->
-                          config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
-                        is ProfileConfiguration ->
-                          config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
-                      }
+                    when (config) {
+                      is RegisterConfiguration ->
+                        config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
+                      is ProfileConfiguration ->
+                        config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
                     }
+                  }
                 }
               }
             }
