@@ -118,31 +118,46 @@ class LoginScreenTest {
   }
 
   @Test
-  fun testLoginFailsWithUnknownTextErrorMessage (){
-    verifyUnknownTextErrorMessage(LoginErrorState.UNKNOWN_HOST, R.string.login_call_fail_error_message )
+  fun testLoginFailsWithUnknownTextErrorMessage() {
+    verifyUnknownTextErrorMessage(
+      LoginErrorState.UNKNOWN_HOST,
+      R.string.login_call_fail_error_message
+    )
   }
 
   @Test
-  fun testLoginFailsWithInvalidCredentialsErrorMessage (){
-    verifyInvalidCredentialsErrorMessage(LoginErrorState.INVALID_CREDENTIALS, R.string.invalid_login_credentials )
+  fun testLoginFailsWithInvalidCredentialsErrorMessage() {
+    verifyInvalidCredentialsErrorMessage(
+      LoginErrorState.INVALID_CREDENTIALS,
+      R.string.invalid_login_credentials
+    )
   }
 
   @Test
-  fun testLoginFailsWithMultiUserLoginErrorMessage (){
-    verifyMultiUserLoginErrorMessage(LoginErrorState.MULTI_USER_LOGIN_ATTEMPT, R.string.multi_user_login_attempt)
+  fun testLoginFailsWithMultiUserLoginErrorMessage() {
+    verifyMultiUserLoginErrorMessage(
+      LoginErrorState.MULTI_USER_LOGIN_ATTEMPT,
+      R.string.multi_user_login_attempt
+    )
   }
 
   @Test
-  fun testLoginFailsWithErrorFetchingUserMessage (){
-    verifyErrorFetchingUser(LoginErrorState.ERROR_FETCHING_USER, R.string.error_fetching_user_details)
+  fun testLoginFailsWithErrorFetchingUserMessage() {
+    verifyErrorFetchingUser(
+      LoginErrorState.ERROR_FETCHING_USER,
+      R.string.error_fetching_user_details
+    )
   }
 
   @Test
-  fun testLoginFailsWithInvalidOfflineStateErrorMessage (){
-    verifyInvalidOfflineState(LoginErrorState.INVALID_OFFLINE_STATE, R.string.invalid_offline_login_state)
+  fun testLoginFailsWithInvalidOfflineStateErrorMessage() {
+    verifyInvalidOfflineState(
+      LoginErrorState.INVALID_OFFLINE_STATE,
+      R.string.invalid_offline_login_state
+    )
   }
 
-  private fun verifyUnknownTextErrorMessage(loginErrorState: LoginErrorState, errorMessageId: Int){
+  private fun verifyUnknownTextErrorMessage(loginErrorState: LoginErrorState, errorMessageId: Int) {
     composeRule.setContent {
       LoginPage(
         applicationConfiguration = applicationConfiguration,
@@ -157,10 +172,14 @@ class LoginScreenTest {
       )
     }
     composeRule
-      .onNodeWithText(context.getString(R.string.login_error, context.getString(errorMessageId))).assertIsDisplayed()
+      .onNodeWithText(context.getString(R.string.login_error, context.getString(errorMessageId)))
+      .assertIsDisplayed()
   }
 
-  private fun verifyInvalidCredentialsErrorMessage(loginErrorState: LoginErrorState, errorMessageId: Int){
+  private fun verifyInvalidCredentialsErrorMessage(
+    loginErrorState: LoginErrorState,
+    errorMessageId: Int
+  ) {
     composeRule.setContent {
       LoginPage(
         applicationConfiguration = applicationConfiguration,
@@ -175,10 +194,14 @@ class LoginScreenTest {
       )
     }
     composeRule
-      .onNodeWithText(context.getString(R.string.login_error, context.getString(errorMessageId))).assertIsDisplayed()
+      .onNodeWithText(context.getString(R.string.login_error, context.getString(errorMessageId)))
+      .assertIsDisplayed()
   }
 
-  private fun verifyMultiUserLoginErrorMessage(loginErrorState: LoginErrorState, errorMessageId: Int){
+  private fun verifyMultiUserLoginErrorMessage(
+    loginErrorState: LoginErrorState,
+    errorMessageId: Int
+  ) {
     composeRule.setContent {
       LoginPage(
         applicationConfiguration = applicationConfiguration,
@@ -193,10 +216,11 @@ class LoginScreenTest {
       )
     }
     composeRule
-      .onNodeWithText(context.getString(R.string.login_error, context.getString(errorMessageId))).assertIsDisplayed()
+      .onNodeWithText(context.getString(R.string.login_error, context.getString(errorMessageId)))
+      .assertIsDisplayed()
   }
 
-  private fun verifyErrorFetchingUser(loginErrorState: LoginErrorState, errorMessageId: Int){
+  private fun verifyErrorFetchingUser(loginErrorState: LoginErrorState, errorMessageId: Int) {
     composeRule.setContent {
       LoginPage(
         applicationConfiguration = applicationConfiguration,
@@ -211,10 +235,11 @@ class LoginScreenTest {
       )
     }
     composeRule
-      .onNodeWithText(context.getString(R.string.login_error, context.getString(errorMessageId))).assertIsDisplayed()
+      .onNodeWithText(context.getString(R.string.login_error, context.getString(errorMessageId)))
+      .assertIsDisplayed()
   }
 
-  private fun verifyInvalidOfflineState(loginErrorState: LoginErrorState, errorMessageId: Int){
+  private fun verifyInvalidOfflineState(loginErrorState: LoginErrorState, errorMessageId: Int) {
     composeRule.setContent {
       LoginPage(
         applicationConfiguration = applicationConfiguration,
@@ -229,6 +254,7 @@ class LoginScreenTest {
       )
     }
     composeRule
-      .onNodeWithText(context.getString(R.string.login_error, context.getString(errorMessageId))).assertIsDisplayed()
+      .onNodeWithText(context.getString(R.string.login_error, context.getString(errorMessageId)))
+      .assertIsDisplayed()
   }
 }
