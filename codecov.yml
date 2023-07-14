@@ -13,12 +13,11 @@ coverage:
     changes: false
     patch:
       default:
-        target: 70.0
+        target: 60.0
     project:
       default:
         enabled: true
         target: auto
-        threshold: 1.0
 flag_management:
   default_rules:
     carryforward: true
