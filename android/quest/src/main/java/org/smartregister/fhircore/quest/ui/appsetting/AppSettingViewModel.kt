@@ -23,7 +23,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.net.UnknownHostException
-import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -111,34 +111,34 @@ constructor(
           .retrieveCompositionSections()
           .asSequence()
           .filter { it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier() }
-          .groupBy { it.focus.reference.substringBefore("/") }
+          .groupBy {
+            it.focus.reference.substringBefore(ConfigurationRegistry.TYPE_REFERENCE_DELIMITER)
+          }
           .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
           .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-            val ids = entry.value.joinToString(",") { it.focus.extractId() }
-            val resourceUrlPath =
-              entry.key +
-                "?${Composition.SP_RES_ID}=$ids" +
-                "&_count=${configService.provideConfigurationSyncPageSize()}"
+            val chunkedResourceIdList =
+              entry.value.chunked(ConfigurationRegistry.MANIFEST_PROCESSOR_BATCH_SIZE)
+            chunkedResourceIdList.forEach { parentIt ->
+              val ids = parentIt.joinToString(",") { it.focus.extractId() }
+              val resourceUrlPath = "${entry.key}?${Composition.SP_RES_ID}=$ids"
+              Timber.d("Fetching config: $resourceUrlPath")
+              fhirResourceDataSource.getResource(resourceUrlPath).entry.forEach {
+                bundleEntryComponent ->
+                defaultRepository.createRemote(false, bundleEntryComponent.resource)
 
-            Timber.d("Fetching config: $resourceUrlPath")
+                if (bundleEntryComponent.resource is Binary) {
+                  val binary = bundleEntryComponent.resource as Binary
+                  binary.data.decodeToString().decodeBase64()?.string(StandardCharsets.UTF_8)?.let {
+                    val config =
+                      it.tryDecodeJson<RegisterConfiguration>()
+                        ?: it.tryDecodeJson<ProfileConfiguration>()
 
-            fhirResourceDataSource.getResource(resourceUrlPath).entry.forEach {
-              bundleEntryComponent,
-              ->
-              defaultRepository.createRemote(false, bundleEntryComponent.resource)
-
-              if (bundleEntryComponent.resource is Binary) {
-                val binary = bundleEntryComponent.resource as Binary
-                binary.data.decodeToString().decodeBase64()?.string(Charset.defaultCharset())?.let {
-                  val config =
-                    it.tryDecodeJson<RegisterConfiguration>()
-                      ?: it.tryDecodeJson<ProfileConfiguration>()
-
-                  when (config) {
-                    is RegisterConfiguration ->
-                      config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
-                    is ProfileConfiguration ->
-                      config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
+                    when (config) {
+                      is RegisterConfiguration ->
+                        config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
+                      is ProfileConfiguration ->
+                        config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
+                    }
                   }
                 }
               }
