@@ -179,3 +179,9 @@ fun Context.isDeviceOnline(): Boolean {
 
   return transports.any { capabilities.hasTransport(it) }
 }
+
+/**
+ * This function returns the second element of the List. It complements the existing kotlin
+ * List.first() and List.last() extensions
+ */
+fun <T> List<T>.second(): T = this[1]
