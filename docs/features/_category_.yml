@@ -1,3 +1,4 @@
 position: 3
-label: 'Features'
+label: 'FEATURES'
+collapsible: false
 collapsed: false
