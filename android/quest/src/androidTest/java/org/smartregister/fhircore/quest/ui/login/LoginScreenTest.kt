@@ -121,7 +121,7 @@ class LoginScreenTest {
   fun testLoginFailsWithUnknownTextErrorMessage() {
     verifyUnknownTextErrorMessage(
       LoginErrorState.UNKNOWN_HOST,
-      R.string.login_call_fail_error_message
+      R.string.login_call_fail_error_message,
     )
   }
 
@@ -129,7 +129,7 @@ class LoginScreenTest {
   fun testLoginFailsWithInvalidCredentialsErrorMessage() {
     verifyInvalidCredentialsErrorMessage(
       LoginErrorState.INVALID_CREDENTIALS,
-      R.string.invalid_login_credentials
+      R.string.invalid_login_credentials,
     )
   }
 
@@ -137,7 +137,7 @@ class LoginScreenTest {
   fun testLoginFailsWithMultiUserLoginErrorMessage() {
     verifyMultiUserLoginErrorMessage(
       LoginErrorState.MULTI_USER_LOGIN_ATTEMPT,
-      R.string.multi_user_login_attempt
+      R.string.multi_user_login_attempt,
     )
   }
 
@@ -145,7 +145,7 @@ class LoginScreenTest {
   fun testLoginFailsWithErrorFetchingUserMessage() {
     verifyErrorFetchingUser(
       LoginErrorState.ERROR_FETCHING_USER,
-      R.string.error_fetching_user_details
+      R.string.error_fetching_user_details,
     )
   }
 
@@ -153,7 +153,7 @@ class LoginScreenTest {
   fun testLoginFailsWithInvalidOfflineStateErrorMessage() {
     verifyInvalidOfflineState(
       LoginErrorState.INVALID_OFFLINE_STATE,
-      R.string.invalid_offline_login_state
+      R.string.invalid_offline_login_state,
     )
   }
 
@@ -178,7 +178,7 @@ class LoginScreenTest {
 
   private fun verifyInvalidCredentialsErrorMessage(
     loginErrorState: LoginErrorState,
-    errorMessageId: Int
+    errorMessageId: Int,
   ) {
     composeRule.setContent {
       LoginPage(
@@ -200,7 +200,7 @@ class LoginScreenTest {
 
   private fun verifyMultiUserLoginErrorMessage(
     loginErrorState: LoginErrorState,
-    errorMessageId: Int
+    errorMessageId: Int,
   ) {
     composeRule.setContent {
       LoginPage(
