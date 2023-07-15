@@ -491,7 +491,11 @@ constructor(
           fhirEngine.update(updateFrom(resource))
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
-        create(resource)
+        try {
+          create(resource)
+        } catch (e: Exception) {
+          Timber.e(e)
+        }
       }
     }
   }
