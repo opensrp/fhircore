@@ -26,14 +26,14 @@ sonar {
     property("sonar.kotlin.source.version", libs.kotlin)
     property(
       "sonar.androidLint.reportPaths",
-      "${project.buildDir}/reports/lint-results-opensrpDebug.xml"
+      "${project.buildDir}/reports/lint-results-opensrpDebug.xml",
     )
     property("sonar.host.url", System.getenv("SONAR_HOST_URL"))
     property("sonar.login", System.getenv("SONAR_TOKEN"))
     property("sonar.sourceEncoding", "UTF-8")
     property(
       "sonar.kotlin.threads",
-      (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+      (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1,
     )
     property(
       "sonar.exclusions",
@@ -42,7 +42,7 @@ sonar {
           **/.gradle/**,
           **/R.class,
           *.json,
-          *.yaml"""
+          *.yaml""",
     )
   }
 }
@@ -54,7 +54,7 @@ android {
     applicationId = "org.smartregister.opensrp"
     minSdk = 26
     targetSdk = 33
-    versionCode = 1
+    versionCode = 3
     versionName = "0.2.4"
     multiDexEnabled = true
 
@@ -66,7 +66,7 @@ android {
     buildConfigField(
       "String",
       "OAUTH_CLIENT_SECRET",
-      """"${project.extra["OAUTH_CLIENT_SECRET"]}""""
+      """"${project.extra["OAUTH_CLIENT_SECRET"]}"""",
     )
     buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """"100"""")
     buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
@@ -120,8 +120,8 @@ android {
         "META-INF/*.kotlin_module",
         "META-INF/AL2.0",
         "META-INF/LGPL2.1",
-        "META-INF/INDEX.LIST"
-      )
+        "META-INF/INDEX.LIST",
+      ),
     )
   }
 
@@ -249,7 +249,7 @@ android {
     variant.resValue(
       "string",
       "app_name",
-      "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\""
+      "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"",
     )
   }
 
@@ -274,7 +274,7 @@ val abiCodes =
     "arm64-v8a" to 3,
     "mips" to 4,
     "x86" to 5,
-    "x86_64" to 6
+    "x86_64" to 6,
   )
 
 // For each APK output variant, override versionCode with a combination of

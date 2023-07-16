@@ -60,7 +60,7 @@ fun SearchBar(
   onTextChanged: (String) -> Unit,
   onBackPress: () -> Unit,
   searchTextState: MutableState<TextFieldValue>,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Box(modifier = modifier.background(color = Color.White)) {
     TextField(
@@ -76,7 +76,7 @@ fun SearchBar(
           Icon(
             Icons.Filled.ArrowBack,
             contentDescription = null,
-            modifier = modifier.padding(16.dp)
+            modifier = modifier.padding(16.dp),
           )
         }
       },
@@ -89,13 +89,13 @@ fun SearchBar(
               searchTextState.value = TextFieldValue("")
               onTextChanged(searchTextState.value.text)
             },
-            modifier = modifier.testTag(SEARCH_BAR_TRAILING_ICON_BUTTON_TEST_TAG)
+            modifier = modifier.testTag(SEARCH_BAR_TRAILING_ICON_BUTTON_TEST_TAG),
           ) {
             Icon(
               Icons.Default.Close,
               contentDescription = "",
               modifier =
-                modifier.padding(16.dp).size(24.dp).testTag(SEARCH_BAR_TRAILING_ICON_TEST_TAG)
+                modifier.padding(16.dp).size(24.dp).testTag(SEARCH_BAR_TRAILING_ICON_TEST_TAG),
             )
           }
         }
@@ -107,9 +107,9 @@ fun SearchBar(
           backgroundColor = Color.White,
           focusedIndicatorColor = Color.Transparent,
           unfocusedIndicatorColor = Color.Transparent,
-          disabledIndicatorColor = Color.Transparent
+          disabledIndicatorColor = Color.Transparent,
         ),
-      placeholder = { SearchHint(modifier) }
+      placeholder = { SearchHint(modifier) },
     )
   }
 }
@@ -118,12 +118,9 @@ fun SearchBar(
 fun SearchHint(modifier: Modifier) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
-    modifier = modifier.wrapContentHeight().focusable(false).then(modifier)
+    modifier = modifier.wrapContentHeight().focusable(false).then(modifier),
   ) {
-    Text(
-      color = Color(0xff757575),
-      text = stringResource(id = R.string.search_hint),
-    )
+    Text(color = Color(0xff757575), text = stringResource(id = R.string.search_hint))
   }
 }
 

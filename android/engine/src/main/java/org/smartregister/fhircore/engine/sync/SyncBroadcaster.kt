@@ -80,8 +80,8 @@ constructor(
         PeriodicSyncConfiguration(
           syncConstraints =
             Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
-          repeat = RepeatInterval(interval = interval, timeUnit = TimeUnit.MINUTES)
-        )
+          repeat = RepeatInterval(interval = interval, timeUnit = TimeUnit.MINUTES),
+        ),
       )
       .handleSyncJobStatus(this)
   }

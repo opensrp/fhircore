@@ -48,7 +48,7 @@ class QuestXFhirQueryResolverTest {
     val result = xFhirResolver.resolve("Patient?active=true")
     Assert.assertTrue(result.isNotEmpty())
     Assert.assertTrue(
-      result.containsAll(resources.filter { it.resourceType == ResourceType.Patient })
+      result.containsAll(resources.filter { it.resourceType == ResourceType.Patient }),
     )
   }
 }

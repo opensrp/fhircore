@@ -38,8 +38,8 @@ class ChangeManagingEntityViewTest {
         EligibleManagingEntity(
           groupId = "group-1",
           logicalId = "patient-1",
-          memberInfo = "Jane Doe"
-        )
+          memberInfo = "Jane Doe",
+        ),
       )
     composeTestRule.setContent {
       ChangeManagingEntityView(
@@ -54,8 +54,8 @@ class ChangeManagingEntityViewTest {
             dialogWarningMessage = "Are you sure you want to abort this operation?",
             dialogContentMessage = "Select a new family head",
             eligibilityCriteriaFhirPathExpression = "Patient.active",
-            noMembersErrorMessage = "No family member"
-          )
+            noMembersErrorMessage = "No family member",
+          ),
       )
     }
   }

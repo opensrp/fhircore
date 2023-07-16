@@ -54,6 +54,7 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Procedure
 import org.hl7.fhir.r4.model.Reference
@@ -92,13 +93,16 @@ class DefaultRepositoryTest : RobolectricTest() {
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
+
   @Inject lateinit var gson: Gson
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
   @Inject lateinit var configService: ConfigService
   private lateinit var dispatcherProvider: DefaultDispatcherProvider
   private lateinit var fhirEngine: FhirEngine
   private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var defaultRepository: DefaultRepository
+
   @Inject lateinit var configRulesExecutor: ConfigRulesExecutor
   private lateinit var spiedConfigService: ConfigService
 
@@ -116,7 +120,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         sharedPreferencesHelper = sharedPreferenceHelper,
         configurationRegistry = configurationRegistry,
         configService = spiedConfigService,
-        configRulesExecutor = configRulesExecutor
+        configRulesExecutor = configRulesExecutor,
       )
   }
 
@@ -168,7 +172,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           subjectId = samplePatientId,
           subjectType = ResourceType.Patient,
           subjectParam = CarePlan.SUBJECT,
-          filters = emptyList()
+          filters = emptyList(),
         )
       Assert.assertEquals(1, actualCarePlans.size)
     }
@@ -189,7 +193,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           subjectId = samplePatientId,
           subjectType = ResourceType.Patient,
           filters = emptyList(),
-          configComputedRuleValues = emptyMap()
+          configComputedRuleValues = emptyMap(),
         )
       Assert.assertEquals(1, actualPatients.size)
     }
@@ -199,14 +203,13 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Test
   fun searchShouldReturn1ConditionGivenConditionTypeDataRequirement() {
-
     coEvery { fhirEngine.search<Condition> {} } returns listOf(mockk())
 
     runBlocking {
       val actualPatients =
         defaultRepository.search(
           dataRequirement =
-            DataRequirement().apply { type = Enumerations.ResourceType.CONDITION.toCode() }
+            DataRequirement().apply { type = Enumerations.ResourceType.CONDITION.toCode() },
         )
       Assert.assertEquals(1, actualPatients.size)
     }
@@ -226,14 +229,14 @@ class DefaultRepositoryTest : RobolectricTest() {
             Address().apply {
               city = "Lahore"
               country = "Pakistan"
-            }
+            },
           )
         name =
           listOf(
             HumanName().apply {
               given = mutableListOf(StringType("Salman"))
               family = "Ali"
-            }
+            },
           )
         telecom = listOf(ContactPoint().apply { value = "12345" })
       }
@@ -361,14 +364,13 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     runBlocking { defaultRepository.addOrUpdate(resource = resource) }
 
-    verify { resource.generateMissingId() }
+    coVerify { resource.generateMissingId() }
 
     unmockkStatic(Resource::generateMissingId)
   }
 
   @Test
   fun loadManagingEntityShouldReturnPatient() {
-
     val group = Group().apply { managingEntity = Reference("RelatedPerson/12983") }
 
     val relatedPerson =
@@ -389,7 +391,6 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Test
   fun changeManagingEntityShouldVerifyFhirEngineCalls() {
-
     val patient =
       Patient().apply {
         id = "54321"
@@ -449,8 +450,8 @@ class DefaultRepositoryTest : RobolectricTest() {
               system = "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
               code = "99990006"
               display = "Family Head"
-            }
-        )
+            },
+        ),
       )
     }
 
@@ -462,8 +463,78 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun removeGroupGivenGroupAlreadyDeletedShouldThrowIllegalStateException() {
+  fun changeManagingEntityShouldVerifyFhirEngineCallsEvenWithAnOrganizationAsTheCurrentManagingEntity() {
+    val patient =
+      Patient().apply {
+        id = "54321"
+        addName().apply {
+          addGiven("Sam")
+          family = "Smith"
+        }
+        addTelecom().apply { value = "ssmith@mail.com" }
+        addAddress().apply {
+          district = "Mawar"
+          city = "Jakarta"
+        }
+        gender = Enumerations.AdministrativeGender.MALE
+      }
+    val relatedPerson =
+      RelatedPerson().apply {
+        active = true
+        name = patient.name
+        birthDate = patient.birthDate
+        telecom = patient.telecom
+        address = patient.address
+        gender = patient.gender
+        this.patient = patient.asReference()
+        id = "testRelatedPersonId"
+      }
 
+    val organization =
+      Organization().apply {
+        id = "12983"
+        name = "Test Organization"
+      }
+
+    val defaultRepositorySpy = spyk(defaultRepository)
+
+    coEvery { fhirEngine.get<Patient>("54321") } returns patient
+    coEvery { fhirEngine.get<Organization>("12983") } returns organization
+    coEvery { fhirEngine.get<RelatedPerson>(any()) } returns relatedPerson
+    coEvery { fhirEngine.create(any()) } returns listOf()
+
+    val group =
+      Group().apply {
+        id = "73847"
+        managingEntity = Reference("Organization/12983")
+        managingEntity.id = "33292"
+      }
+    coEvery { fhirEngine.get<Group>("73847") } returns group
+    coEvery { fhirEngine.update(any()) } just runs
+
+    runBlocking {
+      defaultRepositorySpy.changeManagingEntity(
+        newManagingEntityId = "54321",
+        groupId = "73847",
+        ManagingEntityConfig(
+          resourceType = ResourceType.Patient,
+          relationshipCode =
+            Code().apply {
+              system = "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
+              code = "99990006"
+              display = "Family Head"
+            },
+        ),
+      )
+    }
+
+    coVerify { fhirEngine.get<Patient>("54321") }
+    coVerify { fhirEngine.get<Group>("73847") }
+    coVerify(inverse = true) { defaultRepositorySpy.addOrUpdate(resource = relatedPerson) }
+  }
+
+  @Test
+  fun removeGroupGivenGroupAlreadyDeletedShouldThrowIllegalStateException() {
     val group =
       Group().apply {
         id = "73847"
@@ -487,8 +558,8 @@ class DefaultRepositoryTest : RobolectricTest() {
           sharedPreferencesHelper = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
-          configRulesExecutor = mockk()
-        )
+          configRulesExecutor = mockk(),
+        ),
       )
     coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
       listOf(managingEntityRelatedPerson)
@@ -520,10 +591,10 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.get(patientMemberRep.resourceType, memberId) } returns patientMemberRep
 
     defaultRepositorySpy.removeGroupMember(
-      memberId,
-      null,
-      patientMemberRep.resourceType.name,
-      emptyMap()
+      memberId = memberId,
+      groupId = null,
+      groupMemberResourceType = patientMemberRep.resourceType,
+      configComputedRuleValues = emptyMap(),
     )
     Assert.assertFalse(patientMemberRep.active)
     coVerify { defaultRepositorySpy.addOrUpdate(resource = patientMemberRep) }
@@ -543,10 +614,10 @@ class DefaultRepositoryTest : RobolectricTest() {
       .throws(ResourceNotFoundException("type", "id"))
 
     defaultRepositorySpy.removeGroupMember(
-      memberId,
-      null,
-      patientMemberRep.resourceType.name,
-      emptyMap()
+      memberId = memberId,
+      groupId = null,
+      groupMemberResourceType = patientMemberRep.resourceType,
+      configComputedRuleValues = emptyMap(),
     )
     Assert.assertTrue(patientMemberRep.active)
   }
@@ -562,13 +633,13 @@ class DefaultRepositoryTest : RobolectricTest() {
           sharedPreferencesHelper = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
-          configRulesExecutor = mockk()
-        )
+          configRulesExecutor = mockk(),
+        ),
       )
 
     defaultRepository.delete(resourceType = ResourceType.Patient, resourceId = "123")
 
-    coVerify { fhirEngine.delete(any<ResourceType>(), any<String>()) }
+    coVerify { fhirEngine.delete(any(), any()) }
   }
 
   @Test
@@ -607,7 +678,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     defaultRepository = spyk(defaultRepository)
     val groupId = "73847"
     val memberId = "6745"
-    val groupMemberResourceType: String = ResourceType.Patient.name
+    val groupMemberResourceType = ResourceType.Patient
     val patient =
       Patient().apply {
         id = memberId
@@ -636,13 +707,14 @@ class DefaultRepositoryTest : RobolectricTest() {
         memberId = memberId,
         groupId = groupId,
         groupMemberResourceType = groupMemberResourceType,
-        emptyMap()
+        emptyMap(),
       )
     }
 
     coVerify { defaultRepository.delete(relatedPerson) }
     coVerify { defaultRepository.addOrUpdate(resource = group) }
   }
+
   @Test
   fun addOrUpdateShouldUpdateLastUpdatedToNow() {
     val date = Date()
@@ -661,7 +733,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(savedPatientSlot)) }
     Assert.assertEquals(
       date.formatDate("mm-dd-yyyy"),
-      patient.meta.lastUpdated.formatDate("mm-dd-yyyy")
+      patient.meta.lastUpdated.formatDate("mm-dd-yyyy"),
     )
   }
 
@@ -719,7 +791,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     runBlocking {
       defaultRepository.updateResourcesRecursively(
         resourceConfig = resourceConfig,
-        subject = patient
+        subject = patient,
       )
     }
 
@@ -760,14 +832,14 @@ class DefaultRepositoryTest : RobolectricTest() {
     runBlocking {
       defaultRepository.closeResource(
         serviceRequest,
-        ResourceConfig(resource = ResourceType.ServiceRequest)
+        ResourceConfig(resource = ResourceType.ServiceRequest),
       )
     }
     coVerify { fhirEngine.update(capture(serviceRequestSlot)) }
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", serviceRequestSlot.captured.id)
     Assert.assertEquals(
       ServiceRequest.ServiceRequestStatus.REVOKED,
-      serviceRequestSlot.captured.status
+      serviceRequestSlot.captured.status,
     )
   }
 
@@ -805,8 +877,8 @@ class DefaultRepositoryTest : RobolectricTest() {
               java.time.LocalDate.now()
                 .minusDays(30)
                 .atStartOfDay(ZoneId.systemDefault())
-                .toInstant()
-            )
+                .toInstant(),
+            ),
           )
       }
     coEvery { fhirEngine.update(any()) } just runs
@@ -817,8 +889,8 @@ class DefaultRepositoryTest : RobolectricTest() {
         condition,
         ResourceConfig(
           id = DefaultRepository.PNC_CONDITION_TO_CLOSE_RESOURCE_ID,
-          resource = ResourceType.Condition
-        )
+          resource = ResourceType.Condition,
+        ),
       )
     }
     coVerify { fhirEngine.update(capture(conditionSlot)) }
@@ -827,5 +899,52 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertEquals("370996005", capturedCode.code)
     Assert.assertEquals("http://www.snomed.org/", capturedCode.system)
     Assert.assertEquals("resolved", capturedCode.display)
+  }
+
+  // TODO Refactor/Remove after https://github.com/opensrp/fhircore/issues/2488
+  @Test
+  fun testCloseResourceUpdatesCorrectConditionStatusForCloseSickChildCondition() {
+    val condition =
+      Condition().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        clinicalStatus = null
+        onset =
+          DateTimeType(
+            Date.from(
+              java.time.LocalDate.now()
+                .minusDays(30)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant(),
+            ),
+          )
+      }
+    coEvery { fhirEngine.update(any()) } just runs
+    val conditionSlot = slot<Condition>()
+
+    runBlocking {
+      defaultRepository.closeResource(
+        condition,
+        ResourceConfig(
+          id = DefaultRepository.SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID,
+          resource = ResourceType.Condition,
+        ),
+      )
+    }
+    coVerify { fhirEngine.update(capture(conditionSlot)) }
+    val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
+    Assert.assertEquals("370996005", capturedCode.code)
+    Assert.assertEquals("http://www.snomed.org/", capturedCode.system)
+    Assert.assertEquals("resolved", capturedCode.display)
+  }
+
+  @Test
+  fun `createRemote() should correctly invoke FhirEngine#createRemote`() {
+    val resource = spyk(Patient())
+    coEvery { fhirEngine.createRemote(resource) } just runs
+
+    runBlocking { defaultRepository.createRemote(false, resource) }
+
+    coVerify { fhirEngine.createRemote(resource) }
   }
 }

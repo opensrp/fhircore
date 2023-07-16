@@ -8,6 +8,7 @@ activity-ktx = "1.6.1"
 appcompat = "1.5.1"
 caffeine = "2.9.1"
 cardview = "1.0.0"
+commonsJexl3 = "3.2.1"
 compressor = "3.0.1"
 constraintlayout = "2.1.4"
 constraintlayout-compose = "1.0.1"
@@ -20,12 +21,12 @@ cql-engine = "2.4.0"
 cql-evaluator = "2.4.0"
 cql-to-elm = "2.4.0"
 dagger-hilt-compiler = "2.42"
-data-capture = "1.0.0-preview10-SNAPSHOT"
+data-capture = "1.0.0-preview11-SNAPSHOT"
 desugar-jdk-libs = "1.1.5"
 easy-rules-jexl = "4.1.0"
 espresso-core = "3.5.0"
 fhir-common-utils = "0.0.2-SNAPSHOT"
-fhir-engine = "0.1.0-beta03-preview9.1-SNAPSHOT"
+fhir-engine = "0.1.0-beta03-preview9.2-SNAPSHOT"
 foundation = "1.3.1"
 fragment-ktx = "1.5.5"
 fragment-testing = "1.5.2"
@@ -75,7 +76,7 @@ navigation-ui-ktx = "2.5.3"
 okhttp = "4.10.0"
 okhttp-logging-interceptor = "4.10.0"
 orchestrator = "1.4.2"
-p2p-lib = "0.6.3-SNAPSHOT"
+p2p-lib = "0.6.6-SNAPSHOT"
 paging-compose = "1.0.0-alpha17"
 paging-runtime-ktx = "3.1.1"
 preference-ktx = "1.2.0"
@@ -109,6 +110,7 @@ activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 caffeine = { group = "com.github.ben-manes.caffeine", name = "caffeine", version.ref = "caffeine" }
 cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
+commons-jexl3 = { module = "org.apache.commons:commons-jexl3", version.ref = "commonsJexl3" }
 compressor = { group = "id.zelory", name = "compressor", version.ref = "compressor" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayout-compose" }

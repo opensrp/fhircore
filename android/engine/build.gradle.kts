@@ -24,6 +24,11 @@ android {
     targetSdk = 33
     testInstrumentationRunner = "org.smartregister.fhircore.engine.EngineTestRunner"
     consumerProguardFiles("consumer-rules.pro")
+    buildConfigField(
+      "boolean",
+      "IS_NON_PROXY_APK",
+      "${project.hasProperty("isNonProxy") && property("isNonProxy").toString().toBoolean()}",
+    )
   }
 
   buildTypes {
@@ -69,8 +74,8 @@ android {
         "META-INF/LGPL-3.0.txt",
         "META-INF/sun-jaxb.episode",
         "META-INF/*.kotlin_module",
-        "META-INF/INDEX.LIST"
-      )
+        "META-INF/INDEX.LIST",
+      ),
     )
   }
 
@@ -183,7 +188,11 @@ dependencies {
   api(libs.retrofit2.kotlinx.serialization.converter)
   api(libs.okhttp)
   api(libs.okhttp.logging.interceptor)
-  api(libs.easy.rules.jexl) { exclude(group = "commons-logging", module = "commons-logging") }
+  api(libs.commons.jexl3) { exclude(group = "commons-logging", module = "commons-logging") }
+  api(libs.easy.rules.jexl) {
+    exclude(group = "commons-logging", module = "commons-logging")
+    exclude(group = "org.apache.commons", module = "commons-jexl3")
+  }
   api(libs.data.capture) {
     isTransitive = true
     exclude(group = "ca.uhn.hapi.fhir")

@@ -45,10 +45,10 @@ class CompoundTextTest {
             primaryText = "Full Name, Age",
             primaryTextColor = "#000000",
             primaryTextFontWeight = TextFontWeight.SEMI_BOLD,
-            padding = 16
+            padding = 16,
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
-        navController = navController
+        navController = navController,
       )
     }
     composeTestRule.onNodeWithText("Full Name, Age").assertExists().assertIsDisplayed()
@@ -69,7 +69,7 @@ class CompoundTextTest {
             fontSize = 18.0f,
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
-        navController = navController
+        navController = navController,
       )
     }
     composeTestRule.onNodeWithText("Yesterday").assertExists().assertIsDisplayed()
@@ -86,14 +86,15 @@ class CompoundTextTest {
             remaining essentially unchanged. 
             It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, 
             and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-      """.trimIndent()
+            """
+        .trimIndent()
     val compoundTextProperties =
       CompoundTextProperties(maxLines = 1, overflow = TextOverFlow.ELLIPSIS, primaryText = longText)
     composeTestRule.setContent {
       CompoundText(
         compoundTextProperties = compoundTextProperties,
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
 
@@ -102,20 +103,22 @@ class CompoundTextTest {
 
   @Test
   fun testWhenMaxLinesIsNotExceededThenTextIsNotEllipsized() {
-    val shortText = """
+    val shortText =
+      """
             Lorem Ipsum
-    """.trimIndent()
+        """
+        .trimIndent()
     val compoundTextProperties =
       CompoundTextProperties(
         maxLines = 1,
         overflow = TextOverFlow.ELLIPSIS,
-        primaryText = shortText
+        primaryText = shortText,
       )
     composeTestRule.setContent {
       CompoundText(
         compoundTextProperties = compoundTextProperties,
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
     composeTestRule.onNodeWithText(shortText, useUnmergedTree = true).assertExists()

@@ -28,7 +28,7 @@ private const val VIEW_TYPE = "viewType"
 object ViewPropertiesSerializer :
   JsonContentPolymorphicSerializer<ViewProperties>(ViewProperties::class) {
   override fun selectDeserializer(
-    element: JsonElement
+    element: JsonElement,
   ): DeserializationStrategy<out ViewProperties> {
     val jsonObject = element.jsonObject
     val viewType = jsonObject[VIEW_TYPE]?.jsonPrimitive?.content
@@ -36,7 +36,8 @@ object ViewPropertiesSerializer :
       """Ensure that supported `viewType` property is included in your register view properties configuration.
          Supported types: ${ViewType.values()}
          Parsed JSON: $jsonObject
-          """.trimMargin()
+            """
+        .trimMargin()
     }
     return when (ViewType.valueOf(viewType)) {
       ViewType.ROW -> RowProperties.serializer()

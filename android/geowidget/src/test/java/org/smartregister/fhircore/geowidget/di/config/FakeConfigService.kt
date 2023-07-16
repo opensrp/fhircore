@@ -31,7 +31,7 @@ class FakeConfigService @Inject constructor() : ConfigService {
       oauthServerBaseUrl = "https://fhir-oauth-server.com/oauth",
       clientId = "client-id",
       clientSecret = "client-secret",
-      accountType = "account-type"
+      accountType = "account-type",
     )
   }
 
@@ -43,7 +43,7 @@ class FakeConfigService @Inject constructor() : ConfigService {
           Coding().apply {
             system = CARETEAM_SYSTEM
             display = CARETEAM_DISPLAY
-          }
+          },
       ),
       ResourceTag(
         type = ResourceType.Location.name,
@@ -51,7 +51,7 @@ class FakeConfigService @Inject constructor() : ConfigService {
           Coding().apply {
             system = LOCATION_SYSTEM
             display = LOCATION_DISPLAY
-          }
+          },
       ),
       ResourceTag(
         type = ResourceType.Organization.name,
@@ -59,7 +59,7 @@ class FakeConfigService @Inject constructor() : ConfigService {
           Coding().apply {
             system = ORGANIZATION_SYSTEM
             display = ORGANIZATION_DISPLAY
-          }
+          },
       ),
       ResourceTag(
         type = ResourceType.Practitioner.name,
@@ -67,8 +67,8 @@ class FakeConfigService @Inject constructor() : ConfigService {
           Coding().apply {
             system = PRACTITIONER_SYSTEM
             display = PRACTITIONER_DISPLAY
-          }
-      )
+          },
+      ),
     )
 
   override fun provideConfigurationSyncPageSize(): String {

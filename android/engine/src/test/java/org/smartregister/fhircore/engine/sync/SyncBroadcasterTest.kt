@@ -52,15 +52,10 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var configService: ConfigService
-
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
   private val fhirEngine = mockk<FhirEngine>()
-
   private lateinit var syncListenerManager: SyncListenerManager
-
   private lateinit var syncBroadcaster: SyncBroadcaster
-
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
   @Before
@@ -71,7 +66,7 @@ class SyncBroadcasterTest : RobolectricTest() {
       SyncListenerManager(
         configService = configService,
         sharedPreferencesHelper = sharedPreferencesHelper,
-        configurationRegistry = configurationRegistry
+        configurationRegistry = configurationRegistry,
       )
 
     syncBroadcaster =
@@ -81,8 +76,9 @@ class SyncBroadcasterTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           dispatcherProvider = coroutineTestRule.testDispatcherProvider,
           syncListenerManager = syncListenerManager,
-          context = context
-        )
+          sync = mockk(relaxed = true),
+          context = context,
+        ),
       )
   }
 
@@ -90,7 +86,6 @@ class SyncBroadcasterTest : RobolectricTest() {
 
   @Test
   fun testLoadSyncParamsShouldLoadFromConfiguration() {
-
     sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
     sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
     sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
@@ -108,9 +103,9 @@ class SyncBroadcasterTest : RobolectricTest() {
           ResourceType.Questionnaire.name,
           ResourceType.QuestionnaireResponse.name,
           ResourceType.StructureMap.name,
-          ResourceType.Task.name
+          ResourceType.Task.name,
         )
-        .sorted()
+        .sorted(),
     )
 
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
@@ -130,25 +125,26 @@ class SyncBroadcasterTest : RobolectricTest() {
           ResourceType.Questionnaire,
           ResourceType.QuestionnaireResponse,
           ResourceType.StructureMap,
-          ResourceType.Task
+          ResourceType.Task,
         )
         .sorted()
 
     Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
 
-    syncParam
-      .keys
+    syncParam.keys
       .asSequence()
       .filter { it.isIn(ResourceType.Binary, ResourceType.StructureMap) }
       .forEach { Assert.assertTrue(syncParam[it]!!.containsKey("_count")) }
 
-    syncParam.keys.asSequence().filter { it.isIn(ResourceType.Patient) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.containsKey("organization"))
-      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
-    }
+    syncParam.keys
+      .asSequence()
+      .filter { it.isIn(ResourceType.Patient) }
+      .forEach {
+        Assert.assertTrue(syncParam[it]!!.containsKey("organization"))
+        Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+      }
 
-    syncParam
-      .keys
+    syncParam.keys
       .asSequence()
       .filter {
         it.isIn(
@@ -157,7 +153,7 @@ class SyncBroadcasterTest : RobolectricTest() {
           ResourceType.MedicationRequest,
           ResourceType.Task,
           ResourceType.QuestionnaireResponse,
-          ResourceType.Observation
+          ResourceType.Observation,
         )
       }
       .forEach {
@@ -165,14 +161,14 @@ class SyncBroadcasterTest : RobolectricTest() {
         Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
       }
 
-    syncParam.keys.asSequence().filter { it.isIn(ResourceType.Questionnaire) }.forEach {
-      Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
-    }
+    syncParam.keys
+      .asSequence()
+      .filter { it.isIn(ResourceType.Questionnaire) }
+      .forEach { Assert.assertTrue(syncParam[it]!!.containsKey("_count")) }
   }
 
   @Test
   fun `loadSyncParams() should load configuration when remote sync preference is missing`() {
-
     sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
     sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
     sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
@@ -196,7 +192,7 @@ class SyncBroadcasterTest : RobolectricTest() {
           ResourceType.Questionnaire,
           ResourceType.QuestionnaireResponse,
           ResourceType.StructureMap,
-          ResourceType.Task
+          ResourceType.Task,
         )
         .sorted()
 
@@ -220,13 +216,14 @@ class SyncBroadcasterTest : RobolectricTest() {
         ResourceType.Patient,
         ResourceType.RelatedPerson,
         ResourceType.QuestionnaireResponse,
-        ResourceType.Task
+        ResourceType.Task,
       )
 
     Assert.assertTrue(syncParam.isNotEmpty())
-    syncParam.filterKeys { it.isIn(*resourceTypes) }.values.forEach {
-      Assert.assertTrue(it.containsValue(organizationId))
-    }
+    syncParam
+      .filterKeys { it.isIn(*resourceTypes) }
+      .values
+      .forEach { Assert.assertTrue(it.containsValue(organizationId)) }
   }
 
   // TODO: Not supported yet; need to refactor sync implementation to be based on tags.

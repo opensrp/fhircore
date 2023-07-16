@@ -68,7 +68,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
   val fhirPathDataExtractor: FhirPathDataExtractor,
-  val resourceDataRulesExecutor: ResourceDataRulesExecutor
+  val resourceDataRulesExecutor: ResourceDataRulesExecutor,
 ) : ViewModel() {
 
   val refreshProfileDataLiveData = MutableLiveData<Boolean?>(null)
@@ -93,7 +93,7 @@ constructor(
     val profileConfig =
       configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
         configId = profileId,
-        configType = ConfigType.Profile
+        configType = ConfigType.Profile,
       )
     profileConfig.overFlowMenuItems
       .filter { it.icon != null && !it.icon!!.reference.isNullOrEmpty() }
@@ -111,7 +111,7 @@ constructor(
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
-    paramsList: Array<ActionParameter>? = emptyArray()
+    paramsList: Array<ActionParameter>? = emptyArray(),
   ) {
     if (resourceId.isNotEmpty()) {
       val repositoryResourceData =
@@ -123,7 +123,7 @@ constructor(
           .processResourceData(
             repositoryResourceData = repositoryResourceData,
             ruleConfigs = profileConfigs.rules,
-            params = paramsMap
+            params = paramsMap,
           )
           .copy(listResourceDataMap = listResourceDataStateMap)
 
@@ -132,7 +132,7 @@ constructor(
           resourceData = resourceData,
           profileConfiguration = profileConfigs,
           snackBarTheme = applicationConfiguration.snackBarTheme,
-          showDataLoadProgressIndicator = false
+          showDataLoadProgressIndicator = false,
         )
 
       profileConfigs.views.retrieveListProperties().forEach { listProperties ->
@@ -140,7 +140,7 @@ constructor(
           listProperties = listProperties,
           relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
           computedValuesMap = resourceData.computedValuesMap.plus(paramsMap),
-          listResourceDataStateMap = listResourceDataStateMap
+          listResourceDataStateMap = listResourceDataStateMap,
         )
       }
 
@@ -157,7 +157,7 @@ constructor(
 
   private fun retrieveProfileConfiguration(
     profileId: String,
-    paramsMap: Map<String, String>?
+    paramsMap: Map<String, String>?,
   ): ProfileConfiguration {
     // Ensures profile configuration is initialized once
     if (!::profileConfiguration.isInitialized) {
@@ -177,13 +177,16 @@ constructor(
         val actions = event.overflowMenuItemConfig?.actions
         viewModelScope.launch {
           actions?.run {
-            find { it.workflow == ApplicationWorkflow.CHANGE_MANAGING_ENTITY }?.let {
-              changeManagingEntity(
-                event = event,
-                managingEntity =
-                  it.interpolate(event.resourceData?.computedValuesMap ?: emptyMap()).managingEntity
-              )
-            }
+            find { it.workflow == ApplicationWorkflow.CHANGE_MANAGING_ENTITY }
+              ?.let {
+                changeManagingEntity(
+                  event = event,
+                  managingEntity =
+                    it
+                      .interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
+                      .managingEntity,
+                )
+              }
             handleClickEvent(navController = event.navController, resourceData = event.resourceData)
           }
         }
@@ -193,7 +196,7 @@ constructor(
           registerRepository.changeManagingEntity(
             event.eligibleManagingEntity.logicalId,
             event.eligibleManagingEntity.groupId,
-            event.managingEntityConfig
+            event.managingEntityConfig,
           )
           withContext(dispatcherProvider.main()) {
             emitSnackBarState(
@@ -201,8 +204,8 @@ constructor(
                 SnackBarMessageConfig(
                   message = event.managingEntityConfig?.managingEntityReassignedMessage
                       ?: event.context.getString(R.string.reassigned_managing_entity),
-                  actionLabel = event.context.getString(R.string.ok)
-                )
+                  actionLabel = event.context.getString(R.string.ok),
+                ),
             )
             refreshProfileDataLiveData.value = true
           }
@@ -218,7 +221,7 @@ constructor(
    */
   private fun changeManagingEntity(
     event: ProfileEvent.OverflowMenuClick,
-    managingEntity: ManagingEntityConfig?
+    managingEntity: ManagingEntityConfig?,
   ) {
     if (managingEntity == null || event.resourceData?.baseResourceType != ResourceType.Group) {
       Timber.w("ManagingEntityConfig required. Base resource should be Group")
@@ -241,7 +244,7 @@ constructor(
             fhirPathDataExtractor
               .extractValue(
                 base = managingEntityResource,
-                expression = managingEntity.eligibilityCriteriaFhirPathExpression!!
+                expression = managingEntity.eligibilityCriteriaFhirPathExpression!!,
               )
               .toBoolean()
           }
@@ -253,8 +256,8 @@ constructor(
               memberInfo =
                 fhirPathDataExtractor.extractValue(
                   base = it,
-                  expression = managingEntity.nameFhirPathExpression!!
-                )
+                  expression = managingEntity.nameFhirPathExpression!!,
+                ),
             )
           }
           ?: emptyList()
@@ -271,11 +274,11 @@ constructor(
                   ProfileEvent.OnChangeManagingEntity(
                     context = activity,
                     eligibleManagingEntity = it,
-                    managingEntityConfig = managingEntity
-                  )
+                    managingEntityConfig = managingEntity,
+                  ),
                 )
               },
-              managingEntity = managingEntity
+              managingEntity = managingEntity,
             )
             .run { show(activity.supportFragmentManager, ProfileBottomSheetFragment.TAG) }
         }

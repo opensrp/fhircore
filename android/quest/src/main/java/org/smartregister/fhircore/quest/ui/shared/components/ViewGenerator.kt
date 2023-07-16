@@ -66,7 +66,7 @@ fun GenerateView(
   modifier: Modifier = Modifier,
   properties: ViewProperties,
   resourceData: ResourceData,
-  navController: NavController
+  navController: NavController,
 ) {
   if (properties.visible.toBoolean()) {
     when (properties.viewType) {
@@ -75,14 +75,14 @@ fun GenerateView(
           modifier = modifier,
           compoundTextProperties = properties as CompoundTextProperties,
           resourceData = resourceData,
-          navController = navController
+          navController = navController,
         )
       ViewType.BUTTON ->
         ActionableButton(
           modifier = modifier,
           buttonProperties = properties as ButtonProperties,
           navController = navController,
-          resourceData = resourceData
+          resourceData = resourceData,
         )
       ViewType.COLUMN -> {
         val children = (properties as ColumnProperties).children
@@ -93,7 +93,7 @@ fun GenerateView(
                 modifier = generateModifier(properties),
                 properties = properties,
                 resourceData = resourceData,
-                navController = navController
+                navController = navController,
               )
             }
           }
@@ -109,21 +109,24 @@ fun GenerateView(
               },
             modifier = modifier.padding(properties.padding.dp),
             verticalArrangement =
-              if (isWeighted) Arrangement.spacedBy(properties.spacedBy.dp)
-              else properties.arrangement?.position ?: Arrangement.Top
+              if (isWeighted) {
+                Arrangement.spacedBy(properties.spacedBy.dp)
+              } else {
+                properties.arrangement?.position ?: Arrangement.Top
+              },
           ) {
             children.forEachIndexed { index, child ->
               GenerateView(
                 modifier = generateModifier(child),
                 properties = child.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
-                navController = navController
+                navController = navController,
               )
               if (properties.showDivider.toBoolean() && index < children.lastIndex) {
                 Divider(
                   color = DividerColor,
                   thickness = 0.5.dp,
-                  modifier = Modifier.testTag(COLUMN_DIVIDER_TEST_TAG)
+                  modifier = Modifier.testTag(COLUMN_DIVIDER_TEST_TAG),
                 )
               }
             }
@@ -139,7 +142,7 @@ fun GenerateView(
                 modifier = generateModifier(properties),
                 properties = properties.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
-                navController = navController
+                navController = navController,
               )
             }
           }
@@ -155,15 +158,18 @@ fun GenerateView(
               },
             modifier = modifier.padding(properties.padding.dp),
             horizontalArrangement =
-              if (isWeighted) Arrangement.spacedBy(properties.spacedBy.dp)
-              else properties.arrangement?.position ?: Arrangement.Start
+              if (isWeighted) {
+                Arrangement.spacedBy(properties.spacedBy.dp)
+              } else {
+                properties.arrangement?.position ?: Arrangement.Start
+              },
           ) {
             for (child in children) {
               GenerateView(
                 modifier = generateModifier(child),
                 properties = child.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
-                navController = navController
+                navController = navController,
               )
             }
           }
@@ -174,14 +180,14 @@ fun GenerateView(
           modifier = modifier,
           serviceCardProperties = properties as ServiceCardProperties,
           resourceData = resourceData,
-          navController = navController
+          navController = navController,
         )
       ViewType.CARD ->
         CardView(
           modifier = modifier,
           viewProperties = properties as CardViewProperties,
           resourceData = resourceData,
-          navController = navController
+          navController = navController,
         )
     ViewType.TABS ->
       TabView(
@@ -195,7 +201,7 @@ fun GenerateView(
           modifier = modifier,
           personalDataCardProperties = properties as PersonalDataProperties,
           resourceData = resourceData,
-          navController = navController
+          navController = navController,
         )
       ViewType.SPACER ->
         SpacerView(modifier = modifier, spacerProperties = properties as SpacerProperties)
@@ -239,7 +245,9 @@ fun ColumnScope.generateModifier(viewProperties: ViewProperties): Modifier {
   var modifier =
     if (viewProperties.weight > 0) {
       Modifier.weight(viewProperties.weight)
-    } else Modifier
+    } else {
+      Modifier
+    }
 
   modifier = modifier.applyCommonProperties(viewProperties)
 

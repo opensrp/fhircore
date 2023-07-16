@@ -43,14 +43,13 @@ class LocalizationHelperTest : RobolectricTest() {
 
   @Test
   fun testParseTemplateWithDefaultLocaleGeneratesCorrectlyTranslatedString() {
-
     val templateString = "{{person.gender}} from {{person.address}}"
 
     val result =
       configRegistry.localizationHelper.parseTemplate(
         LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
         Locale.ENGLISH,
-        templateString
+        templateString,
       )
 
     Assert.assertEquals("Male from Nairobi, Kenya", result)
@@ -58,14 +57,13 @@ class LocalizationHelperTest : RobolectricTest() {
 
   @Test
   fun testParseTemplateWithOtherLocaleGeneratesCorrectlyTranslatedString() {
-
     val templateString = "{{person.gender}} from {{person.address}}"
 
     val result =
       configRegistry.localizationHelper.parseTemplate(
         LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
         Locale.FRENCH,
-        templateString
+        templateString,
       )
 
     Assert.assertEquals("Mâle from Paris, France", result)
@@ -73,50 +71,47 @@ class LocalizationHelperTest : RobolectricTest() {
 
   @Test
   fun testParseTemplateWithArgumentsGeneratesCorrectlyTranslatedString() {
-
     val templateString = "{{person.profile.description}}"
 
     val result =
       configRegistry.localizationHelper.parseTemplate(
         LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
         Locale.ENGLISH,
-        templateString
+        templateString,
       )
 
     Assert.assertEquals(
       "Age is 4 years, Height is 100cm, Gender is Female",
-      result.messageFormat(Locale.ENGLISH, 4, 100, "Female")
+      result.messageFormat(Locale.ENGLISH, 4, 100, "Female"),
     )
   }
 
   @Test
   fun testParseTemplateWithArgumentsAndNativeStringFormatterGeneratesCorrectlyTranslatedString() {
-
     val templateString = "{{person.home.address.description}}"
 
     val result =
       configRegistry.localizationHelper.parseTemplate(
         LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
         Locale.ENGLISH,
-        templateString
+        templateString,
       )
 
     Assert.assertEquals(
       "Home address is Nairobi Kenya 106 Park Drive Avenue",
-      result.format(Locale.ENGLISH, "Nairobi Kenya", 106, "Park Drive")
+      result.format(Locale.ENGLISH, "Nairobi Kenya", 106, "Park Drive"),
     )
   }
 
   @Test
   fun testParseTemplateWithDigitPrefixKeyGeneratesCorrectlyTranslatedString() {
-
     val templateString = "The EDD at {{40.weeks}}"
 
     val result =
       configRegistry.localizationHelper.parseTemplate(
         LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
         Locale.ENGLISH,
-        templateString
+        templateString,
       )
 
     Assert.assertEquals("The EDD at 40 Weeks", result)
@@ -124,7 +119,6 @@ class LocalizationHelperTest : RobolectricTest() {
 
   @Test
   fun testGenerateIdentifierReturnsCorrectKey() {
-
     val result = "OVERDUE".translationPropertyKey()
     Assert.assertEquals("overdue", result)
   }
@@ -137,21 +131,19 @@ class LocalizationHelperTest : RobolectricTest() {
 
   @Test
   fun testGenerateIdentifierWithWhitespacesParamReturnsCorrectKey() {
-
     val result = "Home Address".translationPropertyKey()
     Assert.assertEquals("home.address", result)
   }
 
   @Test
   fun testParseTemplateWithPlaceholderWhitespaceGeneratesCorrectlyTranslatedString() {
-
     val templateString = "{{ person.gender }} from {{          person.address           }}"
 
     val result =
       configRegistry.localizationHelper.parseTemplate(
         LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
         Locale.ENGLISH,
-        templateString
+        templateString,
       )
 
     Assert.assertEquals("Male from Nairobi, Kenya", result)
@@ -165,12 +157,12 @@ class LocalizationHelperTest : RobolectricTest() {
       configRegistry.localizationHelper.parseTemplate(
         LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
         Locale.GERMAN,
-        templateString
+        templateString,
       )
 
     Assert.assertTrue(
       "Configs JSON Map DOES NOT contain key in correct format",
-      configRegistry.configsJsonMap.containsKey("stringsDe")
+      configRegistry.configsJsonMap.containsKey("stringsDe"),
     )
     Assert.assertEquals("Mannlich from Berlin, Germany", result)
   }

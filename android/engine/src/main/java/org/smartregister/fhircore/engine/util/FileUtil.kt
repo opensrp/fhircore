@@ -60,7 +60,7 @@ object FileUtil {
     context: Context,
     fileName: String,
     body: String = "",
-    dirName: String
+    dirName: String,
   ) {
     val dir = File(context.filesDir, dirName)
     if (!dir.exists()) {

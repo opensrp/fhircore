@@ -23,7 +23,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
@@ -63,14 +62,13 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val workManager: WorkManager,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
 
   val languages by lazy { configurationRegistry.fetchLanguages() }
   val showDBResetConfirmationDialog = MutableLiveData(false)
   val progressBarState = MutableLiveData(Pair(false, 0))
   val unsyncedResourcesMutableSharedFlow = MutableSharedFlow<List<Pair<String, Int>>>()
-  private val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
   private val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
@@ -85,7 +83,7 @@ constructor(
   fun loadSelectedLanguage(): String =
     Locale.forLanguageTag(
         sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
-          ?: Locale.ENGLISH.toLanguageTag()
+          ?: Locale.ENGLISH.toLanguageTag(),
       )
       .displayName
 
@@ -100,14 +98,17 @@ constructor(
               updateProgressBarState(false, R.string.logging_out)
               activity.launchActivityWithNoBackStackHistory<LoginActivity>()
             }
-          } else activity.launchActivityWithNoBackStackHistory<LoginActivity>()
+          } else {
+            activity.launchActivityWithNoBackStackHistory<LoginActivity>()
+          }
         }
       }
       is UserSettingsEvent.SyncData -> {
         if (event.context.isDeviceOnline()) {
-          viewModelScope.launch { syncBroadcaster.runOneTimeSync() }
-        } else
+          viewModelScope.launch(dispatcherProvider.main()) { syncBroadcaster.runOneTimeSync() }
+        } else {
           event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
+        }
       }
       is UserSettingsEvent.SwitchLanguage -> {
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
@@ -165,7 +166,9 @@ constructor(
           withContext(dispatcherProvider.main()) {
             context.showToast(context.getString(R.string.all_data_synced))
           }
-        } else unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
+        } else {
+          unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
+        }
       }
     }
   }

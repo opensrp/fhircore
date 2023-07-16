@@ -32,7 +32,6 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
-import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
@@ -77,8 +76,8 @@ class ProfileFragmentTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         this.coroutineTestRule.testDispatcherProvider,
         mockk(),
-        mockk()
-      )
+        mockk(),
+      ),
     )
 
   private val activityController = Robolectric.buildActivity(AppMainActivity::class.java)
@@ -109,9 +108,9 @@ class ProfileFragmentTest : RobolectricTest() {
                 ActionParameter(
                   key = "anyId",
                   paramType = ActionParameterType.PARAMDATA,
-                  value = "anyValue"
-                )
-              )
+                  value = "anyValue",
+                ),
+              ),
           )
       }
     activityController.create().resume()
@@ -144,7 +143,7 @@ class ProfileFragmentTest : RobolectricTest() {
     val questionnaireSubmission =
       QuestionnaireSubmission(
         questionnaireConfig = questionnaireConfig,
-        questionnaireResponse = questionnaireResponse
+        questionnaireResponse = questionnaireResponse,
       )
 
     coEvery { profileViewModel.retrieveProfileUiState(any(), any(), any(), any()) } just runs
@@ -157,7 +156,7 @@ class ProfileFragmentTest : RobolectricTest() {
         profileId = "defaultProfile",
         resourceId = "sampleId",
         any(),
-        any()
+        any(),
       )
     }
     coVerify { profileViewModel.emitSnackBarState(snackBarMessageConfig) }
@@ -165,7 +164,6 @@ class ProfileFragmentTest : RobolectricTest() {
 
   @Test
   fun testReloadingProfileUIStateWhenChangeManagingEntityCompletes() {
-
     coEvery { profileViewModel.retrieveProfileUiState(any(), any(), any(), any()) } just runs
 
     coEvery { registerRepository.changeManagingEntity(any(), any(), any()) } just runs
@@ -181,9 +179,9 @@ class ProfileFragmentTest : RobolectricTest() {
           ManagingEntityConfig(
             eligibilityCriteriaFhirPathExpression = "Patient.active",
             resourceType = ResourceType.Patient,
-            nameFhirPathExpression = "Patient.name.given"
-          )
-      )
+            nameFhirPathExpression = "Patient.name.given",
+          ),
+      ),
     )
 
     coVerify { registerRepository.changeManagingEntity(any(), any(), any()) }
@@ -193,7 +191,7 @@ class ProfileFragmentTest : RobolectricTest() {
         profileId = "defaultProfile",
         resourceId = "sampleId",
         any(),
-        any()
+        any(),
       )
     }
   }

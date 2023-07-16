@@ -42,8 +42,11 @@ import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 class AppSettingActivity : AppCompatActivity() {
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
+
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   @Inject lateinit var libraryEvaluator: LibraryEvaluator
   val appSettingViewModel: AppSettingViewModel by viewModels()
 
@@ -77,7 +80,7 @@ class AppSettingActivity : AppCompatActivity() {
             onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
             fetchConfiguration = appSettingViewModel::fetchConfigurations,
             showProgressBar = showProgressBar,
-            error = error
+            error = error,
           )
         }
       }

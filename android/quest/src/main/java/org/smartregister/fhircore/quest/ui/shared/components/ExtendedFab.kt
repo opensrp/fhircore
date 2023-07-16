@@ -55,7 +55,7 @@ fun ExtendedFab(
   fabActions: List<NavigationMenuConfig>,
   resourceData: ResourceData? = null,
   navController: NavController,
-  lazyListState: LazyListState
+  lazyListState: LazyListState?,
 ) {
   val firstFabAction = remember { fabActions.first() }
   val firstFabEnabled =
@@ -68,20 +68,20 @@ fun ExtendedFab(
       if (firstFabEnabled) {
         firstFabAction.actions?.handleClickEvent(
           navController = navController,
-          resourceData = resourceData
+          resourceData = resourceData,
         )
       }
     },
     backgroundColor =
       if (firstFabEnabled) MaterialTheme.colors.primary else DefaultColor.copy(alpha = 0.25f),
-    modifier = modifier.testTag(FAB_BUTTON_TEST_TAG)
+    modifier = modifier.testTag(FAB_BUTTON_TEST_TAG),
   ) {
     val text = remember { firstFabAction.display.uppercase() }
     val firstMenuIconConfig = remember { firstFabAction.menuIconConfig }
 
     Row(
       modifier = modifier.padding(16.dp).testTag(FAB_BUTTON_ROW_TEST_TAG),
-      verticalAlignment = Alignment.CenterVertically
+      verticalAlignment = Alignment.CenterVertically,
     ) {
       if (firstMenuIconConfig != null) {
         Image(
@@ -91,10 +91,17 @@ fun ExtendedFab(
         )
       }
       if (text.isNotEmpty()) {
-        AnimatedVisibility(visible = !lazyListState.isScrollingUp()) {
+        if (firstFabAction.animate) {
+          AnimatedVisibility(visible = lazyListState?.isScrollingUp() == false) {
+            Text(
+              text = text.uppercase(),
+              modifier = modifier.padding(start = 8.dp).testTag(FAB_BUTTON_ROW_TEXT_TEST_TAG),
+            )
+          }
+        } else {
           Text(
-            text = firstFabAction.display.uppercase(),
-            modifier = modifier.padding(start = 8.dp).testTag(FAB_BUTTON_ROW_TEXT_TEST_TAG)
+            text = text.uppercase(),
+            modifier = modifier.padding(start = 8.dp).testTag(FAB_BUTTON_ROW_TEXT_TEST_TAG),
           )
         }
       }
@@ -112,11 +119,11 @@ fun PreviewDisabledExtendedFab() {
           id = "test",
           display = "Fab Button",
           menuIconConfig = ImageConfig(type = "local", reference = "ic_add"),
-          enabled = "false"
-        )
+          enabled = "false",
+        ),
       ),
     navController = rememberNavController(),
-    lazyListState = rememberLazyListState()
+    lazyListState = rememberLazyListState(),
   )
 }
 
@@ -129,11 +136,11 @@ fun PreviewExtendedFab() {
         NavigationMenuConfig(
           id = "test",
           display = "Fab Button",
-          menuIconConfig = ImageConfig(type = "local", reference = "ic_add")
-        )
+          menuIconConfig = ImageConfig(type = "local", reference = "ic_add"),
+        ),
       ),
     navController = rememberNavController(),
-    lazyListState = rememberLazyListState()
+    lazyListState = rememberLazyListState(),
   )
 }
 
@@ -146,10 +153,10 @@ fun PreviewExtendedFabJustIcon() {
         NavigationMenuConfig(
           id = "test",
           display = "",
-          menuIconConfig = ImageConfig(type = "local", reference = "ic_add")
-        )
+          menuIconConfig = ImageConfig(type = "local", reference = "ic_add"),
+        ),
       ),
     navController = rememberNavController(),
-    lazyListState = rememberLazyListState()
+    lazyListState = rememberLazyListState(),
   )
 }

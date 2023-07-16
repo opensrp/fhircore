@@ -44,7 +44,7 @@ class GeoWidgetExtensionsTest {
       Location().apply {
         extension =
           mutableListOf(
-            Extension().apply { url = KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL }
+            Extension().apply { url = KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL },
           )
       }
     Assert.assertFalse(location.hasBoundaryGeoJsonExt)
@@ -59,7 +59,7 @@ class GeoWidgetExtensionsTest {
             Extension().apply {
               url = KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL
               setValue(Attachment())
-            }
+            },
           )
       }
     Assert.assertFalse(location.hasBoundaryGeoJsonExt)
@@ -71,7 +71,7 @@ class GeoWidgetExtensionsTest {
             Extension().apply {
               url = KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL
               setValue(Attachment().apply { contentType = "application/something-else" })
-            }
+            },
           )
       }
     Assert.assertFalse(location.hasBoundaryGeoJsonExt)
@@ -89,9 +89,9 @@ class GeoWidgetExtensionsTest {
                   contentType = "application/geo+json"
                   data =
                     Base64.encodeBase64("""{"properties":{"key":"value"}}""".encodeToByteArray())
-                }
+                },
               )
-            }
+            },
           )
       }
     val feature = JSONObject().apply { put("properties", JSONObject()) }
@@ -111,9 +111,9 @@ class GeoWidgetExtensionsTest {
                 Attachment().apply {
                   contentType = "application/geo+json"
                   data = Base64.encodeBase64("""{"properties":{}}""".encodeToByteArray())
-                }
+                },
               )
-            }
+            },
           )
       }
     val feature =
@@ -134,9 +134,9 @@ class GeoWidgetExtensionsTest {
                 Attachment().apply {
                   contentType = "application/geo+json"
                   data = Base64.encodeBase64("""{}""".encodeToByteArray())
-                }
+                },
               )
-            }
+            },
           )
       }
     val feature =
@@ -158,9 +158,9 @@ class GeoWidgetExtensionsTest {
                   contentType = "application/geo+json"
                   data =
                     Base64.encodeBase64("""{"properties":{"key":"value"}}""".encodeToByteArray())
-                }
+                },
               )
-            }
+            },
           )
       }
     val feature =
@@ -180,7 +180,7 @@ class GeoWidgetExtensionsTest {
       "Feature",
       Base64.decodeBase64(location.boundaryGeoJsonExtAttachment!!.data)
         .run { JSONObject(String(this)) }
-        .get("type")
+        .get("type"),
     )
     Assert.assertEquals(12.83203125, location.position?.longitude?.toDouble())
     Assert.assertEquals(28.304380682962783, location.position?.latitude?.toDouble())
@@ -200,8 +200,8 @@ class GeoWidgetExtensionsTest {
     feature =
       JSONObject(
         String(
-          """{"geometry":{"coordinates":[12.83203125,28.304380682962783]}}""".encodeToByteArray()
-        )
+          """{"geometry":{"coordinates":[12.83203125,28.304380682962783]}}""".encodeToByteArray(),
+        ),
       )
     Assert.assertEquals(coordinate, feature.coordinates())
   }

@@ -40,7 +40,7 @@ const val TRY_BUTTON_TAG = "tryButtonTag"
 fun ErrorMessage(message: String, modifier: Modifier = Modifier, onClickRetry: () -> Unit) {
   Column(
     modifier = modifier.padding(16.dp).fillMaxWidth(),
-    verticalArrangement = Arrangement.Center
+    verticalArrangement = Arrangement.Center,
   ) {
     Text(
       text = message,
@@ -51,12 +51,14 @@ fun ErrorMessage(message: String, modifier: Modifier = Modifier, onClickRetry: (
         modifier
           .padding(vertical = 8.dp)
           .align(Alignment.CenterHorizontally)
-          .testTag(ERROR_MESSAGE_TAG)
+          .testTag(ERROR_MESSAGE_TAG),
     )
     OutlinedButton(
       onClick = onClickRetry,
-      modifier = modifier.align(Alignment.CenterHorizontally).testTag(TRY_BUTTON_TAG)
-    ) { Text(text = stringResource(R.string.try_again)) }
+      modifier = modifier.align(Alignment.CenterHorizontally).testTag(TRY_BUTTON_TAG),
+    ) {
+      Text(text = stringResource(R.string.try_again))
+    }
   }
 }
 
@@ -66,6 +68,6 @@ fun ErrorMessagePreview() {
   ErrorMessage(
     message =
       "Received result from worker com.google.android.fhir.sync.Result@6e1206f and sending output Data",
-    onClickRetry = {}
+    onClickRetry = {},
   )
 }
