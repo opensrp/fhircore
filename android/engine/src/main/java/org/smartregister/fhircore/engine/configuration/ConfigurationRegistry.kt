@@ -39,6 +39,7 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -78,6 +79,7 @@ constructor(
   val configCacheMap = mutableMapOf<String, Configuration>()
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
+  private var isNonProxy_ = BuildConfig.IS_NON_PROXY_APK
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -367,15 +369,7 @@ constructor(
           }
           .forEach { resourceGroup ->
             if (resourceGroup.key == ResourceType.List.name) {
-              if (!BuildConfig.IS_NON_PROXY_APK) {
-
-                resourceGroup.value.forEach {
-                  processCompositionManifestResources(
-                    FHIR_GATEWAY_MODE_HEADER_VALUE,
-                    "${resourceGroup.key}/${it.focus.extractId()}"
-                  )
-                }
-              } else {
+              if (isNonProxy()) {
 
                 // TODO Duplication for Backward Compatibility for NON-PROXY version
                 // Refactor to strip out this after all projects migrate to the proxy implementation
@@ -411,6 +405,13 @@ constructor(
                         }
                       }
                     }
+                }
+              } else {
+                resourceGroup.value.forEach {
+                  processCompositionManifestResources(
+                    FHIR_GATEWAY_MODE_HEADER_VALUE,
+                    "${resourceGroup.key}/${it.focus.extractId()}"
+                  )
                 }
               }
             } else {
@@ -504,6 +505,13 @@ constructor(
       resources.onEach { it.generateMissingId() }
       fhirEngine.createRemote(*resources)
     }
+  }
+
+  @VisibleForTesting fun isNonProxy(): Boolean = isNonProxy_
+
+  @VisibleForTesting
+  fun setNonProxy(nonProxy: Boolean) {
+    isNonProxy_ = nonProxy
   }
 
   companion object {
