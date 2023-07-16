@@ -209,7 +209,7 @@ constructor(
                 .toInt(),
             progressPercentage = _percentageProgress,
             isSyncUpload = _isUploadSync,
-            dismissLoaderView = dismissLoaderView
+            dismissLoaderView = dismissLoaderView,
           )
       }
     }

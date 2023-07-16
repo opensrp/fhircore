@@ -109,9 +109,10 @@ fun RegisterScreen(
     },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (registerUiState.isFirstTimeSync &&
+      if (
+        registerUiState.isFirstTimeSync &&
           !registerUiState.dismissLoaderView.collectAsState(initial = false).value
-      ){
+      ) {
         LoaderDialog(
           modifier = modifier,
           percentageProgressFlow = registerUiState.progressPercentage,

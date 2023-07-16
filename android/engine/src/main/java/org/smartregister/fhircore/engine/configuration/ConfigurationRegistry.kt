@@ -370,7 +370,7 @@ constructor(
           }
           .forEach { resourceGroup ->
             if (resourceGroup.key == ResourceType.List.name) {
-              if (isNonProxy()) { // Backward compatibility for NON-PROXY version
+              if (isNonProxy()) {
                 val chunkedResourceIdList =
                   resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
                 chunkedResourceIdList.forEach {
@@ -509,7 +509,7 @@ constructor(
     }
   }
 
-  @VisibleForTesting fun isNonProxy() = isNonProxy_
+  @VisibleForTesting fun isNonProxy(): Boolean = isNonProxy_
 
   @VisibleForTesting
   fun setNonProxy(nonProxy: Boolean) {
