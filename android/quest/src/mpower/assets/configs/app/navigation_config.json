@@ -42,6 +42,26 @@
       ]
     },
     {
+      "id": "patientRegister",
+      "display": "All patients",
+      "showCount": true,
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_profile"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "patientRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "patientRegister"
+        }
+      ]
+    },
+    {
       "id": "childRegister",
       "display": "Children",
       "showCount": true,

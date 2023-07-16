@@ -1,11 +1,6 @@
 {
   "resourceType": "StructureMap",
   "id": "268",
-  "meta": {
-    "versionId": "3",
-    "lastUpdated": "2023-05-09T06:17:27.709+00:00",
-    "source": "#6UfPUPhKt89LfvmN"
-  },
   "url": "http://fhir.mpower-social.com:7070/fhir/StructureMap/268",
   "name": "mPower Family Member Registration",
   "structure": [
@@ -109,13 +104,6 @@
               "variable": [
                 "src",
                 "patient",
-                "bundle"
-              ]
-            },
-            {
-              "name": "ExtractEncounter",
-              "variable": [
-                "src",
                 "bundle"
               ]
             }
@@ -383,7 +371,7 @@
           ]
         },
         {
-          "name": "rule_patient_identifier_family",
+          "name": "rule_patient_identifier_family_id",
           "source": [
             {
               "context": "src"
@@ -488,7 +476,7 @@
           ]
         },
         {
-          "name": "rule_patient_identifier_national_id",
+          "name": "rule_patient_identifier_government_id",
           "source": [
             {
               "context": "src"
@@ -499,7 +487,7 @@
               "context": "patient",
               "contextType": "variable",
               "element": "identifier",
-              "variable": "patientIdentifierNationalId",
+              "variable": "patientIdentifierGovernmentId",
               "transform": "create",
               "parameter": [
                 {
@@ -510,7 +498,7 @@
           ],
           "rule": [
             {
-              "name": "rule_patient_identifier_national_id_value",
+              "name": "rule_patient_identifier_national_id",
               "source": [
                 {
                   "context": "src",
@@ -519,25 +507,107 @@
                   "condition": "(linkId = '7a31ee75-e1eb-4037-8f69-c8fd5a06fc32')"
                 }
               ],
-              "target": [
+              "rule": [
                 {
-                  "context": "patientIdentifierNationalId",
-                  "contextType": "variable",
-                  "element": "value",
-                  "transform": "evaluate",
-                  "parameter": [
+                  "name": "rule_patient_identifier_government_id_value",
+                  "source": [
                     {
-                      "valueId": "patient_national_id"
-                    },
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
                     {
-                      "valueString": "$this.answer.value"
+                      "context": "patientIdentifierGovernmentId",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "patient_national_id"
+                        },
+                        {
+                          "valueString": "$this.answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_patient_identifier_government_id_type",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientIdentifierGovernmentId",
+                      "contextType": "variable",
+                      "element": "type",
+                      "variable": "concept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_patient_identifier_government_id_type_cod",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "concept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://www.nidw.gov.bd/"
+                            },
+                            {
+                              "valueString": "11111111"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_patient_identifier_government_id_type_cod_display",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "National ID"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 }
               ]
             },
             {
-              "name": "rule_patient_identifier_birth_id_value",
+              "name": "rule_patient_identifier_birth_id",
               "source": [
                 {
                   "context": "src",
@@ -546,25 +616,107 @@
                   "condition": "(linkId = 'b2bad7a2-9757-423c-8b2a-e2c183d6e076')"
                 }
               ],
-              "target": [
+              "rule": [
                 {
-                  "context": "patientIdentifierNationalId",
-                  "contextType": "variable",
-                  "element": "value",
-                  "transform": "evaluate",
-                  "parameter": [
+                  "name": "rule_patient_identifier_government_id_value",
+                  "source": [
                     {
-                      "valueId": "patient_birth_id"
-                    },
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
                     {
-                      "valueString": "$this.answer.value"
+                      "context": "patientIdentifierGovernmentId",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "patient_birth_id"
+                        },
+                        {
+                          "valueString": "$this.answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_patient_identifier_government_id_type",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientIdentifierGovernmentId",
+                      "contextType": "variable",
+                      "element": "type",
+                      "variable": "concept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_patient_identifier_government_id_type_cod",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "concept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "https://bdris.gov.bd/"
+                            },
+                            {
+                              "valueString": "22222222"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_patient_identifier_government_id_type_cod_display",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Birth Registration ID"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 }
               ]
             },
             {
-              "name": "rule_patient_identifier_epi_id_value",
+              "name": "rule_patient_identifier_epi_id",
               "source": [
                 {
                   "context": "src",
@@ -573,18 +725,100 @@
                   "condition": "(linkId = 'bcad728b-3755-4d3a-811d-a1d07066846a')"
                 }
               ],
-              "target": [
+              "rule": [
                 {
-                  "context": "patientIdentifierNationalId",
-                  "contextType": "variable",
-                  "element": "value",
-                  "transform": "evaluate",
-                  "parameter": [
+                  "name": "rule_patient_identifier_government_id_value",
+                  "source": [
                     {
-                      "valueId": "patient_epi_id"
-                    },
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
                     {
-                      "valueString": "$this.answer.value"
+                      "context": "patientIdentifierGovernmentId",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "patient_epi_id"
+                        },
+                        {
+                          "valueString": "$this.answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_patient_identifier_government_id_type",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientIdentifierGovernmentId",
+                      "contextType": "variable",
+                      "element": "type",
+                      "variable": "concept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_patient_identifier_government_id_type_cod",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "concept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "https://dghs.gov.bd/"
+                            },
+                            {
+                              "valueString": "33333333"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_patient_identifier_government_id_type_cod_display",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "EPI ID"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 }
@@ -599,7 +833,7 @@
               ],
               "target": [
                 {
-                  "context": "patientIdentifierNationalId",
+                  "context": "patientIdentifierGovernmentId",
                   "contextType": "variable",
                   "element": "use",
                   "transform": "copy",
@@ -620,7 +854,7 @@
               ],
               "target": [
                 {
-                  "context": "patientIdentifierNationalId",
+                  "context": "patientIdentifierGovernmentId",
                   "contextType": "variable",
                   "element": "period",
                   "variable": "period",
@@ -887,7 +1121,7 @@
                                           "context": "src",
                                           "element": "item",
                                           "variable": "head_of_household_check",
-                                          "condition": "((linkId = '1e1a206f-1cc2-4e48-8103-b26bf4bd7c3c') and (answer.value = 'yes'))"
+                                          "condition": "((linkId = '1e1a206f-1cc2-4e48-8103-b26bf4bd7c3c') and (answer.value.code = 'yes'))"
                                         }
                                       ],
                                       "rule": [
@@ -1055,7 +1289,7 @@
                               "context": "src",
                               "element": "item",
                               "variable": "head_of_household_check",
-                              "condition": "((linkId = '1e1a206f-1cc2-4e48-8103-b26bf4bd7c3c') and (answer.value = 'yes'))"
+                              "condition": "((linkId = '1e1a206f-1cc2-4e48-8103-b26bf4bd7c3c') and (answer.value.code = 'yes'))"
                             }
                           ],
                           "rule": [
@@ -1132,198 +1366,6 @@
               "parameter": [
                 {
                   "valueBoolean": true
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "rule_patient_telecom",
-          "source": [
-            {
-              "context": "src"
-            }
-          ],
-          "target": [
-            {
-              "context": "patient",
-              "contextType": "variable",
-              "element": "telecom",
-              "variable": "patientTelecom",
-              "transform": "create",
-              "parameter": [
-                {
-                  "valueString": "ContactPoint"
-                }
-              ]
-            }
-          ],
-          "rule": [
-            {
-              "name": "rule_patient_telecom_value",
-              "source": [
-                {
-                  "context": "src"
-                }
-              ],
-              "target": [
-                {
-                  "context": "patientTelecom",
-                  "contextType": "variable",
-                  "element": "value",
-                  "transform": "evaluate",
-                  "parameter": [
-                    {
-                      "valueId": "src"
-                    },
-                    {
-                      "valueString": "$this.item.where(linkId = '3a731d3a-0da1-4f6e-8c18-286108c04300').answer.value"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "rule_patient_telecom_use",
-              "source": [
-                {
-                  "context": "src"
-                }
-              ],
-              "target": [
-                {
-                  "context": "patientTelecom",
-                  "contextType": "variable",
-                  "element": "use",
-                  "transform": "copy",
-                  "parameter": [
-                    {
-                      "valueString": "mobile"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "rule_patient_telecom_system",
-              "source": [
-                {
-                  "context": "src"
-                }
-              ],
-              "target": [
-                {
-                  "context": "patientTelecom",
-                  "contextType": "variable",
-                  "element": "system",
-                  "transform": "copy",
-                  "parameter": [
-                    {
-                      "valueString": "phone"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "rule_patient_contact",
-          "source": [
-            {
-              "context": "src",
-              "element": "item",
-              "variable": "household_relationship",
-              "condition": "((linkId = 'c33296ce-1abb-4685-8bd0-e7f7187f2e98') or (linkId = 'ffe83655-d445-471d-8172-c0d3bafb8940'))"
-            }
-          ],
-          "target": [
-            {
-              "context": "patient",
-              "contextType": "variable",
-              "element": "contact",
-              "variable": "patientContact",
-              "transform": "create",
-              "parameter": [
-                {
-                  "valueString": "Patient_Contact"
-                }
-              ]
-            }
-          ],
-          "rule": [
-            {
-              "name": "rule_patient_relationship",
-              "source": [
-                {
-                  "context": "src"
-                }
-              ],
-              "target": [
-                {
-                  "context": "patientContact",
-                  "contextType": "variable",
-                  "element": "relationship",
-                  "variable": "patientRelationship",
-                  "transform": "create",
-                  "parameter": [
-                    {
-                      "valueString": "CodeableConcept"
-                    }
-                  ]
-                }
-              ],
-              "rule": [
-                {
-                  "name": "rule_patient_relationship_cod",
-                  "source": [
-                    {
-                      "context": "src"
-                    }
-                  ],
-                  "target": [
-                    {
-                      "context": "patientRelationship",
-                      "contextType": "variable",
-                      "element": "coding",
-                      "variable": "coding",
-                      "transform": "c",
-                      "parameter": [
-                        {
-                          "valueString": "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
-                        },
-                        {
-                          "valueString": "relation-with-head"
-                        }
-                      ]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "rule_patient_relationship_cod_disp",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "coding",
-                          "contextType": "variable",
-                          "element": "display",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "household_relationship"
-                            },
-                            {
-                              "valueString": "$this.answer.value.display"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
                 }
               ]
             }
@@ -1415,6 +1457,23 @@
                     }
                   ]
                 }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "rule_encounter_reference",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractEncounter",
+              "variable": [
+                "patient",
+                "bundle"
               ]
             }
           ]
@@ -1804,7 +1863,7 @@
       "input": [
         {
           "name": "src",
-          "type": "QuestionnaireResponse",
+          "type": "Patient",
           "mode": "source"
         },
         {
@@ -2093,7 +2152,7 @@
               ]
             },
             {
-              "name": "r_en_sub",
+              "name": "rule_encounter_subject",
               "source": [
                 {
                   "context": "src"
@@ -2104,13 +2163,37 @@
                   "context": "encounter",
                   "contextType": "variable",
                   "element": "subject",
-                  "transform": "evaluate",
+                  "variable": "ref",
+                  "transform": "create",
                   "parameter": [
                     {
-                      "valueId": "src"
-                    },
+                      "valueString": "Reference"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_related_person_patient_ref",
+                  "source": [
                     {
-                      "valueString": "$this.subject"
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "ref",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "'Patient/' + $this.id"
+                        }
+                      ]
                     }
                   ]
                 }

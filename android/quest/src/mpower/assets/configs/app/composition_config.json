@@ -79,6 +79,15 @@
           }
         },
         {
+          "title": "Patient register configuration",
+          "focus": {
+            "reference": "Binary/7a68f458-9402-4c07-be62-feb85d341c17e",
+            "identifier": {
+              "value": "patientRegister"
+            }
+          }
+        },
+        {
           "title": "ANC register configuration",
           "focus": {
             "reference": "Binary/e64815e6-56c1-4200-b2a6-6ec13eedfec3",
