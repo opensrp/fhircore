@@ -27,6 +27,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.R
@@ -68,6 +69,7 @@ constructor(
   val languages by lazy { configurationRegistry.fetchLanguages() }
   val showDBResetConfirmationDialog = MutableLiveData(false)
   val progressBarState = MutableLiveData(Pair(false, 0))
+  val showProgressIndicatorFlow = MutableStateFlow(false)
   val unsyncedResourcesMutableSharedFlow = MutableSharedFlow<List<Pair<String, Int>>>()
   private val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
@@ -151,6 +153,8 @@ constructor(
 
   fun renderInsightsView(context: Context) {
     viewModelScope.launch {
+      showProgressIndicatorFlow.emit(true)
+
       withContext(dispatcherProvider.io()) {
         val unsyncedResources =
           fhirEngine
@@ -159,11 +163,15 @@ constructor(
             .eachCount()
             .map { it.key to it.value }
 
+        showProgressIndicatorFlow.emit(false)
+
         if (unsyncedResources.isNullOrEmpty()) {
           withContext(dispatcherProvider.main()) {
             context.showToast(context.getString(R.string.all_data_synced))
           }
-        } else unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
+        } else {
+          unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
+        }
       }
     }
   }
