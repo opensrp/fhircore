@@ -228,6 +228,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
         val messageResourceId =
           if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
         lifecycleScope.launch {
+          registerViewModel.dismissLoaderView.emit(true)
           registerViewModel.emitSnackBarState(
             SnackBarMessageConfig(
               message = getString(messageResourceId),
