@@ -101,7 +101,8 @@ constructor(
     viewModelScope.launch {
       try {
         Timber.i("Fetching configs for app $appId")
-        val urlPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
+        val urlPath =
+          "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=${ConfigurationRegistry.HAPI_FHIR_DEFAULT_COUNT}"
         val compositionResource =
           withContext(dispatcherProvider.io()) { fetchComposition(urlPath, context) }
             ?: return@launch
@@ -121,10 +122,7 @@ constructor(
             chunkedResourceIdList.forEach { parentIt ->
               val ids = parentIt.joinToString(",") { it.focus.extractId() }
               val resourceUrlPath =
-                entry.key +
-                  "?${Composition.SP_RES_ID}=$ids" +
-                  "&_count=${configService.provideConfigurationSyncPageSize()}"
-
+                "${entry.key}?${Composition.SP_RES_ID}=$ids&_count=${ConfigurationRegistry.HAPI_FHIR_DEFAULT_COUNT}"
               Timber.d("Fetching config: $resourceUrlPath")
 
               fhirResourceDataSource.getResource(resourceUrlPath).entry.forEach {
