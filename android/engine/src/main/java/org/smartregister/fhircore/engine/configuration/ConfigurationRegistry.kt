@@ -238,7 +238,7 @@ constructor(
             if (iconConfigs.isNotEmpty()) {
               val ids = iconConfigs.joinToString(",") { it.focus.extractId() }
               fhirResourceDataSource.getResource(
-                  "${ResourceType.Binary.name}?${Composition.SP_RES_ID}=$ids"
+                  "${ResourceType.Binary.name}?${Composition.SP_RES_ID}=$ids&_count=$HAPI_FHIR_DEFAULT_COUNT"
                 )
                 .entry
                 .forEach { addOrUpdate(it.resource) }
@@ -381,7 +381,7 @@ constructor(
                     it.joinToString(",") { sectionComponent -> sectionComponent.focus.extractId() }
 
                   fhirResourceDataSource.getResource(
-                      "${resourceGroup.key}?${Composition.SP_RES_ID}=$resourceIds"
+                      "${resourceGroup.key}?${Composition.SP_RES_ID}=$resourceIds&_count=$HAPI_FHIR_DEFAULT_COUNT"
                     )
                     .entry
                     .forEach { bundleEntryComponent ->
@@ -395,7 +395,7 @@ constructor(
                               listEntryComponent.item.reference.extractLogicalIdUuid()
 
                             val listResourceUrlPath =
-                              resourceKey + "?${Composition.SP_RES_ID}=$resourceId"
+                              "$resourceKey?${Composition.SP_RES_ID}=$resourceId&_count=$HAPI_FHIR_DEFAULT_COUNT"
                             fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
                               listEntryResourceBundle ->
                               addOrUpdate(listEntryResourceBundle.resource)
@@ -421,7 +421,8 @@ constructor(
                 val resourceIds =
                   it.joinToString(",") { sectionComponent -> sectionComponent.focus.extractId() }
                 processCompositionManifestResources(
-                  searchPath = "${resourceGroup.key}?${Composition.SP_RES_ID}=$resourceIds"
+                  searchPath =
+                    "${resourceGroup.key}?${Composition.SP_RES_ID}=$resourceIds&_count=$HAPI_FHIR_DEFAULT_COUNT"
                 )
               }
             }
@@ -459,7 +460,9 @@ constructor(
         }
         else -> {
           addOrUpdate(bundleEntryComponent.resource)
-          Timber.d("Fetched and processed resources $searchPath")
+          Timber.d(
+            "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.id}"
+          )
         }
       }
     }
@@ -526,5 +529,6 @@ constructor(
     const val ICON_PREFIX = "ic_"
     const val MANIFEST_PROCESSOR_BATCH_SIZE = 30
     const val FHIR_GATEWAY_MODE_HEADER_VALUE = "list-entries"
+    const val HAPI_FHIR_DEFAULT_COUNT = 200
   }
 }
