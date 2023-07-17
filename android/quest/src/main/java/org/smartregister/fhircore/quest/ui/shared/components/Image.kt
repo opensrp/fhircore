@@ -67,18 +67,18 @@ fun Image(
           .conditional(
             imageProperties.shape != null,
             { clip(imageProperties.shape!!.composeShape) },
-            { clip(RoundedCornerShape(imageProperties.borderRadius.dp)) }
+            { clip(RoundedCornerShape(imageProperties.borderRadius.dp)) },
           )
           .conditional(
             imageProperties.size != null,
             { size(imageProperties.size!!.dp) },
-            { size(24.dp) }
+            { size(24.dp) },
           )
           .conditional(
             !imageProperties.backgroundColor.isNullOrEmpty(),
-            { background(imageProperties.backgroundColor.parseColor()) }
+            { background(imageProperties.backgroundColor.parseColor()) },
           )
-          .conditional(imageProperties.padding >= 0, { padding(imageProperties.padding.dp) })
+          .conditional(imageProperties.padding >= 0, { padding(imageProperties.padding.dp) }),
     ) {
       when (imageConfig.type) {
         ICON_TYPE_LOCAL ->
@@ -91,7 +91,7 @@ fun Image(
                   .fillMaxSize(0.9f),
               painter = painterResource(id = drawableId),
               contentDescription = SIDE_MENU_ICON,
-              tint = tint ?: imageProperties.tint.parseColor()
+              tint = tint ?: imageProperties.tint.parseColor(),
             )
           }
         ICON_TYPE_REMOTE ->
@@ -122,8 +122,8 @@ fun ImagePreview() {
         imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_walk"),
         backgroundColor = "dangerColor",
         size = 80,
-        shape = ImageShape.CIRCLE
+        shape = ImageShape.CIRCLE,
       ),
-    tint = DangerColor.copy(0.1f)
+    tint = DangerColor.copy(0.1f),
   )
 }

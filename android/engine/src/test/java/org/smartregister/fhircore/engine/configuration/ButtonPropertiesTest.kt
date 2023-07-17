@@ -49,6 +49,7 @@ class ButtonPropertiesTest : RobolectricTest() {
       actions = emptyList(),
       buttonType = ButtonType.MEDIUM,
     )
+
   @Test
   fun testInterpolateInButtonProperties() {
     val map = mutableMapOf<String, String>()
@@ -62,6 +63,7 @@ class ButtonPropertiesTest : RobolectricTest() {
     Assert.assertEquals("true", interpolatedButton.enabled)
     Assert.assertEquals("ANC Visit", interpolatedButton.text)
   }
+
   @Test
   fun testStatusColorIsPopulatedCorrectly() {
     val map = mutableMapOf<String, String>()

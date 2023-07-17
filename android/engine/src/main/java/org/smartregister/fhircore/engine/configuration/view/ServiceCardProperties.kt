@@ -41,7 +41,7 @@ data class ServiceCardProperties(
   val serviceMemberIcons: String? = null,
   val serviceButton: ButtonProperties? = null,
   val services: List<ButtonProperties>? = null,
-  val actions: List<ActionConfig> = emptyList()
+  val actions: List<ActionConfig> = emptyList(),
 ) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): ServiceCardProperties {
     return this.copy(
@@ -51,7 +51,7 @@ data class ServiceCardProperties(
       clickable = clickable.interpolate(computedValuesMap),
       details = details.map { it.interpolate(computedValuesMap) },
       serviceButton = serviceButton?.interpolate(computedValuesMap),
-      services = services?.map { it.interpolate(computedValuesMap) }
+      services = services?.map { it.interpolate(computedValuesMap) },
     )
   }
 }

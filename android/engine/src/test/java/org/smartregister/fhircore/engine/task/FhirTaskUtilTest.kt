@@ -90,8 +90,8 @@ class FhirTaskUtilTest : RobolectricTest() {
               Task.TaskRestrictionComponent().apply {
                 period = Period().apply { end = today().plusDays(i % 2) }
               }
-          }
-        )
+          },
+        ),
       )
     }
 
@@ -126,8 +126,8 @@ class FhirTaskUtilTest : RobolectricTest() {
             restriction =
               Task.TaskRestrictionComponent().apply { period = Period().apply { end = today() } }
             basedOn.add(Reference().apply { reference = "CarePlan/123" })
-          }
-        )
+          },
+        ),
       )
     }
 
@@ -137,7 +137,7 @@ class FhirTaskUtilTest : RobolectricTest() {
         status = CarePlan.CarePlanStatus.ACTIVE
         activityFirstRep.detail.kind = CarePlan.CarePlanActivityKind.TASK
         activityFirstRep.outcomeReference.add(
-          Reference().apply { reference = "Task/${taskList.first().logicalId}" }
+          Reference().apply { reference = "Task/${taskList.first().logicalId}" },
         )
       }
 
@@ -168,9 +168,9 @@ class FhirTaskUtilTest : RobolectricTest() {
 
     coVerify(inverse = true) { defaultRepository.update(any()) }
   }
+
   @Test
   fun testUpdateTaskStatuses() {
-
     val task =
       Task().apply {
         id = "test-task-id"
@@ -195,7 +195,7 @@ class FhirTaskUtilTest : RobolectricTest() {
           {
             prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
             value = of(DateTimeType(Date().plusDays(-1)))
-          }
+          },
         )
       }
     } returns listOf(task)

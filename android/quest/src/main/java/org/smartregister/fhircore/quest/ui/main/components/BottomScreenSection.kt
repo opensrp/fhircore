@@ -42,42 +42,41 @@ const val BOTTOM_NAV_ITEM_ICON_TEST_TAG = "bottomNavItemIconTestTag"
 @Composable
 fun BottomScreenSection(
   navController: NavHostController,
-  mainNavigationScreens: List<MainNavigationScreen>
+  mainNavigationScreens: List<MainNavigationScreen>,
 ) {
   BottomNavigation(
     backgroundColor = Color.White,
     contentColor = Color.Black,
-    modifier = Modifier.testTag(BOTTOM_NAV_CONTAINER_TEST_TAG)
+    modifier = Modifier.testTag(BOTTOM_NAV_CONTAINER_TEST_TAG),
   ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.id
-    mainNavigationScreens.filter { it.showInBottomNav }.forEach { navigationScreen ->
-      if (navigationScreen.titleResource != null) {
-        BottomNavigationItem(
-          icon = {
-            navigationScreen.iconResource?.let {
-              Icon(
-                painter = painterResource(id = it),
-                contentDescription = stringResource(navigationScreen.titleResource),
-                modifier = Modifier.testTag(BOTTOM_NAV_ITEM_ICON_TEST_TAG)
-              )
-            }
-          },
-          label = {
-            Text(
-              text = stringResource(navigationScreen.titleResource),
-              fontSize = 12.sp,
-            )
-          },
-          selectedContentColor = BlueTextColor,
-          unselectedContentColor = Color.Black.copy(0.5f),
-          alwaysShowLabel = true,
-          selected = currentRoute == navigationScreen.route,
-          onClick = { navController.navigate(navigationScreen.route) },
-          modifier = Modifier.testTag(BOTTOM_NAV_ITEM_TEST_TAG)
-        )
+    mainNavigationScreens
+      .filter { it.showInBottomNav }
+      .forEach { navigationScreen ->
+        if (navigationScreen.titleResource != null) {
+          BottomNavigationItem(
+            icon = {
+              navigationScreen.iconResource?.let {
+                Icon(
+                  painter = painterResource(id = it),
+                  contentDescription = stringResource(navigationScreen.titleResource),
+                  modifier = Modifier.testTag(BOTTOM_NAV_ITEM_ICON_TEST_TAG),
+                )
+              }
+            },
+            label = {
+              Text(text = stringResource(navigationScreen.titleResource), fontSize = 12.sp)
+            },
+            selectedContentColor = BlueTextColor,
+            unselectedContentColor = Color.Black.copy(0.5f),
+            alwaysShowLabel = true,
+            selected = currentRoute == navigationScreen.route,
+            onClick = { navController.navigate(navigationScreen.route) },
+            modifier = Modifier.testTag(BOTTOM_NAV_ITEM_TEST_TAG),
+          )
+        }
       }
-    }
   }
 }
 

@@ -70,7 +70,7 @@ fun RegisterScreen(
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
-  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
+  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
 ) {
   val lazyListState: LazyListState = rememberLazyListState()
 
@@ -85,7 +85,7 @@ fun RegisterScreen(
           toolBarHomeNavigation = toolBarHomeNavigation,
           onSearchTextChanged = { searchText ->
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
-          }
+          },
         ) {
           when (toolBarHomeNavigation) {
             ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
@@ -102,19 +102,21 @@ fun RegisterScreen(
         ExtendedFab(
           fabActions = fabActions,
           navController = navController,
-          lazyListState = lazyListState
+          lazyListState = lazyListState,
         )
       }
-    }
+    },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (registerUiState.isFirstTimeSync)
+      if (registerUiState.isFirstTimeSync) {
         LoaderDialog(
           modifier = modifier,
           percentageProgressFlow = registerUiState.progressPercentage,
-          isSyncUploadFlow = registerUiState.isSyncUpload
+          isSyncUploadFlow = registerUiState.isSyncUpload,
         )
-      if (registerUiState.totalRecordsCount > 0 &&
+      }
+      if (
+        registerUiState.totalRecordsCount > 0 &&
           registerUiState.registerConfiguration?.registerCard != null
       ) {
         RegisterCardList(
@@ -125,7 +127,7 @@ fun RegisterScreen(
           onEvent = onEvent,
           registerUiState = registerUiState,
           currentPage = currentPage,
-          showPagination = searchText.value.isEmpty()
+          showPagination = searchText.value.isEmpty(),
         )
       } else {
         registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
@@ -142,18 +144,18 @@ fun RegisterScreen(
 fun NoRegisterDataView(
   modifier: Modifier = Modifier,
   noResults: NoResultsConfig,
-  onClick: () -> Unit
+  onClick: () -> Unit,
 ) {
   Column(
     modifier = modifier.fillMaxSize().padding(16.dp).testTag(NO_REGISTER_VIEW_COLUMN_TEST_TAG),
     horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.Center
+    verticalArrangement = Arrangement.Center,
   ) {
     Text(
       text = noResults.title,
       fontSize = 16.sp,
       modifier = modifier.padding(vertical = 8.dp).testTag(NO_REGISTER_VIEW_TITLE_TEST_TAG),
-      fontWeight = FontWeight.Bold
+      fontWeight = FontWeight.Bold,
     )
     Text(
       text = noResults.message,
@@ -161,21 +163,21 @@ fun NoRegisterDataView(
         modifier.padding(start = 32.dp, end = 32.dp).testTag(NO_REGISTER_VIEW_MESSAGE_TEST_TAG),
       textAlign = TextAlign.Center,
       fontSize = 15.sp,
-      color = Color.Gray
+      color = Color.Gray,
     )
     if (noResults.actionButton != null) {
       Button(
         modifier = modifier.padding(vertical = 16.dp).testTag(NO_REGISTER_VIEW_BUTTON_TEST_TAG),
-        onClick = onClick
+        onClick = onClick,
       ) {
         Icon(
           imageVector = Icons.Filled.Add,
           contentDescription = null,
-          modifier.padding(end = 8.dp).testTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG)
+          modifier.padding(end = 8.dp).testTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG),
         )
         Text(
           text = noResults.actionButton?.display?.uppercase().toString(),
-          modifier.testTag(NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG)
+          modifier.testTag(NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG),
         )
       }
     }
@@ -190,7 +192,7 @@ private fun PreviewNoRegistersView() {
       NoResultsConfig(
         title = "Title",
         message = "This is message",
-        actionButton = NavigationMenuConfig(display = "Button Text", id = "1")
-      )
+        actionButton = NavigationMenuConfig(display = "Button Text", id = "1"),
+      ),
   ) {}
 }

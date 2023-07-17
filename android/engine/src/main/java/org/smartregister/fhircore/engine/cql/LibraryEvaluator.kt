@@ -92,6 +92,7 @@ class LibraryEvaluator @Inject constructor() {
 
   /**
    * This method loads configurations for CQL evaluation
+   *
    * @param libraryResources Fhir resource type Library
    * @param valueSetData Fhir resource type ValueSet
    * @param testData Fhir resource to evaluate e.g Patient
@@ -100,27 +101,27 @@ class LibraryEvaluator @Inject constructor() {
     libraryResources: List<IBaseResource>,
     valueSetData: IBaseBundle,
     testData: IBaseBundle,
-    fhirContext: FhirContext
+    fhirContext: FhirContext,
   ) {
     bundleFactory.addRootPropertiesToBundle(
       "bundled-directory",
       bundleLinks,
       libraryResources.size,
-      null
+      null,
     )
     bundleFactory.addResourcesToBundle(
       libraryResources,
       BundleTypeEnum.COLLECTION,
       "",
       BundleInclusionRule.BASED_ON_INCLUDES,
-      null
+      null,
     )
     contentProvider =
       BundleFhirLibrarySourceProvider(
         fhirContext,
         bundleFactory.resourceBundle as IBaseBundle,
         adapterFactory,
-        libraryVersionSelector
+        libraryVersionSelector,
       )
 
     terminologyProvider = BundleTerminologyProvider(fhirContext, valueSetData)
@@ -138,7 +139,7 @@ class LibraryEvaluator @Inject constructor() {
             ModelManager(),
             listOf(contentProvider),
             CqlTranslatorOptions.defaultOptions(),
-            null
+            null,
           ) {
           // This is a hack needed to circumvent a bug that's currently present in the cql-engine.
           // By default, the LibraryLoader checks to ensure that the same translator options are
@@ -155,18 +156,19 @@ class LibraryEvaluator @Inject constructor() {
           init {
             put(
               "http://hl7.org/fhir",
-              CompositeDataProvider(fhirModelResolver, bundleRetrieveProvider)
+              CompositeDataProvider(fhirModelResolver, bundleRetrieveProvider),
             )
           }
         },
         terminologyProvider,
-        CqlEngineOptions.defaultOptions().options
+        CqlEngineOptions.defaultOptions().options,
       )
     libEvaluator = LibraryEvaluator(cqlFhirParametersConverter, cqlEvaluator)
   }
 
   /**
    * This method is used to run a CQL Evaluation
+   *
    * @param valueSetData Fhir resource type ValueSet
    * @param testData Fhir resource to evaluate e.g Patient
    * @param evaluatorId Outcome Id of evaluation e.g ANCRecommendationA2
@@ -181,7 +183,7 @@ class LibraryEvaluator @Inject constructor() {
     fhirContext: FhirContext,
     evaluatorId: String?,
     context: String,
-    contextLabel: String
+    contextLabel: String,
   ): String {
     loadConfigs(resources, valueSetData, testData, fhirContext)
     val result =
@@ -189,7 +191,7 @@ class LibraryEvaluator @Inject constructor() {
         VersionedIdentifier().withId(evaluatorId),
         Pair.of(context, contextLabel),
         null,
-        null
+        null,
       )
     return parser.encodeResourceToString(result)
   }
@@ -197,6 +199,7 @@ class LibraryEvaluator @Inject constructor() {
   /**
    * This method removes multiple patients in a bundle entry and is left with the first occurrence
    * and returns a bundle with patient entry
+   *
    * @param patientData
    */
   fun processCqlPatientBundle(patientData: String): String {
@@ -222,7 +225,7 @@ class LibraryEvaluator @Inject constructor() {
     patient: Patient?,
     data: Bundle,
     repository: DefaultRepository,
-    outputLog: Boolean = false
+    outputLog: Boolean = false,
   ): List<String> {
     initialize()
 
@@ -244,9 +247,9 @@ class LibraryEvaluator @Inject constructor() {
         listOfNotNull(
           patient,
           *data.entry.map { it.resource }.toTypedArray(),
-          *repository.search(library.dataRequirementFirstRep).toTypedArray()
-        )
-      )
+          *repository.search(library.dataRequirementFirstRep).toTypedArray(),
+        ),
+      ),
     )
 
     val result =
@@ -254,9 +257,8 @@ class LibraryEvaluator @Inject constructor() {
         VersionedIdentifier().withId(library.name).withVersion(library.version),
         patient?.let { Pair.of("Patient", it.logicalId) },
         null,
-        null
-      ) as
-        Parameters
+        null,
+      ) as Parameters
 
     parser.setPrettyPrint(false)
     return result.parameter.mapNotNull { p ->
@@ -299,7 +301,7 @@ class LibraryEvaluator @Inject constructor() {
       BundleTypeEnum.COLLECTION,
       "",
       BundleInclusionRule.BASED_ON_INCLUDES,
-      null
+      null,
     )
 
     val libraryProvider =
@@ -307,7 +309,7 @@ class LibraryEvaluator @Inject constructor() {
         fhirContext,
         bundleFactory.resourceBundle as IBaseBundle,
         adapterFactory,
-        libraryVersionSelector
+        libraryVersionSelector,
       )
 
     // Load terminology content, and create a TerminologyProvider which is the interface used by the
@@ -330,11 +332,11 @@ class LibraryEvaluator @Inject constructor() {
           modelManager,
           listOf(libraryProvider),
           CqlTranslatorOptions.defaultOptions(),
-          null
+          null,
         ),
         mapOf("http://hl7.org/fhir" to CompositeDataProvider(fhirModelResolver, retrieveProvider)),
         terminologyProvider,
-        CqlEngineOptions.defaultOptions().options
+        CqlEngineOptions.defaultOptions().options,
       )
 
     libEvaluator = LibraryEvaluator(cqlFhirParametersConverter, cqlEvaluator)
@@ -349,7 +351,7 @@ class LibraryEvaluator @Inject constructor() {
           BundleTypeEnum.COLLECTION,
           "",
           BundleInclusionRule.BASED_ON_INCLUDES,
-          null
+          null,
         )
       }
     return bundleFactory.resourceBundle as Bundle

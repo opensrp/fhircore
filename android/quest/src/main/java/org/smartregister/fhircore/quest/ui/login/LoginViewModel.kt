@@ -74,7 +74,7 @@ constructor(
   val fhirResourceService: FhirResourceService,
   val tokenAuthenticator: TokenAuthenticator,
   val dispatcherProvider: DispatcherProvider,
-  val workManager: WorkManager
+  val workManager: WorkManager,
 ) : ViewModel() {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -121,7 +121,7 @@ constructor(
       _showProgressBar.postValue(true)
 
       val trimmedUsername = username.value!!.trim()
-      val passwordAsCharArray = password.value!!.toCharArray()
+      val passwordAsCharArray = password.value!!.trim().toCharArray()
 
       viewModelScope.launch(dispatcherProvider.io()) {
         if (context.getActivity()!!.isDeviceOnline()) {
@@ -148,16 +148,14 @@ constructor(
                 Timber.e(bundleResult.getOrNull().valueToString())
                 _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
               }
-            }
+            },
           )
         } else {
           if (secureSharedPreference.retrieveSessionUsername() == null) {
             _showProgressBar.postValue(false)
             _loginErrorState.postValue(LoginErrorState.INVALID_OFFLINE_STATE)
-          } else if (accountAuthenticator.validateLoginCredentials(
-              trimmedUsername,
-              passwordAsCharArray
-            )
+          } else if (
+            accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)
           ) {
             try {
               // Configure Sentry scope
@@ -201,12 +199,12 @@ constructor(
     username: String,
     password: CharArray,
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
-    onFetchPractitioner: (Result<FhirR4ModelBundle>) -> Unit
+    onFetchPractitioner: (Result<FhirR4ModelBundle>) -> Unit,
   ) {
     val practitionerDetails =
       sharedPreferences.read<PractitionerDetails>(
         key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-        decodeWithGson = true
+        decodeWithGson = true,
       )
     if (tokenAuthenticator.sessionActive() && practitionerDetails != null) {
       _showProgressBar.postValue(false)
@@ -242,7 +240,7 @@ constructor(
 
   suspend fun fetchPractitioner(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
-    onFetchPractitioner: (Result<FhirR4ModelBundle>) -> Unit
+    onFetchPractitioner: (Result<FhirR4ModelBundle>) -> Unit,
   ) {
     try {
       val userInfo = keycloakService.fetchUserInfo().body()
@@ -267,7 +265,7 @@ constructor(
         }
       } else {
         onFetchPractitioner(
-          Result.failure(NullPointerException("Keycloak user is null. Failed to fetch user."))
+          Result.failure(NullPointerException("Keycloak user is null. Failed to fetch user.")),
         )
       }
     } catch (httpException: HttpException) {
@@ -314,7 +312,7 @@ constructor(
 
       sharedPreferences.write(
         key = SharedPreferenceKey.PRACTITIONER_ID.name,
-        value = practitionerDetails.fhirPractitionerDetails?.practitionerId.valueToString()
+        value = practitionerDetails.fhirPractitionerDetails?.practitionerId.valueToString(),
       )
       sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS.name, practitionerDetails)
       sharedPreferences.write(ResourceType.CareTeam.name, careTeamIds)
@@ -322,7 +320,7 @@ constructor(
       sharedPreferences.write(ResourceType.Location.name, locationIds)
       sharedPreferences.write(
         SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
-        locationHierarchies
+        locationHierarchies,
       )
 
       postProcess()

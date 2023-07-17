@@ -42,6 +42,7 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 class ConfigRulesExecutorTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   private lateinit var configRulesExecutor: ConfigRulesExecutor
+
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val rulesEngine = mockk<DefaultRulesEngine>()
 
@@ -59,7 +60,7 @@ class ConfigRulesExecutorTest : RobolectricTest() {
         name = "underFive",
         description = "Children Under 5 years",
         actions =
-          listOf("data.put('underFive', dateService.addOrSubtractYearFromCurrentDate(5,'-'))")
+          listOf("data.put('underFive', dateService.addOrSubtractYearFromCurrentDate(5,'-'))"),
       )
     val ruleConfigs = listOf(ruleConfig)
 

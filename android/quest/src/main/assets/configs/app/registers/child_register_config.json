@@ -8,7 +8,7 @@
       "name": "under5",
       "condition": "true",
       "actions": [
-        "data.put('under5', dateService.addOrSubtractYearFromCurrentDate(5,'-'))"
+        "data.put('under5', dateService.addOrSubtractTimeUnitFromCurrentDate(5,'-','YEAR'))"
       ]
     }
   ],

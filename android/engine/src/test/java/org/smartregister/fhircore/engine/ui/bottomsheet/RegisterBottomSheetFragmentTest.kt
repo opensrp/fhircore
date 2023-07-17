@@ -36,9 +36,9 @@ class RegisterBottomSheetFragmentTest : RobolectricTest() {
       RegisterBottomSheetFragment(
         listOf(
           NavigationMenuConfig(id = "UniqueTag1", display = "Menu 1"),
-          NavigationMenuConfig(id = "UniqueTag2", display = "Menu 2")
-        )
-      ) {}
+          NavigationMenuConfig(id = "UniqueTag2", display = "Menu 2"),
+        ),
+      ) {},
     )
 
   private lateinit var activity: AppCompatActivity
@@ -59,7 +59,7 @@ class RegisterBottomSheetFragmentTest : RobolectricTest() {
     Assert.assertEquals(2, registerBottomSheetFragment.navigationMenuConfigs?.size)
     registerBottomSheetFragment.show(
       activity.supportFragmentManager,
-      RegisterBottomSheetFragment.TAG
+      RegisterBottomSheetFragment.TAG,
     )
     Assert.assertTrue(registerBottomSheetFragment.showsDialog)
   }

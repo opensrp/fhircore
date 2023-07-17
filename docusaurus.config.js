@@ -13,7 +13,7 @@ const config = {
   trailingSlash:false,
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/opensrp-logo.png',
+  favicon: 'img/opensrp-favicon.png',
   staticDirectories: ['static'],
 
   // GitHub pages deployment config.
@@ -39,7 +39,10 @@ const config = {
           editUrl:
             'https://github.com/opensrp/fhircore/tree/main/docs',
         },
-        blog: false
+        blog: false,
+        theme: {
+          customCss: [require.resolve('./static/css/custom.css')],
+        }
       }),
     ],
   ],
@@ -47,22 +50,49 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      colorMode: {
+      defaultMode: 'light',
+      disableSwitch: true,
+      respectPrefersColorScheme: false,
+    },
+      
       navbar: {
-        title: 'OpenSRP',
+        title: 'Docs',
         logo: {
           alt: 'OpenSRP Documentation',
           src: 'img/opensrp-logo.png',
+          href: '/',
         },
         items: [
           {
-            href: '/dokka',
-            label: 'Code Docs',
+            to: 'https://opensrp.io/',
+            label: 'Home',
             position: 'right',
+            target: '_self',
           },
           {
-            href: 'https://github.com/opensrp/fhircore',
-            label: 'GitHub',
+            to: 'https://opensrp.io/about/',
+            label: 'About',
             position: 'right',
+            target: '_self',
+          },
+          {
+            href: '/',
+            label: 'Docs',
+            position: 'right',
+            className: 'nav-active'
+          },
+          {
+            to: 'https://opensrp.io/screenshots/',
+            label: 'Screenshots',
+            position: 'right',
+            target: '_self',
+          },
+          {
+            to: 'https://opensrp.io/impact/',
+            label: 'Impact',
+            position: 'right',
+            target: '_self',
           },
         ],
       },
@@ -73,7 +103,7 @@ const config = {
             items: [
               {
                 label: 'OpenSRP',
-                href: 'https://smartregister.org',
+                href: 'https://opensrp.io',
               },
               {
                 label: 'Ona',

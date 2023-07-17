@@ -26,7 +26,7 @@ fun getLastOffset(items: List<Any>, lastOffset: Int, batchSize: Int): Int {
       else -> 0
     }
   Timber.w(
-    "Previous last offset = $lastOffset next last offset = $updatedLastOffset batch size = $batchSize"
+    "Previous last offset = $lastOffset next last offset = $updatedLastOffset batch size = $batchSize",
   )
   return updatedLastOffset
 }

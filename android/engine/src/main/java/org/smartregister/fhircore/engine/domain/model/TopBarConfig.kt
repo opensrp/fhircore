@@ -29,5 +29,5 @@ data class TopBarConfig(
   val collapsible: Boolean = true,
   val content: List<ViewProperties> = emptyList(),
   val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
-  val showOverflowMenu: Boolean = true
+  val showOverflowMenu: Boolean = true,
 ) : Parcelable, java.io.Serializable

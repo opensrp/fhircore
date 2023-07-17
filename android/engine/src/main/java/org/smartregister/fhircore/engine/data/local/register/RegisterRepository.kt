@@ -49,7 +49,7 @@ constructor(
   override val sharedPreferencesHelper: SharedPreferencesHelper,
   override val configurationRegistry: ConfigurationRegistry,
   override val configService: ConfigService,
-  override val configRulesExecutor: ConfigRulesExecutor
+  override val configRulesExecutor: ConfigRulesExecutor,
 ) :
   Repository,
   DefaultRepository(
@@ -58,13 +58,13 @@ constructor(
     sharedPreferencesHelper = sharedPreferencesHelper,
     configurationRegistry = configurationRegistry,
     configService = configService,
-    configRulesExecutor = configRulesExecutor
+    configRulesExecutor = configRulesExecutor,
   ) {
 
   override suspend fun loadRegisterData(
     currentPage: Int,
     registerId: String,
-    paramsMap: Map<String, String>?
+    paramsMap: Map<String, String>?,
   ): List<RepositoryResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     return searchResourcesRecursively(
@@ -73,7 +73,7 @@ constructor(
       secondaryResourceConfigs = registerConfiguration.secondaryResources,
       currentPage = currentPage,
       pageSize = registerConfiguration.pageSize,
-      configRules = registerConfiguration.configRules
+      configRules = registerConfiguration.configRules,
     )
   }
 
@@ -83,7 +83,7 @@ constructor(
     secondaryResourceConfigs: List<FhirResourceConfig>?,
     currentPage: Int? = null,
     pageSize: Int? = null,
-    configRules: List<RuleConfig>?
+    configRules: List<RuleConfig>?,
   ): List<RepositoryResourceData> {
     val baseResourceConfig = fhirResourceConfig.baseResource
     val relatedResourcesConfig = fhirResourceConfig.relatedResources
@@ -94,7 +94,7 @@ constructor(
           resourceConfig = baseResourceConfig,
           filterActiveResources = filterActiveResources,
           sortData = true,
-          configComputedRuleValues = configComputedRuleValues
+          configComputedRuleValues = configComputedRuleValues,
         )
         if (currentPage != null && pageSize != null) {
           count = pageSize
@@ -121,7 +121,7 @@ constructor(
             resources = listOf(baseFhirResource),
             relatedResourcesConfigs = relatedResourcesConfig,
             relatedResourceWrapper = RelatedResourceWrapper(),
-            configComputedRuleValues = configComputedRuleValues
+            configComputedRuleValues = configComputedRuleValues,
           )
         }
       RepositoryResourceData(
@@ -132,14 +132,14 @@ constructor(
         secondaryRepositoryResourceData =
           withContext(dispatcherProvider.io()) {
             secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData(filterActiveResources)
-          }
+          },
       )
     }
   }
 
   /** This function fetches other resources that are not linked to the base/primary resource. */
   private suspend fun List<FhirResourceConfig>?.retrieveSecondaryRepositoryResourceData(
-    filterActiveResources: List<ActiveResourceFilterConfig>?
+    filterActiveResources: List<ActiveResourceFilterConfig>?,
   ): LinkedList<RepositoryResourceData> {
     val secondaryRepositoryResourceDataLinkedList = LinkedList<RepositoryResourceData>()
     this?.forEach {
@@ -148,8 +148,8 @@ constructor(
           fhirResourceConfig = it,
           filterActiveResources = filterActiveResources,
           secondaryResourceConfigs = null,
-          configRules = null
-        )
+          configRules = null,
+        ),
       )
     }
     return secondaryRepositoryResourceDataLinkedList
@@ -158,7 +158,7 @@ constructor(
   /** Count register data for the provided [registerId]. Use the configured base resource filters */
   override suspend fun countRegisterData(
     registerId: String,
-    paramsMap: Map<String, String>?
+    paramsMap: Map<String, String>?,
   ): Long {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     val baseResourceConfig = registerConfiguration.fhirResource.baseResource
@@ -169,13 +169,13 @@ constructor(
           resourceConfig = baseResourceConfig,
           sortData = false,
           filterActiveResources = registerConfiguration.activeResourceFilters,
-          configComputedRuleValues = configComputedRuleValues
+          configComputedRuleValues = configComputedRuleValues,
         )
       }
     return search.count(
       onFailure = {
         Timber.e(it, "Error counting register data for register id: ${registerConfiguration.id}")
-      }
+      },
     )
   }
 
@@ -183,7 +183,7 @@ constructor(
     profileId: String,
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig?,
-    paramsList: Array<ActionParameter>?
+    paramsList: Array<ActionParameter>?,
   ): RepositoryResourceData {
     val paramsMap: Map<String, String> =
       paramsList
@@ -212,7 +212,7 @@ constructor(
           resources = listOf(baseResource),
           relatedResourcesConfigs = resourceConfig.relatedResources,
           relatedResourceWrapper = RelatedResourceWrapper(),
-          configComputedRuleValues = configComputedRuleValues
+          configComputedRuleValues = configComputedRuleValues,
         )
       }
     return RepositoryResourceData(
@@ -223,9 +223,9 @@ constructor(
       secondaryRepositoryResourceData =
         withContext(dispatcherProvider.io()) {
           profileConfiguration.secondaryResources.retrieveSecondaryRepositoryResourceData(
-            profileConfiguration.filterActiveResources
+            profileConfiguration.filterActiveResources,
           )
-        }
+        },
     )
   }
 
@@ -233,12 +233,12 @@ constructor(
     configurationRegistry.retrieveConfiguration<ProfileConfiguration>(
       configType = ConfigType.Profile,
       configId = profileId,
-      paramsMap = paramsMap
+      paramsMap = paramsMap,
     )
 
   fun retrieveRegisterConfiguration(
     registerId: String,
-    paramsMap: Map<String, String>?
+    paramsMap: Map<String, String>?,
   ): RegisterConfiguration =
     configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramsMap)
 

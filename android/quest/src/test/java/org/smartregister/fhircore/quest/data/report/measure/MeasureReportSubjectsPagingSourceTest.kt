@@ -37,8 +37,9 @@ import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDat
 class MeasureReportSubjectsPagingSourceTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
   @Inject lateinit var measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
-  private val reportRepository = mockk<MeasureReportRepository>()
+  private val reportRepository = mockk<MeasureReportPagingSource>()
   private lateinit var reportSubjectsPagingSource: MeasureReportSubjectsPagingSource
 
   @Before
@@ -50,13 +51,13 @@ class MeasureReportSubjectsPagingSourceTest : RobolectricTest() {
 
   @Test
   fun loadShouldReturnResults() {
-    coEvery { reportRepository.retrieveSubjects(0) } returns
+    coEvery { reportRepository.retrieveSubjects() } returns
       listOf(
         ResourceData(
           baseResourceId = "resourceId",
           baseResourceType = ResourceType.Patient,
           computedValuesMap = emptyMap(),
-        )
+        ),
       )
 
     val loadParams = mockk<PagingSource.LoadParams<Int>>()

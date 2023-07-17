@@ -34,16 +34,15 @@ import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportTypeSele
 fun MeasureReportMainScreen(
   reportId: String,
   mainNavController: NavController,
-  measureReportViewModel: MeasureReportViewModel
+  measureReportViewModel: MeasureReportViewModel,
 ) {
   // Use a different navController internally for navigating Report Composable screens
   val navController = rememberNavController()
 
   NavHost(
     navController = navController,
-    startDestination = MeasureReportNavigationScreen.MeasureReportList.route
+    startDestination = MeasureReportNavigationScreen.MeasureReportList.route,
   ) {
-
     // Display list of supported measures for reporting
     composable(MeasureReportNavigationScreen.MeasureReportList.route) {
       MeasureReportListScreen(
@@ -51,9 +50,9 @@ fun MeasureReportMainScreen(
         dataList = measureReportViewModel.reportMeasuresList(reportId),
         onReportMeasureClicked = { measureReportRowData ->
           measureReportViewModel.onEvent(
-            MeasureReportEvent.OnSelectMeasure(measureReportRowData, navController)
+            MeasureReportEvent.OnSelectMeasure(measureReportRowData, navController),
           )
-        }
+        },
       )
     }
     // Choose report type; for either individual or population
@@ -66,15 +65,15 @@ fun MeasureReportMainScreen(
           navArgument(NavigationArg.SCREEN_TITLE) {
             type = NavType.StringType
             defaultValue = ""
-          }
-        )
+          },
+        ),
     ) { stackEntry ->
       val screenTitle: String = stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE) ?: ""
       ReportTypeSelectorScreen(
         reportId = reportId,
         screenTitle = screenTitle,
         navController = navController,
-        measureReportViewModel = measureReportViewModel
+        measureReportViewModel = measureReportViewModel,
       )
     }
 
@@ -83,7 +82,7 @@ fun MeasureReportMainScreen(
       MeasureReportSubjectsScreen(
         reportId = reportId,
         navController = navController,
-        measureReportViewModel = measureReportViewModel
+        measureReportViewModel = measureReportViewModel,
       )
     }
 
@@ -91,7 +90,7 @@ fun MeasureReportMainScreen(
     composable(MeasureReportNavigationScreen.MeasureReportResult.route) {
       MeasureReportResultScreen(
         navController = navController,
-        measureReportViewModel = measureReportViewModel
+        measureReportViewModel = measureReportViewModel,
       )
     }
   }

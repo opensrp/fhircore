@@ -24,5 +24,5 @@ data class ProfileUiState(
   val resourceData: ResourceData? = null,
   val profileConfiguration: ProfileConfiguration? = null,
   val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
-  val showDataLoadProgressIndicator: Boolean = true
+  val showDataLoadProgressIndicator: Boolean = true,
 )

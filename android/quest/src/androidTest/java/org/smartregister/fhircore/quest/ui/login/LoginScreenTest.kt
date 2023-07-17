@@ -18,15 +18,19 @@ package org.smartregister.fhircore.quest.ui.login
 
 import android.view.inputmethod.EditorInfo
 import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextInput
+import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.LoginConfig
+import org.smartregister.fhircore.quest.R
 
 @ExperimentalCoroutinesApi
 class LoginScreenTest {
@@ -37,8 +41,11 @@ class LoginScreenTest {
     object {
       // Imitate click action by doing nothing
       fun onUsernameUpdated() {}
+
       fun onPasswordUpdated() {}
+
       fun forgotPassword() {}
+
       fun attemptRemoteLogin() {}
     }
 
@@ -46,8 +53,10 @@ class LoginScreenTest {
     ApplicationConfiguration(
       appTitle = "My app",
       appId = "app/debug",
-      loginConfig = LoginConfig(showLogo = true)
+      loginConfig = LoginConfig(showLogo = true),
     )
+
+  private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
   @Test
   fun testLoginPage() {
@@ -60,7 +69,7 @@ class LoginScreenTest {
         onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
         forgotPassword = { listenerObjectSpy.forgotPassword() },
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
-        appVersionPair = Pair(1, "1.0.1")
+        appVersionPair = Pair(1, "1.0.1"),
       )
     }
     if (applicationConfiguration.loginConfig.showLogo) {
@@ -91,7 +100,7 @@ class LoginScreenTest {
         onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
         forgotPassword = { listenerObjectSpy.forgotPassword() },
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
-        appVersionPair = Pair(1, "1.0.1")
+        appVersionPair = Pair(1, "1.0.1"),
       )
     }
     composeRule
@@ -106,5 +115,146 @@ class LoginScreenTest {
       .onNodeWithTag(PASSWORD_FIELD_TAG)
       .performImeAction()
       .equals(EditorInfo.IME_ACTION_DONE)
+  }
+
+  @Test
+  fun testLoginFailsWithUnknownTextErrorMessage() {
+    verifyUnknownTextErrorMessage(
+      LoginErrorState.UNKNOWN_HOST,
+      R.string.login_call_fail_error_message,
+    )
+  }
+
+  @Test
+  fun testLoginFailsWithInvalidCredentialsErrorMessage() {
+    verifyInvalidCredentialsErrorMessage(
+      LoginErrorState.INVALID_CREDENTIALS,
+      R.string.invalid_login_credentials,
+    )
+  }
+
+  @Test
+  fun testLoginFailsWithMultiUserLoginErrorMessage() {
+    verifyMultiUserLoginErrorMessage(
+      LoginErrorState.MULTI_USER_LOGIN_ATTEMPT,
+      R.string.multi_user_login_attempt,
+    )
+  }
+
+  @Test
+  fun testLoginFailsWithErrorFetchingUserMessage() {
+    verifyErrorFetchingUser(
+      LoginErrorState.ERROR_FETCHING_USER,
+      R.string.error_fetching_user_details,
+    )
+  }
+
+  @Test
+  fun testLoginFailsWithInvalidOfflineStateErrorMessage() {
+    verifyInvalidOfflineState(
+      LoginErrorState.INVALID_OFFLINE_STATE,
+      R.string.invalid_offline_login_state,
+    )
+  }
+
+  private fun verifyUnknownTextErrorMessage(loginErrorState: LoginErrorState, errorMessageId: Int) {
+    composeRule.setContent {
+      LoginPage(
+        applicationConfiguration = applicationConfiguration,
+        username = "user",
+        onUsernameChanged = { listenerObjectSpy.onUsernameUpdated() },
+        password = "password",
+        onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
+        forgotPassword = { listenerObjectSpy.forgotPassword() },
+        onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
+        appVersionPair = Pair(1, "1.0.1"),
+        loginErrorState = loginErrorState,
+      )
+    }
+    composeRule
+      .onNodeWithText(context.getString(R.string.login_error, context.getString(errorMessageId)))
+      .assertIsDisplayed()
+  }
+
+  private fun verifyInvalidCredentialsErrorMessage(
+    loginErrorState: LoginErrorState,
+    errorMessageId: Int,
+  ) {
+    composeRule.setContent {
+      LoginPage(
+        applicationConfiguration = applicationConfiguration,
+        username = "user",
+        onUsernameChanged = { listenerObjectSpy.onUsernameUpdated() },
+        password = "password",
+        onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
+        forgotPassword = { listenerObjectSpy.forgotPassword() },
+        onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
+        appVersionPair = Pair(1, "1.0.1"),
+        loginErrorState = loginErrorState,
+      )
+    }
+    composeRule
+      .onNodeWithText(context.getString(R.string.login_error, context.getString(errorMessageId)))
+      .assertIsDisplayed()
+  }
+
+  private fun verifyMultiUserLoginErrorMessage(
+    loginErrorState: LoginErrorState,
+    errorMessageId: Int,
+  ) {
+    composeRule.setContent {
+      LoginPage(
+        applicationConfiguration = applicationConfiguration,
+        username = "user",
+        onUsernameChanged = { listenerObjectSpy.onUsernameUpdated() },
+        password = "password",
+        onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
+        forgotPassword = { listenerObjectSpy.forgotPassword() },
+        onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
+        appVersionPair = Pair(1, "1.0.1"),
+        loginErrorState = loginErrorState,
+      )
+    }
+    composeRule
+      .onNodeWithText(context.getString(R.string.login_error, context.getString(errorMessageId)))
+      .assertIsDisplayed()
+  }
+
+  private fun verifyErrorFetchingUser(loginErrorState: LoginErrorState, errorMessageId: Int) {
+    composeRule.setContent {
+      LoginPage(
+        applicationConfiguration = applicationConfiguration,
+        username = "user",
+        onUsernameChanged = { listenerObjectSpy.onUsernameUpdated() },
+        password = "password",
+        onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
+        forgotPassword = { listenerObjectSpy.forgotPassword() },
+        onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
+        appVersionPair = Pair(1, "1.0.1"),
+        loginErrorState = loginErrorState,
+      )
+    }
+    composeRule
+      .onNodeWithText(context.getString(R.string.login_error, context.getString(errorMessageId)))
+      .assertIsDisplayed()
+  }
+
+  private fun verifyInvalidOfflineState(loginErrorState: LoginErrorState, errorMessageId: Int) {
+    composeRule.setContent {
+      LoginPage(
+        applicationConfiguration = applicationConfiguration,
+        username = "user",
+        onUsernameChanged = { listenerObjectSpy.onUsernameUpdated() },
+        password = "password",
+        onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
+        forgotPassword = { listenerObjectSpy.forgotPassword() },
+        onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
+        appVersionPair = Pair(1, "1.0.1"),
+        loginErrorState = loginErrorState,
+      )
+    }
+    composeRule
+      .onNodeWithText(context.getString(R.string.login_error, context.getString(errorMessageId)))
+      .assertIsDisplayed()
   }
 }

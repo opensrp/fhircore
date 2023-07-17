@@ -35,7 +35,7 @@ data class PersonalDataProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   override val visible: String = "true",
-  val personalDataItems: List<PersonalDataItem> = emptyList()
+  val personalDataItems: List<PersonalDataItem> = emptyList(),
 ) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): PersonalDataProperties {
     return this.copy(
@@ -45,9 +45,9 @@ data class PersonalDataProperties(
         personalDataItems.map {
           PersonalDataItem(
             label = it.label.interpolate(computedValuesMap),
-            displayValue = it.displayValue.interpolate(computedValuesMap)
+            displayValue = it.displayValue.interpolate(computedValuesMap),
           )
-        }
+        },
     )
   }
 }
@@ -56,5 +56,5 @@ data class PersonalDataProperties(
 @Parcelize
 data class PersonalDataItem(
   val label: CompoundTextProperties,
-  val displayValue: CompoundTextProperties
+  val displayValue: CompoundTextProperties,
 ) : Parcelable, java.io.Serializable

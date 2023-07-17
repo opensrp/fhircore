@@ -78,7 +78,7 @@ fun Base?.valueToString(): String {
           .plus(
             it.periodUnit.display.replaceFirstChar { char ->
               if (char.isLowerCase()) char.titlecase(Locale.getDefault()) else char.toString()
-            }
+            },
           )
           .plus(" (s)")
       }
@@ -173,7 +173,7 @@ fun QuestionnaireResponse.generateMissingItems(questionnaire: Questionnaire) =
   questionnaire.item.generateMissingItems(this.item)
 
 fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
-  qrItems: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>
+  qrItems: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>,
 ) {
   this.forEachIndexed { index, qItem ->
     // generate complete hierarchy if response item missing otherwise check for nested items
@@ -184,6 +184,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
     }
   }
 }
+
 /**
  * Set all questions that are not of type [Questionnaire.QuestionnaireItemType.GROUP] to readOnly if
  * [readOnly] is true. This also generates the correct FHIRPath population expression for each
@@ -192,19 +193,19 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
 fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrEditing(
   path: String,
   readOnly: Boolean = false,
-  readOnlyLinkIds: List<String>? = emptyList()
+  readOnlyLinkIds: List<String>? = emptyList(),
 ) {
   forEach { item ->
     if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
       item.readOnly = readOnly || item.readOnly || readOnlyLinkIds?.contains(item.linkId) == true
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').answer.item",
-        readOnly
+        readOnly,
       )
     } else {
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').item",
-        readOnly
+        readOnly,
       )
     }
   }
@@ -333,7 +334,7 @@ fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/"
  */
 suspend fun Task.updateDependentTaskDueDate(
   defaultRepository: DefaultRepository,
-  fhirEngine: FhirEngine
+  fhirEngine: FhirEngine,
 ): Task {
   return apply {
     val dependentTasks =
@@ -342,7 +343,8 @@ suspend fun Task.updateDependentTaskDueDate(
       }
     dependentTasks.forEach { dependantTask ->
       dependantTask.partOf.forEach { _ ->
-        if (dependantTask.executionPeriod.hasStart() &&
+        if (
+          dependantTask.executionPeriod.hasStart() &&
             dependantTask.hasInput() &&
             dependantTask.status.equals(Task.TaskStatus.REQUESTED)
         ) {
@@ -365,9 +367,9 @@ suspend fun Task.updateDependentTaskDueDate(
                           abs(
                             Duration.between(
                                 immunizationDate.toInstant(),
-                                dependentTaskStartDate.toInstant()
+                                dependentTaskStartDate.toInstant(),
                               )
-                              .toDays()
+                              .toDays(),
                           )
                         if (difference < dependentTaskInputDuration) {
                           dependantTask
@@ -379,7 +381,7 @@ suspend fun Task.updateDependentTaskDueDate(
                             .run {
                               defaultRepository.addOrUpdate(
                                 addMandatoryTags = true,
-                                resource = dependantTask
+                                resource = dependantTask,
                               )
                             }
                         }

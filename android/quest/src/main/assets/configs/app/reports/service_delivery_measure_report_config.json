@@ -3,7 +3,7 @@
   "configType": "measureReport",
   "id": "serviceDeliveryMeasureReport",
   "registerId": "inventoryRegister",
-  "registerDate": "2020-10-27",
+  "startPeriod": "2020-10-27",
   "showFixedRangeSelection": true,
   "reports": [
     {

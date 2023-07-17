@@ -28,12 +28,12 @@ import timber.log.Timber
 
 /**
  * @property _registerPagingSourceState as state containing the properties used in the
- * [RegisterRepository] function for loading data to the paging source.
+ *   [RegisterRepository] function for loading data to the paging source.
  */
 class RegisterPagingSource(
   private val registerRepository: RegisterRepository,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
-  private val ruleConfigs: List<RuleConfig>
+  private val ruleConfigs: List<RuleConfig>,
 ) : PagingSource<Int, ResourceData>() {
 
   private lateinit var _registerPagingSourceState: RegisterPagingSourceState
@@ -56,7 +56,7 @@ class RegisterPagingSource(
       val registerData =
         registerRepository.loadRegisterData(
           currentPage = currentPage,
-          registerId = _registerPagingSourceState.registerId
+          registerId = _registerPagingSourceState.registerId,
         )
 
       val prevKey =
@@ -76,7 +76,7 @@ class RegisterPagingSource(
           resourceDataRulesExecutor.processResourceData(
             repositoryResourceData = repositoryResourceData,
             ruleConfigs = ruleConfigs,
-            params = emptyMap()
+            params = emptyMap(),
           )
         }
       LoadResult.Page(data = data, prevKey = prevKey, nextKey = nextKey)
