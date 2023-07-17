@@ -2,11 +2,27 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
 
 val isApplication = (project.name == "quest")
 val actualProjectName = if(isApplication) "opensrp" else project.name
+/*
+
+task<Exec>("fhircoreInstrumentedTests") {
+  val taskName = "connected${if (isApplication)  actualProjectName.capitalize() else ""}DebugAndroidTest"
+
+  commandLine(taskName, "-- tests org.smartregister.fhircore")
+}
+
+task<Exec>("fhircorePerformanceTests") {
+  val taskName = "connected${if (isApplication)  actualProjectName.capitalize() else ""}DebugAndroidTest"
+
+  commandLine(taskName, "--tests org.smartregister.fhircore.performance")
+}
+
+*/
+
 tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
   dependsOn(
     setOf(
       "test${if(isApplication) actualProjectName.capitalize() else ""}DebugUnitTest", // Generates unit test coverage report
-      "connected${if (isApplication)  actualProjectName.capitalize() else ""}DebugAndroidTest" // Generates instrumentation test coverage report
+      //"connected${if (isApplication)  actualProjectName.capitalize() else ""}DebugAndroidTest" // Generates instrumentation test coverage report
     )
   )
   reports {

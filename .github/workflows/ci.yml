@@ -221,7 +221,7 @@ jobs:
           force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew :quest:clean && ./gradlew :quest:fhircoreJacocoReport --stacktrace
+          script: wget https://github.com/ekigamba/debug-jacoco-reports/releases/download/v0.0.1/resources.db && mv resources.db quest/src/androidTest/assets/ && ./gradlew :quest:clean && ./gradlew :quest:fhircoreJacocoReport --stacktrace
 
       - name: Upload Quest module test coverage report to Codecov
         if: matrix.api-level == 30 # Only upload coverage on API level 30

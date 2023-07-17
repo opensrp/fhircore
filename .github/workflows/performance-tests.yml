@@ -1,0 +1,80 @@
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Performance tests
+
+on:
+  pull_request:
+    branches: [ main ]
+
+env:
+ FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
+ FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
+ CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+jobs:
+
+  quest-tests:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        api-level: [30]
+    steps:
+      - name: Cancel Previous workflow runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        working-directory: android 
+
+      - name: Copy CI gradle.properties
+        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
+
+      - name: Setup Gradle cache
+        uses: gradle/gradle-build-action@v2
+      
+      - name: Load AVD cache
+        uses: actions/cache@v2
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ matrix.api-level }}
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          working-directory: android
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: Run Quest module performance tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with: 
+          working-directory: android
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          force-avd-creation: true
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: ./gradlew :quest:clean && ./gradlew :quest: --stacktrace -e package org.smartregister.fhircore.quest.performance
+
+      - name: Check performance tests
+        run: ./gradlew :quest:checkPerformance

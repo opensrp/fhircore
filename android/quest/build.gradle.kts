@@ -1,5 +1,8 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType
+import java.io.FileReader
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.json.JSONObject
+import kotlin.collections.hashMapOf
 
 buildscript {
   apply(from = "../jacoco.gradle.kts")
@@ -302,6 +305,10 @@ tasks.withType<Test> {
   minHeapSize = "4608m"
   maxHeapSize = "4608m"
   maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+
+  if (!name.toLowerCase().contains("performance")) {
+    exclude("org.smartregister.fhircore.performance.*")
+  }
 }
 
 configurations {
@@ -368,4 +375,26 @@ dependencies {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }
   ktlint(project(":linting"))
+}
+
+task("checkPerformanceLimits")  {
+  val resultsFile = File("performance-results.json")
+  val expectationsFile = File("expected-results.json")
+
+  // Read the expectations file
+  val expectedResultsMap : HashMap<String, HashMap<String, Float>> = hashMapOf()
+
+  JSONObject(FileReader(expectationsFile).readText()).run {
+    keys().forEach { key ->
+      val resultMaxDeltaMap :HashMap<String, Float> = hashMapOf()
+      val methodExpectedResults = this.getJSONObject("key")
+
+      methodExpectedResults.keys().forEach { expectedResultsKey ->
+        resultMaxDeltaMap.put(expectedResultsKey, methodExpectedResults.getFloat(expectedResultsKey))
+      }
+    }
+  }
+
+  // Loop through the results file updating the results
+  JSONObject
 }
