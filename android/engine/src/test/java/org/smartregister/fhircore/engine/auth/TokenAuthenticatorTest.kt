@@ -19,8 +19,8 @@ package org.smartregister.fhircore.engine.auth
 import android.accounts.Account
 import android.accounts.AccountManager
 import android.accounts.AuthenticatorException
-import android.content.OperationApplicationException
-import androidx.core.os.bundleOf
+import android.accounts.OperationCanceledException
+import android.os.Bundle
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -38,6 +38,7 @@ import java.io.IOException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import javax.net.ssl.SSLHandshakeException
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import okhttp3.internal.http.RealResponseBody
 import org.junit.After
@@ -53,7 +54,7 @@ import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator.C
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.toSha1
+import org.smartregister.fhircore.engine.util.toPasswordHash
 import retrofit2.HttpException
 import retrofit2.Response
 
@@ -61,8 +62,11 @@ import retrofit2.Response
 class TokenAuthenticatorTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
-  @kotlinx.coroutines.ExperimentalCoroutinesApi @get:Rule val coroutineRule = CoroutineTestRule()
+
+  @ExperimentalCoroutinesApi @get:Rule val coroutineRule = CoroutineTestRule()
+
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
   @Inject lateinit var configService: ConfigService
   private val oAuthService: OAuthService = mockk()
   private lateinit var tokenAuthenticator: TokenAuthenticator
@@ -71,7 +75,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
   private val sampleUsername = "demo"
 
   @Before
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
     tokenAuthenticator =
@@ -82,8 +86,8 @@ class TokenAuthenticatorTest : RobolectricTest() {
           oAuthService = oAuthService,
           dispatcherProvider = coroutineRule.testDispatcherProvider,
           accountManager = accountManager,
-          context = context
-        )
+          context = context,
+        ),
       )
   }
 
@@ -143,27 +147,45 @@ class TokenAuthenticatorTest : RobolectricTest() {
   fun testGetAccessTokenShouldCatchOperationCanceledAndIOAndAuthenticatorExceptions() {
     val account = Account(sampleUsername, PROVIDER)
     every { tokenAuthenticator.findAccount() } returns account
-    every { tokenAuthenticator.isTokenActive(any()) } returns true
+    every { tokenAuthenticator.isTokenActive(any()) } returns false
     val accessToken = "gibberishaccesstoken"
     every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns accessToken
-    every { accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, bundleOf(), true, any(), any()) }
-      .throws(OperationApplicationException())
+    every { accountManager.invalidateAuthToken(account.type, accessToken) } just runs
+    every {
+      accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, any<Bundle>(), true, any(), any())
+    } throws OperationCanceledException()
     Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
-    every { accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, bundleOf(), true, any(), any()) }
-      .throws(IOException())
+    every {
+      accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, any<Bundle>(), true, any(), any())
+    } throws IOException()
     Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
-    every { accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, bundleOf(), true, any(), any()) }
-      .throws(AuthenticatorException())
+    every {
+      accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, any<Bundle>(), true, any(), any())
+    } throws AuthenticatorException()
     Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @ExperimentalCoroutinesApi
   fun testFetchTokenShouldRetrieveNewTokenAndCreateAccount() {
     val token = "goodToken"
     val refreshToken = "refreshToken"
     val username = sampleUsername
     val password = charArrayOf('P', '4', '5', '5', 'W', '4', '0')
+    var passwordSalt = byteArrayOf(-128, 100, 112, 127)
+
+    val secureSharedPreference = spyk(secureSharedPreference)
+    val tokenAuthenticator =
+      spyk(
+        TokenAuthenticator(
+          secureSharedPreference = secureSharedPreference,
+          configService = configService,
+          oAuthService = oAuthService,
+          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          accountManager = accountManager,
+          context = context,
+        ),
+      )
 
     val oAuthResponse =
       OAuthResponse(
@@ -171,10 +193,11 @@ class TokenAuthenticatorTest : RobolectricTest() {
         refreshToken = refreshToken,
         tokenType = "",
         expiresIn = 3600,
-        scope = SCOPE
+        scope = SCOPE,
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
 
+    every { secureSharedPreference.get256RandomBytes() } returns passwordSalt
     every { accountManager.accounts } returns arrayOf()
 
     val accountSlot = slot<Account>()
@@ -193,11 +216,46 @@ class TokenAuthenticatorTest : RobolectricTest() {
     val credentials = secureSharedPreference.retrieveCredentials()
     Assert.assertNotNull(credentials)
     Assert.assertTrue(username.contentEquals(credentials?.username))
-    Assert.assertTrue(password.concatToString().toSha1().contentEquals(credentials?.password))
+
+    Assert.assertEquals(
+      charArrayOf('P', '4', '5', '5', 'W', '4', '0').toPasswordHash(passwordSalt),
+      credentials?.passwordHash,
+    )
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun testFetchTokenShouldSetPasswordAndAuthTokenForExistingAccount() = runTest {
+    val testAPKApplicationId = "org.smartregister.fhircore.engine.test"
+    val account = Account(sampleUsername, testAPKApplicationId)
+    val password = charArrayOf('P', '4', '5', '5', 'W', '4', '0')
+    val token = "goodToken"
+    val refreshToken = "refreshToken"
+
+    val oAuthResponse =
+      OAuthResponse(
+        accessToken = token,
+        refreshToken = refreshToken,
+        tokenType = "",
+        expiresIn = 3600,
+        scope = SCOPE,
+      )
+    coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
+    every { accountManager.accounts } returns arrayOf(account)
+    every { accountManager.setPassword(account, oAuthResponse.refreshToken) } just runs
+    every { accountManager.setAuthToken(account, AUTH_TOKEN_TYPE, oAuthResponse.accessToken) } just
+      runs
+
+    tokenAuthenticator.fetchAccessToken(sampleUsername, password)
+
+    verifyOrder {
+      accountManager.setPassword(account, oAuthResponse.refreshToken)
+      accountManager.setAuthToken(account, AUTH_TOKEN_TYPE, oAuthResponse.accessToken)
+    }
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @ExperimentalCoroutinesApi
   fun testFetchTokenShouldShouldCatchHttpAndUnknownHostAndSSLHandshakeExceptions() {
     val username = sampleUsername
     val password = charArrayOf('P', '4', '5', '5', 'W', '4', '0')
@@ -229,6 +287,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
       Assert.assertEquals(Result.failure<SSLHandshakeException>(sslHandshakeException), result)
     }
   }
+
   @Test
   fun testLogout() {
     val account = Account(sampleUsername, PROVIDER)
@@ -277,7 +336,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         refreshToken = "soRefreshingRefreshToken",
         tokenType = "",
         expiresIn = 3600,
-        scope = SCOPE
+        scope = SCOPE,
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
 
@@ -287,9 +346,35 @@ class TokenAuthenticatorTest : RobolectricTest() {
     Assert.assertEquals(accessToken, newAccessToken)
   }
 
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun testValidateSavedLoginCredentialsShouldReturnTrue() {
+    val passwd = "P455W40"
+    val passwordSalt = byteArrayOf(-128, 100, 112, 127)
+
+    val secureSharedPreference = spyk(secureSharedPreference)
+    every { secureSharedPreference.get256RandomBytes() } returns passwordSalt
+    secureSharedPreference.saveCredentials(sampleUsername, passwd.toCharArray())
+    val tokenAuthenticator =
+      spyk(
+        TokenAuthenticator(
+          secureSharedPreference = secureSharedPreference,
+          configService = configService,
+          oAuthService = oAuthService,
+          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          accountManager = accountManager,
+          context = context,
+        ),
+      )
+
+    val result =
+      tokenAuthenticator.validateSavedLoginCredentials(sampleUsername, passwd.toCharArray())
+    Assert.assertTrue(result)
+  }
+
   @Test
   fun testFindAccountShouldReturnAnAccount() {
-    secureSharedPreference.saveCredentials(AuthCredentials(sampleUsername, "sirikali"))
+    secureSharedPreference.saveCredentials(sampleUsername, "sirikali".toCharArray())
     val account = Account(sampleUsername, PROVIDER)
     every { accountManager.getAccountsByType(any()) } returns arrayOf(account)
     val resultAccount = tokenAuthenticator.findAccount()
@@ -335,6 +420,17 @@ class TokenAuthenticatorTest : RobolectricTest() {
       accountManager.removeAccountExplicitly(account)
       onSessionInvalidated()
     }
+  }
+
+  @Test
+  fun testsCurrentRefreshTokenActiveWithInActiveToken() {
+    val account = Account(sampleUsername, PROVIDER)
+    val token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ik1hcnRpbiBOZGVnd2EiLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MzMyNDI4OTMyMzF9.sYnHKVkXrku7X4X92zsidrZeKyd6nbOvsM5qgck3kiA"
+    every { tokenAuthenticator.findAccount() } returns account
+    every { accountManager.getPassword(account) } returns token
+
+    Assert.assertTrue(tokenAuthenticator.isCurrentRefreshTokenActive())
   }
 
   companion object {

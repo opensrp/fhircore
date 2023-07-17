@@ -27,7 +27,9 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
@@ -47,16 +49,12 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  @get:Rule(order = 1)
-  var coroutinesTestRule = CoroutineTestRule()
+
   @Inject lateinit var gson: Gson
   private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var fhirEngine: FhirEngine
@@ -79,11 +77,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
         fhirEngine = fhirEngine,
         fhirResourceDataSource = fhirResourceDataSource,
         sharedPreferencesHelper = sharedPreferencesHelper,
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
         configService = configService,
-        json = Faker.json
+        json = Faker.json,
       )
-    coEvery { fhirEngine.create(any()) } answers { listOf() }
+    coEvery { fhirEngine.createRemote(any()) } just runs
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
   }
 
@@ -120,6 +118,39 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
+  fun testFetchListResourceNonProxy() = runBlocking {
+    val composition =
+      Composition().apply {
+        addSection().apply {
+          this.focus =
+            Reference().apply {
+              reference = "List/123456"
+              identifier = Identifier().apply { value = "012345" }
+            }
+        }
+      }
+
+    val bundle =
+      org.hl7.fhir.r4.model.Bundle().apply {
+        addEntry().apply {
+          this.resource = ListResource().apply { ListResource@ this.id = "123456" }
+        }
+      }
+
+    configurationRegistry.setNonProxy(true)
+    every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
+
+    coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
+    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+
+    configurationRegistry.fetchNonWorkflowConfigResources()
+    coVerify { configurationRegistry.fhirResourceDataSource.getResource(any()) }
+    coVerify { configurationRegistry.create(any()) }
+  }
+
+  @Test
   fun testFetchListResource() = runBlocking {
     val composition =
       Composition().apply {
@@ -142,12 +173,18 @@ class ConfigurationRegistryTest : RobolectricTest() {
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
-
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
+    coEvery {
+      fhirResourceService.getResourceWithGatewayModeHeader(
+        ConfigurationRegistry.FHIR_GATEWAY_MODE_HEADER_VALUE,
+        "List/123456",
+      )
+    } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
 
     configurationRegistry.fetchNonWorkflowConfigResources()
-    coVerify { configurationRegistry.fhirResourceDataSource.getResource(any()) }
+
+    coVerify { fhirResourceService.getResourceWithGatewayModeHeader(any(), any()) }
     coVerify { configurationRegistry.create(any()) }
   }
 }

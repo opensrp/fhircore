@@ -35,7 +35,10 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
@@ -53,6 +56,7 @@ import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -62,9 +66,11 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 @HiltAndroidTest
 class RulesFactoryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   @get:Rule(order = 1)
   val coroutineRule = CoroutineTestRule()
+
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val rulesEngine = mockk<DefaultRulesEngine>()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
@@ -81,8 +87,8 @@ class RulesFactoryTest : RobolectricTest() {
           context = ApplicationProvider.getApplicationContext(),
           configurationRegistry = configurationRegistry,
           fhirPathDataExtractor = fhirPathDataExtractor,
-          dispatcherProvider = coroutineRule.testDispatcherProvider
-        )
+          dispatcherProvider = coroutineRule.testDispatcherProvider,
+        ),
       )
     rulesEngineService = rulesFactory.RulesEngineService()
   }
@@ -103,12 +109,12 @@ class RulesFactoryTest : RobolectricTest() {
   fun fireRulesCallsRulesEngineFireWithCorrectRulesAndFacts() {
     runTest {
       val baseResource = Faker.buildPatient()
-      val relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap()
+      val relatedResourcesMap: Map<String, List<Resource>> = emptyMap()
       val ruleConfig =
         RuleConfig(
           name = "patientName",
           description = "Retrieve patient name",
-          actions = listOf("data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))")
+          actions = listOf("data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))"),
         )
       val ruleConfigs = listOf(ruleConfig)
 
@@ -117,8 +123,12 @@ class RulesFactoryTest : RobolectricTest() {
       val rules = rulesFactory.generateRules(ruleConfigs)
       rulesFactory.fireRules(
         rules = rules,
-        baseResource = baseResource,
-        relatedResourcesMap = relatedResourcesMap
+        repositoryResourceData =
+          RepositoryResourceData(
+            resource = baseResource,
+            secondaryRepositoryResourceData = null,
+            relatedResourcesMap = relatedResourcesMap,
+          ),
       )
 
       val factsSlot = slot<Facts>()
@@ -150,20 +160,63 @@ class RulesFactoryTest : RobolectricTest() {
         RuleConfig(
           name = "patientName",
           description = "Retrieve patient name",
-          actions = listOf("data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))")
+          actions = listOf("data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))"),
         )
       val ruleConfigs = listOf(ruleConfig)
 
       ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
       every { rulesEngine.fire(any(), any()) } just runs
       val rules = rulesFactory.generateRules(ruleConfigs)
-      rulesFactory.fireRules(rules = rules, baseResource = baseResource)
+      rulesFactory.fireRules(
+        rules = rules,
+        repositoryResourceData =
+          RepositoryResourceData(
+            resource = baseResource,
+            secondaryRepositoryResourceData =
+              listOf(
+                RepositoryResourceData(
+                  resourceRulesEngineFactId = "commodities",
+                  resource = Group().apply { id = "Commodity1" },
+                  relatedResourcesMap =
+                    mapOf(
+                      "stockObservations" to
+                        listOf(
+                          Observation().apply { id = "Obsv1" },
+                          Observation().apply { id = "Obsv2" },
+                        ),
+                      "latestObservations" to
+                        listOf(
+                          Observation().apply { id = "Obsv3" },
+                          Observation().apply { id = "Obsv4" },
+                        ),
+                    ),
+                  relatedResourcesCountMap =
+                    mapOf("stockCount" to listOf(RelatedResourceCount(count = 20))),
+                ),
+                RepositoryResourceData(
+                  resourceRulesEngineFactId = "commodities",
+                  resource = Group().apply { id = "Commodity2" },
+                  relatedResourcesMap =
+                    mapOf(
+                      "stockObservations" to
+                        listOf(
+                          Observation().apply { id = "Obsv6" },
+                          Observation().apply { id = "Obsv7" },
+                        ),
+                    ),
+                  relatedResourcesCountMap =
+                    mapOf("stockCount" to listOf(RelatedResourceCount(count = 10))),
+                ),
+              ),
+          ),
+      )
 
       val factsSlot = slot<Facts>()
       val rulesSlot = slot<Rules>()
       verify { rulesEngine.fire(capture(rulesSlot), capture(factsSlot)) }
 
-      val capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
+      val facts = factsSlot.captured
+      val capturedBaseResource = facts.get<Patient>(baseResource.resourceType.name)
       Assert.assertEquals(baseResource.logicalId, capturedBaseResource.logicalId)
       Assert.assertTrue(capturedBaseResource.active)
       Assert.assertEquals(baseResource.birthDate, capturedBaseResource.birthDate)
@@ -176,40 +229,36 @@ class RulesFactoryTest : RobolectricTest() {
       val capturedRule = rulesSlot.captured.first()
       Assert.assertEquals(ruleConfig.name, capturedRule.name)
       Assert.assertEquals(ruleConfig.description, capturedRule.description)
+
+      // Assertions for secondary resources
+      val factsMap = facts.asMap()
+      val commodities: List<Resource> = factsMap["commodities"] as List<Resource>
+      Assert.assertNotNull(commodities)
+      Assert.assertEquals(2, commodities.size)
+      Assert.assertEquals("Commodity1", commodities.first().id)
+      Assert.assertEquals("Commodity2", commodities.last().id)
+
+      val latestObservations: List<Resource> = factsMap["latestObservations"] as List<Resource>
+      Assert.assertNotNull(latestObservations)
+      Assert.assertEquals(2, latestObservations.size)
+      Assert.assertEquals("Obsv3", latestObservations.first().id)
+      Assert.assertEquals("Obsv4", latestObservations.last().id)
+
+      val stockObservations: List<Resource> = factsMap["stockObservations"] as List<Resource>
+      Assert.assertNotNull(stockObservations)
+      Assert.assertEquals(4, stockObservations.size)
+      Assert.assertEquals("Obsv1", stockObservations.first().id)
+      Assert.assertEquals("Obsv7", stockObservations.last().id)
+
+      val stockCount: List<RelatedResourceCount> =
+        factsMap["stockCount"] as List<RelatedResourceCount>
+      Assert.assertNotNull(stockCount)
+      Assert.assertEquals(2, stockCount.size)
+      Assert.assertEquals(20, stockCount.first().count)
+      Assert.assertEquals(10, stockCount.last().count)
     }
   }
 
-  @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun fireRulesIgnoresBaseResourceWhenNull() {
-    runTest {
-      val baseResource = Faker.buildPatient()
-      val relatedResourcesMap: Map<String, List<RepositoryResourceData.QueryResult>> = emptyMap()
-      val ruleConfig =
-        RuleConfig(
-          name = "patientName",
-          description = "Retrieve patient name",
-          actions = listOf("data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))")
-        )
-      val ruleConfigs = listOf(ruleConfig)
-
-      ReflectionHelpers.setField(rulesFactory, "rulesEngine", rulesEngine)
-      every { rulesEngine.fire(any(), any()) } just runs
-      val rules = rulesFactory.generateRules(ruleConfigs)
-      rulesFactory.fireRules(rules = rules, relatedResourcesMap = relatedResourcesMap)
-
-      val factsSlot = slot<Facts>()
-      val rulesSlot = slot<Rules>()
-      verify { rulesEngine.fire(capture(rulesSlot), capture(factsSlot)) }
-
-      val capturedBaseResource = factsSlot.captured.get<Patient>(baseResource.resourceType.name)
-      Assert.assertNull(capturedBaseResource)
-
-      val capturedRule = rulesSlot.captured.first()
-      Assert.assertEquals(ruleConfig.name, capturedRule.name)
-      Assert.assertEquals(ruleConfig.description, capturedRule.description)
-    }
-  }
   @Test
   fun retrieveRelatedResourcesReturnsCorrectResource() {
     populateFactsWithResources()
@@ -217,11 +266,23 @@ class RulesFactoryTest : RobolectricTest() {
       rulesEngineService.retrieveRelatedResources(
         resource = Faker.buildPatient(),
         relatedResourceKey = ResourceType.CarePlan.name,
-        referenceFhirPathExpression = "CarePlan.subject.reference"
+        referenceFhirPathExpression = "CarePlan.subject.reference",
       )
     Assert.assertEquals(1, result.size)
     Assert.assertEquals("CarePlan", result[0].resourceType.name)
     Assert.assertEquals("careplan-1", result[0].logicalId)
+  }
+
+  @Test
+  fun retrieveRelatedResourcesWithoutReferenceReturnsResources() {
+    populateFactsWithResources()
+    val result =
+      rulesEngineService.retrieveRelatedResources(
+        resource = Faker.buildPatient(),
+        relatedResourceKey = ResourceType.CarePlan.name,
+        referenceFhirPathExpression = "",
+      )
+    Assert.assertEquals(1, result.size)
   }
 
   @Test
@@ -231,7 +292,7 @@ class RulesFactoryTest : RobolectricTest() {
       rulesEngineService.retrieveParentResource(
         childResource = Faker.buildCarePlan(),
         parentResourceType = "Patient",
-        fhirPathExpression = "CarePlan.subject.reference"
+        fhirPathExpression = "CarePlan.subject.reference",
       )
     Assert.assertEquals("Patient", result!!.resourceType.name)
     Assert.assertEquals("sampleId", result.logicalId)
@@ -241,23 +302,25 @@ class RulesFactoryTest : RobolectricTest() {
   fun extractGenderReturnsCorrectGender() {
     Assert.assertEquals(
       "Male",
-      rulesEngineService.extractGender(Patient().setGender(Enumerations.AdministrativeGender.MALE))
+      rulesEngineService.extractGender(Patient().setGender(Enumerations.AdministrativeGender.MALE)),
     )
     Assert.assertEquals(
       "Female",
       rulesEngineService.extractGender(
-        Patient().setGender(Enumerations.AdministrativeGender.FEMALE)
-      )
+        Patient().setGender(Enumerations.AdministrativeGender.FEMALE),
+      ),
     )
     Assert.assertEquals(
       "Other",
-      rulesEngineService.extractGender(Patient().setGender(Enumerations.AdministrativeGender.OTHER))
+      rulesEngineService.extractGender(
+        Patient().setGender(Enumerations.AdministrativeGender.OTHER),
+      ),
     )
     Assert.assertEquals(
       "Unknown",
       rulesEngineService.extractGender(
-        Patient().setGender(Enumerations.AdministrativeGender.UNKNOWN)
-      )
+        Patient().setGender(Enumerations.AdministrativeGender.UNKNOWN),
+      ),
     )
     Assert.assertEquals("", rulesEngineService.extractGender(Patient()))
   }
@@ -268,8 +331,8 @@ class RulesFactoryTest : RobolectricTest() {
       "03/10/2015",
       rulesEngineService.extractDOB(
         Patient().setBirthDate(LocalDate.parse("2015-10-03").toDate()),
-        "dd/MM/YYYY"
-      )
+        "dd/MM/YYYY",
+      ),
     )
   }
 
@@ -294,18 +357,18 @@ class RulesFactoryTest : RobolectricTest() {
     val expectedFormat = "dd-MM-yyyy"
     Assert.assertEquals(
       "10-10-2021",
-      rulesEngineService.formatDate(inputDateString, inputDateFormat, expectedFormat)
+      rulesEngineService.formatDate(inputDateString, inputDateFormat, expectedFormat),
     )
 
     val expectedFormat2 = "dd yyyy"
     Assert.assertEquals(
       "10 2021",
-      rulesEngineService.formatDate(inputDateString, inputDateFormat, expectedFormat2)
+      rulesEngineService.formatDate(inputDateString, inputDateFormat, expectedFormat2),
     )
 
     Assert.assertEquals(
       "Sun, Oct 10 2021",
-      rulesEngineService.formatDate(inputDateString, inputDateFormat)
+      rulesEngineService.formatDate(inputDateString, inputDateFormat),
     )
   }
 
@@ -316,7 +379,7 @@ class RulesFactoryTest : RobolectricTest() {
     val expectedFormat = "dd-MM-yyyy"
     Assert.assertEquals(
       "01-09-2023",
-      rulesEngineService.formatDate(inputDateString, inputDateFormat, expectedFormat)
+      rulesEngineService.formatDate(inputDateString, inputDateFormat, expectedFormat),
     )
   }
 
@@ -327,11 +390,11 @@ class RulesFactoryTest : RobolectricTest() {
       listOf(
         Patient().setBirthDate(LocalDate.parse("2015-10-03").toDate()),
         Patient().setActive(true).setBirthDate(LocalDate.parse("2019-10-03").toDate()),
-        Patient().setActive(true).setBirthDate(LocalDate.parse("2020-10-03").toDate())
+        Patient().setActive(true).setBirthDate(LocalDate.parse("2020-10-03").toDate()),
       )
 
     val result = rulesEngineService.mapResourcesToLabeledCSV(resources, fhirPathExpression, "CHILD")
-    Assert.assertEquals("CHILD,CHILD", result)
+    Assert.assertEquals("CHILD", result)
   }
 
   @Test
@@ -351,15 +414,16 @@ class RulesFactoryTest : RobolectricTest() {
       listOf(
         Task().apply { status = TaskStatus.COMPLETED },
         Task().apply { status = TaskStatus.READY },
-        Task().apply { status = TaskStatus.CANCELLED }
+        Task().apply { status = TaskStatus.CANCELLED },
       )
 
     Assert.assertTrue(
-      rulesEngineService.filterResources(
+      rulesEngineService
+        .filterResources(
           resources = resources,
-          fhirPathExpression = fhirPathExpression
+          fhirPathExpression = fhirPathExpression,
         )
-        .size == 2
+        .size == 2,
     )
   }
 
@@ -399,7 +463,7 @@ class RulesFactoryTest : RobolectricTest() {
       listOf(
         Task().apply { status = TaskStatus.COMPLETED },
         Task().apply { status = TaskStatus.REQUESTED },
-        Task().apply { status = TaskStatus.CANCELLED }
+        Task().apply { status = TaskStatus.CANCELLED },
       )
 
     val results = rulesEngineService.filterResources(resources, fhirPathExpression)
@@ -441,6 +505,69 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun testLimitTo() {
+    val source = mutableListOf("apple", "banana", "cherry", "date")
+    val expected = mutableListOf("apple", "banana")
+    Assert.assertTrue(expected == rulesEngineService.limitTo(source.toMutableList(), 2))
+  }
+
+  @Test
+  fun testLimitToWithResources() {
+    val source =
+      mutableListOf(
+        Condition().apply {
+          id = "001"
+          clinicalStatus = CodeableConcept(Coding("", "0001", "Pregnant"))
+        },
+        Condition().apply {
+          id = "002"
+          clinicalStatus = CodeableConcept(Coding("", "0002", "Family Planning"))
+        },
+      )
+    val expected =
+      mutableListOf(
+        Condition().apply {
+          id = "001"
+          clinicalStatus = CodeableConcept(Coding("", "0001", "Pregnant"))
+        },
+      )
+
+    val result = rulesEngineService.limitTo(source.toMutableList(), 1)
+    Assert.assertTrue(result?.size == expected.size)
+    with(result?.first() as Condition) { Assert.assertEquals(expected[0].id, id) }
+  }
+
+  @Test
+  fun testLimitToWithNull() {
+    val result = rulesEngineService.limitTo(null, 1)
+    Assert.assertTrue(result.isEmpty())
+  }
+
+  @Test
+  fun testLimitToWithNullSourceAndNUllLimit() {
+    val result = rulesEngineService.limitTo(null, null)
+    Assert.assertTrue(result.isEmpty())
+  }
+
+  @Test
+  fun testLimitToWithZeroLimit() {
+    val source =
+      mutableListOf(
+        Condition().apply {
+          id = "001"
+          clinicalStatus = CodeableConcept(Coding("", "0001", "Pregnant"))
+        },
+        Condition().apply {
+          id = "002"
+          clinicalStatus = CodeableConcept(Coding("", "0002", "Family Planning"))
+        },
+      )
+
+    val result = rulesEngineService.limitTo(source.toMutableList(), 0)
+    Assert.assertTrue(result.isEmpty())
+  }
+
+  @Test
   fun testJoinToStringWithNulls() {
     val source = mutableListOf("apple", null, "banana", "cherry", null, "date")
     val expected = "apple, banana, cherry, date"
@@ -469,6 +596,34 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun testJoinToStringSpecialCharacters() {
+    val source = mutableListOf("apple", "banana", " cherry", "  ", "date ", "CM-NTD Leprosy")
+    val expected = "apple,banana,cherry,date ,CM-NTD Leprosy"
+    Assert.assertTrue(
+      expected ==
+        rulesEngineService.joinToString(
+          source.toMutableList(),
+          "(?<=^|,)[\\s,]*(\\w[\\w\\s&-]*)(?=[\\s,]*$|,)",
+          ",",
+        ),
+    )
+  }
+
+  @Test
+  fun testJoinToStringSpecialCharactersWithDefinedSeparator() {
+    val source = mutableListOf("apple", "banana", " cherry", "  ", "date ", "CM&NTD Leprosy")
+    val expected = "apple:banana:cherry:date :CM&NTD Leprosy"
+    Assert.assertTrue(
+      expected ==
+        rulesEngineService.joinToString(
+          source.toMutableList(),
+          "(?<=^|,)[\\s,]*(\\w[\\w\\s&-]*)(?=[\\s,]*$|,)",
+          ":",
+        ),
+    )
+  }
+
+  @Test
   fun testJoinToStringWithExtraCommasAndSpaces() {
     val source =
       mutableListOf(
@@ -486,7 +641,7 @@ class RulesFactoryTest : RobolectricTest() {
         ", ",
         ",     ",
         "     ,   ",
-        "      , "
+        "      , ",
       )
     val expected = "apple, cherry, date "
     Assert.assertTrue(expected == rulesEngineService.joinToString(source))
@@ -503,12 +658,12 @@ class RulesFactoryTest : RobolectricTest() {
         Condition().apply {
           id = "002"
           clinicalStatus = CodeableConcept(Coding("", "0002", "Family Planning"))
-        }
+        },
       )
     val conditions =
       rulesEngineService.filterResources(
         resources,
-        "Condition.clinicalStatus.coding.display = 'Pregnant'"
+        "Condition.clinicalStatus.coding.display = 'Pregnant'",
       )
     val conditionIds = rulesEngineService.mapResourcesToExtractedValues(conditions, "Condition.id")
     Assert.assertTrue(conditionIds.first() == "001")
@@ -519,11 +674,13 @@ class RulesFactoryTest : RobolectricTest() {
     val result = rulesEngineService.filterResources(listOf(), "")
     Assert.assertEquals(result.size, 0)
   }
+
   @Test
   fun filterResourcesIsEmptyWhenEmptyResources() {
     val result = rulesEngineService.filterResources(listOf(), "something")
     Assert.assertEquals(result.size, 0)
   }
+
   @Test
   fun mapResourcesToExtractedValuesIsEmptyWhenEmptyExpression() {
     val result = rulesEngineService.mapResourcesToExtractedValues(listOf(), "")
@@ -586,7 +743,7 @@ class RulesFactoryTest : RobolectricTest() {
     verify {
       rulesFactory.log(
         exception,
-        "jexl exception, consider checking for null before usage: e.g var != null"
+        "jexl exception, consider checking for null before usage: e.g var != null",
       )
     }
   }
@@ -615,7 +772,6 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun testFilterListShouldReturnMatchingResource() {
-
     val resources =
       listOf(
         Condition().apply {
@@ -625,7 +781,7 @@ class RulesFactoryTest : RobolectricTest() {
         Condition().apply {
           id = "2"
           clinicalStatus = CodeableConcept(Coding("", "0002", "family-planning"))
-        }
+        },
       )
 
     val result = rulesEngineService.filterResources(resources, "Condition.id = 2")
@@ -640,13 +796,12 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun testFilterListShouldReturnEmptyListWhenFieldNotFound() {
-
     val listOfResources =
       listOf(
         Condition().apply {
           id = "1"
           clinicalStatus = CodeableConcept(Coding("", "0001", "pregnant"))
-        }
+        },
       )
 
     val result = rulesEngineService.filterResources(listOfResources, "unknown_field")
@@ -664,6 +819,7 @@ class RulesFactoryTest : RobolectricTest() {
     }
     ReflectionHelpers.setField(rulesFactory, "facts", facts)
   }
+
   @Test
   fun testPrettifyDateReturnXDaysAgo() {
     val weeksAgo = 2
@@ -685,11 +841,11 @@ class RulesFactoryTest : RobolectricTest() {
     val period =
       Period(
         LocalDate.parse("2005-01-01", dateFormatter),
-        LocalDate.parse(LocalDate.now().toString(), dateFormatter)
+        LocalDate.parse(LocalDate.now().toString(), dateFormatter),
       )
     Assert.assertEquals(
       period.years.toString() + "y",
-      rulesEngineService.extractAge(Patient().setBirthDate(LocalDate.parse("2005-01-01").toDate()))
+      rulesEngineService.extractAge(Patient().setBirthDate(LocalDate.parse("2005-01-01").toDate())),
     )
   }
 }

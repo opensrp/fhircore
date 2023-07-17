@@ -128,4 +128,9 @@
     <string name="error_loading_config_no_internet">Haikuweza kupakia usanidi. Tafadhali angalia muunganisho wako wa intaneti</string>
     <string name="error_loading_config_general">Hitilafu katika kuunganisha kwenye seva. Tafadhali wasiliana na msimamizi wa mfumo</string>
     <string name="error_loading_config_http_error">Haikuweza kupakia usanidi. Tafadhali jaribu tena baadae</string>
+    <string name="insights">Takwimu</string>
+    <string name="dismiss">Ondoa</string>
+    <string name="unsynced_resources">Zilizobakia Kwa Simu</string>
+    <string name="all_data_synced">Zote zimesawazishwa</string>
+    <string name="invalid_offline_login_state">Usanidi wa mtumiaji unahitajika. Washa mtandao</string>
 </resources>

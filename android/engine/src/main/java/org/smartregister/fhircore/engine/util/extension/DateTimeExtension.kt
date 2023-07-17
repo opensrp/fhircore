@@ -38,6 +38,7 @@ const val SDF_MMMM = "MMMM"
 const val SDF_YYYY = "yyyy"
 const val SDF_D_MMM_YYYY_WITH_COMA = "d MMM, yyyy"
 const val SDFHH_MM = "HH:mm"
+const val SDF_E_MMM_DD_YYYY = "E, MMM dd yyyy"
 
 fun yesterday(): Date = DateTimeType.now().apply { add(Calendar.DATE, -1) }.value
 
@@ -55,8 +56,9 @@ fun SimpleDateFormat.tryParse(date: String): Date? =
       .getOrNull()
 
 fun Date?.makeItReadable(): String {
-  return if (this == null) "N/A"
-  else {
+  return if (this == null) {
+    "N/A"
+  } else {
     SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault()).run { format(this@makeItReadable) }
   }
 }
@@ -122,9 +124,9 @@ fun DateType.format(): String = value.formatDate(SDF_YYYY_MM_DD)
  * periods. If year is > 0 display the age in years, if year is 0 then display age in month and
  * weeks, if month is 0 display age in weeks and days otherwise if week is 0 display age in days.
  */
-fun calculateAge(date: Date, context: Context): String {
+fun calculateAge(date: Date, context: Context, localDateNow: LocalDate = LocalDate.now()): String {
   val theDate: LocalDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
-  val period = Period.between(theDate, LocalDate.now())
+  val period = Period.between(theDate, localDateNow)
   val years = period.years
   val months = period.months
   val weeks = period.days / 7

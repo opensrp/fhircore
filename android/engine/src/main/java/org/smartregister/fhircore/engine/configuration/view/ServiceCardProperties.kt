@@ -16,11 +16,15 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class ServiceCardProperties(
   override val viewType: ViewType = ViewType.SERVICE_CARD,
   override val weight: Float = 0f,
@@ -37,5 +41,17 @@ data class ServiceCardProperties(
   val serviceMemberIcons: String? = null,
   val serviceButton: ButtonProperties? = null,
   val services: List<ButtonProperties>? = null,
-  val actions: List<ActionConfig> = emptyList()
-) : ViewProperties()
+  val actions: List<ActionConfig> = emptyList(),
+) : ViewProperties(), Parcelable {
+  override fun interpolate(computedValuesMap: Map<String, Any>): ServiceCardProperties {
+    return this.copy(
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap),
+      serviceMemberIcons = serviceMemberIcons?.interpolate(computedValuesMap),
+      clickable = clickable.interpolate(computedValuesMap),
+      details = details.map { it.interpolate(computedValuesMap) },
+      serviceButton = serviceButton?.interpolate(computedValuesMap),
+      services = services?.map { it.interpolate(computedValuesMap) },
+    )
+  }
+}

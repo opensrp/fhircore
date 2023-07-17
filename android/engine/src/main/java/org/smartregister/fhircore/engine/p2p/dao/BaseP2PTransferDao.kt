@@ -43,7 +43,7 @@ open class BaseP2PTransferDao
 constructor(
   open val fhirEngine: FhirEngine,
   open val dispatcherProvider: DispatcherProvider,
-  open val configurationRegistry: ConfigurationRegistry
+  open val configurationRegistry: ConfigurationRegistry,
 ) {
 
   protected val jsonParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
@@ -53,7 +53,8 @@ constructor(
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
     val deviceToDeviceSyncConfigs = appRegistry.deviceToDeviceSync
 
-    return if (deviceToDeviceSyncConfigs?.resourcesToSync != null &&
+    return if (
+      deviceToDeviceSyncConfigs?.resourcesToSync != null &&
         deviceToDeviceSyncConfigs.resourcesToSync.isNotEmpty()
     ) {
       getDynamicDataTypes(deviceToDeviceSyncConfigs.resourcesToSync)
@@ -65,30 +66,30 @@ constructor(
   open fun getDefaultDataTypes(): TreeSet<DataType> =
     TreeSet<DataType>(
       listOf(
-        ResourceType.Group,
-        ResourceType.Patient,
-        ResourceType.Questionnaire,
-        ResourceType.QuestionnaireResponse,
-        ResourceType.Observation,
-        ResourceType.Encounter
-      )
+          ResourceType.Group,
+          ResourceType.Patient,
+          ResourceType.Questionnaire,
+          ResourceType.QuestionnaireResponse,
+          ResourceType.Observation,
+          ResourceType.Encounter,
+        )
         .mapIndexed { index, resourceType ->
           DataType(name = resourceType.name, DataType.Filetype.JSON, index)
-        }
+        },
     )
 
   open fun getDynamicDataTypes(resourceList: List<String>): TreeSet<DataType> =
     TreeSet<DataType>(
-      resourceList.filter { isValidResourceType(it) }.mapIndexed { index, resource ->
-        DataType(name = resource, DataType.Filetype.JSON, index)
-      }
+      resourceList
+        .filter { isValidResourceType(it) }
+        .mapIndexed { index, resource -> DataType(name = resource, DataType.Filetype.JSON, index) },
     )
 
   suspend fun loadResources(
     lastRecordUpdatedAt: Long,
     batchSize: Int,
     offset: Int,
-    classType: Class<out Resource>
+    classType: Class<out Resource>,
   ): List<Resource> {
     return withContext(dispatcherProvider.io()) {
       val searchQuery =
@@ -97,18 +98,19 @@ constructor(
             SELECT a.serializedResource
               FROM ResourceEntity a
               LEFT JOIN DateIndexEntity b
-              ON a.resourceType = b.resourceType AND a.resourceUuid = b.resourceUuid 
+              ON a.resourceType = b.resourceType AND a.resourceUuid = b.resourceUuid AND b.index_name = "_lastUpdated"
               LEFT JOIN DateTimeIndexEntity c
-              ON a.resourceType = c.resourceType AND a.resourceUuid = c.resourceUuid
-              WHERE a.resourceUuid IN (
+              ON a.resourceType = c.resourceType AND a.resourceUuid = c.resourceUuid AND c.index_name = "_lastUpdated"
+              WHERE a.resourceType = "${classType.newInstance().resourceType}"
+              AND a.resourceUuid IN (
               SELECT resourceUuid FROM DateTimeIndexEntity
-              WHERE resourceType = '${classType.newInstance().resourceType}' AND index_name = '_lastUpdated' AND index_to >= ?
+              WHERE resourceType = "${classType.newInstance().resourceType}" AND index_name = "_lastUpdated" AND index_to >= ?
               )
-              AND (b.index_name = '_lastUpdated' OR c.index_name = '_lastUpdated')
-              ORDER BY c.index_from ASC, a.id ASC
+              ORDER BY b.index_from ASC, c.index_from ASC
               LIMIT ? OFFSET ?
-          """.trimIndent(),
-          listOf(lastRecordUpdatedAt, batchSize, offset)
+                    """
+            .trimIndent(),
+          listOf(lastRecordUpdatedAt, batchSize, offset),
         )
 
       fhirEngine.search(searchQuery)
@@ -134,8 +136,8 @@ constructor(
         DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
         {
           value = of(DateTimeType(Date(lastRecordUpdatedAt)))
-          prefix = ParamPrefixEnum.GREATERTHAN
-        }
+          prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+        },
       )
     }
   }

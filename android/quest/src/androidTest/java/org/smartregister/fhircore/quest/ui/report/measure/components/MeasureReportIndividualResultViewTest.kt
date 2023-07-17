@@ -23,12 +23,13 @@ import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.core.app.ActivityScenario
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientViewData
+import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
 class MeasureReportIndividualResultViewTest {
 
@@ -36,11 +37,10 @@ class MeasureReportIndividualResultViewTest {
 
   private lateinit var scenario: ActivityScenario<ComponentActivity>
 
-  private val patientViewData =
-    MeasureReportPatientViewData(
-      name = "Jacky Coughlin",
-      gender = "F",
-      age = "27",
+  private val subjectViewData =
+    MeasureReportSubjectViewData(
+      type = ResourceType.Patient,
+      display = "Jacky Coughlin, F, 27",
       logicalId = "12444",
     )
 
@@ -59,51 +59,18 @@ class MeasureReportIndividualResultViewTest {
     initComposable(isMatchedIndicator = true)
     composeTestRule.onNodeWithTag(PERSONAL_DETAILS_TEST_TAG).assertExists()
     composeTestRule
-      .onNodeWithText(useUnmergedTree = true, text = patientViewData.personalDetails())
+      .onNodeWithText(useUnmergedTree = true, text = subjectViewData.display)
       .assertExists()
       .assertIsDisplayed()
   }
 
-  @Test
-  fun testResultViewRendersIndicatorStatusCorrectly() {
-    initComposable(isMatchedIndicator = true)
-    composeTestRule.onNodeWithTag(RESULT_VIEW_INDICATOR_STATUS).assertExists()
-    composeTestRule
-      .onNodeWithText(useUnmergedTree = true, text = "True")
-      .assertExists()
-      .assertIsDisplayed()
-  }
-
-  @Test
-  fun testResultViewRendersCheckIconCorrectly() {
-    initComposable(isMatchedIndicator = true)
-    composeTestRule.onNodeWithTag(RESULT_VIEW_CHECK_ICON).assertExists().assertIsDisplayed()
-  }
-
-  @Test
-  fun testResultViewRendersStalledIconCorrectly() {
-    initComposable(isMatchedIndicator = false)
-    composeTestRule.onNodeWithTag(RESULT_VIEW_STALLED_ICON).assertExists().assertIsDisplayed()
-  }
-
-  @Test
-  fun testResultViewRendersIndicatorDescriptionCorrectly() {
-    initComposable(isMatchedIndicator = true)
-    composeTestRule.onNodeWithTag(RESULT_VIEW_INDICATOR_DESCRIPTION).assertExists()
-    composeTestRule
-      .onNodeWithText(useUnmergedTree = true, text = "Indicator description")
-      .assertExists()
-      .assertIsDisplayed()
-  }
   private fun initComposable(isMatchedIndicator: Boolean) {
     scenario.onActivity { activity ->
       activity.setContent {
         AppTheme {
           MeasureReportIndividualResultView(
-            patientViewData = patientViewData,
+            subjectViewData = subjectViewData,
             isMatchedIndicator = isMatchedIndicator,
-            indicatorStatus = "True",
-            indicatorDescription = "Indicator description"
           )
         }
       }

@@ -21,10 +21,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -57,15 +60,16 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.flow.SharedFlow
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.TopBarConfig
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
-import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.ui.shared.components.CompoundText
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
+import org.smartregister.fhircore.quest.ui.shared.components.Image
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
@@ -82,7 +86,7 @@ fun ProfileScreen(
   navController: NavController,
   profileUiState: ProfileUiState,
   snackStateFlow: SharedFlow<SnackBarMessageConfig>,
-  onEvent: (ProfileEvent) -> Unit
+  onEvent: (ProfileEvent) -> Unit,
 ) {
   val scaffoldState = rememberScaffoldState()
   val lazyListState = rememberLazyListState()
@@ -101,14 +105,15 @@ fun ProfileScreen(
           elevation = 4,
           profileUiState = profileUiState,
           lazyListState = lazyListState,
-          onEvent = onEvent
+          onEvent = onEvent,
+          collapsible = false,
         )
       } else {
         CustomProfileTopAppBar(
           navController = navController,
           profileUiState = profileUiState,
           onEvent = onEvent,
-          lazyListState = lazyListState
+          lazyListState = lazyListState,
         )
       }
     },
@@ -121,7 +126,7 @@ fun ProfileScreen(
           fabActions = fabActions,
           resourceData = profileUiState.resourceData,
           navController = navController,
-          lazyListState = lazyListState
+          lazyListState = lazyListState,
         )
       }
     },
@@ -131,7 +136,7 @@ fun ProfileScreen(
         snackBarHostState = snackBarHostState,
         backgroundColorHex = profileUiState.snackBarTheme.backgroundColor,
         actionColorHex = profileUiState.snackBarTheme.actionTextColor,
-        contentColorHex = profileUiState.snackBarTheme.messageTextColor
+        contentColorHex = profileUiState.snackBarTheme.messageTextColor,
       )
     },
   ) { innerPadding ->
@@ -140,7 +145,7 @@ fun ProfileScreen(
         CircularProgressIndicator(
           modifier = modifier.align(Alignment.Center).size(24.dp),
           strokeWidth = 1.8.dp,
-          color = MaterialTheme.colors.primary
+          color = MaterialTheme.colors.primary,
         )
       }
       LazyColumn(state = lazyListState) {
@@ -149,7 +154,7 @@ fun ProfileScreen(
             viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
             resourceData = profileUiState.resourceData
                 ?: ResourceData("", ResourceType.Patient, emptyMap()),
-            navController = navController
+            navController = navController,
           )
         }
       }
@@ -163,7 +168,7 @@ fun CustomProfileTopAppBar(
   navController: NavController,
   profileUiState: ProfileUiState,
   onEvent: (ProfileEvent) -> Unit,
-  lazyListState: LazyListState
+  lazyListState: LazyListState,
 ) {
   val topBarConfig = remember { profileUiState.profileConfiguration?.topAppBar ?: TopBarConfig() }
 
@@ -172,21 +177,59 @@ fun CustomProfileTopAppBar(
       modifier = modifier,
       navController = navController,
       elevation = 0,
-      titleTextProperties = topBarConfig.title,
+      titleTextProperties =
+        topBarConfig.title?.interpolate(
+          profileUiState.resourceData?.computedValuesMap ?: emptyMap(),
+        ),
       profileUiState = profileUiState,
+      collapsible = topBarConfig.collapsible,
       onEvent = onEvent,
-      lazyListState = lazyListState
+      lazyListState = lazyListState,
     )
-    AnimatedVisibility(visible = lazyListState.isScrollingDown()) {
-      Column(modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
-        ViewRenderer(
-          viewProperties = topBarConfig.content,
-          resourceData = profileUiState.resourceData
-              ?: ResourceData("", ResourceType.Patient, emptyMap()),
-          navController = navController
+    if (topBarConfig.collapsible) {
+      AnimatedVisibility(visible = lazyListState.isScrollingDown()) {
+        RenderSimpleAppTopBar(
+          modifier = modifier,
+          topBarConfig = topBarConfig,
+          profileUiState = profileUiState,
+          navController = navController,
+          titleContentPadding = 16,
         )
       }
+    } else {
+      RenderSimpleAppTopBar(
+        modifier = modifier,
+        topBarConfig = topBarConfig,
+        profileUiState = profileUiState,
+        navController = navController,
+        titleContentPadding = 0,
+      )
     }
+  }
+}
+
+@Composable
+private fun RenderSimpleAppTopBar(
+  modifier: Modifier,
+  topBarConfig: TopBarConfig,
+  profileUiState: ProfileUiState,
+  navController: NavController,
+  titleContentPadding: Int,
+) {
+  Column(
+    modifier =
+      modifier.padding(
+        start = titleContentPadding.dp,
+        end = titleContentPadding.dp,
+        bottom = titleContentPadding.dp,
+      ),
+  ) {
+    ViewRenderer(
+      viewProperties = topBarConfig.content,
+      resourceData = profileUiState.resourceData
+          ?: ResourceData("", ResourceType.Patient, emptyMap()),
+      navController = navController,
+    )
   }
 }
 
@@ -198,17 +241,26 @@ private fun SimpleTopAppBar(
   titleTextProperties: CompoundTextProperties? = null,
   profileUiState: ProfileUiState,
   lazyListState: LazyListState,
-  onEvent: (ProfileEvent) -> Unit
+  collapsible: Boolean,
+  onEvent: (ProfileEvent) -> Unit,
 ) {
   TopAppBar(
     modifier = modifier.testTag(PROFILE_TOP_BAR_TEST_TAG),
     title = {
       if (titleTextProperties != null && profileUiState.resourceData != null) {
-        AnimatedVisibility(visible = !lazyListState.isScrollingDown()) {
+        if (collapsible) {
+          AnimatedVisibility(visible = !lazyListState.isScrollingDown()) {
+            CompoundText(
+              compoundTextProperties = titleTextProperties,
+              resourceData = profileUiState.resourceData,
+              navController = navController,
+            )
+          }
+        } else {
           CompoundText(
             compoundTextProperties = titleTextProperties,
             resourceData = profileUiState.resourceData,
-            navController = navController
+            navController = navController,
           )
         }
       }
@@ -218,7 +270,7 @@ private fun SimpleTopAppBar(
         Icon(
           Icons.Filled.ArrowBack,
           null,
-          modifier = modifier.testTag(PROFILE_TOP_BAR_ICON_TEST_TAG)
+          modifier = modifier.testTag(PROFILE_TOP_BAR_ICON_TEST_TAG),
         )
       }
     },
@@ -226,10 +278,10 @@ private fun SimpleTopAppBar(
       ProfileTopAppBarMenuAction(
         profileUiState = profileUiState,
         onEvent = onEvent,
-        navController = navController
+        navController = navController,
       )
     },
-    elevation = elevation.dp
+    elevation = elevation.dp,
   )
 }
 
@@ -238,29 +290,26 @@ private fun ProfileTopAppBarMenuAction(
   profileUiState: ProfileUiState,
   onEvent: (ProfileEvent) -> Unit,
   navController: NavController,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   var showOverflowMenu by remember { mutableStateOf(false) }
-
   IconButton(
     onClick = { showOverflowMenu = !showOverflowMenu },
-    modifier = modifier.testTag(DROPDOWN_MENU_TEST_TAG)
-  ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null, tint = Color.White) }
+    modifier = modifier.testTag(DROPDOWN_MENU_TEST_TAG),
+  ) {
+    Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null, tint = Color.White)
+  }
 
   DropdownMenu(expanded = showOverflowMenu, onDismissRequest = { showOverflowMenu = false }) {
-    profileUiState.profileConfiguration?.overFlowMenuItems?.forEach { overflowMenuItemConfig ->
-      if (!overflowMenuItemConfig
-          .visible
-          .interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
-          .toBoolean()
-      )
-        return@forEach
-      val enabled =
-        overflowMenuItemConfig
-          .enabled
-          .interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
-          .toBoolean()
+    profileUiState.profileConfiguration?.overFlowMenuItems?.forEach {
+      val overflowMenuItemConfig =
+        it.interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
+      if (!overflowMenuItemConfig.visible.toBoolean()) return@forEach
+      val enabled = overflowMenuItemConfig.enabled.toBoolean()
       if (overflowMenuItemConfig.showSeparator) Divider(color = DividerColor, thickness = 1.dp)
+      val contentColor =
+        if (enabled) overflowMenuItemConfig.titleColor.parseColor() else DefaultColor
+
       DropdownMenuItem(
         enabled = enabled,
         onClick = {
@@ -269,8 +318,8 @@ private fun ProfileTopAppBarMenuAction(
             ProfileEvent.OverflowMenuClick(
               navController = navController,
               resourceData = profileUiState.resourceData,
-              overflowMenuItemConfig = overflowMenuItemConfig
-            )
+              overflowMenuItemConfig = overflowMenuItemConfig,
+            ),
           )
         },
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -279,15 +328,21 @@ private fun ProfileTopAppBarMenuAction(
             .fillMaxWidth()
             .background(
               color =
-                if (overflowMenuItemConfig.confirmAction)
+                if (overflowMenuItemConfig.confirmAction) {
                   overflowMenuItemConfig.backgroundColor.parseColor().copy(alpha = 0.1f)
-                else Color.Transparent
-            )
+                } else {
+                  Color.Transparent
+                },
+            ),
       ) {
-        Text(
-          text = overflowMenuItemConfig.title,
-          color = if (enabled) overflowMenuItemConfig.titleColor.parseColor() else DefaultColor
-        )
+        Row {
+          Image(
+            imageProperties = ImageProperties(imageConfig = overflowMenuItemConfig.icon),
+            tint = contentColor,
+          )
+          if (overflowMenuItemConfig.icon != null) Spacer(modifier = Modifier.width(4.dp))
+          Text(text = overflowMenuItemConfig.title, color = contentColor)
+        }
       }
     }
   }

@@ -27,30 +27,88 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import io.mockk.mockk
 import org.hl7.fhir.r4.model.ResourceType
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 
 class ActionableButtonTest {
-
   @get:Rule val composeRule = createComposeRule()
-
   private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
 
-  @Before
-  fun init() {
+  @Test
+  fun testActionableButtonRendersAncClickWorksCorrectlyWithStatusDue() {
+    setContent(ServiceStatus.DUE.name)
+
+    composeRule
+      .onNodeWithText("Button Text", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+  }
+
+  @Test
+  fun testActionableButtonRendersAncClickWorksCorrectlyWithStatusOverdue() {
+    setContent(ServiceStatus.OVERDUE.name)
+
+    composeRule
+      .onNodeWithText("Button Text", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+  }
+
+  @Test
+  fun testActionableButtonRendersAncClickWorksCorrectlyWithStatusInProgress() {
+    setContent(ServiceStatus.IN_PROGRESS.name)
+
+    composeRule
+      .onNodeWithText("Button Text", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+  }
+
+  @Test
+  fun testActionableButtonRendersAncClickWorksCorrectlyWithStatusSetUsingComputedValues() {
+    setContent("@{ status }", computedValuesMap = mapOf("status" to "DUE"))
+
+    composeRule
+      .onNodeWithText("Button Text", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+  }
+
+  @Test
+  fun testActionableButtonRendersAncClickWorksCorrectlyWhenDisabled() {
+    setContent(ServiceStatus.OVERDUE.name, "false")
+
+    composeRule
+      .onNodeWithText("Button Text", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+  }
+
+  private fun setContent(
+    serviceStatus: String,
+    enabled: String = "true",
+    computedValuesMap: Map<String, Any> = emptyMap(),
+  ) {
     composeRule.setContent {
       Column(modifier = Modifier.height(50.dp)) {
         ActionableButton(
           buttonProperties =
             ButtonProperties(
-              status = "DUE",
+              status = serviceStatus,
               text = "Button Text",
               actions =
                 listOf(
@@ -58,22 +116,15 @@ class ActionableButtonTest {
                     trigger = ActionTrigger.ON_CLICK,
                     workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
                     questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
-                  )
-                )
+                  ),
+                ),
+              enabled = enabled,
+              startIcon = ImageConfig("ic_home", ICON_TYPE_LOCAL),
             ),
-          resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-          navController = navController
+          resourceData = ResourceData("id", ResourceType.Patient, computedValuesMap),
+          navController = navController,
         )
       }
     }
-  }
-
-  @Test
-  fun testActionableButtonRendersAncClickWorksCorrectly() {
-    composeRule
-      .onNodeWithText("Button Text", useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
-      .performClick()
   }
 }

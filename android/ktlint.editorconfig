@@ -1,0 +1,4 @@
+[*.{kt,kts}]
+continuation_indent_size = 2
+indent_size = 2
+ktlint_standard = disabled

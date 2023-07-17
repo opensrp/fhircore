@@ -31,9 +31,9 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 @HiltAndroidTest
 class MeasureReportPatientViewDataMapperTest : RobolectricTest() {
 
-  @get:Rule val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
+  @Inject lateinit var measureReportPatientViewDataMapper: MeasureReportSubjectViewDataMapper
 
   @Before
   fun setup() {
@@ -43,23 +43,22 @@ class MeasureReportPatientViewDataMapperTest : RobolectricTest() {
   @Test
   fun testMapToOutputModelPatient() {
     val samplePatient =
-      "patient-registration-questionnaire/sample/patient.json".parseSampleResourceFromFile() as
-        Patient
+      "patient-registration-questionnaire/sample/patient.json".parseSampleResourceFromFile()
+        as Patient
     val dto =
       ResourceData(
         baseResourceId = samplePatient.logicalId,
         baseResourceType = samplePatient.resourceType,
-        computedValuesMap = emptyMap()
+        computedValuesMap = emptyMap(),
       )
     val profileViewDataHiv = measureReportPatientViewDataMapper.transformInputToOutputModel(dto)
     with(profileViewDataHiv) {
       // TODO Update expected values once refactors in
       //  MeasureReportPatientViewDataMapper#transformInputToOutputModel() are complete
       Assert.assertEquals("TEST_PATIENT", logicalId)
-      Assert.assertEquals("", name)
+      Assert.assertEquals("", display)
       Assert.assertEquals("", getTestPatientAge())
       Assert.assertEquals("", family)
-      Assert.assertEquals("", gender)
     }
     Assert.assertEquals("TEST_PATIENT", profileViewDataHiv.logicalId)
   }

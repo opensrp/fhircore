@@ -32,7 +32,6 @@ import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import org.smartregister.fhircore.quest.util.extensions.isVisible
 
 /**
  * This function takes a list of [ViewProperties] and build views recursively as configured in the
@@ -47,17 +46,15 @@ import org.smartregister.fhircore.quest.util.extensions.isVisible
 fun ViewRenderer(
   viewProperties: List<ViewProperties>,
   resourceData: ResourceData,
-  navController: NavController
+  navController: NavController,
 ) {
   viewProperties.forEach { properties ->
-    if (properties.isVisible(resourceData.computedValuesMap)) {
-      GenerateView(
-        modifier = generateModifier(properties),
-        properties = properties,
-        resourceData = resourceData,
-        navController = navController
-      )
-    }
+    GenerateView(
+      modifier = generateModifier(properties),
+      properties = properties.interpolate(resourceData.computedValuesMap),
+      resourceData = resourceData,
+      navController = navController,
+    )
   }
 }
 
@@ -77,20 +74,20 @@ private fun PreviewWeightedViewsInRow() {
                 text = "Due Service",
                 status = "DUE",
                 fillMaxWidth = true,
-                weight = 1.0f
+                weight = 1.0f,
               ),
               ButtonProperties(
                 viewType = ViewType.BUTTON,
                 text = "Completed Service",
                 status = "COMPLETED",
                 fillMaxWidth = true,
-                weight = 1.0f
-              )
-            )
-        )
+                weight = 1.0f,
+              ),
+            ),
+        ),
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-    navController = rememberNavController()
+    navController = rememberNavController(),
   )
 }
 
@@ -118,14 +115,14 @@ private fun PreviewWrappedViewsInRow() {
                 primaryText = "ANC Danger Signs",
                 primaryTextColor = "#D2760D",
                 primaryTextBackgroundColor = "#FFECD6",
-                padding = 8
+                padding = 8,
               ),
               CompoundTextProperties(
                 viewType = ViewType.COMPOUND_TEXT,
                 primaryText = "TB Danger Signs",
                 primaryTextColor = "#D2760D",
                 primaryTextBackgroundColor = "#FFECD6",
-                padding = 8
+                padding = 8,
               ),
               CompoundTextProperties(
                 viewType = ViewType.COMPOUND_TEXT,
@@ -139,13 +136,13 @@ private fun PreviewWrappedViewsInRow() {
                 primaryText = "COVID Danger Signs",
                 primaryTextColor = "#D2760D",
                 primaryTextBackgroundColor = "#FFECD6",
-                padding = 8
-              )
-            )
-        )
+                padding = 8,
+              ),
+            ),
+        ),
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-    navController = rememberNavController()
+    navController = rememberNavController(),
   )
 }
 
@@ -176,13 +173,13 @@ private fun PreviewSameSizedViewInRow() {
                 primaryTextColor = "#D2760D",
                 primaryTextBackgroundColor = "#FFECD6",
                 padding = 8,
-                alignment = ViewAlignment.END
-              )
-            )
-        )
+                alignment = ViewAlignment.END,
+              ),
+            ),
+        ),
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-    navController = rememberNavController()
+    navController = rememberNavController(),
   )
 }
 
@@ -200,7 +197,7 @@ private fun PreviewCardViewWithRows() {
               viewType = ViewType.COMPOUND_TEXT,
               primaryText = "PATIENTS",
               primaryTextColor = "#6F7274",
-              padding = 8
+              padding = 8,
             ),
           content =
             listOf(
@@ -230,10 +227,10 @@ private fun PreviewCardViewWithRows() {
                             viewType = ViewType.COMPOUND_TEXT,
                             primaryText = "VIEW ALL",
                             primaryTextColor = "#508BE8",
-                            primaryTextFontWeight = TextFontWeight.MEDIUM
-                          )
-                        )
-                    )
+                            primaryTextFontWeight = TextFontWeight.MEDIUM,
+                          ),
+                        ),
+                    ),
                   ),
               ),
               RowProperties(
@@ -260,11 +257,11 @@ private fun PreviewCardViewWithRows() {
                             viewType = ViewType.COMPOUND_TEXT,
                             primaryText = "VIEW ALL",
                             primaryTextColor = "#508BE8",
-                            primaryTextFontWeight = TextFontWeight.MEDIUM
-                          )
-                        )
-                    )
-                  )
+                            primaryTextFontWeight = TextFontWeight.MEDIUM,
+                          ),
+                        ),
+                    ),
+                  ),
               ),
               RowProperties(
                 viewType = ViewType.ROW,
@@ -290,16 +287,16 @@ private fun PreviewCardViewWithRows() {
                             viewType = ViewType.COMPOUND_TEXT,
                             primaryText = "VIEW ALL",
                             primaryTextColor = "#508BE8",
-                            primaryTextFontWeight = TextFontWeight.MEDIUM
-                          )
-                        )
-                    )
-                  )
-              )
-            )
-        )
+                            primaryTextFontWeight = TextFontWeight.MEDIUM,
+                          ),
+                        ),
+                    ),
+                  ),
+              ),
+            ),
+        ),
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-    navController = rememberNavController()
+    navController = rememberNavController(),
   )
 }

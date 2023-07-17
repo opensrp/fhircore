@@ -44,7 +44,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 @HiltAndroidTest
 class ConfigDownloadWorkerTest : RobolectricTest() {
 
-  @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   private val configurationRegistry = mockk<ConfigurationRegistry>()
   private lateinit var configDownloadWorker: ConfigDownloadWorker
 
@@ -64,7 +64,7 @@ class ConfigDownloadWorkerTest : RobolectricTest() {
     // Initialize WorkManager for instrumentation tests.
     WorkManagerTestInitHelper.initializeTestWorkManager(
       ApplicationProvider.getApplicationContext(),
-      config
+      config,
     )
   }
 
@@ -83,12 +83,13 @@ class ConfigDownloadWorkerTest : RobolectricTest() {
     override fun createWorker(
       appContext: Context,
       workerClassName: String,
-      workerParameters: WorkerParameters
+      workerParameters: WorkerParameters,
     ): ListenableWorker {
       return ConfigDownloadWorker(
         appContext = appContext,
         workerParams = workerParameters,
-        configurationRegistry = configurationRegistry
+        configurationRegistry = configurationRegistry,
+        dispatcherProvider = this@ConfigDownloadWorkerTest.coroutineTestRule.testDispatcherProvider,
       )
     }
   }

@@ -17,9 +17,11 @@
 package org.smartregister.fhircore.engine.configuration.profile
 
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFilterConfig
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
@@ -39,5 +41,11 @@ data class ProfileConfiguration(
   val topAppBar: TopBarConfig? = null,
   val views: List<ViewProperties> = emptyList(),
   val fabActions: List<NavigationMenuConfig> = emptyList(),
-  val overFlowMenuItems: List<OverflowMenuItemConfig> = emptyList()
+  val overFlowMenuItems: List<OverflowMenuItemConfig> = emptyList(),
+  val filterActiveResources: List<ActiveResourceFilterConfig> =
+    listOf(
+      ActiveResourceFilterConfig(resourceType = ResourceType.Patient, active = true),
+      ActiveResourceFilterConfig(resourceType = ResourceType.Group, active = true),
+    ),
+  val configRules: List<RuleConfig>? = null,
 ) : Configuration()

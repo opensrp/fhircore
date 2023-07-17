@@ -73,7 +73,7 @@ class FhirEngineExtensionTest : RobolectricTest() {
 
     Assert.assertEquals(
       "CREATE INDEX IF NOT EXISTS `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
-      searchQuerySlot.captured.query
+      searchQuerySlot.captured.query,
     )
   }
 
@@ -102,7 +102,7 @@ class FhirEngineExtensionTest : RobolectricTest() {
               type = RelatedArtifact.RelatedArtifactType.DEPENDSON
               resource = "Library/456"
             },
-            RelatedArtifact().apply { type = RelatedArtifact.RelatedArtifactType.CITATION }
+            RelatedArtifact().apply { type = RelatedArtifact.RelatedArtifactType.CITATION },
           )
       }
 

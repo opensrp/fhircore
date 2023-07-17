@@ -16,12 +16,16 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import android.os.Parcelable
 import androidx.compose.material.SnackbarDuration
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-@kotlinx.serialization.Serializable
+@Serializable
+@Parcelize
 data class SnackBarMessageConfig(
   val message: String = "",
   val actionLabel: String? = null,
   val duration: SnackbarDuration = SnackbarDuration.Short,
   val snackBarActions: List<ActionConfig> = emptyList(),
-) : java.io.Serializable
+) : java.io.Serializable, Parcelable

@@ -19,22 +19,16 @@ package org.smartregister.fhircore.quest.util.extensions
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
-import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.engine.configuration.interpolate
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
-import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
-import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
 
@@ -42,48 +36,40 @@ fun List<ActionConfig>.handleClickEvent(
   navController: NavController,
   resourceData: ResourceData? = null,
   navMenu: NavigationMenuConfig? = null,
-  questionnaireResponse: QuestionnaireResponse? = null
 ) {
-  val onClickAction = this.find { it.trigger == ActionTrigger.ON_CLICK }
-  onClickAction?.let { actionConfig ->
+  val onClickAction =
+    this.find { it.trigger.isIn(ActionTrigger.ON_CLICK, ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION) }
+  onClickAction?.let { theConfig ->
+    val computedValuesMap = resourceData?.computedValuesMap ?: emptyMap()
+    val actionConfig = theConfig.interpolate(computedValuesMap)
     when (onClickAction.workflow) {
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
-          val questionnaireConfigInterpolated =
-            questionnaireConfig.interpolate(resourceData?.computedValuesMap ?: emptyMap())
-
-          val intentBundle =
-            when (questionnaireConfigInterpolated.type) {
-              QuestionnaireType.EDIT, QuestionnaireType.READ_ONLY -> {
-                actionConfig.paramsBundle(resourceData?.computedValuesMap ?: emptyMap()).apply {
-                  putString(
-                    QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
-                    questionnaireResponse?.encodeResourceToString()
-                      ?: QuestionnaireResponse().encodeResourceToString()
-                  )
-                }
-              }
-              else -> bundleOf()
-            }
+          val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
 
           if (navController.context is QuestionnaireHandler) {
             (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
               context = navController.context,
-              intentBundle = intentBundle,
               questionnaireConfig = questionnaireConfigInterpolated,
-              actionParams = interpolateActionParamsValue(actionConfig, resourceData).toList()
+              actionParams = interpolateActionParamsValue(actionConfig, resourceData).toList(),
+              baseResourceId = resourceData?.baseResourceId,
+              baseResourceType = resourceData?.baseResourceType?.name,
             )
           }
         }
       }
       ApplicationWorkflow.LAUNCH_PROFILE -> {
+        val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
+        val resourceId =
+          interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
+            ?: resourceData?.baseResourceId
         actionConfig.id?.let { id ->
           val args =
             bundleOf(
               NavigationArg.PROFILE_ID to id,
-              NavigationArg.RESOURCE_ID to resourceData?.baseResourceId,
+              NavigationArg.RESOURCE_ID to resourceId,
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
-              NavigationArg.PARAMS to interpolateActionParamsValue(actionConfig, resourceData)
+              NavigationArg.PARAMS to interpolatedParams,
             )
           navController.navigate(MainNavigationScreen.Profile.route, args)
         }
@@ -92,20 +78,30 @@ fun List<ActionConfig>.handleClickEvent(
         val args =
           bundleOf(
             Pair(NavigationArg.REGISTER_ID, actionConfig.id ?: navMenu?.id),
-            Pair(
-              NavigationArg.SCREEN_TITLE,
-              resourceData?.let { actionConfig.display(it.computedValuesMap) } ?: navMenu?.display
-            ),
+            Pair(NavigationArg.SCREEN_TITLE, actionConfig.display ?: navMenu?.display ?: ""),
             Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
-            Pair(NavigationArg.PARAMS, interpolateActionParamsValue(actionConfig, resourceData))
+            Pair(NavigationArg.PARAMS, interpolateActionParamsValue(actionConfig, resourceData)),
           )
 
-        // Register is the entry point destination, clear back stack with every register switch
-        navController.navigate(
-          resId = MainNavigationScreen.Home.route,
-          args = args,
-          navOptions = navOptions(MainNavigationScreen.Home.route),
-        )
+        // If value != null, we are navigating FROM a register; disallow same register navigation
+        val currentRegisterId =
+          navController.currentBackStackEntry?.arguments?.getString(NavigationArg.REGISTER_ID)
+        val sameRegisterNavigation =
+          args.getString(NavigationArg.REGISTER_ID) ==
+            navController.previousBackStackEntry?.arguments?.getString(NavigationArg.REGISTER_ID)
+
+        if (!currentRegisterId.isNullOrEmpty() && sameRegisterNavigation) {
+          return
+        } else {
+          navController.navigate(
+            resId = MainNavigationScreen.Home.route,
+            args = args,
+            navOptions =
+              navController.currentDestination?.id?.let {
+                navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
+              },
+          )
+        }
       }
       ApplicationWorkflow.LAUNCH_REPORT -> {
         val args = bundleOf(Pair(NavigationArg.REPORT_ID, actionConfig.id))
@@ -117,7 +113,7 @@ fun List<ActionConfig>.handleClickEvent(
       ApplicationWorkflow.LAUNCH_MAP ->
         navController.navigate(
           MainNavigationScreen.GeoWidget.route,
-          bundleOf(NavigationArg.CONFIG_ID to actionConfig.id)
+          bundleOf(NavigationArg.CONFIG_ID to actionConfig.id),
         )
       else -> return
     }
@@ -125,40 +121,22 @@ fun List<ActionConfig>.handleClickEvent(
 }
 
 fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =
-  actionConfig
-    .params
-    .map {
-      ActionParameter(
-        key = it.key,
-        paramType = it.paramType,
-        dataType = it.dataType,
-        linkId = it.linkId,
-        value = it.value.interpolate(resourceData?.computedValuesMap ?: emptyMap())
-      )
-    }
+  actionConfig.params
+    .map { it.interpolate(resourceData?.computedValuesMap ?: emptyMap()) }
     .toTypedArray()
 
 /**
  * Apply navigation options. Restrict destination to only use a single instance in the back stack.
  */
 fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = true) =
-  NavOptions.Builder().setPopUpTo(resId, true, inclusive).setLaunchSingleTop(singleOnTop).build()
-
-fun ViewProperties.clickable(ResourceData: ResourceData) =
-  this.clickable.interpolate(ResourceData.computedValuesMap).toBoolean()
-
-fun ViewProperties.isVisible(computedValuesMap: Map<String, Any>) =
-  this.visible.interpolate(computedValuesMap).toBoolean()
+  NavOptions.Builder().setPopUpTo(resId, inclusive, true).setLaunchSingleTop(singleOnTop).build()
 
 /**
  * Function to convert the elements of an array that have paramType [ActionParameterType.PARAMDATA]
- * to a map of their keys to values. It also returns [emptyMap] if [actionParameters] is null.
- *
- * @return Map of the values or emptyMap if [array] is null
- * @property array The array of ActionParameter elements to convert
+ * to a map of [ActionParameter.key] against [ActionParameter](value).
  */
-fun <K, V> Array<ActionParameter>?.toParamDataMap() =
-  this?.asSequence()?.filter { it.paramType == ActionParameterType.PARAMDATA }?.associate {
-    it.key to it.value
-  }
+fun Array<ActionParameter>?.toParamDataMap(): Map<String, String> =
+  this?.asSequence()
+    ?.filter { it.paramType == ActionParameterType.PARAMDATA }
+    ?.associate { it.key to it.value }
     ?: emptyMap()

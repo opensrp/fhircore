@@ -36,30 +36,31 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.engine.launchFragmentInHiltContainer
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.launchFragmentInHiltContainer
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 
 @HiltAndroidTest
 class UserSettingFragmentTest : RobolectricTest() {
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
-  lateinit var userSettingViewModel: UserSettingViewModel
-  lateinit var accountAuthenticator: AccountAuthenticator
-  lateinit var secureSharedPreference: SecureSharedPreference
-  var sharedPreferencesHelper: SharedPreferencesHelper
-  private var configService: ConfigService
   private val navController = TestNavHostController(ApplicationProvider.getApplicationContext())
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private val resourceService: FhirResourceService = mockk()
+  private val application: Context = ApplicationProvider.getApplicationContext()
+  private var sharedPreferencesHelper: SharedPreferencesHelper
+  private var configService: ConfigService
   private var fhirResourceDataSource: FhirResourceDataSource
   private lateinit var syncBroadcaster: SyncBroadcaster
-  private val application: Context = ApplicationProvider.getApplicationContext()
+  private lateinit var userSettingViewModel: UserSettingViewModel
+  private lateinit var accountAuthenticator: AccountAuthenticator
+  private lateinit var secureSharedPreference: SecureSharedPreference
 
   init {
     sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
@@ -78,9 +79,10 @@ class UserSettingFragmentTest : RobolectricTest() {
       SyncBroadcaster(
         configurationRegistry,
         fhirEngine = mockk(),
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
         syncListenerManager = mockk(relaxed = true),
-        context = application
+        sync = mockk(relaxed = true),
+        context = application,
       )
 
     userSettingViewModel =
@@ -92,7 +94,7 @@ class UserSettingFragmentTest : RobolectricTest() {
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         workManager = mockk(relaxed = true),
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider
+        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
       )
   }
 

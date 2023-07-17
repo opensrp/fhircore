@@ -21,6 +21,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -28,6 +29,7 @@ import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkf
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class ActionConfig(
   val trigger: ActionTrigger,
   val workflow: ApplicationWorkflow? = null,
@@ -38,29 +40,32 @@ data class ActionConfig(
   val managingEntity: ManagingEntityConfig? = null,
   val params: List<ActionParameter> = emptyList(),
   val resourceConfig: FhirResourceConfig? = null,
-  val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
-) {
+  val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
+  val popNavigationBackStack: Boolean? = null,
+) : Parcelable, java.io.Serializable {
   fun paramsBundle(computedValuesMap: Map<String, Any> = emptyMap()): Bundle =
     Bundle().apply {
-      params.filter { !it.paramType?.name.equals(PREPOPULATE_PARAM_TYPE) }.forEach {
-        putString(it.key, it.value.interpolate(computedValuesMap))
-      }
+      params
+        .filter { !it.paramType?.name.equals(PREPOPULATE_PARAM_TYPE) }
+        .forEach { putString(it.key, it.value.interpolate(computedValuesMap)) }
     }
 
-  fun display(computedValuesMap: Map<String, Any> = emptyMap()): String =
-    display?.interpolate(computedValuesMap) ?: ""
-
-  fun interpolateManagingEntity(computedValuesMap: Map<String, Any>) =
-    with(managingEntity) {
-      managingEntity?.copy(
-        dialogTitle = this?.dialogTitle?.interpolate(computedValuesMap),
-        dialogWarningMessage = this?.dialogWarningMessage?.interpolate(computedValuesMap),
-        dialogContentMessage = this?.dialogContentMessage?.interpolate(computedValuesMap),
-        noMembersErrorMessage = this?.noMembersErrorMessage?.interpolate(computedValuesMap) ?: "",
-        managingEntityReassignedMessage =
-          this?.managingEntityReassignedMessage?.interpolate(computedValuesMap) ?: ""
-      )
-    }
+  fun interpolate(computedValuesMap: Map<String, Any>): ActionConfig =
+    this.copy(
+      display = display?.interpolate(computedValuesMap),
+      managingEntity =
+        managingEntity?.copy(
+          dialogTitle = managingEntity.dialogTitle?.interpolate(computedValuesMap),
+          dialogWarningMessage =
+            managingEntity.dialogWarningMessage?.interpolate(computedValuesMap),
+          dialogContentMessage =
+            managingEntity.dialogContentMessage?.interpolate(computedValuesMap),
+          noMembersErrorMessage =
+            managingEntity.noMembersErrorMessage.interpolate(computedValuesMap),
+          managingEntityReassignedMessage =
+            managingEntity.managingEntityReassignedMessage.interpolate(computedValuesMap),
+        ),
+    )
 
   companion object {
     const val PREPOPULATE_PARAM_TYPE = "PREPOPULATE"
@@ -74,5 +79,14 @@ data class ActionParameter(
   val paramType: ActionParameterType? = null,
   val dataType: Enumerations.DataType? = null,
   val value: String,
-  val linkId: String? = null
-) : Parcelable
+  val linkId: String? = null,
+  val resourceType: ResourceType? = null,
+) : Parcelable, java.io.Serializable {
+
+  fun interpolate(computedValuesMap: Map<String, Any>) =
+    this.copy(
+      value = value.interpolate(computedValuesMap),
+      key = key.interpolate(computedValuesMap),
+      linkId = linkId?.interpolate(computedValuesMap),
+    )
+}

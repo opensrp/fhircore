@@ -32,6 +32,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.ResourceFactory
 import org.hl7.fhir.r4.model.RiskAssessment.RiskAssessmentPredictionComponent
+import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
 import org.hl7.fhir.r4.terminologies.ConceptMapEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities.ITransformerServices
@@ -65,6 +66,7 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "EpisodeOfCare_Diagnosis" -> EpisodeOfCare.DiagnosisComponent()
       "Encounter_Diagnosis" -> Encounter.DiagnosisComponent()
       "Encounter_Participant" -> Encounter.EncounterParticipantComponent()
+      "Encounter_Location" -> Encounter.EncounterLocationComponent()
       "CarePlan_Activity" -> CarePlan.CarePlanActivityComponent()
       "CarePlan_ActivityDetail" -> CarePlan.CarePlanActivityDetailComponent()
       "Patient_Link" -> Patient.PatientLinkComponent()
@@ -72,6 +74,9 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "PlanDefinition_Action" -> PlanDefinition.PlanDefinitionActionComponent()
       "Group_Characteristic" -> Group.GroupCharacteristicComponent()
       "Observation_Component" -> Observation.ObservationComponentComponent()
+      "Task_Input" -> Task.ParameterComponent()
+      "Task_Output" -> Task.TaskOutputComponent()
+      "Task_Restriction" -> Task.TaskRestrictionComponent()
       else -> ResourceFactory.createResourceOrType(name)
     }
   }

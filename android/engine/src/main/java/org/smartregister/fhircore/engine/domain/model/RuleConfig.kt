@@ -16,13 +16,16 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Parcelize
 data class RuleConfig(
   val name: String,
   val description: String = "",
   val priority: Int = 1,
   val condition: String = "true", // Default to always execute the action
-  val actions: List<String>
-)
+  val actions: List<String>,
+) : java.io.Serializable, Parcelable

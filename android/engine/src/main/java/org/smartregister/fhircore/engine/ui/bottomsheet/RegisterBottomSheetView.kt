@@ -56,31 +56,33 @@ fun RegisterBottomSheetView(
   navigationMenuConfigs: List<NavigationMenuConfig>?,
   registerCountMap: Map<String, Long> = emptyMap(),
   menuClickListener: (NavigationMenuConfig) -> Unit,
-  onDismiss: () -> Unit
+  title: String?,
+  onDismiss: () -> Unit,
 ) {
   Surface(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)) {
     Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
       Text(
-        text = stringResource(R.string.other_patients),
+        text = if (title.isNullOrEmpty()) stringResource(R.string.other_patients) else title,
         textAlign = TextAlign.Start,
         fontWeight = FontWeight.Bold,
         fontSize = 16.sp,
-        modifier = modifier.padding(horizontal = 12.dp, vertical = 16.dp).align(Alignment.Start)
+        modifier = modifier.padding(horizontal = 12.dp, vertical = 16.dp).align(Alignment.Start),
       )
       Divider(color = DividerColor, thickness = 1.dp)
       LazyColumn(
         contentPadding = PaddingValues(vertical = 8.dp),
-        modifier = Modifier.fillMaxWidth().testTag(REGISTER_BOTTOM_SHEET_LIST)
+        modifier = Modifier.fillMaxWidth().testTag(REGISTER_BOTTOM_SHEET_LIST),
       ) {
         itemsIndexed(navigationMenuConfigs!!) { index, item ->
           RegisterListItem(
             navigationMenuConfig = item,
             registerCountMap = registerCountMap,
             menuClickListener = menuClickListener,
-            onDismiss = onDismiss
+            onDismiss = onDismiss,
           )
-          if (index < navigationMenuConfigs.lastIndex)
+          if (index < navigationMenuConfigs.lastIndex) {
             Divider(color = DividerColor, thickness = 1.dp)
+          }
         }
       }
     }
@@ -93,9 +95,8 @@ fun RegisterListItem(
   navigationMenuConfig: NavigationMenuConfig,
   registerCountMap: Map<String, Long> = emptyMap(),
   menuClickListener: (NavigationMenuConfig) -> Unit,
-  onDismiss: () -> Unit
+  onDismiss: () -> Unit,
 ) {
-
   val action = remember {
     navigationMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_COUNT }
   }
@@ -108,7 +109,7 @@ fun RegisterListItem(
           menuClickListener(navigationMenuConfig)
           onDismiss()
         }
-        .padding(14.dp)
+        .padding(14.dp),
   ) {
     Box(modifier = modifier.wrapContentWidth()) {}
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -130,7 +131,7 @@ fun RegisterListItemPreview() {
     navigationMenuConfig =
       NavigationMenuConfig(id = "TestFragmentTag", display = "All Clients", showCount = true),
     menuClickListener = {},
-    onDismiss = {}
+    onDismiss = {},
   )
 }
 
@@ -141,9 +142,10 @@ fun RegisterBottomSheetPreview() {
     navigationMenuConfigs =
       listOf(
         NavigationMenuConfig(id = "TestFragmentTag", display = "All Clients"),
-        NavigationMenuConfig(id = "TestFragmentTag2", display = "Families", showCount = true)
+        NavigationMenuConfig(id = "TestFragmentTag2", display = "Families", showCount = true),
       ),
     menuClickListener = {},
-    onDismiss = {}
+    onDismiss = {},
+    title = "Other Services",
   )
 }

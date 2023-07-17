@@ -58,7 +58,7 @@ fun RegisterCardList(
   onEvent: (RegisterEvent) -> Unit,
   registerUiState: RegisterUiState,
   currentPage: MutableState<Int>,
-  showPagination: Boolean = false
+  showPagination: Boolean = false,
 ) {
   LazyColumn(modifier = modifier.testTag(REGISTER_CARD_LIST_TEST_TAG), state = lazyListState) {
     itemsIndexed(pagingItems) { _, item ->
@@ -81,7 +81,7 @@ fun RegisterCardList(
           item {
             ErrorMessage(
               message = loadStateError.error.also { Timber.e(it) }.localizedMessage!!,
-              onClickRetry = { retry() }
+              onClickRetry = { retry() },
             )
           }
         }
@@ -102,7 +102,7 @@ fun RegisterCardList(
           currentPage = currentPage.value.plus(1),
           pagesCount = registerUiState.pagesCount,
           previousButtonClickListener = { onEvent(RegisterEvent.MoveToPreviousPage) },
-          nextButtonClickListener = { onEvent(RegisterEvent.MoveToNextPage) }
+          nextButtonClickListener = { onEvent(RegisterEvent.MoveToNextPage) },
         )
       }
     }

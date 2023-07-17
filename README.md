@@ -1,7 +1,8 @@
 [![Android CI with Gradle](https://github.com/opensrp/fhircore/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/opensrp/fhircore/actions/workflows/ci.yml?query=branch%3Amain)
-[![codecov](https://codecov.io/gh/opensrp/fhircore/branch/main/graph/badge.svg?token=IJUTHZUGGH)](https://codecov.io/gh/opensrp/fhircore)
+[![Codecov Test Coverage](https://codecov.io/gh/opensrp/fhircore/branch/main/graph/badge.svg?token=IJUTHZUGGH)](https://codecov.io/gh/opensrp/fhircore)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![project chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.fhir.org/#narrow/stream/370552-OpenSRP)
+[![Zulip Chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.fhir.org/#narrow/stream/370552-OpenSRP)
+[![Slack Chat](https://img.shields.io/badge/slack-join_chat-purple)](https://join.slack.com/t/opensrp/shared_invite/zt-1xvw5fsjo-5RPlKqHmpU57SumJavgCzA)
 
 # OpenSRP FHIR Core
 
@@ -23,7 +24,7 @@ For remote data storage and login, the mobile application requires:
 FHIRcore also interoperates well with:
 - [OpenSRP Web](https://github.com/OpenSRP/web) to access healthcare data from the same HAPI FHIR server.
 
-<img align=center width=400 src="docs/assets/fhircore.png">
+<img align=center width=400 src="static/img/fhircore.png">
 
 ## Getting Started
 
@@ -33,7 +34,7 @@ This repository contains the folders
 * **[android](android)**: for building the Android application.
 * **[docs](docs)**: a library of documents describing the FHIR Core solution.
 
-We recommend reviewing the [docs](https://fhircore.smartregister.org/) before setting up the Android Studio Project in the [android](android) folder.
+We recommend reviewing the [docs](https://docs.smartregister.org/) before setting up the Android Studio Project in the [android](android) folder.
 
 For starter resources on the FHIR specification:
 

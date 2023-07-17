@@ -18,7 +18,8 @@
 
 package org.smartregister.fhircore.quest
 
-import androidx.test.platform.app.InstrumentationRegistry
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
@@ -34,6 +35,7 @@ class QuestConfigServiceTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @Inject lateinit var configService: QuestConfigService
+  val context = ApplicationProvider.getApplicationContext<Context>()!!
 
   @Before
   fun setUp() {
@@ -42,17 +44,16 @@ class QuestConfigServiceTest : RobolectricTest() {
 
   @Test
   fun testProvideAuthConfigurationShouldReturnConfigs() {
-
     val authConfiguration = configService.provideAuthConfiguration()
 
     Assert.assertNotNull(authConfiguration)
     Assert.assertEquals(BuildConfig.FHIR_BASE_URL, authConfiguration.fhirServerBaseUrl)
     Assert.assertEquals(BuildConfig.OAUTH_BASE_URL, authConfiguration.oauthServerBaseUrl)
-    Assert.assertEquals(BuildConfig.OAUTH_CIENT_ID, authConfiguration.clientId)
+    Assert.assertEquals(BuildConfig.OAUTH_CLIENT_ID, authConfiguration.clientId)
     Assert.assertEquals(BuildConfig.OAUTH_CLIENT_SECRET, authConfiguration.clientSecret)
     Assert.assertEquals(
-      InstrumentationRegistry.getInstrumentation().targetContext.packageName,
-      authConfiguration.accountType
+      context.getString(R.string.authenticator_account_type),
+      authConfiguration.accountType,
     )
   }
 }

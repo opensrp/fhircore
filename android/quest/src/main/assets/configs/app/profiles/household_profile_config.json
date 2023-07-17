@@ -35,7 +35,8 @@
     "relatedResources": [
       {
         "resource": "Patient",
-        "fhirPathExpression": "Group.member.entity",
+        "isRevInclude": false,
+        "searchParameter": "member",
         "relatedResources": [
           {
             "resource": "Condition",
@@ -109,6 +110,7 @@
             "id": "e5155788-8831-4916-a3f5-486915ce34b2",
             "title": "Add household member",
             "saveButtonText": "Add Member",
+            "resourceType": "Patient",
             "groupResource": {
               "groupIdentifier": "@{familyLogicalId}",
               "memberResourceType": "Patient"
@@ -373,6 +375,7 @@
               {
                 "name": "showMemberTasks",
                 "condition": "true",
+                "priority": 2,
                 "actions": [
                   "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(Task) > 0)"
                 ]
@@ -562,13 +565,19 @@
             "setOrganizationDetails": true,
             "type": "EDIT",
             "resourceIdentifier": "@{familyLogicalId}",
+            "resourceType": "Group",
             "params": [
               {
                 "key": "familyLogicalId",
                 "value": "@{familyLogicalId}",
                 "paramType": "UPDATE_DATE_ON_EDIT"
               }
-            ]
+            ],
+            "snackBarMessage": {
+              "message": "Household details have been updated",
+              "actionLabel": "",
+              "duration": "Short"
+            }
           }
         }
       ]
@@ -644,7 +653,16 @@
               "title": "Remove household",
               "message": "Removing @{familyName} will remove their entire health record from your device. This action can’t be undone.",
               "actionButtonText": "Remove household"
-            }
+            },
+            "onSubmitActions": [
+              {
+                "trigger": "ON_QUESTIONNAIRE_SUBMISSION",
+                "workflow": "LAUNCH_REGISTER",
+                "id": "householdRegister",
+                "display": "All Households",
+                "popNavigationBackStack": true
+              }
+            ]
           }
         }
       ]

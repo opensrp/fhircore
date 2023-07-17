@@ -23,7 +23,9 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.net.UnknownHostException
+import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import retrofit2.HttpException
 
 @HiltWorker
@@ -32,17 +34,20 @@ class ConfigDownloadWorker
 constructor(
   @Assisted val appContext: Context,
   @Assisted val workerParams: WorkerParameters,
-  val configurationRegistry: ConfigurationRegistry
+  val configurationRegistry: ConfigurationRegistry,
+  val dispatcherProvider: DispatcherProvider,
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
-    return try {
-      configurationRegistry.fetchNonWorkflowConfigResources()
-      Result.success()
-    } catch (httpException: HttpException) {
-      Result.failure()
-    } catch (unknownHostException: UnknownHostException) {
-      Result.failure()
+    return withContext(dispatcherProvider.io()) {
+      try {
+        configurationRegistry.fetchNonWorkflowConfigResources()
+        Result.success()
+      } catch (httpException: HttpException) {
+        Result.failure()
+      } catch (unknownHostException: UnknownHostException) {
+        Result.failure()
+      }
     }
   }
 }

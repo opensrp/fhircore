@@ -16,10 +16,14 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class SpacerProperties(
   override val viewType: ViewType = ViewType.SPACER,
   override val weight: Float = 0f,
@@ -33,4 +37,11 @@ data class SpacerProperties(
   override val visible: String = "true",
   val height: Float? = null,
   val width: Float? = null,
-) : ViewProperties()
+) : ViewProperties(), Parcelable {
+  override fun interpolate(computedValuesMap: Map<String, Any>): SpacerProperties {
+    return this.copy(
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap),
+    )
+  }
+}

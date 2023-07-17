@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
@@ -50,12 +51,16 @@ import org.smartregister.fhircore.quest.R
 
 class SearchView
 
+const val SEARCH_BAR_TRAILING_ICON_TEST_TAG = "searchBarTrailingIconTestTag"
+const val SEARCH_BAR_TRAILING_ICON_BUTTON_TEST_TAG = "searchBarTrailingIconButtonTestTag"
+const val SEARCH_BAR_TRAILING_TEXT_FIELD_TEST_TAG = "searchBarTrailingTextFieldTestTag"
+
 @Composable
 fun SearchBar(
   onTextChanged: (String) -> Unit,
   onBackPress: () -> Unit,
   searchTextState: MutableState<TextFieldValue>,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Box(modifier = modifier.background(color = Color.White)) {
     TextField(
@@ -64,14 +69,14 @@ fun SearchBar(
         searchTextState.value = value
         onTextChanged(value.text)
       },
-      modifier = modifier.fillMaxWidth(),
+      modifier = modifier.fillMaxWidth().testTag(SEARCH_BAR_TRAILING_TEXT_FIELD_TEST_TAG),
       textStyle = TextStyle(fontSize = 18.sp),
       leadingIcon = {
         IconButton(onClick = onBackPress) {
           Icon(
             Icons.Filled.ArrowBack,
             contentDescription = null,
-            modifier = modifier.padding(16.dp)
+            modifier = modifier.padding(16.dp),
           )
         }
       },
@@ -83,12 +88,14 @@ fun SearchBar(
               // Remove text from TextField when you press the 'X' icon
               searchTextState.value = TextFieldValue("")
               onTextChanged(searchTextState.value.text)
-            }
+            },
+            modifier = modifier.testTag(SEARCH_BAR_TRAILING_ICON_BUTTON_TEST_TAG),
           ) {
             Icon(
               Icons.Default.Close,
               contentDescription = "",
-              modifier = modifier.padding(16.dp).size(24.dp)
+              modifier =
+                modifier.padding(16.dp).size(24.dp).testTag(SEARCH_BAR_TRAILING_ICON_TEST_TAG),
             )
           }
         }
@@ -100,9 +107,9 @@ fun SearchBar(
           backgroundColor = Color.White,
           focusedIndicatorColor = Color.Transparent,
           unfocusedIndicatorColor = Color.Transparent,
-          disabledIndicatorColor = Color.Transparent
+          disabledIndicatorColor = Color.Transparent,
         ),
-      placeholder = { SearchHint(modifier) }
+      placeholder = { SearchHint(modifier) },
     )
   }
 }
@@ -111,12 +118,9 @@ fun SearchBar(
 fun SearchHint(modifier: Modifier) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
-    modifier = modifier.wrapContentHeight().focusable(false).then(modifier)
+    modifier = modifier.wrapContentHeight().focusable(false).then(modifier),
   ) {
-    Text(
-      color = Color(0xff757575),
-      text = stringResource(id = R.string.search_hint),
-    )
+    Text(color = Color(0xff757575), text = stringResource(id = R.string.search_hint))
   }
 }
 

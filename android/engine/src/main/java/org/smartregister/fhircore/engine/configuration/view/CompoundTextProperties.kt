@@ -16,12 +16,16 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import android.os.Parcelable
 import androidx.compose.ui.text.font.FontWeight
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class CompoundTextProperties(
   override val viewType: ViewType = ViewType.COMPOUND_TEXT,
   override val weight: Float = 0f,
@@ -48,8 +52,22 @@ data class CompoundTextProperties(
   val maxLines: Int = Int.MAX_VALUE,
   val colorOpacity: Float = 1f,
   val textCase: TextCase? = null,
-  val overflow: TextOverFlow? = null
-) : ViewProperties()
+  val overflow: TextOverFlow? = null,
+) : ViewProperties(), Parcelable {
+  override fun interpolate(computedValuesMap: Map<String, Any>): CompoundTextProperties {
+    return this.copy(
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap),
+      primaryText = primaryText?.interpolate(computedValuesMap),
+      secondaryText = secondaryText?.interpolate(computedValuesMap),
+      primaryTextColor = primaryTextColor?.interpolate(computedValuesMap),
+      primaryTextBackgroundColor = primaryTextBackgroundColor?.interpolate(computedValuesMap),
+      secondaryTextColor = secondaryTextColor?.interpolate(computedValuesMap),
+      secondaryTextBackgroundColor = secondaryTextBackgroundColor?.interpolate(computedValuesMap),
+      separator = separator?.interpolate(computedValuesMap),
+    )
+  }
+}
 
 enum class TextFontWeight(val fontWeight: FontWeight) {
   THIN(FontWeight.Thin),
@@ -67,10 +85,11 @@ enum class TextCase {
   UPPER_CASE,
   LOWER_CASE,
   CAMEL_CASE,
+  TITLE_CASE,
 }
 
 enum class TextOverFlow {
   CLIP,
   ELLIPSIS,
-  VISIBLE
+  VISIBLE,
 }

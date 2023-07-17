@@ -45,7 +45,7 @@ class ServiceCardTest {
       ServiceCard(
         serviceCardProperties = initTestServiceCardProperties(),
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
     composeRule
@@ -55,12 +55,25 @@ class ServiceCardTest {
   }
 
   @Test
+  fun serviceActionButtonIsDisplayedCorrectlyWithButtonParams() {
+    composeRule.setContent {
+      ServiceCard(
+        serviceCardProperties =
+          initTestServiceCardProperties(serviceStatus = ServiceStatus.OVERDUE.name, text = "1"),
+        resourceData = resourceData,
+        navController = navController,
+      )
+    }
+    composeRule.onNodeWithText("1", useUnmergedTree = true).assertExists().assertIsDisplayed()
+  }
+
+  @Test
   fun serviceActionButtonNotDisplayedWhenVisibleIsFalse() {
     composeRule.setContent {
       ServiceCard(
         serviceCardProperties = initTestServiceCardProperties(visible = "false"),
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
     composeRule.onNodeWithText("Next visit 09-10-2022", useUnmergedTree = true).assertDoesNotExist()
@@ -72,7 +85,7 @@ class ServiceCardTest {
       ServiceCard(
         serviceCardProperties = initTestServiceCardProperties(showVerticalDivider = true),
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
     composeRule.onNodeWithTag(DIVIDER_TEST_TAG).assertExists().assertIsDisplayed()
@@ -84,7 +97,7 @@ class ServiceCardTest {
       ServiceCard(
         serviceCardProperties = initTestServiceCardProperties(showVerticalDivider = false),
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
     composeRule.onNodeWithTag(DIVIDER_TEST_TAG).assertDoesNotExist()
@@ -95,8 +108,9 @@ class ServiceCardTest {
   private fun initTestServiceCardProperties(
     showVerticalDivider: Boolean = false,
     serviceStatus: String = ServiceStatus.UPCOMING.name,
+    text: String = "Next visit 09-10-2022",
     smallSized: Boolean = false,
-    visible: String = "true"
+    visible: String = "true",
   ): ServiceCardProperties {
     return ServiceCardProperties(
       viewType = ViewType.SERVICE_CARD,
@@ -112,13 +126,13 @@ class ServiceCardTest {
             primaryText = "Town/Village",
             primaryTextColor = "#5A5A5A",
             secondaryText = "HH No.",
-            secondaryTextColor = "#555AAA"
+            secondaryTextColor = "#555AAA",
           ),
           CompoundTextProperties(
             viewType = ViewType.COMPOUND_TEXT,
             primaryText = "Last visited yesterday",
             primaryTextColor = "#5A5A5A",
-          )
+          ),
         ),
       serviceMemberIcons = "CHILD,CHILD,CHILD,CHILD",
       showVerticalDivider = showVerticalDivider,
@@ -126,9 +140,9 @@ class ServiceCardTest {
         ButtonProperties(
           visible = visible,
           status = serviceStatus,
-          text = "Next visit 09-10-2022",
-          smallSized = smallSized
-        )
+          text = text,
+          smallSized = smallSized,
+        ),
     )
   }
 }

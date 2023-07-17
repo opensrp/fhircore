@@ -24,7 +24,7 @@ import com.google.android.fhir.sync.AcceptLocalConflictResolver
 import com.google.android.fhir.sync.ConflictResolver
 import com.google.android.fhir.sync.DownloadWorkManager
 import com.google.android.fhir.sync.FhirSyncWorker
-import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
+import com.google.android.fhir.sync.UploadConfiguration
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -35,13 +35,21 @@ constructor(
   @Assisted appContext: Context,
   @Assisted workerParams: WorkerParameters,
   val syncListenerManager: SyncListenerManager,
-  val questFhirEngine: FhirEngine
+  val openSrpFhirEngine: FhirEngine,
+  val appTimeStampContext: AppTimeStampContext,
 ) : FhirSyncWorker(appContext, workerParams) {
 
   override fun getConflictResolver(): ConflictResolver = AcceptLocalConflictResolver
 
   override fun getDownloadWorkManager(): DownloadWorkManager =
-    ResourceParamsBasedDownloadWorkManager(syncParams = syncListenerManager.loadSyncParams())
+    OpenSrpDownloadManager(
+      syncParams = syncListenerManager.loadSyncParams(),
+      context = appTimeStampContext,
+    )
 
-  override fun getFhirEngine(): FhirEngine = questFhirEngine
+  /** Disable ETag for upload */
+  override fun getUploadConfiguration(): UploadConfiguration =
+    UploadConfiguration(useETagForUpload = false)
+
+  override fun getFhirEngine(): FhirEngine = openSrpFhirEngine
 }

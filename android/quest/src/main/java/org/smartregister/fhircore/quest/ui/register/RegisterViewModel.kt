@@ -42,7 +42,7 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
-import org.smartregister.fhircore.engine.rulesengine.RulesExecutor
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -58,7 +58,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val dispatcherProvider: DispatcherProvider,
-  val rulesExecutor: RulesExecutor
+  val resourceDataRulesExecutor: ResourceDataRulesExecutor,
 ) : ViewModel() {
 
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
@@ -83,7 +83,7 @@ constructor(
   fun paginateRegisterData(
     registerId: String,
     loadAll: Boolean = false,
-    clearCache: Boolean = false
+    clearCache: Boolean = false,
   ) {
     if (clearCache) {
       pagesDataCache.clear()
@@ -103,22 +103,22 @@ constructor(
     return Pager(
       config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
       pagingSourceFactory = {
-        RegisterPagingSource(registerRepository, rulesExecutor, ruleConfigs).apply {
+        RegisterPagingSource(registerRepository, resourceDataRulesExecutor, ruleConfigs).apply {
           setPatientPagingSourceState(
             RegisterPagingSourceState(
               registerId = registerId,
               loadAll = loadAll,
-              currentPage = if (loadAll) 0 else currentPage.value
-            )
+              currentPage = if (loadAll) 0 else currentPage.value,
+            ),
           )
         }
-      }
+      },
     )
   }
 
   fun retrieveRegisterConfiguration(
     registerId: String,
-    paramMap: Map<String, String>? = emptyMap()
+    paramMap: Map<String, String>? = emptyMap(),
   ): RegisterConfiguration {
     // Ensures register configuration is initialized once
     if (!::registerConfiguration.isInitialized) {
@@ -141,8 +141,11 @@ constructor(
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
         searchText.value = event.searchText
-        if (event.searchText.isEmpty()) paginateRegisterData(registerUiState.value.registerId)
-        else filterRegisterData(event)
+        if (event.searchText.isEmpty()) {
+          paginateRegisterData(registerUiState.value.registerId)
+        } else {
+          filterRegisterData(event)
+        }
       }
       is RegisterEvent.MoveToNextPage -> {
         currentPage.value = currentPage.value.plus(1)
@@ -175,15 +178,16 @@ constructor(
   fun retrieveRegisterUiState(
     registerId: String,
     screenTitle: String,
-    params: Array<ActionParameter>? = emptyArray()
+    params: Array<ActionParameter>? = emptyArray(),
+    clearCache: Boolean,
   ) {
     if (registerId.isNotEmpty()) {
-      val paramsMap: Map<String, String> = params.toParamDataMap<String, String>()
+      val paramsMap: Map<String, String> = params.toParamDataMap()
       viewModelScope.launch(dispatcherProvider.io()) {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
         // Count register data then paginate the data
         _totalRecordsCount.value = registerRepository.countRegisterData(registerId, paramsMap)
-        paginateRegisterData(registerId, loadAll = false)
+        paginateRegisterData(registerId, loadAll = false, clearCache = clearCache)
 
         registerUiState.value =
           RegisterUiState(
@@ -197,14 +201,13 @@ constructor(
             totalRecordsCount = _totalRecordsCount.value,
             pagesCount =
               ceil(
-                  _totalRecordsCount
-                    .value
+                  _totalRecordsCount.value
                     .toDouble()
-                    .div(currentRegisterConfiguration.pageSize.toLong())
+                    .div(currentRegisterConfiguration.pageSize.toLong()),
                 )
                 .toInt(),
             progressPercentage = _percentageProgress,
-            isSyncUpload = _isUploadSync
+            isSyncUpload = _isUploadSync,
           )
       }
     }
@@ -213,6 +216,7 @@ constructor(
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
   }
+
   suspend fun emitPercentageProgressState(progress: Int, isUploadSync: Boolean) {
     _percentageProgress.emit(progress)
     _isUploadSync.emit(isUploadSync)

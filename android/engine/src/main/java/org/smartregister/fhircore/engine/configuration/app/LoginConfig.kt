@@ -22,5 +22,6 @@ import kotlinx.serialization.Serializable
 data class LoginConfig(
   val showLogo: Boolean = true,
   val enablePin: Boolean? = false,
-  val pinLength: Int = 4
+  val pinLength: Int = 4,
+  val pinLoginMessage: String? = null,
 )

@@ -37,12 +37,13 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class AppSettingActivityTest : RobolectricTest() {
+
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
   private var activityScenario: ActivityScenario<AppSettingActivity>? = null
 
   @Before

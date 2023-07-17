@@ -17,7 +17,9 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -42,29 +44,45 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.parseColor
+import org.smartregister.fhircore.quest.util.extensions.conditional
 
 @Composable
 fun CardView(
   modifier: Modifier = Modifier,
   viewProperties: CardViewProperties,
   resourceData: ResourceData,
-  navController: NavController
+  navController: NavController,
 ) {
+  val headerActionVisible = viewProperties.headerAction?.visible.toBoolean()
   Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
     // Header section
-    Column(modifier = modifier.fillMaxWidth()) {
+    Spacer(modifier = modifier.height(8.dp))
+    Row(
+      modifier = modifier.fillMaxWidth(),
+      verticalAlignment = Alignment.Top,
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
       if (viewProperties.header != null) {
-        Spacer(modifier = modifier.height(8.dp))
         CompoundText(
-          modifier = modifier.wrapContentWidth(Alignment.Start),
+          modifier =
+            modifier
+              .conditional(headerActionVisible, { weight(if (headerActionVisible) 0.6f else 1f) })
+              .wrapContentWidth(Alignment.Start),
           compoundTextProperties = viewProperties.header!!.copy(textCase = TextCase.UPPER_CASE),
           resourceData = resourceData,
-          navController = navController
+          navController = navController,
         )
-        // TODO Display viewAll action text
-        Spacer(modifier = modifier.height(8.dp))
+        if (viewProperties.headerAction != null && headerActionVisible) {
+          CompoundText(
+            modifier = modifier.wrapContentWidth(Alignment.End).weight(0.4f),
+            compoundTextProperties = viewProperties.headerAction!!,
+            resourceData = resourceData,
+            navController = navController,
+          )
+        }
       }
     }
+    Spacer(modifier = modifier.height(8.dp))
     // Card section
     Card(
       elevation = viewProperties.elevation.dp,
@@ -72,13 +90,13 @@ fun CardView(
         modifier
           .padding(horizontal = viewProperties.padding.dp)
           .fillMaxWidth()
-          .clip(RoundedCornerShape(viewProperties.cornerSize.dp))
+          .clip(RoundedCornerShape(viewProperties.cornerSize.dp)),
     ) {
       Column(modifier = modifier.padding(viewProperties.contentPadding.dp)) {
         ViewRenderer(
           viewProperties = viewProperties.content,
           resourceData = resourceData,
-          navController = navController
+          navController = navController,
         )
       }
     }
@@ -98,18 +116,24 @@ private fun CardViewWithoutPaddingPreview() {
               CompoundTextProperties(
                 primaryText = "Richard Brown, M, 21",
                 primaryTextColor = "#000000",
-              )
+              ),
             ),
           header =
             CompoundTextProperties(
-              primaryText = "HOUSE MEMBERS",
+              primaryText = "Immunizations at 10 weeks",
               fontSize = 18.0f,
               primaryTextColor = "#6F7274",
-              padding = 16
-            )
+            ),
+          headerAction =
+            CompoundTextProperties(
+              primaryText = "Record All",
+              primaryTextColor = "infoColor",
+              clickable = "true",
+              visible = "true",
+            ),
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-      navController = rememberNavController()
+      navController = rememberNavController(),
     )
   }
 }
@@ -132,26 +156,21 @@ private fun CardViewWithPaddingPreview() {
                     ButtonProperties(
                       status = "OVERDUE",
                       viewType = ViewType.BUTTON,
-                      text = "Sick child followup"
+                      text = "Sick child followup",
                     ),
                     ButtonProperties(
                       status = "COMPLETED",
                       viewType = ViewType.BUTTON,
-                      text = "COVID Vaccination"
-                    )
-                  )
-              )
+                      text = "COVID Vaccination",
+                    ),
+                  ),
+              ),
             ),
           header =
-            CompoundTextProperties(
-              primaryText = "VISITS",
-              fontSize = 18.0f,
-              primaryTextColor = "#6F7274",
-              padding = 16
-            )
+            CompoundTextProperties(fontSize = 18.0f, primaryTextColor = "#6F7274", padding = 16),
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-      navController = rememberNavController()
+      navController = rememberNavController(),
     )
   }
 }
@@ -169,11 +188,11 @@ private fun CardViewWithoutPaddingAndHeaderPreview() {
               CompoundTextProperties(
                 primaryText = "Richard Brown, M, 21",
                 primaryTextColor = "#000000",
-              )
+              ),
             ),
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-      navController = rememberNavController()
+      navController = rememberNavController(),
     )
   }
 }

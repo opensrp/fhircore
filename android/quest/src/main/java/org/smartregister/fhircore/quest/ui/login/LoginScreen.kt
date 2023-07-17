@@ -123,7 +123,7 @@ fun LoginScreen(loginViewModel: LoginViewModel, appVersionPair: Pair<Int, String
     onLoginButtonClicked = { loginViewModel.login(context) },
     loginErrorState = loginErrorState,
     showProgressBar = showProgressBar,
-    appVersionPair = appVersionPair
+    appVersionPair = appVersionPair,
   )
 }
 
@@ -139,7 +139,7 @@ fun LoginPage(
   modifier: Modifier = Modifier,
   loginErrorState: LoginErrorState? = null,
   showProgressBar: Boolean = false,
-  appVersionPair: Pair<Int, String>? = null
+  appVersionPair: Pair<Int, String>? = null,
 ) {
   var showPassword by remember { mutableStateOf(false) }
   var showForgotPasswordDialog by remember { mutableStateOf(false) }
@@ -163,12 +163,12 @@ fun LoginPage(
         .fillMaxSize()
         .scrollable(orientation = Orientation.Vertical, state = rememberScrollState()),
     color = Color.White,
-    contentColor = contentColorFor(backgroundColor = Color.DarkGray)
+    contentColor = contentColorFor(backgroundColor = Color.DarkGray),
   ) {
     if (showForgotPasswordDialog) {
       ForgotPasswordDialog(
         forgotPassword = forgotPassword,
-        onDismissDialog = { showForgotPasswordDialog = false }
+        onDismissDialog = { showForgotPasswordDialog = false },
       )
     }
     Column(
@@ -201,7 +201,7 @@ fun LoginPage(
               .wrapContentWidth()
               .padding(vertical = 8.dp)
               .align(Alignment.CenterHorizontally)
-              .testTag(APP_NAME_TEXT_TAG)
+              .testTag(APP_NAME_TEXT_TAG),
         )
         Spacer(modifier = modifier.height(40.dp))
         Text(text = stringResource(R.string.username), modifier = modifier.padding(vertical = 4.dp))
@@ -211,10 +211,7 @@ fun LoginPage(
           maxLines = 1,
           singleLine = true,
           placeholder = {
-            Text(
-              color = Color.LightGray,
-              text = stringResource(R.string.username_sample),
-            )
+            Text(color = Color.LightGray, text = stringResource(R.string.username_sample))
           },
           modifier =
             modifier
@@ -223,12 +220,12 @@ fun LoginPage(
               .background(color = Color.Unspecified)
               .testTag(USERNAME_FIELD_TAG)
               .focusRequester(usernameFocusRequester),
-          keyboardActions = KeyboardActions(onDone = { passwordFocusRequester.requestFocus() })
+          keyboardActions = KeyboardActions(onDone = { passwordFocusRequester.requestFocus() }),
         )
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier.fillMaxWidth()) {
           Text(
             text = stringResource(R.string.password),
-            modifier = modifier.wrapContentWidth().padding(vertical = 4.dp)
+            modifier = modifier.wrapContentWidth().padding(vertical = 4.dp),
           )
           Text(
             text = stringResource(R.string.forgot_password),
@@ -237,7 +234,7 @@ fun LoginPage(
             modifier =
               modifier.wrapContentWidth().padding(vertical = 8.dp).clickable {
                 showForgotPasswordDialog = !showForgotPasswordDialog
-              }
+              },
           )
         }
         OutlinedTextField(
@@ -245,12 +242,7 @@ fun LoginPage(
           onValueChange = onPasswordChanged,
           maxLines = 1,
           singleLine = true,
-          placeholder = {
-            Text(
-              color = Color.LightGray,
-              text = "********",
-            )
-          },
+          placeholder = { Text(color = Color.LightGray, text = "********") },
           visualTransformation =
             if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
           keyboardOptions =
@@ -278,8 +270,8 @@ fun LoginPage(
               onDone = {
                 focusManager.clearFocus()
                 onLoginButtonClicked()
-              }
-            )
+              },
+            ),
         )
         Text(
           fontSize = 14.sp,
@@ -289,23 +281,28 @@ fun LoginPage(
               LoginErrorState.UNKNOWN_HOST ->
                 stringResource(
                   id = R.string.login_error,
-                  stringResource(R.string.login_call_fail_error_message)
+                  stringResource(R.string.login_call_fail_error_message),
                 )
               LoginErrorState.INVALID_CREDENTIALS ->
                 stringResource(
                   id = R.string.login_error,
-                  stringResource(R.string.invalid_login_credentials)
+                  stringResource(R.string.invalid_login_credentials),
                 )
               null -> ""
               LoginErrorState.MULTI_USER_LOGIN_ATTEMPT ->
                 stringResource(
                   id = R.string.login_error,
-                  stringResource(R.string.multi_user_login_attempt)
+                  stringResource(R.string.multi_user_login_attempt),
                 )
               LoginErrorState.ERROR_FETCHING_USER ->
                 stringResource(
                   id = R.string.login_error,
-                  stringResource(R.string.error_fetching_user_details)
+                  stringResource(R.string.error_fetching_user_details),
+                )
+              LoginErrorState.INVALID_OFFLINE_STATE ->
+                stringResource(
+                  id = R.string.login_error,
+                  stringResource(R.string.invalid_offline_login_state),
                 )
             },
           modifier =
@@ -313,7 +310,7 @@ fun LoginPage(
               .wrapContentWidth()
               .padding(vertical = 10.dp)
               .align(Alignment.Start)
-              .testTag(LOGIN_ERROR_TEXT_TAG)
+              .testTag(LOGIN_ERROR_TEXT_TAG),
         )
         Spacer(modifier = modifier.height(0.dp))
         Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
@@ -323,9 +320,12 @@ fun LoginPage(
               ButtonDefaults.buttonColors(
                 backgroundColor = MaterialTheme.colors.primary,
                 disabledContentColor =
-                  if (applicationConfiguration.useDarkTheme) LoginFieldBackgroundColor
-                  else Color.Gray,
-                contentColor = Color.White
+                  if (applicationConfiguration.useDarkTheme) {
+                    LoginFieldBackgroundColor
+                  } else {
+                    Color.Gray
+                  },
+                contentColor = Color.White,
               ),
             onClick = onLoginButtonClicked,
             modifier =
@@ -333,18 +333,18 @@ fun LoginPage(
                 .fillMaxWidth()
                 .bringIntoViewRequester(bringIntoViewRequester)
                 .testTag(LOGIN_BUTTON_TAG),
-            elevation = null
+            elevation = null,
           ) {
             Text(
               text = if (!showProgressBar) stringResource(id = R.string.login_text) else "",
-              modifier = modifier.padding(8.dp)
+              modifier = modifier.padding(8.dp),
             )
           }
           if (showProgressBar) {
             CircularProgressIndicator(
               modifier = modifier.align(Alignment.Center).size(18.dp),
               strokeWidth = 1.6.dp,
-              color = Color.White
+              color = Color.White,
             )
           }
         }
@@ -352,24 +352,24 @@ fun LoginPage(
       Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
-        verticalAlignment = Alignment.Bottom
+        verticalAlignment = Alignment.Bottom,
       ) {
         Column {
           Text(
             text = stringResource(id = R.string.powered_by),
-            modifier = modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.Start)
+            modifier = modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.Start),
           )
           Image(
             painter = painterResource(id = R.drawable.ic_opensrp_logo),
             contentDescription = stringResource(id = R.string.app_logo),
-            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(40.dp)
+            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(40.dp),
           )
         }
 
         Text(
           fontSize = 16.sp,
           text = stringResource(id = R.string.app_version, versionCode, versionName),
-          modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER)
+          modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER),
         )
       }
     }
@@ -380,7 +380,7 @@ fun LoginPage(
 fun ForgotPasswordDialog(
   forgotPassword: () -> Unit,
   onDismissDialog: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   AlertDialog(
     onDismissRequest = onDismissDialog,
@@ -388,7 +388,7 @@ fun ForgotPasswordDialog(
       Text(
         text = stringResource(R.string.forgot_password_title),
         fontWeight = FontWeight.Bold,
-        fontSize = 18.sp
+        fontSize = 18.sp,
       )
     },
     text = {
@@ -397,11 +397,11 @@ fun ForgotPasswordDialog(
     buttons = {
       Row(
         modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
-        horizontalArrangement = Arrangement.End
+        horizontalArrangement = Arrangement.End,
       ) {
         Text(
           text = stringResource(R.string.cancel),
-          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() }
+          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() },
         )
         Text(
           color = MaterialTheme.colors.primary,
@@ -410,11 +410,11 @@ fun ForgotPasswordDialog(
             modifier.padding(horizontal = 10.dp).clickable {
               onDismissDialog()
               forgotPassword()
-            }
+            },
         )
       }
     },
-    modifier = Modifier.testTag(PASSWORD_FORGOT_DIALOG)
+    modifier = Modifier.testTag(PASSWORD_FORGOT_DIALOG),
   )
 }
 
@@ -426,7 +426,7 @@ fun LoginScreenPreview() {
       ApplicationConfiguration(
         appId = "appId",
         configType = "application",
-        appTitle = "FHIRCore App"
+        appTitle = "FHIRCore App",
       ),
     username = "",
     onUsernameChanged = {},
@@ -434,7 +434,7 @@ fun LoginScreenPreview() {
     onPasswordChanged = {},
     forgotPassword = {},
     onLoginButtonClicked = {},
-    appVersionPair = Pair(1, "0.0.1")
+    appVersionPair = Pair(1, "0.0.1"),
   )
 }
 
@@ -446,7 +446,7 @@ fun LoginScreenPreviewDarkMode() {
       ApplicationConfiguration(
         appId = "appId",
         configType = "application",
-        appTitle = "FHIRCore App"
+        appTitle = "FHIRCore App",
       ),
     username = "",
     onUsernameChanged = {},
@@ -454,6 +454,6 @@ fun LoginScreenPreviewDarkMode() {
     onPasswordChanged = {},
     forgotPassword = {},
     onLoginButtonClicked = {},
-    appVersionPair = Pair(1, "0.0.1")
+    appVersionPair = Pair(1, "0.0.1"),
   )
 }

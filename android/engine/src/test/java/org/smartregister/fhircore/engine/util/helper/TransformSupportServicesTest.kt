@@ -45,86 +45,87 @@ class TransformSupportServicesTest : RobolectricTest() {
   @Test
   fun `createType() should return RiskAssessmentPrediction when given RiskAssessment_Prediction`() {
     Assert.assertTrue(
-      transformSupportServices.createType("", "RiskAssessment_Prediction") is
-        RiskAssessment.RiskAssessmentPredictionComponent
+      transformSupportServices.createType("", "RiskAssessment_Prediction")
+        is RiskAssessment.RiskAssessmentPredictionComponent,
     )
   }
 
   @Test
   fun `createType() should return ImmunizationProtocol when given Immunization_VaccinationProtocol`() {
     Assert.assertTrue(
-      transformSupportServices.createType("", "Immunization_VaccinationProtocol") is
-        Immunization.ImmunizationProtocolAppliedComponent
+      transformSupportServices.createType("", "Immunization_VaccinationProtocol")
+        is Immunization.ImmunizationProtocolAppliedComponent,
     )
   }
 
   @Test
   fun `createType() should return ImmunizationReaction when given Immunization_Reaction`() {
     Assert.assertTrue(
-      transformSupportServices.createType("", "Immunization_Reaction") is
-        Immunization.ImmunizationReactionComponent
+      transformSupportServices.createType("", "Immunization_Reaction")
+        is Immunization.ImmunizationReactionComponent,
     )
   }
 
   @Test
   fun `createType() should return Diagnosis when given EpisodeOfCare_Diagnosis`() {
     Assert.assertTrue(
-      transformSupportServices.createType("", "EpisodeOfCare_Diagnosis") is
-        EpisodeOfCare.DiagnosisComponent
+      transformSupportServices.createType("", "EpisodeOfCare_Diagnosis")
+        is EpisodeOfCare.DiagnosisComponent,
     )
   }
 
   @Test
   fun `createType() should return Diagnosis when given Encounter_Diagnosis`() {
     Assert.assertTrue(
-      transformSupportServices.createType("", "Encounter_Diagnosis") is Encounter.DiagnosisComponent
+      transformSupportServices.createType("", "Encounter_Diagnosis")
+        is Encounter.DiagnosisComponent,
     )
   }
 
   @Test
   fun `createType() should return EncounterParticipant when given Encounter_Participant`() {
     Assert.assertTrue(
-      transformSupportServices.createType("", "Encounter_Participant") is
-        Encounter.EncounterParticipantComponent
+      transformSupportServices.createType("", "Encounter_Participant")
+        is Encounter.EncounterParticipantComponent,
     )
   }
 
   @Test
   fun `createType() should return CarePlanActivity when given CarePlan_Activity`() {
     Assert.assertTrue(
-      transformSupportServices.createType("", "CarePlan_Activity") is
-        CarePlan.CarePlanActivityComponent
+      transformSupportServices.createType("", "CarePlan_Activity")
+        is CarePlan.CarePlanActivityComponent,
     )
   }
 
   @Test
   fun `createType() should return CarePlanActivityDetail when given CarePlan_ActivityDetail`() {
     Assert.assertTrue(
-      transformSupportServices.createType("", "CarePlan_ActivityDetail") is
-        CarePlan.CarePlanActivityDetailComponent
+      transformSupportServices.createType("", "CarePlan_ActivityDetail")
+        is CarePlan.CarePlanActivityDetailComponent,
     )
   }
 
   @Test
   fun `createType() should return PatientLink when given Patient_Link`() {
     Assert.assertTrue(
-      transformSupportServices.createType("", "Patient_Link") is Patient.PatientLinkComponent
+      transformSupportServices.createType("", "Patient_Link") is Patient.PatientLinkComponent,
     )
   }
 
   @Test
   fun `createType() should return GroupCharacteristicComponent when given Group_Characteristic`() {
     Assert.assertTrue(
-      transformSupportServices.createType("", "Group_Characteristic") is
-        Group.GroupCharacteristicComponent
+      transformSupportServices.createType("", "Group_Characteristic")
+        is Group.GroupCharacteristicComponent,
     )
   }
 
   @Test
   fun `createType() should return ObservationComponentComponent when given Observation_Component`() {
     Assert.assertTrue(
-      transformSupportServices.createType("", "Observation_Component") is
-        Observation.ObservationComponentComponent
+      transformSupportServices.createType("", "Observation_Component")
+        is Observation.ObservationComponentComponent,
     )
   }
 

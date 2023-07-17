@@ -45,6 +45,7 @@ import org.smartregister.p2p.P2PLibrary
 class PinLoginActivityTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
   @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private val pinLoginActivityController = Robolectric.buildActivity(PinLoginActivity::class.java)
   private lateinit var pinLoginActivity: PinLoginActivity
@@ -97,13 +98,12 @@ class PinLoginActivityTest : RobolectricTest() {
   @OptIn(ExperimentalMaterialApi::class)
   @Test
   fun testNavigateToHomeLaunchesAppLMainActivity() {
-
     // Mock p2p Library then un mock it at the end of test
     mockkObject(P2PLibrary)
     every { P2PLibrary.init(any()) } returns mockk()
 
     // When new pin is setup the app navigates to home screen
-    pinLoginActivity.pinViewModel.onSetPin("1234")
+    pinLoginActivity.pinViewModel.onSetPin("1234".toCharArray())
     val resultIntent = Shadows.shadowOf(pinLoginActivity).nextStartedActivity
     Assert.assertNotNull(resultIntent)
     val shadowIntent: ShadowIntent = Shadows.shadowOf(resultIntent)

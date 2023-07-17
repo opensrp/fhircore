@@ -34,19 +34,25 @@ interface QuestionnaireHandler {
     context: Context,
     intentBundle: Bundle = bundleOf(),
     questionnaireConfig: QuestionnaireConfig? = null,
-    actionParams: List<ActionParameter> = emptyList()
+    actionParams: List<ActionParameter> = emptyList(),
+    baseResourceId: String? = null,
+    baseResourceType: String? = null,
   ) {
-    startForResult.launch(
-      Intent(context, QuestionnaireActivity::class.java)
-        .putExtras(
-          QuestionnaireActivity.intentArgs(
-            questionnaireConfig = questionnaireConfig,
-            actionParams = actionParams
+    if (questionnaireConfig != null) {
+      startForResult.launch(
+        Intent(context, QuestionnaireActivity::class.java)
+          .putExtras(
+            QuestionnaireActivity.intentArgs(
+              questionnaireConfig = questionnaireConfig,
+              actionParams = actionParams,
+              baseResourceId = baseResourceId,
+              baseResourceType = baseResourceType,
+            ),
           )
-        )
-        .putExtras(intentBundle)
-    )
+          .putExtras(intentBundle),
+      )
+    }
   }
 
-  fun onSubmitQuestionnaire(activityResult: ActivityResult)
+  suspend fun onSubmitQuestionnaire(activityResult: ActivityResult)
 }

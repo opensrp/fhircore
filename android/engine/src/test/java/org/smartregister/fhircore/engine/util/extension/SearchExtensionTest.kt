@@ -63,16 +63,19 @@ class SearchExtensionTest {
               "value": "Value"
             }
           ]
-         }""".decodeJson<
-        DataQuery>()
+         }"""
+        .decodeJson<
+          DataQuery,
+        >()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
     val search = spyk(Search(ResourceType.Patient))
-    search.filterBy(dataQuery)
+    search.filterBy(dataQuery, computedRulesMap)
     val stringClientParamSlot = slot<StringClientParam>()
     verify {
       search.filter(
         stringParameter = capture(stringClientParamSlot),
         init = anyVararg(),
-        operation = any()
+        operation = any(),
       )
     }
     Assert.assertEquals(dataQuery.paramName, stringClientParamSlot.captured.paramName)
@@ -89,16 +92,19 @@ class SearchExtensionTest {
               "value": 10
             }
           ]
-         }""".decodeJson<
-        DataQuery>()
+         }"""
+        .decodeJson<
+          DataQuery,
+        >()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
     val search = spyk(Search(ResourceType.Patient))
-    search.filterBy(dataQuery)
+    search.filterBy(dataQuery, computedRulesMap)
     val clientParamSlot = slot<NumberClientParam>()
     verify {
       search.filter(
         numberParameter = capture(clientParamSlot),
         init = anyVararg(),
-        operation = any()
+        operation = any(),
       )
     }
     Assert.assertEquals(dataQuery.paramName, clientParamSlot.captured.paramName)
@@ -115,16 +121,19 @@ class SearchExtensionTest {
               "value": 10
             }
           ]
-         }""".decodeJson<
-        DataQuery>()
+         }"""
+        .decodeJson<
+          DataQuery,
+        >()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
     val search = spyk(Search(ResourceType.Patient))
-    search.filterBy(dataQuery)
+    search.filterBy(dataQuery, computedRulesMap)
     val clientParamSlot = slot<QuantityClientParam>()
     verify {
       search.filter(
         quantityParameter = capture(clientParamSlot),
         init = anyVararg(),
-        operation = any()
+        operation = any(),
       )
     }
     Assert.assertEquals(dataQuery.paramName, clientParamSlot.captured.paramName)
@@ -141,16 +150,19 @@ class SearchExtensionTest {
               "value": "Patient/sample-logical-id"
             }
           ]
-         }""".decodeJson<
-        DataQuery>()
+         }"""
+        .decodeJson<
+          DataQuery,
+        >()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
     val search = spyk(Search(ResourceType.Patient))
-    search.filterBy(dataQuery)
+    search.filterBy(dataQuery, computedRulesMap)
     val clientParamSlot = slot<ReferenceClientParam>()
     verify {
       search.filter(
         referenceParameter = capture(clientParamSlot),
         init = anyVararg(),
-        operation = any()
+        operation = any(),
       )
     }
     Assert.assertEquals(dataQuery.paramName, clientParamSlot.captured.paramName)
@@ -167,10 +179,13 @@ class SearchExtensionTest {
               "value": "http://sample-dummy-uri.com"
             }
           ]
-         }""".decodeJson<
-        DataQuery>()
+         }"""
+        .decodeJson<
+          DataQuery,
+        >()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
     val search = spyk(Search(ResourceType.Patient))
-    search.filterBy(dataQuery)
+    search.filterBy(dataQuery, computedRulesMap)
     val clientParamSlot = slot<UriClientParam>()
     verify {
       search.filter(uriParam = capture(clientParamSlot), init = anyVararg(), operation = any())
@@ -194,14 +209,15 @@ class SearchExtensionTest {
         }"""
         .trimMargin()
         .decodeJson<DataQuery>()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
     val search = spyk(Search(ResourceType.Patient))
-    search.filterBy(dataQuery)
+    search.filterBy(dataQuery, computedRulesMap)
     val stringClientParamSlot = slot<TokenClientParam>()
     verify {
       search.filter(
         tokenParameter = capture(stringClientParamSlot),
         init = anyVararg(),
-        operation = any()
+        operation = any(),
       )
     }
     Assert.assertEquals(dataQuery.paramName, stringClientParamSlot.captured.paramName)
@@ -215,20 +231,53 @@ class SearchExtensionTest {
           "filterCriteria": [
             {
               "dataType": "DATE",
-              "valueDate": "2017-03-14",
+              "value": "2017-03-14",
               "prefix": "GREATERTHAN_OR_EQUALS"
             }
           ]
-        }""".decodeJson<
-        DataQuery>()
+        }"""
+        .decodeJson<
+          DataQuery,
+        >()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
     val search = spyk(Search(ResourceType.Patient))
-    search.filterBy(dataQuery)
+    search.filterBy(dataQuery, computedRulesMap)
     val dateClientParamSlot = slot<DateClientParam>()
     verify {
       search.filter(
         dateParameter = capture(dateClientParamSlot),
         init = anyVararg(),
-        operation = any()
+        operation = any(),
+      )
+    }
+    Assert.assertEquals(dataQuery.paramName, dateClientParamSlot.captured.paramName)
+  }
+
+  @Test
+  fun testFilterForDateTypeWithComputedRule() {
+    val dataQuery =
+      """{
+          "paramName": "birthdate",
+          "filterCriteria": [
+            {
+              "dataType": "DATE",
+              "computedRule": "valueDate",
+              "prefix": "GREATERTHAN_OR_EQUALS"
+            }
+          ]
+        }"""
+        .decodeJson<
+          DataQuery,
+        >()
+    val computedRulesMap = mapOf<String, Any>().apply { "valueDate" to "2022-08-15" }
+    val search = spyk(Search(ResourceType.Patient))
+    search.filterBy(dataQuery, computedRulesMap)
+    val dateClientParamSlot = slot<DateClientParam>()
+    verify {
+      search.filter(
+        dateParameter = capture(dateClientParamSlot),
+        init = anyVararg(),
+        operation = any(),
       )
     }
     Assert.assertEquals(dataQuery.paramName, dateClientParamSlot.captured.paramName)

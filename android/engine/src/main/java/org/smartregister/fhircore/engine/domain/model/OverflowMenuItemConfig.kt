@@ -16,17 +16,36 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
+import org.smartregister.fhircore.engine.util.extension.BLACK_COLOR_HEX_CODE
+import org.smartregister.fhircore.engine.util.extension.TRUE
+import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class OverflowMenuItemConfig(
   val id: Int = 1,
   val title: String = "",
   val confirmAction: Boolean = false,
-  val titleColor: String? = null,
+  val icon: ImageConfig? = null,
+  val titleColor: String = BLACK_COLOR_HEX_CODE,
   val backgroundColor: String? = null,
   val visible: String,
   val showSeparator: Boolean = false,
-  val enabled: String = "true",
-  val actions: List<ActionConfig> = emptyList()
-)
+  val enabled: String = TRUE,
+  val actions: List<ActionConfig> = emptyList(),
+) : Parcelable, java.io.Serializable {
+  fun interpolate(computedValuesMap: Map<String, Any>): OverflowMenuItemConfig {
+    return this.copy(
+      title = title.interpolate(computedValuesMap),
+      enabled = enabled.interpolate(computedValuesMap),
+      visible = visible.interpolate(computedValuesMap),
+      titleColor = titleColor.interpolate(computedValuesMap),
+      backgroundColor = backgroundColor?.interpolate(computedValuesMap),
+      icon = icon?.interpolate(computedValuesMap),
+    )
+  }
+}
