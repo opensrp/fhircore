@@ -29,5 +29,6 @@ data class MeasureReportConfiguration(
   val registerDate: String? = null,
   val showFixedRangeSelection: Boolean? = null,
   val showSubjectSelection: Boolean? = null,
+  val stratifierXFhirQuery: String? = null,
   val reports: List<MeasureReportConfig> = emptyList()
 ) : Configuration()
