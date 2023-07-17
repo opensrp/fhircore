@@ -272,6 +272,18 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun retrieveRelatedResourcesWithoutReferenceReturnsResources() {
+    populateFactsWithResources()
+    val result =
+      rulesEngineService.retrieveRelatedResources(
+        resource = Faker.buildPatient(),
+        relatedResourceKey = ResourceType.CarePlan.name,
+        referenceFhirPathExpression = ""
+      )
+    Assert.assertEquals(1, result.size)
+  }
+
+  @Test
   fun retrieveParentResourcesReturnsCorrectResource() {
     populateFactsWithResources()
     val result =
