@@ -186,11 +186,11 @@ jobs:
 
       - name: Setup Gradle cache
         uses: gradle/gradle-build-action@v2
- 
+
       - name: Spotless check quest application
         run: ./gradlew -PlocalPropertiesFile=local.properties :quest:spotlessCheck --stacktrace :quest:ktlintCheck --stacktrace
         working-directory: android 
-      
+
       - name: Load AVD cache
         uses: actions/cache@v2
         id: avd-cache
@@ -199,6 +199,10 @@ jobs:
             ~/.android/avd/*
             ~/.android/adb*
           key: avd-${{ matrix.api-level }}
+
+      - name: Download sample database for performance tests
+        working-directory: android
+        run: wget -q https://github.com/ekigamba/debug-jacoco-reports/releases/download/v0.0.1/resources.db -P quest/src/androidTest/assets/
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
@@ -221,7 +225,7 @@ jobs:
           force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: wget https://github.com/ekigamba/debug-jacoco-reports/releases/download/v0.0.1/resources.db && mv resources.db quest/src/androidTest/assets/ && ./gradlew -PlocalPropertiesFile=local.properties :quest:clean && ./gradlew -PlocalPropertiesFile=local.properties  :quest:fhircoreJacocoReport --stacktrace
+          script: ./gradlew -PlocalPropertiesFile=local.properties :quest:clean && ./gradlew -PlocalPropertiesFile=local.properties :quest:connectedOpensrpDebugAndroidTest --stacktrace && ./gradlew -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace
 
       - name: Upload Quest module test coverage report to Codecov
         if: matrix.api-level == 30 # Only upload coverage on API level 30

@@ -2,7 +2,6 @@ import com.android.build.api.variant.FilterConfiguration.FilterType
 import java.io.FileReader
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.json.JSONObject
-import kotlin.collections.hashMapOf
 
 buildscript {
   apply(from = "../jacoco.gradle.kts")
@@ -76,7 +75,8 @@ android {
 
     testInstrumentationRunner = "org.smartregister.fhircore.quest.QuestTestRunner"
     testInstrumentationRunnerArguments["additionalTestOutputDir"] = "/sdcard/Download"
-    testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] = "ACTIVITY-MISSING,CODE-COVERAGE,DEBUGGABLE,UNLOCKED,EMULATOR"
+    testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] =
+      "ACTIVITY-MISSING,CODE-COVERAGE,DEBUGGABLE,UNLOCKED,EMULATOR"
   }
 
   signingConfigs {
@@ -377,24 +377,59 @@ dependencies {
   ktlint(project(":linting"))
 }
 
-task("checkPerformanceLimits")  {
-  val resultsFile = File("performance-results.json")
-  val expectationsFile = File("expected-results.json")
 
-  // Read the expectations file
-  val expectedResultsMap : HashMap<String, HashMap<String, Float>> = hashMapOf()
+ task("checkPerformanceLimits")  {
+   val expectationsFile = project.file("expected-results.json")
+   val resultsFile = project.file("performance-results.json")
 
-  JSONObject(FileReader(expectationsFile).readText()).run {
-    keys().forEach { key ->
-      val resultMaxDeltaMap :HashMap<String, Float> = hashMapOf()
-      val methodExpectedResults = this.getJSONObject("key")
+   // Check if the file exists
 
-      methodExpectedResults.keys().forEach { expectedResultsKey ->
-        resultMaxDeltaMap.put(expectedResultsKey, methodExpectedResults.getFloat(expectedResultsKey))
-      }
-    }
-  }
+   //throw Exception("Full url 1 : ${expectationsFile.absolutePath} --- " + "Full url 2 : ${resultsFile.path}")
 
-  // Loop through the results file updating the results
-  JSONObject
+   System.out.println("Full url 1 : ${expectationsFile.path}")
+   System.out.println("Full url 2 : ${resultsFile.path}")
+
+   // Read the expectations file
+   val expectedResultsMap : HashMap<String, HashMap<String, Double>> = hashMapOf()
+
+   JSONObject(FileReader(expectationsFile).readText()).run {
+     keys().forEach { key ->
+       val resultMaxDeltaMap :HashMap<String, Double> = hashMapOf()
+       val methodExpectedResults = this.getJSONObject(key)
+
+       methodExpectedResults.keys().forEach { expectedResultsKey ->
+         resultMaxDeltaMap.put(expectedResultsKey, methodExpectedResults.getDouble(expectedResultsKey))
+       }
+
+       expectedResultsMap[key] = resultMaxDeltaMap
+     }
+   }
+
+   // Loop through the results file updating the results
+   JSONObject(FileReader(resultsFile).readText()).run {
+     getJSONArray("benchmarks").forEachIndexed { index, any ->
+       val benchmark = any as JSONObject
+       val fullName = benchmark.getTestName()
+       val timings = benchmark.getJSONObject("metrics").getJSONObject("timeNs")
+
+       /*
+       val min = timings.getDouble("minimum")
+       val max = timings.getDouble("maximum")
+       */
+       val median = timings.getDouble("median")
+       val expectedTimings = expectedResultsMap[fullName]
+       val expectedMaxTiming = (expectedTimings!!.get("max") ?: 0e1)
+
+       if (median >  expectedMaxTiming) {
+         throw Exception("$fullName test passes the threshold of $expectedMaxTiming Ns. The timing is $median Ns")
+       }
+     }
+   }
+ }
+
+fun JSONObject.getTestName() : String {
+  val className = getString("className").substringAfterLast(".")
+  val methodName = getString("name").substringAfterLast("_")
+
+  return "$className#$methodName"
 }
