@@ -74,6 +74,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -193,6 +194,7 @@ fun LoginPage(
           text = viewConfiguration.applicationName,
           fontWeight = FontWeight.Bold,
           fontSize = 32.sp,
+          textAlign = TextAlign.Center,
           modifier =
             modifier
               .wrapContentWidth()
