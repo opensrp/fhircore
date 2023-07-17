@@ -186,7 +186,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             context = questionnaireActivity,
           )
         if (!questionnaireResponseValid) {
-          showToast(getString(R.string.questionnaire_response_broken))
+          showToast(getString(R.string.questionnaire_response_invalid))
           finish()
         }
 

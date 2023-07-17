@@ -59,6 +59,7 @@ fun List<ActionConfig>.handleClickEvent(
           val args =
             bundleOf(
               NavigationArg.QUESTIONNAIRE_CONFIG to questionnaireConfigInterpolated,
+              NavigationArg.PARAMS to interpolateActionParamsValue(actionConfig, resourceData),
             )
           navController.navigate(MainNavigationScreen.Questionnaire.route, args)
         }

@@ -49,7 +49,7 @@ fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asLabel() =
     ""
   }
 
-fun Questionnaire.isExtractionCandidate() =
+fun Questionnaire.extractByStructureMap() =
   this.targetStructureMap != null ||
     this.extension.any { it.url.contains("sdc-questionnaire-itemExtractionContext") }
 

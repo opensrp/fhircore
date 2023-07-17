@@ -197,30 +197,32 @@ object AlertDialogue {
   ): DatePickerDialog {
     val dateDialog = DatePickerDialog(context)
 
-    dateDialog.apply {
-      max?.let { this.datePicker.maxDate = it.time }
-      val id = Resources.getSystem().getIdentifier("date_picker_header_date", "id", "android")
-      if (id != 0) {
-        this.datePicker.findViewById<TextView>(id).textSize = 14f
-      }
+    dateDialog
+      .apply {
+        max?.let { this.datePicker.maxDate = it.time }
+        val id = Resources.getSystem().getIdentifier("date_picker_header_date", "id", "android")
+        if (id != 0) {
+          this.datePicker.findViewById<TextView>(id).textSize = 14f
+        }
 
-      title?.let {
-        this.setCustomTitle(
-          TextView(context).apply {
-            this.text = it
-            this.setPadding(20)
-          },
-        )
-      }
+        title?.let {
+          this.setCustomTitle(
+            TextView(context).apply {
+              this.text = it
+              this.setPadding(20)
+            },
+          )
+        }
 
-      this.setButton(DialogInterface.BUTTON_POSITIVE, confirmButtonText) { d, _ ->
-        val date =
-          Calendar.getInstance().apply {
-            (d as DatePickerDialog).datePicker.let { this.set(it.year, it.month, it.dayOfMonth) }
-          }
-        confirmButtonListener.invoke(date.time)
+        this.setButton(DialogInterface.BUTTON_POSITIVE, confirmButtonText) { d, _ ->
+          val date =
+            Calendar.getInstance().apply {
+              (d as DatePickerDialog).datePicker.let { this.set(it.year, it.month, it.dayOfMonth) }
+            }
+          confirmButtonListener.invoke(date.time)
+        }
       }
-    }.create()
+      .create()
 
     if (dangerActionColor) {
       dateDialog

@@ -165,8 +165,10 @@ constructor(
 
   private fun preProcessResources(addResourceTags: Boolean, vararg resource: Resource) {
     resource.onEach { currentResource ->
-      currentResource.updateLastUpdated()
-      currentResource.generateMissingId()
+      currentResource.apply {
+        updateLastUpdated()
+        generateMissingId()
+      }
       if (addResourceTags) {
         val tags = configService.provideResourceTags(sharedPreferencesHelper)
         tags.forEach {
