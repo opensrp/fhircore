@@ -62,7 +62,7 @@ fun CompoundText(
   modifier: Modifier = Modifier,
   compoundTextProperties: CompoundTextProperties,
   resourceData: ResourceData,
-  navController: NavController
+  navController: NavController,
 ) {
   FlowRow(
     modifier =
@@ -71,9 +71,9 @@ fun CompoundText(
         .conditional(compoundTextProperties.fillMaxHeight, { fillMaxHeight() })
         .padding(
           horizontal = compoundTextProperties.padding.dp,
-          vertical = compoundTextProperties.padding.div(2).dp
+          vertical = compoundTextProperties.padding.div(2).dp,
         )
-        .background(compoundTextProperties.backgroundColor.parseColor())
+        .background(compoundTextProperties.backgroundColor.parseColor()),
   ) {
     if (!compoundTextProperties.primaryText.isNullOrEmpty()) {
       CompoundTextPart(
@@ -91,7 +91,7 @@ fun CompoundText(
         actions = compoundTextProperties.primaryTextActions,
         resourceData = resourceData,
         navController = navController,
-        overflow = compoundTextProperties.overflow
+        overflow = compoundTextProperties.overflow,
       )
     }
     // Separate the primary and secondary text
@@ -101,7 +101,7 @@ fun CompoundText(
           text = compoundTextProperties.separator!!,
           fontSize = compoundTextProperties.fontSize.sp,
           color = DefaultColor,
-          textAlign = TextAlign.Center
+          textAlign = TextAlign.Center,
         )
       }
     }
@@ -121,7 +121,7 @@ fun CompoundText(
         actions = compoundTextProperties.secondaryTextActions,
         navController = navController,
         resourceData = resourceData,
-        overflow = compoundTextProperties.overflow
+        overflow = compoundTextProperties.overflow,
       )
     }
   }
@@ -144,7 +144,7 @@ private fun CompoundTextPart(
   actions: List<ActionConfig>,
   navController: NavController,
   resourceData: ResourceData,
-  overflow: TextOverFlow?
+  overflow: TextOverFlow?,
 ) {
   Text(
     text =
@@ -162,7 +162,7 @@ private fun CompoundTextPart(
         .wrapContentWidth(Alignment.Start)
         .conditional(
           clickable.toBoolean(),
-          { clickable { actions.handleClickEvent(navController, resourceData) } }
+          { clickable { actions.handleClickEvent(navController, resourceData) } },
         )
         .clip(RoundedCornerShape(borderRadius.dp))
         .background(backgroundColor.parseColor())
@@ -182,7 +182,7 @@ private fun CompoundTextPart(
         TextOverFlow.CLIP -> TextOverflow.Clip
         TextOverFlow.VISIBLE -> TextOverflow.Visible
         else -> TextOverflow.Ellipsis
-      }
+      },
   )
 }
 
@@ -199,16 +199,13 @@ private fun CompoundTextNoSecondaryTextPreview() {
           primaryTextFontWeight = TextFontWeight.SEMI_BOLD,
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-      navController = navController
+      navController = navController,
     )
     CompoundText(
       compoundTextProperties =
-        CompoundTextProperties(
-          primaryText = "Sex",
-          primaryTextColor = "#5A5A5A",
-        ),
+        CompoundTextProperties(primaryText = "Sex", primaryTextColor = "#5A5A5A"),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-      navController = navController
+      navController = navController,
     )
   }
 }
@@ -222,7 +219,7 @@ private fun CompoundTextWithSecondaryTextPreview() {
       compoundTextProperties =
         CompoundTextProperties(primaryText = "Full Name, Sex, Age", primaryTextColor = "#000000"),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-      navController = navController
+      navController = navController,
     )
     SpacerView(spacerProperties = SpacerProperties(viewType = ViewType.SPACER, width = 8f))
     CompoundText(
@@ -233,10 +230,10 @@ private fun CompoundTextWithSecondaryTextPreview() {
           secondaryText = "Overdue",
           secondaryTextColor = "#000000",
           separator = ":",
-          secondaryTextBackgroundColor = "#FFA500"
+          secondaryTextBackgroundColor = "#FFA500",
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-      navController = navController
+      navController = navController,
     )
   }
 }

@@ -32,7 +32,7 @@ suspend fun <T : Any> KClass<T>.callSuspendFunctionOnField(
   obj: T,
   field: String,
   method: String,
-  vararg args: Any
+  vararg args: Any,
 ): Any? {
   val declaredObject =
     this.declaredMemberProperties
@@ -40,8 +40,9 @@ suspend fun <T : Any> KClass<T>.callSuspendFunctionOnField(
       .apply { this.isAccessible = true }
       .get(obj)!!
   val declaredObjectMethod =
-    declaredObject::class.declaredMemberFunctions.first { it.name == method }.apply {
-      isAccessible = true
-    }
+    declaredObject::class
+      .declaredMemberFunctions
+      .first { it.name == method }
+      .apply { isAccessible = true }
   return declaredObjectMethod.callSuspend(declaredObject, *args)
 }

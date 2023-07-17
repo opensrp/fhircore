@@ -56,8 +56,9 @@ fun SimpleDateFormat.tryParse(date: String): Date? =
       .getOrNull()
 
 fun Date?.makeItReadable(): String {
-  return if (this == null) "N/A"
-  else {
+  return if (this == null) {
+    "N/A"
+  } else {
     SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault()).run { format(this@makeItReadable) }
   }
 }

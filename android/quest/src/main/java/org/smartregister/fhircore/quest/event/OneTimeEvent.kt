@@ -30,7 +30,6 @@ class OneTimeEvent<out T>(private val content: T) {
 
   /**
    * @param asker Used to identify, whether this "asker" has already handled this Event.
-   *
    * @return Event content or null if it has been already handled by asker
    */
   fun getIfNotHandled(asker: String): T? = if (handlers.add(asker)) content else null

@@ -30,11 +30,18 @@ class FhirResourceDataSource @Inject constructor(private val resourceService: Fh
     return resourceService.getResource(path)
   }
 
+  suspend fun getResourceWithGatewayModeHeader(
+    gatewayModeHeaderValue: String,
+    path: String,
+  ): Bundle {
+    return resourceService.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, path)
+  }
+
   suspend fun insert(resourceType: String, resourceId: String, payload: String): Resource {
     return resourceService.insertResource(
       resourceType,
       resourceId,
-      payload.toRequestBody("application/fhir+json".toMediaType())
+      payload.toRequestBody("application/fhir+json".toMediaType()),
     )
   }
 
@@ -42,7 +49,7 @@ class FhirResourceDataSource @Inject constructor(private val resourceService: Fh
     return resourceService.updateResource(
       resourceType,
       resourceId,
-      payload.toRequestBody("application/json-patch+json".toMediaType())
+      payload.toRequestBody("application/json-patch+json".toMediaType()),
     )
   }
 

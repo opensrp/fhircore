@@ -24,25 +24,17 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
-import java.util.Date
 import java.util.TreeSet
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import org.hl7.fhir.r4.model.Address
-import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Encounter
-import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.ListResource
-import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.StringType
-import org.joda.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -55,14 +47,9 @@ import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.p2p.sync.DataType
 
 class BaseP2PTransferDaoTest : RobolectricTest() {
-
   private lateinit var baseP2PTransferDao: BaseP2PTransferDao
-
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
   private val fhirEngine: FhirEngine = mockk(relaxed = true)
-
-  private val currentDate = Date()
 
   @Before
   fun setUp() {
@@ -72,35 +59,36 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
           fhirEngine,
           DefaultDispatcherProvider(),
           configurationRegistry,
-          mockk()
-        )
+          mockk(),
+        ),
       )
   }
 
   @Test
   fun `getDataTypes() returns correct list of datatypes`() {
-
     val actualDataTypes = baseP2PTransferDao.getDataTypes()
     assertEquals(9, actualDataTypes.size)
     assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0))
+      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0)),
     )
     assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1))
-    )
-    assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2))
+      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)),
     )
     assertTrue(
       actualDataTypes.contains(
-        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3)
-      )
+        DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2),
+      ),
     )
     assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4))
+      actualDataTypes.contains(
+        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3),
+      ),
     )
     assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5))
+      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4)),
+    )
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5)),
     )
   }
 
@@ -113,29 +101,31 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
         ResourceType.Questionnaire.name,
         ResourceType.QuestionnaireResponse.name,
         ResourceType.Observation.name,
-        ResourceType.Encounter.name
+        ResourceType.Encounter.name,
       )
     val actualDataTypes = baseP2PTransferDao.getDynamicDataTypes(resourceList)
     assertEquals(6, actualDataTypes.size)
     assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0))
+      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0)),
     )
     assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1))
-    )
-    assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2))
+      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)),
     )
     assertTrue(
       actualDataTypes.contains(
-        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3)
-      )
+        DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2),
+      ),
     )
     assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4))
+      actualDataTypes.contains(
+        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3),
+      ),
     )
     assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5))
+      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4)),
+    )
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5)),
     )
   }
 
@@ -145,15 +135,15 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
       "SELECT a.serializedResource\n" +
         "  FROM ResourceEntity a\n" +
         "  LEFT JOIN DateIndexEntity b\n" +
-        "  ON a.resourceType = b.resourceType AND a.resourceUuid = b.resourceUuid \n" +
+        "  ON a.resourceType = b.resourceType AND a.resourceUuid = b.resourceUuid AND b.index_name = \"_lastUpdated\"\n" +
         "  LEFT JOIN DateTimeIndexEntity c\n" +
-        "  ON a.resourceType = c.resourceType AND a.resourceUuid = c.resourceUuid\n" +
-        "  WHERE a.resourceUuid IN (\n" +
+        "  ON a.resourceType = c.resourceType AND a.resourceUuid = c.resourceUuid AND c.index_name = \"_lastUpdated\"\n" +
+        "  WHERE a.resourceType = \"Patient\"\n" +
+        "  AND a.resourceUuid IN (\n" +
         "  SELECT resourceUuid FROM DateTimeIndexEntity\n" +
-        "  WHERE resourceType = 'Patient' AND index_name = '_lastUpdated' AND index_to >= ?\n" +
+        "  WHERE resourceType = \"Patient\" AND index_name = \"_lastUpdated\" AND index_to >= ?\n" +
         "  )\n" +
-        "  AND (b.index_name = '_lastUpdated' OR c.index_name = '_lastUpdated')\n" +
-        "  ORDER BY c.index_from ASC, a.id ASC\n" +
+        "  ORDER BY b.index_from ASC, c.index_from ASC\n" +
         "  LIMIT ? OFFSET ?"
 
     val patientDataType = DataType("Patient", DataType.Filetype.JSON, 1)
@@ -163,11 +153,11 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
         lastRecordUpdatedAt = 0,
         batchSize = 25,
         offset = 0,
-        classType = classType
+        classType = classType,
       )
     }
-
     val searchQuerySlot = slot<SearchQuery>()
+
     coVerify { fhirEngine.search<Patient>(capture(searchQuerySlot)) }
     assertEquals(25, searchQuerySlot.captured.args[1])
     assertEquals(expectedQuery, searchQuerySlot.captured.query)
@@ -177,33 +167,33 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
   fun `resourceClassType() returns correct resource class type for data type`() {
     assertEquals(
       Group::class.java,
-      DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0).name.resourceClassType()
+      DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0).name.resourceClassType(),
     )
     assertEquals(
       Encounter::class.java,
-      DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 0).name.resourceClassType()
+      DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 0).name.resourceClassType(),
     )
     assertEquals(
       Observation::class.java,
-      DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 0).name.resourceClassType()
+      DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 0).name.resourceClassType(),
     )
     assertEquals(
       Patient::class.java,
-      DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 0).name.resourceClassType()
+      DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 0).name.resourceClassType(),
     )
     assertEquals(
       Questionnaire::class.java,
-      DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 0).name.resourceClassType()
+      DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 0).name.resourceClassType(),
     )
     assertEquals(
       QuestionnaireResponse::class.java,
       DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 0)
         .name
-        .resourceClassType()
+        .resourceClassType(),
     )
     assertEquals(
       ListResource::class.java,
-      DataType(ResourceType.List.name, DataType.Filetype.JSON, 0).name.resourceClassType()
+      DataType(ResourceType.List.name, DataType.Filetype.JSON, 0).name.resourceClassType(),
     )
   }
 
@@ -228,56 +218,29 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
 
   @Test
   fun getDefaultDataTypesReturnsCorrectListOfDataTypes() {
-
     val actualDataTypes = baseP2PTransferDao.getDefaultDataTypes()
     assertEquals(6, actualDataTypes.size)
     assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0))
+      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0)),
     )
     assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1))
-    )
-    assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2))
+      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)),
     )
     assertTrue(
       actualDataTypes.contains(
-        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3)
-      )
+        DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2),
+      ),
     )
     assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4))
+      actualDataTypes.contains(
+        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3),
+      ),
     )
     assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5))
+      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4)),
     )
-  }
-
-  private fun populateTestPatient(): Patient {
-    val patientId = "patient-123456"
-    val patient: Patient =
-      Patient().apply {
-        id = patientId
-        active = true
-        birthDate = LocalDate.parse("1999-10-03").toDate()
-        gender = Enumerations.AdministrativeGender.MALE
-        address =
-          listOf(
-            Address().apply {
-              city = "Nairobi"
-              country = "Kenya"
-            }
-          )
-        name =
-          listOf(
-            HumanName().apply {
-              given = mutableListOf(StringType("Kiptoo"))
-              family = "Maina"
-            }
-          )
-        telecom = listOf(ContactPoint().apply { value = "12345" })
-        meta = Meta().apply { lastUpdated = currentDate }
-      }
-    return patient
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5)),
+    )
   }
 }

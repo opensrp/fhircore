@@ -35,7 +35,7 @@ class RegisterBottomSheetFragment(
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?
+    savedInstanceState: Bundle?,
   ): View {
     return ComposeView(requireContext()).apply {
       setContent {
@@ -45,7 +45,7 @@ class RegisterBottomSheetFragment(
             registerCountMap = registerCountMap,
             menuClickListener = menuClickListener,
             onDismiss = { dismiss() },
-            title = title
+            title = title,
           )
         }
       }

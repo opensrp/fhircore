@@ -35,7 +35,7 @@ constructor(
   @Assisted val appContext: Context,
   @Assisted val workerParams: WorkerParameters,
   val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {

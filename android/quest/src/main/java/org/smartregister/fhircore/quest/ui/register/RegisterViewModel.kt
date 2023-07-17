@@ -58,7 +58,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val dispatcherProvider: DispatcherProvider,
-  val resourceDataRulesExecutor: ResourceDataRulesExecutor
+  val resourceDataRulesExecutor: ResourceDataRulesExecutor,
 ) : ViewModel() {
 
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
@@ -83,7 +83,7 @@ constructor(
   fun paginateRegisterData(
     registerId: String,
     loadAll: Boolean = false,
-    clearCache: Boolean = false
+    clearCache: Boolean = false,
   ) {
     if (clearCache) {
       pagesDataCache.clear()
@@ -108,17 +108,17 @@ constructor(
             RegisterPagingSourceState(
               registerId = registerId,
               loadAll = loadAll,
-              currentPage = if (loadAll) 0 else currentPage.value
-            )
+              currentPage = if (loadAll) 0 else currentPage.value,
+            ),
           )
         }
-      }
+      },
     )
   }
 
   fun retrieveRegisterConfiguration(
     registerId: String,
-    paramMap: Map<String, String>? = emptyMap()
+    paramMap: Map<String, String>? = emptyMap(),
   ): RegisterConfiguration {
     // Ensures register configuration is initialized once
     if (!::registerConfiguration.isInitialized) {
@@ -141,8 +141,11 @@ constructor(
       // Search using name or patient logicalId or identifier. Modify to add more search params
       is RegisterEvent.SearchRegister -> {
         searchText.value = event.searchText
-        if (event.searchText.isEmpty()) paginateRegisterData(registerUiState.value.registerId)
-        else filterRegisterData(event)
+        if (event.searchText.isEmpty()) {
+          paginateRegisterData(registerUiState.value.registerId)
+        } else {
+          filterRegisterData(event)
+        }
       }
       is RegisterEvent.MoveToNextPage -> {
         currentPage.value = currentPage.value.plus(1)
@@ -176,7 +179,7 @@ constructor(
     registerId: String,
     screenTitle: String,
     params: Array<ActionParameter>? = emptyArray(),
-    clearCache: Boolean
+    clearCache: Boolean,
   ) {
     if (registerId.isNotEmpty()) {
       val paramsMap: Map<String, String> = params.toParamDataMap()
@@ -198,14 +201,13 @@ constructor(
             totalRecordsCount = _totalRecordsCount.value,
             pagesCount =
               ceil(
-                  _totalRecordsCount
-                    .value
+                  _totalRecordsCount.value
                     .toDouble()
-                    .div(currentRegisterConfiguration.pageSize.toLong())
+                    .div(currentRegisterConfiguration.pageSize.toLong()),
                 )
                 .toInt(),
             progressPercentage = _percentageProgress,
-            isSyncUpload = _isUploadSync
+            isSyncUpload = _isUploadSync,
           )
       }
     }
@@ -214,6 +216,7 @@ constructor(
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
   }
+
   suspend fun emitPercentageProgressState(progress: Int, isUploadSync: Boolean) {
     _percentageProgress.emit(progress)
     _isUploadSync.emit(isUploadSync)

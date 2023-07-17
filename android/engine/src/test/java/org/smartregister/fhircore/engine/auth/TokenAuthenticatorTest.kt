@@ -62,8 +62,11 @@ import retrofit2.Response
 class TokenAuthenticatorTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
+
   @ExperimentalCoroutinesApi @get:Rule val coroutineRule = CoroutineTestRule()
+
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
   @Inject lateinit var configService: ConfigService
   private val oAuthService: OAuthService = mockk()
   private lateinit var tokenAuthenticator: TokenAuthenticator
@@ -83,8 +86,8 @@ class TokenAuthenticatorTest : RobolectricTest() {
           oAuthService = oAuthService,
           dispatcherProvider = coroutineRule.testDispatcherProvider,
           accountManager = accountManager,
-          context = context
-        )
+          context = context,
+        ),
       )
   }
 
@@ -180,8 +183,8 @@ class TokenAuthenticatorTest : RobolectricTest() {
           oAuthService = oAuthService,
           dispatcherProvider = coroutineRule.testDispatcherProvider,
           accountManager = accountManager,
-          context = context
-        )
+          context = context,
+        ),
       )
 
     val oAuthResponse =
@@ -190,7 +193,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         refreshToken = refreshToken,
         tokenType = "",
         expiresIn = 3600,
-        scope = SCOPE
+        scope = SCOPE,
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
 
@@ -216,14 +219,15 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
     Assert.assertEquals(
       charArrayOf('P', '4', '5', '5', 'W', '4', '0').toPasswordHash(passwordSalt),
-      credentials?.passwordHash
+      credentials?.passwordHash,
     )
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun testFetchTokenShouldSetPasswordAndAuthTokenForExistingAccount() = runTest {
-    val account = Account(sampleUsername, PROVIDER)
+    val testAPKApplicationId = "org.smartregister.fhircore.engine.test"
+    val account = Account(sampleUsername, testAPKApplicationId)
     val password = charArrayOf('P', '4', '5', '5', 'W', '4', '0')
     val token = "goodToken"
     val refreshToken = "refreshToken"
@@ -234,7 +238,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         refreshToken = refreshToken,
         tokenType = "",
         expiresIn = 3600,
-        scope = SCOPE
+        scope = SCOPE,
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
     every { accountManager.accounts } returns arrayOf(account)
@@ -283,6 +287,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
       Assert.assertEquals(Result.failure<SSLHandshakeException>(sslHandshakeException), result)
     }
   }
+
   @Test
   fun testLogout() {
     val account = Account(sampleUsername, PROVIDER)
@@ -331,7 +336,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         refreshToken = "soRefreshingRefreshToken",
         tokenType = "",
         expiresIn = 3600,
-        scope = SCOPE
+        scope = SCOPE,
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
 
@@ -358,8 +363,8 @@ class TokenAuthenticatorTest : RobolectricTest() {
           oAuthService = oAuthService,
           dispatcherProvider = coroutineRule.testDispatcherProvider,
           accountManager = accountManager,
-          context = context
-        )
+          context = context,
+        ),
       )
 
     val result =
@@ -416,6 +421,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
       onSessionInvalidated()
     }
   }
+
   @Test
   fun testsCurrentRefreshTokenActiveWithInActiveToken() {
     val account = Account(sampleUsername, PROVIDER)

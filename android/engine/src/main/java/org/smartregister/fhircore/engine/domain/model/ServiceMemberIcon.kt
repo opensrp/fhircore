@@ -25,5 +25,5 @@ import org.smartregister.fhircore.engine.R
 @Suppress("EXPLICIT_SERIALIZABLE_IS_REQUIRED")
 enum class ServiceMemberIcon(val icon: Int) {
   @JsonNames("child", "Child") CHILD(R.drawable.ic_kids),
-  @JsonNames("pregnant_woman", "PregnantWoman") PREGNANT_WOMAN(R.drawable.ic_pregnant)
+  @JsonNames("pregnant_woman", "PregnantWoman") PREGNANT_WOMAN(R.drawable.ic_pregnant),
 }

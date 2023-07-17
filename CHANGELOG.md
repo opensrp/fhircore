@@ -8,9 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.4] - 2023-06-24
 ### Added
 - Insights feature to show stats on any _Unsynced_ Resources on the device
+- Generic date service function to add or subtract days, weeks, months or years from/to current date
+- Add ability to configure resource Id used to open profiles
 
 ### Fixed
 - Incorrect error shown for failed authentication when the credentials are invalid.
+- [P2P] Possible p2p sync slow regression #2536
 
 ### Changed
 - 
@@ -72,6 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Triggering QuestionnaireResponse extraction for Questionnaires closed via a Confirm Dialog
 - Fix the OVERDUE service status setting on the `RulesFactory#generateTaskServiceStatus()`
 - Fix change HH head breaking if a HH head is not already assigned
+- `Task.status` for tasks created today and DUE today not update to `ready`
 
 ### Changed
 - Refactored how the related resources SELECT and COUNT queries search results are represented. 

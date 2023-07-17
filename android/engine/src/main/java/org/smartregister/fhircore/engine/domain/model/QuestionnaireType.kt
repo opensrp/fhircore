@@ -19,9 +19,12 @@ package org.smartregister.fhircore.engine.domain.model
 enum class QuestionnaireType {
   DEFAULT,
   EDIT,
-  READ_ONLY;
+  READ_ONLY,
+  ;
 
   fun isDefault() = this == DEFAULT
+
   fun isEditMode() = this == EDIT
+
   fun isReadOnly() = this == READ_ONLY
 }

@@ -38,7 +38,7 @@ class MeasureReportFragment : Fragment() {
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?
+    savedInstanceState: Bundle?,
   ): View {
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -47,7 +47,7 @@ class MeasureReportFragment : Fragment() {
           MeasureReportMainScreen(
             reportId = measureReportFragmentArgs.reportId,
             measureReportViewModel = measureReportViewModel,
-            mainNavController = findNavController()
+            mainNavController = findNavController(),
           )
         }
       }

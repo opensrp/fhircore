@@ -36,18 +36,19 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.engine.launchFragmentInHiltContainer
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.launchFragmentInHiltContainer
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 
 @HiltAndroidTest
 class UserSettingFragmentTest : RobolectricTest() {
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
   private val navController = TestNavHostController(ApplicationProvider.getApplicationContext())
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
@@ -81,7 +82,7 @@ class UserSettingFragmentTest : RobolectricTest() {
         dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
         syncListenerManager = mockk(relaxed = true),
         sync = mockk(relaxed = true),
-        context = application
+        context = application,
       )
 
     userSettingViewModel =
@@ -93,7 +94,7 @@ class UserSettingFragmentTest : RobolectricTest() {
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         workManager = mockk(relaxed = true),
-        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider
+        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
       )
   }
 

@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.util.extension.lastOffset
 @HiltAndroidTest
 class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   private val defaultRepository: DefaultRepository = mockk(relaxed = true)
   private val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk(relaxed = true)
@@ -68,7 +69,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
     initializeWorkManager()
     fhirCompleteCarePlanWorker =
       TestListenableWorkerBuilder<FhirCompleteCarePlanWorker>(
-          ApplicationProvider.getApplicationContext()
+          ApplicationProvider.getApplicationContext(),
         )
         .setWorkerFactory(FhirCompleteCarePlanWorkerFactory())
         .build()
@@ -92,9 +93,9 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
               outcomeReference =
                 listOf(
                   Reference("Task/f10eec84-ef78-4bd1-bac4-6e68c7548f4c"),
-                  Reference("Task/4f71e93f-dccd-48bf-becd-e4c93b51f8e2")
+                  Reference("Task/4f71e93f-dccd-48bf-becd-e4c93b51f8e2"),
                 )
-            }
+            },
           )
       }
     fhirCompleteCarePlanWorker = spyk(fhirCompleteCarePlanWorker)
@@ -137,9 +138,9 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
               outcomeReference =
                 listOf(
                   Reference("Task/f10eec84-ef78-4bd1-bac4-6e68c7548f4c"),
-                  Reference("Task/4f71e93f-dccd-48bf-becd-e4c93b51f8e2")
+                  Reference("Task/4f71e93f-dccd-48bf-becd-e4c93b51f8e2"),
                 )
-            }
+            },
           )
       }
     fhirCompleteCarePlanWorker = spyk(fhirCompleteCarePlanWorker)
@@ -182,9 +183,9 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
                 listOf(
                   Reference("Task/f10eec84-ef78-4bd1-bac4-6e68c7548f4c"),
                   Reference("Task/4f71e93f-dccd-48bf-becd-e4c93b51f8e2"),
-                  Reference("Task/56a7824a-d76b-4a20-844d-e975b66fde61")
+                  Reference("Task/56a7824a-d76b-4a20-844d-e975b66fde61"),
                 )
-            }
+            },
           )
       }
     fhirCompleteCarePlanWorker = spyk(fhirCompleteCarePlanWorker)
@@ -228,7 +229,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
     // Initialize WorkManager for instrumentation tests.
     WorkManagerTestInitHelper.initializeTestWorkManager(
       ApplicationProvider.getApplicationContext(),
-      config
+      config,
     )
   }
 
@@ -236,7 +237,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
     override fun createWorker(
       appContext: Context,
       workerClassName: String,
-      workerParameters: WorkerParameters
+      workerParameters: WorkerParameters,
     ): ListenableWorker {
       return FhirCompleteCarePlanWorker(
         context = appContext,
@@ -245,7 +246,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         fhirCarePlanGenerator = fhirCarePlanGenerator,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider
+        dispatcherProvider = coroutineTestRule.testDispatcherProvider,
       )
     }
   }

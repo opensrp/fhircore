@@ -23,5 +23,5 @@ data class LoginConfig(
   val showLogo: Boolean = true,
   val enablePin: Boolean? = false,
   val pinLength: Int = 4,
-  val pinLoginMessage: String? = null
+  val pinLoginMessage: String? = null,
 )
