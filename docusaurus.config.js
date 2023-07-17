@@ -57,7 +57,7 @@ const config = {
     },
       
       navbar: {
-        title: '',
+        title: 'Docs',
         logo: {
           alt: 'OpenSRP Documentation',
           src: 'img/opensrp-logo.png',
@@ -77,8 +77,14 @@ const config = {
             target: '_self',
           },
           {
-            to: 'https://opensrp.io/features/',
-            label: 'Features',
+            href: '/',
+            label: 'Docs',
+            position: 'right',
+            className: 'nav-active'
+          },
+          {
+            to: 'https://opensrp.io/screenshots/',
+            label: 'Screenshots',
             position: 'right',
             target: '_self',
           },
@@ -87,11 +93,6 @@ const config = {
             label: 'Impact',
             position: 'right',
             target: '_self',
-          },
-          {
-            href: '/',
-            label: 'Docs',
-            position: 'right',
           },
         ],
       },
@@ -102,7 +103,7 @@ const config = {
             items: [
               {
                 label: 'OpenSRP',
-                href: 'https://smartregister.org',
+                href: 'https://opensrp.io',
               },
               {
                 label: 'Ona',
