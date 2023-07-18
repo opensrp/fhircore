@@ -62,7 +62,7 @@ fun AppScreen(appMainViewModel: AppMainViewModel, sync: () -> Unit) {
           onClick = { patientRegistrationLauncher.launch(appMainViewModel.openForm(context)) },
           // enabled = syncState is SyncJobStatus.Finished,
           modifier = Modifier.fillMaxWidth()
-        ) { Text(text = "Create New Patient") }
+        ) { Text(text = appState.registrationButton) }
     }
   ) { paddingValues ->
     AppScreenBody(

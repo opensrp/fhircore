@@ -51,12 +51,12 @@ import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 class AppMainViewModel
 @Inject
 constructor(
-  val configurationRegistry: ConfigurationRegistry,
+  private val configurationRegistry: ConfigurationRegistry,
   private val sharedPreferencesHelper: SharedPreferencesHelper,
   private val secureSharedPreference: SecureSharedPreference,
 ) : ViewModel() {
 
-  val patientRegisterConfiguration: RegisterViewConfiguration by lazy {
+  private val patientRegisterConfiguration: RegisterViewConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(AppConfigClassification.PATIENT_REGISTER)
   }
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
@@ -74,7 +74,8 @@ constructor(
         username = secureSharedPreference.retrieveSessionUsername() ?: "",
         lastSyncTime = retrieveLastSyncTimestamp() ?: "",
         languages = configurationRegistry.fetchLanguages(),
-        isInitialSync = syncBroadcaster.isInitialSync()
+        isInitialSync = syncBroadcaster.isInitialSync(),
+        registrationButton = patientRegisterConfiguration.newClientButtonText
       )
   }
 
