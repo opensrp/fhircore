@@ -288,6 +288,33 @@ class AppSettingViewModelTest : RobolectricTest() {
     Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
 
+  @Test(expected = HttpException::class)
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testFetchConfigurationsThrowsHttpExceptionWithStatusCodeOutside400And503() = runTest {
+    val appId = "app_id"
+    appSettingViewModel.onApplicationIdChanged(appId)
+    val context = mockk<Context>(relaxed = true)
+    val fhirResourceDataSource = FhirResourceDataSource(mockk())
+    coEvery { fhirResourceDataSource.getResource(anyString()) } throws
+        HttpException(
+          Response.error<ResponseBody>(
+            504,
+            "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull()),
+          ),
+        )
+    fhirResourceDataSource.getResource(anyString())
+    verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
+    coVerify { fhirResourceDataSource.getResource(anyString()) }
+    coVerify { appSettingViewModel.fetchConfigurations(context) }
+    verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
+    coVerify { (appSettingViewModel.fetchComposition(appId, any())) }
+    Assert.assertEquals(
+      context.getString(R.string.error_loading_config_http_error),
+      appSettingViewModel.error.value,
+    )
+    Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
+  }
+
   @Test(expected = UnknownHostException::class)
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchConfigurationsThrowsUnknownHostException() = runTest {
