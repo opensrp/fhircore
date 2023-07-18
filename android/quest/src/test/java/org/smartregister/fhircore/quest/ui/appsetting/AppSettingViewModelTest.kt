@@ -296,12 +296,12 @@ class AppSettingViewModelTest : RobolectricTest() {
     val context = mockk<Context>(relaxed = true)
     val fhirResourceDataSource = FhirResourceDataSource(mockk())
     coEvery { fhirResourceDataSource.getResource(anyString()) } throws
-        HttpException(
-          Response.error<ResponseBody>(
-            504,
-            "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull()),
-          ),
-        )
+      HttpException(
+        Response.error<ResponseBody>(
+          504,
+          "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull()),
+        ),
+      )
     fhirResourceDataSource.getResource(anyString())
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
     coVerify { fhirResourceDataSource.getResource(anyString()) }
