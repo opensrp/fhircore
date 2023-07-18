@@ -33,6 +33,7 @@ import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportTypeSele
 @Composable
 fun MeasureReportMainScreen(
   reportId: String,
+  practitionerId: String,
   mainNavController: NavController,
   measureReportViewModel: MeasureReportViewModel,
 ) {
@@ -50,7 +51,11 @@ fun MeasureReportMainScreen(
         dataList = measureReportViewModel.reportMeasuresList(reportId),
         onReportMeasureClicked = { measureReportRowData ->
           measureReportViewModel.onEvent(
-            MeasureReportEvent.OnSelectMeasure(measureReportRowData, navController),
+            MeasureReportEvent.OnSelectMeasure(
+              reportConfigurations = measureReportRowData,
+              navController = navController,
+              practitionerId = practitionerId
+            ),
           )
         },
       )
@@ -71,6 +76,7 @@ fun MeasureReportMainScreen(
       val screenTitle: String = stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE) ?: ""
       ReportTypeSelectorScreen(
         reportId = reportId,
+        practitionerId = practitionerId,
         screenTitle = screenTitle,
         navController = navController,
         measureReportViewModel = measureReportViewModel,

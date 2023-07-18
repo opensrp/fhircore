@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import timber.log.Timber
 
@@ -157,6 +158,25 @@ constructor(
     if (config.subjectXFhirQuery?.isNotEmpty() == true) {
       try {
         return fhirEngine.search(config.subjectXFhirQuery!!).map {
+          // prevent missing subject where MeasureEvaluator looks for Group members and skips the
+          // Group itself
+          if (it is Group && !it.hasMember()) {
+            it.addMember(Group.GroupMemberComponent(it.asReference()))
+            update(it)
+          }
+          "${it.resourceType.name}/${it.logicalId}"
+        }
+      } catch (e: FHIRException) {
+        Timber.e(e, "When fetching subjects for measure report")
+      }
+    }
+    return emptyList()
+  }
+
+  suspend fun fetchSubjectsById(resourceId: String): List<String> {
+    if (resourceId?.isNotEmpty() == true) {
+      try {
+        return fhirEngine.search(resourceId.extractLogicalIdUuid()).map {
           // prevent missing subject where MeasureEvaluator looks for Group members and skips the
           // Group itself
           if (it is Group && !it.hasMember()) {

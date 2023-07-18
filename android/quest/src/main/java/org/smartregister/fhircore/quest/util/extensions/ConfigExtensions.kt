@@ -104,7 +104,15 @@ fun List<ActionConfig>.handleClickEvent(
         }
       }
       ApplicationWorkflow.LAUNCH_REPORT -> {
-        val args = bundleOf(Pair(NavigationArg.REPORT_ID, actionConfig.id))
+        val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
+        val practitionerId =
+          interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
+        val args =
+          bundleOf(
+            Pair(NavigationArg.REPORT_ID, actionConfig.id),
+            Pair(NavigationArg.RESOURCE_ID, practitionerId),
+          )
+
         navController.navigate(MainNavigationScreen.Reports.route, args)
       }
       ApplicationWorkflow.LAUNCH_SETTINGS ->

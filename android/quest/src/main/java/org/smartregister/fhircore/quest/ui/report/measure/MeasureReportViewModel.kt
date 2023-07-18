@@ -165,6 +165,7 @@ constructor(
           MeasureReportNavigationScreen.ReportTypeSelector.route +
             NavigationArg.bindArgumentsOf(
               Pair(NavigationArg.SCREEN_TITLE, reportConfigurations.firstOrNull()?.module ?: ""),
+              Pair(NavigationArg.RESOURCE_ID, event.practitionerId),
             ),
         )
       }
@@ -178,7 +179,7 @@ constructor(
             )
         }
         refreshData()
-        evaluateMeasure(event.navController)
+        event.practitionerId?.let { evaluateMeasure(event.navController, practitionerId = it) }
       }
       is MeasureReportEvent.OnDateRangeSelected -> {
         //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
@@ -260,7 +261,7 @@ constructor(
   }
 
   // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
-  fun evaluateMeasure(navController: NavController) {
+  fun evaluateMeasure(navController: NavController, practitionerId: String? = null) {
     // Run evaluate measure only for existing report
     if (reportConfigurations.isNotEmpty()) {
       // Retrieve and parse dates to  (2020-11-16)
@@ -282,6 +283,10 @@ constructor(
             val result =
               reportConfigurations.flatMap { config ->
                 val subjects = measureReportRepository.fetchSubjects(config)
+                if (practitionerId != null) {
+                  subjects + measureReportRepository.fetchSubjectsById(practitionerId)
+                }
+
                 val existing =
                   retrievePreviouslyGeneratedMeasureReports(
                     fhirEngine,

@@ -46,6 +46,7 @@ class MeasureReportFragment : Fragment() {
         AppTheme {
           MeasureReportMainScreen(
             reportId = measureReportFragmentArgs.reportId,
+            practitionerId = measureReportFragmentArgs.resourceId,
             measureReportViewModel = measureReportViewModel,
             mainNavController = findNavController(),
           )

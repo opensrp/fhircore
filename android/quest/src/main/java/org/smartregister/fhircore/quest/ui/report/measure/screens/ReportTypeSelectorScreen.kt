@@ -99,6 +99,7 @@ const val MONTH_TEST_TAG = "MONTH_TEST_TAG"
 @Composable
 fun ReportTypeSelectorScreen(
   reportId: String,
+  practitionerId: String = "",
   screenTitle: String,
   navController: NavController,
   measureReportViewModel: MeasureReportViewModel,
@@ -126,7 +127,7 @@ fun ReportTypeSelectorScreen(
     },
     onGenerateReport = { date ->
       measureReportViewModel.onEvent(
-        MeasureReportEvent.GenerateReport(navController, context),
+        MeasureReportEvent.GenerateReport(navController, context, practitionerId = practitionerId),
         date,
       )
     },
