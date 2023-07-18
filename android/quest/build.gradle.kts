@@ -379,15 +379,14 @@ dependencies {
 
 task("checkPerformanceLimits") {
   val expectationsFile = project.file("expected-results.json")
-  val resultsFile = project.file("performance-results.json")
 
-  // Check if the file exists
+  val mainFolder =
+    project.file(
+      "build/outputs/connected_android_test_additional_output/opensrpDebugAndroidTest/connected"
+    )
 
-  // throw Exception("Full url 1 : ${expectationsFile.absolutePath} --- " + "Full url 2 :
-  // ${resultsFile.path}")
-
-  System.out.println("Full url 1 : ${expectationsFile.path}")
-  System.out.println("Full url 2 : ${resultsFile.path}")
+  val performanceFileFolder = mainFolder.listFiles().first()
+  val resultsFile = File(performanceFileFolder, "org.smartregister.opensrp-benchmarkData.json")
 
   // Read the expectations file
   val expectedResultsMap: HashMap<String, HashMap<String, Double>> = hashMapOf()
@@ -421,12 +420,17 @@ task("checkPerformanceLimits") {
        */
       val median = timings.getDouble("median")
       val expectedTimings = expectedResultsMap[fullName]
-      val expectedMaxTiming = (expectedTimings!!.get("max") ?: 0e1)
 
-      if (median > expectedMaxTiming) {
-        throw Exception(
-          "$fullName test passes the threshold of $expectedMaxTiming Ns. The timing is $median Ns",
-        )
+      if (expectedTimings == null) {
+        System.out.println("Timings for $fullName could not be found")
+      } else {
+        val expectedMaxTiming = (expectedTimings.get("max") ?: 0e1)
+
+        if (median > expectedMaxTiming) {
+          throw Exception(
+            "$fullName test passes the threshold of $expectedMaxTiming Ns. The timing is $median Ns",
+          )
+        }
       }
     }
   }

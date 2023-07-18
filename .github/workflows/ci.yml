@@ -77,7 +77,11 @@ jobs:
           force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew -PlocalPropertiesFile=local.properties :quest:clean && ./gradlew -PlocalPropertiesFile=local.properties :quest:connectedOpensrpDebugAndroidTest --stacktrace && ./gradlew -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace
+          script: ./gradlew -PlocalPropertiesFile=local.properties :quest:clean && ./gradlew -PlocalPropertiesFile=local.properties :quest:connectedEcbisDebugAndroidTest --stacktrace && ./gradlew -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace
+
+      - name: Check performance results
+        working-directory: android
+        run: ./gradlew :quest:checkPerformanceLimits --stacktrace
 
       - name: Upload Quest module test coverage report to Codecov
         if: matrix.api-level == 30 # Only upload coverage on API level 30
