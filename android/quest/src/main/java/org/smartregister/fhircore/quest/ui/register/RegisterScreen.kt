@@ -109,10 +109,8 @@ fun RegisterScreen(
     },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (
-        registerUiState.isFirstTimeSync &&
-          !registerUiState.dismissLoaderView.collectAsState(initial = false).value
-      ) {
+      val dismissLoader = registerUiState.dismissLoaderView.collectAsState(initial = false).value
+      if (registerUiState.isFirstTimeSync && !dismissLoader) {
         LoaderDialog(
           modifier = modifier,
           percentageProgressFlow = registerUiState.progressPercentage,

@@ -305,8 +305,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
       bundle
     coEvery { fhirEngine.update(any()) } returns Unit
     coEvery { fhirEngine.get(ResourceType.List, testListId) } returns listResource
-    coEvery { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId") } returns bundle
-    coEvery { fhirResourceService.getResource("List?_id=$testListId") } returns bundle
+    coEvery {
+      fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200")
+    } returns bundle
+    coEvery { fhirResourceService.getResource("List?_id=$testListId&_count=200") } returns bundle
 
     runTest {
       configRegistry.fhirEngine.create(composition)
@@ -315,7 +317,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     }
 
     coVerify { fhirEngine.get(ResourceType.List, testListId) }
-    coVerify { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId") }
+    coVerify { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200") }
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") }
   }
 
@@ -607,10 +609,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     Assert.assertEquals(2, requestPathArgumentSlot.size)
     Assert.assertEquals(
-      "StructureMap?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30",
+      "StructureMap?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30&_count=200",
       requestPathArgumentSlot.first(),
     )
-    Assert.assertEquals("StructureMap?_id=id-31", requestPathArgumentSlot.last())
+    Assert.assertEquals("StructureMap?_id=id-31&_count=200", requestPathArgumentSlot.last())
   }
 
   @Test

@@ -185,7 +185,7 @@ constructor(
         when (event.state) {
           is SyncJobStatus.Finished,
           is SyncJobStatus.Failed,
-          is SyncJobStatus.Glitch -> {
+          is SyncJobStatus.Glitch, -> {
             sharedPreferencesHelper.write(
               SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
               formatLastSyncTimestamp(event.state.timestamp),
