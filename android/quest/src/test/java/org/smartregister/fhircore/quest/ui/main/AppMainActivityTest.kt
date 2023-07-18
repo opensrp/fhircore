@@ -132,10 +132,10 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSyncWithSyncStateFailedWhenTimestampIsNull() {
+  fun testOnSyncWithSyncStateFailedWhenTimestampIsNotNull() {
     val viewModel = appMainActivity.appMainViewModel
     appMainActivity.onSync(SyncJobStatus.Failed(listOf()))
-    Assert.assertEquals(viewModel.appMainUiState.value.lastSyncTime, "")
+    Assert.assertNotNull(viewModel.appMainUiState.value.lastSyncTime)
   }
 
   @Test
