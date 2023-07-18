@@ -185,7 +185,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       configRegistry.retrieveConfiguration<RegisterConfiguration>(
         ConfigType.Register,
         configId,
-        mapOf(appId to paramAppId, id to paramId)
+        mapOf(appId to paramAppId, id to paramId),
       )
     Assert.assertTrue(configRegistry.configCacheMap.containsKey(configId))
     Assert.assertEquals(paramAppId, registerConfig.appId)
