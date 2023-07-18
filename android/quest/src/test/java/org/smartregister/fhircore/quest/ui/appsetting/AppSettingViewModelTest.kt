@@ -361,12 +361,13 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     coEvery { appSettingViewModel.loadConfigurations(any()) } just runs
     coEvery { appSettingViewModel.appId } returns MutableLiveData(appId)
-    coEvery { fhirResourceDataSource.getResource("Composition?identifier=test_app_id") } returns
-      Bundle().apply { addEntry().resource = composition }
+    coEvery {
+      fhirResourceDataSource.getResource("Composition?identifier=test_app_id&_count=200")
+    } returns Bundle().apply { addEntry().resource = composition }
     coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
     coEvery {
       fhirResourceDataSource.getResource(
-        "Binary?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30",
+        "Binary?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30&_count=200",
       )
     } returns
       Bundle().apply {
@@ -384,7 +385,7 @@ class AppSettingViewModelTest : RobolectricTest() {
             },
           )
       }
-    coEvery { fhirResourceDataSource.getResource("Binary?_id=id-31") } returns
+    coEvery { fhirResourceDataSource.getResource("Binary?_id=id-31&_count=200") } returns
       Bundle().apply {
         entry =
           listOf(
@@ -422,11 +423,14 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(3, requestPathArgumentSlot.size)
 
-    Assert.assertEquals("Composition?identifier=test_app_id", requestPathArgumentSlot.first())
     Assert.assertEquals(
-      "Binary?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30",
+      "Composition?identifier=test_app_id&_count=200",
+      requestPathArgumentSlot.first(),
+    )
+    Assert.assertEquals(
+      "Binary?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30&_count=200",
       requestPathArgumentSlot.second(),
     )
-    Assert.assertEquals("Binary?_id=id-31", requestPathArgumentSlot.last())
+    Assert.assertEquals("Binary?_id=id-31&_count=200", requestPathArgumentSlot.last())
   }
 }
