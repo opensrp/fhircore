@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
+import android.database.SQLException
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
@@ -239,7 +240,7 @@ constructor(
               val ids = iconConfigs.joinToString(DEFAULT_STRING_SEPARATOR) { it.focus.extractId() }
               fhirResourceDataSource
                 .getResource(
-                  "${ResourceType.Binary.name}?$ID=$ids&_count=$HAPI_FHIR_DEFAULT_COUNT",
+                  "${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT",
                 )
                 .entry
                 .forEach { addOrUpdate(it.resource) }
@@ -381,7 +382,7 @@ constructor(
 
                   fhirResourceDataSource
                     .getResource(
-                      "${resourceGroup.key}?$ID=$resourceIds&_count=$HAPI_FHIR_DEFAULT_COUNT",
+                      "${resourceGroup.key}?$ID=$resourceIds&_count=$DEFAULT_COUNT",
                     )
                     .entry
                     .forEach { bundleEntryComponent ->
@@ -397,7 +398,7 @@ constructor(
                             val resourceId =
                               listEntryComponent.item.reference.extractLogicalIdUuid()
                             val listResourceUrlPath =
-                              "$resourceKey?$ID=$resourceId&_count=$HAPI_FHIR_DEFAULT_COUNT"
+                              "$resourceKey?$ID=$resourceId&_count=$DEFAULT_COUNT"
                             fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
                               listEntryResourceBundle ->
                               addOrUpdate(listEntryResourceBundle.resource)
@@ -425,8 +426,7 @@ constructor(
                     sectionComponent.focus.extractId()
                   }
                 processCompositionManifestResources(
-                  searchPath =
-                    "${resourceGroup.key}?$ID=$resourceIds&_count=$HAPI_FHIR_DEFAULT_COUNT",
+                  searchPath = "${resourceGroup.key}?$ID=$resourceIds&_count=$DEFAULT_COUNT",
                 )
               }
             }
@@ -493,8 +493,8 @@ constructor(
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         try {
           create(resource)
-        } catch (e: Exception) {
-          Timber.e(e)
+        } catch (sqlException: SQLException) {
+          Timber.e(sqlException)
         }
       }
     }
@@ -534,6 +534,6 @@ constructor(
     const val MANIFEST_PROCESSOR_BATCH_SIZE = 30
     const val ORGANIZATION = "organization"
     const val TYPE_REFERENCE_DELIMITER = "/"
-    const val HAPI_FHIR_DEFAULT_COUNT = 200
+    const val DEFAULT_COUNT = 200
   }
 }
