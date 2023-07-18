@@ -31,7 +31,6 @@ import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.ListResource
@@ -165,14 +164,13 @@ constructor(
         )
 
       val containedList = ListResource().apply { id = UUID.randomUUID().toString() }
-      bundle.entry.forEach { bundleEntryComponent ->
+      bundle?.entry?.forEach { bundleEntryComponent ->
         val bundleEntryResource: Resource? = bundleEntryComponent.resource
         bundleEntryResource?.run {
           applyResourceMetadata()
           defaultRepository.addOrUpdate(resource = this)
 
-          // Track ids for the generated resources in ListResource added to the
-          // QuestionnaireResponse
+          // Track ids for resources in ListResource added to the QuestionnaireResponse
           val listEntryComponent =
             ListEntryComponent().apply {
               deleted = false
@@ -181,15 +179,17 @@ constructor(
             }
           containedList.addEntry(listEntryComponent)
         }
-
-        // Save questionnaire response
-        currentQuestionnaireResponse.addContained(containedList)
-        defaultRepository.addOrUpdate(resource = currentQuestionnaireResponse)
-
-        actionParameters?.let { parameters -> updateResourcesLastUpdatedProperty(parameters) }
-
-        // TODO Handle CarePlan generation and closing of configured resources
       }
+
+      // Save questionnaire response
+      if (bundle != null) {
+        currentQuestionnaireResponse.addContained(containedList)
+      }
+      defaultRepository.addOrUpdate(resource = currentQuestionnaireResponse)
+
+      actionParameters?.let { parameters -> updateResourcesLastUpdatedProperty(parameters) }
+
+      // TODO Handle CarePlan generation and closing of configured resources
     }
   }
 
@@ -216,47 +216,45 @@ constructor(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     context: Context,
-  ): Bundle =
-    withContext(dispatcherProvider.io()) {
-      kotlin
-        .runCatching {
-          if (extractByStructureMap) {
-            ResourceMapper.extract(
-              questionnaire = questionnaire,
-              questionnaireResponse = questionnaireResponse,
-              StructureMapExtractionContext(
-                context = context,
-                transformSupportServices = transformSupportServices,
-                structureMapProvider = { structureMapUrl: String, _: IWorkerContext ->
-                  defaultRepository.loadResource(structureMapUrl.extractLogicalIdUuid())
-                },
-              ),
+  ): Bundle? =
+    kotlin
+      .runCatching {
+        if (extractByStructureMap) {
+          ResourceMapper.extract(
+            questionnaire = questionnaire,
+            questionnaireResponse = questionnaireResponse,
+            StructureMapExtractionContext(
+              context = context,
+              transformSupportServices = transformSupportServices,
+              structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
+                structureMapUrl?.substringAfterLast("/")?.let { defaultRepository.loadResource(it) }
+              },
+            ),
+          )
+        } else {
+          ResourceMapper.extract(
+            questionnaire = questionnaire,
+            questionnaireResponse = questionnaireResponse,
+          )
+        }
+      }
+      .onFailure { exception ->
+        Timber.e(exception)
+        viewModelScope.launch {
+          if (exception is NullPointerException && exception.message!!.contains("StructureMap")) {
+            context.showToast(
+              context.getString(R.string.structure_map_missing_message),
+              Toast.LENGTH_LONG,
             )
           } else {
-            ResourceMapper.extract(
-              questionnaire = questionnaire,
-              questionnaireResponse = questionnaireResponse,
+            context.showToast(
+              context.getString(R.string.structuremap_failed, questionnaire.name),
+              Toast.LENGTH_LONG,
             )
           }
         }
-        .onFailure { exception ->
-          Timber.e(exception)
-          viewModelScope.launch {
-            if (exception is NullPointerException && exception.message!!.contains("StructureMap")) {
-              context.showToast(
-                context.getString(R.string.structure_map_missing_message),
-                Toast.LENGTH_LONG,
-              )
-            } else {
-              context.showToast(
-                context.getString(R.string.structuremap_failed, questionnaire.name),
-                Toast.LENGTH_LONG,
-              )
-            }
-          }
-        }
-        .getOrDefault(Bundle())
-    }
+      }
+      .getOrDefault(null)
 
   /**
    * This function saves [QuestionnaireResponse] as draft if any of the [QuestionnaireResponse.item]
