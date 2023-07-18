@@ -31,18 +31,22 @@ import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -52,11 +56,12 @@ import org.smartregister.fhircore.engine.util.extension.DEFAULT_PLACEHOLDER_PREF
 import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
-import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
@@ -73,6 +78,7 @@ constructor(
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
   val transformSupportServices: TransformSupportServices,
   val sharedPreferencesHelper: SharedPreferencesHelper,
+  val libraryEvaluator: LibraryEvaluator,
 ) : ViewModel() {
 
   private val authenticatedOrganizationIds by lazy {
@@ -110,9 +116,12 @@ constructor(
 
     val questionnaire =
       defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
-        if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditMode()) {
+        if (
+          questionnaireConfig.type == QuestionnaireType.READ_ONLY ||
+            questionnaireConfig.type == QuestionnaireType.EDIT
+        ) {
           item.prepareQuestionsForReadingOrEditing(
-            readOnly = questionnaireConfig.type.isReadOnly(),
+            readOnly = questionnaireConfig.type == QuestionnaireType.READ_ONLY,
             readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds,
           )
         }
@@ -128,9 +137,13 @@ constructor(
   }
 
   /**
-   * This function performs data extraction against the [QuestionnaireResponse]. The generated
-   * resources are then saved in the database. Optionally, this function will generate CarePlan
-   * using the PlanDefinition resource configured in [QuestionnaireConfig.planDefinitions]
+   * This function performs data extraction against the [QuestionnaireResponse]. All the resources
+   * generated from a successful extraction by StructureMap or definition are stored in the
+   * database. The [QuestionnaireResponse] is also stored in the database regardless of the outcome
+   * of [ResourceMapper.extract]. This function will optionally generate CarePlan using the
+   * PlanDefinition resource configured in [QuestionnaireConfig.planDefinitions]. The
+   * [QuestionnaireConfig.eventWorkflows] contains configurations to cascade update the statuses of
+   * resources to in-active (close) that are related to the current [QuestionnaireResponse.subject]
    */
   fun handleQuestionnaireSubmission(
     questionnaire: Questionnaire,
@@ -163,35 +176,72 @@ constructor(
           context = context,
         )
 
-      val containedList = ListResource().apply { id = UUID.randomUUID().toString() }
+      val extractionDate = Date()
+
+      // Create a list resource to store the references for generated resources
+      val listResource =
+        ListResource().apply {
+          id = UUID.randomUUID().toString()
+          status = ListResource.ListStatus.CURRENT
+          mode = ListResource.ListMode.WORKING
+          title = CONTAINED_LIST_TITLE
+          date = extractionDate
+        }
+
       bundle?.entry?.forEach { bundleEntryComponent ->
         val bundleEntryResource: Resource? = bundleEntryComponent.resource
         bundleEntryResource?.run {
           applyResourceMetadata()
           defaultRepository.addOrUpdate(resource = this)
 
-          // Track ids for resources in ListResource added to the QuestionnaireResponse
+          // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
           val listEntryComponent =
             ListEntryComponent().apply {
               deleted = false
-              date = Date()
+              date = extractionDate
               item = bundleEntryResource.asReference()
             }
-          containedList.addEntry(listEntryComponent)
+          listResource.addEntry(listEntryComponent)
         }
       }
 
       // Save questionnaire response
-      if (bundle != null) {
-        currentQuestionnaireResponse.addContained(containedList)
-      }
+      currentQuestionnaireResponse.addContained(listResource)
       defaultRepository.addOrUpdate(resource = currentQuestionnaireResponse)
 
-      actionParameters?.let { parameters -> updateResourcesLastUpdatedProperty(parameters) }
+      // Update _lastUpdated for resources configured via ActionParameterType.UPDATE_DATE_ON_EDIT
+      updateResourcesLastUpdatedProperty(actionParameters)
 
-      // TODO Handle CarePlan generation and closing of configured resources
+      // Generate CarePlan using configured plan definitions
+      generateCarePlan(
+        questionnaire = questionnaire,
+        bundle = bundle.copyBundle(currentQuestionnaireResponse),
+        questionnaireConfig = questionnaireConfig,
+      )
+
+      // Execute CQL
+      executeCql(
+        questionnaire = questionnaire,
+        bundle = bundle.copyBundle(currentQuestionnaireResponse),
+      )
+
+      // Cascade update statuses of resources closed by this Questionnaire submission
+      bundle?.let {
+        viewModelScope.launch {
+          fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
+            questionnaireConfig = questionnaireConfig,
+            subject = retrieveSubject(questionnaire, it),
+            bundle = it,
+          )
+        }
+      }
     }
   }
+
+  private fun Bundle?.copyBundle(currentQuestionnaireResponse: QuestionnaireResponse): Bundle? =
+    this?.copy()?.apply {
+      addEntry(Bundle.BundleEntryComponent().apply { resource = currentQuestionnaireResponse })
+    }
 
   private fun QuestionnaireResponse.processMetadata(questionnaire: Questionnaire) {
     status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
@@ -211,6 +261,11 @@ constructor(
     return this
   }
 
+  /**
+   * Perform StructureMap or Definition based definition. The result of this function returns a
+   * Bundle that contains the resources that were generated via the [ResourceMapper.extract]
+   * operation otherwise returns null if an exception is encountered.
+   */
   suspend fun performExtraction(
     extractByStructureMap: Boolean,
     questionnaire: Questionnaire,
@@ -279,19 +334,16 @@ constructor(
    * questionnaire is submitted, the affected resources last modified/updated date will also be
    * updated.
    */
-  suspend fun updateResourcesLastUpdatedProperty(actionParameters: Array<ActionParameter>) {
+  suspend fun updateResourcesLastUpdatedProperty(actionParameters: Array<ActionParameter>?) {
     val updateOnEditParams =
-      actionParameters.filter {
+      actionParameters?.filter {
         it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT && it.value.isNotEmpty()
       }
 
-    updateOnEditParams.forEach { param ->
+    updateOnEditParams?.forEach { param ->
       try {
-        val resourceType =
-          param.value.substringBefore("/").resourceClassType().newInstance().resourceType
-        val resource =
-          defaultRepository.loadResource(param.value.extractLogicalIdUuid(), resourceType)
-        resource.let { defaultRepository.addOrUpdate(resource = it) }
+        val resource = defaultRepository.loadResource(Reference(param.value))
+        defaultRepository.addOrUpdate(resource = resource)
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         Timber.e("Unable to update resource's _lastUpdated", resourceNotFoundException)
       }
@@ -316,4 +368,51 @@ constructor(
       .values
       .flatten()
       .all { it is Valid || it is NotValidated }
+
+  suspend fun executeCql(questionnaire: Questionnaire, bundle: Bundle?) {
+    withContext(dispatcherProvider.io()) {
+      questionnaire.cqfLibraryIds().forEach {
+        // TODO Get the id of the resource of type Questionnaire.subjectType from the bundle
+        //  libraryEvaluator.runCqlLibrary(it, patient, bundle)
+      }
+    }
+  }
+
+  /**
+   * This function generates CarePlans for the [QuestionnaireResponse.subject] using the configured
+   * [QuestionnaireConfig.planDefinitions]
+   */
+  suspend fun generateCarePlan(
+    questionnaire: Questionnaire,
+    bundle: Bundle?,
+    questionnaireConfig: QuestionnaireConfig,
+  ) {
+    val subject = retrieveSubject(questionnaire, bundle)
+    questionnaireConfig.planDefinitions?.forEach { planId ->
+      kotlin
+        .runCatching {
+          if (bundle != null) {
+            fhirCarePlanGenerator.generateOrUpdateCarePlan(
+              planDefinitionId = planId,
+              subject = subject,
+              data = bundle,
+            )
+          }
+        }
+        .onFailure { Timber.e(it) }
+    }
+  }
+
+  // TODO Subject should be the resource obtained from the bundle of type Questionnaire.subjectType
+  private suspend fun retrieveSubject(
+    questionnaire: Questionnaire,
+    bundle: Bundle?,
+  ): Resource {
+    return (questionnaire.findSubject(bundle)
+      ?: defaultRepository.loadResource(questionnaire.subject))
+  }
+
+  companion object {
+    const val CONTAINED_LIST_TITLE = "GeneratedResourcesList"
+  }
 }

@@ -50,13 +50,6 @@ data class QuestionnaireConfig(
   val configRules: List<RuleConfig>? = null,
   val extraParams: List<ActionParameter>? = null,
   val onSubmitActions: List<ActionConfig>? = null,
-  val questionnaireSubjects: List<ResourceType> =
-    listOf(
-      ResourceType.Patient,
-      ResourceType.Group,
-      ResourceType.Practitioner,
-      ResourceType.Location,
-    ),
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =

@@ -434,7 +434,7 @@ constructor(
             } else {
               null
             }
-          libraryEvaluator.runCqlLibrary(it, patient, data, defaultRepository)
+          libraryEvaluator.runCqlLibrary(it, patient, data)
         }
         .forEach { output ->
           if (output.isNotEmpty()) extractionProgressMessage.postValue(output.joinToString("\n"))
