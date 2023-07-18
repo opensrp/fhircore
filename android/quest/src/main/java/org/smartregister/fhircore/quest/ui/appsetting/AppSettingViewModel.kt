@@ -33,6 +33,7 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -131,15 +132,20 @@ constructor(
                 if (bundleEntryComponent.resource is Binary) {
                   val binary = bundleEntryComponent.resource as Binary
                   binary.data.decodeToString().decodeBase64()?.string(StandardCharsets.UTF_8)?.let {
-                    val config =
-                      it.tryDecodeJson<RegisterConfiguration>()
-                        ?: it.tryDecodeJson<ProfileConfiguration>()
-
-                    when (config) {
-                      is RegisterConfiguration ->
-                        config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
-                      is ProfileConfiguration ->
-                        config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
+                    val registerConfig = it.tryDecodeJson<RegisterConfiguration>()
+                    if (registerConfig != null) {
+                      if (registerConfig.configType == ConfigType.Profile.name) {
+                        val profileConfig = it.tryDecodeJson<ProfileConfiguration>()
+                        profileConfig
+                          ?.fhirResource
+                          ?.dependentResourceTypes(
+                            patientRelatedResourceTypes,
+                          )
+                      } else {
+                        registerConfig.fhirResource.dependentResourceTypes(
+                          patientRelatedResourceTypes,
+                        )
+                      }
                     }
                   }
                 }

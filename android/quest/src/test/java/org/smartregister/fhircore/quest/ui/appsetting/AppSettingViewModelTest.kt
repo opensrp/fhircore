@@ -164,7 +164,6 @@ class AppSettingViewModelTest : RobolectricTest() {
                         RegisterConfiguration(
                           id = "1",
                           appId = "a",
-                          configType = "register",
                           fhirResource =
                             FhirResourceConfig(
                               baseResource = ResourceConfig(resource = ResourceType.Patient),
@@ -200,6 +199,67 @@ class AppSettingViewModelTest : RobolectricTest() {
         slot.captured,
       )
     }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun `fetchConfigurations() should decode profile configuration`() = runTest {
+    coEvery { appSettingViewModel.fetchComposition(any(), any()) } returns
+      Composition().apply {
+        addSection().apply {
+          this.focus =
+            Reference().apply {
+              reference = "Binary/123"
+              identifier = Identifier().apply { value = "register-test" }
+            }
+        }
+      }
+    coEvery { fhirResourceDataSource.getResource(any()) } returns
+      Bundle().apply {
+        addEntry().resource =
+          Binary().apply {
+            data =
+              Base64.getEncoder()
+                .encode(
+                  JsonUtil.serialize(
+                      ProfileConfiguration(
+                        id = "1",
+                        appId = "a",
+                        fhirResource =
+                          FhirResourceConfig(
+                            baseResource = ResourceConfig(resource = ResourceType.Patient),
+                            relatedResources =
+                              listOf(
+                                ResourceConfig(resource = ResourceType.Encounter),
+                                ResourceConfig(resource = ResourceType.Task),
+                              ),
+                          ),
+                        profileParams = listOf("1"),
+                      ),
+                    )
+                    .encodeToByteArray(),
+                )
+          }
+      }
+    coEvery { defaultRepository.createRemote(any(), any()) } just runs
+    coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
+
+    appSettingViewModel.run {
+      onApplicationIdChanged("app")
+      fetchConfigurations(context)
+    }
+
+    val slot = slot<List<ResourceType>>()
+
+    coVerify { appSettingViewModel.fetchComposition(any(), any()) }
+    coVerify { fhirResourceDataSource.getResource(any()) }
+    coVerify { defaultRepository.createRemote(any(), any()) }
+    coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
+
+    Assert.assertEquals(
+      listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),
+      slot.captured,
+    )
+  }
 
   @Test(expected = HttpException::class)
   @kotlinx.coroutines.ExperimentalCoroutinesApi
