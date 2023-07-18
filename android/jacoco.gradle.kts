@@ -127,6 +127,3 @@ tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
     }
   )
 }
-
-tasks.create("sampleTask") {
-}

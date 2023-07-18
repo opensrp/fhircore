@@ -17,24 +17,14 @@
 package org.smartregister.fhircore.di
 
 import android.content.Context
-import com.google.android.fhir.DatabaseErrorStrategy
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.FhirEngineConfiguration
 import com.google.android.fhir.FhirEngineProvider
-import com.google.android.fhir.NetworkConfiguration
-import com.google.android.fhir.ServerConfiguration
-import com.google.android.fhir.sync.remote.HttpLogger
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
-import org.smartregister.fhircore.engine.BuildConfig
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.di.FhirEngineModule
-import org.smartregister.fhircore.engine.di.NetworkModule
-import timber.log.Timber
 
 @Module
 @TestInstallIn(components = [SingletonComponent::class], replaces = [FhirEngineModule::class])
