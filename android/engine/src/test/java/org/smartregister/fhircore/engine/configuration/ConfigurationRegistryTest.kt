@@ -173,6 +173,27 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testRetrieveConfigurationPassParamsMap() {
+    val appId = "idOfApp"
+    val id = "register"
+    val paramAppId = "idOfAppParam"
+    val paramId = "registerParam"
+    val configId = "idOfConfig"
+    configRegistry.configsJsonMap[configId] =
+      "{\"appId\": \"@{$appId}\", \"id\": \"@{$id}\", \"fhirResource\": {\"baseResource\": { \"resource\": \"Patient\"}}}"
+    val registerConfig =
+      configRegistry.retrieveConfiguration<RegisterConfiguration>(
+        ConfigType.Register,
+        configId,
+        mapOf(appId to paramAppId, id to paramId)
+      )
+    Assert.assertTrue(configRegistry.configCacheMap.containsKey(configId))
+    Assert.assertEquals(paramAppId, registerConfig.appId)
+    Assert.assertEquals(paramId, registerConfig.id)
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testRetrieveConfigurationParseResource() {
     Assert.assertThrows("Configuration MUST be a template", IllegalArgumentException::class.java) {
       configRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Sync)
