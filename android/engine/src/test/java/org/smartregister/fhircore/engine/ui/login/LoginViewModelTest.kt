@@ -161,7 +161,26 @@ internal class LoginViewModelTest : RobolectricTest() {
       PractitionerDetails()
     )
     every { tokenAuthenticator.sessionActive() } returns true
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns
+      Result.success(
+        OAuthResponse(
+          accessToken = "very_new_top_of_the_class_access_token",
+          tokenType = "you_guess_it",
+          refreshToken = "another_very_refreshing_token",
+          refreshExpiresIn = 540000,
+          scope = "open_my_guy"
+        )
+      )
+    coEvery { keycloakService.fetchUserInfo() } returns
+      Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
+    val bundle = Bundle()
+    val bundleEntry = Bundle.BundleEntryComponent().apply { resource = practitionerDetails() }
+    coEvery { fhirResourceService.getResource(any()) } returns bundle.addEntry(bundleEntry)
+
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
+
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertTrue(loginViewModel.navigateToHome.value!!)
   }

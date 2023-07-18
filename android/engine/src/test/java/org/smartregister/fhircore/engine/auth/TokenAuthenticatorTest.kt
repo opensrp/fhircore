@@ -254,6 +254,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
     every { accountManager.addAccountExplicitly(capture(accountSlot), any(), null) } returns true
     every { accountManager.setAuthToken(any(), any(), capture(tokenSlot)) } just runs
+    every { accountManager.getAccountsByType(any()) } returns arrayOf()
 
     runTest {
       tokenAuthenticator.fetchAccessToken(username, password)
@@ -298,6 +299,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         oAuthResponse.accessToken
       )
     } just runs
+    every { accountManager.getAccountsByType(any()) } returns arrayOf(account)
 
     tokenAuthenticator.fetchAccessToken(sampleUsername, password)
 
