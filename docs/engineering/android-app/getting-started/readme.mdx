@@ -24,15 +24,7 @@ FHIR_BASE_URL=https://fhir.labs.smartregister.org/fhir/
 ```
 
 #### Gateway vs Non Gateway backend
-Currently the codebase supports building a release that uses the [Proxy/Gateway](https://github.com/opensrp/fhir-gateway) and one that doesn't. Proxy is default but if you backend server is not using the [FHIR Gateway](https://github.com/opensrp/fhir-gateway/releases) you need to specify this in the build configuration. For now, inorder to switch between the two one needs to update [this file here](https://github.com/opensrp/fhircore/blob/main/android/engine/build.gradle.kts#L30) and set the value to `true` 
-
-```kotlin
-buildConfigField(
-      "boolean",
-      "IS_NON_PROXY_APK",
-      "true",
-    )
-```
+The codebase supports building a release that uses the [FHIR Gateway backend](https://github.com/opensrp/fhir-gateway) and one that doesn't. The **proxy** mode is the _default_ but if your backend is not using the [FHIR Gateway](https://github.com/opensrp/fhir-gateway/releases) you need to specify this by switching to the correct build type variant. To switch between the two one needs to change to a variant with the `debugNonProxy` build type. e.g for the flavor `opensrp` select the variant `opensrpDebugNonProxy`
 
 ### App release
 
