@@ -162,7 +162,7 @@ constructor(
           reportConfigurations.addAll(it)
         }
         event.navController.navigate(
-          MeasureReportNavigationScreen.ReportTypeSelector.route +
+          MeasureReportNavigationScreen.ReportDateSelector.route +
             NavigationArg.bindArgumentsOf(
               Pair(NavigationArg.SCREEN_TITLE, reportConfigurations.firstOrNull()?.module ?: ""),
               Pair(NavigationArg.RESOURCE_ID, event.practitionerId),
@@ -283,17 +283,14 @@ constructor(
             val result =
               reportConfigurations.flatMap { config ->
                 val subjects = measureReportRepository.fetchSubjects(config)
-                if (practitionerId != null) {
-                  subjects + measureReportRepository.fetchSubjectsById(practitionerId)
-                }
 
                 val existing =
                   retrievePreviouslyGeneratedMeasureReports(
-                    fhirEngine,
-                    startDateFormatted,
-                    endDateFormatted,
-                    config.url,
-                    listOf(),
+                    fhirEngine = fhirEngine,
+                    startDateFormatted = startDateFormatted,
+                    endDateFormatted = endDateFormatted,
+                    measureUrl = config.url,
+                    subjects = listOf(),
                   )
 
                 // if report is of current month or does not exist generate a new one and replace
@@ -309,11 +306,12 @@ constructor(
                   }
 
                   measureReportRepository.evaluatePopulationMeasure(
-                    config.url,
-                    startDateFormatted,
-                    endDateFormatted,
-                    subjects,
-                    existing,
+                    measureUrl = config.url,
+                    startDateFormatted = startDateFormatted,
+                    endDateFormatted = endDateFormatted,
+                    subjects = subjects,
+                    existing = existing,
+                    practitionerId = practitionerId,
                   )
                 } else {
                   existing

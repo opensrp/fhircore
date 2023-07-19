@@ -35,7 +35,7 @@ sealed class MeasureReportEvent {
   data class GenerateReport(
     val navController: NavController,
     val context: Context,
-    val practitionerId: String? = null
+    val practitionerId: String? = null,
   ) : MeasureReportEvent()
 
   data class OnReportTypeChanged(

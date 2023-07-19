@@ -26,6 +26,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -110,7 +111,7 @@ fun List<ActionConfig>.handleClickEvent(
         val args =
           bundleOf(
             Pair(NavigationArg.REPORT_ID, actionConfig.id),
-            Pair(NavigationArg.RESOURCE_ID, practitionerId),
+            Pair(NavigationArg.RESOURCE_ID, practitionerId?.extractLogicalIdUuid()),
           )
 
         navController.navigate(MainNavigationScreen.Reports.route, args)

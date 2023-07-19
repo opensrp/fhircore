@@ -97,7 +97,7 @@ const val YEAR_TEST_TAG = "YEAR_TEST_TAG"
 const val MONTH_TEST_TAG = "MONTH_TEST_TAG"
 
 @Composable
-fun ReportTypeSelectorScreen(
+fun ReportDateSelectorScreen(
   reportId: String,
   practitionerId: String = "",
   screenTitle: String,
@@ -121,7 +121,7 @@ fun ReportTypeSelectorScreen(
       // Reset UI state
       measureReportViewModel.resetState()
       navController.popBackStack(
-        route = MeasureReportNavigationScreen.MeasureReportList.route,
+        route = MeasureReportNavigationScreen.MeasureReportModule.route,
         inclusive = false,
       )
     },

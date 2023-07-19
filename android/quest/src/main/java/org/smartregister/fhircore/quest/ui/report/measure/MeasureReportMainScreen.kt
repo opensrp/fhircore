@@ -28,7 +28,7 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportListScreen
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportResultScreen
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportSubjectsScreen
-import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportTypeSelectorScreen
+import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportDateSelectorScreen
 
 @Composable
 fun MeasureReportMainScreen(
@@ -42,10 +42,10 @@ fun MeasureReportMainScreen(
 
   NavHost(
     navController = navController,
-    startDestination = MeasureReportNavigationScreen.MeasureReportList.route,
+    startDestination = MeasureReportNavigationScreen.MeasureReportModule.route,
   ) {
     // Display list of supported measures for reporting
-    composable(MeasureReportNavigationScreen.MeasureReportList.route) {
+    composable(MeasureReportNavigationScreen.MeasureReportModule.route) {
       MeasureReportListScreen(
         mainNavController = mainNavController,
         dataList = measureReportViewModel.reportMeasuresList(reportId),
@@ -54,16 +54,17 @@ fun MeasureReportMainScreen(
             MeasureReportEvent.OnSelectMeasure(
               reportConfigurations = measureReportRowData,
               navController = navController,
-              practitionerId = practitionerId
+              practitionerId = practitionerId,
             ),
           )
         },
       )
     }
     // Choose report type; for either individual or population
+    // Date selection
     composable(
       route =
-        MeasureReportNavigationScreen.ReportTypeSelector.route +
+        MeasureReportNavigationScreen.ReportDateSelector.route +
           NavigationArg.routePathsOf(NavigationArg.SCREEN_TITLE),
       arguments =
         listOf(
@@ -74,7 +75,7 @@ fun MeasureReportMainScreen(
         ),
     ) { stackEntry ->
       val screenTitle: String = stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE) ?: ""
-      ReportTypeSelectorScreen(
+      ReportDateSelectorScreen(
         reportId = reportId,
         practitionerId = practitionerId,
         screenTitle = screenTitle,
