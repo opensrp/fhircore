@@ -75,6 +75,7 @@ jobs:
           script: echo "Generated AVD snapshot for caching."
 
       - name: Generate APKs for performance quest-tests
+        working-directory: android
         run: ./gradlew :quest:assembleEcbisDebugAndroidTest --stacktrace
 
       - name: Run instrumentation tests manually
