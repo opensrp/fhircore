@@ -49,7 +49,7 @@
 
         <activity
             android:name=".ui.main.AppMainActivity"
-            android:exported="false"
+            android:exported="true"
             android:launchMode="singleTop"
             android:clearTaskOnLaunch="true" />
 
