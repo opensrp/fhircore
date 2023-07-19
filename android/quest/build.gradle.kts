@@ -385,58 +385,59 @@ task("checkPerformanceLimits") {
       "build/outputs/connected_android_test_additional_output/opensrpDebugAndroidTest/connected"
     )
 
-  if (mainFolder == null) {
-     return
-  }
+  if (mainFolder != null && mainFolder.exists()) {
 
-  val performanceFileFolder = mainFolder.listFiles().first()
-  val resultsFile = File(performanceFileFolder, "org.smartregister.opensrp-benchmarkData.json")
+    val performanceFileFolder = mainFolder.listFiles().first()
+    val resultsFile = File(performanceFileFolder, "org.smartregister.opensrp-benchmarkData.json")
 
-  // Read the expectations file
-  val expectedResultsMap: HashMap<String, HashMap<String, Double>> = hashMapOf()
+    // Read the expectations file
+    val expectedResultsMap: HashMap<String, HashMap<String, Double>> = hashMapOf()
 
-  JSONObject(FileReader(expectationsFile).readText()).run {
-    keys().forEach { key ->
-      val resultMaxDeltaMap: HashMap<String, Double> = hashMapOf()
-      val methodExpectedResults = this.getJSONObject(key)
+    JSONObject(FileReader(expectationsFile).readText()).run {
+      keys().forEach { key ->
+        val resultMaxDeltaMap: HashMap<String, Double> = hashMapOf()
+        val methodExpectedResults = this.getJSONObject(key)
 
-      methodExpectedResults.keys().forEach { expectedResultsKey ->
-        resultMaxDeltaMap.put(
-          expectedResultsKey,
-          methodExpectedResults.getDouble(expectedResultsKey),
-        )
-      }
-
-      expectedResultsMap[key] = resultMaxDeltaMap
-    }
-  }
-
-  // Loop through the results file updating the results
-  JSONObject(FileReader(resultsFile).readText()).run {
-    getJSONArray("benchmarks").forEachIndexed { index, any ->
-      val benchmark = any as JSONObject
-      val fullName = benchmark.getTestName()
-      val timings = benchmark.getJSONObject("metrics").getJSONObject("timeNs")
-
-      /*
-      val min = timings.getDouble("minimum")
-      val max = timings.getDouble("maximum")
-       */
-      val median = timings.getDouble("median")
-      val expectedTimings = expectedResultsMap[fullName]
-
-      if (expectedTimings == null) {
-        System.out.println("Timings for $fullName could not be found")
-      } else {
-        val expectedMaxTiming = (expectedTimings.get("max") ?: 0e1)
-
-        if (median > expectedMaxTiming) {
-          throw Exception(
-            "$fullName test passes the threshold of $expectedMaxTiming Ns. The timing is $median Ns",
+        methodExpectedResults.keys().forEach { expectedResultsKey ->
+          resultMaxDeltaMap.put(
+            expectedResultsKey,
+            methodExpectedResults.getDouble(expectedResultsKey),
           )
+        }
+
+        expectedResultsMap[key] = resultMaxDeltaMap
+      }
+    }
+
+    // Loop through the results file updating the results
+    JSONObject(FileReader(resultsFile).readText()).run {
+      getJSONArray("benchmarks").forEachIndexed { index, any ->
+        val benchmark = any as JSONObject
+        val fullName = benchmark.getTestName()
+        val timings = benchmark.getJSONObject("metrics").getJSONObject("timeNs")
+
+        /*
+        val min = timings.getDouble("minimum")
+        val max = timings.getDouble("maximum")
+         */
+        val median = timings.getDouble("median")
+        val expectedTimings = expectedResultsMap[fullName]
+
+        if (expectedTimings == null) {
+          System.out.println("Timings for $fullName could not be found")
+        } else {
+          val expectedMaxTiming = (expectedTimings.get("max") ?: 0e1)
+
+          if (median > expectedMaxTiming) {
+            throw Exception(
+              "$fullName test passes the threshold of $expectedMaxTiming Ns. The timing is $median Ns",
+            )
+          }
         }
       }
     }
+  } else {
+    System.out.println("Results file could not be found in ")
   }
 }
 
