@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.AlertDialog
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -76,6 +77,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
@@ -85,6 +87,7 @@ import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
+import org.smartregister.fhircore.quest.ui.pin.CIRCULAR_PROGRESS_INDICATOR
 
 const val RESET_DATABASE_DIALOG = "resetDatabaseDialog"
 const val USER_SETTING_ROW_LOGOUT = "userSettingRowLogout"
@@ -108,6 +111,7 @@ fun UserSettingScreen(
   appVersionPair: Pair<Int, String>? = null,
   allowP2PSync: Boolean,
   lastSyncTime: String?,
+  showProgressIndicatorFlow: MutableStateFlow<Boolean>,
   unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>>,
   dismissInsightsView: () -> Unit,
 ) {
@@ -278,6 +282,7 @@ fun UserSettingScreen(
         text = stringResource(id = R.string.insights),
         clickListener = { onEvent(UserSettingsEvent.ShowInsightsView(true, context)) },
         modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS),
+        showProgressIndicator = showProgressIndicatorFlow.collectAsState().value,
       )
 
       UserSettingRow(
@@ -336,6 +341,7 @@ fun UserSettingRow(
   canSwitchToScreen: Boolean = false,
   iconTint: Color = BlueTextColor,
   textColor: Color = LoginDarkColor,
+  showProgressIndicator: Boolean = false,
 ) {
   Row(
     modifier =
@@ -356,6 +362,13 @@ fun UserSettingRow(
         "",
         tint = Color.LightGray,
         modifier = modifier.wrapContentWidth(Alignment.End),
+      )
+    }
+    if (showProgressIndicator) {
+      CircularProgressIndicator(
+        modifier =
+          modifier.size(18.dp).testTag(CIRCULAR_PROGRESS_INDICATOR).wrapContentWidth(Alignment.End),
+        strokeWidth = 1.6.dp,
       )
     }
   }
@@ -418,6 +431,7 @@ fun UserSettingPreview() {
     appVersionPair = Pair(1, "1.0.1"),
     allowP2PSync = true,
     lastSyncTime = "05:30 PM, Mar 3",
+    showProgressIndicatorFlow = MutableStateFlow(false),
     unsyncedResourcesFlow = MutableSharedFlow(),
     dismissInsightsView = {},
   )
