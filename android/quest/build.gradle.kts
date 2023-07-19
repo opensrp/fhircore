@@ -385,6 +385,10 @@ task("checkPerformanceLimits") {
       "build/outputs/connected_android_test_additional_output/opensrpDebugAndroidTest/connected"
     )
 
+  if (mainFolder == null) {
+     return
+  }
+
   val performanceFileFolder = mainFolder.listFiles().first()
   val resultsFile = File(performanceFileFolder, "org.smartregister.opensrp-benchmarkData.json")
 
