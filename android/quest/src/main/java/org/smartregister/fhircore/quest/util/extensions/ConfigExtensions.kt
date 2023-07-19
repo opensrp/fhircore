@@ -111,7 +111,7 @@ fun List<ActionConfig>.handleClickEvent(
         val args =
           bundleOf(
             Pair(NavigationArg.REPORT_ID, actionConfig.id),
-            Pair(NavigationArg.RESOURCE_ID, practitionerId?.extractLogicalIdUuid()),
+            Pair(NavigationArg.RESOURCE_ID, practitionerId?.extractLogicalIdUuid() ?: ""),
           )
 
         navController.navigate(MainNavigationScreen.Reports.route, args)

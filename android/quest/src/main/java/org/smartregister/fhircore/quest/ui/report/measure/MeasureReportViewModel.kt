@@ -82,7 +82,6 @@ import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPagingS
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportSubjectsPagingSource
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
-import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
@@ -161,15 +160,8 @@ constructor(
           reportConfigurations.clear()
           reportConfigurations.addAll(it)
         }
-        event.navController.navigate(
-          MeasureReportNavigationScreen.ReportDateSelector.route +
-            NavigationArg.bindArgumentsOf(
-              Pair(NavigationArg.SCREEN_TITLE, reportConfigurations.firstOrNull()?.module ?: ""),
-              Pair(NavigationArg.RESOURCE_ID, event.practitionerId),
-            ),
-        )
-      }
-      is MeasureReportEvent.GenerateReport -> {
+
+        // generate report
         if (selectedDate != null) {
           reportTypeState.value = MeasureReport.MeasureReportType.SUMMARY
           reportTypeSelectorUiState.value =
@@ -180,6 +172,17 @@ constructor(
         }
         refreshData()
         event.practitionerId?.let { evaluateMeasure(event.navController, practitionerId = it) }
+      }
+      is MeasureReportEvent.OnDateSelected -> {
+        if (selectedDate != null) {
+          reportTypeState.value = MeasureReport.MeasureReportType.SUMMARY
+          reportTypeSelectorUiState.value =
+            reportTypeSelectorUiState.value.copy(
+              startDate = selectedDate.firstDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA),
+              endDate = selectedDate.lastDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA),
+            )
+        }
+        event.navController.navigate(MeasureReportNavigationScreen.MeasureReportModule.route)
       }
       is MeasureReportEvent.OnDateRangeSelected -> {
         //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021

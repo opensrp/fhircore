@@ -205,7 +205,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
       ReportTypeSelectorUiState("21 Jan, 2022", "21 Feb, 2022", false, sampleSubjectViewData)
 
     measureReportViewModel.onEvent(
-      MeasureReportEvent.GenerateReport(context = application, navController = navController),
+      MeasureReportEvent.OnDateSelected(context = application, navController = navController),
       "2022-10-31".parseDate(SDF_YYYY_MM_DD),
     )
 

@@ -42,7 +42,7 @@ fun MeasureReportMainScreen(
 
   NavHost(
     navController = navController,
-    startDestination = MeasureReportNavigationScreen.MeasureReportModule.route,
+    startDestination = MeasureReportNavigationScreen.ReportDateSelector.route,
   ) {
     // Display list of supported measures for reporting
     composable(MeasureReportNavigationScreen.MeasureReportModule.route) {
@@ -60,12 +60,9 @@ fun MeasureReportMainScreen(
         },
       )
     }
-    // Choose report type; for either individual or population
-    // Date selection
+    // Page for selecting report date
     composable(
-      route =
-        MeasureReportNavigationScreen.ReportDateSelector.route +
-          NavigationArg.routePathsOf(NavigationArg.SCREEN_TITLE),
+      route = MeasureReportNavigationScreen.ReportDateSelector.route,
       arguments =
         listOf(
           navArgument(NavigationArg.SCREEN_TITLE) {

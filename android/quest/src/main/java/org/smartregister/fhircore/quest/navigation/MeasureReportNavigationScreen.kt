@@ -23,6 +23,5 @@ sealed class MeasureReportNavigationScreen(val route: String) {
 
   object SubjectsList : MeasureReportNavigationScreen("subjectsList")
 
-  object MeasureReportResult :
-    MeasureReportNavigationScreen("measureReportResult")
+  object MeasureReportResult : MeasureReportNavigationScreen("measureReportResult")
 }
