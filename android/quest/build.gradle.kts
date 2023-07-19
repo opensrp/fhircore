@@ -172,6 +172,13 @@ android {
       manifestPlaceholders["appLabel"] = "fhir HA"
     }
 
+    create("mpower-mcgovern") {
+      dimension = "apps"
+      applicationIdSuffix = ".mpower.mcgovern"
+      versionNameSuffix = "-mpower-mcgovern"
+      manifestPlaceholders["appLabel"] = "fhir mHealth"
+    }
+
     create("ecbis") {
       dimension = "apps"
       applicationIdSuffix = ".ecbis"

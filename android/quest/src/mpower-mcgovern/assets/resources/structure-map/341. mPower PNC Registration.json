@@ -1,0 +1,433 @@
+{
+    "resourceType": "StructureMap",
+    "id": "341",
+    "meta": {
+      "versionId": "2",
+      "lastUpdated": "2022-10-23T11:55:55.870+00:00",
+      "source": "#gfF3vGojF4OQij08"
+    },
+    "url": "http://192.168.19.63:8080/fhir/StructureMap/341",
+    "name": "PNC Registration",
+    "structure": [
+      {
+        "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+        "mode": "source"
+      },
+      {
+        "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+        "mode": "target"
+      }
+    ],
+    "group": [
+      {
+        "name": "PNCRegistration",
+        "typeMode": "none",
+        "input": [
+          {
+            "name": "src",
+            "type": "QuestionnaireResponse",
+            "mode": "source"
+          },
+          {
+            "name": "bundle",
+            "type": "Bundle",
+            "mode": "target"
+          }
+        ],
+        "rule": [
+          {
+            "name": "r_bundle_type",
+            "source": [
+              {
+                "context": "src"
+              }
+            ],
+            "target": [
+              {
+                "context": "bundle",
+                "contextType": "variable",
+                "element": "type",
+                "transform": "copy",
+                "parameter": [
+                  {
+                    "valueString": "collection"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "r_bundle_entries",
+            "source": [
+              {
+                "context": "src"
+              }
+            ],
+            "target": [
+              {
+                "variable": "refPatient",
+                "transform": "evaluate",
+                "parameter": [
+                  {
+                    "valueId": "src"
+                  },
+                  {
+                    "valueString": "$this.subject"
+                  }
+                ]
+              }
+            ],
+            "dependent": [
+              {
+                "name": "ExtractPNCResources",
+                "variable": [
+                  "src",
+                  "bundle",
+                  "refPatient"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "ExtractPNCResources",
+        "typeMode": "none",
+        "input": [
+          {
+            "name": "src",
+            "type": "QuestionnaireResponse",
+            "mode": "source"
+          },
+          {
+            "name": "bundle",
+            "type": "Bundle",
+            "mode": "target"
+          },
+          {
+            "name": "refPatient",
+            "type": "Reference",
+            "mode": "source"
+          }
+        ],
+        "rule": [
+          {
+            "name": "rule_live_birth_check",
+            "source": [
+              {
+                "context": "src",
+                "element": "item",
+                "variable": "item_pnc_started",
+                "condition": "((linkId = 'd8bf2a47-8953-480a-8cb8-0fcfd97f1c10') and (answer.value.code = 'born-alive'))"
+              }
+            ],
+            "rule": [
+              {
+                "name": "rule_pnc_condition",
+                "source": [
+                  {
+                    "context": "src"
+                  }
+                ],
+                "dependent": [
+                  {
+                    "name": "ExtractPNCCondition",
+                    "variable": [
+                      "src",
+                      "bundle",
+                      "refPatient"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "ExtractPNCCondition",
+        "typeMode": "none",
+        "input": [
+          {
+            "name": "src",
+            "type": "QuestionnaireResponse",
+            "mode": "source"
+          },
+          {
+            "name": "bundle",
+            "type": "Bundle",
+            "mode": "target"
+          },
+          {
+            "name": "refPatient",
+            "type": "Reference",
+            "mode": "source"
+          }
+        ],
+        "rule": [
+          {
+            "name": "r_cnd",
+            "source": [
+              {
+                "context": "src"
+              }
+            ],
+            "target": [
+              {
+                "context": "bundle",
+                "contextType": "variable",
+                "element": "entry",
+                "variable": "entry"
+              },
+              {
+                "context": "entry",
+                "contextType": "variable",
+                "element": "resource",
+                "variable": "cnd",
+                "transform": "create",
+                "parameter": [
+                  {
+                    "valueString": "Condition"
+                  }
+                ]
+              }
+            ],
+            "rule": [
+              {
+                "name": "r_cnd_id",
+                "source": [
+                  {
+                    "context": "src"
+                  }
+                ],
+                "target": [
+                  {
+                    "context": "cnd",
+                    "contextType": "variable",
+                    "element": "id",
+                    "transform": "uuid"
+                  }
+                ]
+              },
+              {
+                "name": "r_cnd_onset_date_val",
+                "source": [
+                  {
+                    "context": "src"
+                  }
+                ],
+                "target": [
+                  {
+                    "context": "cnd",
+                    "contextType": "variable",
+                    "element": "onset",
+                    "transform": "evaluate",
+                    "parameter": [
+                      {
+                        "valueId": "src"
+                      },
+                      {
+                        "valueString": "now()"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "r_cnd_clinical_st",
+                "source": [
+                  {
+                    "context": "src"
+                  }
+                ],
+                "target": [
+                  {
+                    "context": "cnd",
+                    "contextType": "variable",
+                    "element": "clinicalStatus",
+                    "transform": "cc",
+                    "parameter": [
+                      {
+                        "valueString": "http://terminology.hl7.org/CodeSystem/condition-clinical"
+                      },
+                      {
+                        "valueString": "active"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "r_cnd_verif_st",
+                "source": [
+                  {
+                    "context": "src"
+                  }
+                ],
+                "target": [
+                  {
+                    "context": "cnd",
+                    "contextType": "variable",
+                    "element": "verificationStatus",
+                    "transform": "cc",
+                    "parameter": [
+                      {
+                        "valueString": "http://terminology.hl7.org/CodeSystem/condition-ver-status"
+                      },
+                      {
+                        "valueString": "confirmed"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "r_cnd_category",
+                "source": [
+                  {
+                    "context": "src"
+                  }
+                ],
+                "target": [
+                  {
+                    "context": "cnd",
+                    "contextType": "variable",
+                    "element": "category",
+                    "transform": "cc",
+                    "parameter": [
+                      {
+                        "valueString": "http://terminology.hl7.org/CodeSystem/condition-category"
+                      },
+                      {
+                        "valueString": "encounter-diagnosis"
+                      },
+                      {
+                        "valueString": "Encounter Diagnosis"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "r_cnd_sub",
+                "source": [
+                  {
+                    "context": "src"
+                  }
+                ],
+                "target": [
+                  {
+                    "context": "cnd",
+                    "contextType": "variable",
+                    "element": "subject",
+                    "transform": "copy",
+                    "parameter": [
+                      {
+                        "valueId": "refPatient"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "r_cnd_recorded",
+                "source": [
+                  {
+                    "context": "src"
+                  }
+                ],
+                "target": [
+                  {
+                    "context": "cnd",
+                    "contextType": "variable",
+                    "element": "recordedDate",
+                    "transform": "evaluate",
+                    "parameter": [
+                      {
+                        "valueId": "src"
+                      },
+                      {
+                        "valueString": "now()"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "r_cnd_code",
+                "source": [
+                  {
+                    "context": "src"
+                  }
+                ],
+                "target": [
+                  {
+                    "context": "cnd",
+                    "contextType": "variable",
+                    "element": "code",
+                    "variable": "ccPreg",
+                    "transform": "create",
+                    "parameter": [
+                      {
+                        "valueString": "CodeableConcept"
+                      }
+                    ]
+                  }
+                ],
+                "rule": [
+                  {
+                    "name": "r_cnd_code_coding",
+                    "source": [
+                      {
+                        "context": "src"
+                      }
+                    ],
+                    "target": [
+                      {
+                        "context": "ccPreg",
+                        "contextType": "variable",
+                        "element": "coding",
+                        "transform": "c",
+                        "parameter": [
+                          {
+                            "valueString": "http://snomed.info/sct"
+                          },
+                          {
+                            "valueString": "234234234"
+                          },
+                          {
+                            "valueString": "PNC"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "r_cnd_code_text",
+                    "source": [
+                      {
+                        "context": "src"
+                      }
+                    ],
+                    "target": [
+                      {
+                        "context": "ccPreg",
+                        "contextType": "variable",
+                        "element": "text",
+                        "transform": "copy",
+                        "parameter": [
+                          {
+                            "valueString": "PNC"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }

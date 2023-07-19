@@ -1,0 +1,115 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "2370",
+  "meta": {
+    "versionId": "4",
+    "lastUpdated": "2023-05-26T21:08:32.183+00:00",
+    "source": "#f42a9db35850e551",
+    "profile": [
+      "http://ehelse.no/fhir/StructureDefinition/sdf-Questionnaire"
+    ],
+    "tag": [
+      {
+        "system": "urn:ietf:bcp:47",
+        "code": "nb-NO",
+        "display": "Norsk Bokmål"
+      }
+    ]
+  },
+  "language": "nb-NO",
+  "extension": [
+    {
+      "url": "http://helsenorge.no/fhir/StructureDefinition/sdf-sidebar",
+      "valueCoding": {
+        "system": "http://helsenorge.no/fhir/ValueSet/sdf-sidebar",
+        "code": "1"
+      }
+    },
+    {
+      "url": "http://helsenorge.no/fhir/StructureDefinition/sdf-information-message",
+      "valueCoding": {
+        "system": "http://helsenorge.no/fhir/ValueSet/sdf-information-message",
+        "code": "1"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "http://fhir.mpower-social.com:7070/fhir/StructureMap/2369"
+    }
+  ],
+  "version": "0.0.1",
+  "title": "mPower Child Immunization",
+  "status": "active",
+  "subjectType": [
+    "Patient"
+  ],
+  "date": "2022-10-12T00:00:00Z",
+  "publisher": "ONA",
+  "contact": [
+    {
+      "name": "https://www.smartregister.org"
+    }
+  ],
+  "description": "mPower Child Immunization",
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/ValueSet/usage-context-type",
+        "code": "focus",
+        "display": "Clinical Focus"
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+            "display": "mPower Child Immunization"
+          }
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "linkId": "1e1f0f3b-58de-41b4-8db0-6c4b033cce57",
+      "text": "Date of Immunization",
+      "type": "date",
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "903ac7cf-663d-43d5-8d1e-ae23a3d68d0d",
+      "text": "Task Immunization Code",
+      "type": "string",
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "8baf36fb-0529-4678-b19d-933211faf3a2",
+      "text": "Task Immunization Text",
+      "type": "string",
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "ccc7ec06-f61d-4bec-a9ad-93cd644a0da2",
+      "text": "Task ID",
+      "type": "string",
+      "readOnly": true
+    }
+  ]
+}

@@ -1,0 +1,1627 @@
+{
+  "resourceType": "Questionnaire",
+  "language": "en-GB",
+  "id": "345",
+  "title": "mPower Pregnancy Outcome",
+  "description": "mPower Pregnancy Outcome",
+  "version": "0.0.1",
+  "status": "active",
+  "publisher": "mPower",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2022-10-23T12:04:27.406+00:00",
+    "source": "#LPLQsrDBJ9faw2Gb",
+    "profile": [
+      "http://ehelse.no/fhir/StructureDefinition/sdf-Questionnaire"
+    ],
+    "tag": [
+      {
+        "system": "urn:ietf:bcp:47",
+        "code": "en-GB",
+        "display": "English"
+      }
+    ],
+    "security": [
+      {
+        "code": "3",
+        "display": "Helsehjelp",
+        "system": "urn:oid:2.16.578.1.12.4.1.1.7618"
+      }
+    ]
+  },
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/ValueSet/usage-context-type",
+        "code": "focus",
+        "display": "Clinical Focus"
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+            "display": "mPower Pregnancy Outcome"
+          }
+        ]
+      }
+    }
+  ],
+  "contact": [
+    {
+      "name": "https://www.mpower-social.com/"
+    }
+  ],
+  "subjectType": [
+    "Patient"
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "http://fhir.mpower-social.com:7070/fhir/StructureMap/341"
+    }
+  ],
+  "date": "2022-05-18T00:00:00Z",
+  "item": [
+    {
+      "linkId": "d8bf2a47-8953-480a-8cb8-0fcfd97f1c10",
+      "type": "choice",
+      "text": "প্রসবের ফলাফল",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "a20e3a93-9821-4ad6-e370-098f8facedff",
+            "code": "born-alive",
+            "system": "urn:uuid:24fb8d51-cd1c-4fce-eba6-f9733881c3d2",
+            "display": "জীবিত জন্ম"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "00ab25a5-3bd0-4a22-a1e1-706add23b33e",
+            "code": "still-born",
+            "system": "urn:uuid:24fb8d51-cd1c-4fce-eba6-f9733881c3d2",
+            "display": "মৃত জন্ম"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "af245c4c-c57b-49fe-f29f-544c873e5d79",
+            "code": "born-alive-died",
+            "system": "urn:uuid:24fb8d51-cd1c-4fce-eba6-f9733881c3d2",
+            "display": "নবজাতকের মৃত্যু"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "31ec28fa-9999-4f10-8a64-61de1e79a3e2",
+            "code": "miscarriage",
+            "system": "urn:uuid:24fb8d51-cd1c-4fce-eba6-f9733881c3d2",
+            "display": "গর্ভপাত"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "7d99d8ea-dc37-4545-841a-39435256a1ef",
+          "type": "group",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "d8bf2a47-8953-480a-8cb8-0fcfd97f1c10",
+              "operator": "!=",
+              "answerCoding": {
+                "system": "urn:uuid:24fb8d51-cd1c-4fce-eba6-f9733881c3d2",
+                "code": "miscarriage"
+              }
+            }
+          ],
+          "text": "শিশুর জন্ম",
+          "item": [
+            {
+              "linkId": "70abc6ef-edc5-4036-efcd-9f99df705da8",
+              "type": "dateTime",
+              "text": "প্রসবের তারিখ ও সময়",
+              "extension": [
+                {
+                  "url": "http://ehelse.no/fhir/StructureDefinition/sdf-maxvalue",
+                  "valueString": "today()"
+                }
+              ],
+              "required": true
+            },
+            {
+              "linkId": "aee9c83d-6dc3-41d6-8837-964afbfea7c7",
+              "type": "string",
+              "readOnly": true,
+              "text": "প্রসবের তারিখ",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+                  "valueBoolean": true
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+                  "valueExpression": {
+                    "language": "text/fhirpath",
+                    "expression": "%resource.descendants().where(linkId='70abc6ef-edc5-4036-efcd-9f99df705da8').answer.value.toString().substring(0, 10)"
+                  }
+                }
+              ],
+              "required": true
+            },
+            {
+              "linkId": "e516a8f2-3ff3-41c7-8652-afb489b00ee9",
+              "type": "string",
+              "text": "প্রসবের সময়",
+              "required": true,
+              "readOnly": true,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+                  "valueBoolean": true
+                },
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+                  "valueExpression": {
+                    "language": "text/fhirpath",
+                    "expression": "%resource.descendants().where(linkId='70abc6ef-edc5-4036-efcd-9f99df705da8').answer.value.toString().substring(11, 8)"
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "e23d64aa-6d85-4b30-e90b-3bc9cd573a43",
+              "type": "choice",
+              "text": "মায়ের অবস্থা",
+              "required": false,
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "id": "b9dd5cfe-a8d7-4d52-d3e3-f8726c6f6f4f",
+                    "code": "alive",
+                    "system": "urn:uuid:d5a069a7-b271-4b73-8558-708f476a0a58",
+                    "display": "সুস্থ আছেন"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "1bc708c2-8057-478c-8a17-1bf3c0c0c8c6",
+                    "code": "sick",
+                    "system": "urn:uuid:d5a069a7-b271-4b73-8558-708f476a0a58",
+                    "display": "অসুস্থ"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "58272d7a-e373-451d-d248-cad72f1236da",
+                    "code": "dead",
+                    "system": "urn:uuid:d5a069a7-b271-4b73-8558-708f476a0a58",
+                    "display": "মারা গেছেন"
+                  }
+                }
+              ],
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "radio-button"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "dbe21f55-3bbf-4e66-8aa7-119de8abd91b",
+              "type": "choice",
+              "text": "কোন ধরনের প্রসব পরিচালনা করা হয়েছে?",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "id": "9f9c19f8-e94d-484c-8beb-cf20b799b35d",
+                    "code": "normal-vaginal-delivery",
+                    "system": "urn:uuid:dbfe40f9-c7e4-406a-b6c9-c103109cf869",
+                    "display": "নরমাল ডেলিভারি"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "9cc94f2f-7570-4969-b744-8120f9a71e3b",
+                    "code": "cesarean ",
+                    "system": "urn:uuid:dbfe40f9-c7e4-406a-b6c9-c103109cf869",
+                    "display": "সিজারিয়ান"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "d13fdc6f-b44e-48db-e70e-c58ee3d69f05",
+                    "code": "assisted-vaginal-delivery",
+                    "system": "urn:uuid:dbfe40f9-c7e4-406a-b6c9-c103109cf869",
+                    "display": "সহায়ক নরমাল ডেলিভারি"
+                  }
+                }
+              ],
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "radio-button"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "85a63034-cc7c-45b4-e958-cf72661b4d24",
+              "type": "choice",
+              "text": "প্রসবের স্থান",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "id": "ae042873-1f65-4356-f068-b8a610f51397",
+                    "code": "home",
+                    "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                    "display": "বাড়িতে"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "a5f0303f-7def-489b-913e-98fc53b16ce7",
+                    "code": "community-clinic",
+                    "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                    "display": "কমিউনিটি ক্লিনিক"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "fb45a63b-ab02-4c2c-90e6-b52d866d2892",
+                    "code": "union-sub-center",
+                    "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                    "display": "ইউনিয়ন উপস্বাস্থ্য কেন্দ্র"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "3de59dd9-2700-4733-ec97-5b60e5e00609",
+                    "code": "union-family-welfare-center",
+                    "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                    "display": "ইউনিয়ন পরিবার কল্যাণ কেন্দ্র"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "38c4b1b5-612c-42b9-818d-7eee52965098",
+                    "code": "union-health-and-family-welfare-center",
+                    "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                    "display": "ইউনিয়ন স্বাস্থ্য ও পরিবার কল্যাণ কেন্দ্র"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "b8f2cc5b-cf82-49b6-870b-5bbf0fc6e8d9",
+                    "code": "metarnal-and-child-wellfare-center",
+                    "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                    "display": "মা ও শিশু কল্যাণ কেন্দ্র"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "d14bee95-3a83-40d0-b5bc-39a4df77d891",
+                    "code": "10-beds-hospital",
+                    "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                    "display": "১০ শয্যা বিশিষ্ট হাসপাতাল"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "f55422f0-fd0f-4595-8956-b318a6aaddaf",
+                    "code": "20-beds-hospital",
+                    "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                    "display": "২০ শয্যা বিশিষ্ট হাসপাতাল"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "c298705e-d69d-4332-8a7e-d79f0a0c5abd",
+                    "code": "upazila-health-complex",
+                    "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                    "display": "উপজেলা স্বাস্থ্য কমপ্লেক্স"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "b881c656-b38e-4e6c-8e86-e4be4b17d6b9",
+                    "code": "district-hospital",
+                    "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                    "display": "সদর হাসপাতাল"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "dbfde2ef-941f-4d51-b9c9-2df65afa85e5",
+                    "code": "medical-college-and-hospital",
+                    "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                    "display": "মেডিকেল কলেজ হাসপাতাল"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "fb629145-a988-4424-9549-ed4717e77db8",
+                    "code": "private-clinic-and-hospital",
+                    "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                    "display": "বেসরকারী ক্লিনিক/হাসপাতাল"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "e9162952-87dd-4c2e-9859-de6184ab4497",
+                    "code": "non-governmental-organization",
+                    "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                    "display": "এনজিও"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "489ad5ca-2d75-4db1-8620-80e76e0fa3e7",
+                    "code": "specialized-hospital",
+                    "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                    "display": "বিশেষায়িত হাসপাতাল"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "eb159a14-5413-4770-fc81-763fdd7e23f2",
+                    "code": "others-health-facility",
+                    "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                    "display": "অন্যান্য"
+                  }
+                }
+              ],
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "drop-down"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "item": [
+                {
+                  "linkId": "416b9fb1-5967-4032-f665-5b8b630f518b",
+                  "type": "choice",
+                  "text": "প্রসবে সহায়তাকারী",
+                  "required": true,
+                  "answerOption": [
+                    {
+                      "valueCoding": {
+                        "id": "434bb1c1-1165-4bc3-8513-96640ac94b20",
+                        "code": "nobody",
+                        "system": "urn:uuid:323154d6-ad28-42c6-a968-7bbd334090ab",
+                        "display": "কেউ না"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "c252a9e5-782b-4a04-94d6-a48a85df4d4e",
+                        "code": "relatives",
+                        "system": "urn:uuid:323154d6-ad28-42c6-a968-7bbd334090ab",
+                        "display": "আত্মীয়-স্বজন"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "f716595d-227e-405c-f1f9-1f61139be6ce",
+                        "code": "neighbor",
+                        "system": "urn:uuid:323154d6-ad28-42c6-a968-7bbd334090ab",
+                        "display": "প্রতিবেশী"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "bdd85a24-e1ee-415c-84c3-f98c95dcaec3",
+                        "code": "traditional-birth-attendent",
+                        "system": "urn:uuid:323154d6-ad28-42c6-a968-7bbd334090ab",
+                        "display": "অপ্রশিক্ষিত দাই"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "ae8be076-e3f7-4cbc-b0b9-84fa906e8919",
+                        "code": "trained-birth-attendent",
+                        "system": "urn:uuid:323154d6-ad28-42c6-a968-7bbd334090ab",
+                        "display": "প্র্রশিক্ষিত দাই"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "43c148f5-5b73-4fcd-8e6f-dbdb2f97a801",
+                        "code": "ngo-workers",
+                        "system": "urn:uuid:323154d6-ad28-42c6-a968-7bbd334090ab",
+                        "display": "এনজিও কর্মী"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "57a54901-e954-4f78-f3f6-dae88ffafe15",
+                        "code": "fwa-ha",
+                        "system": "urn:uuid:323154d6-ad28-42c6-a968-7bbd334090ab",
+                        "display": "এফ.ডব্লিউ.এ/এইচ.এ"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "2ca15a79-e47f-408c-86e5-92ca5dd9243d",
+                        "code": "fwv",
+                        "system": "urn:uuid:323154d6-ad28-42c6-a968-7bbd334090ab",
+                        "display": "এফ.ডাব্লিউ.ভি."
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "db046e2b-7f81-4724-e661-4c308e3e7804",
+                        "code": "others-anyone",
+                        "system": "urn:uuid:323154d6-ad28-42c6-a968-7bbd334090ab",
+                        "display": "অন্য কেউ"
+                      }
+                    }
+                  ],
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                      "valueCodeableConcept": {
+                        "coding": [
+                          {
+                            "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                            "code": "drop-down"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "enableWhen": [
+                    {
+                      "question": "85a63034-cc7c-45b4-e958-cf72661b4d24",
+                      "operator": "=",
+                      "answerCoding": {
+                        "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                        "code": "home"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "linkId": "b55bd6be-ce71-4a16-81b8-8b2ed6bf2575",
+                  "type": "choice",
+                  "text": "প্রসবে সহায়তাকারী",
+                  "required": true,
+                  "answerOption": [
+                    {
+                      "valueCoding": {
+                        "id": "434bb1c1-1165-4bc3-8513-96640ac94b20",
+                        "code": "chcp",
+                        "system": "urn:uuid:323154d6-ad28-42c6-a968-7bbd334090ab",
+                        "display": "সিএইচসিপি"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "c252a9e5-782b-4a04-94d6-a48a85df4d4e",
+                        "code": "health-assistant",
+                        "system": "urn:uuid:323154d6-ad28-42c6-a968-7bbd334090ab",
+                        "display": "স্বাস্থ্য সহকারী"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "f716595d-227e-405c-f1f9-1f61139be6ce",
+                        "code": "fwa",
+                        "system": "urn:uuid:323154d6-ad28-42c6-a968-7bbd334090ab",
+                        "display": "এফ.ডব্লিউ.এ"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "db046e2b-7f81-4724-e661-4c308e3e7804",
+                        "code": "others-anyone",
+                        "system": "urn:uuid:323154d6-ad28-42c6-a968-7bbd334090ab",
+                        "display": "অন্য কেউ"
+                      }
+                    }
+                  ],
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                      "valueCodeableConcept": {
+                        "coding": [
+                          {
+                            "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                            "code": "drop-down"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "enableWhen": [
+                    {
+                      "question": "85a63034-cc7c-45b4-e958-cf72661b4d24",
+                      "operator": "=",
+                      "answerCoding": {
+                        "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                        "code": "community-clinic"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "linkId": "49652f39-d1e3-40e4-8d8c-a5a5208c7425",
+                  "type": "choice",
+                  "text": "প্রসবে সহায়তাকারী সিএসবিএ প্রশিক্ষণপ্রাপ্ত কিনা?",
+                  "required": true,
+                  "answerOption": [
+                    {
+                      "valueCoding": {
+                        "id": "fc94e9be-b5ab-45b8-f880-bc724de7d856",
+                        "code": "yes",
+                        "system": "urn:uuid:8a43253c-fe52-4aca-85cf-74bcff040133",
+                        "display": "হ্যাঁ"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "b3082519-9c4e-4199-9447-62ca9bf83241",
+                        "code": "no",
+                        "system": "urn:uuid:8a43253c-fe52-4aca-85cf-74bcff040133",
+                        "display": "না"
+                      }
+                    }
+                  ],
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                      "valueCodeableConcept": {
+                        "coding": [
+                          {
+                            "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                            "code": "radio-button"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "enableWhen": [
+                    {
+                      "question": "85a63034-cc7c-45b4-e958-cf72661b4d24",
+                      "operator": "=",
+                      "answerCoding": {
+                        "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                        "code": "home"
+                      }
+                    },
+                    {
+                      "question": "85a63034-cc7c-45b4-e958-cf72661b4d24",
+                      "operator": "=",
+                      "answerCoding": {
+                        "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                        "code": "community-clinic"
+                      }
+                    }
+                  ],
+                  "enableBehavior": "any"
+                }
+              ]
+            },
+            {
+              "linkId": "c81dcbab-e4f3-4391-c404-1bb36819f675",
+              "type": "choice",
+              "text": "প্রসবকালীন সময়ে পার্টোগ্রাফ ব্যবহৃত হয়েছিল?",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "id": "fc94e9be-b5ab-45b8-f880-bc724de7d856",
+                    "code": "yes",
+                    "system": "urn:uuid:8a43253c-fe52-4aca-85cf-74bcff040133",
+                    "display": "হ্যাঁ"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "b3082519-9c4e-4199-9447-62ca9bf83241",
+                    "code": "no",
+                    "system": "urn:uuid:8a43253c-fe52-4aca-85cf-74bcff040133",
+                    "display": "না"
+                  }
+                }
+              ],
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "radio-button"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "12ee68cd-3778-494c-c718-02376b74ca34",
+              "type": "choice",
+              "text": "প্রসবকালীন সময়ে মিসোপ্রস্টোল গ্রহন করেছিলেন?",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "id": "fc94e9be-b5ab-45b8-f880-bc724de7d856",
+                    "code": "yes",
+                    "system": "urn:uuid:8a43253c-fe52-4aca-85cf-74bcff040133",
+                    "display": "হ্যাঁ"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "b3082519-9c4e-4199-9447-62ca9bf83241",
+                    "code": "no",
+                    "system": "urn:uuid:8a43253c-fe52-4aca-85cf-74bcff040133",
+                    "display": "না"
+                  }
+                }
+              ],
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "radio-button"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "a9f1bbe5-f761-4991-80ef-4e23493c38a4",
+              "type": "choice",
+              "text": "প্রসবকালীন সময়ে অক্সিটসিন গ্রহন করেছিলেন?",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "id": "fc94e9be-b5ab-45b8-f880-bc724de7d856",
+                    "code": "yes",
+                    "system": "urn:uuid:8a43253c-fe52-4aca-85cf-74bcff040133",
+                    "display": "হ্যাঁ"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "b3082519-9c4e-4199-9447-62ca9bf83241",
+                    "code": "no",
+                    "system": "urn:uuid:8a43253c-fe52-4aca-85cf-74bcff040133",
+                    "display": "না"
+                  }
+                }
+              ],
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "radio-button"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "5190e681-201c-4e08-8415-401bd7ff4669",
+              "type": "choice",
+              "text": "প্রসবকালীন সময়ে এন্টিবায়োটিক দ্বারা চিকিৎসা করা হয়েছিল?",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "id": "fc94e9be-b5ab-45b8-f880-bc724de7d856",
+                    "code": "yes",
+                    "system": "urn:uuid:8a43253c-fe52-4aca-85cf-74bcff040133",
+                    "display": "হ্যাঁ"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "b3082519-9c4e-4199-9447-62ca9bf83241",
+                    "code": "no",
+                    "system": "urn:uuid:8a43253c-fe52-4aca-85cf-74bcff040133",
+                    "display": "না"
+                  }
+                }
+              ],
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "radio-button"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "ba50cc50-334c-4022-f6bd-128b4fb64f7c",
+              "type": "choice",
+              "text": "মায়ের কি কোন বিপদচিহ্ন আছে?",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "id": "f1719749-e992-462e-e6ab-9e997d8cb112",
+                    "code": "yes",
+                    "system": "urn:uuid:9de579cd-4bbe-4671-95d2-44897ed96731",
+                    "display": "হ্যাঁ"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "113a39e8-9602-4bca-b9fd-1b3eb8ec1bfb",
+                    "code": "no",
+                    "system": "urn:uuid:9de579cd-4bbe-4671-95d2-44897ed96731",
+                    "display": "না"
+                  }
+                }
+              ],
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "radio-button"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "item": [
+                {
+                  "linkId": "b3c5dd00-cebc-48f1-864a-c8b0df1257c8",
+                  "type": "choice",
+                  "text": "মায়ের বিপদচিহ্ন সমূহ নির্ধারণ করুন",
+                  "required": true,
+                  "repeats": true,
+                  "answerOption": [
+                    {
+                      "valueCoding": {
+                        "id": "a3cc9413-86e5-4b26-8e98-86e054640f58",
+                        "code": "swelling-of-face-and-hands",
+                        "system": "urn:uuid:2964fffe-ac37-4f5e-86d3-5b3027f9c223",
+                        "display": "মুখ ও হাত ফুলে যাওয়া"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "2e8b4fa8-62c0-48bb-8b77-84222b1151fd",
+                        "code": "severe-pain-in-her-belly",
+                        "system": "urn:uuid:2964fffe-ac37-4f5e-86d3-5b3027f9c223",
+                        "display": "পেটে প্রচন্ড ব্যাথা"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "4f96d898-ad7c-4e52-8e0a-455ba5562ba7",
+                        "code": "pain/burning-while-urinating",
+                        "system": "urn:uuid:2964fffe-ac37-4f5e-86d3-5b3027f9c223",
+                        "display": "প্রস্রাব করার সময় ব্যথা/জ্বালা"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "57831fb4-0e1a-4710-8ef1-96340fb4925b",
+                        "code": "fever/chills",
+                        "system": "urn:uuid:2964fffe-ac37-4f5e-86d3-5b3027f9c223",
+                        "display": "জ্বর/ঠান্ডা"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "900a31a7-602c-41e1-c47f-7ceb81de7445",
+                        "code": "abnormal-(bad-smelling-and-plenty)-vaginal-discharge",
+                        "system": "urn:uuid:2964fffe-ac37-4f5e-86d3-5b3027f9c223",
+                        "display": "অস্বাভাবিক (খারাপ গন্ধ এবং প্রচুর) যোনি স্রাব"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "6b901acd-9961-4210-831d-14ffdbdafbed",
+                        "code": "excess-tiredness-or-shortness-of-breathe",
+                        "system": "urn:uuid:2964fffe-ac37-4f5e-86d3-5b3027f9c223",
+                        "display": "অতিরিক্ত ক্লান্তি বা শ্বাসকষ্ট"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "55407149-814e-47cc-a899-d4d829990aad",
+                        "code": "high-blood-pressure",
+                        "system": "urn:uuid:2964fffe-ac37-4f5e-86d3-5b3027f9c223",
+                        "display": "উচ্চ রক্তচাপ"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "b023b468-d3c2-47a6-8911-bd333eac8576",
+                        "code": "convulsion",
+                        "system": "urn:uuid:2964fffe-ac37-4f5e-86d3-5b3027f9c223",
+                        "display": "এক্লাম্পসিয়া/খিঁচুনি"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "0762eb82-8158-4bf8-d2fe-5aa1d5b3ad05",
+                        "code": "weakness-blurred-vision",
+                        "system": "urn:uuid:2964fffe-ac37-4f5e-86d3-5b3027f9c223",
+                        "display": "ঝাপসা দৃষ্টি / গুরুতর মাথাব্যথা"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "9b7b4f7b-be01-4b02-f604-6083f65b9eb1",
+                        "code": "excessive-vaginal-bleeding",
+                        "system": "urn:uuid:2964fffe-ac37-4f5e-86d3-5b3027f9c223",
+                        "display": "যোনিপথে অত্যধিক রক্তক্ষরণ"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "6deae688-3c36-46b1-d718-d27c99bd6a0e",
+                        "code": "other",
+                        "system": "urn:uuid:2964fffe-ac37-4f5e-86d3-5b3027f9c223",
+                        "display": "অন্যান্য"
+                      }
+                    }
+                  ],
+                  "enableWhen": [
+                    {
+                      "question": "ba50cc50-334c-4022-f6bd-128b4fb64f7c",
+                      "operator": "=",
+                      "answerCoding": {
+                        "system": "urn:uuid:9de579cd-4bbe-4671-95d2-44897ed96731",
+                        "code": "yes"
+                      }
+                    }
+                  ],
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                      "valueCodeableConcept": {
+                        "coding": [
+                          {
+                            "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                            "code": "drop-down"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "item": [
+                    {
+                      "linkId": "ecdbd39a-e2d0-4afd-f72f-2ffbb95cb4f9",
+                      "type": "string",
+                      "text": "অন্যান্য বিপদচিহ্ন লিখুন",
+                      "required": true,
+                      "enableWhen": [
+                        {
+                          "question": "b3c5dd00-cebc-48f1-864a-c8b0df1257c8",
+                          "operator": "=",
+                          "answerCoding": {
+                            "system": "urn:uuid:2964fffe-ac37-4f5e-86d3-5b3027f9c223",
+                            "code": "other"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "linkId": "358b1a85-aacc-417c-8d93-1ba618cab245",
+              "type": "choice",
+              "text": "আপনাকে রেফার করা হয়েছে?",
+              "required": true,
+              "enableWhen": [
+                {
+                  "question": "ba50cc50-334c-4022-f6bd-128b4fb64f7c",
+                  "operator": "=",
+                  "answerCoding": {
+                    "system": "urn:uuid:9de579cd-4bbe-4671-95d2-44897ed96731",
+                    "code": "yes"
+                  }
+                },
+                {
+                  "question": "85a63034-cc7c-45b4-e958-cf72661b4d24",
+                  "operator": "=",
+                  "answerCoding": {
+                    "system": "urn:uuid:92fd045f-7917-47cb-cd7f-ea63d270c5b4",
+                    "code": "home"
+                  }
+                }
+              ],
+              "enableBehavior": "all",
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "id": "77e43611-57c0-4f84-8866-6804c7458748",
+                    "code": "yes",
+                    "system": "urn:uuid:571417c5-dae8-48b3-8b52-dafdbc76fac1",
+                    "display": "হ্যাঁ"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "679b92c2-bf91-4668-dbd6-97e26e98c322",
+                    "code": "no",
+                    "system": "urn:uuid:571417c5-dae8-48b3-8b52-dafdbc76fac1",
+                    "display": "না"
+                  }
+                }
+              ],
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "radio-button"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "item": [
+                {
+                  "linkId": "eda1ff9a-68ff-43b8-a3c2-38cb155a38a8",
+                  "type": "choice",
+                  "text": "রেফারের স্থান",
+                  "required": true,
+                  "answerOption": [
+                    {
+                      "valueCoding": {
+                        "id": "77e43611-57c0-4f84-8866-6804c7458748",
+                        "code": "community-clinic",
+                        "system": "urn:uuid:571417c5-dae8-48b3-8b52-dafdbc76fac1",
+                        "display": "কমিউনিটি ক্লিনিক"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "679b92c2-bf91-4668-dbd6-97e26e98c322",
+                        "code": "union-sub-center",
+                        "system": "urn:uuid:571417c5-dae8-48b3-8b52-dafdbc76fac1",
+                        "display": "ইউনিয়ন উপস্বাস্থ্য কেন্দ্র"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "799e5d53-f2d1-4577-b500-349a5f74c207",
+                        "code": "union-family-welfare-center",
+                        "system": "urn:uuid:571417c5-dae8-48b3-8b52-dafdbc76fac1",
+                        "display": "ইউনিয়ন পরিবার কল্যাণ কেন্দ্র"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "b05aae4e-9499-4133-92ac-cbf8f82f7286",
+                        "code": "union-health-and-family-welfare-center",
+                        "system": "urn:uuid:571417c5-dae8-48b3-8b52-dafdbc76fac1",
+                        "display": "ইউনিয়ন স্বাস্থ্য ও পরিবার কল্যাণ কেন্দ্র"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "1101f0e8-8df2-4e7b-8786-7e0765520040",
+                        "code": "metarnal-and-child-wellfare-center",
+                        "system": "urn:uuid:571417c5-dae8-48b3-8b52-dafdbc76fac1",
+                        "display": "মা ও শিশু কল্যাণ কেন্দ্র"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "0d3e2efe-83c0-4e2a-b38c-1b6c0bd4ba2a",
+                        "code": "10-beds-hospital",
+                        "system": "urn:uuid:571417c5-dae8-48b3-8b52-dafdbc76fac1",
+                        "display": "১০ শয্যা বিশিষ্ট হাসপাতাল"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "7c3f0b23-669f-4baa-8698-b62bc3117cb8",
+                        "code": "20-beds-hospital",
+                        "system": "urn:uuid:571417c5-dae8-48b3-8b52-dafdbc76fac1",
+                        "display": "২০ শয্যা বিশিষ্ট হাসপাতাল"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "2f5edd0d-9848-496d-94ed-38d67a6baf39",
+                        "code": "upazila-health-complex",
+                        "system": "urn:uuid:571417c5-dae8-48b3-8b52-dafdbc76fac1",
+                        "display": "উপজেলা স্বাস্থ্য কমপ্লেক্স"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "ad98fa7d-4b2c-47b7-8294-8e82bb53560d",
+                        "code": "district-hospital",
+                        "system": "urn:uuid:571417c5-dae8-48b3-8b52-dafdbc76fac1",
+                        "display": "সদর হাসপাতাল"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "b9822f29-449d-4af4-85e7-b4c526cfaa53",
+                        "code": "medical-college-and-hospital",
+                        "system": "urn:uuid:571417c5-dae8-48b3-8b52-dafdbc76fac1",
+                        "display": "মেডিকেল কলেজ হাসপাতাল"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "5032c1cb-4835-43bc-bb8e-1c429cafc6ff",
+                        "code": "specialized-hospital",
+                        "system": "urn:uuid:571417c5-dae8-48b3-8b52-dafdbc76fac1",
+                        "display": "বিশেষায়িত হাসপাতাল"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "e15c078e-91db-4ccb-896d-61d65bec775d",
+                        "code": "others-health-facility",
+                        "system": "urn:uuid:571417c5-dae8-48b3-8b52-dafdbc76fac1",
+                        "display": "অন্যান্য"
+                      }
+                    }
+                  ],
+                  "enableWhen": [
+                    {
+                      "question": "358b1a85-aacc-417c-8d93-1ba618cab245",
+                      "operator": "=",
+                      "answerCoding": {
+                        "system": "urn:uuid:571417c5-dae8-48b3-8b52-dafdbc76fac1",
+                        "code": "yes"
+                      }
+                    }
+                  ],
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                      "valueCodeableConcept": {
+                        "coding": [
+                          {
+                            "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                            "code": "drop-down"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "3571d4fd-c649-4eb1-9799-c234eec6c2fe",
+          "type": "group",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "d8bf2a47-8953-480a-8cb8-0fcfd97f1c10",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:24fb8d51-cd1c-4fce-eba6-f9733881c3d2",
+                "code": "born-alive"
+              }
+            }
+          ],
+          "text": "জীবিত জন্ম",
+          "item": [
+            {
+              "linkId": "237f9db0-1591-4779-884d-498c63df81fb",
+              "type": "integer",
+              "text": "জীবিত জন্ম সংখ্যা",
+              "required": true,
+              "maxLength": 1,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/regex",
+                  "valueString": "[0-9]*"
+                }
+              ]
+            },
+            {
+              "linkId": "a960607d-2813-4792-8496-da23df6806cd",
+              "type": "choice",
+              "text": "নবজাতকের লিঙ্গ",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "id": "9f01dbff-45c2-4b92-8abe-74ea2bb5cfb3",
+                    "code": "male",
+                    "system": "urn:uuid:3b3f2f96-c289-419a-80b2-ac6e16f9fd1b",
+                    "display": "পুরুষ"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "b008ee5e-087a-4649-b85d-bc0ff5f7dfeb",
+                    "code": "female",
+                    "system": "urn:uuid:3b3f2f96-c289-419a-80b2-ac6e16f9fd1b",
+                    "display": "নারী"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "ef112732-db2b-4d4e-85f7-5899e598ddb9",
+                    "code": "other",
+                    "system": "urn:uuid:3b3f2f96-c289-419a-80b2-ac6e16f9fd1b",
+                    "display": "তৃতীয় লিঙ্গ"
+                  }
+                }
+              ],
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "radio-button"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "d8829cab-815a-4ffd-8395-7588ca847367",
+              "type": "string",
+              "text": "প্রসবের ঠিকানা(ইউনিয়ন)",
+              "required": true,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/regex",
+                  "valueString": "[A-Za-z0-9.,() ]*"
+                },
+                {
+                  "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+                  "valueString": "ইউনিয়ন এর নামের অক্ষর ইংরেজিতে লিখুন"
+                }
+              ]
+            },
+            {
+              "linkId": "c9ac9f4e-815b-4a4e-8a97-ee40bb9e9454",
+              "type": "choice",
+              "text": "প্রসবকালীন কোন জটিলতা হয়েছিল কিনা",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "id": "fc94e9be-b5ab-45b8-f880-bc724de7d856",
+                    "code": "yes",
+                    "system": "urn:uuid:8a43253c-fe52-4aca-85cf-74bcff040133",
+                    "display": "হ্যাঁ"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "b3082519-9c4e-4199-9447-62ca9bf83241",
+                    "code": "no",
+                    "system": "urn:uuid:8a43253c-fe52-4aca-85cf-74bcff040133",
+                    "display": "না"
+                  }
+                }
+              ],
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "radio-button"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "item": [
+                {
+                  "linkId": "aea07aa0-02ca-4a03-f3ca-3feb99db9b2d",
+                  "type": "choice",
+                  "text": "প্রসবকালীন সময়ে কোন কোন ধরনের জটিলতা হয়েছিল",
+                  "required": true,
+                  "repeats": true,
+                  "answerOption": [
+                    {
+                      "valueCoding": {
+                        "id": "5e28020a-0474-43b6-dc7f-1ad254a11800",
+                        "code": "hemorrhage",
+                        "system": "urn:uuid:236803db-57b6-40b5-87ee-0111314b1b18",
+                        "display": "অতিরিক্ত রক্তপাত"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "914b4006-7c05-469e-ed7c-6e3a90c16167",
+                        "code": "prom",
+                        "system": "urn:uuid:236803db-57b6-40b5-87ee-0111314b1b18",
+                        "display": "ঝিল্লির অকাল ফেটে যাওয়া"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "f1792e09-ca00-4f47-cd1c-cecfc4bcfd69",
+                        "code": "cord-compression",
+                        "system": "urn:uuid:236803db-57b6-40b5-87ee-0111314b1b18",
+                        "display": "আম্বিলিক্যাল কর্ড প্রোল্যাপস"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "90880f09-2062-48f2-c797-f74c883d9135",
+                        "code": "high-blood-pressure",
+                        "system": "urn:uuid:236803db-57b6-40b5-87ee-0111314b1b18",
+                        "display": "উচ্চ-রক্তচাপ"
+                      }
+                    },
+                    {
+                      "valueCoding": {
+                        "id": "67bec698-817c-4bae-d24d-db54b088139d",
+                        "code": "other",
+                        "system": "urn:uuid:236803db-57b6-40b5-87ee-0111314b1b18",
+                        "display": "অন্যান্য"
+                      }
+                    }
+                  ],
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                      "valueCodeableConcept": {
+                        "coding": [
+                          {
+                            "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                            "code": "check-box"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "enableWhen": [
+                    {
+                      "question": "c9ac9f4e-815b-4a4e-8a97-ee40bb9e9454",
+                      "operator": "=",
+                      "answerCoding": {
+                        "system": "urn:uuid:8a43253c-fe52-4aca-85cf-74bcff040133",
+                        "code": "yes"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "e8ad9c44-51db-4fe9-fd38-d9f341d38f0d",
+          "type": "group",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "d8bf2a47-8953-480a-8cb8-0fcfd97f1c10",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:24fb8d51-cd1c-4fce-eba6-f9733881c3d2",
+                "code": "still-born"
+              }
+            }
+          ],
+          "text": "মৃত জন্ম",
+          "item": [
+            {
+              "linkId": "6b4b82ca-8dd3-4bbb-80b6-682c80009c4a",
+              "type": "integer",
+              "text": "মৃত জন্ম সংখ্যা",
+              "required": true,
+              "maxLength": 1,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/regex",
+                  "valueString": "[0-9]*"
+                },
+                {
+                  "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+                  "valueString": "1 ডিজিটের বেশি দেওয়া যাবে না"
+                }
+              ]
+            },
+            {
+              "linkId": "8844f2cb-b02a-4d17-933f-82ffe470c0b4",
+              "type": "choice",
+              "text": "মৃত বাচ্চা জন্মের ধরণ",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "id": "51fa93e4-f4db-4b82-9611-47d386f03175",
+                    "code": "macereted",
+                    "system": "urn:uuid:4ddbaf6a-b08f-43a5-8947-bcf0bf0ceec4",
+                    "display": "ক্ষয় হওয়া"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "24103d22-fc9b-465b-e63b-59cf8e795a73",
+                    "code": "fresh",
+                    "system": "urn:uuid:4ddbaf6a-b08f-43a5-8947-bcf0bf0ceec4",
+                    "display": "তরতাজা"
+                  }
+                }
+              ],
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "radio-button"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "7ef9d829-2934-46e9-9841-174524b6e978",
+          "type": "group",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "d8bf2a47-8953-480a-8cb8-0fcfd97f1c10",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:24fb8d51-cd1c-4fce-eba6-f9733881c3d2",
+                "code": "born-alive-died"
+              }
+            }
+          ],
+          "text": "নবজাতকের মৃত্যু",
+          "item": [
+            {
+              "linkId": "718f850d-94a1-490b-ee33-6cf263665ce8",
+              "type": "integer",
+              "text": "মৃত নবজাতকের সংখ্যা",
+              "required": true,
+              "maxLength": 1,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/regex",
+                  "valueString": "[0-9]*"
+                },
+                {
+                  "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+                  "valueString": "1 ডিজিটের বেশি দেওয়া যাবে না"
+                }
+              ]
+            },
+            {
+              "linkId": "57813868-8e9c-422b-9b09-1e550f9c73f4",
+              "type": "choice",
+              "text": "নবজাতকের মৃত্যুর কারণ",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "id": "31330963-ef8f-4157-9220-cf0c99ce229e",
+                    "code": "shortness-of-breath",
+                    "system": "urn:uuid:a6deee55-a293-410d-8845-953bf2e5dcb7",
+                    "display": "শ্বাসরোধ"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "040828b7-d6af-488d-fb63-c96cdaf2f868",
+                    "code": "abnormally-low-temperatures",
+                    "system": "urn:uuid:a6deee55-a293-410d-8845-953bf2e5dcb7",
+                    "display": "অস্বাভাবিক কম তাপমাত্রা"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "4f1e786e-250b-45f9-ded1-f1f7897e1e36",
+                    "code": "low-birth-weight",
+                    "system": "urn:uuid:a6deee55-a293-410d-8845-953bf2e5dcb7",
+                    "display": "কম জন্ম ওজন"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "b9980871-21c1-46ca-8377-c5adf1fc32c7",
+                    "code": "itching",
+                    "system": "urn:uuid:a6deee55-a293-410d-8845-953bf2e5dcb7",
+                    "display": "খিঁচুনি"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "5c2ce382-6b63-4709-ecc8-dfb29d6cab51",
+                    "code": "infection-of-the-navel",
+                    "system": "urn:uuid:a6deee55-a293-410d-8845-953bf2e5dcb7",
+                    "display": "নাভির সংক্রমণ"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "7a7a1444-d9ea-451e-b70a-91229843c5c7",
+                    "code": "unknown",
+                    "system": "urn:uuid:a6deee55-a293-410d-8845-953bf2e5dcb7",
+                    "display": "জানা নেই"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "48ac3e27-329f-40ad-f3de-0e52e6f4724f",
+                    "code": "other",
+                    "system": "urn:uuid:a6deee55-a293-410d-8845-953bf2e5dcb7",
+                    "display": "অন্যান্য"
+                  }
+                }
+              ],
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "drop-down"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "7c5aa633-7ecf-41b9-89fd-00a515d75adc",
+          "type": "group",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "d8bf2a47-8953-480a-8cb8-0fcfd97f1c10",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:24fb8d51-cd1c-4fce-eba6-f9733881c3d2",
+                "code": "miscarriage"
+              }
+            }
+          ],
+          "text": "গর্ভপাত",
+          "item": [
+            {
+              "linkId": "499f1202-79f1-4d8f-979b-cbb5785f654c",
+              "type": "integer",
+              "text": "গর্ভপাত সংখ্যা",
+              "required": true,
+              "maxLength": 1,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/regex",
+                  "valueString": "[0-9]*"
+                },
+                {
+                  "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+                  "valueString": "1 ডিজিটের বেশি দেওয়া যাবে না"
+                }
+              ]
+            },
+            {
+              "linkId": "0ec272af-e975-469e-82e5-23f85c88d75d",
+              "type": "date",
+              "text": "গর্ভপাতের তারিখ",
+              "extension": [
+                {
+                  "url": "http://ehelse.no/fhir/StructureDefinition/sdf-maxvalue",
+                  "valueString": "today()"
+                }
+              ],
+              "required": true
+            },
+            {
+              "linkId": "02846c8a-3a4f-4a19-8985-35a033d398ac",
+              "type": "choice",
+              "text": "গর্ভপাতের ধরণ",
+              "required": true,
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "id": "d334a831-f4cd-4d1f-93fb-86806578a9f1",
+                    "code": "unnecessary-abortion",
+                    "system": "urn:uuid:bb07bcbd-1a13-416f-8ede-6d77b0977fe4",
+                    "display": "অনাকাঙ্খিত গর্ভপাত"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "id": "c987bbc0-3d4f-49bf-9e06-c4ff829f348b",
+                    "code": "abortion-by-medication",
+                    "system": "urn:uuid:bb07bcbd-1a13-416f-8ede-6d77b0977fe4",
+                    "display": "ঔষধ দ্বারা গর্ভপাত"
+                  }
+                }
+              ],
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "radio-button"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

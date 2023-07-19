@@ -1,0 +1,827 @@
+{
+    "resourceType": "Questionnaire",
+    "language": "en-GB",
+    "id": "343",
+    "title": "mPower New Pregnancy Registration",
+    "description": "mPower New Pregnancy Registration",
+    "version": "0.0.1",
+    "status": "active",
+    "publisher": "mPower",
+    "meta": {
+      "versionId": "1",
+      "lastUpdated": "2022-10-23T12:04:27.406+00:00",
+      "source": "#LPLQsrDBJ9faw2Gb",
+      "profile": [
+        "http://ehelse.no/fhir/StructureDefinition/sdf-Questionnaire"
+      ],
+      "tag": [
+        {
+          "system": "urn:ietf:bcp:47",
+          "code": "en-GB",
+          "display": "English"
+        }
+      ],
+      "security": [
+        {
+          "code": "3",
+          "display": "Helsehjelp",
+          "system": "urn:oid:2.16.578.1.12.4.1.1.7618"
+        }
+      ]
+    },
+    "useContext": [
+      {
+        "code": {
+          "system": "http://hl7.org/fhir/ValueSet/usage-context-type",
+          "code": "focus",
+          "display": "Clinical Focus"
+        },
+        "valueCodeableConcept": {
+          "coding": [
+            {
+              "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+              "display": "mPower New Pregnancy Registration"
+            }
+          ]
+        }
+      }
+    ],
+    "contact": [
+      {
+        "name": "https://www.smartregister.org/"
+      }
+    ],
+    "subjectType": [
+      "Patient"
+    ],
+    "extension": [
+      {
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+        "valueCanonical": "http://192.168.19.63:8080/fhir/StructureMap/342"
+      }
+    ],
+    "date": "2022-05-18T00:00:00Z",
+    "item": [
+      {
+        "extension": [
+          {
+            "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+            "valueString": "Enter the correct date"
+          },
+          {
+            "url": "http://ehelse.no/fhir/StructureDefinition/sdf-minvalue",
+            "valueString": "today() - 308 'days'"
+          },
+          {
+            "url": "http://ehelse.no/fhir/StructureDefinition/sdf-maxvalue",
+            "valueString": "today() - 42 'days'"
+          }
+        ],
+        "linkId": "245679f2-6172-456e-8ff3-425f5cea3243",
+        "text": "শেষ মাসিকের তারিখ",
+        "type": "date",
+        "required": true,
+        "item": [
+          {
+            "extension": [
+              {
+                "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+                "valueString": "Enter the correct date"
+              },
+              {
+                "url": "http://ehelse.no/fhir/StructureDefinition/sdf-minvalue",
+                "valueString": "today() - 280 'days'"
+              },
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "%resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value + 280 'days'"
+                }
+              }
+            ],
+            "linkId": "4f04affb-22a8-4da5-88d8-78bc6d0454e7",
+            "text": "সম্ভাব্য প্রসবের তারিখ",
+            "type": "date",
+            "required": false,
+            "readOnly": true
+          }
+        ]
+      },
+      {
+        "linkId": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+        "type": "integer",
+        "text": "কতবার অন্তঃসত্ত্বা হয়েছেন (এই গর্ভ সহ)",
+        "required": true,
+        "extension": [
+          {
+            "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+            "valueString": "সংখ্যাটি 0 এর চেয়ে সমান বা বড় এবং 10 এর চেয়ে সমান বা ছোট হতে হবে"
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/regex",
+            "valueString": "^([1-9]|10)$"
+          }
+        ],
+        "item": [
+          {
+            "linkId": "3f8bbfec-04f5-47a0-8c68-26cbf6d848e1",
+            "type": "display",
+            "text": "বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন",
+            "required": false,
+            "enableWhen": [
+              {
+                "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+                "operator": ">",
+                "answerInteger": 4
+              }
+            ],
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                "valueCodeableConcept": {
+                  "coding": [
+                    {
+                      "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                      "code": "highlight"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "linkId": "868f3888-0c96-4a5d-85ed-045617c58036",
+        "type": "integer",
+        "text": "কতজন জীবিত সন্তান জন্ম হয়েছে?",
+        "required": true,
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/regex",
+            "valueString": "[0-9]*"
+          },
+          {
+            "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+            "valueString": "সংখ্যাটি 0 এর সমান বা বড় হতে হবে"
+          }
+        ],
+        "enableWhen": [
+          {
+            "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+            "operator": ">",
+            "answerInteger": 1
+          }
+        ],
+        "item": [
+          {
+            "linkId": "b8039221-29a3-4f9f-e704-1527fd8df150",
+            "type": "display",
+            "text": "সর্বমোট গর্ভসংখ্যা (এই গর্ভ সহ) থেকে কম হতে হবে",
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                "valueCodeableConcept": {
+                  "coding": [
+                    {
+                      "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                      "code": "highlight"
+                    }
+                  ]
+                }
+              },
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "%resource.descendants().where(linkId='868f3888-0c96-4a5d-85ed-045617c58036').answer.value > %resource.descendants().where(linkId='b1a4ad4d-bf7e-4e4b-86c2-57912acb569f').answer.value"
+                }
+              }
+            ],
+            "required": false
+          }
+        ]
+      },
+      {
+        "linkId": "2515c2d2-59a2-4525-b995-d82606efef3e",
+        "type": "integer",
+        "text": "মায়ের উচ্চতা (সে.মি.)",
+        "required": true,
+        "extension": [
+          {
+            "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+            "valueString": "সংখ্যাটি 210 এর কম হতে হবে"
+          },
+          {
+            "url": "http://ehelse.no/fhir/StructureDefinition/sdf-maxvalue",
+            "valueString": "210"
+          }
+        ]
+      },
+      {
+        "linkId": "15c0400e-ca99-428a-88d3-e9aff2ec5cf6",
+        "type": "choice",
+        "text": "সিজারের ইতিহাস আছে?",
+        "required": true,
+        "answerOption": [
+          {
+            "valueCoding": {
+              "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+              "code": "yes",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "হ্যাঁ"
+            }
+          },
+          {
+            "valueCoding": {
+              "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+              "code": "no",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "না"
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                  "code": "radio-button"
+                }
+              ]
+            }
+          }
+        ],
+        "enableWhen": [
+          {
+            "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+            "operator": ">",
+            "answerInteger": 1
+          }
+        ]
+      },
+      {
+        "linkId": "9936aa43-49b1-438d-f4fb-f9f18856c65d",
+        "type": "choice",
+        "text": "গর্ভপাতের ইতিহাস আছে?",
+        "required": true,
+        "answerOption": [
+          {
+            "valueCoding": {
+              "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+              "code": "yes",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "হ্যাঁ"
+            }
+          },
+          {
+            "valueCoding": {
+              "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+              "code": "no",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "না"
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                  "code": "radio-button"
+                }
+              ]
+            }
+          }
+        ],
+        "enableWhen": [
+          {
+            "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+            "operator": ">",
+            "answerInteger": 1
+          }
+        ]
+      },
+      {
+        "linkId": "b751ea8d-5d68-428c-81d1-858763432691",
+        "type": "choice",
+        "text": "মৃত জন্মের ইতিহাস আছে?",
+        "item": [
+          {
+            "linkId": "2824e909-2382-4ca5-804c-e7eb7ad09c0f",
+            "type": "string",
+            "text": "কতটি মৃত জন্ম ?",
+            "required": true,
+            "enableWhen": [
+              {
+                "question": "b751ea8d-5d68-428c-81d1-858763432691",
+                "operator": "=",
+                "answerCoding": {
+                  "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+                  "code": "yes"
+                }
+              }
+            ],
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/regex",
+                "valueString": "^([1-9]|10)$"
+              },
+              {
+                "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+                "valueString": "সংখ্যাটি 0 এর চেয়ে সমান বা বড় এবং 10 এর চেয়ে সমান বা ছোট হতে হবে"
+              }
+            ]
+          }
+        ],
+        "required": true,
+        "answerOption": [
+          {
+            "valueCoding": {
+              "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+              "code": "yes",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "হ্যাঁ"
+            }
+          },
+          {
+            "valueCoding": {
+              "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+              "code": "no",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "না"
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                  "code": "radio-button"
+                }
+              ]
+            }
+          }
+        ],
+        "enableWhen": [
+          {
+            "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+            "operator": ">",
+            "answerInteger": 1
+          }
+        ]
+      },
+      {
+        "linkId": "819ac356-bc10-4189-9712-fa3ffea020fd",
+        "type": "choice",
+        "text": "প্রাক-প্রসবকালীন রক্তক্ষরণের ইতিহাস আছে?",
+        "required": true,
+        "answerOption": [
+          {
+            "valueCoding": {
+              "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+              "code": "yes",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "হ্যাঁ"
+            }
+          },
+          {
+            "valueCoding": {
+              "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+              "code": "no",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "না"
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                  "code": "radio-button"
+                }
+              ]
+            }
+          }
+        ],
+        "enableWhen": [
+          {
+            "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+            "operator": ">",
+            "answerInteger": 1
+          }
+        ]
+      },
+      {
+        "linkId": "2a86b2a7-1b7b-4344-8cdf-1acd53f13d1a",
+        "type": "choice",
+        "text": "বিলম্বিত প্রসবের ইতিহাস আছে?",
+        "required": true,
+        "answerOption": [
+          {
+            "valueCoding": {
+              "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+              "code": "yes",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "হ্যাঁ"
+            }
+          },
+          {
+            "valueCoding": {
+              "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+              "code": "no",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "না"
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                  "code": "radio-button"
+                }
+              ]
+            }
+          }
+        ],
+        "enableWhen": [
+          {
+            "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+            "operator": ">",
+            "answerInteger": 1
+          }
+        ]
+      },
+      {
+        "linkId": "933cfd12-b945-4d8e-ea08-9be70c0098d7",
+        "type": "choice",
+        "text": "প্রসবোত্তর রক্তক্ষরণের ইতিহাস আছে?",
+        "required": true,
+        "answerOption": [
+          {
+            "valueCoding": {
+              "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+              "code": "yes",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "হ্যাঁ"
+            }
+          },
+          {
+            "valueCoding": {
+              "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+              "code": "no",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "না"
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                  "code": "radio-button"
+                }
+              ]
+            }
+          }
+        ],
+        "enableWhen": [
+          {
+            "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+            "operator": ">",
+            "answerInteger": 1
+          }
+        ]
+      },
+      {
+        "linkId": "a80e7d62-32f3-485a-8843-2a66370cc7e0",
+        "type": "choice",
+        "text": "পূর্ববর্তী গর্ভধারনের সময়ে উচ্চ রক্তচাপের ইতিহাস আছে?",
+        "required": true,
+        "answerOption": [
+          {
+            "valueCoding": {
+              "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+              "code": "yes",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "হ্যাঁ"
+            }
+          },
+          {
+            "valueCoding": {
+              "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+              "code": "no",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "না"
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                  "code": "radio-button"
+                }
+              ]
+            }
+          }
+        ],
+        "enableWhen": [
+          {
+            "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+            "operator": ">",
+            "answerInteger": 1
+          }
+        ]
+      },
+      {
+        "linkId": "64682753-6d2b-4ad1-8894-e9ae71304735",
+        "type": "choice",
+        "text": "পূর্ববর্তী গর্ভধারনের সময়ে শরীরে উচ্চ তাপমাত্রার ইতিহাস আছে?",
+        "required": true,
+        "answerOption": [
+          {
+            "valueCoding": {
+              "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+              "code": "yes",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "হ্যাঁ"
+            }
+          },
+          {
+            "valueCoding": {
+              "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+              "code": "no",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "না"
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                  "code": "radio-button"
+                }
+              ]
+            }
+          }
+        ],
+        "enableWhen": [
+          {
+            "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+            "operator": ">",
+            "answerInteger": 1
+          }
+        ]
+      },
+      {
+        "linkId": "037b1c2b-3d55-4892-c0be-f5e1d3aadca1",
+        "type": "choice",
+        "text": "পূর্ববর্তী গর্ভধারনের সময়ে ডায়াবেটিসের ইতিহাস আছে?",
+        "required": true,
+        "answerOption": [
+          {
+            "valueCoding": {
+              "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+              "code": "yes",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "হ্যাঁ"
+            }
+          },
+          {
+            "valueCoding": {
+              "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+              "code": "no",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "না"
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                  "code": "radio-button"
+                }
+              ]
+            }
+          }
+        ],
+        "enableWhen": [
+          {
+            "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+            "operator": ">",
+            "answerInteger": 1
+          }
+        ]
+      },
+      {
+        "linkId": "ad1d299a-033a-4af2-e059-9ae3f9a1266f",
+        "type": "choice",
+        "text": "পূর্ববর্তী গর্ভধারনের সময়ে খিচুনীর ইতিহাস আছে?",
+        "required": true,
+        "answerOption": [
+          {
+            "valueCoding": {
+              "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+              "code": "yes",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "হ্যাঁ"
+            }
+          },
+          {
+            "valueCoding": {
+              "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+              "code": "no",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "না"
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                  "code": "radio-button"
+                }
+              ]
+            }
+          }
+        ],
+        "enableWhen": [
+          {
+            "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+            "operator": ">",
+            "answerInteger": 1
+          }
+        ]
+      },
+      {
+        "linkId": "a4230d70-d10b-4f47-8fc4-9a6e1069a448",
+        "type": "choice",
+        "text": "থ্যালাসেমিয়ার ইতিহাস আছে?",
+        "required": true,
+        "answerOption": [
+          {
+            "valueCoding": {
+              "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+              "code": "yes",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "হ্যাঁ"
+            }
+          },
+          {
+            "valueCoding": {
+              "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+              "code": "no",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "না"
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                  "code": "radio-button"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "linkId": "d3bb238f-7e5a-4bbf-ff2c-d3209bb0e532",
+        "type": "choice",
+        "text": "মানসিক স্বাস্থ্য জনিত সমস্যা আছে?",
+        "required": true,
+        "answerOption": [
+          {
+            "valueCoding": {
+              "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+              "code": "yes",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "হ্যাঁ"
+            }
+          },
+          {
+            "valueCoding": {
+              "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+              "code": "no",
+              "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+              "display": "না"
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                  "code": "radio-button"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "linkId": "7bc52242-bb2d-4b2c-c534-69de7af1b6ca",
+        "type": "choice",
+        "text": "আপনি কোন কোন টিটি/টিডি টিকা গ্রহন করেছেন?",
+        "required": false,
+        "repeats": true,
+        "answerOption": [
+          {
+            "valueCoding": {
+              "id": "23f93cd4-403b-403a-d1cb-7f8b61b8a3a8",
+              "code": "TT_td_1_Complete",
+              "system": "urn:uuid:80bbd477-2873-4eae-f761-db75695353d0",
+              "display": "টিটি/টিডি-১ সম্পন্ন"
+            }
+          },
+          {
+            "valueCoding": {
+              "id": "1d468e37-6c3c-44c8-f4ab-385f28d11781",
+              "code": "TT_td_2_Complete",
+              "system": "urn:uuid:80bbd477-2873-4eae-f761-db75695353d0",
+              "display": "টিটি/টিডি-২ সম্পন্ন"
+            }
+          },
+          {
+            "valueCoding": {
+              "id": "a653c645-3fe3-44f9-88bf-d0aa5323d112",
+              "code": "TT_td_3_Complete",
+              "system": "urn:uuid:80bbd477-2873-4eae-f761-db75695353d0",
+              "display": "টিটি/টিডি-৩ সম্পন্ন"
+            }
+          },
+          {
+            "valueCoding": {
+              "id": "11af3134-511e-445a-8d51-c290aeca1187",
+              "code": "TT_td_4_Complete",
+              "system": "urn:uuid:80bbd477-2873-4eae-f761-db75695353d0",
+              "display": "টিটি/টিডি-৪ সম্পন্ন"
+            }
+          },
+          {
+            "valueCoding": {
+              "id": "a2e1f44e-fc72-40b6-81f5-305b4deeb8cf",
+              "code": "TT_td_5_Complete",
+              "system": "urn:uuid:80bbd477-2873-4eae-f761-db75695353d0",
+              "display": "টিটি/টিডি-৫ সম্পন্ন"
+            }
+          }
+        ],
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                  "code": "check-box"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }

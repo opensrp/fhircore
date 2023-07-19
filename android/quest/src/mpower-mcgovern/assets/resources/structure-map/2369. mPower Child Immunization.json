@@ -1,0 +1,1908 @@
+{
+  "resourceType": "StructureMap",
+  "id": "2369",
+  "meta": {
+    "versionId": "7",
+    "lastUpdated": "2023-05-26T21:44:59.849+00:00",
+    "source": "#28c47b62d31d1555"
+  },
+  "text": {
+    "status": "additional",
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><pre>map &quot;http://fhir.mpower-social.com:7070/fhir/StructureMap/3c118304-fb18-4752-a296-941292811433&quot; = &quot;mPower Child Immunization Record Single&quot;\n\nuses &quot;http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse&quot; as source\nuses &quot;http://hl7.org/fhir/StructureDefinition/Bundle&quot; as target\n\ngroup childImmunizationSingleFollowUp(source questionnaireResponse : QuestionnaireResponse, target bundle: Bundle) {\n    questionnaireResponse -&gt; bundle.type = &quot;collection&quot; &quot;r_bundle_type&quot;;\n    questionnaireResponse -&gt; evaluate(questionnaireResponse, $this.subject) as referencedPatient then\n        extractChildImmunizationSingleEncounters(questionnaireResponse, referencedPatient, bundle) &quot;rule_ref&quot;;\n}\n\ngroup extractChildImmunizationSingleEncounters(source questionnaireResponse : QuestionnaireResponse, source referencedPatient : Reference, target bundle: Bundle) {\n    questionnaireResponse -&gt; evaluate(questionnaireResponse, &quot;41000179103&quot;) as encounterOneCode, evaluate(questionnaireResponse, &quot;Immunization record (record artifact)&quot;) as encounterOneText, evaluate(questionnaireResponse, &quot;&quot;) as encounterPartOf then {\n        questionnaireResponse then extractEncounter( questionnaireResponse, referencedPatient, bundle, encounterOneCode, encounterOneText, encounterPartOf) &quot;rule_encounter_one&quot;;\n    } &quot;rule_encounter_one&quot;;\n}\n\ngroup extractEncounter(source questionnaireResponse : QuestionnaireResponse, source referencedPatient : Reference, target bundle: Bundle, source encounterCode : String, source encounterText : String, source encounterPartOf : Encounter) {\n    questionnaireResponse -&gt; evaluate(questionnaireResponse, $this.item.where(linkId = '903ac7cf-663d-43d5-8d1e-ae23a3d68d0d').answer.value.toString()) as immunizationCode, \n        evaluate(questionnaireResponse, $this.item.where(linkId = '8baf36fb-0529-4678-b19d-933211faf3a2').answer.value.toString()) as immunizationCodeDisplay then {\n        \n        questionnaireResponse -&gt; bundle.entry as entry, entry.resource = create('Encounter') as encounter then {\n            questionnaireResponse -&gt; encounter.id = uuid() &quot;rule_encounter_id&quot;;\n            questionnaireResponse -&gt; encounter.status = 'finished' &quot;rule_encounter_status&quot;;\n            questionnaireResponse -&gt; encounter.class = c(&quot;http://terminology.hl7.org/CodeSystem/v3-ActCode&quot;, &quot;HH&quot;, &quot;home health&quot;) &quot;rule_encounter_class&quot;;\n\n            //OpenSRP Type of Encounter\n            questionnaireResponse -&gt; encounter.type = create('CodeableConcept') as concept then {\n                questionnaireResponse -&gt; concept.coding = c(&quot;https://smartregister.org/&quot;, &quot;child_immunization&quot;) as coding then {\n                    questionnaireResponse -&gt; coding.display = &quot;Child Immunization&quot; &quot;rule_encounter_type_one_coding_display&quot;;\n                } &quot;rule_encounter_type_one_coding&quot;;\n                questionnaireResponse -&gt; concept.text = &quot;Child Immunization&quot; &quot;rule_encounter_type_one_text&quot;;\n            } &quot;rule_encounter_one_type&quot;;\n\n            //Type of Encounter\n            questionnaireResponse -&gt; encounter.type = create('CodeableConcept') as concept then {\n                questionnaireResponse -&gt; concept.coding = c(&quot;https://smartregister.org/&quot;, encounterCode) as coding then {\n                    questionnaireResponse -&gt; coding.display = encounterText &quot;rule_encounter_type_two_coding_display&quot;;\n                } &quot;rule_encounter_type_two_coding&quot;;\n                questionnaireResponse -&gt; concept.text = encounterText &quot;rule_encounter_type_two_text&quot;;\n            } &quot;rule_encounter_two_type&quot;;\n\n            questionnaireResponse -&gt; encounter.priority = create('CodeableConcept') as priority then {\n                questionnaireResponse -&gt; priority.coding = c(&quot;http://terminology.hl7.org/ValueSet/v3-ActPriority&quot;, &quot;EL&quot;) as priorityCoding then {\n                    questionnaireResponse -&gt; priorityCoding.display = &quot;Elective&quot; &quot;rule_encounter_priority_coding_display&quot;;\n                } &quot;rule_encounter_priority_coding&quot;;\n                questionnaireResponse -&gt; priority.text = &quot;Elective&quot; &quot;rule_encounter_priority_text&quot;;\n            } &quot;rule_encounter_priority&quot;;\n            questionnaireResponse.subject as subject -&gt; encounter.subject = referencedPatient &quot;rule_encounter_subject&quot;;\n            questionnaireResponse -&gt; encounter.period = create('Period') as period then {\n                questionnaireResponse -&gt; period.start = evaluate(questionnaireResponse, now()) &quot;rule_encounter_period_start&quot;;\n                questionnaireResponse -&gt; period.end = evaluate(questionnaireResponse, now()) &quot;rule_encounter_period_end&quot;;\n            } &quot;rule_encounter_period&quot;;\n\n            // OpenSRP Reason for Encounter\n            questionnaireResponse -&gt; encounter.reasonCode = create('CodeableConcept') as reason then {\n                questionnaireResponse -&gt; reason.text = &quot;Child Immunization&quot; &quot;rule_encounter_reason_text&quot;;\n                questionnaireResponse -&gt; reason.coding = c(&quot;https://smartregister.org/&quot;, &quot;child_immunization&quot;) as opensrpReasonCode then {\n                    questionnaireResponse -&gt; opensrpReasonCode.display = &quot;Child Immunization&quot; &quot;rule_encounter_reason_coding_display&quot;;\n                } &quot;rule_encounter_reason_coding&quot;;\n            } &quot;rule_encounter_reason&quot;;\n\n            // Reason for Encounter\n            questionnaireResponse -&gt; encounter.reasonCode = create('CodeableConcept') as reason then {\n                questionnaireResponse -&gt; reason.text = immunizationCodeDisplay &quot;rule_encounter_reason_text&quot;;\n                questionnaireResponse -&gt; reason.coding = c(&quot;https://smartregister.org/&quot;, immunizationCode) as reasonCode then {\n                    questionnaireResponse -&gt; reasonCode.display = immunizationCodeDisplay &quot;rule_encounter_reason_coding_display&quot;;\n                } &quot;rule_encounter_reason_coding&quot;;\n            } &quot;rule_encounter_reason&quot;;\n\n            questionnaireResponse where(encounterPartOf.empty().not()) then {\n                questionnaireResponse -&gt; encounter.partOf = reference(encounterPartOf) &quot;rule_encounter_partOf_reference&quot;;\n                questionnaireResponse then extractImmunization(questionnaireResponse, referencedPatient, bundle, encounterPartOf, encounter) &quot;rule_extract_mmunization&quot;;\n            } &quot;rule_encounter_partOf_exists&quot;;\n\n            questionnaireResponse where(encounterPartOf.empty()) then {\n                questionnaireResponse -&gt; evaluate(questionnaireResponse, &quot;33879002&quot;) as encounterTwoCode, evaluate(questionnaireResponse, &quot;Administration of vaccine to produce active immunity (procedure)&quot;) as encounterTwoText then {\n                    questionnaireResponse then extractEncounter( questionnaireResponse, referencedPatient, bundle, encounterTwoCode, encounterTwoText, encounter) &quot;rule_encounter_two&quot;;\n                } &quot;rule_encounter_two&quot;;\n            } &quot;rule_encounter_partOf_not_exists&quot;;\n        } &quot;rule_encounter&quot;;\n    } &quot;rule_immunization_code&quot;;\n}\n\ngroup extractImmunization(source questionnaireResponse : QuestionnaireResponse, source referencedPatient : Reference, target bundle: Bundle, source encounterPartOf : Encounter, source encounter : Encounter) {\n    questionnaireResponse -&gt; evaluate(questionnaireResponse, $this.item.where(linkId = '903ac7cf-663d-43d5-8d1e-ae23a3d68d0d').answer.value.toString()) as immunizationCode, \n        evaluate(questionnaireResponse, $this.item.where(linkId = '8baf36fb-0529-4678-b19d-933211faf3a2').answer.value.toString()) as immunizationCodeDisplay then {\n            \n        questionnaireResponse -&gt; bundle.entry as entry, entry.resource = create('Immunization') as immunization then {\n            questionnaireResponse -&gt; immunization.id = uuid() &quot;rule_immunization_id&quot;;\n            questionnaireResponse -&gt; immunization.status = 'completed' &quot;rule_immunization_status&quot;;\n\n            questionnaireResponse -&gt; immunization.vaccineCode = create('CodeableConcept') as vaccineCode then {\n                questionnaireResponse -&gt; vaccineCode.coding = c(&quot;http://snomed.info/sct&quot;, immunizationCode) as vaccineCodeCoding then {\n                    questionnaireResponse -&gt; vaccineCodeCoding.display = immunizationCodeDisplay &quot;rule_immunization_vaccineCode_coding_display&quot;;\n                } &quot;rule_immunization_vaccineCode_coding&quot;;\n                questionnaireResponse -&gt; vaccineCode.text = immunizationCodeDisplay &quot;rule_immunization_vaccineCode_text&quot;;\n            } &quot;rule_immunization_vaccineCode&quot;;\n\n            questionnaireResponse -&gt; immunization.reasonCode = create('CodeableConcept') as reasonCode then {\n                questionnaireResponse -&gt; reasonCode.coding = c(&quot;http://snomed.info/sct&quot;, &quot;33879002&quot;) as reasonCodeCoding then {\n                    questionnaireResponse -&gt; reasonCodeCoding.display = &quot;Administration of vaccine to produce active immunity (procedure)&quot; &quot;rule_immunization_reasonCode_coding_display&quot;;\n                } &quot;rule_immunization_reasonCode_coding&quot;;\n                questionnaireResponse -&gt; reasonCode.text = &quot;Administration of vaccine to produce active immunity (procedure)&quot; &quot;rule_immunization_reasonCode_text&quot;;\n            } &quot;rule_immunization_reasonCode&quot;;\n\n            questionnaireResponse -&gt; immunization.patient = referencedPatient &quot;rule_immunization_patient&quot;;\n            questionnaireResponse -&gt; immunization.occurrence = evaluate(questionnaireResponse, $this.item.where(linkId = '1e1f0f3b-58de-41b4-8db0-6c4b033cce57').answer.value.toString() + 'T00:00:00.00Z') &quot;rule_immunization_occurrenceDateTime&quot;;\n            questionnaireResponse -&gt; immunization.encounter = reference(encounter) &quot;rule_immunization_encounter_reference&quot;;\n\n            questionnaireResponse then extractTaskOutput( questionnaireResponse, bundle, encounterPartOf, encounter, immunization) &quot;rule_output_two&quot;;\n        } &quot;rule_immunization&quot;;\n    } &quot;rule_immunization_code&quot;; \n}\n\ngroup extractTaskOutput(source questionnaireResponse : QuestionnaireResponse, target bundle: Bundle, source encounterPartOf : Encounter, source encounter : Encounter, source immunization : Immunization) {\n    questionnaireResponse -&gt; bundle.entry as entry, entry.resource = create('Task') as task then {\n        questionnaireResponse -&gt; task.id = create('id') as id then {\n            questionnaireResponse -&gt; id.value = evaluate(questionnaireResponse, $this.item.where(linkId = 'ccc7ec06-f61d-4bec-a9ad-93cd644a0da2').answer.value.toString()) &quot;rule_task_id&quot;;\n        } &quot;rule_update_task&quot;;\n\n        // Task Encounter Output one\n        questionnaireResponse -&gt; task.output = create('Task_Output') as outputTask then {\n            questionnaireResponse -&gt; outputTask.type = create(&quot;CodeableConcept&quot;) as concept then {\n                questionnaireResponse-&gt; concept.coding = c(&quot;http://snomed.info/sct&quot;,&quot;41000179103&quot;) as coding then {\n                    questionnaireResponse -&gt; coding.display = &quot;Immunization record (record artifact)&quot; &quot;rule_coding_display&quot;;\n                } &quot;rule_task_concept_coding&quot;;\n            } &quot;rule_codeable_concept&quot;;\n            questionnaireResponse -&gt; outputTask.value = reference(encounterPartOf) &quot;rule_task_output_reference&quot;;\n        } &quot;rule_task_output&quot;;\n\n        // Task Encounter Output two\n        questionnaireResponse -&gt; task.output = create('Task_Output') as outputTask then {\n            questionnaireResponse -&gt; outputTask.type = create(&quot;CodeableConcept&quot;) as concept then {\n                questionnaireResponse-&gt; concept.coding = c(&quot;http://snomed.info/sct&quot;,&quot;41000179103&quot;) as coding then {\n                    questionnaireResponse -&gt; coding.display = &quot;Immunization record (record artifact)&quot; &quot;rule_coding_display&quot;;\n                } &quot;rule_task_concept_coding&quot;;\n            } &quot;rule_codeable_concept&quot;;\n            questionnaireResponse -&gt; outputTask.value = reference(encounter) &quot;rule_task_output_reference&quot;;\n        } &quot;rule_task_output&quot;;\n\n        // Task Immunization Output\n        questionnaireResponse -&gt; task.output = create('Task_Output') as outputTask then {\n            questionnaireResponse -&gt; outputTask.type = create(&quot;CodeableConcept&quot;) as concept then {\n                questionnaireResponse-&gt; concept.coding = c(&quot;http://snomed.info/sct&quot;,&quot;41000179103&quot;) as coding then {\n                    questionnaireResponse -&gt; coding.display = &quot;Immunization record (record artifact)&quot; &quot;rule_coding_display&quot;;\n                } &quot;rule_task_concept_coding&quot;;\n            } &quot;rule_codeable_concept&quot;;\n            questionnaireResponse -&gt; outputTask.value = reference(immunization) &quot;rule_task_output_reference&quot;;\n        } &quot;rule_task_output&quot;;\n    } &quot;rule_task&quot;;\n}\n</pre></div>"
+  },
+  "url": "http://fhir.mpower-social.com:7070/fhir/StructureMap/2369",
+  "name": "mPower Child Immunization Record Single",
+  "structure": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+      "mode": "source"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+      "mode": "target"
+    }
+  ],
+  "group": [
+    {
+      "name": "childImmunizationSingleFollowUp",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "questionnaireResponse",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_bundle_type",
+          "source": [
+            {
+              "context": "questionnaireResponse"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "type",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "collection"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "rule_ref",
+          "source": [
+            {
+              "context": "questionnaireResponse"
+            }
+          ],
+          "target": [
+            {
+              "variable": "referencedPatient",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "questionnaireResponse"
+                },
+                {
+                  "valueString": "$this.subject"
+                }
+              ]
+            }
+          ],
+          "dependent": [
+            {
+              "name": "extractChildImmunizationSingleEncounters",
+              "variable": [
+                "questionnaireResponse",
+                "referencedPatient",
+                "bundle"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractChildImmunizationSingleEncounters",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "questionnaireResponse",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "referencedPatient",
+          "type": "Reference",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_encounter_one",
+          "source": [
+            {
+              "context": "questionnaireResponse"
+            }
+          ],
+          "target": [
+            {
+              "variable": "encounterOneCode",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "questionnaireResponse"
+                },
+                {
+                  "valueString": "'41000179103'"
+                }
+              ]
+            },
+            {
+              "variable": "encounterOneText",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "questionnaireResponse"
+                },
+                {
+                  "valueString": "'Immunization record (record artifact)'"
+                }
+              ]
+            },
+            {
+              "variable": "encounterPartOf",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "questionnaireResponse"
+                },
+                {
+                  "valueString": "''"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_encounter_one",
+              "source": [
+                {
+                  "context": "questionnaireResponse"
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "extractEncounter",
+                  "variable": [
+                    "questionnaireResponse",
+                    "referencedPatient",
+                    "bundle",
+                    "encounterOneCode",
+                    "encounterOneText",
+                    "encounterPartOf"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractEncounter",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "questionnaireResponse",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "referencedPatient",
+          "type": "Reference",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounterCode",
+          "type": "String",
+          "mode": "source"
+        },
+        {
+          "name": "encounterText",
+          "type": "String",
+          "mode": "source"
+        },
+        {
+          "name": "encounterPartOf",
+          "type": "Encounter",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_immunization_code",
+          "source": [
+            {
+              "context": "questionnaireResponse"
+            }
+          ],
+          "target": [
+            {
+              "variable": "immunizationCode",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "questionnaireResponse"
+                },
+                {
+                  "valueString": "$this.item.where(linkId = '903ac7cf-663d-43d5-8d1e-ae23a3d68d0d').answer.value.toString()"
+                }
+              ]
+            },
+            {
+              "variable": "immunizationCodeDisplay",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "questionnaireResponse"
+                },
+                {
+                  "valueString": "$this.item.where(linkId = '8baf36fb-0529-4678-b19d-933211faf3a2').answer.value.toString()"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_encounter",
+              "source": [
+                {
+                  "context": "questionnaireResponse"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "encounter",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Encounter"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_encounter_id",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "encounter",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_encounter_status",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "encounter",
+                      "contextType": "variable",
+                      "element": "status",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "finished"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_encounter_class",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "encounter",
+                      "contextType": "variable",
+                      "element": "class",
+                      "transform": "c",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/v3-ActCode"
+                        },
+                        {
+                          "valueString": "HH"
+                        },
+                        {
+                          "valueString": "home health"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_encounter_one_type",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "encounter",
+                      "contextType": "variable",
+                      "element": "type",
+                      "variable": "concept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_encounter_type_one_coding",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "concept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "https://smartregister.org/"
+                            },
+                            {
+                              "valueString": "child_immunization"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_encounter_type_one_coding_display",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Child Immunization"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_encounter_type_one_text",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "concept",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Child Immunization"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_encounter_two_type",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "encounter",
+                      "contextType": "variable",
+                      "element": "type",
+                      "variable": "concept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_encounter_type_two_coding",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "concept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "https://smartregister.org/"
+                            },
+                            {
+                              "valueId": "encounterCode"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_encounter_type_two_coding_display",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueId": "encounterText"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_encounter_type_two_text",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "concept",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueId": "encounterText"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_encounter_priority",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "encounter",
+                      "contextType": "variable",
+                      "element": "priority",
+                      "variable": "priority",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_encounter_priority_coding",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "priority",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "priorityCoding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/ValueSet/v3-ActPriority"
+                            },
+                            {
+                              "valueString": "EL"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_encounter_priority_coding_display",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "priorityCoding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Elective"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_encounter_priority_text",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "priority",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Elective"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_encounter_subject",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse",
+                      "element": "subject",
+                      "variable": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "encounter",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueId": "referencedPatient"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_encounter_period",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "encounter",
+                      "contextType": "variable",
+                      "element": "period",
+                      "variable": "period",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Period"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_encounter_period_start",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "period",
+                          "contextType": "variable",
+                          "element": "start",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "questionnaireResponse"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_encounter_period_end",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "period",
+                          "contextType": "variable",
+                          "element": "end",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "questionnaireResponse"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_encounter_reason",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "encounter",
+                      "contextType": "variable",
+                      "element": "reasonCode",
+                      "variable": "reason",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_encounter_reason_text",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reason",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Child Immunization"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_encounter_reason_coding",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reason",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "opensrpReasonCode",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "https://smartregister.org/"
+                            },
+                            {
+                              "valueString": "child_immunization"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_encounter_reason_coding_display",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "opensrpReasonCode",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Child Immunization"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_encounter_reason",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "encounter",
+                      "contextType": "variable",
+                      "element": "reasonCode",
+                      "variable": "reason",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_encounter_reason_text",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reason",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueId": "immunizationCodeDisplay"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_encounter_reason_coding",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reason",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "reasonCode",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "https://smartregister.org/"
+                            },
+                            {
+                              "valueId": "immunizationCode"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_encounter_reason_coding_display",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "reasonCode",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueId": "immunizationCodeDisplay"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_encounter_partOf_exists",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse",
+                      "condition": "(encounterPartOf.empty().not())"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_encounter_partOf_reference",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "encounter",
+                          "contextType": "variable",
+                          "element": "partOf",
+                          "transform": "reference",
+                          "parameter": [
+                            {
+                              "valueId": "encounterPartOf"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_extract_mmunization",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "dependent": [
+                        {
+                          "name": "extractImmunization",
+                          "variable": [
+                            "questionnaireResponse",
+                            "referencedPatient",
+                            "bundle",
+                            "encounterPartOf",
+                            "encounter"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_encounter_partOf_not_exists",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse",
+                      "condition": "(encounterPartOf.empty())"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_encounter_two",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "encounterTwoCode",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "questionnaireResponse"
+                            },
+                            {
+                              "valueString": "'33879002'"
+                            }
+                          ]
+                        },
+                        {
+                          "variable": "encounterTwoText",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "questionnaireResponse"
+                            },
+                            {
+                              "valueString": "'Administration of vaccine to produce active immunity (procedure)'"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_encounter_two",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractEncounter",
+                              "variable": [
+                                "questionnaireResponse",
+                                "referencedPatient",
+                                "bundle",
+                                "encounterTwoCode",
+                                "encounterTwoText",
+                                "encounter"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractImmunization",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "questionnaireResponse",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "referencedPatient",
+          "type": "Reference",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounterPartOf",
+          "type": "Encounter",
+          "mode": "source"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_immunization_code",
+          "source": [
+            {
+              "context": "questionnaireResponse"
+            }
+          ],
+          "target": [
+            {
+              "variable": "immunizationCode",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "questionnaireResponse"
+                },
+                {
+                  "valueString": "$this.item.where(linkId = '903ac7cf-663d-43d5-8d1e-ae23a3d68d0d').answer.value.toString()"
+                }
+              ]
+            },
+            {
+              "variable": "immunizationCodeDisplay",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "questionnaireResponse"
+                },
+                {
+                  "valueString": "$this.item.where(linkId = '8baf36fb-0529-4678-b19d-933211faf3a2').answer.value.toString()"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_immunization",
+              "source": [
+                {
+                  "context": "questionnaireResponse"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "immunization",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Immunization"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_immunization_id",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "immunization",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_immunization_status",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "immunization",
+                      "contextType": "variable",
+                      "element": "status",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "completed"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_immunization_vaccineCode",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "immunization",
+                      "contextType": "variable",
+                      "element": "vaccineCode",
+                      "variable": "vaccineCode",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_immunization_vaccineCode_coding",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "vaccineCode",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "vaccineCodeCoding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://snomed.info/sct"
+                            },
+                            {
+                              "valueId": "immunizationCode"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_immunization_vaccineCode_coding_display",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "vaccineCodeCoding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueId": "immunizationCodeDisplay"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_immunization_vaccineCode_text",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "vaccineCode",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueId": "immunizationCodeDisplay"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_immunization_reasonCode",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "immunization",
+                      "contextType": "variable",
+                      "element": "reasonCode",
+                      "variable": "reasonCode",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_immunization_reasonCode_coding",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonCode",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "reasonCodeCoding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://snomed.info/sct"
+                            },
+                            {
+                              "valueString": "33879002"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_immunization_reasonCode_coding_display",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "reasonCodeCoding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Administration of vaccine to produce active immunity (procedure)"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_immunization_reasonCode_text",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonCode",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Administration of vaccine to produce active immunity (procedure)"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_immunization_patient",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "immunization",
+                      "contextType": "variable",
+                      "element": "patient",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueId": "referencedPatient"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_immunization_occurrenceDateTime",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "immunization",
+                      "contextType": "variable",
+                      "element": "occurrence",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "questionnaireResponse"
+                        },
+                        {
+                          "valueString": "$this.item.where(linkId = '1e1f0f3b-58de-41b4-8db0-6c4b033cce57').answer.value.toString() + 'T00:00:00.00Z'"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_immunization_encounter_reference",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "immunization",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_output_two",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "extractTaskOutput",
+                      "variable": [
+                        "questionnaireResponse",
+                        "bundle",
+                        "encounterPartOf",
+                        "encounter",
+                        "immunization"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractTaskOutput",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "questionnaireResponse",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounterPartOf",
+          "type": "Encounter",
+          "mode": "source"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "source"
+        },
+        {
+          "name": "immunization",
+          "type": "Immunization",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_task",
+          "source": [
+            {
+              "context": "questionnaireResponse"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "task",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Task"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_update_task",
+              "source": [
+                {
+                  "context": "questionnaireResponse"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "id",
+                  "variable": "id",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "id"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_task_id",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "id",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "questionnaireResponse"
+                        },
+                        {
+                          "valueString": "$this.item.where(linkId = 'ccc7ec06-f61d-4bec-a9ad-93cd644a0da2').answer.value.toString()"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_task_output",
+              "source": [
+                {
+                  "context": "questionnaireResponse"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "output",
+                  "variable": "outputTask",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Task_Output"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_codeable_concept",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "outputTask",
+                      "contextType": "variable",
+                      "element": "type",
+                      "variable": "concept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_task_concept_coding",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "concept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://snomed.info/sct"
+                            },
+                            {
+                              "valueString": "41000179103"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_coding_display",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Immunization record (record artifact)"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_task_output_reference",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "outputTask",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounterPartOf"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_task_output",
+              "source": [
+                {
+                  "context": "questionnaireResponse"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "output",
+                  "variable": "outputTask",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Task_Output"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_codeable_concept",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "outputTask",
+                      "contextType": "variable",
+                      "element": "type",
+                      "variable": "concept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_task_concept_coding",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "concept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://snomed.info/sct"
+                            },
+                            {
+                              "valueString": "41000179103"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_coding_display",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Immunization record (record artifact)"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_task_output_reference",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "outputTask",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_task_output",
+              "source": [
+                {
+                  "context": "questionnaireResponse"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "output",
+                  "variable": "outputTask",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Task_Output"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_codeable_concept",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "outputTask",
+                      "contextType": "variable",
+                      "element": "type",
+                      "variable": "concept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_task_concept_coding",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "concept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://snomed.info/sct"
+                            },
+                            {
+                              "valueString": "41000179103"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_coding_display",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Immunization record (record artifact)"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_task_output_reference",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "outputTask",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "immunization"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

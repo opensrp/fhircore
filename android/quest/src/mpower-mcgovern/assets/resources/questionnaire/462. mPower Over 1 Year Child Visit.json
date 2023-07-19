@@ -1,0 +1,731 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "462",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2023-05-11T07:26:53.164+00:00",
+    "source": "#TiRVS7vcRb72Fsb6",
+    "profile": [
+      "http://ehelse.no/fhir/StructureDefinition/sdf-Questionnaire"
+    ],
+    "tag": [
+      {
+        "system": "urn:ietf:bcp:47",
+        "code": "en-GB",
+        "display": "English"
+      }
+    ]
+  },
+  "language": "en-GB",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "http://fhir.mpower-social.com:7070/fhir/StructureMap/461"
+    }
+  ],
+  "version": "0.0.1",
+  "title": "mPower over 1 Year Child Visit Form",
+  "status": "active",
+  "subjectType": [
+    "Patient"
+  ],
+  "date": "2022-03-21T00:00:00Z",
+  "publisher": "ona",
+  "contact": [
+    {
+      "name": "https://www.smartregister.org/"
+    }
+  ],
+  "description": "mPower over 1 Year Child Visit Form",
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/ValueSet/usage-context-type",
+        "code": "focus",
+        "display": "Clinical Focus"
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+            "display": "mPower over 1 Year Child Visit Form"
+          }
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxDecimalPlaces",
+          "valueDecimal": 3
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueDecimal": 13
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueDecimal": 60
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Enter correct age"
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "name": "patientBirthdate",
+            "language": "text/fhirpath",
+            "expression": "(((today().toString().substring(0, 4).toInteger() - Patient.birthDate.toString().substring(0, 4).toInteger()) * 12) + (today().toString().substring(5, 2).toInteger() - Patient.birthDate.toString().substring(5, 2).toInteger()) + ((today().toString().substring(8, 2).toInteger() - Patient.birthDate.toString().substring(8, 2).toInteger()) / 12))"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "6ec31f2c-8321-437a-f68b-480d96a50f34",
+      "text": "Age of child (in months).",
+      "type": "decimal",
+      "required": true,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "3db4e08c-1eca-4f03-8560-dc9809c06021",
+      "text": "How is the child feeling?",
+      "type": "choice",
+      "enableBehavior": "all",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "3f1853eb-79bb-4285-de6e-b3c1a2644c68",
+            "system": "urn:uuid:994e3607-3d95-4d14-9f33-e731c36a069a",
+            "code": "child-is-well",
+            "display": "Child is well"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "e58801e3-2845-492d-998a-5a1df86edd6d",
+            "system": "urn:uuid:994e3607-3d95-4d14-9f33-e731c36a069a",
+            "code": "not-well,-has-sick-symptoms",
+            "display": "Not well, has sick symptoms"
+          }
+        }
+      ],
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ],
+          "linkId": "ccecf68a-aa35-4bf1-8e5f-8415254bb56b",
+          "text": "Record sick child in the sick child form",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "3db4e08c-1eca-4f03-8560-dc9809c06021",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:994e3607-3d95-4d14-9f33-e731c36a069a",
+                "code": "not-well,-has-sick-symptoms"
+              }
+            }
+          ],
+          "enableBehavior": "any",
+          "required": false
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "80f3d39c-ff91-4088-d7df-07f73d68e94e",
+      "text": "Did child receive vitamin A?",
+      "type": "choice",
+      "enableWhen": [
+        {
+          "question": "6ec31f2c-8321-437a-f68b-480d96a50f34",
+          "operator": ">",
+          "answerDecimal": 12
+        },
+        {
+          "question": "6ec31f2c-8321-437a-f68b-480d96a50f34",
+          "operator": "<=",
+          "answerDecimal": 60
+        }
+      ],
+      "enableBehavior": "all",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "6e8c938a-0cc1-4edb-8a2f-45cb3a3d4c0e",
+            "system": "urn:uuid:28935c90-2d6f-41f9-83d2-10efa8bec7ee",
+            "code": "yes",
+            "display": "Yes"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "4e313ab3-e0b4-4ee5-9add-a7c56fd8f923",
+            "system": "urn:uuid:28935c90-2d6f-41f9-83d2-10efa8bec7ee",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "12cbb54c-e8e9-4def-9dad-68eb141b18b9",
+      "text": "Date Vitamin A given known?",
+      "type": "choice",
+      "enableWhen": [
+        {
+          "question": "80f3d39c-ff91-4088-d7df-07f73d68e94e",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:28935c90-2d6f-41f9-83d2-10efa8bec7ee",
+            "code": "yes"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "0625c220-200f-4e29-e125-1de4f857cdd5",
+            "system": "urn:uuid:c1c05520-b9d8-4170-8537-2869e92a4081",
+            "code": "yes",
+            "display": "Yes"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "563a4673-4e08-4bb1-8299-dedb95a6d82b",
+            "system": "urn:uuid:c1c05520-b9d8-4170-8537-2869e92a4081",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Enter the correct date"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "_valueDate": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "today() - 365 days"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "_valueDate": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "today()"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "1c2f57c7-5eb2-4728-8002-5c7f65f81ec4",
+      "text": "Date Vitamin A was given",
+      "type": "date",
+      "enableWhen": [
+        {
+          "question": "12cbb54c-e8e9-4def-9dad-68eb141b18b9",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:c1c05520-b9d8-4170-8537-2869e92a4081",
+            "code": "yes"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "373429a0-8134-41b6-eb15-6fd4bb6cf26c",
+      "text": "Did you give child a deworming tablet?",
+      "type": "choice",
+      "enableWhen": [
+        {
+          "question": "6ec31f2c-8321-437a-f68b-480d96a50f34",
+          "operator": ">",
+          "answerDecimal": 12
+        },
+        {
+          "question": "6ec31f2c-8321-437a-f68b-480d96a50f34",
+          "operator": "<=",
+          "answerDecimal": 60
+        }
+      ],
+      "enableBehavior": "all",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "b7adcefb-380c-4544-c7e0-525b54c276cd",
+            "system": "urn:uuid:e455cd1b-09de-496e-8058-d69648e13614",
+            "code": "yes",
+            "display": "Yes"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "1d96aa11-949f-4dbf-c1b0-848909fe2cbd",
+            "system": "urn:uuid:e455cd1b-09de-496e-8058-d69648e13614",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "0ea6b537-08b3-48b8-aa83-c70e10fe836b",
+      "text": "Stock Balance - Deworming tablets (Pre-populated) (Hidden)",
+      "type": "integer",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "236022f2-e608-4e51-a56d-c9e21c4271cd",
+      "text": "Latest Observation ID - Deworming tablets (Pre-populated) (Hidden)",
+      "type": "string",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "7b02d76c-4752-41d4-98d2-96a1fc91652f",
+      "text": "Stockout Flag ID - Deworming tablets (Pre-populated) (Hidden)",
+      "type": "string",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "4ed721d8-e300-4038-8677-f42171232b13",
+      "text": "Date child dewormed known?",
+      "type": "choice",
+      "enableWhen": [
+        {
+          "question": "373429a0-8134-41b6-eb15-6fd4bb6cf26c",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:e455cd1b-09de-496e-8058-d69648e13614",
+            "code": "yes"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "77cd5b5a-b89f-4f68-85a4-dcba3d80d411",
+            "system": "urn:uuid:01ecacee-2b5e-4cf2-9247-bbaf8c7d720b",
+            "code": "yes",
+            "display": "Yes"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "8b81349c-46cd-4305-850d-8e9ed8b2a29f",
+            "system": "urn:uuid:01ecacee-2b5e-4cf2-9247-bbaf8c7d720b",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Enter correct date"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "_valueDate": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "today() - 365 days"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "_valueDate": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "today()"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "d8d98e48-2932-4cc8-c54f-b12b675d633d",
+      "text": "Date of deworming",
+      "type": "date",
+      "enableWhen": [
+        {
+          "question": "4ed721d8-e300-4038-8677-f42171232b13",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:01ecacee-2b5e-4cf2-9247-bbaf8c7d720b",
+            "code": "yes"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "4ff5b5b3-57d6-4d39-8f59-abe78ff4fc5a",
+      "text": "Child MUAC",
+      "type": "choice",
+      "enableWhen": [
+        {
+          "question": "6ec31f2c-8321-437a-f68b-480d96a50f34",
+          "operator": ">",
+          "answerDecimal": 12
+        },
+        {
+          "question": "6ec31f2c-8321-437a-f68b-480d96a50f34",
+          "operator": "<=",
+          "answerDecimal": 59
+        }
+      ],
+      "enableBehavior": "all",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "5e0cddd1-2d38-48c5-f88c-be248668a988",
+            "system": "urn:uuid:4f0dd351-901d-4539-e91b-7cedb9867d34",
+            "code": "red",
+            "display": "Red"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "8ad0035c-fc59-4647-8a69-0a0536b0d07e",
+            "system": "urn:uuid:4f0dd351-901d-4539-e91b-7cedb9867d34",
+            "code": "yellow",
+            "display": "Yellow"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "5dad14c2-f9ae-414e-ee00-4cc4860054a7",
+            "system": "urn:uuid:4f0dd351-901d-4539-e91b-7cedb9867d34",
+            "code": "green",
+            "display": "Green"
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "f0cd689d-b567-4cd6-8159-3ef49e9a0058",
+      "text": "Micronutrient powder (MNP)given?",
+      "type": "choice",
+      "enableWhen": [
+        {
+          "question": "4ff5b5b3-57d6-4d39-8f59-abe78ff4fc5a",
+          "operator": "!=",
+          "answerCoding": {
+            "system": "urn:uuid:4f0dd351-901d-4539-e91b-7cedb9867d34",
+            "code": "red"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "9075b779-bb14-4852-b9a6-b051a3c0d870",
+            "system": "urn:uuid:79bd9111-545f-4ae1-9150-80e1f1239914",
+            "code": "yes",
+            "display": "Yes"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "651c4f60-8d36-4375-a983-1a8933ba55d0",
+            "system": "urn:uuid:79bd9111-545f-4ae1-9150-80e1f1239914",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "e215bd25-8962-4ef1-8040-149cbb653781",
+      "text": "Stock Balance - Micronutrient powder (MNP) (Pre-populated) (Hidden)",
+      "type": "integer",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "bb342c7f-39a1-4ff7-bc13-28efdc7386ab",
+      "text": "Latest Observation ID - Micronutrient powder (MNP) (Pre-populated) (Hidden)",
+      "type": "string",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "5d788dc8-284c-4c6a-8e0c-70d91bc95c97",
+      "text": "Stockout Flag ID - Micronutrient powder (MNP) (Pre-populated) (Hidden)",
+      "type": "string",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "74edaa28-8925-4150-b889-a3cbabf58ba0",
+      "text": "Mother counseled on infant and young child feeding?",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "e186dff4-bc89-46d3-9c84-9716376d1d39",
+            "system": "urn:uuid:0f5edcce-c8f9-40ad-8cae-e8639677e79a",
+            "code": "yes",
+            "display": "Yes"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3108f94f-42bf-42b0-a485-80aa20ae6b12",
+            "system": "urn:uuid:0f5edcce-c8f9-40ad-8cae-e8639677e79a",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "6670fade-c403-4d5c-8d73-2dadf9fa85b2",
+      "text": "Was child refered to hospital?",
+      "type": "choice",
+      "enableWhen": [
+        {
+          "question": "4ff5b5b3-57d6-4d39-8f59-abe78ff4fc5a",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:4f0dd351-901d-4539-e91b-7cedb9867d34",
+            "code": "red"
+          }
+        }
+      ],
+      "enableBehavior": "any",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "ef77f705-2a24-46a7-ad5c-af08854dffdb",
+            "system": "urn:uuid:b6f5a5cc-db6c-482f-ff12-281c290d199c",
+            "code": "yes",
+            "display": "Yes"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2196dca5-8991-4eeb-8b21-41d6469fd965",
+            "system": "urn:uuid:b6f5a5cc-db6c-482f-ff12-281c290d199c",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    }
+  ]
+}
