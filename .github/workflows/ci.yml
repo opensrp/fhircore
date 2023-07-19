@@ -39,7 +39,7 @@ jobs:
 
       - name: Copy CI gradle.properties
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
-        
+
       - name: Start SSH session
         uses: luchihoratiu/debug-via-ssh@main
         with:
@@ -73,6 +73,20 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
+
+      - name: Generate APKs for performance quest-tests
+        run: ./gradlew :quest:assembleEcbisDebugAndroidTest --stacktrace
+
+      - name: Run instrumentation tests manually
+        uses: reactivecircus/android-emulator-runner@v2
+        with: 
+          working-directory: android
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          force-avd-creation: true
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: /Users/runner/Library/Android/sdk/platform-tools/adb shell am instrument -w org.smartregister.opensrp.ecbis/androidx.benchmark.junit4.AndroidBenchmarkRunner
 
       - name: Run Quest module unit and instrumentation tests and generate coverage report
         uses: reactivecircus/android-emulator-runner@v2
