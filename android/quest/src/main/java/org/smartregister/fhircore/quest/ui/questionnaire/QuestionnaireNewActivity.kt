@@ -35,6 +35,7 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
+import timber.log.Timber
 
 @AndroidEntryPoint
 class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
@@ -104,6 +105,13 @@ class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
         }
 
         questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig, actionParameters)
+        if (questionnaire?.subjectType.isNullOrEmpty()) {
+          showToast(getString(R.string.missing_subject_type))
+          Timber.e(
+            "Missing subject type on questionnaire. Provide Questionnaire.subjectType to resolve.",
+          )
+          finish()
+        }
         val questionnaireJson = questionnaire?.asJson()
         if (questionnaireJson.isNullOrEmpty()) {
           showToast(getString(R.string.questionnaire_not_found))

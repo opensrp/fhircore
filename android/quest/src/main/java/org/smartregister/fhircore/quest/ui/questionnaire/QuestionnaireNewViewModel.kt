@@ -36,6 +36,7 @@ import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
@@ -59,7 +60,6 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
-import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -212,34 +212,37 @@ constructor(
       // Update _lastUpdated for resources configured via ActionParameterType.UPDATE_DATE_ON_EDIT
       updateResourcesLastUpdatedProperty(actionParameters)
 
-      // Generate CarePlan using configured plan definitions
-      generateCarePlan(
-        questionnaire = questionnaire,
-        bundle = bundle.copyBundle(currentQuestionnaireResponse),
-        questionnaireConfig = questionnaireConfig,
-      )
+      val subject = retrieveSubject(questionnaire, bundle)
+      if (subject != null && bundle != null) {
+        // Generate CarePlan using configured plan definitions and execute cql
+        val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
+        generateCarePlan(
+          subject = subject,
+          bundle = newBundle,
+          questionnaireConfig = questionnaireConfig,
+        )
 
-      // Execute CQL
-      executeCql(
-        questionnaire = questionnaire,
-        bundle = bundle.copyBundle(currentQuestionnaireResponse),
-      )
+        // Execute CQL
+        executeCql(
+          subject = subject,
+          bundle = newBundle,
+          questionnaire = questionnaire,
+        )
 
-      // Cascade update statuses of resources closed by this Questionnaire submission
-      bundle?.let {
+        // Cascade update statuses of resources closed by this Questionnaire submission
         viewModelScope.launch {
           fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
             questionnaireConfig = questionnaireConfig,
-            subject = retrieveSubject(questionnaire, it),
-            bundle = it,
+            subject = subject,
+            bundle = bundle,
           )
         }
       }
     }
   }
 
-  private fun Bundle?.copyBundle(currentQuestionnaireResponse: QuestionnaireResponse): Bundle? =
-    this?.copy()?.apply {
+  private fun Bundle.copyBundle(currentQuestionnaireResponse: QuestionnaireResponse): Bundle =
+    this.copy().apply {
       addEntry(Bundle.BundleEntryComponent().apply { resource = currentQuestionnaireResponse })
     }
 
@@ -369,11 +372,12 @@ constructor(
       .flatten()
       .all { it is Valid || it is NotValidated }
 
-  suspend fun executeCql(questionnaire: Questionnaire, bundle: Bundle?) {
+  suspend fun executeCql(subject: Resource, bundle: Bundle, questionnaire: Questionnaire) {
     withContext(dispatcherProvider.io()) {
       questionnaire.cqfLibraryIds().forEach {
-        // TODO Get the id of the resource of type Questionnaire.subjectType from the bundle
-        //  libraryEvaluator.runCqlLibrary(it, patient, bundle)
+        if (subject.resourceType == ResourceType.Patient) {
+          libraryEvaluator.runCqlLibrary(it, subject as Patient, bundle)
+        }
       }
     }
   }
@@ -383,33 +387,39 @@ constructor(
    * [QuestionnaireConfig.planDefinitions]
    */
   suspend fun generateCarePlan(
-    questionnaire: Questionnaire,
-    bundle: Bundle?,
+    subject: Resource,
+    bundle: Bundle,
     questionnaireConfig: QuestionnaireConfig,
   ) {
-    val subject = retrieveSubject(questionnaire, bundle)
     questionnaireConfig.planDefinitions?.forEach { planId ->
       kotlin
         .runCatching {
-          if (bundle != null) {
-            fhirCarePlanGenerator.generateOrUpdateCarePlan(
-              planDefinitionId = planId,
-              subject = subject,
-              data = bundle,
-            )
-          }
+          fhirCarePlanGenerator.generateOrUpdateCarePlan(
+            planDefinitionId = planId,
+            subject = subject,
+            data = bundle,
+          )
         }
         .onFailure { Timber.e(it) }
     }
   }
 
-  // TODO Subject should be the resource obtained from the bundle of type Questionnaire.subjectType
-  private suspend fun retrieveSubject(
+  /**
+   * This function returns the first resource of type [Questionnaire.subjectType] retrieved from the
+   * [Bundle.entry]
+   */
+  fun retrieveSubject(
     questionnaire: Questionnaire,
     bundle: Bundle?,
-  ): Resource {
-    return (questionnaire.findSubject(bundle)
-      ?: defaultRepository.loadResource(questionnaire.subject))
+  ): Resource? {
+    questionnaire.subjectType.forEach {
+      val resourceType = ResourceType.valueOf(it.primitiveValue())
+      return bundle
+        ?.entry
+        ?.first { entryComponent -> entryComponent.resource.resourceType == resourceType }
+        ?.resource
+    }
+    return null
   }
 
   companion object {

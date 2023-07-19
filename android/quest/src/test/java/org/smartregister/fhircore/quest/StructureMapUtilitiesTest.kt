@@ -137,9 +137,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val questionnaire = iParser.parseResource(Questionnaire::class.java, questionnaireJson)
     val questionnaireResponse: QuestionnaireResponse
 
-    runBlocking {
-      questionnaireResponse = ResourceMapper.populate(questionnaire, patient, immunization)
-    }
+    runBlocking { questionnaireResponse = firstTaskpulate(questionnaire, patient, immunization) }
 
     structureMapUtilities.transform(contextR4, questionnaireResponse, structureMap, targetResource)
 

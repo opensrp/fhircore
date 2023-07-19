@@ -103,5 +103,6 @@
     <string name="questionnaire_response_invalid">Questionnaire response invalid</string>
     <string name="app_version_tag_url" translatable="false">https://smartregister.org/app-version</string>
     <string name="application_version" translatable="false">Application Version</string>
+    <string name="missing_subject_type">Missing subject type on questionnaire. Provide Questionnaire.subjectType to resolve.</string>
 
 </resources>
