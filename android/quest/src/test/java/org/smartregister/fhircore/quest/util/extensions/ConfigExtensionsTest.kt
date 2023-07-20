@@ -188,8 +188,8 @@ class ConfigExtensionsTest : RobolectricTest() {
             ActionParameter(
               value = "practitioner_id",
               key = "resourceId",
-              paramType = ActionParameterType.RESOURCE_ID
-            )
+              paramType = ActionParameterType.RESOURCE_ID,
+            ),
           ),
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
