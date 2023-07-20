@@ -33,6 +33,8 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
 
+const val PRACTITIONER_ID = "practitionerId"
+
 fun List<ActionConfig>.handleClickEvent(
   navController: NavController,
   resourceData: ResourceData? = null,
@@ -45,7 +47,9 @@ fun List<ActionConfig>.handleClickEvent(
     val actionConfig = theConfig.interpolate(computedValuesMap)
     val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
     val practitionerId =
-      interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
+      interpolatedParams
+        .find { it.paramType == ActionParameterType.RESOURCE_ID && it.key == PRACTITIONER_ID }
+        ?.value
     val resourceId =
       interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
         ?: resourceData?.baseResourceId
