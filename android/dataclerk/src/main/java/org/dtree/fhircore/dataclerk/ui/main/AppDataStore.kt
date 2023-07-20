@@ -19,11 +19,14 @@ package org.dtree.fhircore.dataclerk.ui.main
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractName
 import timber.log.Timber
 
@@ -38,24 +41,42 @@ class AppDataStore @Inject constructor(private val fhirEngine: FhirEngine) {
         sort(Patient.NAME, Order.ASCENDING)
       }
       .map { inputModel ->
-          Timber.e(jsonParser.encodeResourceToString(inputModel))
+        Timber.e(jsonParser.encodeResourceToString(inputModel))
         inputModel.toPatientItem()
       }
+  }
+
+  suspend fun getPatient(patientId: String): PatientItem {
+    val patient = fhirEngine.get<Patient>(patientId)
+    return patient.toPatientItem()
   }
 }
 
 data class PatientItem(
-  val id: String? = null,
-  val resourceId: String? = null,
+  val id: String,
+  val resourceId: String,
   val name: String,
-  val age: String
+  val gender: String,
+  val dob: LocalDate? = null,
+  val phone: String,
+  val isActive: Boolean,
 )
 
 internal fun Patient.toPatientItem(): PatientItem {
+  val phone = if (hasTelecom()) telecom[0].value else "N/A"
+  val isActive = active
+  val gender = if (hasGenderElement()) genderElement.valueAsString else ""
+  val dob =
+    if (hasBirthDateElement())
+      LocalDate.parse(birthDateElement.valueAsString, DateTimeFormatter.ISO_DATE)
+    else null
   return PatientItem(
-    id = this.identifierFirstRep.value,
-    resourceId = this.id,
+    id = this.identifierFirstRep?.value ?: "N/A",
+    resourceId = this.logicalId,
     name = this.extractName(),
-    age = this.extractAge()
+    dob = dob,
+    gender = gender ?: "",
+    phone = phone ?: "N/A",
+    isActive = isActive,
   )
 }

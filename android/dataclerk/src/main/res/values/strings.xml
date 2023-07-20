@@ -1,4 +1,18 @@
 <resources>
     <string name="app_name">Data Clerk</string>
     <string name="initializing">Initializing settings &#8230;</string>
+
+    <string name="patient_id">Id</string>
+    <string name="patient_name">Name</string>
+    <string name="patient_gender">Gender</string>
+    <string name="patient_dob">DOB</string>
+    <string name="patient_phone_number">Phone Number</string>
+    <string name="patient_city">City</string>
+    <string name="patient_country">Country</string>
+    <string name="patient_is_active">Is Active</string>
+    <string name="patient_property_mobile">Mobile Number</string>
+    <string name="patient_property_id">ID Number</string>
+    <string name="patient_property_address">Address</string>
+    <string name="patient_property_dob">Date of Birth</string>
+    <string name="patient_property_gender">Gender</string>
 </resources>

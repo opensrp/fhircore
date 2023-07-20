@@ -14,116 +14,30 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package org.dtree.fhircore.dataclerk.ui.main
 
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import com.google.android.fhir.sync.SyncJobStatus
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import org.dtree.fhircore.dataclerk.ui.home.HomeScreen
+import org.dtree.fhircore.dataclerk.ui.patient.PatientScreen
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppScreen(appMainViewModel: AppMainViewModel, sync: () -> Unit) {
-  val appState by appMainViewModel.appMainUiState
-  val context = LocalContext.current
-  val patientRegistrationLauncher =
-    rememberLauncherForActivityResult(
-      contract = ActivityResultContracts.StartActivityForResult(),
-      onResult = {}
-    )
-  val syncState by appMainViewModel.syncSharedFlow.collectAsState(initial = null)
+  val navController = rememberNavController()
 
-  Scaffold(
-    topBar = { TopAppBar(title = { Text(text = appState.appTitle) }) },
-    bottomBar = {
-      if (!appState.isInitialSync)
-        Button(
-          onClick = { patientRegistrationLauncher.launch(appMainViewModel.openForm(context)) },
-          modifier = Modifier.fillMaxWidth()
-        ) { Text(text = appState.registrationButton) }
-    }
-  ) { paddingValues ->
-    Column(Modifier.padding(paddingValues)) {
-      //      AppScreenBody(
-      //              paddingValues = paddingValues,
-      //              appState = appState,
-      //              syncState = syncState,
-      //              sync = sync,
-      //      )
-      PatientList(viewModel = appMainViewModel)
-    }
-  }
-}
-
-@Composable
-fun AppScreenBody(
-  paddingValues: PaddingValues,
-  appState: AppMainUiState,
-  syncState: SyncJobStatus?,
-  sync: (() -> Unit)
-) {
-  Column(
-    horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement =
-      if (appState.isInitialSync) Arrangement.Center else Arrangement.SpaceAround,
-    modifier = Modifier.padding(paddingValues).fillMaxSize()
-  ) {
-    Column(
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-      when (syncState) {
-        is SyncJobStatus.InProgress, is SyncJobStatus.Started -> {
-          Text(
-            text =
-              if (syncState is SyncJobStatus.Started)
-                stringResource(org.smartregister.fhircore.engine.R.string.syncing_initiated)
-              else stringResource(org.smartregister.fhircore.engine.R.string.syncing_in_progress)
-          )
-          CircularProgressIndicator()
-          if (syncState is SyncJobStatus.InProgress) {
-            Text(
-              text = "${syncState.syncOperation} ${syncState.completed} out of ${syncState.total}"
-            )
-          }
-        }
-        is SyncJobStatus.Finished -> {
-          Text(text = "Sync finished")
-        }
-        is SyncJobStatus.Glitch, is SyncJobStatus.Failed -> {
-          Text(text = "Sync failed")
-        }
-        else -> {
-          Text(text = "Synced")
-        }
+  NavHost(navController = navController, startDestination = "home") {
+    composable("home") {
+      HomeScreen(appMainViewModel = appMainViewModel, sync = sync) {
+        navController.navigate("patient/${it.resourceId}")
       }
-      Button(
-        onClick = sync,
-        enabled = !(syncState is SyncJobStatus.InProgress || syncState is SyncJobStatus.Started)
-      ) { Text(text = "Run Sync") }
     }
-
-    Text(text = "Last Sync: ${appState.lastSyncTime}")
+    composable(
+      "patient/{patientId}",
+      arguments = listOf(navArgument("patientId") { type = NavType.StringType })
+    ) { PatientScreen(navController, appMainViewModel = appMainViewModel) }
   }
 }
