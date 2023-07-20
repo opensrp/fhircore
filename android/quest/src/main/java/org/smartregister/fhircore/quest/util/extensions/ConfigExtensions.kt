@@ -43,6 +43,12 @@ fun List<ActionConfig>.handleClickEvent(
   onClickAction?.let { theConfig ->
     val computedValuesMap = resourceData?.computedValuesMap ?: emptyMap()
     val actionConfig = theConfig.interpolate(computedValuesMap)
+    val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
+    val practitionerId =
+      interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
+    val resourceId =
+      interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
+        ?: resourceData?.baseResourceId
     when (onClickAction.workflow) {
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
@@ -60,10 +66,6 @@ fun List<ActionConfig>.handleClickEvent(
         }
       }
       ApplicationWorkflow.LAUNCH_PROFILE -> {
-        val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
-        val resourceId =
-          interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
-            ?: resourceData?.baseResourceId
         actionConfig.id?.let { id ->
           val args =
             bundleOf(
@@ -105,9 +107,6 @@ fun List<ActionConfig>.handleClickEvent(
         }
       }
       ApplicationWorkflow.LAUNCH_REPORT -> {
-        val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
-        val practitionerId =
-          interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
         val args =
           bundleOf(
             Pair(NavigationArg.REPORT_ID, actionConfig.id),
