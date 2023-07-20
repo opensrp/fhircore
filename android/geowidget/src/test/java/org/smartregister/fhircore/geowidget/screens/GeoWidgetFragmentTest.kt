@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
-import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.os.Looper
@@ -36,7 +35,6 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
-import io.ona.kujaku.callbacks.AddPointCallback
 import io.ona.kujaku.views.KujakuMapView
 import org.junit.Assert
 import org.junit.Before
@@ -49,7 +47,6 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
-import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.shadows.ShadowConnectivityReceiver
 import org.smartregister.fhircore.geowidget.shadows.ShadowKujakuMapView
@@ -255,6 +252,7 @@ class GeoWidgetFragmentTest {
     val mockedGeoWidgetFragment = spyk(geowidgetFragment)
     every { mockedGeoWidgetFragment.requireContext() } returns mockk()
     mockedGeoWidgetFragment.enableFamilyRegistration()
+
     verify { kujakuMapView.addPoint(eq(true),any()) }
   }
 }
