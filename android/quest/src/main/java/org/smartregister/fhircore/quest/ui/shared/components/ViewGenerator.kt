@@ -118,7 +118,19 @@ fun GenerateView(
                 ViewAlignment.CENTER -> Alignment.CenterHorizontally
                 ViewAlignment.NONE -> Alignment.Start
               },
-            modifier = modifier.padding(properties.padding.dp),
+            modifier =
+              modifier
+                .padding(properties.padding.dp)
+                .conditional(
+                  properties.clickable.toBoolean(),
+                  {
+                    clickable {
+                      (properties as RowProperties)
+                        .actions
+                        .handleClickEvent(navController, resourceData)
+                    }
+                  },
+                ),
             verticalArrangement =
               if (isWeighted) {
                 Arrangement.spacedBy(properties.spacedBy.dp)
