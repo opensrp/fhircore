@@ -60,17 +60,19 @@ fun AppScreen(appMainViewModel: AppMainViewModel, sync: () -> Unit) {
       if (!appState.isInitialSync)
         Button(
           onClick = { patientRegistrationLauncher.launch(appMainViewModel.openForm(context)) },
-          // enabled = syncState is SyncJobStatus.Finished,
           modifier = Modifier.fillMaxWidth()
         ) { Text(text = appState.registrationButton) }
     }
   ) { paddingValues ->
-    AppScreenBody(
-      paddingValues = paddingValues,
-      appState = appState,
-      syncState = syncState,
-      sync = sync,
-    )
+    Column(Modifier.padding(paddingValues)) {
+      //      AppScreenBody(
+      //              paddingValues = paddingValues,
+      //              appState = appState,
+      //              syncState = syncState,
+      //              sync = sync,
+      //      )
+      PatientList(viewModel = appMainViewModel)
+    }
   }
 }
 

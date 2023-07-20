@@ -26,7 +26,12 @@ data class AppMainUiState(
   val currentLanguage: String,
   val languages: List<Language>,
   val isInitialSync: Boolean,
-  val registrationButton: String
+  val registrationButton: String,
+)
+
+data class AppRegistryState(
+  val loading: Boolean = true,
+  val patients: List<PatientItem> = emptyList(),
 )
 
 fun appMainUiStateOf(
@@ -36,7 +41,7 @@ fun appMainUiStateOf(
   currentLanguage: String = Locale.ENGLISH.displayName,
   languages: List<Language> = emptyList(),
   isInitialSync: Boolean = false,
-  registrationButton: String = "Create New Patient"
+  registrationButton: String = "Create New Patient",
 ): AppMainUiState {
   return AppMainUiState(
     appTitle = appTitle,
