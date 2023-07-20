@@ -186,6 +186,7 @@ class UserSettingScreenTest {
           lastSyncTime = "05:30 PM, Mar 3",
           unsyncedResourcesFlow = unsyncedResourcesFlow,
           dismissInsightsView = {},
+          showProgressIndicatorFlow = MutableStateFlow(false),
         )
       }
 

@@ -152,7 +152,7 @@ constructor(
     fun retrieveRelatedResources(
       resource: Resource,
       relatedResourceKey: String,
-      referenceFhirPathExpression: String,
+      referenceFhirPathExpression: String?,
       relatedResourcesMap: Map<String, List<Resource>>? = null,
     ): List<Resource> {
       val value: List<Resource> =
@@ -163,10 +163,15 @@ constructor(
             emptyList()
           }
 
-      return value.filter {
-        resource.logicalId ==
-          fhirPathDataExtractor.extractValue(it, referenceFhirPathExpression).extractLogicalIdUuid()
-      }
+      return if (referenceFhirPathExpression.isNullOrEmpty()) {
+        value
+      } else
+        value.filter {
+          resource.logicalId ==
+            fhirPathDataExtractor
+              .extractValue(it, referenceFhirPathExpression)
+              .extractLogicalIdUuid()
+        }
     }
 
     /**

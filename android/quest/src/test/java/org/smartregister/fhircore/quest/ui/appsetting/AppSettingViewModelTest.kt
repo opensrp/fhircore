@@ -164,7 +164,6 @@ class AppSettingViewModelTest : RobolectricTest() {
                         RegisterConfiguration(
                           id = "1",
                           appId = "a",
-                          configType = "register",
                           fhirResource =
                             FhirResourceConfig(
                               baseResource = ResourceConfig(resource = ResourceType.Patient),
@@ -201,6 +200,67 @@ class AppSettingViewModelTest : RobolectricTest() {
       )
     }
 
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun `fetchConfigurations() should decode profile configuration`() = runTest {
+    coEvery { appSettingViewModel.fetchComposition(any(), any()) } returns
+      Composition().apply {
+        addSection().apply {
+          this.focus =
+            Reference().apply {
+              reference = "Binary/123"
+              identifier = Identifier().apply { value = "register-test" }
+            }
+        }
+      }
+    coEvery { fhirResourceDataSource.getResource(any()) } returns
+      Bundle().apply {
+        addEntry().resource =
+          Binary().apply {
+            data =
+              Base64.getEncoder()
+                .encode(
+                  JsonUtil.serialize(
+                      ProfileConfiguration(
+                        id = "1",
+                        appId = "a",
+                        fhirResource =
+                          FhirResourceConfig(
+                            baseResource = ResourceConfig(resource = ResourceType.Patient),
+                            relatedResources =
+                              listOf(
+                                ResourceConfig(resource = ResourceType.Encounter),
+                                ResourceConfig(resource = ResourceType.Task),
+                              ),
+                          ),
+                        profileParams = listOf("1"),
+                      ),
+                    )
+                    .encodeToByteArray(),
+                )
+          }
+      }
+    coEvery { defaultRepository.createRemote(any(), any()) } just runs
+    coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
+
+    appSettingViewModel.run {
+      onApplicationIdChanged("app")
+      fetchConfigurations(context)
+    }
+
+    val slot = slot<List<ResourceType>>()
+
+    coVerify { appSettingViewModel.fetchComposition(any(), any()) }
+    coVerify { fhirResourceDataSource.getResource(any()) }
+    coVerify { defaultRepository.createRemote(any(), any()) }
+    coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
+
+    Assert.assertEquals(
+      listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),
+      slot.captured,
+    )
+  }
+
   @Test(expected = HttpException::class)
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchConfigurationsThrowsHttpExceptionWithStatusCodeBetween400And503() = runTest {
@@ -212,6 +272,33 @@ class AppSettingViewModelTest : RobolectricTest() {
       HttpException(
         Response.error<ResponseBody>(
           500,
+          "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull()),
+        ),
+      )
+    fhirResourceDataSource.getResource(anyString())
+    verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
+    coVerify { fhirResourceDataSource.getResource(anyString()) }
+    coVerify { appSettingViewModel.fetchConfigurations(context) }
+    verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
+    coVerify { (appSettingViewModel.fetchComposition(appId, any())) }
+    Assert.assertEquals(
+      context.getString(R.string.error_loading_config_http_error),
+      appSettingViewModel.error.value,
+    )
+    Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
+  }
+
+  @Test(expected = HttpException::class)
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testFetchConfigurationsThrowsHttpExceptionWithStatusCodeOutside400And503() = runTest {
+    val appId = "app_id"
+    appSettingViewModel.onApplicationIdChanged(appId)
+    val context = mockk<Context>(relaxed = true)
+    val fhirResourceDataSource = FhirResourceDataSource(mockk())
+    coEvery { fhirResourceDataSource.getResource(anyString()) } throws
+      HttpException(
+        Response.error<ResponseBody>(
+          504,
           "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull()),
         ),
       )
@@ -361,12 +448,13 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     coEvery { appSettingViewModel.loadConfigurations(any()) } just runs
     coEvery { appSettingViewModel.appId } returns MutableLiveData(appId)
-    coEvery { fhirResourceDataSource.getResource("Composition?identifier=test_app_id") } returns
-      Bundle().apply { addEntry().resource = composition }
+    coEvery {
+      fhirResourceDataSource.getResource("Composition?identifier=test_app_id&_count=200")
+    } returns Bundle().apply { addEntry().resource = composition }
     coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
     coEvery {
       fhirResourceDataSource.getResource(
-        "Binary?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30",
+        "Binary?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30&_count=200",
       )
     } returns
       Bundle().apply {
@@ -384,7 +472,7 @@ class AppSettingViewModelTest : RobolectricTest() {
             },
           )
       }
-    coEvery { fhirResourceDataSource.getResource("Binary?_id=id-31") } returns
+    coEvery { fhirResourceDataSource.getResource("Binary?_id=id-31&_count=200") } returns
       Bundle().apply {
         entry =
           listOf(
@@ -422,11 +510,14 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(3, requestPathArgumentSlot.size)
 
-    Assert.assertEquals("Composition?identifier=test_app_id", requestPathArgumentSlot.first())
     Assert.assertEquals(
-      "Binary?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30",
+      "Composition?identifier=test_app_id&_count=200",
+      requestPathArgumentSlot.first(),
+    )
+    Assert.assertEquals(
+      "Binary?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30&_count=200",
       requestPathArgumentSlot.second(),
     )
-    Assert.assertEquals("Binary?_id=id-31", requestPathArgumentSlot.last())
+    Assert.assertEquals("Binary?_id=id-31&_count=200", requestPathArgumentSlot.last())
   }
 }

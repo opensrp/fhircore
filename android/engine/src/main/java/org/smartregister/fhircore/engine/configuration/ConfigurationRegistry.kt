@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
+import android.database.SQLException
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
@@ -238,7 +239,9 @@ constructor(
             if (iconConfigs.isNotEmpty()) {
               val ids = iconConfigs.joinToString(DEFAULT_STRING_SEPARATOR) { it.focus.extractId() }
               fhirResourceDataSource
-                .getResource("${ResourceType.Binary.name}?$ID=$ids")
+                .getResource(
+                  "${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT",
+                )
                 .entry
                 .forEach { addOrUpdate(it.resource) }
             }
@@ -368,7 +371,7 @@ constructor(
           }
           .forEach { resourceGroup ->
             if (resourceGroup.key == ResourceType.List.name) {
-              if (isNonProxy()) { // Backward compatibility for NON-PROXY version
+              if (isNonProxy()) {
                 val chunkedResourceIdList =
                   resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
                 chunkedResourceIdList.forEach {
@@ -376,8 +379,11 @@ constructor(
                     it.joinToString(DEFAULT_STRING_SEPARATOR) { sectionComponent ->
                       sectionComponent.focus.extractId()
                     }
+
                   fhirResourceDataSource
-                    .getResource("${resourceGroup.key}?$ID=$resourceIds")
+                    .getResource(
+                      "${resourceGroup.key}?$ID=$resourceIds&_count=$DEFAULT_COUNT",
+                    )
                     .entry
                     .forEach { bundleEntryComponent ->
                       when (bundleEntryComponent.resource) {
@@ -391,8 +397,8 @@ constructor(
                               )
                             val resourceId =
                               listEntryComponent.item.reference.extractLogicalIdUuid()
-
-                            val listResourceUrlPath = "$resourceKey?$ID=$resourceId"
+                            val listResourceUrlPath =
+                              "$resourceKey?$ID=$resourceId&_count=$DEFAULT_COUNT"
                             fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
                               listEntryResourceBundle ->
                               addOrUpdate(listEntryResourceBundle.resource)
@@ -420,7 +426,7 @@ constructor(
                     sectionComponent.focus.extractId()
                   }
                 processCompositionManifestResources(
-                  searchPath = "${resourceGroup.key}?$ID=$resourceIds",
+                  searchPath = "${resourceGroup.key}?$ID=$resourceIds&_count=$DEFAULT_COUNT",
                 )
               }
             }
@@ -458,7 +464,9 @@ constructor(
         }
         else -> {
           addOrUpdate(bundleEntryComponent.resource)
-          Timber.d("Fetched and processed resources $searchPath")
+          Timber.d(
+            "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.id}",
+          )
         }
       }
     }
@@ -483,7 +491,11 @@ constructor(
           fhirEngine.update(updateFrom(resource))
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
-        create(resource)
+        try {
+          create(resource)
+        } catch (sqlException: SQLException) {
+          Timber.e(sqlException)
+        }
       }
     }
   }
@@ -501,7 +513,7 @@ constructor(
     }
   }
 
-  @VisibleForTesting fun isNonProxy() = isNonProxy_
+  @VisibleForTesting fun isNonProxy(): Boolean = isNonProxy_
 
   @VisibleForTesting
   fun setNonProxy(nonProxy: Boolean) {
@@ -522,5 +534,6 @@ constructor(
     const val MANIFEST_PROCESSOR_BATCH_SIZE = 30
     const val ORGANIZATION = "organization"
     const val TYPE_REFERENCE_DELIMITER = "/"
+    const val DEFAULT_COUNT = 200
   }
 }
