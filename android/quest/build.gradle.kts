@@ -171,6 +171,13 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".ecbis"
       versionNameSuffix = "-ecbis"
+      manifestPlaceholders["appLabel"] = "MOH eCBIS Preview"
+    }
+
+    create("ecbis_liberia") {
+      dimension = "apps"
+      applicationIdSuffix = ".ecbis_liberia"
+      versionNameSuffix = "-ecbis_liberia"
       manifestPlaceholders["appLabel"] = "MOH eCBIS"
     }
 
