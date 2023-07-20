@@ -54,4 +54,3 @@ data class ImageConfig(
 
 const val ICON_TYPE_LOCAL = "local"
 const val ICON_TYPE_REMOTE = "remote"
-const val ICON_TYPE_ANDROID = "android"
