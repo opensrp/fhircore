@@ -64,31 +64,6 @@ class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
     )
   }
 
-  override fun onStart() {
-    super.onStart()
-    supportFragmentManager.setFragmentResultListener(
-      QuestionnaireFragment.SUBMIT_REQUEST_KEY,
-      this,
-    ) { _, _ ->
-      val questionnaireResponse = retrieveQuestionnaireResponse()
-      questionnaireFragmentArgs.questionnaireConfig?.let { questionnaireConfig ->
-        // Close questionnaire if opened in read only mode or if experimental
-        if (questionnaireConfig.type.isReadOnly() || questionnaire?.experimental == false) {
-          finish()
-        }
-        if (questionnaireResponse != null && questionnaire != null) {
-          viewModel.handleQuestionnaireSubmission(
-            questionnaire = questionnaire!!,
-            currentQuestionnaireResponse = questionnaireResponse,
-            questionnaireConfig = questionnaireConfig,
-            actionParameters = questionnaireFragmentArgs.params,
-            context = this,
-          )
-        }
-      }
-    }
-  }
-
   private fun renderQuestionnaire() {
     val questionnaireConfig = questionnaireFragmentArgs.questionnaireConfig
     val actionParameters = questionnaireFragmentArgs.params
@@ -113,23 +88,47 @@ class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
           finish()
         }
         val questionnaireJson = questionnaire?.asJson()
-        if (questionnaireJson.isNullOrEmpty()) {
+        if (questionnaire?.id.isNullOrEmpty() || questionnaireJson.isNullOrEmpty()) {
           showToast(getString(R.string.questionnaire_not_found))
           finish()
         }
+        val questionnaireFragment =
+          QuestionnaireFragment.builder().setQuestionnaire(questionnaireJson!!).build()
         supportFragmentManager.commit {
           setReorderingAllowed(true)
-          add(
-            R.id.container,
-            QuestionnaireFragment.builder().setQuestionnaire(questionnaireJson!!).build(),
-            QUESTIONNAIRE_FRAGMENT_TAG,
+          add(R.id.container, questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
+        }
+      }
+
+      registerFragmentResultListener()
+    }
+  }
+
+  private fun Questionnaire?.asJson(): String? = this?.encodeResourceToString()
+
+  private fun registerFragmentResultListener() {
+    supportFragmentManager.setFragmentResultListener(
+      QuestionnaireFragment.SUBMIT_REQUEST_KEY,
+      this,
+    ) { _, _ ->
+      val questionnaireResponse = retrieveQuestionnaireResponse()
+      questionnaireFragmentArgs.questionnaireConfig?.let { questionnaireConfig ->
+        // Close questionnaire if opened in read only mode or if experimental
+        if (questionnaireConfig.type.isReadOnly() || questionnaire?.experimental == false) {
+          finish()
+        }
+        if (questionnaireResponse != null && questionnaire != null) {
+          viewModel.handleQuestionnaireSubmission(
+            questionnaire = questionnaire!!,
+            currentQuestionnaireResponse = questionnaireResponse,
+            questionnaireConfig = questionnaireConfig,
+            actionParameters = questionnaireFragmentArgs.params,
+            context = this,
           )
         }
       }
     }
   }
-
-  private fun Questionnaire?.asJson(): String? = this?.encodeResourceToString()
 
   private fun handleBackPress() {
     val questionnaireConfig = questionnaireFragmentArgs.questionnaireConfig

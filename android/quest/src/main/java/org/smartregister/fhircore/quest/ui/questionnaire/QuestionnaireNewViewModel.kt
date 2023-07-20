@@ -31,7 +31,6 @@ import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.ListResource
@@ -47,7 +46,6 @@ import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -116,12 +114,9 @@ constructor(
 
     val questionnaire =
       defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
-        if (
-          questionnaireConfig.type == QuestionnaireType.READ_ONLY ||
-            questionnaireConfig.type == QuestionnaireType.EDIT
-        ) {
+        if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditMode()) {
           item.prepareQuestionsForReadingOrEditing(
-            readOnly = questionnaireConfig.type == QuestionnaireType.READ_ONLY,
+            readOnly = questionnaireConfig.type.isReadOnly(),
             readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds,
           )
         }
@@ -205,14 +200,19 @@ constructor(
         }
       }
 
+      val subject = retrieveSubject(questionnaire, bundle)
+
       // Save questionnaire response
-      currentQuestionnaireResponse.addContained(listResource)
-      defaultRepository.addOrUpdate(resource = currentQuestionnaireResponse)
+      currentQuestionnaireResponse
+        .apply {
+          setSubject(subject?.asReference())
+          addContained(listResource)
+        }
+        .run { defaultRepository.addOrUpdate(resource = this) }
 
       // Update _lastUpdated for resources configured via ActionParameterType.UPDATE_DATE_ON_EDIT
       updateResourcesLastUpdatedProperty(actionParameters)
 
-      val subject = retrieveSubject(questionnaire, bundle)
       if (subject != null && bundle != null) {
         // Generate CarePlan using configured plan definitions and execute cql
         val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
@@ -373,11 +373,9 @@ constructor(
       .all { it is Valid || it is NotValidated }
 
   suspend fun executeCql(subject: Resource, bundle: Bundle, questionnaire: Questionnaire) {
-    withContext(dispatcherProvider.io()) {
-      questionnaire.cqfLibraryIds().forEach {
-        if (subject.resourceType == ResourceType.Patient) {
-          libraryEvaluator.runCqlLibrary(it, subject as Patient, bundle)
-        }
+    questionnaire.cqfLibraryIds().forEach {
+      if (subject.resourceType == ResourceType.Patient) {
+        libraryEvaluator.runCqlLibrary(it, subject as Patient, bundle)
       }
     }
   }
