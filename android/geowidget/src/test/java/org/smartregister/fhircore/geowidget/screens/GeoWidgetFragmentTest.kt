@@ -247,12 +247,12 @@ class GeoWidgetFragmentTest {
   }
 
   @Test
-  fun `enableFamilyRegistration should open FamilyRegistrationWithCoordinates`(){
-    every { kujakuMapView.addPoint(any(),any()) } just runs
+  fun `enableFamilyRegistration should open FamilyRegistrationWithCoordinates`() {
+    every { kujakuMapView.addPoint(any(), any()) } just runs
     val mockedGeoWidgetFragment = spyk(geowidgetFragment)
     every { mockedGeoWidgetFragment.requireContext() } returns mockk()
     mockedGeoWidgetFragment.enableFamilyRegistration()
 
-    verify { kujakuMapView.addPoint(eq(true),any()) }
+    verify { kujakuMapView.addPoint(eq(true), any()) }
   }
 }
