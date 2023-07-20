@@ -17,12 +17,14 @@
 package org.smartregister.fhircore.quest.ui.report.measure
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportListScreen
@@ -70,12 +72,11 @@ fun MeasureReportMainScreen(
             defaultValue = ""
           },
         ),
-    ) { stackEntry ->
-      val screenTitle: String = stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE) ?: ""
+    ) {
       ReportDateSelectorScreen(
         reportId = reportId,
         practitionerId = practitionerId,
-        screenTitle = screenTitle,
+        screenTitle = stringResource(R.string.select_date_range),
         navController = navController,
         measureReportViewModel = measureReportViewModel,
       )

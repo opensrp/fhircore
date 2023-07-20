@@ -162,7 +162,7 @@ fun ReportFilterSelector(
       TopAppBar(
         title = {
           Text(
-            text = stringResource(R.string.select_date_range),
+            text = screenTitle,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
             modifier = modifier.testTag(SCREEN_TITLE),
