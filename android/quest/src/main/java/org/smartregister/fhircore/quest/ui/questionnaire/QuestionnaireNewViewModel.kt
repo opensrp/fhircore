@@ -35,6 +35,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
 import org.hl7.fhir.r4.model.Patient
@@ -60,6 +61,7 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -185,11 +187,19 @@ constructor(
           date = extractionDate
         }
 
+      val group =
+        questionnaireConfig.groupResource?.groupIdentifier?.let { groupId ->
+          defaultRepository.loadResource<Group>(groupId)
+        }
+
       bundle?.entry?.forEach { bundleEntryComponent ->
         val bundleEntryResource: Resource? = bundleEntryComponent.resource
         bundleEntryResource?.run {
           applyResourceMetadata()
           defaultRepository.addOrUpdate(resource = this)
+
+          // List resource as member of a (configured) Group
+          group?.let { bundleEntryResource.addMemberToGroup(it) }
 
           // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
           val listEntryComponent =
@@ -203,6 +213,9 @@ constructor(
       }
 
       val subject = retrieveSubject(questionnaire, bundle)
+
+      // Update Group resource to save members
+      group?.let { defaultRepository.addOrUpdate(resource = it) }
 
       // Save questionnaire response
       if (subject != null) {
@@ -417,13 +430,35 @@ constructor(
     bundle: Bundle?,
   ): Resource? {
     questionnaire.subjectType.forEach {
-      val resourceType = ResourceType.valueOf(it.primitiveValue())
+      val resourceType = ResourceType.valueOf(it.code)
       return bundle
         ?.entry
         ?.first { entryComponent -> entryComponent.resource.resourceType == resourceType }
         ?.resource
     }
     return null
+  }
+
+  /** Adds [Resource] to [Group.member] */
+  fun Resource.addMemberToGroup(group: Group) {
+    this.run {
+      if (
+        this.resourceType.isIn(
+          ResourceType.CareTeam,
+          ResourceType.Device,
+          ResourceType.Group,
+          ResourceType.HealthcareService,
+          ResourceType.Location,
+          ResourceType.Organization,
+          ResourceType.Patient,
+          ResourceType.Practitioner,
+          ResourceType.PractitionerRole,
+          ResourceType.Specimen,
+        )
+      ) {
+        group.addMember(Group.GroupMemberComponent().apply { entity = asReference() })
+      }
+    }
   }
 
   companion object {

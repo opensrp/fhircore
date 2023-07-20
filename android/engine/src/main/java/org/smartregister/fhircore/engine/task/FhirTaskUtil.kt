@@ -140,7 +140,7 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
       }
 
     Timber.i(
-      "Found ${tasks.size} upcoming Tasks (with statuses REQUESTED, ACCEPTED or RECEIVED) to be updated"
+      "Found ${tasks.size} upcoming Tasks (with statuses REQUESTED, ACCEPTED or RECEIVED) to be updated",
     )
 
     tasks.forEach { task ->

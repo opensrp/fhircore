@@ -277,15 +277,9 @@ fun Resource.updateLastUpdated() {
   meta.lastUpdated = Date()
 }
 
-fun Resource.isPatient(patientId: String) =
-  this.resourceType == ResourceType.Patient && this.logicalId == patientId
+fun Resource.asReference() = Reference().apply { this.reference = "$resourceType/$logicalId" }
 
-fun Resource.asReference(): Reference {
-  val referenceValue = "${fhirType()}/$logicalId"
-  return Reference().apply { this.reference = referenceValue }
-}
-
-fun Resource.referenceValue(): String = "${fhirType()}/$logicalId"
+fun Resource.referenceValue(): String = "$resourceType/$logicalId"
 
 fun Resource.referenceParamForCondition(): ReferenceClientParam =
   when (resourceType) {
