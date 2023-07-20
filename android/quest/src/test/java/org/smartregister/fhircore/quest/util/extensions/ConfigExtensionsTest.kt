@@ -183,14 +183,23 @@ class ConfigExtensionsTest : RobolectricTest() {
         id = "reportId",
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_REPORT,
+        params =
+          listOf(
+            ActionParameter(
+              value = "practitioner_id",
+              key = "resourceId",
+              paramType = ActionParameterType.RESOURCE_ID
+            )
+          ),
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(MainNavigationScreen.Reports.route, slotInt.captured)
-    Assert.assertEquals(1, slotBundle.captured.size())
+    Assert.assertEquals(2, slotBundle.captured.size())
     Assert.assertEquals("reportId", slotBundle.captured.getString(NavigationArg.REPORT_ID))
+    Assert.assertEquals("practitioner_id", slotBundle.captured.getString(NavigationArg.RESOURCE_ID))
   }
 
   @Test
