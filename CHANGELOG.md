@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implement configurable image/icon widget
 - Added functionality to filter related resources for list view
 - Added the sick child workflow automated closure
+- Added a new eCBIS flavour to be used for the production app. 
 
 ### Fixed
 - Logout while offline causes flicker(multiple render) of Login Page
