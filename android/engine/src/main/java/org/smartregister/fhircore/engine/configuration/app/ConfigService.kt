@@ -56,8 +56,8 @@ interface ConfigService {
   fun provideResourceTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
     val tags = mutableListOf<Coding>()
     defineResourceTags().forEach { strategy ->
-      if (strategy.type == ResourceType.Practitioner.name) {
-        val id = sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+      if (strategy.isResource.not())  {
+        val id = sharedPreferencesHelper.read(strategy.type, null)
         if (id.isNullOrBlank()) {
           strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
         } else {

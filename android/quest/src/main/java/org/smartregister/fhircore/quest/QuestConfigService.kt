@@ -25,6 +25,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.sync.ResourceTag
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 
 @Singleton
 class QuestConfigService @Inject constructor(@ApplicationContext val context: Context) :
@@ -65,13 +66,23 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
             display = context.getString(R.string.sync_strategy_organization_display)
           }
       ),
-      ResourceTag(
-        type = ResourceType.Practitioner.name,
-        tag =
-          Coding().apply {
-            system = context.getString(R.string.sync_strategy_practitioner_system)
-            display = context.getString(R.string.sync_strategy_practitioner_display)
-          }
-      )
+            ResourceTag(
+                    type = SharedPreferenceKey.PRACTITIONER_ID.name,
+                    tag =
+                    Coding().apply {
+                        system = context.getString(R.string.sync_strategy_practitioner_system)
+                        display = context.getString(R.string.sync_strategy_practitioner_display)
+                    },
+                    isResource = false
+            ),
+            ResourceTag(
+                    type = SharedPreferenceKey.APP_ID.name,
+                    tag =
+                    Coding().apply {
+                        system = context.getString(R.string.sync_strategy_appid_system)
+                        display = context.getString(R.string.application_id)
+                    },
+                    isResource = false
+            )
     )
 }

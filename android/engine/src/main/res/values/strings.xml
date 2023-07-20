@@ -144,6 +144,7 @@
     <string name="sync_strategy_location_system" translatable="false">http://smartregister.org/fhir/location-tag</string>
     <string name="sync_strategy_organization_system" translatable="false">http://smartregister.org/fhir/organization-tag</string>
     <string name="sync_strategy_practitioner_system" translatable="false">http://smartregister.org/fhir/practitioner-tag</string>
+    <string name="sync_strategy_appid_system" translatable="false">http://smartregister.org/fhir/appid-tag</string>
     <string name="sync_strategy_careteam_display" translatable="false">Practitioner CareTeam</string>
     <string name="sync_strategy_location_display" translatable="false">Practitioner Location</string>
     <string name="sync_strategy_organization_display" translatable="false">Practitioner Organization</string>
