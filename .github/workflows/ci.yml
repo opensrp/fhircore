@@ -40,12 +40,6 @@ jobs:
       - name: Copy CI gradle.properties
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
 
-      - name: Start SSH session
-        uses: luchihoratiu/debug-via-ssh@main
-        with:
-          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-          SSH_PASS: ${{ secrets.SSH_PASS }}
-
       - name: Setup Gradle cache
         uses: gradle/gradle-build-action@v2
 
@@ -76,7 +70,7 @@ jobs:
 
       - name: Generate APKs for performance quest-tests
         working-directory: android
-        run: ./gradlew :quest:assembleEcbisDebugAndroidTest --stacktrace && /Users/runner/Library/Android/sdk/platform-tools/adb install quest/build/outputs/apk/androidTest/ecbis/debug/quest-ecbis-debug-androidTest.apk
+        run: ./gradlew :quest:assembleEcbisDebugAndroidTest --stacktrace
 
       - name: Run instrumentation tests manually
         uses: reactivecircus/android-emulator-runner@v2
@@ -87,7 +81,7 @@ jobs:
           force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: /Users/runner/Library/Android/sdk/platform-tools/adb shell am instrument -w org.smartregister.opensrp.ecbis/androidx.benchmark.junit4.AndroidBenchmarkRunner
+          script: /Users/runner/Library/Android/sdk/platform-tools/adb install quest/build/outputs/apk/androidTest/ecbis/debug/quest-ecbis-debug-androidTest.apk && /Users/runner/Library/Android/sdk/platform-tools/adb shell am instrument -w org.smartregister.opensrp.ecbis/androidx.benchmark.junit4.AndroidBenchmarkRunner
 
       - name: Run Quest module unit and instrumentation tests and generate coverage report
         uses: reactivecircus/android-emulator-runner@v2
