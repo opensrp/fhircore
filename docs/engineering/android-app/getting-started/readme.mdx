@@ -2,13 +2,7 @@
 sidebar_position: 2
 ---
 
-# Getting started
-
-## As a platform user
-
-TBC.
-
-## As a platform developer
+# Getting started for platform developers
 
 [![Android CI with Gradle](https://github.com/opensrp/fhircore/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/opensrp/fhircore/actions/workflows/ci.yml?query=branch%3Amain)
 [![codecov](https://codecov.io/gh/opensrp/fhircore/branch/main/graph/badge.svg?token=IJUTHZUGGH)](https://codecov.io/gh/opensrp/fhircore)
@@ -28,6 +22,9 @@ OAUTH_CLIENT_SECRET="provide client secret"
 OAUTH_SCOPE=openid
 FHIR_BASE_URL=https://fhir.labs.smartregister.org/fhir/
 ```
+
+#### Gateway vs Non Gateway backend
+The codebase supports building a release that uses the [FHIR Gateway backend](https://github.com/opensrp/fhir-gateway) and one that doesn't. The **proxy** mode is the _default_ but if your backend is not using the [FHIR Gateway](https://github.com/opensrp/fhir-gateway/releases) you need to specify this by switching to the correct build type variant. To switch between the two one needs to change to a variant with the `debugNonProxy` build type. e.g for the flavor `opensrp` select the variant `opensrpDebugNonProxy`
 
 ### App release
 
