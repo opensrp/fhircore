@@ -28,7 +28,8 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import androidx.core.os.bundleOf
-import com.google.android.fhir.sync.Authenticator as FhirAuthenticator
+import com.google.android.fhir.sync.HttpAuthenticationMethod
+import com.google.android.fhir.sync.HttpAuthenticator as FhirAuthenticator
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
@@ -58,14 +59,14 @@ constructor(
   val oAuthService: OAuthService,
   val dispatcherProvider: DispatcherProvider,
   val accountManager: AccountManager,
-  @ApplicationContext val context: Context
+  @ApplicationContext val context: Context,
 ) : FhirAuthenticator {
 
   private val jwtParser = Jwts.parser()
   private val authConfiguration by lazy { configService.provideAuthConfiguration() }
   private var isLoginPageRendered = false
 
-  override fun getAccessToken(): String {
+  fun getAccessToken(): String {
     val account = findAccount()
     return if (account != null) {
       val accessToken = accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) ?: ""
@@ -82,7 +83,7 @@ constructor(
               Handler(Looper.getMainLooper()) { message: Message ->
                 Timber.e(message.toString())
                 true
-              }
+              },
             )
           } catch (operationCanceledException: OperationCanceledException) {
             Timber.e(operationCanceledException)
@@ -97,30 +98,32 @@ constructor(
         isLoginPageRendered = false
       }
       accessToken
-    } else ""
+    } else {
+      ""
+    }
   }
 
   private fun AccountManager.handleAccountManagerFutureCallback(account: Account?) =
-      { result: AccountManagerFuture<Bundle> ->
-    val bundle = result.result
-    when {
-      bundle.containsKey(AccountManager.KEY_AUTHTOKEN) -> {
-        val token = bundle.getString(AccountManager.KEY_AUTHTOKEN)
-        setAuthToken(account, AUTH_TOKEN_TYPE, token)
-      }
-      bundle.containsKey(AccountManager.KEY_INTENT) -> {
-        val launchIntent = bundle.get(AccountManager.KEY_INTENT) as? Intent
+    { result: AccountManagerFuture<Bundle> ->
+      val bundle = result.result
+      when {
+        bundle.containsKey(AccountManager.KEY_AUTHTOKEN) -> {
+          val token = bundle.getString(AccountManager.KEY_AUTHTOKEN)
+          setAuthToken(account, AUTH_TOKEN_TYPE, token)
+        }
+        bundle.containsKey(AccountManager.KEY_INTENT) -> {
+          val launchIntent = bundle.get(AccountManager.KEY_INTENT) as? Intent
 
-        // Deletes session PIN to allow reset
-        secureSharedPreference.deleteSessionPin()
+          // Deletes session PIN to allow reset
+          secureSharedPreference.deleteSessionPin()
 
-        if (launchIntent != null && !isLoginPageRendered) {
-          context.startActivity(launchIntent.putExtra(CANCEL_BACKGROUND_SYNC, true))
-          isLoginPageRendered = true
+          if (launchIntent != null && !isLoginPageRendered) {
+            context.startActivity(launchIntent.putExtra(CANCEL_BACKGROUND_SYNC, true))
+            isLoginPageRendered = true
+          }
         }
       }
     }
-  }
 
   /** This function checks if token is null or empty or expired */
   fun isTokenActive(authToken: String?): Boolean {
@@ -141,7 +144,7 @@ constructor(
       GRANT_TYPE to grantType,
       CLIENT_ID to authConfiguration.clientId,
       CLIENT_SECRET to authConfiguration.clientSecret,
-      SCOPE to authConfiguration.scope
+      SCOPE to authConfiguration.scope,
     )
 
   /**
@@ -176,13 +179,13 @@ constructor(
           oAuthService.logout(
             clientId = authConfiguration.clientId,
             clientSecret = authConfiguration.clientSecret,
-            refreshToken = accountManager.getPassword(account)
+            refreshToken = accountManager.getPassword(account),
           )
 
         if (responseBody.isSuccessful) {
           accountManager.invalidateAuthToken(
             account.type,
-            accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE)
+            accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE),
           )
           Result.success(true)
         } else Result.success(false)
@@ -200,7 +203,8 @@ constructor(
     oAuthResponse: OAuthResponse,
   ) {
     accountManager.run {
-      val account = accounts.find { it.name == username }
+      val account =
+        accounts.find { it.name == username && it.type == authConfiguration.accountType }
       if (account != null) {
         setPassword(account, oAuthResponse.refreshToken)
         setAuthToken(account, AUTH_TOKEN_TYPE, oAuthResponse.accessToken)
@@ -223,7 +227,7 @@ constructor(
     return runBlocking {
       val oAuthResponse =
         oAuthService.fetchToken(
-          buildOAuthPayload(REFRESH_TOKEN).apply { put(REFRESH_TOKEN, currentRefreshToken) }
+          buildOAuthPayload(REFRESH_TOKEN).apply { put(REFRESH_TOKEN, currentRefreshToken) },
         )
 
       // Returns valid token or throws exception, NullPointerException not expected
@@ -237,7 +241,9 @@ constructor(
       val generatedHash =
         enteredPassword.toPasswordHash(Base64.getDecoder().decode(credentials!!.salt))
       generatedHash == credentials.passwordHash
-    } else false
+    } else {
+      false
+    }
   }
 
   fun findAccount(): Account? {
@@ -275,4 +281,7 @@ constructor(
     const val AUTH_TOKEN_TYPE = "provider"
     const val CANCEL_BACKGROUND_SYNC = "cancelBackgroundSync"
   }
+
+  override fun getAuthenticationMethod(): HttpAuthenticationMethod =
+    HttpAuthenticationMethod.Bearer(getAccessToken())
 }

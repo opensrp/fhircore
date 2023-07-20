@@ -57,7 +57,6 @@ class CqlLibraryHelperTest : RobolectricTest() {
 
   @Test
   fun testLoadMeasureEvaluateLibraryShouldReturnBaseBundle() {
-
     val bundle =
       Bundle().apply {
         addEntry().apply { resource = Patient().apply { addName().apply { addGiven("Robin") } } }
@@ -71,7 +70,7 @@ class CqlLibraryHelperTest : RobolectricTest() {
     Assert.assertEquals(1, result.entry.size)
     Assert.assertEquals(
       "Robin",
-      (result.entryFirstRep.resource as Patient).nameFirstRep.givenAsSingleString
+      (result.entryFirstRep.resource as Patient).nameFirstRep.givenAsSingleString,
     )
 
     verify(exactly = 1) { FileUtil.readFileFromInternalStorage(any(), any(), any()) }
@@ -82,7 +81,7 @@ class CqlLibraryHelperTest : RobolectricTest() {
     Assert.assertEquals(1, sameResult.entry.size)
     Assert.assertEquals(
       "Robin",
-      (sameResult.entryFirstRep.resource as Patient).nameFirstRep.givenAsSingleString
+      (sameResult.entryFirstRep.resource as Patient).nameFirstRep.givenAsSingleString,
     )
 
     verify(exactly = 0, inverse = true) {
@@ -93,7 +92,6 @@ class CqlLibraryHelperTest : RobolectricTest() {
 
   @Test
   fun testWriteMeasureEvaluateLibraryDataShouldWriteFileInternalStorage() {
-
     every { FileUtil.writeFileOnInternalStorage(any(), any(), any(), any()) } returns Unit
 
     cqlLibraryHelper.writeMeasureEvaluateLibraryData("test_data", "test_file", "test_dir")

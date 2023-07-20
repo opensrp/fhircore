@@ -35,19 +35,19 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
 fun NoResults(modifier: Modifier = Modifier) {
   Column(
     verticalArrangement = Arrangement.Center,
-    horizontalAlignment = Alignment.CenterHorizontally
+    horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     Text(
       fontWeight = FontWeight.Bold,
       text = stringResource(R.string.no_results),
       modifier = modifier.padding(8.dp),
-      textAlign = TextAlign.Center
+      textAlign = TextAlign.Center,
     )
     Text(
       color = GreyTextColor,
       text = stringResource(id = R.string.no_results_message),
       modifier = modifier.padding(8.dp),
-      textAlign = TextAlign.Center
+      textAlign = TextAlign.Center,
     )
   }
 }

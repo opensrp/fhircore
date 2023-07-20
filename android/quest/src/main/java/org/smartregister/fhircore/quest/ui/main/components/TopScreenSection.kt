@@ -67,12 +67,12 @@ fun TopScreenSection(
   searchPlaceholder: String? = null,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (String) -> Unit,
-  onTitleIconClick: () -> Unit
+  onTitleIconClick: () -> Unit,
 ) {
   Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
-      modifier = modifier.padding(vertical = 8.dp).testTag(TITLE_ROW_TEST_TAG)
+      modifier = modifier.padding(vertical = 8.dp).testTag(TITLE_ROW_TEST_TAG),
     ) {
       IconButton(onClick = onTitleIconClick) {
         Icon(
@@ -82,14 +82,14 @@ fun TopScreenSection(
           },
           contentDescription = DRAWER_MENU,
           tint = Color.White,
-          modifier = modifier.testTag(TOP_ROW_ICON_TEST_TAG)
+          modifier = modifier.testTag(TOP_ROW_ICON_TEST_TAG),
         )
       }
       Text(
         text = title,
         fontSize = 20.sp,
         color = Color.White,
-        modifier = modifier.testTag(TOP_ROW_TEXT_TEST_TAG)
+        modifier = modifier.testTag(TOP_ROW_TEXT_TEST_TAG),
       )
     }
     OutlinedTextField(
@@ -116,23 +116,24 @@ fun TopScreenSection(
         Icon(
           imageVector = Icons.Filled.Search,
           SEARCH,
-          modifier = modifier.testTag(LEADING_ICON_TEST_TAG)
+          modifier = modifier.testTag(LEADING_ICON_TEST_TAG),
         )
       },
       trailingIcon = {
-        if (searchText.isNotEmpty())
+        if (searchText.isNotEmpty()) {
           IconButton(
             onClick = { onSearchTextChanged("") },
-            modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG)
+            modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
           ) {
             Icon(
               imageVector = Icons.Filled.Clear,
               CLEAR,
               tint = Color.Gray,
-              modifier = modifier.testTag(TRAILING_ICON_TEST_TAG)
+              modifier = modifier.testTag(TRAILING_ICON_TEST_TAG),
             )
           }
-      }
+        }
+      },
     )
   }
 }
@@ -144,6 +145,6 @@ fun TopScreenSectionPreview() {
     title = "All Clients",
     searchText = "Eddy",
     onSearchTextChanged = {},
-    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK
+    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
   ) {}
 }

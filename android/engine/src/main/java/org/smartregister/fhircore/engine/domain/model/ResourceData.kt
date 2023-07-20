@@ -21,6 +21,7 @@ import org.hl7.fhir.r4.model.ResourceType
 
 /**
  * Represent the resource types that are used on a Register.
+ *
  * @property baseResourceId is the unique identifier for the main resource in the register
  * @property baseResourceType is the [ResourceType] for the main resource
  * @property computedValuesMap contains data extracted from the resources to be used on the UI
@@ -33,5 +34,5 @@ data class ResourceData(
   val baseResourceId: String,
   val baseResourceType: ResourceType,
   val computedValuesMap: Map<String, Any>,
-  val listResourceDataMap: Map<String, List<ResourceData>>? = null
+  val listResourceDataMap: Map<String, List<ResourceData>>? = null,
 )

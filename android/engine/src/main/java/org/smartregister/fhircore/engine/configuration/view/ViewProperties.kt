@@ -69,5 +69,5 @@ enum class ViewAlignment {
   START,
   END,
   CENTER,
-  NONE
+  NONE,
 }

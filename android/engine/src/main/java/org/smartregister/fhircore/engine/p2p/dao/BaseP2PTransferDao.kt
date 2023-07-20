@@ -43,7 +43,7 @@ open class BaseP2PTransferDao
 constructor(
   open val fhirEngine: FhirEngine,
   open val dispatcherProvider: DispatcherProvider,
-  open val configurationRegistry: ConfigurationRegistry
+  open val configurationRegistry: ConfigurationRegistry,
 ) {
 
   protected val jsonParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
@@ -53,7 +53,8 @@ constructor(
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
     val deviceToDeviceSyncConfigs = appRegistry.deviceToDeviceSync
 
-    return if (deviceToDeviceSyncConfigs?.resourcesToSync != null &&
+    return if (
+      deviceToDeviceSyncConfigs?.resourcesToSync != null &&
         deviceToDeviceSyncConfigs.resourcesToSync.isNotEmpty()
     ) {
       getDynamicDataTypes(deviceToDeviceSyncConfigs.resourcesToSync)
@@ -65,30 +66,30 @@ constructor(
   open fun getDefaultDataTypes(): TreeSet<DataType> =
     TreeSet<DataType>(
       listOf(
-        ResourceType.Group,
-        ResourceType.Patient,
-        ResourceType.Questionnaire,
-        ResourceType.QuestionnaireResponse,
-        ResourceType.Observation,
-        ResourceType.Encounter
-      )
+          ResourceType.Group,
+          ResourceType.Patient,
+          ResourceType.Questionnaire,
+          ResourceType.QuestionnaireResponse,
+          ResourceType.Observation,
+          ResourceType.Encounter,
+        )
         .mapIndexed { index, resourceType ->
           DataType(name = resourceType.name, DataType.Filetype.JSON, index)
-        }
+        },
     )
 
   open fun getDynamicDataTypes(resourceList: List<String>): TreeSet<DataType> =
     TreeSet<DataType>(
-      resourceList.filter { isValidResourceType(it) }.mapIndexed { index, resource ->
-        DataType(name = resource, DataType.Filetype.JSON, index)
-      }
+      resourceList
+        .filter { isValidResourceType(it) }
+        .mapIndexed { index, resource -> DataType(name = resource, DataType.Filetype.JSON, index) },
     )
 
   suspend fun loadResources(
     lastRecordUpdatedAt: Long,
     batchSize: Int,
     offset: Int,
-    classType: Class<out Resource>
+    classType: Class<out Resource>,
   ): List<Resource> {
     return withContext(dispatcherProvider.io()) {
       val searchQuery =
@@ -107,8 +108,9 @@ constructor(
               )
               ORDER BY b.index_from ASC, c.index_from ASC
               LIMIT ? OFFSET ?
-          """.trimIndent(),
-          listOf(lastRecordUpdatedAt, batchSize, offset)
+                    """
+            .trimIndent(),
+          listOf(lastRecordUpdatedAt, batchSize, offset),
         )
 
       fhirEngine.search(searchQuery)
@@ -135,7 +137,7 @@ constructor(
         {
           value = of(DateTimeType(Date(lastRecordUpdatedAt)))
           prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-        }
+        },
       )
     }
   }

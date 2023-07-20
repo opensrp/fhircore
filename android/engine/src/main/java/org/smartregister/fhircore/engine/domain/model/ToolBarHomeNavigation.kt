@@ -18,5 +18,5 @@ package org.smartregister.fhircore.engine.domain.model
 
 enum class ToolBarHomeNavigation {
   OPEN_DRAWER,
-  NAVIGATE_BACK
+  NAVIGATE_BACK,
 }

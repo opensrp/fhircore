@@ -42,22 +42,22 @@ data class ImageProperties(
   val tint: String? = null,
   val imageConfig: ImageConfig? = null,
   val size: Int? = null,
-  val shape: ImageShape? = null
+  val shape: ImageShape? = null,
 ) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): ViewProperties {
     return this.copy(
       imageConfig =
         imageConfig?.copy(
           reference = imageConfig.reference?.interpolate(computedValuesMap),
-          type = imageConfig.type.interpolate(computedValuesMap)
+          type = imageConfig.type.interpolate(computedValuesMap),
         ),
       tint = this.tint?.interpolate(computedValuesMap),
-      backgroundColor = this.backgroundColor?.interpolate(computedValuesMap)
+      backgroundColor = this.backgroundColor?.interpolate(computedValuesMap),
     )
   }
 }
 
 enum class ImageShape(val composeShape: Shape) {
   CIRCLE(CircleShape),
-  RECTANGLE(RectangleShape)
+  RECTANGLE(RectangleShape),
 }

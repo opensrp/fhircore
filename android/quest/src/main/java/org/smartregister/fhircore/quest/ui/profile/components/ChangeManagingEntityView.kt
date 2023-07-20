@@ -71,7 +71,7 @@ fun ChangeManagingEntityView(
   eligibleManagingEntities: List<EligibleManagingEntity> = emptyList(),
   onSaveClick: (EligibleManagingEntity) -> Unit,
   managingEntity: ManagingEntityConfig? = null,
-  onDismiss: () -> Unit
+  onDismiss: () -> Unit,
 ) {
   var isEnabled by remember { mutableStateOf(false) }
   var selectedEligibleManagingEntity by remember { mutableStateOf<EligibleManagingEntity?>(null) }
@@ -85,7 +85,7 @@ fun ChangeManagingEntityView(
       ChangeManagingEntityTopBar(
         modifier = modifier,
         managingEntity = managingEntity,
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
       )
 
       // Main content to display eligible members
@@ -95,7 +95,7 @@ fun ChangeManagingEntityView(
           currentEligibleManagingEntity = item,
           selectedEligibleManagingEntity = selectedEligibleManagingEntity,
           enableButton = { isEnabled = it },
-          onEligibleManagingEntitySelection = onEligibleManagingEntitySelection
+          onEligibleManagingEntitySelection = onEligibleManagingEntitySelection,
         )
       }
 
@@ -107,7 +107,7 @@ fun ChangeManagingEntityView(
         onDismiss = onDismiss,
         isEnabled = isEnabled,
         onSaveClick = onSaveClick,
-        selectedEligibleManagingEntity = selectedEligibleManagingEntity
+        selectedEligibleManagingEntity = selectedEligibleManagingEntity,
       )
     }
   }
@@ -128,11 +128,11 @@ private fun ChangeManagingEntityBottomBar(
       modifier
         .fillMaxWidth()
         .height(IntrinsicSize.Min)
-        .padding(horizontal = 16.dp, vertical = 16.dp)
+        .padding(horizontal = 16.dp, vertical = 16.dp),
   ) {
     TextButton(
       onClick = { onDismiss() },
-      modifier = modifier.fillMaxWidth().weight(1F).testTag(TEST_TAG_CANCEL)
+      modifier = modifier.fillMaxWidth().weight(1F).testTag(TEST_TAG_CANCEL),
     ) {
       Text(
         fontSize = 14.sp,
@@ -150,8 +150,8 @@ private fun ChangeManagingEntityBottomBar(
       colors =
         ButtonDefaults.textButtonColors(
           backgroundColor =
-            colorResource(id = if (isEnabled) R.color.colorPrimary else R.color.white)
-        )
+            colorResource(id = if (isEnabled) R.color.colorPrimary else R.color.white),
+        ),
     ) {
       Text(
         fontSize = 14.sp,
@@ -166,7 +166,7 @@ private fun ChangeManagingEntityBottomBar(
 private fun ChangeManagingEntityTopBar(
   modifier: Modifier,
   managingEntity: ManagingEntityConfig?,
-  onDismiss: () -> Unit
+  onDismiss: () -> Unit,
 ) {
   Column(modifier = modifier.fillMaxWidth()) {
     Row(
@@ -176,7 +176,7 @@ private fun ChangeManagingEntityTopBar(
         modifier
           .fillMaxWidth()
           .height(IntrinsicSize.Min)
-          .padding(horizontal = 16.dp, vertical = 16.dp)
+          .padding(horizontal = 16.dp, vertical = 16.dp),
     ) {
       Text(
         text = managingEntity?.dialogTitle ?: "",
@@ -188,7 +188,7 @@ private fun ChangeManagingEntityTopBar(
         imageVector = Icons.Filled.Clear,
         contentDescription = null,
         tint = DefaultColor.copy(0.8f),
-        modifier = modifier.clickable { onDismiss() }
+        modifier = modifier.clickable { onDismiss() },
       )
     }
     Divider()
@@ -201,20 +201,20 @@ private fun ChangeManagingEntityTopBar(
           .padding(horizontal = 12.dp, vertical = 18.dp)
           .background(
             color = colorResource(id = R.color.background_warning),
-            shape = RoundedCornerShape(8.dp)
-          )
+            shape = RoundedCornerShape(8.dp),
+          ),
     ) {
       Image(
         painter = painterResource(id = R.drawable.ic_alert_triangle),
         contentDescription = null,
-        modifier = modifier.padding(horizontal = 12.dp)
+        modifier = modifier.padding(horizontal = 12.dp),
       )
       Text(
         text = managingEntity?.dialogWarningMessage ?: "",
         textAlign = TextAlign.Start,
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp,
-        modifier = modifier.padding(vertical = 12.dp)
+        modifier = modifier.padding(vertical = 12.dp),
       )
     }
     Text(
@@ -233,7 +233,7 @@ fun BottomListItem(
   currentEligibleManagingEntity: EligibleManagingEntity,
   selectedEligibleManagingEntity: EligibleManagingEntity?,
   onEligibleManagingEntitySelection: (EligibleManagingEntity) -> Unit,
-  enableButton: (Boolean) -> Unit
+  enableButton: (Boolean) -> Unit,
 ) {
   val onClick = remember {
     {
@@ -247,11 +247,11 @@ fun BottomListItem(
   ) {
     RadioButton(
       selected = currentEligibleManagingEntity == selectedEligibleManagingEntity,
-      onClick = onClick
+      onClick = onClick,
     )
     Text(
       text = currentEligibleManagingEntity.memberInfo,
-      modifier = modifier.clickable { onClick() }
+      modifier = modifier.clickable { onClick() },
     )
   }
 }
@@ -266,13 +266,13 @@ fun ChangeManagingEntityViewPreview() {
         EligibleManagingEntity(
           groupId = "group-1",
           logicalId = "patient-1",
-          memberInfo = "Jane Doe"
+          memberInfo = "Jane Doe",
         ),
         EligibleManagingEntity(
           groupId = "group-1",
           logicalId = "patient-2",
-          memberInfo = "James Doe"
-        )
+          memberInfo = "James Doe",
+        ),
       ),
     onDismiss = {},
     managingEntity =
@@ -283,7 +283,7 @@ fun ChangeManagingEntityViewPreview() {
         dialogTitle = "Assign new family head",
         dialogWarningMessage =
           "Please assign a new household head, family no longer has a household head",
-        dialogContentMessage = "Select a new family head"
-      )
+        dialogContentMessage = "Select a new family head",
+      ),
   )
 }

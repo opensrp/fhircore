@@ -38,7 +38,7 @@ class UserSettingFragment : Fragment() {
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?
+    savedInstanceState: Bundle?,
   ): View {
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -58,8 +58,9 @@ class UserSettingFragment : Fragment() {
             isDebugVariant = BuildConfig.DEBUG,
             mainNavController = findNavController(),
             lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp(),
+            showProgressIndicatorFlow = userSettingViewModel.showProgressIndicatorFlow,
             unsyncedResourcesFlow = userSettingViewModel.unsyncedResourcesMutableSharedFlow,
-            dismissInsightsView = userSettingViewModel::dismissInsightsView
+            dismissInsightsView = userSettingViewModel::dismissInsightsView,
           )
         }
       }

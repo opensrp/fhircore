@@ -51,7 +51,7 @@ object Faker {
 
   fun buildTestConfigurationRegistry(
     sharedPreferencesHelper: SharedPreferencesHelper = mockk(),
-    dispatcherProvider: DispatcherProvider = mockk()
+    dispatcherProvider: DispatcherProvider = mockk(),
   ): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
     val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
@@ -59,7 +59,7 @@ object Faker {
       fhirResourceService,
       fhirResourceDataSource,
       sharedPreferencesHelper,
-      dispatcherProvider
+      dispatcherProvider,
     )
   }
 
@@ -67,7 +67,7 @@ object Faker {
     fhirResourceService: FhirResourceService,
     fhirResourceDataSource: FhirResourceDataSource,
     sharedPreferencesHelper: SharedPreferencesHelper,
-    dispatcherProvider: DispatcherProvider
+    dispatcherProvider: DispatcherProvider,
   ): ConfigurationRegistry {
     coEvery { fhirResourceService.getResource(any()) } returns Bundle()
 
@@ -79,14 +79,14 @@ object Faker {
           sharedPreferencesHelper = sharedPreferencesHelper,
           dispatcherProvider = dispatcherProvider,
           configService = mockk(),
-          json = json
-        )
+          json = json,
+        ),
       )
 
     runBlocking {
       configurationRegistry.loadConfigurations(
         appId = APP_DEBUG,
-        context = InstrumentationRegistry.getInstrumentation().targetContext
+        context = InstrumentationRegistry.getInstrumentation().targetContext,
       ) {}
     }
 
@@ -98,7 +98,7 @@ object Faker {
     family: String = "Mandela",
     given: String = "Nelson",
     age: Int = 78,
-    gender: Enumerations.AdministrativeGender = Enumerations.AdministrativeGender.MALE
+    gender: Enumerations.AdministrativeGender = Enumerations.AdministrativeGender.MALE,
   ): Patient {
     return Patient().apply {
       this.id = id
@@ -127,7 +127,7 @@ object Faker {
             Identifier().apply {
               use = Identifier.IdentifierUse.OFFICIAL
               value = "value-1"
-            }
+            },
           )
         subject = Reference().apply { reference = referenceString }
       }

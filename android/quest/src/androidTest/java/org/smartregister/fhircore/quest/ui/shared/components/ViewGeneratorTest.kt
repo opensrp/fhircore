@@ -69,8 +69,8 @@ class ViewGeneratorTest {
                 CompoundTextProperties(
                   viewType = ViewType.COMPOUND_TEXT,
                   primaryText = "Upcoming household service",
-                  primaryTextColor = "#000000"
-                )
+                  primaryTextColor = "#000000",
+                ),
               ),
             serviceMemberIcons = "CHILD,CHILD,CHILD,CHILD",
             showVerticalDivider = false,
@@ -79,11 +79,11 @@ class ViewGeneratorTest {
                 visible = "true",
                 status = ServiceStatus.DUE.name,
                 text = "Next visit 09-10-2022",
-                smallSized = false
-              )
+                smallSized = false,
+              ),
           ),
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
     composeRule.onNodeWithText("Upcoming household service").assertExists().assertIsDisplayed()
@@ -104,11 +104,11 @@ class ViewGeneratorTest {
                   trigger = ActionTrigger.ON_CLICK,
                   workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
                   questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
-                )
-              )
+                ),
+              ),
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-        navController = navController
+        navController = navController,
       )
     }
     composeRule
@@ -131,10 +131,10 @@ class ViewGeneratorTest {
                 ButtonProperties(status = "COMPLETED", text = "Completed Task"),
                 ButtonProperties(status = "READY", text = "Ready Task"),
               ),
-            viewType = ViewType.COLUMN
+            viewType = ViewType.COLUMN,
           ),
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
     composeRule
@@ -163,10 +163,10 @@ class ViewGeneratorTest {
                 ButtonProperties(status = "COMPLETED", text = "Completed Task", visible = "false"),
                 ButtonProperties(status = "READY", text = "Ready Task", visible = "true"),
               ),
-            viewType = ViewType.COLUMN
+            viewType = ViewType.COLUMN,
           ),
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
     composeRule
@@ -193,12 +193,12 @@ class ViewGeneratorTest {
             children =
               listOf(
                 ButtonProperties(status = "DUE", text = "Due Task", visible = "true"),
-                ButtonProperties(status = "COMPLETED", text = "Completed Task", visible = "false")
+                ButtonProperties(status = "COMPLETED", text = "Completed Task", visible = "false"),
               ),
-            viewType = ViewType.COLUMN
+            viewType = ViewType.COLUMN,
           ),
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
     composeRule.onNodeWithTag(COLUMN_DIVIDER_TEST_TAG).assertExists()
@@ -222,9 +222,9 @@ class ViewGeneratorTest {
                       CompoundTextProperties(
                         primaryText = "Richard Brown, M, 29",
                         primaryTextColor = "#000000",
-                        visible = "false"
-                      )
-                    )
+                        visible = "false",
+                      ),
+                    ),
                 ),
                 CardViewProperties(
                   viewType = ViewType.CARD,
@@ -233,8 +233,8 @@ class ViewGeneratorTest {
                       CompoundTextProperties(
                         primaryText = "Jane Brown, M, 26",
                         primaryTextColor = "#000000",
-                      )
-                    )
+                      ),
+                    ),
                 ),
                 CardViewProperties(
                   viewType = ViewType.CARD,
@@ -243,15 +243,15 @@ class ViewGeneratorTest {
                       CompoundTextProperties(
                         primaryText = "Billy Brown, M, 20",
                         primaryTextColor = "#000000",
-                        visible = "false"
-                      )
-                    )
-                )
+                        visible = "false",
+                      ),
+                    ),
+                ),
               ),
-            viewType = ViewType.COLUMN
+            viewType = ViewType.COLUMN,
           ),
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
     composeRule.onNodeWithText("Richard Brown, M, 29", useUnmergedTree = true).assertDoesNotExist()
@@ -275,10 +275,10 @@ class ViewGeneratorTest {
                 ButtonProperties(status = "COMPLETED", text = "Completed Task"),
                 ButtonProperties(status = "READY", text = "Ready Task"),
               ),
-            viewType = ViewType.ROW
+            viewType = ViewType.ROW,
           ),
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
     composeRule
@@ -307,10 +307,10 @@ class ViewGeneratorTest {
                 ButtonProperties(status = "COMPLETED", text = "Completed Task", visible = "false"),
                 ButtonProperties(status = "READY", text = "Ready Task", visible = "true"),
               ),
-            viewType = ViewType.ROW
+            viewType = ViewType.ROW,
           ),
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
     composeRule
@@ -330,31 +330,26 @@ class ViewGeneratorTest {
             personalDataItems =
               listOf(
                 PersonalDataItem(
-                  label =
-                    CompoundTextProperties(
-                      primaryText = "Sex",
-                    ),
-                  displayValue =
-                    CompoundTextProperties(
-                      primaryText = "Male",
-                    )
-                )
-              )
+                  label = CompoundTextProperties(primaryText = "Sex"),
+                  displayValue = CompoundTextProperties(primaryText = "Male"),
+                ),
+              ),
           ),
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
     composeRule.onNodeWithText("Sex").assertIsDisplayed()
     composeRule.onNodeWithText("Male").assertIsDisplayed()
   }
+
   @Test
   fun testImageIsRenderedFromLocalAsset() {
     composeRule.setContent {
       GenerateView(
         properties = ImageProperties(imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_walk")),
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
     composeRule.onNodeWithTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG).assertExists().assertIsDisplayed()
@@ -369,11 +364,11 @@ class ViewGeneratorTest {
             imageConfig =
               ImageConfig(
                 ICON_TYPE_REMOTE,
-                decodedBitmap = Bitmap.createBitmap(100, 16, Bitmap.Config.ARGB_8888)
-              )
+                decodedBitmap = Bitmap.createBitmap(100, 16, Bitmap.Config.ARGB_8888),
+              ),
           ),
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
     composeRule

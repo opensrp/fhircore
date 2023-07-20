@@ -36,9 +36,9 @@ interface QuestionnaireHandler {
     questionnaireConfig: QuestionnaireConfig? = null,
     actionParams: List<ActionParameter> = emptyList(),
     baseResourceId: String? = null,
-    baseResourceType: String? = null
+    baseResourceType: String? = null,
   ) {
-    if (questionnaireConfig != null)
+    if (questionnaireConfig != null) {
       startForResult.launch(
         Intent(context, QuestionnaireActivity::class.java)
           .putExtras(
@@ -46,11 +46,12 @@ interface QuestionnaireHandler {
               questionnaireConfig = questionnaireConfig,
               actionParams = actionParams,
               baseResourceId = baseResourceId,
-              baseResourceType = baseResourceType
-            )
+              baseResourceType = baseResourceType,
+            ),
           )
-          .putExtras(intentBundle)
+          .putExtras(intentBundle),
       )
+    }
   }
 
   suspend fun onSubmitQuestionnaire(activityResult: ActivityResult)

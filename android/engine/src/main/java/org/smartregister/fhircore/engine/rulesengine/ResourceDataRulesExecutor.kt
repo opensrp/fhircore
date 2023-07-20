@@ -44,18 +44,18 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
   fun processResourceData(
     repositoryResourceData: RepositoryResourceData,
     ruleConfigs: List<RuleConfig>,
-    params: Map<String, String>?
+    params: Map<String, String>?,
   ): ResourceData {
     val computedValuesMap =
       computeResourceDataRules(
         ruleConfigs = ruleConfigs,
-        repositoryResourceData = repositoryResourceData
+        repositoryResourceData = repositoryResourceData,
       )
     return ResourceData(
       baseResourceId = repositoryResourceData.resource.logicalId.extractLogicalIdUuid(),
       baseResourceType = repositoryResourceData.resource.resourceType,
       computedValuesMap =
-        if (params != null) computedValuesMap.plus(params).toMap() else computedValuesMap.toMap()
+        if (params != null) computedValuesMap.plus(params).toMap() else computedValuesMap.toMap(),
     )
   }
 
@@ -70,7 +70,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
     listProperties: ListProperties,
     relatedResourcesMap: Map<String, List<Resource>>,
     computedValuesMap: Map<String, Any>,
-    listResourceDataStateMap: SnapshotStateMap<String, SnapshotStateList<ResourceData>>
+    listResourceDataStateMap: SnapshotStateMap<String, SnapshotStateList<ResourceData>>,
   ) {
     listProperties.resources.forEach { listResource ->
       // Initialize to be updated incrementally as resources are transformed into ResourceData
@@ -83,7 +83,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
           relatedResourcesMap = relatedResourcesMap,
           ruleConfigs = listProperties.registerCard.rules,
           computedValuesMap = computedValuesMap,
-          resourceDataSnapshotStateList = resourceDataSnapshotStateList
+          resourceDataSnapshotStateList = resourceDataSnapshotStateList,
         )
     }
   }
@@ -96,11 +96,11 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
    */
   fun computeResourceDataRules(
     ruleConfigs: List<RuleConfig>,
-    repositoryResourceData: RepositoryResourceData?
+    repositoryResourceData: RepositoryResourceData?,
   ): Map<String, Any> {
     return rulesFactory.fireRules(
       rules = rulesFactory.generateRules(ruleConfigs),
-      repositoryResourceData = repositoryResourceData
+      repositoryResourceData = repositoryResourceData,
     )
   }
 
@@ -115,24 +115,27 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
       val listItemRelatedResources = mutableMapOf<String, List<Resource>>()
       listResource.relatedResources.forEach { relatedListResource ->
         val retrieveRelatedResources: List<Resource>? =
-          relatedListResource.fhirPathExpression?.let {
+          relatedListResource.fhirPathExpression.let {
             rulesFactory.rulesEngineService.retrieveRelatedResources(
               resource = resource,
               relatedResourceKey = relatedListResource.relatedResourceId
                   ?: relatedListResource.resourceType.name,
               referenceFhirPathExpression = it,
-              relatedResourcesMap = relatedResourcesMap
+              relatedResourcesMap = relatedResourcesMap,
             )
           }
         if (!retrieveRelatedResources.isNullOrEmpty()) {
           listItemRelatedResources[
-            relatedListResource.id ?: relatedListResource.resourceType.name] =
-            if (!relatedListResource.conditionalFhirPathExpression.isNullOrEmpty())
+            relatedListResource.id ?: relatedListResource.resourceType.name,
+          ] =
+            if (!relatedListResource.conditionalFhirPathExpression.isNullOrEmpty()) {
               rulesFactory.rulesEngineService.filterResources(
                 retrieveRelatedResources,
-                relatedListResource.conditionalFhirPathExpression
+                relatedListResource.conditionalFhirPathExpression,
               )
-            else retrieveRelatedResources
+            } else {
+              retrieveRelatedResources
+            }
         }
       }
 
@@ -143,16 +146,17 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
             RepositoryResourceData(
               resourceRulesEngineFactId = null,
               resource = resource,
-              relatedResourcesMap = listItemRelatedResources
-            )
+              relatedResourcesMap = listItemRelatedResources,
+            ),
         )
 
       resourceDataSnapshotStateList.add(
         ResourceData(
           baseResourceId = resource.logicalId.extractLogicalIdUuid(),
           baseResourceType = resource.resourceType,
-          computedValuesMap = computedValuesMap.plus(listComputedValuesMap) // Reuse computed values
-        )
+          computedValuesMap =
+            computedValuesMap.plus(listComputedValuesMap), // Reuse computed values
+        ),
       )
     }
   }
@@ -164,33 +168,36 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
    */
   private fun filteredListResources(
     relatedResourceMap: Map<String, List<Resource>>,
-    listResource: ListResource
+    listResource: ListResource,
   ): List<Resource> {
     val relatedResourceKey = listResource.relatedResourceId ?: listResource.resourceType.name
     val newListRelatedResources = relatedResourceMap[relatedResourceKey]
 
     // conditionalFhirPath expression e.g. "Task.status == 'ready'" to filter tasks that are due
     val resources =
-      if (newListRelatedResources != null &&
+      if (
+        newListRelatedResources != null &&
           !listResource.conditionalFhirPathExpression.isNullOrEmpty()
       ) {
         rulesFactory.rulesEngineService.filterResources(
           resources = newListRelatedResources,
-          fhirPathExpression = listResource.conditionalFhirPathExpression
+          fhirPathExpression = listResource.conditionalFhirPathExpression,
         )
       } else newListRelatedResources ?: listOf()
 
     val sortConfig = listResource.sortConfig
 
     // Sort resources if sort configuration is provided
-    return if (sortConfig != null && sortConfig.fhirPathExpression.isNotEmpty())
+    return if (sortConfig != null && sortConfig.fhirPathExpression.isNotEmpty()) {
       rulesFactory.rulesEngineService.sortResources(
         resources = resources,
         fhirPathExpression = sortConfig.fhirPathExpression,
         dataType = sortConfig.dataType.name,
-        order = sortConfig.order.name
+        order = sortConfig.order.name,
       )
         ?: resources
-    else resources
+    } else {
+      resources
+    }
   }
 }

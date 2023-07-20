@@ -34,9 +34,11 @@ import org.smartregister.model.practitioner.KeycloakUserDetails
 @HiltAndroidTest
 internal class SharedPreferencesHelperTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
   private val application = ApplicationProvider.getApplicationContext<Application>()
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
   @Inject lateinit var gson: Gson
 
   @Before
@@ -84,7 +86,7 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
     sharedPreferencesHelper.write("object", questionnaireConfig)
     Assert.assertEquals(
       questionnaireConfig.id,
-      sharedPreferencesHelper.read<QuestionnaireConfig>("object")?.id
+      sharedPreferencesHelper.read<QuestionnaireConfig>("object")?.id,
     )
   }
 
@@ -94,13 +96,12 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
     sharedPreferencesHelper.write("object", keycloakUserDetails, encodeWithGson = true)
     Assert.assertEquals(
       keycloakUserDetails.id,
-      sharedPreferencesHelper.read<KeycloakUserDetails>("object", decodeWithGson = true)?.id
+      sharedPreferencesHelper.read<KeycloakUserDetails>("object", decodeWithGson = true)?.id,
     )
   }
 
   @Test
   fun testResetSharedPrefsClearsData() {
-
     sharedPreferencesHelper.write("anyBooleanKey", true)
     sharedPreferencesHelper.write("anyLongKey", 123456789)
 

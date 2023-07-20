@@ -24,10 +24,24 @@ android {
     targetSdk = 33
     testInstrumentationRunner = "org.smartregister.fhircore.engine.EngineTestRunner"
     consumerProguardFiles("consumer-rules.pro")
+    buildConfigField(
+      "boolean",
+      "IS_NON_PROXY_APK",
+      "${project.hasProperty("isNonProxy") && property("isNonProxy").toString().toBoolean()}",
+    )
   }
 
   buildTypes {
     getByName("debug") { isTestCoverageEnabled = true }
+
+    create("debugNonProxy") {
+      initWith(getByName("debug"))
+      buildConfigField(
+        "boolean",
+        "IS_NON_PROXY_APK",
+        "true",
+      )
+    }
 
     getByName("release") {
       isMinifyEnabled = false
@@ -69,8 +83,8 @@ android {
         "META-INF/LGPL-3.0.txt",
         "META-INF/sun-jaxb.episode",
         "META-INF/*.kotlin_module",
-        "META-INF/INDEX.LIST"
-      )
+        "META-INF/INDEX.LIST",
+      ),
     )
   }
 

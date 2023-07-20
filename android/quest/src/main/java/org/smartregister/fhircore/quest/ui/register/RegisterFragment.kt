@@ -54,6 +54,7 @@ import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
@@ -74,15 +75,16 @@ import timber.log.Timber
 class RegisterFragment : Fragment(), OnSyncListener {
 
   @Inject lateinit var syncListenerManager: SyncListenerManager
+
   @Inject lateinit var eventBus: EventBus
-  val appMainViewModel by activityViewModels<AppMainViewModel>()
+  private val appMainViewModel by activityViewModels<AppMainViewModel>()
   private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
   private val registerViewModel by viewModels<RegisterViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?
+    savedInstanceState: Bundle?,
   ): View {
     appMainViewModel.retrieveIconsAsBitmap()
 
@@ -92,7 +94,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
           registerId = registerId,
           screenTitle = screenTitle,
           params = params,
-          clearCache = false
+          clearCache = false,
         )
       }
     }
@@ -119,14 +121,13 @@ class RegisterFragment : Fragment(), OnSyncListener {
           registerViewModel.snackBarStateFlow.hookSnackBar(
             scaffoldState = scaffoldState,
             resourceData = null,
-            navController = findNavController()
+            navController = findNavController(),
           )
         }
 
         AppTheme {
           val pagingItems =
-            registerViewModel
-              .paginatedRegisterData
+            registerViewModel.paginatedRegisterData
               .collectAsState(emptyFlow())
               .value
               .collectAsLazyPagingItems()
@@ -140,7 +141,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 appUiState = uiState,
                 openDrawer = openDrawer,
                 onSideMenuClick = appMainViewModel::onEvent,
-                navController = findNavController()
+                navController = findNavController(),
               )
             },
             bottomBar = {
@@ -155,9 +156,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 snackBarHostState = snackBarHostState,
                 backgroundColorHex = appConfig.snackBarTheme.backgroundColor,
                 actionColorHex = appConfig.snackBarTheme.actionTextColor,
-                contentColorHex = appConfig.snackBarTheme.messageTextColor
+                contentColorHex = appConfig.snackBarTheme.messageTextColor,
               )
-            }
+            },
           ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
               RegisterScreen(
@@ -168,7 +169,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 onEvent = registerViewModel::onEvent,
                 pagingItems = pagingItems,
                 registerUiState = registerViewModel.registerUiState.value,
-                toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation
+                toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
               )
             }
           }
@@ -192,14 +193,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
       is SyncJobStatus.Started ->
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
-            SnackBarMessageConfig(message = getString(R.string.syncing))
+            SnackBarMessageConfig(message = getString(R.string.syncing)),
           )
         }
       is SyncJobStatus.InProgress ->
-        emitPercentageProgress(
-          syncJobStatus.completed * 100 / if (syncJobStatus.total > 0) syncJobStatus.total else 1,
-          syncJobStatus.syncOperation == SyncOperation.UPLOAD
-        )
+        emitPercentageProgress(syncJobStatus, syncJobStatus.syncOperation == SyncOperation.UPLOAD)
       is SyncJobStatus.Finished -> {
         refreshRegisterData()
         lifecycleScope.launch {
@@ -207,8 +205,20 @@ class RegisterFragment : Fragment(), OnSyncListener {
             SnackBarMessageConfig(
               message = getString(R.string.sync_completed),
               actionLabel = getString(R.string.ok).uppercase(),
-              duration = SnackbarDuration.Long
-            )
+              duration = SnackbarDuration.Long,
+            ),
+          )
+        }
+      }
+      is SyncJobStatus.Glitch -> {
+        refreshRegisterData()
+        lifecycleScope.launch {
+          registerViewModel.dismissLoaderView.emit(true)
+          registerViewModel.emitSnackBarState(
+            SnackBarMessageConfig(
+              message = getString(R.string.sync_failed),
+              duration = SnackbarDuration.Long,
+            ),
           )
         }
       }
@@ -220,8 +230,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
           try {
             Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
 
-            (syncJobStatus.exceptions[0].takeIf { it.exception is HttpException }?.exception as
-                HttpException)
+            (syncJobStatus.exceptions[0].takeIf { it.exception is HttpException }?.exception
+                as HttpException)
               .code() == 401
           } catch (e: NullPointerException) {
             false
@@ -230,16 +240,17 @@ class RegisterFragment : Fragment(), OnSyncListener {
         val messageResourceId =
           if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
         lifecycleScope.launch {
+          registerViewModel.dismissLoaderView.emit(true)
           registerViewModel.emitSnackBarState(
             SnackBarMessageConfig(
               message = getString(messageResourceId),
-              duration = SnackbarDuration.Long
-            )
+              duration = SnackbarDuration.Long,
+            ),
           )
         }
       }
       else -> {
-        /* Do nothing*/
+        // Do nothing
       }
     }
   }
@@ -253,7 +264,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
           registerId = registerId,
           screenTitle = screenTitle,
           params = params,
-          clearCache = false
+          clearCache = false,
         )
       }
     }
@@ -263,8 +274,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
     viewLifecycleOwner.lifecycleScope.launch {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
         // Each register should have unique eventId
-        eventBus
-          .events
+        eventBus.events
           .getFor(MainNavigationScreen.Home.eventId(registerFragmentArgs.registerId))
           .onEach { appEvent ->
             when (appEvent) {
@@ -294,9 +304,46 @@ class RegisterFragment : Fragment(), OnSyncListener {
     questionnaireConfig.onSubmitActions?.handleClickEvent(navController = findNavController())
   }
 
-  fun emitPercentageProgress(percentageProgress: Int, isUploadSync: Boolean) {
+  fun emitPercentageProgress(
+    progressSyncJobStatus: SyncJobStatus.InProgress,
+    isUploadSync: Boolean,
+  ) {
     lifecycleScope.launch {
+      val percentageProgress: Int = calculateActualPercentageProgress(progressSyncJobStatus)
       registerViewModel.emitPercentageProgressState(percentageProgress, isUploadSync)
     }
+  }
+
+  private fun getSyncProgress(completed: Int, total: Int) =
+    completed * 100 / if (total > 0) total else 1
+
+  private fun calculateActualPercentageProgress(
+    progressSyncJobStatus: SyncJobStatus.InProgress,
+  ): Int {
+    val totalRecordsOverall =
+      registerViewModel.sharedPreferencesHelper.read(
+        SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
+          progressSyncJobStatus.syncOperation.name,
+        1L,
+      )
+    val isProgressTotalLess = progressSyncJobStatus.total <= totalRecordsOverall
+    var currentProgress: Int
+    var currentTotalRecords =
+      if (isProgressTotalLess) {
+        currentProgress =
+          totalRecordsOverall.toInt() - progressSyncJobStatus.total +
+            progressSyncJobStatus.completed
+        totalRecordsOverall.toInt()
+      } else {
+        registerViewModel.sharedPreferencesHelper.write(
+          SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
+            progressSyncJobStatus.syncOperation.name,
+          progressSyncJobStatus.total.toLong(),
+        )
+        currentProgress = progressSyncJobStatus.completed
+        progressSyncJobStatus.total
+      }
+
+    return getSyncProgress(currentProgress, currentTotalRecords)
   }
 }

@@ -64,7 +64,7 @@ class ConfigDownloadWorkerTest : RobolectricTest() {
     // Initialize WorkManager for instrumentation tests.
     WorkManagerTestInitHelper.initializeTestWorkManager(
       ApplicationProvider.getApplicationContext(),
-      config
+      config,
     )
   }
 
@@ -83,13 +83,13 @@ class ConfigDownloadWorkerTest : RobolectricTest() {
     override fun createWorker(
       appContext: Context,
       workerClassName: String,
-      workerParameters: WorkerParameters
+      workerParameters: WorkerParameters,
     ): ListenableWorker {
       return ConfigDownloadWorker(
         appContext = appContext,
         workerParams = workerParameters,
         configurationRegistry = configurationRegistry,
-        dispatcherProvider = this@ConfigDownloadWorkerTest.coroutineTestRule.testDispatcherProvider
+        dispatcherProvider = this@ConfigDownloadWorkerTest.coroutineTestRule.testDispatcherProvider,
       )
     }
   }

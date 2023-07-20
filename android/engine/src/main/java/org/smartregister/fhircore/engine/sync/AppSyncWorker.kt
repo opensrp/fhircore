@@ -44,7 +44,7 @@ constructor(
   override fun getDownloadWorkManager(): DownloadWorkManager =
     OpenSrpDownloadManager(
       syncParams = syncListenerManager.loadSyncParams(),
-      context = appTimeStampContext
+      context = appTimeStampContext,
     )
 
   /** Disable ETag for upload */

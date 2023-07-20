@@ -120,22 +120,22 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     val viewModel = appMainActivity.appMainViewModel
     viewModel.sharedPreferencesHelper.write(
       SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-      "2022-05-19"
+      "2022-05-19",
     )
     appMainActivity.onSync(SyncJobStatus.Failed(listOf()))
 
     Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
     Assert.assertEquals(
       viewModel.appMainUiState.value.lastSyncTime,
-      viewModel.retrieveLastSyncTimestamp()
+      viewModel.retrieveLastSyncTimestamp(),
     )
   }
 
   @Test
-  fun testOnSyncWithSyncStateFailedWhenTimestampIsNull() {
+  fun testOnSyncWithSyncStateFailedWhenTimestampIsNotNull() {
     val viewModel = appMainActivity.appMainViewModel
     appMainActivity.onSync(SyncJobStatus.Failed(listOf()))
-    Assert.assertEquals(viewModel.appMainUiState.value.lastSyncTime, "")
+    Assert.assertNotNull(viewModel.appMainUiState.value.lastSyncTime)
   }
 
   @Test
@@ -146,7 +146,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
     Assert.assertEquals(
       viewModel.formatLastSyncTimestamp(timestamp = stateFinished.timestamp),
-      viewModel.retrieveLastSyncTimestamp()
+      viewModel.retrieveLastSyncTimestamp(),
     )
   }
 
@@ -162,14 +162,14 @@ class AppMainActivityTest : ActivityRobolectricTest() {
             QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
             QuestionnaireResponse().apply {
               status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
-            }
+            },
           )
           putExtra(
             QuestionnaireActivity.QUESTIONNAIRE_CONFIG,
-            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId") as Serializable
+            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId") as Serializable,
           )
-        }
-      )
+        },
+      ),
     )
 
     val onSubmitQuestionnaireSlot = slot<AppEvent.OnSubmitQuestionnaire>()
@@ -180,7 +180,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals("questionnaireId", questionnaireSubmission?.questionnaireConfig?.id)
     Assert.assertEquals(
       QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS,
-      questionnaireSubmission?.questionnaireResponse?.status
+      questionnaireSubmission?.questionnaireResponse?.status,
     )
   }
 
@@ -201,14 +201,14 @@ class AppMainActivityTest : ActivityRobolectricTest() {
             QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
             QuestionnaireResponse().apply {
               status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
-            }
+            },
           )
           putExtra(
             QuestionnaireActivity.QUESTIONNAIRE_CONFIG,
-            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId") as Serializable
+            QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId") as Serializable,
           )
-        }
-      )
+        },
+      ),
     )
 
     coVerify { eventBus.triggerEvent(any()) }

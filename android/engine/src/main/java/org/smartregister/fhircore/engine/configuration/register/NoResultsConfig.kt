@@ -26,5 +26,5 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 data class NoResultsConfig(
   val title: String = "",
   val message: String = "",
-  val actionButton: NavigationMenuConfig? = null
+  val actionButton: NavigationMenuConfig? = null,
 ) : Parcelable, java.io.Serializable

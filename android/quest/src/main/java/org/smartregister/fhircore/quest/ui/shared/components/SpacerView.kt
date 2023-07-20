@@ -30,17 +30,14 @@ const val VERTICAL_SPACER_TEST_TAG = "verticalSpacerTestTag"
 const val HORIZONTAL_SPACER_TEST_TAG = "verticalSpacerTestTag"
 
 @Composable
-fun SpacerView(
-  modifier: Modifier = Modifier,
-  spacerProperties: SpacerProperties,
-) {
+fun SpacerView(modifier: Modifier = Modifier, spacerProperties: SpacerProperties) {
   if (spacerProperties.height != null) {
     Spacer(
-      modifier = modifier.height(spacerProperties.height!!.dp).testTag(VERTICAL_SPACER_TEST_TAG)
+      modifier = modifier.height(spacerProperties.height!!.dp).testTag(VERTICAL_SPACER_TEST_TAG),
     )
   } else if (spacerProperties.width != null) {
     Spacer(
-      modifier = modifier.width(spacerProperties.width!!.dp).testTag(HORIZONTAL_SPACER_TEST_TAG)
+      modifier = modifier.width(spacerProperties.width!!.dp).testTag(HORIZONTAL_SPACER_TEST_TAG),
     )
   }
 }

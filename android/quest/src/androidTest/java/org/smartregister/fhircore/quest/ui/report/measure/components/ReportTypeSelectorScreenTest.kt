@@ -56,6 +56,7 @@ class ReportTypeSelectorScreenTest {
   private val monthList = listOf(ReportRangeSelectionData("March", "October", Date()))
 
   private val dateRange = HashMap<String, List<ReportRangeSelectionData>>()
+
   @Before
   fun setup() {
     dateRange["2022"] = monthList
@@ -68,7 +69,7 @@ class ReportTypeSelectorScreenTest {
         onMonthSelected = mockRangeSelectListener,
         reportGenerationRange = dateRange,
         showProgressIndicator = false,
-        innerPadding = PaddingValues()
+        innerPadding = PaddingValues(),
       )
     }
     composeTestRule
@@ -84,7 +85,7 @@ class ReportTypeSelectorScreenTest {
         onMonthSelected = mockRangeSelectListener,
         reportGenerationRange = dateRange,
         showProgressIndicator = true,
-        innerPadding = PaddingValues()
+        innerPadding = PaddingValues(),
       )
     }
 
@@ -106,7 +107,7 @@ class ReportTypeSelectorScreenTest {
         onMonthSelected = mockRangeSelectListener,
         reportGenerationRange = dateRange,
         showProgressIndicator = false,
-        innerPadding = PaddingValues()
+        innerPadding = PaddingValues(),
       )
     }
 
@@ -116,6 +117,7 @@ class ReportTypeSelectorScreenTest {
       .performClick()
       .assertIsDisplayed()
   }
+
   @Test
   fun testShowDatePickerFormr() {
     composeTestRule.setContent {
@@ -127,7 +129,7 @@ class ReportTypeSelectorScreenTest {
         dateRange = mutableStateOf(defaultDateRangeState()),
         onDateRangeSelected = mockDateSelectListener,
         generateReport = false,
-        innerPadding = PaddingValues()
+        innerPadding = PaddingValues(),
       )
     }
     composeTestRule
@@ -144,7 +146,7 @@ class ReportTypeSelectorScreenTest {
         onMonthSelected = mockRangeSelectListener,
         reportGenerationRange = dateRange,
         showProgressIndicator = true,
-        innerPadding = PaddingValues()
+        innerPadding = PaddingValues(),
       )
     }
     composeTestRule
@@ -153,6 +155,7 @@ class ReportTypeSelectorScreenTest {
       .performClick()
       .assertIsDisplayed()
   }
+
   @Test
   fun testScreenTitleIsDisplayedCorrectly() {
     composeTestRule.setContent {
@@ -168,11 +171,12 @@ class ReportTypeSelectorScreenTest {
         onGenerateReport = {},
         onDateRangeSelected = {},
         onReportTypeSelected = {},
-        onSubjectRemoved = {}
+        onSubjectRemoved = {},
       )
     }
     composeTestRule.onNodeWithText("Measure Report").assertExists().assertIsDisplayed()
   }
+
   @Test
   fun testCorrectHeaderYearDisplayedCorrectly() {
     composeTestRule.setContent {
@@ -180,7 +184,7 @@ class ReportTypeSelectorScreenTest {
         onMonthSelected = mockRangeSelectListener,
         reportGenerationRange = dateRange,
         showProgressIndicator = false,
-        innerPadding = PaddingValues()
+        innerPadding = PaddingValues(),
       )
     }
     composeTestRule
@@ -191,6 +195,7 @@ class ReportTypeSelectorScreenTest {
 
     composeTestRule.onNodeWithText("2022").assertExists().assertIsDisplayed()
   }
+
   @Test
   fun testCorrectHeaderMonthDisplayedCorrectly() {
     composeTestRule.setContent {
@@ -198,7 +203,7 @@ class ReportTypeSelectorScreenTest {
         onMonthSelected = mockRangeSelectListener,
         reportGenerationRange = dateRange,
         showProgressIndicator = false,
-        innerPadding = PaddingValues()
+        innerPadding = PaddingValues(),
       )
     }
     composeTestRule
@@ -209,9 +214,10 @@ class ReportTypeSelectorScreenTest {
 
     composeTestRule.onNodeWithText("March").assertExists().assertIsDisplayed()
   }
+
   private fun defaultDateRangeState() =
     androidx.core.util.Pair(
       MaterialDatePicker.thisMonthInUtcMilliseconds(),
-      MaterialDatePicker.todayInUtcMilliseconds()
+      MaterialDatePicker.todayInUtcMilliseconds(),
     )
 }

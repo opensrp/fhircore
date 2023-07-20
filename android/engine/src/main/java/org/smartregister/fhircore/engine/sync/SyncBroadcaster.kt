@@ -80,11 +80,12 @@ constructor(
         PeriodicSyncConfiguration(
           syncConstraints =
             Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
-          repeat = RepeatInterval(interval = interval, timeUnit = TimeUnit.MINUTES)
-        )
+          repeat = RepeatInterval(interval = interval, timeUnit = TimeUnit.MINUTES),
+        ),
       )
       .handleSyncJobStatus(this)
   }
+
   private fun Flow<SyncJobStatus>.handleSyncJobStatus(coroutineScope: CoroutineScope) {
     this.onEach {
         syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }

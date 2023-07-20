@@ -115,8 +115,11 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
+
   @Inject lateinit var transformSupportServices: TransformSupportServices
+
   @Inject lateinit var fhirPathEngine: FHIRPathEngine
   private lateinit var fhirTaskUtil: FhirTaskUtil
   private lateinit var fhirEngine: FhirEngine
@@ -142,8 +145,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       spyk(
         FhirTaskUtil(
           appContext = ApplicationProvider.getApplicationContext(),
-          defaultRepository = defaultRepository
-        )
+          defaultRepository = defaultRepository,
+        ),
       )
 
     fhirCarePlanGenerator =
@@ -152,7 +155,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         transformSupportServices = transformSupportServices,
         fhirPathEngine = fhirPathEngine,
         defaultRepository = defaultRepository,
-        fhirTaskUtil = fhirTaskUtil
+        fhirTaskUtil = fhirTaskUtil,
       )
 
     immunizationResource =
@@ -175,7 +178,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
                 },
                 "occurrenceString": "2021-10-23T00:00:00.00Z"
               }
-        """.trimIndent()
+                """
+          .trimIndent(),
       )
 
     encounter =
@@ -211,11 +215,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
                   "reference": "Encounter/15e2ae52-32fc-4507-8736-1177cdaafe90"
                 }
               }
-        """.trimIndent()
+                """
+          .trimIndent(),
       )
 
     opv0 =
-      iParser.parseResource(
+      iParser
+        .parseResource(
           Task::class.java,
           """
                   {
@@ -358,15 +364,16 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
                       }
                     ]
                   }
-        """.trimIndent()
+                """
+            .trimIndent(),
         )
         .apply {
           output =
             listOf(
               TaskOutputComponent(
                 CodeableConcept(),
-                Reference("Immunization/41921cfe-5074-4eec-925f-2bc581237660")
-              )
+                Reference("Immunization/41921cfe-5074-4eec-925f-2bc581237660"),
+              ),
             )
         }
     opv1 =
@@ -444,7 +451,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
                   }
                 ]
               }
-        """.trimIndent()
+                """
+          .trimIndent(),
       )
   }
 
@@ -488,10 +496,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get<StructureMap>("131373") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+    fhirCarePlanGenerator
+      .generateOrUpdateCarePlan(
         planDefinition,
         patient,
-        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient }),
       )!!
       .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
@@ -501,18 +510,18 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         assertEquals("Child Routine visit Plan", carePlan.title)
         assertEquals(
           "This defines the schedule of care for patients under 5 years old",
-          carePlan.description
+          carePlan.description,
         )
         assertEquals(patient.logicalId, carePlan.subject.extractId())
         assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
         assertEquals(patient.generalPractitionerFirstRep.extractId(), carePlan.author.extractId())
         assertEquals(
           DateTimeType.now().value.makeItReadable(),
-          carePlan.period.start.makeItReadable()
+          carePlan.period.start.makeItReadable(),
         )
         assertEquals(
           patient.birthDate.plusYears(5).makeItReadable(),
-          carePlan.period.end.makeItReadable()
+          carePlan.period.end.makeItReadable(),
         )
         // 60 - 2  = 58 TODO Fix issue with number of tasks updating relative to today's date
         assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
@@ -564,15 +573,16 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+    fhirCarePlanGenerator
+      .generateOrUpdateCarePlan(
         planDefinition,
         group,
         Bundle()
           .addEntry(
             Bundle.BundleEntryComponent().apply {
               resource = Encounter().apply { status = Encounter.EncounterStatus.FINISHED }
-            }
-          )
+            },
+          ),
       )!!
       .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
@@ -630,15 +640,16 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+    fhirCarePlanGenerator
+      .generateOrUpdateCarePlan(
         planDefinition,
         group,
         Bundle()
           .addEntry(
             Bundle.BundleEntryComponent().apply {
               resource = Encounter().apply { status = Encounter.EncounterStatus.FINISHED }
-            }
-          )
+            },
+          ),
       )!!
       .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
@@ -648,7 +659,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         assertEquals("Household Routine WASH Check Plan", carePlan.title)
         assertEquals(
           "This defines the schedule of service for WASH Check on households",
-          carePlan.description
+          carePlan.description,
         )
         assertEquals(group.logicalId, carePlan.subject.extractId())
         assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
@@ -755,13 +766,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val questionnaireResponses = planDefinitionResources.questionnaireResponses
     val resourcesSlot = planDefinitionResources.resourcesSlot
 
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+    fhirCarePlanGenerator
+      .generateOrUpdateCarePlan(
         planDefinition,
         patient,
         Bundle()
           .addEntry(
-            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
-          )
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
+          ),
       )!!
       .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
@@ -787,22 +799,22 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             assertTrue(
               this.all { task ->
                 task.executionPeriod.end.asYyyyMmDd() == Date().plusDays(7).asYyyyMmDd()
-              }
+              },
             )
             assertTrue(
-              this.all { it.basedOn.first().reference == carePlan.asReference().reference }
+              this.all { it.basedOn.first().reference == carePlan.asReference().reference },
             )
             assertTrue(
               this.elementAt(0).executionPeriod.start.asYyyyMmDd() ==
-                Date().plusDays(1).asYyyyMmDd()
+                Date().plusDays(1).asYyyyMmDd(),
             )
             assertTrue(
               this.elementAt(1).executionPeriod.start.asYyyyMmDd() ==
-                Date().plusDays(2).asYyyyMmDd()
+                Date().plusDays(2).asYyyyMmDd(),
             )
             assertTrue(
               this.elementAt(2).executionPeriod.start.asYyyyMmDd() ==
-                Date().plusDays(3).asYyyyMmDd()
+                Date().plusDays(3).asYyyyMmDd(),
             )
           }
       }
@@ -818,25 +830,30 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val questionnaireResponses = planDefinitionResources.questionnaireResponses
     val resourcesSlot = planDefinitionResources.resourcesSlot
 
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+    fhirCarePlanGenerator
+      .generateOrUpdateCarePlan(
         planDefinition,
         patient,
         Bundle()
           .addEntry(
-            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
-          )
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
+          ),
       )
       .also { carePlan ->
         assertNull(carePlan)
 
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
 
-        resourcesSlot.map { it as Task }.also { assertEquals(1, it.size) }.first().let {
-          assertTrue(it.status == TaskStatus.READY)
-          assertTrue(it.basedOn.first().reference == planDefinition.asReference().reference)
-          assertTrue(it.`for`.reference == patient.asReference().reference)
-          assertTrue(it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
-        }
+        resourcesSlot
+          .map { it as Task }
+          .also { assertEquals(1, it.size) }
+          .first()
+          .let {
+            assertTrue(it.status == TaskStatus.READY)
+            assertTrue(it.basedOn.first().reference == planDefinition.asReference().reference)
+            assertTrue(it.`for`.reference == patient.asReference().reference)
+            assertTrue(it.executionPeriod.start.asYyyyMmDd() == Date().asYyyyMmDd())
+          }
       }
   }
 
@@ -856,7 +873,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .decodeResourceFromString<QuestionnaireResponse>()
 
     val structureMapReferral =
-      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
+      structureMapUtilities
+        .parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
     val createdTasksSlot = mutableListOf<Resource>()
@@ -873,7 +891,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         CarePlan().apply {
           instantiatesCanonical = listOf(CanonicalType(plandefinition.asReference().reference))
           addActivity().apply { this.addOutcomeReference().apply { this.reference = "Task/1111" } }
-        }
+        },
       )
     coEvery { fhirEngine.get<Task>(any()) } returns
       Task().apply {
@@ -881,10 +899,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         status = TaskStatus.READY
       }
 
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+    fhirCarePlanGenerator
+      .generateOrUpdateCarePlan(
         plandefinition,
         patient,
-        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse }),
       )!!
       .also { carePlan: CarePlan ->
         assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
@@ -940,10 +959,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+    fhirCarePlanGenerator
+      .generateOrUpdateCarePlan(
         plandefinition,
         patient,
-        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse }),
       )
       .also { _ ->
         resourcesSlot.forEach { println(it.encodeResourceToString()) }
@@ -966,232 +986,252 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   @ExperimentalCoroutinesApi
   fun `generateOrUpdateCarePlan should generate full careplan for 8 visits when lmp is today`() =
-      runTest {
-    val planDefinitionResources = loadPlanDefinitionResources("anc-visit", listOf("register"))
-    val planDefinition = planDefinitionResources.planDefinition
-    val patient = planDefinitionResources.patient
-    val questionnaireResponses = planDefinitionResources.questionnaireResponses
-    val resourcesSlot = planDefinitionResources.resourcesSlot
+    runTest {
+      val planDefinitionResources = loadPlanDefinitionResources("anc-visit", listOf("register"))
+      val planDefinition = planDefinitionResources.planDefinition
+      val patient = planDefinitionResources.patient
+      val questionnaireResponses = planDefinitionResources.questionnaireResponses
+      val resourcesSlot = planDefinitionResources.resourcesSlot
 
-    // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
-    val lmp = Date()
+      // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
+      val lmp = Date()
 
-    questionnaireResponses.first().find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first()
-      .value = DateType(lmp)
+      questionnaireResponses
+        .first()
+        .find("245679f2-6172-456e-8ff3-425f5cea3243")!!
+        .answer
+        .first()
+        .value = DateType(lmp)
 
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(
-        planDefinition,
-        patient,
-        Bundle()
-          .addEntry(
-            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
-          )
-      )!!
-      .also { println(it.encodeResourceToString()) }
-      .also { carePlan ->
-        assertCarePlan(
-          carePlan,
+      fhirCarePlanGenerator
+        .generateOrUpdateCarePlan(
           planDefinition,
           patient,
-          lmp,
-          lmp.plusMonths(9),
-          8
-        ) // 8 visits for each month of ANC
+          Bundle()
+            .addEntry(
+              Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
+            ),
+        )!!
+        .also { println(it.encodeResourceToString()) }
+        .also { carePlan ->
+          assertCarePlan(
+            carePlan,
+            planDefinition,
+            patient,
+            lmp,
+            lmp.plusMonths(9),
+            8,
+          ) // 8 visits for each month of ANC
 
-        resourcesSlot.forEach { println(carePlan.encodeResourceToString()) }
+          resourcesSlot.forEach { println(carePlan.encodeResourceToString()) }
 
-        assertTrue(resourcesSlot.first() is CarePlan)
+          assertTrue(resourcesSlot.first() is CarePlan)
 
-        resourcesSlot
-          .filter { res -> res.resourceType == ResourceType.Task }
-          .map { it as Task }
-          .also { assertEquals(9, it.size) } // 8 for visit, 1 for referral
-          .also {
-            assertTrue(it.all { it.status == TaskStatus.READY })
-            assertTrue(it.all { it.`for`.reference == patient.asReference().reference })
-          }
-          // last task is referral
-          .also {
-            it.last().let { task ->
-              assertTrue(task.reasonReference.reference == "Questionnaire/132049")
-              assertTrue(task.executionPeriod.end.asYyyyMmDd() == Date().plusMonths(1).asYyyyMmDd())
+          resourcesSlot
+            .filter { res -> res.resourceType == ResourceType.Task }
+            .map { it as Task }
+            .also { assertEquals(9, it.size) } // 8 for visit, 1 for referral
+            .also {
+              assertTrue(it.all { it.status == TaskStatus.READY })
+              assertTrue(it.all { it.`for`.reference == patient.asReference().reference })
             }
-          }
-          // first 8 tasks are anc visit for each month start
-          .take(8)
-          .run {
-            assertTrue(this.all { it.reasonReference.reference == "Questionnaire/132155" })
-            assertTrue(
-              this.all { it.basedOn.first().reference == carePlan.asReference().reference }
-            )
-
-            // first visit is lmp plus 1 month and subsequent visit are every month after
-            // that until
-            // delivery
-            var pregnancyStart: BaseDateTimeType = DateTimeType(lmp.clone() as Date)
-            this.forEach { task ->
-              fhirPathEngine
-                .evaluate(pregnancyStart, "\$this + 1 'month'")
-                .firstOrNull()
-                ?.dateTimeValue()
-                ?.let { result -> pregnancyStart = result }
-              assertEquals(
-                pregnancyStart.valueToString(),
-                DateTimeType(task.executionPeriod.start).valueToString()
+            // last task is referral
+            .also {
+              it.last().let { task ->
+                assertTrue(task.reasonReference.reference == "Questionnaire/132049")
+                assertTrue(
+                  task.executionPeriod.end.asYyyyMmDd() == Date().plusMonths(1).asYyyyMmDd(),
+                )
+              }
+            }
+            // first 8 tasks are anc visit for each month start
+            .take(8)
+            .run {
+              assertTrue(this.all { it.reasonReference.reference == "Questionnaire/132155" })
+              assertTrue(
+                this.all { it.basedOn.first().reference == carePlan.asReference().reference },
               )
+
+              // first visit is lmp plus 1 month and subsequent visit are every month after
+              // that until
+              // delivery
+              var pregnancyStart: BaseDateTimeType = DateTimeType(lmp.clone() as Date)
+              this.forEach { task ->
+                fhirPathEngine
+                  .evaluate(pregnancyStart, "\$this + 1 'month'")
+                  .firstOrNull()
+                  ?.dateTimeValue()
+                  ?.let { result -> pregnancyStart = result }
+                assertEquals(
+                  pregnancyStart.valueToString(),
+                  DateTimeType(task.executionPeriod.start).valueToString(),
+                )
+              }
             }
-          }
-      }
-  }
+        }
+    }
 
   @Test
   @ExperimentalCoroutinesApi
   fun `generateOrUpdateCarePlan should generate careplan for 5 visits when lmp has passed 3 months`() =
-      runTest {
-    val planDefinitionResources = loadPlanDefinitionResources("anc-visit", listOf("register"))
-    val planDefinition = planDefinitionResources.planDefinition
-    val patient = planDefinitionResources.patient
-    val questionnaireResponses = planDefinitionResources.questionnaireResponses
-    val resourcesSlot = planDefinitionResources.resourcesSlot
+    runTest {
+      val planDefinitionResources = loadPlanDefinitionResources("anc-visit", listOf("register"))
+      val planDefinition = planDefinitionResources.planDefinition
+      val patient = planDefinitionResources.patient
+      val questionnaireResponses = planDefinitionResources.questionnaireResponses
+      val resourcesSlot = planDefinitionResources.resourcesSlot
 
-    // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
-    // anc registered late so skip the tasks which passed due date
+      // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
+      // anc registered late so skip the tasks which passed due date
 
-    // NOTE : UCUM days per month as used by FHIR Standard are 30
-    // Invoking this twice to work around February edge case
-    // TO DO : Implement Permanent fix for test class - Tracked under
-    // https://github.com/opensrp/fhircore/issues/2402
+      // NOTE : UCUM days per month as used by FHIR Standard are 30
+      // Invoking this twice to work around February edge case
+      // TO DO : Implement Permanent fix for test class - Tracked under
+      // https://github.com/opensrp/fhircore/issues/2402
 
-    val lmp = DateType(Date()).apply { add(Calendar.MONTH, -4) }
+      val lmp = DateType(Date()).apply { add(Calendar.MONTH, -4) }
 
-    questionnaireResponses.first().find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first()
-      .value = lmp
+      questionnaireResponses
+        .first()
+        .find("245679f2-6172-456e-8ff3-425f5cea3243")!!
+        .answer
+        .first()
+        .value = lmp
 
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(
-        planDefinition,
-        patient,
-        Bundle()
-          .addEntry(
-            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
-          )
-      )!!
-      .also { println(it.encodeResourceToString()) }
-      .also { resourcesSlot.forEach { println(it.encodeResourceToString()) } }
-      .also { carePlan ->
-        assertCarePlan(
-          carePlan,
+      fhirCarePlanGenerator
+        .generateOrUpdateCarePlan(
           planDefinition,
           patient,
-          lmp.value,
-          fhirCarePlanGenerator.evaluateToDate(DateTimeType(lmp.value), "\$this + 9 'month'")!!
-            .value,
-          5
-        ) // 5 visits for each month of ANC
+          Bundle()
+            .addEntry(
+              Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
+            ),
+        )!!
+        .also { println(it.encodeResourceToString()) }
+        .also { resourcesSlot.forEach { println(it.encodeResourceToString()) } }
+        .also { carePlan ->
+          assertCarePlan(
+            carePlan,
+            planDefinition,
+            patient,
+            lmp.value,
+            fhirCarePlanGenerator
+              .evaluateToDate(DateTimeType(lmp.value), "\$this + 9 'month'")!!
+              .value,
+            5,
+          ) // 5 visits for each month of ANC
 
-        resourcesSlot
-          .filter { res -> res.resourceType == ResourceType.Task }
-          .map { it as Task }
-          .also { assertEquals(6, it.size) } // 5 for visit, 1 for referral
-          .also {
-            assertTrue(it.all { task -> task.status == TaskStatus.READY })
-            assertTrue(it.all { task -> task.`for`.reference == patient.asReference().reference })
-          }
-          // first 5 tasks are anc visit for each month of pregnancy
-          .take(5)
-          .run {
-            assertTrue(this.all { it.reasonReference.reference == "Questionnaire/132155" })
-            assertTrue(
-              this.all { it.basedOn.first().reference == carePlan.asReference().reference }
-            )
-
-            // first visit is lmp plus 1 month and subsequent visit are every month after
-            // that until
-            // delivery
-            // skip tasks for past 3 months of late registration
-
-            val ancStart =
-              fhirCarePlanGenerator.evaluateToDate(DateTimeType(lmp.value), "\$this + 3 'month'")!!
-                .value
-            this.forEachIndexed { index, task ->
-              assertEquals(
-                (fhirCarePlanGenerator.evaluateToDate(
-                      DateTimeType(ancStart),
-                      "\$this + ${index + 1} 'month'"
-                    )!!
-                    .value)
-                  .asYyyyMmDd(),
-                task.executionPeriod.start.asYyyyMmDd()
-              )
+          resourcesSlot
+            .filter { res -> res.resourceType == ResourceType.Task }
+            .map { it as Task }
+            .also { assertEquals(6, it.size) } // 5 for visit, 1 for referral
+            .also {
+              assertTrue(it.all { task -> task.status == TaskStatus.READY })
+              assertTrue(it.all { task -> task.`for`.reference == patient.asReference().reference })
             }
-          }
-      }
-  }
+            // first 5 tasks are anc visit for each month of pregnancy
+            .take(5)
+            .run {
+              assertTrue(this.all { it.reasonReference.reference == "Questionnaire/132155" })
+              assertTrue(
+                this.all { it.basedOn.first().reference == carePlan.asReference().reference },
+              )
+
+              // first visit is lmp plus 1 month and subsequent visit are every month after
+              // that until
+              // delivery
+              // skip tasks for past 3 months of late registration
+
+              val ancStart =
+                fhirCarePlanGenerator
+                  .evaluateToDate(DateTimeType(lmp.value), "\$this + 3 'month'")!!
+                  .value
+              this.forEachIndexed { index, task ->
+                assertEquals(
+                  (fhirCarePlanGenerator
+                      .evaluateToDate(
+                        DateTimeType(ancStart),
+                        "\$this + ${index + 1} 'month'",
+                      )!!
+                      .value)
+                    .asYyyyMmDd(),
+                  task.executionPeriod.start.asYyyyMmDd(),
+                )
+              }
+            }
+        }
+    }
 
   @Test
   @ExperimentalCoroutinesApi
   fun `generateOrUpdateCarePlan should generate careplan for next visit when ondemand task is required`() =
-      runTest {
-    val planDefinitionResources =
-      loadPlanDefinitionResources("anc-visit-ondemand", listOf("register"))
-    val planDefinition = planDefinitionResources.planDefinition
-    val patient = planDefinitionResources.patient
-    val questionnaireResponses = planDefinitionResources.questionnaireResponses
-    val resourcesSlot = planDefinitionResources.resourcesSlot
+    runTest {
+      val planDefinitionResources =
+        loadPlanDefinitionResources("anc-visit-ondemand", listOf("register"))
+      val planDefinition = planDefinitionResources.planDefinition
+      val patient = planDefinitionResources.patient
+      val questionnaireResponses = planDefinitionResources.questionnaireResponses
+      val resourcesSlot = planDefinitionResources.resourcesSlot
 
-    // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
-    // anc registered late so skip the tasks which passed due date
-    val lmp = Date().plusMonths(-4)
+      // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
+      // anc registered late so skip the tasks which passed due date
+      val lmp = Date().plusMonths(-4)
 
-    questionnaireResponses.first().find("245679f2-6172-456e-8ff3-425f5cea3243")!!.answer.first()
-      .value = DateType(lmp)
+      questionnaireResponses
+        .first()
+        .find("245679f2-6172-456e-8ff3-425f5cea3243")!!
+        .answer
+        .first()
+        .value = DateType(lmp)
 
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(
-        planDefinition,
-        patient,
-        Bundle()
-          .addEntry(
-            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
-          )
-      )!!
-      .also { println(it.encodeResourceToString()) }
-      .also { carePlan ->
-        assertCarePlan(
-          carePlan,
+      fhirCarePlanGenerator
+        .generateOrUpdateCarePlan(
           planDefinition,
           patient,
-          lmp,
-          lmp.plusMonths(9),
-          1
-        ) // 1 visits for next month of ANC
+          Bundle()
+            .addEntry(
+              Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
+            ),
+        )!!
+        .also { println(it.encodeResourceToString()) }
+        .also { carePlan ->
+          assertCarePlan(
+            carePlan,
+            planDefinition,
+            patient,
+            lmp,
+            lmp.plusMonths(9),
+            1,
+          ) // 1 visits for next month of ANC
 
-        resourcesSlot.forEach { println(it.encodeResourceToString()) }
-        assertEquals(1, carePlan.activityFirstRep.outcomeReference.size)
+          resourcesSlot.forEach { println(it.encodeResourceToString()) }
+          assertEquals(1, carePlan.activityFirstRep.outcomeReference.size)
 
-        resourcesSlot
-          .filter { res -> res.resourceType == ResourceType.Task }
-          .map { it as Task }
-          .also { assertEquals(2, it.size) } // 1 for visit, 1 for referral
-          .also { tasks ->
-            assertTrue(tasks.all { it.status == TaskStatus.READY })
-            assertTrue(tasks.all { it.`for`.reference == patient.asReference().reference })
-          }
-          // first 5 tasks are anc visit for each month of pregnancy
-          .take(1)
-          .run {
-            assertTrue(this.all { it.reasonReference.reference == "Questionnaire/132155" })
-            assertTrue(
-              this.all { it.basedOn.first().reference == carePlan.asReference().reference }
-            )
-
-            this.forEachIndexed { _, task ->
-              assertEquals(
-                Date().plusMonths(1).asYyyyMmDd(),
-                task.executionPeriod.start.asYyyyMmDd()
-              )
+          resourcesSlot
+            .filter { res -> res.resourceType == ResourceType.Task }
+            .map { it as Task }
+            .also { assertEquals(2, it.size) } // 1 for visit, 1 for referral
+            .also { tasks ->
+              assertTrue(tasks.all { it.status == TaskStatus.READY })
+              assertTrue(tasks.all { it.`for`.reference == patient.asReference().reference })
             }
-          }
-      }
-  }
+            // first 5 tasks are anc visit for each month of pregnancy
+            .take(1)
+            .run {
+              assertTrue(this.all { it.reasonReference.reference == "Questionnaire/132155" })
+              assertTrue(
+                this.all { it.basedOn.first().reference == carePlan.asReference().reference },
+              )
+
+              this.forEachIndexed { _, task ->
+                assertEquals(
+                  Date().plusMonths(1).asYyyyMmDd(),
+                  task.executionPeriod.start.asYyyyMmDd(),
+                )
+              }
+            }
+        }
+    }
 
   @Test
   @ExperimentalCoroutinesApi
@@ -1204,14 +1244,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val resourcesSlot = planDefinitionResources.resourcesSlot
     val vaccines = makeVaccinesMapForPatient(patient)
 
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+    fhirCarePlanGenerator
+      .generateOrUpdateCarePlan(
         planDefinition,
         patient,
         Bundle()
           .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
           .addEntry(
-            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
-          )
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
+          ),
       )!!
       .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
@@ -1221,7 +1262,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           patient,
           patient.birthDate,
           patient.birthDate.plusDays(4017),
-          20
+          20,
         )
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
@@ -1231,21 +1272,21 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             assertTrue(
               tasks.all {
                 it.reasonReference.reference == "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82"
-              }
+              },
             )
             assertTrue(
               tasks.all {
                 it.code.codingFirstRep.display ==
                   "Administration of vaccine to produce active immunity (procedure)" &&
                   it.code.codingFirstRep.code == "33879002"
-              }
+              },
             )
             assertTrue(tasks.all { it.description.contains(it.reasonCode.text, true) })
             assertTrue(
-              tasks.all { it.`for`.reference == questionnaireResponses.first().subject.reference }
+              tasks.all { it.`for`.reference == questionnaireResponses.first().subject.reference },
             )
             assertTrue(
-              tasks.all { it.basedOnFirstRep.reference == carePlan.asReference().reference }
+              tasks.all { it.basedOnFirstRep.reference == carePlan.asReference().reference },
             )
             vaccines.forEach { vaccine ->
               val task = tasks.find { it.description.startsWith(vaccine.key) }!!
@@ -1269,17 +1310,18 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val vaccines =
       mapOf(
         "AstraZeneca 2" to referenceDate.plusDays(70),
-        "AstraZeneca Booster" to referenceDate.plusDays(180)
+        "AstraZeneca Booster" to referenceDate.plusDays(180),
       )
 
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+    fhirCarePlanGenerator
+      .generateOrUpdateCarePlan(
         planDefinition,
         patient,
         Bundle()
           .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
           .addEntry(
-            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
-          )
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
+          ),
       )!!
       .also { carePlan ->
         assertCarePlan(carePlan, planDefinition, patient, referenceDate, null, 2)
@@ -1292,20 +1334,20 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             assertTrue(
               tasks.all {
                 it.reasonReference.reference == "Questionnaire/e8572c86-065d-11ee-be56-0242ac120002"
-              }
+              },
             )
             assertTrue(
               tasks.all {
                 it.code.codingFirstRep.display == "SARS-CoV-2 vaccination" &&
                   it.code.codingFirstRep.code == "840534001"
-              }
+              },
             )
             assertTrue(tasks.all { it.description.contains(it.reasonCode.text, true) })
             assertTrue(
-              tasks.all { it.`for`.reference == questionnaireResponses.first().subject.reference }
+              tasks.all { it.`for`.reference == questionnaireResponses.first().subject.reference },
             )
             assertTrue(
-              tasks.all { it.basedOnFirstRep.reference == carePlan.asReference().reference }
+              tasks.all { it.basedOnFirstRep.reference == carePlan.asReference().reference },
             )
             vaccines.forEach { vaccine ->
               val task = tasks.find { it.description.startsWith(vaccine.key) }!!
@@ -1318,180 +1360,190 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Test
   @ExperimentalCoroutinesApi
   fun `test generateOrUpdateCarePlan returns success even when evaluatedValue is null`() =
-      runBlocking {
-    val planDefinitionResources =
-      loadPlanDefinitionResources("child-immunization-schedule", listOf("register-temp"))
-    val questionnaireResponses = planDefinitionResources.questionnaireResponses
-    val planDefinition = planDefinitionResources.planDefinition
-    val patient = planDefinitionResources.patient
-    val data =
-      Bundle()
-        .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
-        .addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() })
+    runBlocking {
+      val planDefinitionResources =
+        loadPlanDefinitionResources("child-immunization-schedule", listOf("register-temp"))
+      val questionnaireResponses = planDefinitionResources.questionnaireResponses
+      val planDefinition = planDefinitionResources.planDefinition
+      val patient = planDefinitionResources.patient
+      val data =
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
+          )
 
-    val dynamicValue = planDefinition.action.first().dynamicValue
-    val expressionValue = dynamicValue.find { it.expression.expression == "%rootResource.title" }
+      val dynamicValue = planDefinition.action.first().dynamicValue
+      val expressionValue = dynamicValue.find { it.expression.expression == "%rootResource.title" }
 
-    // Update the value of the expression
-    expressionValue?.let { it.expression = Expression().apply { expression = "dummyExpression" } }
+      // Update the value of the expression
+      expressionValue?.let { it.expression = Expression().apply { expression = "dummyExpression" } }
 
-    // call the method under test and get the result
-    val result = fhirCarePlanGenerator.generateOrUpdateCarePlan(planDefinition, patient, data)
+      // call the method under test and get the result
+      val result = fhirCarePlanGenerator.generateOrUpdateCarePlan(planDefinition, patient, data)
 
-    // assert that the result is not null
-    assertNotNull(result)
-  }
+      // assert that the result is not null
+      assertNotNull(result)
+    }
 
   @Test
   @ExperimentalCoroutinesApi
   fun `Generate CarePlan should generate child immunization schedule with correct groupIdentifier value`() =
-      runTest {
-    val planDefinitionResources =
-      loadPlanDefinitionResources("child-immunization-schedule", listOf("register-temp"))
-    val planDefinition = planDefinitionResources.planDefinition
-    val patient = planDefinitionResources.patient
-    val questionnaireResponses = planDefinitionResources.questionnaireResponses
-    val resourcesSlot = planDefinitionResources.resourcesSlot
-    val vaccines = makeVaccinesMapForPatient(patient)
+    runTest {
+      val planDefinitionResources =
+        loadPlanDefinitionResources("child-immunization-schedule", listOf("register-temp"))
+      val planDefinition = planDefinitionResources.planDefinition
+      val patient = planDefinitionResources.patient
+      val questionnaireResponses = planDefinitionResources.questionnaireResponses
+      val resourcesSlot = planDefinitionResources.resourcesSlot
+      val vaccines = makeVaccinesMapForPatient(patient)
 
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(
-        planDefinition,
-        patient,
-        Bundle()
-          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
-          .addEntry(
-            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
-          )
-      )!!
-      .also { carePlan ->
-        assertCarePlan(
-          carePlan,
+      fhirCarePlanGenerator
+        .generateOrUpdateCarePlan(
           planDefinition,
           patient,
-          patient.birthDate,
-          patient.birthDate.plusDays(4017),
-          20
-        )
-        resourcesSlot
-          .filter { res -> res.resourceType == ResourceType.Task }
-          .map { it as Task }
-          .also { tasks ->
-            assertTrue(tasks.all { it.status == TaskStatus.REQUESTED })
-            assertTrue(
-              tasks.all {
-                it.reasonReference.reference == "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82"
-              }
-            )
-            assertTrue(
-              tasks.all {
-                it.code.codingFirstRep.display ==
-                  "Administration of vaccine to produce active immunity (procedure)" &&
-                  it.code.codingFirstRep.code == "33879002"
-              }
-            )
-            assertTrue(tasks.all { it.description.contains(it.reasonCode.text, true) })
-            assertTrue(
-              tasks.all { it.`for`.reference == questionnaireResponses.first().subject.reference }
-            )
-            assertTrue(
-              tasks.all { it.basedOnFirstRep.reference == carePlan.asReference().reference }
-            )
-            vaccines.forEach { vaccine ->
-              val task = tasks.find { it.description.startsWith(vaccine.key) }!!
-              when (vaccine.key) {
-                "BCG" -> assertEquals(task.groupIdentifier.value, "0_d")
-                "OPV 0" -> assertEquals(task.groupIdentifier.value, "0_d")
-                "PENTA 1" -> assertEquals(task.groupIdentifier.value, "6_wk")
-                "OPV 1" -> assertEquals(task.groupIdentifier.value, "6_wk")
-                "PCV 1" -> assertEquals(task.groupIdentifier.value, "6_wk")
-                "ROTA 1" -> assertEquals(task.groupIdentifier.value, "6_wk")
-                "PENTA 2" -> assertEquals(task.groupIdentifier.value, "10_wk")
-                "OPV 2" -> assertEquals(task.groupIdentifier.value, "10_wk")
-                "PCV 2" -> assertEquals(task.groupIdentifier.value, "10_wk")
-                "ROTA 2" -> assertEquals(task.groupIdentifier.value, "10_wk")
-                "PENTA 3" -> assertEquals(task.groupIdentifier.value, "14_wk")
-                "OPV 3" -> assertEquals(task.groupIdentifier.value, "14_wk")
-                "PCV 3" -> assertEquals(task.groupIdentifier.value, "14_wk")
-                "IPV" -> assertEquals(task.groupIdentifier.value, "14_wk")
-                "MEASLES 1" -> assertEquals(task.groupIdentifier.value, "9_mo")
-                "MEASLES 2" -> assertEquals(task.groupIdentifier.value, "15_mo")
-                "YELLOW FEVER" -> assertEquals(task.groupIdentifier.value, "9_mo")
-                "TYPHOID" -> assertEquals(task.groupIdentifier.value, "9_mo")
-                "HPV 1" -> assertEquals(task.groupIdentifier.value, "108_mo")
-                "HPV 2" -> assertEquals(task.groupIdentifier.value, "114_mo")
+          Bundle()
+            .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+            .addEntry(
+              Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
+            ),
+        )!!
+        .also { carePlan ->
+          assertCarePlan(
+            carePlan,
+            planDefinition,
+            patient,
+            patient.birthDate,
+            patient.birthDate.plusDays(4017),
+            20,
+          )
+          resourcesSlot
+            .filter { res -> res.resourceType == ResourceType.Task }
+            .map { it as Task }
+            .also { tasks ->
+              assertTrue(tasks.all { it.status == TaskStatus.REQUESTED })
+              assertTrue(
+                tasks.all {
+                  it.reasonReference.reference ==
+                    "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82"
+                },
+              )
+              assertTrue(
+                tasks.all {
+                  it.code.codingFirstRep.display ==
+                    "Administration of vaccine to produce active immunity (procedure)" &&
+                    it.code.codingFirstRep.code == "33879002"
+                },
+              )
+              assertTrue(tasks.all { it.description.contains(it.reasonCode.text, true) })
+              assertTrue(
+                tasks.all {
+                  it.`for`.reference == questionnaireResponses.first().subject.reference
+                },
+              )
+              assertTrue(
+                tasks.all { it.basedOnFirstRep.reference == carePlan.asReference().reference },
+              )
+              vaccines.forEach { vaccine ->
+                val task = tasks.find { it.description.startsWith(vaccine.key) }!!
+                when (vaccine.key) {
+                  "BCG" -> assertEquals(task.groupIdentifier.value, "0_d")
+                  "OPV 0" -> assertEquals(task.groupIdentifier.value, "0_d")
+                  "PENTA 1" -> assertEquals(task.groupIdentifier.value, "6_wk")
+                  "OPV 1" -> assertEquals(task.groupIdentifier.value, "6_wk")
+                  "PCV 1" -> assertEquals(task.groupIdentifier.value, "6_wk")
+                  "ROTA 1" -> assertEquals(task.groupIdentifier.value, "6_wk")
+                  "PENTA 2" -> assertEquals(task.groupIdentifier.value, "10_wk")
+                  "OPV 2" -> assertEquals(task.groupIdentifier.value, "10_wk")
+                  "PCV 2" -> assertEquals(task.groupIdentifier.value, "10_wk")
+                  "ROTA 2" -> assertEquals(task.groupIdentifier.value, "10_wk")
+                  "PENTA 3" -> assertEquals(task.groupIdentifier.value, "14_wk")
+                  "OPV 3" -> assertEquals(task.groupIdentifier.value, "14_wk")
+                  "PCV 3" -> assertEquals(task.groupIdentifier.value, "14_wk")
+                  "IPV" -> assertEquals(task.groupIdentifier.value, "14_wk")
+                  "MEASLES 1" -> assertEquals(task.groupIdentifier.value, "9_mo")
+                  "MEASLES 2" -> assertEquals(task.groupIdentifier.value, "15_mo")
+                  "YELLOW FEVER" -> assertEquals(task.groupIdentifier.value, "9_mo")
+                  "TYPHOID" -> assertEquals(task.groupIdentifier.value, "9_mo")
+                  "HPV 1" -> assertEquals(task.groupIdentifier.value, "108_mo")
+                  "HPV 2" -> assertEquals(task.groupIdentifier.value, "114_mo")
+                }
               }
             }
-          }
-      }
-  }
+        }
+    }
 
   @Test
   @ExperimentalCoroutinesApi
   fun `Generate CarePlan should generate child immunization schedule with pre-req def and expiry timing`() =
-      runTest {
-    val planDefinitionResources =
-      loadPlanDefinitionResources("child-immunization-schedule", listOf("register-temp"))
-    val planDefinition = planDefinitionResources.planDefinition
-    val patient = planDefinitionResources.patient
-    val questionnaireResponses = planDefinitionResources.questionnaireResponses
-    val resourcesSlot = planDefinitionResources.resourcesSlot
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(
-        planDefinition,
-        patient,
-        Bundle()
-          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
-          .addEntry(
-            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() }
-          )
-      )!!
-      .also { println(it.encodeResourceToString()) }
-      .also { carePlan ->
-        assertCarePlan(
-          carePlan,
+    runTest {
+      val planDefinitionResources =
+        loadPlanDefinitionResources("child-immunization-schedule", listOf("register-temp"))
+      val planDefinition = planDefinitionResources.planDefinition
+      val patient = planDefinitionResources.patient
+      val questionnaireResponses = planDefinitionResources.questionnaireResponses
+      val resourcesSlot = planDefinitionResources.resourcesSlot
+      fhirCarePlanGenerator
+        .generateOrUpdateCarePlan(
           planDefinition,
           patient,
-          patient.birthDate,
-          patient.birthDate.plusDays(4017),
-          20
-        )
+          Bundle()
+            .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+            .addEntry(
+              Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
+            ),
+        )!!
+        .also { println(it.encodeResourceToString()) }
+        .also { carePlan ->
+          assertCarePlan(
+            carePlan,
+            planDefinition,
+            patient,
+            patient.birthDate,
+            patient.birthDate.plusDays(4017),
+            20,
+          )
 
-        resourcesSlot
-          .filter { res -> res.resourceType == ResourceType.Task }
-          .map {
-            println(it.encodeResourceToString())
-            it as Task
-          }
-          .also { tasks ->
-            assertTrue(tasks.all { it.input.firstOrNull()?.value.valueToString() == "28" })
-            assertTrue(
-              tasks.all {
-                it.input.firstOrNull()?.type?.coding!![0].display == "Dependent (qualifier value)"
-              }
-            )
-            assertTrue(tasks.all { it.input.firstOrNull()?.type?.coding!![0].code == "371154000" })
+          resourcesSlot
+            .filter { res -> res.resourceType == ResourceType.Task }
+            .map {
+              println(it.encodeResourceToString())
+              it as Task
+            }
+            .also { tasks ->
+              assertTrue(tasks.all { it.input.firstOrNull()?.value.valueToString() == "28" })
+              assertTrue(
+                tasks.all {
+                  it.input.firstOrNull()?.type?.coding!![0].display == "Dependent (qualifier value)"
+                },
+              )
+              assertTrue(
+                tasks.all { it.input.firstOrNull()?.type?.coding!![0].code == "371154000" },
+              )
 
-            /*assertTrue(
-              tasks.all {
-                it.restriction.period.start.asYyyyMmDd() == patient.birthDate.asYyyyMmDd()
-              }
-            )*/
-            val opv2 = tasks.first { it.description.contains("OPV 2") }
-            val opv1 = tasks.first { it.description.contains("OPV 1") }
-            val pcv3 = tasks.first { it.description.contains("PCV 3") }
-            val pcv2 = tasks.first { it.description.contains("PCV 2") }
-            val bcg = tasks.first { it.description.contains("BCG") }
+              /*assertTrue(
+                tasks.all {
+                  it.restriction.period.start.asYyyyMmDd() == patient.birthDate.asYyyyMmDd()
+                }
+              )*/
+              val opv2 = tasks.first { it.description.contains("OPV 2") }
+              val opv1 = tasks.first { it.description.contains("OPV 1") }
+              val pcv3 = tasks.first { it.description.contains("PCV 3") }
+              val pcv2 = tasks.first { it.description.contains("PCV 2") }
+              val bcg = tasks.first { it.description.contains("BCG") }
 
-            assertEquals(opv2.partOf.first().reference.toString(), opv1.referenceValue())
-            assertEquals(pcv3.partOf.first().reference.toString(), pcv2.referenceValue())
-            assertTrue(bcg.partOf.isEmpty() == true)
-            val c = Calendar.getInstance()
-            c.time = opv1.restriction?.period?.start!!
-            c.add(Calendar.YEAR, 5)
-            c.add(Calendar.DATE, -1)
-            assertEquals(opv1.restriction?.period?.end, c.time)
-          }
-      }
-  }
+              assertEquals(opv2.partOf.first().reference.toString(), opv1.referenceValue())
+              assertEquals(pcv3.partOf.first().reference.toString(), pcv2.referenceValue())
+              assertTrue(bcg.partOf.isEmpty() == true)
+              val c = Calendar.getInstance()
+              c.time = opv1.restriction?.period?.start!!
+              c.add(Calendar.YEAR, 5)
+              c.add(Calendar.DATE, -1)
+              assertEquals(opv1.restriction?.period?.end, c.time)
+            }
+        }
+    }
+
   @Test
   @ExperimentalCoroutinesApi
   fun `Generate CarePlan should generate disease followup schedule`() = runTest {
@@ -1517,7 +1569,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get<StructureMap>("63752b18-9f0e-48a7-9a21-d3714be6309a") } returns
       structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns emptyList()
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+    fhirCarePlanGenerator
+      .generateOrUpdateCarePlan(
         planDefinition,
         patient,
         Bundle()
@@ -1525,8 +1578,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           .addEntry(
             Bundle.BundleEntryComponent().apply {
               resource = diseaseFollowUpQuestionnaireResponseString
-            }
-          )
+            },
+          ),
       )!!
       .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
@@ -1537,7 +1590,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         assertEquals("Disease Follow Up", carePlan.title)
         assertEquals(
           "This is a follow up for patient's marked with the following diseases HIV, TB, Mental Health & CM-NTD",
-          carePlan.description
+          carePlan.description,
         )
         assertEquals(patient.logicalId, carePlan.subject.extractId())
         assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
@@ -1582,15 +1635,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           listOf(
             EventTriggerCondition(
               eventResourceId = "carePlan1",
-              conditionalFhirPathExpressions = listOf("Patient.active")
-            )
-          )
+              conditionalFhirPathExpressions = listOf("Patient.active"),
+            ),
+          ),
       )
     val questionnaireConfig =
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        eventWorkflows = listOf(eventWorkflow)
+        eventWorkflows = listOf(eventWorkflow),
       )
     val patient =
       Patient().apply {
@@ -1602,7 +1655,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       fhirEngine.search<CarePlan> {
         filter(
           CarePlan.INSTANTIATES_CANONICAL,
-          { value = "${PlanDefinition().fhirType()}/plandef-1" }
+          { value = "${PlanDefinition().fhirType()}/plandef-1" },
         )
         filter(CarePlan.SUBJECT, { value = patient.referenceValue() })
       }
@@ -1612,7 +1665,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
         questionnaireConfig = questionnaireConfig,
         subject = patient,
-        bundle = bundle
+        bundle = bundle,
       )
     }
 
@@ -1629,15 +1682,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           listOf(
             EventTriggerCondition(
               eventResourceId = "carePlan1",
-              conditionalFhirPathExpressions = listOf("Patient.active")
-            )
-          )
+              conditionalFhirPathExpressions = listOf("Patient.active"),
+            ),
+          ),
       )
     val questionnaireConfig =
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        eventWorkflows = listOf(eventWorkflow)
+        eventWorkflows = listOf(eventWorkflow),
       )
     val patient =
       Patient().apply {
@@ -1654,7 +1707,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       fhirEngine.search<CarePlan> {
         filter(
           CarePlan.INSTANTIATES_CANONICAL,
-          { value = "${PlanDefinition().fhirType()}/plandef-1" }
+          { value = "${PlanDefinition().fhirType()}/plandef-1" },
         )
         filter(CarePlan.SUBJECT, { value = patient.referenceValue() })
       }
@@ -1665,7 +1718,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
         questionnaireConfig = questionnaireConfig,
         subject = patient,
-        bundle = bundle
+        bundle = bundle,
       )
     }
 
@@ -1683,23 +1736,23 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           listOf(
             EventTriggerCondition(
               eventResourceId = "carePlan1",
-              conditionalFhirPathExpressions = listOf("Patient.active")
-            )
+              conditionalFhirPathExpressions = listOf("Patient.active"),
+            ),
           ),
         eventResources =
           listOf(
             ResourceConfig(
               resource = ResourceType.CarePlan,
               planDefinitions = planDefinitions,
-              id = carePlanId
-            )
-          )
+              id = carePlanId,
+            ),
+          ),
       )
     val questionnaireConfig =
       QuestionnaireConfig(
         id = "id-1",
         planDefinitions = planDefinitions,
-        eventWorkflows = listOf(eventWorkflow)
+        eventWorkflows = listOf(eventWorkflow),
       )
     val patient =
       Patient().apply {
@@ -1713,7 +1766,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
         questionnaireConfig = questionnaireConfig,
         subject = patient,
-        bundle = bundle
+        bundle = bundle,
       )
     }
 
@@ -1723,7 +1776,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coVerify {
       defaultRepository.updateResourcesRecursively(
         capture(eventResourceConfigSlot),
-        capture(resourceSLot)
+        capture(resourceSLot),
       )
     }
     assertEquals(carePlanId, eventResourceConfigSlot.captured.id)
@@ -1800,9 +1853,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
               StringType(
                 "{\n" +
                   "          \"reference\": \"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
-                  "        }"
-              )
-            )
+                  "        }",
+              ),
+            ),
           )
       }
     coEvery {
@@ -1810,8 +1863,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Reference(
           Json.decodeFromString<JsonObject>(opv1.output.first().value.toString())[REFERENCE]
             ?.jsonPrimitive
-            ?.content
-        )
+            ?.content,
+        ),
       )
     } returns encounter.apply { partOf = null }
     coEvery { defaultRepository.loadResource(Reference(ArgumentMatchers.anyString())) } returns
@@ -1833,9 +1886,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
               StringType(
                 "{\n" +
                   "          \"reference\": \"Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90\"\n" +
-                  "        }"
-              )
-            )
+                  "        }",
+              ),
+            ),
           )
         input = listOf(Task.ParameterComponent(CodeableConcept(), StringType("9")))
       }
@@ -1850,8 +1903,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Reference(
           Json.decodeFromString<JsonObject>(opv1.output.first().value.toString())[REFERENCE]
             ?.jsonPrimitive
-            ?.content
-        )
+            ?.content,
+        ),
       )
     } returns encounter
     coEvery { defaultRepository.loadResource(Reference(encounter.partOf.reference)) } returns
@@ -1870,8 +1923,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           listOf(
             TaskOutputComponent(
               CodeableConcept(),
-              Reference("Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90")
-            )
+              Reference("Encounter/14e2ae52-32fc-4507-8736-1177cdaafe90"),
+            ),
           )
         input = listOf(Task.ParameterComponent(CodeableConcept(), StringType("9")))
       }
@@ -1879,7 +1932,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       fhirEngine.search<Task> {
         filter(
           referenceParameter = ReferenceClientParam("part-of"),
-          { value = opv1.id.extractLogicalIdUuid() }
+          { value = opv1.id.extractLogicalIdUuid() },
         )
       }
     } returns
@@ -1888,7 +1941,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       fhirEngine.search<Immunization> {
         filter(
           referenceParameter = ReferenceClientParam("part-of"),
-          { value = immunizationResource.id.extractLogicalIdUuid() }
+          { value = immunizationResource.id.extractLogicalIdUuid() },
         )
       }
     } returns listOf(immunizationResource)
@@ -1896,7 +1949,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       fhirEngine.search<Encounter> {
         filter(
           referenceParameter = ReferenceClientParam("part-of"),
-          { value = encounter.id.extractLogicalIdUuid() }
+          { value = encounter.id.extractLogicalIdUuid() },
         )
       }
     } returns listOf(encounter)
@@ -1904,13 +1957,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
     assertEquals(opv0, updatedTask)
   }
+
   @Test
   fun `updateDependentTaskDueDate sets executionPeriod start correctly`() {
     coEvery {
       fhirEngine.search<Task> {
         filter(
           referenceParameter = ReferenceClientParam("part-of"),
-          { value = opv1.id.extractLogicalIdUuid() }
+          { value = opv1.id.extractLogicalIdUuid() },
         )
       }
     } returns
@@ -1919,7 +1973,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           partOf = listOf(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f"))
           status = TaskStatus.REQUESTED
           input = listOf(Task.ParameterComponent(CodeableConcept(), StringType("28")))
-        }
+        },
       )
     coEvery { fhirEngine.get<Immunization>(immunizationResource.id.extractLogicalIdUuid()) } returns
       immunizationResource
@@ -1928,7 +1982,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       fhirEngine.search<Encounter> {
         filter(
           referenceParameter = ReferenceClientParam("part-of"),
-          { value = encounter.id.extractLogicalIdUuid() }
+          { value = encounter.id.extractLogicalIdUuid() },
         )
       }
     } returns listOf(encounter)
@@ -1955,7 +2009,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         subject = patient,
         bundle = bundle,
         triggerConditions = conditionalFhirPathExpression,
-        matchAll = true
+        matchAll = true,
       )
 
     assertTrue(conditionsMet)
@@ -1977,11 +2031,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         subject = patient,
         bundle = bundle,
         triggerConditions = conditionalFhirPathExpression,
-        matchAll = true
+        matchAll = true,
       )
 
     assertFalse(conditionsMet)
   }
+
   @Test
   fun testEvaluateToBooleanReturnsTrueWhenSomeConditionsAreNotMetIfMatchAllIsSetToFalse() {
     val conditionalFhirPathExpression =
@@ -1998,7 +2053,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         subject = patient,
         bundle = bundle,
         triggerConditions = conditionalFhirPathExpression,
-        matchAll = false
+        matchAll = false,
       )
 
     assertTrue(conditionsMet)
@@ -2020,7 +2075,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         subject = patient,
         bundle = bundle,
         triggerConditions = conditionalFhirPathExpression,
-        matchAll = false
+        matchAll = false,
       )
 
     assertFalse(conditionsMet)
@@ -2032,12 +2087,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val questionnaireResponses: List<QuestionnaireResponse>,
     val structureMap: StructureMap,
     val structureMapReferral: StructureMap,
-    val resourcesSlot: MutableList<Resource>
+    val resourcesSlot: MutableList<Resource>,
   )
 
   private fun loadPlanDefinitionResources(
     planName: String,
-    questionnaireResponseTags: List<String> = emptyList()
+    questionnaireResponseTags: List<String> = emptyList(),
   ): PlanDefinitionResources {
     val planDefinition =
       "plans/$planName/plandefinition.json".readFile().decodeResourceFromString<PlanDefinition>()
@@ -2053,14 +2108,16 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       }
 
     val structureMapRegister =
-      structureMapUtilities.parse(
+      structureMapUtilities
+        .parse(
           "plans/$planName/structure-map-register.txt".readFile(),
-          "${planName.uppercase().replace("-", "").replace(" ", "")}CarePlan"
+          "${planName.uppercase().replace("-", "").replace(" ", "")}CarePlan",
         )
         .also { println(it.encodeResourceToString()) }
 
     val structureMapReferral =
-      structureMapUtilities.parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
+      structureMapUtilities
+        .parse("plans/structure-map-referral.txt".readFile(), "ReferralTask")
         .also { println(it.encodeResourceToString()) }
 
     val resourcesSlot = mutableListOf<Resource>()
@@ -2079,7 +2136,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       questionnaireResponses,
       structureMapRegister,
       structureMapReferral,
-      resourcesSlot
+      resourcesSlot,
     )
   }
 
@@ -2089,7 +2146,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     patient: Patient,
     referenceDate: Date,
     endDate: Date?,
-    visitTasks: Int
+    visitTasks: Int,
   ) {
     assertNotNull(UUID.fromString(carePlan.id))
     assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)

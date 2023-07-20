@@ -101,7 +101,7 @@ class ActionableButtonTest {
   private fun setContent(
     serviceStatus: String,
     enabled: String = "true",
-    computedValuesMap: Map<String, Any> = emptyMap()
+    computedValuesMap: Map<String, Any> = emptyMap(),
   ) {
     composeRule.setContent {
       Column(modifier = Modifier.height(50.dp)) {
@@ -116,13 +116,13 @@ class ActionableButtonTest {
                     trigger = ActionTrigger.ON_CLICK,
                     workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
                     questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
-                  )
+                  ),
                 ),
               enabled = enabled,
-              startIcon = ImageConfig("ic_home", ICON_TYPE_LOCAL)
+              startIcon = ImageConfig("ic_home", ICON_TYPE_LOCAL),
             ),
           resourceData = ResourceData("id", ResourceType.Patient, computedValuesMap),
-          navController = navController
+          navController = navController,
         )
       }
     }

@@ -45,7 +45,7 @@ constructor(
   val sharedPreferences: SharedPreferencesHelper,
   val secureSharedPreference: SecureSharedPreference,
   val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -70,7 +70,7 @@ constructor(
 
   val pinUiState: MutableState<PinUiState> =
     mutableStateOf(
-      PinUiState(message = "", appName = "", setupPin = false, pinLength = 0, showLogo = false)
+      PinUiState(message = "", appName = "", setupPin = false, pinLength = 0, showLogo = false),
     )
 
   private val applicationConfiguration: ApplicationConfiguration by lazy {
@@ -84,12 +84,14 @@ constructor(
         appName = applicationConfiguration.appTitle,
         setupPin = setupPin,
         message =
-          if (setupPin)
+          if (setupPin) {
             applicationConfiguration.loginConfig.pinLoginMessage
               ?: context.getString(R.string.set_pin_message)
-          else context.getString(R.string.enter_pin_for_user, username),
+          } else {
+            context.getString(R.string.enter_pin_for_user, username)
+          },
         pinLength = applicationConfiguration.loginConfig.pinLength,
-        showLogo = applicationConfiguration.showLogo
+        showLogo = applicationConfiguration.showLogo,
       )
   }
 
@@ -99,13 +101,13 @@ constructor(
       _navigateToHome.postValue(true)
     }
   }
+
   fun onShowPinError(showError: Boolean) {
     pinUiState.value = pinUiState.value.copy(showProgressBar = false)
     _showError.postValue(showError)
   }
 
   fun onSetPin(newPin: CharArray) {
-
     viewModelScope.launch(dispatcherProvider.io()) {
       pinUiState.value = pinUiState.value.copy(showProgressBar = true)
       secureSharedPreference.saveSessionPin(newPin)
@@ -122,7 +124,9 @@ constructor(
       secureSharedPreference.deleteCredentials()
       sharedPreferences.remove(SharedPreferenceKey.APP_ID.name)
       _navigateToSettings.value = true
-    } else _navigateToLogin.value = true
+    } else {
+      _navigateToLogin.value = true
+    }
   }
 
   fun forgotPin() {
@@ -131,7 +135,6 @@ constructor(
   }
 
   fun pinLogin(enteredPin: CharArray, callback: (Boolean) -> Unit) {
-
     viewModelScope.launch(dispatcherProvider.io()) {
       pinUiState.value = pinUiState.value.copy(showProgressBar = true)
 

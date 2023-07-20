@@ -32,6 +32,7 @@ class BottomScreenSectionTest {
 
   private val navigationScreens =
     listOf(MainNavigationScreen.Home, MainNavigationScreen.Reports, MainNavigationScreen.Settings)
+
   @get:Rule val composeTestRule = createComposeRule()
 
   @Before
@@ -39,7 +40,7 @@ class BottomScreenSectionTest {
     composeTestRule.setContent {
       BottomScreenSection(
         navController = rememberNavController(),
-        mainNavigationScreens = navigationScreens
+        mainNavigationScreens = navigationScreens,
       )
     }
   }
