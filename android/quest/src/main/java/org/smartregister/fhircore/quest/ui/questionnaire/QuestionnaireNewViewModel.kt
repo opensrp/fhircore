@@ -26,10 +26,12 @@ import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
@@ -147,22 +149,22 @@ constructor(
     actionParameters: Array<ActionParameter>?,
     context: Context,
   ) {
-    val questionnaireResponseValid =
-      validateQuestionnaireResponse(
-        questionnaire = questionnaire,
-        questionnaireResponse = currentQuestionnaireResponse,
-        context = context,
-      )
+    viewModelScope.launch(SupervisorJob()) {
+      val questionnaireResponseValid =
+        validateQuestionnaireResponse(
+          questionnaire = questionnaire,
+          questionnaireResponse = currentQuestionnaireResponse,
+          context = context,
+        )
 
-    if (!questionnaireResponseValid) {
-      Timber.e("Invalid questionnaire response")
-      context.showToast(context.getString(R.string.questionnaire_response_invalid))
-      return
-    }
+      if (!questionnaireResponseValid) {
+        Timber.e("Invalid questionnaire response")
+        context.showToast(context.getString(R.string.questionnaire_response_invalid))
+        return@launch
+      }
 
-    currentQuestionnaireResponse.processMetadata(questionnaire)
+      currentQuestionnaireResponse.processMetadata(questionnaire)
 
-    viewModelScope.launch {
       val bundle =
         performExtraction(
           extractByStructureMap = questionnaire.extractByStructureMap(),
@@ -203,12 +205,16 @@ constructor(
       val subject = retrieveSubject(questionnaire, bundle)
 
       // Save questionnaire response
-      currentQuestionnaireResponse
-        .apply {
-          setSubject(subject?.asReference())
-          addContained(listResource)
-        }
-        .run { defaultRepository.addOrUpdate(resource = this) }
+      if (subject != null) {
+        defaultRepository.addOrUpdate(
+          resource =
+            currentQuestionnaireResponse.apply {
+              setQuestionnaire("${questionnaire.resourceType}/${questionnaire.logicalId}")
+              setSubject(subject.asReference())
+              addContained(listResource)
+            },
+        )
+      }
 
       // Update _lastUpdated for resources configured via ActionParameterType.UPDATE_DATE_ON_EDIT
       updateResourcesLastUpdatedProperty(actionParameters)

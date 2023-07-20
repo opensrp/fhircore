@@ -139,7 +139,9 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
         )
       }
 
-    Timber.i("Found ${tasks.size} upcoming Tasks to be updated")
+    Timber.i(
+      "Found ${tasks.size} upcoming Tasks (with statuses REQUESTED, ACCEPTED or RECEIVED) to be updated"
+    )
 
     tasks.forEach { task ->
       val previousStatus = task.status
@@ -149,8 +151,10 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
 
       if (task.hasPartOf() && !task.preRequisiteConditionSatisfied()) task.status = previousStatus
 
-      if (task.status != previousStatus) defaultRepository.update(task)
-      Timber.d("Task with ID '${task.id}' status updated to ${task.status}")
+      if (task.status != previousStatus) {
+        defaultRepository.update(task)
+        Timber.d("Task with ID '${task.id}' status updated FROM $previousStatus TO ${task.status}")
+      }
     }
   }
 
