@@ -170,7 +170,7 @@ android {
       versionNameSuffix = "-ecbis"
       manifestPlaceholders["appLabel"] = "MOH eCBIS Preview"
     }
-    
+
     create("ecbis_production") {
       dimension = "apps"
       applicationIdSuffix = ".ecbis_production"
