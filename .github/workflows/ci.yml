@@ -70,7 +70,7 @@ jobs:
 
       - name: Generate APKs for performance quest-tests
         working-directory: android
-        run: ./gradlew :quest:assembleEcbisDebugAndroidTest --stacktrace
+        run: ./gradlew :quest:assembleEcbisDebugAndroidTest --stacktrace && ./gradlew :quest:assembleEcbisDebug --stacktrace
 
       - name: Run instrumentation tests manually
         uses: reactivecircus/android-emulator-runner@v2
