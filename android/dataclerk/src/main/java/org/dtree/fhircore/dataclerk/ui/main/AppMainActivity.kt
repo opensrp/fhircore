@@ -16,6 +16,8 @@
 
 package org.dtree.fhircore.dataclerk.ui.main
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -27,9 +29,11 @@ import kotlin.math.max
 import kotlinx.coroutines.launch
 import org.dtree.fhircore.dataclerk.ui.home.HomeViewModel
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
@@ -124,5 +128,15 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       }
     }
     lastSyncState = state
+  }
+
+  @Suppress("DEPRECATION")
+  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    super.onActivityResult(requestCode, resultCode, data)
+
+    if (resultCode == Activity.RESULT_OK)
+      data?.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY)?.let {
+        appMainViewModel.onTaskComplete()
+      }
   }
 }

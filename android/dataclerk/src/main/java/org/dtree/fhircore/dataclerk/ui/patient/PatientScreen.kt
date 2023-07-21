@@ -43,6 +43,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -53,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.google.android.fhir.sync.SyncJobStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.dtree.fhircore.dataclerk.ui.main.AppMainViewModel
 import org.dtree.fhircore.dataclerk.util.extractName
@@ -67,6 +69,16 @@ fun PatientScreen(
 ) {
   val state by patientViewModel.screenState.collectAsState()
   val list by patientViewModel.resourceMapStatus
+  val syncState by appMainViewModel.syncSharedFlow.collectAsState(initial = null)
+  val refreshKey by appMainViewModel.refreshHash
+
+  LaunchedEffect(syncState) {
+    if (syncState is SyncJobStatus.Finished) {
+      patientViewModel.fetchPatient()
+    }
+  }
+
+  LaunchedEffect(refreshKey) { if (refreshKey.isNotBlank()) patientViewModel.fetchPatient() }
 
   Scaffold(
     topBar = {
@@ -80,7 +92,8 @@ fun PatientScreen(
           if (state is PatientDetailScreenState.Success) {
             Text(text = (state as PatientDetailScreenState.Success).patientDetail.name)
           }
-        }
+        },
+        actions = {}
       )
     }
   ) { paddingValues ->

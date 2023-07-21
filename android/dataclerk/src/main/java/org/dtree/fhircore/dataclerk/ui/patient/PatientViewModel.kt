@@ -56,7 +56,7 @@ constructor(
     fetchPatient()
   }
 
-  private fun fetchPatient() {
+  fun fetchPatient() {
     viewModelScope.launch {
       try {
         screenState.emit(PatientDetailScreenState.Loading)

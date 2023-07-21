@@ -63,12 +63,15 @@ fun HomeScreen(
       onResult = {}
     )
   val syncState by appMainViewModel.syncSharedFlow.collectAsState(initial = null)
+  val refreshKey by appMainViewModel.refreshHash
 
   LaunchedEffect(syncState) {
     if (syncState is SyncJobStatus.Finished) {
       homeViewModel.refresh()
     }
   }
+
+  LaunchedEffect(refreshKey) { if (refreshKey.isNotBlank()) homeViewModel.refresh() }
 
   Scaffold(
     topBar = {

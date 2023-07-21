@@ -66,6 +66,7 @@ constructor(
 
   private val applicationConfiguration: ApplicationConfiguration =
     configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+  val refreshHash = mutableStateOf("")
 
   suspend fun retrieveAppMainUiState(syncBroadcaster: SyncBroadcaster) {
     appMainUiState.value =
@@ -160,6 +161,10 @@ constructor(
       }
     val parse: Date? = syncTimestampFormatter.parse(timestamp.toString())
     return if (parse == null) "" else simpleDateFormat.format(parse)
+  }
+
+  fun onTaskComplete() {
+    refreshHash.value = System.currentTimeMillis().toString()
   }
 
   companion object {
