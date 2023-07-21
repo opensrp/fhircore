@@ -77,6 +77,11 @@
             android:defaultValue=""
             app:argType="string"
             app:nullable="false" />
+        <argument
+            android:name="resourceId"
+            android:defaultValue=""
+            app:argType="string"
+            app:nullable="false" />
     </fragment>
 
     <activity
