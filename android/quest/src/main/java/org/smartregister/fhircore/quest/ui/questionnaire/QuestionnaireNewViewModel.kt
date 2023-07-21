@@ -433,7 +433,7 @@ constructor(
       val resourceType = ResourceType.valueOf(it.code)
       return bundle
         ?.entry
-        ?.first { entryComponent -> entryComponent.resource.resourceType == resourceType }
+        ?.firstOrNull { entryComponent -> entryComponent.resource.resourceType == resourceType }
         ?.resource
     }
     return null
