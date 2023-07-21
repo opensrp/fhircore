@@ -298,3 +298,122 @@ size | Size of the image in pixels | | 24 |
 imageConfig | The property that points to the actual image. It can either point to a local drawable or a server side Binary file| | [ViewAlignment.None]|
 padding | Determines whether the view should fill its parent's width | | false |
 shape | Used to clip the image into a shape e.g into a circle or rectangle | | false |
+
+
+## ROW widgets
+The purpose of the row is to act as a container for organizing and laying out its child views horizontally.
+
+
+```json
+{
+  "viewType": "ROW",
+  "arrangement": "SPACE_BETWEEN",
+  "fillMaxWidth": true,
+  "children": [
+    {
+      "viewType": "COLUMN",
+      "children": [
+        {
+          "viewType": "COMPOUND_TEXT",
+          "primaryText": "Last restock",
+          "primaryTextColor": "#5A5A5A",
+          "fontSize": 18.0
+        },
+        {
+          "viewType": "COMPOUND_TEXT",
+          "primaryText": "Previous restock ",
+          "fontSize": 16.0,
+          "secondaryText": "@{lastRestockedDate}"
+        }
+      ]
+    },
+    {
+      "viewType": "COMPOUND_TEXT",
+      "primaryText": "@{lastRestockedAmount}",
+      "primaryTextColor": "#000000",
+      "fontSize": 16.0
+    }
+  ]
+}
+```
+
+## Config properties of ROW
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType | Specifies the type of view | Yes | [ViewType]|
+weight | The weight of the row. It determines how much space this row should occupy relative to other rows in a layout that uses weights.| No | The default is 0 |
+backgroundColor | The background color of the row.It is specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No |  Null |
+padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
+borderRadius | The radius of the row's corners in pixels. Setting this value creates rounded corners for the row.| | 0 |
+alignment | Specifies the alignment of the row's content within the row. | | [ViewAlignment.NONE]|
+fillMaxWidth | If set to true, the row will attempt to occupy the maximum available width in its parent layout. | | false |
+fillMaxHeight | If set to true, the row will attempt to occupy the maximum available height in its parent layout. | | false |
+clickable |  Indicates whether the row is clickable. If set to "true", the row can be interacted with and handle click events. | | false |
+visible | Specifies the visibility of the row. If set to "true", the row will be visible, otherwise, if set to "false", it will be hidden | | true |
+spacedBy |  The spacing between the children views of the row, in pixels. | | 8|
+arrangement |  Specifies the arrangement of the children views within the row. | | |
+wrapContent |  If set to true, the row's width and height will adjust to wrap its content tightly. | | false |
+children |   A list of **ViewProperties** objects representing the children views within the row. | | emptyList()|
+
+## VIEW Widget
+Defines the hierarchical stucture of views to be rendered. It contains various properties that define its appearance and behavior.
+
+``` json
+"views": [
+            {
+                "viewType": "COLUMN",
+                "children": [
+                    {
+                        "viewType": "SERVICE_CARD",
+                        "details": [
+                            {
+                                "viewType": "COMPOUND_TEXT",
+                                "primaryText": "@{patientName}",
+                                "primaryTextColor": "#000000"
+                            },
+                            {
+                                "viewType": "COMPOUND_TEXT",
+                                "primaryText": "{{ id.patient.id }}",
+                                "fontSize": 14.0,
+                                "primaryTextColor": "#000000"
+                            }
+                        ],
+                        "showVerticalDivider": false,
+                        "serviceButton": {
+                            "visible": true,
+                            "text": "{{ anc.visit }}",
+                            "status": "DUE",
+                            "smallSized": true
+                        },
+                        "actions": [
+                            {
+                                "trigger": "ON_CLICK",
+                                "workflow": "LAUNCH_PROFILE",
+                                "id": "defaultProfile",
+                                "params": [
+                                    {
+                                        "key": "patientId",
+                                        "value": "@{patientId}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+```
+
+## Config properties of VIEW
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType | Specifies the type of view. It acts as a discriminator to identify the type of view during runtime. | Yes | [ViewType]|
+weight |  It defines the weight of the view, which is typically used in layout containers with weighted distribution to control the amount of space a view occupies relative to other views.|  | Float |
+backgroundColor | t represents the background color of the view, specified as a color code in the format "#RRGGBB" or "#AARRGGBB". If null, it indicates a transparent background. | | String? |
+padding |  It defines the padding around the content of the view, in pixels. | No | Int |
+borderRadius |  It specifies the radius of the view's corners in pixels. Setting this property creates rounded corners for the view.| | Int |
+alignment | Specifies the alignment of the row's content within the row. | | [ViewAlignment]|
+fillMaxWidth | It indicates whether the view should attempt to occupy the maximum available width in its parent layout. | | Boolean |
+fillMaxHeight | It indicates whether the view should attempt to occupy the maximum available height in its parent layout. | | Boolean |
+clickable |  Indicates whether the view is clickable. If set to "true", the row can be interacted with and handle click events. | | String |
+visible | Specifies the visibility of the view. If set to "true", the row will be visible, otherwise, if set to "false", it will be hidden | | String |
