@@ -187,7 +187,7 @@ class ConfigExtensionsTest : RobolectricTest() {
           listOf(
             ActionParameter(
               value = "practitioner_id",
-              key = "resourceId",
+              key = "practitionerId",
               paramType = ActionParameterType.RESOURCE_ID,
             ),
           ),
