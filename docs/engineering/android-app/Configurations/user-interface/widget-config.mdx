@@ -2,7 +2,9 @@
 
 Configurations used to configure widgets. FHIR Core uses widgets to render views. Examples are rows, columns, cards, and buttons.
 
-## Flex alignment widgets
+## LIST widget
+
+### Flex alignment widgets
 
 To display items in flexRow below sample JSON config works fine. Replace **COMPOUND_TEXT** with your preferred widget component. Please note, the below json borrows from **LIST** component properties
 
@@ -30,9 +32,9 @@ To display items in flexRow below sample JSON config works fine. Replace **COMPO
     ]
     }
    }
- ```
+```
 
-## Display resources inside another list
+### Display resources inside another list
 To display list resources inside a list and execute it's rules , add it an attribute called **resources** inside your list and define it's parameters as shown in the list below
 If the config doesn't have a **resources** attribute, the app logic defaults to using relatedResources and executes rules in the rule config section.
 ``` json
@@ -85,19 +87,9 @@ If the config doesn't have a **resources** attribute, the app logic defaults to 
     ]
   }
 }
- ```
+```
 
-## Config properties of list resources using the above json config
-|Property | Description | Required | Default |
-|--|--|:--:|:--:|
-id | Unique identifier for the resource | no but highly recommended | app defaults to using resourceType.Name|
-relatedResourceId | Unique identifier for the relatedResources | no but highly recommended | app defaults to using resourceType.Name|
-resourceType | The resource to to get/fetch data from e.g Task or Careplan | yes | |
-conditionalFhirPathExpression | FhirPathExpression to get to use when filtering the resource defined in resourceType section | no | app defaults to using relatedResources types and fhirPathexpression|
-sortConfig | Configuration used for sorting LIST widget resource | no | |
-
-
-## Config properties of a list widget
+### Config properties of LIST
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 id | Unique identifier for the application | Yes | |
@@ -109,6 +101,14 @@ registerCard | card to display widgets at | Yes |  |
 views | the desired widgets and their properties to be displayed | | |
 resources | the list resources to execute rules for | No but should be included if you want to display data as described in the sub-title|emptyList() |
 
+### Config properties of nested LIST
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+id | Unique identifier for the resource | no but highly recommended | app defaults to using resourceType.Name|
+relatedResourceId | Unique identifier for the relatedResources | no but highly recommended | app defaults to using resourceType.Name|
+resourceType | The resource to to get/fetch data from e.g Task or Careplan | yes | |
+conditionalFhirPathExpression | FhirPathExpression to get to use when filtering the resource defined in resourceType section | no | app defaults to using relatedResources types and fhirPathexpression|
+sortConfig | Configuration used for sorting LIST widget resource | no | |
 
 ## How to use COMPOUND_TEXT
 Defines the configuration properties for a Compound Text view, which is a view that displays two text strings with an optional separator between them. This view can also have actions associated with each text string.
@@ -131,8 +131,7 @@ Defines the configuration properties for a Compound Text view, which is a view t
               }
 ```
 
-
-## Config properties of COMPOUND_TEXT
+### Config properties of COMPOUND_TEXT
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 viewType | First viewType should be a list. This will help in iterating over the data to display | Yes | |
@@ -157,7 +156,6 @@ secondaryTextFontWeight | The font weight of the secondary text | | [TextFontWei
 primaryTextActions | The list of actions associated with the primary text. If the list is empty, no actions will be displayed | | |
 secondaryTextActions | The list of actions associated with the secondary text. If the list is empty, no actions will be displayed | | |
 overflow | Determines how the text should be truncated if it is too long to fit | | [TextOverflow.ELLIPSIS] |
-
 
 ## SERVICE_CARD widgets
 Displays Patient's details ,other related services and tasks. The details field within the SERVICE_CARD display patient's name and ID.
@@ -202,8 +200,7 @@ Displays Patient's details ,other related services and tasks. The details field 
       }
 ```
 
-
-## Config properties of SERVICE_CARD
+### Config properties of SERVICE_CARD
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 viewType | First viewType should be a list. This will help in iterating over the data to display | Yes | [ViewType.SERVICE_CARD]|
@@ -222,7 +219,6 @@ servicememberIcons | A String value that represents the icons for the service me
 serviceButton | A ButtonProperties object that represents a button displayed in the service card | Yes | null |
 services | A list of ButtonProperties that represent the services associated with the service card | yes | null |
 actions | A list of ActionConfig objects that represent the actions that can be performed on the service card | yes | emptyList() |
-
 
 ## COLUMN widgets
 The column widgets are used to create a vertical layout container that can hold multiple child views. The purpose of the "COLUMN" is to arrange child views in a vertical column, with the child views stacked on top of one another in the order in which they are added.
@@ -251,8 +247,7 @@ The column widgets are used to create a vertical layout container that can hold 
                 }
  ```
 
-
-## Config properties of COLUMN
+### Config properties of COLUMN
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 viewType | First viewType should be a list. This will help in iterating over the data to display | Yes | [ViewType.COLUMN]|
@@ -287,7 +282,7 @@ Displays icons or images.
     }
 ```
 
-## Config properties of IMAGE
+### Config properties of IMAGE
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 viewType |  | Yes | [ViewType.IMAGE]|
@@ -336,7 +331,7 @@ The purpose of the row is to act as a container for organizing and laying out it
 }
 ```
 
-## Config properties of ROW
+### Config properties of ROW
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 viewType | Specifies the type of view | Yes | [ViewType]|
@@ -403,7 +398,7 @@ Defines the hierarchical stucture of views to be rendered. It contains various p
         ]
 ```
 
-## Config properties of VIEW
+### Config properties of VIEW
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 viewType | Specifies the type of view. It acts as a discriminator to identify the type of view during runtime. | Yes | [ViewType]|
@@ -417,9 +412,9 @@ fillMaxHeight | It indicates whether the view should attempt to occupy the maxim
 clickable |  Indicates whether the view is clickable. If set to "true", the row can be interacted with and handle click events. | | String |
 visible | Specifies the visibility of the view. If set to "true", the row will be visible, otherwise, if set to "false", it will be hidden | | String |
 
-## Divider Widget
+### Divider Widget
 
-The Divider widget allows one to visually separate and organize different components within a graphical user interface (GUI). 
+The Divider widget allows one to visually separate and organize different components within a graphical user interface (GUI).
 It creates a horizontal line that acts as a visual boundary, enhancing the overall aesthetics and user experience.
 
 To use the Divider widget in the app, one has to define the JSON file as follows:
@@ -434,7 +429,7 @@ The JSON configuration instructs the app to create a Divider widget with the fol
 - View Type: The `viewType: BORDER` setting specifies the  type of widget that will be rendered, and in this case, it is set to `"BORDER"` type which renders a solid horizontal line as the divider.
 - Thickness: The `thickness: 0.8` setting determines the width of the Divider. By adjusting the thickness value, one can precisely control the Divider's visual appearance.
 
-## CONFIG PROPERTIES OF DIVIDER
+### Config properties of DIVIDER
 
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
@@ -460,7 +455,8 @@ After defining the above JSON example a view will be rendered with the following
 - View Type: The `viewType: SPACER` setting specifies that the widget that will be rendered is a spacer, which creates an empty space or gap between other UI elements.
 - Height: The `height: 10` setting determines the height of the spacer. By setting the height value to 10, the spacer will have a height of 10 density-independent pixels which scales appropriately across different screen densities, ensuring consistent visual appearance on various devices.
 
-## CONFIG PROPERTIES OF SPACER
+### Config properties of SPACER
+
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 viewType | The type of widget that will be rendered in this case it is the `SPACER` view. | Yes | [ViewType.SPACER]|
