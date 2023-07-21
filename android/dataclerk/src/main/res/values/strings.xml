@@ -14,5 +14,6 @@
     <string name="patient_property_id">ID Number</string>
     <string name="patient_property_address">Address</string>
     <string name="patient_property_dob">Date of Birth</string>
+    <string name="patient_property_age">Age</string>
     <string name="patient_property_gender">Gender</string>
 </resources>

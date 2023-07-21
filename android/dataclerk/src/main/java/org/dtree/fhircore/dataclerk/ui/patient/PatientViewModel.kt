@@ -35,6 +35,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.dtree.fhircore.dataclerk.R
 import org.dtree.fhircore.dataclerk.ui.main.AppDataStore
+import org.dtree.fhircore.dataclerk.util.getFormattedAge
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 
 @HiltViewModel
 class PatientViewModel
@@ -62,12 +66,6 @@ constructor(
         patient.let { patientItem ->
           data.add(PatientDetailOverview(patientItem, firstInGroup = true))
           data.add(PatientDetailProperty(PatientProperty("HCC/ArtNumber", patientItem.id)))
-          //          data.add(
-          //            PatientDetailProperty(
-          //              PatientProperty(getString(R.string.patient_property_id),
-          // patientItem.resourceId)
-          //            )
-          //          )
           data.add(
             PatientDetailProperty(
               PatientProperty(getString(R.string.patient_property_mobile), patientItem.phone)
@@ -78,6 +76,14 @@ constructor(
               PatientProperty(
                 getString(R.string.patient_property_dob),
                 patientItem.dob?.localizedString ?: ""
+              )
+            )
+          )
+          data.add(
+            PatientDetailProperty(
+              PatientProperty(
+                getString(R.string.patient_property_age),
+                getFormattedAge(patient, context.resources)
               )
             )
           )
@@ -120,7 +126,7 @@ constructor(
     viewModelScope.launch { resourceIds.forEach { fetchResource(it) } }
   }
 
-  suspend fun fetchResource(resourceId: String) {
+  private suspend fun fetchResource(resourceId: String) {
     viewModelScope.launch {
       try {
         resourceMapStatus.value =
@@ -142,6 +148,17 @@ constructor(
   }
 
   private fun getString(resId: Int) = context.resources.getString(resId)
+  fun editPatient(context: Context) {
+    context.launchQuestionnaire<QuestionnaireActivity>(
+      questionnaireId = EDIT_PROFILE_FORM,
+      clientIdentifier = patientId,
+      questionnaireType = QuestionnaireType.EDIT
+    )
+  }
+
+  companion object {
+    const val EDIT_PROFILE_FORM = "edit-patient-profile"
+  }
 }
 
 private fun isAndroidIcuSupported() = true

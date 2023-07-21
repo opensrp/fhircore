@@ -16,10 +16,26 @@
 
 package org.dtree.fhircore.dataclerk.util
 
+import android.content.res.Resources
+import java.time.LocalDate
+import java.time.Period
+import org.dtree.fhircore.dataclerk.R
+import org.dtree.fhircore.dataclerk.ui.main.PatientItem
 import org.hl7.fhir.r4.model.Practitioner
 import org.smartregister.fhircore.engine.util.extension.canonicalName
 
 fun Practitioner.extractName(): String {
   if (!hasName()) return ""
   return this.name.canonicalName()
+}
+
+fun getFormattedAge(patientItem: PatientItem, resources: Resources): String {
+  if (patientItem.dob == null) return ""
+  return Period.between(patientItem.dob, LocalDate.now()).let {
+    when {
+      it.years > 0 -> resources.getQuantityString(R.plurals.ageYear, it.years, it.years)
+      it.months > 0 -> resources.getQuantityString(R.plurals.ageMonth, it.months, it.months)
+      else -> resources.getQuantityString(R.plurals.ageDay, it.days, it.days)
+    }
+  }
 }

@@ -30,15 +30,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -46,6 +46,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -84,6 +85,7 @@ fun PatientScreen(
     }
   ) { paddingValues ->
     Column(Modifier.padding(paddingValues).fillMaxSize()) {
+      val context = LocalContext.current
       if (state is PatientDetailScreenState.Success) {
         LazyColumn(
           verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -94,7 +96,8 @@ fun PatientScreen(
             when (data) {
               is PatientDetailHeader -> PatientDetailsCardViewBinding(data)
               is PatientDetailProperty -> PatientListItemViewBinding(data)
-              is PatientDetailOverview -> PatientDetailsHeaderBinding(data)
+              is PatientDetailOverview ->
+                PatientDetailsHeaderBinding(data) { patientViewModel.editPatient(context) }
               is PatientReferenceProperty ->
                 list[data.patientProperty.value]?.let { PatientReferencePropertyBinding(data, it) }
             }
@@ -113,20 +116,22 @@ fun PatientDetailsCardViewBinding(data: PatientDetailHeader) {
 }
 
 @Composable
-fun PatientDetailsHeaderBinding(data: PatientDetailOverview) {
+fun PatientDetailsHeaderBinding(data: PatientDetailOverview, editPatient: () -> Unit = {}) {
+
   Card(modifier = Modifier.fillMaxWidth()) {
     Column(Modifier.padding(Constants.defaultCardPadding)) {
       Text(
         text = data.patient.name,
-        style = MaterialTheme.typography.h6.copy(fontSize = 24.sp, fontStyle = FontStyle.Normal)
+        style =
+          MaterialTheme.typography.titleLarge.copy(fontSize = 24.sp, fontStyle = FontStyle.Normal)
       )
       Row(Modifier.padding(8.dp)) {
-        Text(text = "Type", style = MaterialTheme.typography.body2)
+        Text(text = "Type", style = MaterialTheme.typography.bodyMedium)
         Box(modifier = Modifier.width(8.dp))
-        Text(text = data.patient.healthStatus.display, style = MaterialTheme.typography.body2)
+        Text(text = data.patient.healthStatus.display, style = MaterialTheme.typography.bodyMedium)
       }
       Box(modifier = Modifier.height(12.dp))
-      Button(onClick = { /*TODO*/}, modifier = Modifier.fillMaxWidth()) {
+      Button(onClick = editPatient, modifier = Modifier.fillMaxWidth()) {
         Text(text = "Edit Profile")
       }
     }
@@ -139,10 +144,14 @@ fun PatientListItemViewBinding(data: PatientDetailProperty) {
     Column(Modifier.padding(Constants.defaultCardPadding)) {
       Text(
         text = data.patientProperty.header,
-        style = MaterialTheme.typography.subtitle1.copy(fontWeight = FontWeight.Bold)
+        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
       )
       Box(modifier = Modifier.height(8.dp))
-      Text(text = data.patientProperty.value, style = MaterialTheme.typography.body2, maxLines = 1)
+      Text(
+        text = data.patientProperty.value,
+        style = MaterialTheme.typography.bodyMedium,
+        maxLines = 1
+      )
     }
   }
 }
@@ -158,19 +167,23 @@ fun PatientReferencePropertyBinding(
     Column(Modifier.padding(Constants.defaultCardPadding)) {
       Text(
         text = data.patientProperty.header,
-        style = MaterialTheme.typography.subtitle1.copy(fontWeight = FontWeight.Bold)
+        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
       )
       Box(modifier = Modifier.height(8.dp))
       if (state is ResourcePropertyState.Error) {
         Text(
           text = (state as ResourcePropertyState.Error).message,
-          style = MaterialTheme.typography.body2,
+          style = MaterialTheme.typography.bodyMedium,
           maxLines = 1
         )
       } else if (state is ResourcePropertyState.Success) {
         val resource = (state as ResourcePropertyState.Success).resource
         if (resource is Practitioner) {
-          Text(text = resource.extractName(), style = MaterialTheme.typography.body2, maxLines = 1)
+          Text(
+            text = resource.extractName(),
+            style = MaterialTheme.typography.bodyMedium,
+            maxLines = 1
+          )
         }
       } else {
         CircularProgressIndicator()

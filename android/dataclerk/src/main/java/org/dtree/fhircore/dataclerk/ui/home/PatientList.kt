@@ -20,20 +20,28 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
+import androidx.compose.material.Chip
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.dtree.fhircore.dataclerk.ui.main.AppMainViewModel
 import org.dtree.fhircore.dataclerk.ui.main.PatientItem
-import org.dtree.fhircore.dataclerk.ui.patient.localizedString
+import org.dtree.fhircore.dataclerk.ui.patient.Constants
+import org.dtree.fhircore.dataclerk.util.getFormattedAge
 
 @Composable
 fun PatientList(viewModel: AppMainViewModel, navigate: (PatientItem) -> Unit) {
@@ -50,13 +58,23 @@ fun PatientList(viewModel: AppMainViewModel, navigate: (PatientItem) -> Unit) {
   }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PatientItemCard(patient: PatientItem, onClick: () -> Unit) {
-  Card(modifier = Modifier.fillMaxWidth().clickable { onClick() }) {
-    Column(Modifier.padding(8.dp).fillMaxWidth()) {
-      Text(text = patient.name)
-      Text(text = patient.dob?.localizedString ?: "")
-      Text(text = patient.id)
+  OutlinedCard(modifier = Modifier.fillMaxWidth().clickable { onClick() }) {
+    Column(Modifier.padding(Constants.defaultCardPadding).fillMaxWidth()) {
+      Text(
+        text = patient.name,
+        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+      )
+      Row(
+        Modifier.fillMaxWidth().padding(top = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Chip(onClick = {}) { Text(text = "Id: #${patient.id}") }
+        Text(text = getFormattedAge(patient, LocalContext.current.resources))
+      }
     }
   }
 }
