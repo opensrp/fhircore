@@ -23,13 +23,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -41,7 +46,6 @@ import com.google.android.fhir.sync.SyncJobStatus
 import org.dtree.fhircore.dataclerk.ui.main.AppMainViewModel
 import org.dtree.fhircore.dataclerk.ui.main.PatientItem
 import org.smartregister.fhircore.engine.R
-import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,6 +64,12 @@ fun HomeScreen(
     )
   val syncState by appMainViewModel.syncSharedFlow.collectAsState(initial = null)
 
+  LaunchedEffect(syncState) {
+    if (syncState is SyncJobStatus.Finished) {
+      homeViewModel.refresh()
+    }
+  }
+
   Scaffold(
     topBar = {
       Column(Modifier.fillMaxWidth()) {
@@ -70,6 +80,12 @@ fun HomeScreen(
               syncState = syncState,
               sync = sync,
             )
+            IconButton(onClick = { homeViewModel.refresh() }) {
+              Icon(
+                imageVector = Icons.Default.Refresh,
+                contentDescription = "Refresh",
+              )
+            }
           }
         )
         SyncStatusBar(
@@ -130,7 +146,8 @@ fun AppScreenBody(syncState: SyncJobStatus?, sync: () -> Unit) {
           Text(
             text =
               if (syncState is SyncJobStatus.Started) stringResource(R.string.syncing_initiated)
-              else "${(syncState as SyncJobStatus.InProgress).syncOperation.name.lowercase()}ing...",
+              else
+                "${(syncState as SyncJobStatus.InProgress).syncOperation.name.lowercase()}ing...",
           )
         }
         is SyncJobStatus.Finished -> {

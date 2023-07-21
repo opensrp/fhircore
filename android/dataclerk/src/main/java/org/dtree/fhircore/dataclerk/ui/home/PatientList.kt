@@ -33,6 +33,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,7 +51,8 @@ import timber.log.Timber
 
 @Composable
 fun PatientList(viewModel: HomeViewModel, navigate: (PatientItem) -> Unit) {
-  val patients = viewModel.patientsPaging.collectAsLazyPagingItems()
+  val source by viewModel.patientsPaging.collectAsState()
+  val patients = source.collectAsLazyPagingItems()
 
   LazyColumn(
     verticalArrangement = Arrangement.spacedBy(8.dp),

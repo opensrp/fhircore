@@ -26,6 +26,8 @@ import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import org.dtree.fhircore.dataclerk.ui.home.paging.PatientPagingSource
 import org.dtree.fhircore.dataclerk.ui.main.AppDataStore
@@ -34,9 +36,10 @@ import org.dtree.fhircore.dataclerk.ui.main.PatientItem
 @HiltViewModel
 class HomeViewModel @Inject constructor(private val dataStore: AppDataStore) : ViewModel() {
   val patientCount = mutableStateOf(0L)
-  val patientsPaging: Flow<PagingData<PatientItem>> = getPatients()
+  var patientsPaging: MutableStateFlow<Flow<PagingData<PatientItem>>> =
+    MutableStateFlow(emptyFlow())
   init {
-    count()
+    refresh()
   }
   private fun getPatients() =
     Pager(
@@ -49,7 +52,10 @@ class HomeViewModel @Inject constructor(private val dataStore: AppDataStore) : V
       .flow
       .cachedIn(viewModelScope)
 
-  private fun count() {
-    viewModelScope.launch { patientCount.value = dataStore.patientCount() }
+  fun refresh() {
+    viewModelScope.launch {
+      patientCount.value = dataStore.patientCount()
+      patientsPaging.emit(getPatients())
+    }
   }
 }
