@@ -298,3 +298,56 @@ size | Size of the image in pixels | | 24 |
 imageConfig | The property that points to the actual image. It can either point to a local drawable or a server side Binary file| | [ViewAlignment.None]|
 padding | Determines whether the view should fill its parent's width | | false |
 shape | Used to clip the image into a shape e.g into a circle or rectangle | | false |
+
+
+## Divider Widget
+
+The Divider widget allows one to visually separate and organize different components within a graphical user interface (GUI). 
+It creates a horizontal line that acts as a visual boundary, enhancing the overall aesthetics and user experience.
+
+To use the Divider widget in the app, one has to define the JSON file as follows:
+```json
+{
+  "viewType": "BORDER",
+  "thickness": 0.8
+}
+```
+The JSON configuration instructs the app to create a Divider widget with the following properties:
+
+- View Type: The `viewType: BORDER` setting specifies the  type of widget that will be rendered, and in this case, it is set to `"BORDER"` type which renders a solid horizontal line as the divider.
+- Thickness: The `thickness: 0.8` setting determines the width of the Divider. By adjusting the thickness value, one can precisely control the Divider's visual appearance.
+
+## CONFIG PROPERTIES OF DIVIDER
+
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType | The type of widget that will be rendered in this case it is the `BORDER` view. | Yes | [ViewType.BORDER]|
+thickness | The width of the Divider. | No | 0.5 |
+backgroundColor | The background color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No | #FFFFFF |
+visible | A string value that determines whether the view should be visible | No| true |
+padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
+
+## Spacer Widget
+
+The Spacer widget is used to create a flexible, empty space between two views. It is used to create a space between two views in a layout, and it is also used to create a space between the edge of a view and its parent layout.
+
+To use the Divider widget in the app, one has to define the JSON file as follows:
+
+```json
+{
+  "viewType": "SPACER",
+  "height": 10
+}
+```
+After defining the above JSON example a view will be rendered with the following properties:
+- View Type: The `viewType: SPACER` setting specifies that the widget that will be rendered is a spacer, which creates an empty space or gap between other UI elements.
+- Height: The `height: 10` setting determines the height of the spacer. By setting the height value to 10, the spacer will have a height of 10 density-independent pixels which scales appropriately across different screen densities, ensuring consistent visual appearance on various devices.
+
+## CONFIG PROPERTIES OF SPACER
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType | The type of widget that will be rendered in this case it is the `SPACER` view. | Yes | [ViewType.SPACER]|
+height | The height of the Spacer. | Yes | _ |
+backgroundColor | The background color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No | #FFFFFF |
+padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
+
