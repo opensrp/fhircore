@@ -54,6 +54,12 @@ abstract class BaseRegisterPerformanceTest {
       "/data/data/${appContext.packageName}/databases/resources.db-shm".deleteFileIsExists()
       "/data/data/${appContext.packageName}/databases/resources.db-wal".deleteFileIsExists()
 
+      val databasesFolder = File("/data/data/${appContext.packageName}/databases/")
+
+      if (!databasesFolder.exists()) {
+        databasesFolder.mkdirs()
+      }
+
       // Copy over the db
       Files.copy(
         resourcesDbInputStream,
