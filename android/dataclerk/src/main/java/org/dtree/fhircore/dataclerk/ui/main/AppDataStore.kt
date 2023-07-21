@@ -27,11 +27,33 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.Resource
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.HealthStatus
+import org.smartregister.fhircore.engine.util.extension.extractAddress
+import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
+import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
+import org.smartregister.fhircore.engine.util.extension.extractWithFhirPath
 import timber.log.Timber
 
-class AppDataStore @Inject constructor(private val fhirEngine: FhirEngine) {
+class AppDataStore
+@Inject
+constructor(
+  private val fhirEngine: FhirEngine,
+  private val configurationRegistry: ConfigurationRegistry,
+  val defaultRepository: DefaultRepository
+) {
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+
+  private fun getApplicationConfiguration(): ApplicationConfiguration {
+    return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+  }
 
   suspend fun loadPatients(): List<PatientItem> {
     // TODO: replace with _tag search when update is out
@@ -42,13 +64,17 @@ class AppDataStore @Inject constructor(private val fhirEngine: FhirEngine) {
       }
       .map { inputModel ->
         Timber.e(jsonParser.encodeResourceToString(inputModel))
-        inputModel.toPatientItem()
+        inputModel.toPatientItem(getApplicationConfiguration())
       }
   }
 
   suspend fun getPatient(patientId: String): PatientItem {
     val patient = fhirEngine.get<Patient>(patientId)
-    return patient.toPatientItem()
+    return patient.toPatientItem(getApplicationConfiguration())
+  }
+
+  suspend fun getResource(resourceId: String): Resource {
+    return defaultRepository.loadResource(Reference().apply { this.reference = resourceId })
   }
 }
 
@@ -58,11 +84,22 @@ data class PatientItem(
   val name: String,
   val gender: String,
   val dob: LocalDate? = null,
+  val addressData: AddressData,
   val phone: String,
   val isActive: Boolean,
+  val chwAssigned: String,
+  val healthStatus: HealthStatus,
+  val practitioners: List<Reference>? = null,
 )
 
-internal fun Patient.toPatientItem(): PatientItem {
+data class AddressData(
+  val district: String = "",
+  val state: String = "",
+  val text: String = "",
+  val fullAddress: String = ""
+)
+
+internal fun Patient.toPatientItem(configuration: ApplicationConfiguration): PatientItem {
   val phone = if (hasTelecom()) telecom[0].value else "N/A"
   val isActive = active
   val gender = if (hasGenderElement()) genderElement.valueAsString else ""
@@ -71,12 +108,23 @@ internal fun Patient.toPatientItem(): PatientItem {
       LocalDate.parse(birthDateElement.valueAsString, DateTimeFormatter.ISO_DATE)
     else null
   return PatientItem(
-    id = this.identifierFirstRep?.value ?: "N/A",
+    id = this.extractOfficialIdentifier() ?: "N/A",
     resourceId = this.logicalId,
     name = this.extractName(),
     dob = dob,
     gender = gender ?: "",
     phone = phone ?: "N/A",
     isActive = isActive,
+    healthStatus =
+      this.extractHealthStatusFromMeta(configuration.patientTypeFilterTagViaMetaCodingSystem),
+    chwAssigned = this.extractGeneralPractitionerReference(),
+    practitioners = this.generalPractitioner,
+    addressData =
+      AddressData(
+        district = this.extractWithFhirPath("Patient.address.district"),
+        state = this.extractWithFhirPath("Patient.address.state"),
+        text = this.extractWithFhirPath("Patient.address.text"),
+        fullAddress = this.extractAddress()
+      )
   )
 }

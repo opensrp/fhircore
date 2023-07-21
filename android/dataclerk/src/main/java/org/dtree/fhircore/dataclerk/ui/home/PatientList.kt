@@ -30,9 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import java.time.LocalDate
 import org.dtree.fhircore.dataclerk.ui.main.AppMainViewModel
 import org.dtree.fhircore.dataclerk.ui.main.PatientItem
 import org.dtree.fhircore.dataclerk.ui.patient.localizedString
@@ -61,21 +59,4 @@ fun PatientItemCard(patient: PatientItem, onClick: () -> Unit) {
       Text(text = patient.id)
     }
   }
-}
-
-@Preview
-@Composable
-fun PatientItemCardPreview() {
-  val patient =
-    PatientItem(
-      name = "John Doe",
-      dob = LocalDate.now(),
-      id = "1234567890",
-      gender = "",
-      isActive = false,
-      phone = "",
-      resourceId = ""
-    )
-
-  PatientItemCard(patient) {}
 }

@@ -34,6 +34,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,7 +52,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.dtree.fhircore.dataclerk.ui.main.AppMainViewModel
+import org.dtree.fhircore.dataclerk.util.extractName
+import org.hl7.fhir.r4.model.Practitioner
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,6 +65,7 @@ fun PatientScreen(
   patientViewModel: PatientViewModel = hiltViewModel()
 ) {
   val state by patientViewModel.screenState.collectAsState()
+  val list by patientViewModel.resourceMapStatus
 
   Scaffold(
     topBar = {
@@ -90,6 +95,8 @@ fun PatientScreen(
               is PatientDetailHeader -> PatientDetailsCardViewBinding(data)
               is PatientDetailProperty -> PatientListItemViewBinding(data)
               is PatientDetailOverview -> PatientDetailsHeaderBinding(data)
+              is PatientReferenceProperty ->
+                list[data.patientProperty.value]?.let { PatientReferencePropertyBinding(data, it) }
             }
           }
         }
@@ -109,11 +116,18 @@ fun PatientDetailsCardViewBinding(data: PatientDetailHeader) {
 fun PatientDetailsHeaderBinding(data: PatientDetailOverview) {
   Card(modifier = Modifier.fillMaxWidth()) {
     Column(Modifier.padding(Constants.defaultCardPadding)) {
-      Text(text = data.patient.name, style = MaterialTheme.typography.h6.copy(fontSize = 24.sp, fontStyle = FontStyle.Normal))
+      Text(
+        text = data.patient.name,
+        style = MaterialTheme.typography.h6.copy(fontSize = 24.sp, fontStyle = FontStyle.Normal)
+      )
       Row(Modifier.padding(8.dp)) {
         Text(text = "Type", style = MaterialTheme.typography.body2)
         Box(modifier = Modifier.width(8.dp))
-        Text(text = "Art Client", style = MaterialTheme.typography.body2)
+        Text(text = data.patient.healthStatus.display, style = MaterialTheme.typography.body2)
+      }
+      Box(modifier = Modifier.height(12.dp))
+      Button(onClick = { /*TODO*/}, modifier = Modifier.fillMaxWidth()) {
+        Text(text = "Edit Profile")
       }
     }
   }
@@ -123,9 +137,44 @@ fun PatientDetailsHeaderBinding(data: PatientDetailOverview) {
 fun PatientListItemViewBinding(data: PatientDetailProperty) {
   Card(modifier = Modifier.fillMaxWidth()) {
     Column(Modifier.padding(Constants.defaultCardPadding)) {
-      Text(text = data.patientProperty.header, style = MaterialTheme.typography.subtitle1.copy(fontWeight = FontWeight.Bold))
+      Text(
+        text = data.patientProperty.header,
+        style = MaterialTheme.typography.subtitle1.copy(fontWeight = FontWeight.Bold)
+      )
       Box(modifier = Modifier.height(8.dp))
       Text(text = data.patientProperty.value, style = MaterialTheme.typography.body2, maxLines = 1)
+    }
+  }
+}
+
+@Composable
+fun PatientReferencePropertyBinding(
+  data: PatientReferenceProperty,
+  value: MutableStateFlow<ResourcePropertyState>
+) {
+  val state by value.collectAsState()
+
+  Card(modifier = Modifier.fillMaxWidth()) {
+    Column(Modifier.padding(Constants.defaultCardPadding)) {
+      Text(
+        text = data.patientProperty.header,
+        style = MaterialTheme.typography.subtitle1.copy(fontWeight = FontWeight.Bold)
+      )
+      Box(modifier = Modifier.height(8.dp))
+      if (state is ResourcePropertyState.Error) {
+        Text(
+          text = (state as ResourcePropertyState.Error).message,
+          style = MaterialTheme.typography.body2,
+          maxLines = 1
+        )
+      } else if (state is ResourcePropertyState.Success) {
+        val resource = (state as ResourcePropertyState.Success).resource
+        if (resource is Practitioner) {
+          Text(text = resource.extractName(), style = MaterialTheme.typography.body2, maxLines = 1)
+        }
+      } else {
+        CircularProgressIndicator()
+      }
     }
   }
 }

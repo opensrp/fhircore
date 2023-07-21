@@ -18,6 +18,8 @@ package org.dtree.fhircore.dataclerk.ui.patient
 
 import android.content.Context
 import android.icu.text.DateFormat
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -44,7 +46,8 @@ constructor(
 ) : ViewModel() {
   private val patientId = savedStateHandle.get<String>("patientId") ?: ""
   val screenState = MutableStateFlow<PatientDetailScreenState>(PatientDetailScreenState.Loading)
-
+  val resourceMapStatus: MutableState<Map<String, MutableStateFlow<ResourcePropertyState>>> =
+    mutableStateOf(mapOf())
   init {
     fetchPatient()
   }
@@ -55,14 +58,16 @@ constructor(
         screenState.emit(PatientDetailScreenState.Loading)
         val data = mutableListOf<PatientDetailData>()
         val patient = appDataStore.getPatient(patientId)
+        val hashList = mutableListOf<String>()
         patient.let { patientItem ->
           data.add(PatientDetailOverview(patientItem, firstInGroup = true))
           data.add(PatientDetailProperty(PatientProperty("HCC/ArtNumber", patientItem.id)))
-          data.add(
-            PatientDetailProperty(
-              PatientProperty(getString(R.string.patient_property_id), patientItem.resourceId)
-            )
-          )
+          //          data.add(
+          //            PatientDetailProperty(
+          //              PatientProperty(getString(R.string.patient_property_id),
+          // patientItem.resourceId)
+          //            )
+          //          )
           data.add(
             PatientDetailProperty(
               PatientProperty(getString(R.string.patient_property_mobile), patientItem.phone)
@@ -87,10 +92,51 @@ constructor(
               lastInGroup = true
             )
           )
+          val address = patientItem.addressData.fullAddress
+          data.add(
+            PatientDetailProperty(
+              PatientProperty(
+                getString(R.string.patient_property_address),
+                address.ifBlank { "N/A" }
+              )
+            )
+          )
+          data.add(
+            PatientReferenceProperty(PatientProperty("CHW Assigned", patientItem.chwAssigned))
+          )
+          if (patientItem.chwAssigned.isNotBlank()) {
+            hashList.add(patientItem.chwAssigned)
+          }
         }
         screenState.emit(PatientDetailScreenState.Success(patient, data))
+        fetchResources(hashList)
       } catch (e: Exception) {
         screenState.emit(PatientDetailScreenState.Error(e.message ?: "Error"))
+      }
+    }
+  }
+
+  private fun fetchResources(resourceIds: List<String>) {
+    viewModelScope.launch { resourceIds.forEach { fetchResource(it) } }
+  }
+
+  suspend fun fetchResource(resourceId: String) {
+    viewModelScope.launch {
+      try {
+        resourceMapStatus.value =
+          resourceMapStatus.value.toMutableMap().apply {
+            this[resourceId] = MutableStateFlow(ResourcePropertyState.Loading)
+          }
+        val resource = appDataStore.getResource(resourceId)
+        resourceMapStatus.value =
+          resourceMapStatus.value.toMutableMap().apply {
+            this[resourceId] = MutableStateFlow(ResourcePropertyState.Success(resource))
+          }
+      } catch (e: Exception) {
+        resourceMapStatus.value =
+          resourceMapStatus.value.toMutableMap().apply {
+            this[resourceId] = MutableStateFlow(ResourcePropertyState.Error(e.message ?: "Error"))
+          }
       }
     }
   }

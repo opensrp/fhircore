@@ -17,12 +17,19 @@
 package org.dtree.fhircore.dataclerk.ui.patient
 
 import org.dtree.fhircore.dataclerk.ui.main.PatientItem
+import org.hl7.fhir.r4.model.Resource
 
 sealed class PatientDetailScreenState {
   object Loading : PatientDetailScreenState()
   data class Success(val patientDetail: PatientItem, val detailsData: List<PatientDetailData>) :
     PatientDetailScreenState()
   data class Error(val message: String) : PatientDetailScreenState()
+}
+
+sealed class ResourcePropertyState {
+  object Loading : ResourcePropertyState()
+  data class Success(val resource: Resource) : ResourcePropertyState()
+  data class Error(val message: String) : ResourcePropertyState()
 }
 
 interface PatientDetailData {
@@ -44,6 +51,12 @@ data class PatientDetailProperty(
 
 data class PatientDetailOverview(
   val patient: PatientItem,
+  override val firstInGroup: Boolean = false,
+  override val lastInGroup: Boolean = false
+) : PatientDetailData
+
+data class PatientReferenceProperty(
+  val patientProperty: PatientProperty,
   override val firstInGroup: Boolean = false,
   override val lastInGroup: Boolean = false
 ) : PatientDetailData
