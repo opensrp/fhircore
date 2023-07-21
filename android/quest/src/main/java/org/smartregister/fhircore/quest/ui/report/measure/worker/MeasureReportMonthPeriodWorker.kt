@@ -89,11 +89,12 @@ constructor(
             }
 
             measureReportRepository.evaluatePopulationMeasure(
-              config.url,
-              startDateFormatted,
-              endDateFormatted,
-              subjects,
-              existing,
+              measureUrl = config.url,
+              startDateFormatted = startDateFormatted,
+              endDateFormatted = endDateFormatted,
+              subjects = subjects,
+              existing = existing,
+              practitionerId = null,
             )
           }
         }
