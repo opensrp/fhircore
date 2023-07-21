@@ -29,4 +29,5 @@ data class RegisterUiState(
   val pagesCount: Int = 1,
   val progressPercentage: Flow<Int> = flowOf(0),
   val isSyncUpload: Flow<Boolean> = flowOf(false),
+  val dismissLoaderView: Flow<Boolean> = flowOf(false),
 )

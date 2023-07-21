@@ -3,7 +3,9 @@ sidebar_position: 2
 sidebar_label: App Features
 ---
 
-# App Features (release v0.2.3–0.2.4)
+# App Features 
+
+As of release [**v0.2.4**](https://github.com/opensrp/fhircore/releases/tag/v0.2.4-opensrp) (July 18th, 2023)
 
 ## Patient and family registration
 
@@ -83,7 +85,7 @@ Data can be transferred without exposing the patient records in the OpenSRP app.
 
 Tasks are used to identify patients that are due for health services. They are meant to help health workers prioritize who to visit at any given time by prominently appearing in the register list views.
 
-![](/img/tasks.png)
+![task management](/img/tasks.png)
 
 Tasks in OpenSRP can fit into five categories: (1) inactive and not completable, (2) inactive but completable, (3) active and due, (4) overdue, and (5) expired. Tasks are represented in the app in both register lists and profiles in configurable colors. They are listed in order of due date, and can be configured to be listed according to other criteria stored in the Task.
 
@@ -94,7 +96,7 @@ Tasks can be due on a specific day or for a time period. The primary settings fo
 OpenSRP can generate easy-to-understand indicators used by community health workers to track progress, celebrate successes, and learn about gaps in coverage.
 Indicators are calculated from a user's patient list (and so show a health worker's achievements) and are often tied to goals or targets set by health supervisors.
 
-![](/img/in-app-reporting.png)
+![in-app reporting](/img/in-app-reporting.png)
 
 ## Stock and commodity management
 
@@ -102,19 +104,23 @@ OpenSRP makes stock and commodity management easier for health workers to antici
 
 When stock is received by a health worker, they use a consumption log form to document commodities received. As commodities are provided or used with patients during health services, stock is automatically deducted. If a stock level reaches a predetermined threshold, the app will highlight that commodity so the health worker can obtain more. During the next commodity refill, the app can calculate the correct balance the health worker should receive.
 
-![](/img/stock.png)
+![stock management](/img/stock.png)
 
 ## Multi-language support
 
 OpenSRP supports multiple languages through translatable built in content and user managed translations of form and configuration content.
-Languages the core application currently supports
-How much effort for the core application to support a new language
 
 ## Peer-to-peer data transfer
 
 OpenSRP supports peer-to-peer data transfer using “WiFi-direct” technology so that 2 off-line devices can connect to each other and synchronize information from one device to another. The receiving device will only be able to view devices it has permission to view, even though it may receive and store in its device database information it does not have permission to view.
 
-![](/img/p2p.png)
+![p2p data transfer](/img/p2p.png)
+
+## Sync Insights
+
+Through sync insights OpenSRP makes it possible to understand which data has been synced back to the remote server and what data remains unsynced on your device. These insights help provide assurances that data is synced securely and timely. Sync insights also helps the health worker navigate and troubleshoot data connectivity issues, and is invaluable to teams when providing remote support.
+
+![sync insights](/img/sync-insights.png)
 
 ## Roadmap for 2023–2024
 - Editing submitted form data
