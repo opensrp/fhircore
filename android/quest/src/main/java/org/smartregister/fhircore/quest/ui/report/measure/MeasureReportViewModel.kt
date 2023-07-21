@@ -82,7 +82,6 @@ import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPagingS
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportSubjectsPagingSource
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
-import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
@@ -161,14 +160,8 @@ constructor(
           reportConfigurations.clear()
           reportConfigurations.addAll(it)
         }
-        event.navController.navigate(
-          MeasureReportNavigationScreen.ReportTypeSelector.route +
-            NavigationArg.bindArgumentsOf(
-              Pair(NavigationArg.SCREEN_TITLE, reportConfigurations.firstOrNull()?.module ?: ""),
-            ),
-        )
-      }
-      is MeasureReportEvent.GenerateReport -> {
+
+        // generate report
         if (selectedDate != null) {
           reportTypeState.value = MeasureReport.MeasureReportType.SUMMARY
           reportTypeSelectorUiState.value =
@@ -178,7 +171,18 @@ constructor(
             )
         }
         refreshData()
-        evaluateMeasure(event.navController)
+        event.practitionerId?.let { evaluateMeasure(event.navController, practitionerId = it) }
+      }
+      is MeasureReportEvent.OnDateSelected -> {
+        if (selectedDate != null) {
+          reportTypeState.value = MeasureReport.MeasureReportType.SUMMARY
+          reportTypeSelectorUiState.value =
+            reportTypeSelectorUiState.value.copy(
+              startDate = selectedDate.firstDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA),
+              endDate = selectedDate.lastDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA),
+            )
+        }
+        event.navController.navigate(MeasureReportNavigationScreen.MeasureReportModule.route)
       }
       is MeasureReportEvent.OnDateRangeSelected -> {
         //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
@@ -260,7 +264,7 @@ constructor(
   }
 
   // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
-  fun evaluateMeasure(navController: NavController) {
+  fun evaluateMeasure(navController: NavController, practitionerId: String? = null) {
     // Run evaluate measure only for existing report
     if (reportConfigurations.isNotEmpty()) {
       // Retrieve and parse dates to  (2020-11-16)
@@ -281,14 +285,21 @@ constructor(
             toggleProgressIndicatorVisibility(true)
             val result =
               reportConfigurations.flatMap { config ->
-                val subjects = measureReportRepository.fetchSubjects(config)
+                val subjects = mutableListOf<String>()
+                subjects.addAll(measureReportRepository.fetchSubjects(config))
+
+                // If a practitioner Id is available, add it to the list of subjects
+                if (practitionerId?.isNotBlank() == true) {
+                  subjects.add("${Practitioner().resourceType.name}/$practitionerId")
+                }
+
                 val existing =
                   retrievePreviouslyGeneratedMeasureReports(
-                    fhirEngine,
-                    startDateFormatted,
-                    endDateFormatted,
-                    config.url,
-                    listOf(),
+                    fhirEngine = fhirEngine,
+                    startDateFormatted = startDateFormatted,
+                    endDateFormatted = endDateFormatted,
+                    measureUrl = config.url,
+                    subjects = listOf(),
                   )
 
                 // if report is of current month or does not exist generate a new one and replace
@@ -304,11 +315,12 @@ constructor(
                   }
 
                   measureReportRepository.evaluatePopulationMeasure(
-                    config.url,
-                    startDateFormatted,
-                    endDateFormatted,
-                    subjects,
-                    existing,
+                    measureUrl = config.url,
+                    startDateFormatted = startDateFormatted,
+                    endDateFormatted = endDateFormatted,
+                    subjects = subjects,
+                    existing = existing,
+                    practitionerId = practitionerId,
                   )
                 } else {
                   existing

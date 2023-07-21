@@ -97,8 +97,9 @@ const val YEAR_TEST_TAG = "YEAR_TEST_TAG"
 const val MONTH_TEST_TAG = "MONTH_TEST_TAG"
 
 @Composable
-fun ReportTypeSelectorScreen(
+fun ReportDateSelectorScreen(
   reportId: String,
+  practitionerId: String = "",
   screenTitle: String,
   navController: NavController,
   measureReportViewModel: MeasureReportViewModel,
@@ -120,13 +121,13 @@ fun ReportTypeSelectorScreen(
       // Reset UI state
       measureReportViewModel.resetState()
       navController.popBackStack(
-        route = MeasureReportNavigationScreen.MeasureReportList.route,
+        route = MeasureReportNavigationScreen.MeasureReportModule.route,
         inclusive = false,
       )
     },
-    onGenerateReport = { date ->
+    onSelectReportDate = { date ->
       measureReportViewModel.onEvent(
-        MeasureReportEvent.GenerateReport(navController, context),
+        MeasureReportEvent.OnDateSelected(navController, context, practitionerId = practitionerId),
         date,
       )
     },
@@ -151,7 +152,7 @@ fun ReportFilterSelector(
   reportPeriodRange: Map<String, List<ReportRangeSelectionData>>,
   modifier: Modifier = Modifier,
   onBackPressed: () -> Unit,
-  onGenerateReport: (date: Date?) -> Unit,
+  onSelectReportDate: (date: Date?) -> Unit,
   onDateRangeSelected: (Pair<Long, Long>) -> Unit,
   onReportTypeSelected: (MeasureReportType) -> Unit,
   onSubjectRemoved: (MeasureReportSubjectViewData) -> Unit,
@@ -214,7 +215,7 @@ fun ReportFilterSelector(
     ) {
       if (showFixedRangeSelection) {
         FixedMonthYearListing(
-          onMonthSelected = onGenerateReport,
+          onMonthSelected = onSelectReportDate,
           showProgressIndicator = uiState.showProgressIndicator,
           reportGenerationRange = reportPeriodRange,
           innerPadding = innerPadding,
@@ -228,7 +229,7 @@ fun ReportFilterSelector(
               uiState.endDate.isNotEmpty() &&
               (uiState.subjectViewData != null ||
                 reportTypeState.value == MeasureReportType.SUMMARY),
-          onGenerateReportClicked = { onGenerateReport.invoke(null) },
+          onGenerateReportClicked = { onSelectReportDate.invoke(null) },
           showProgressIndicator = uiState.showProgressIndicator,
           dateRange = dateRange!!,
           onDateRangeSelected = onDateRangeSelected,
@@ -548,7 +549,7 @@ fun FixedRangeListPreview() {
     dateRange = null,
     reportPeriodRange = ranges,
     onBackPressed = {},
-    onGenerateReport = {},
+    onSelectReportDate = {},
     onDateRangeSelected = {},
     onReportTypeSelected = {},
     onSubjectRemoved = {},
@@ -571,7 +572,7 @@ fun ReportFilterPreview() {
     dateRange = dateRange,
     reportPeriodRange = mapOf(),
     onBackPressed = {},
-    onGenerateReport = {},
+    onSelectReportDate = {},
     onDateRangeSelected = {},
     onReportTypeSelected = {},
     onSubjectRemoved = {},
