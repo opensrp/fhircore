@@ -81,28 +81,17 @@ jobs:
           force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: /Users/runner/Library/Android/sdk/platform-tools/adb install quest/build/outputs/apk/androidTest/ecbis/debug/quest-ecbis-debug-androidTest.apk && /Users/runner/Library/Android/sdk/platform-tools/adb shell am instrument -w org.smartregister.opensrp.ecbis/androidx.benchmark.junit4.AndroidBenchmarkRunner
+          script: /Users/runner/Library/Android/sdk/platform-tools/adb install quest/build/outputs/apk/androidTest/ecbis/debug/quest-ecbis-debug-androidTest.apk && /Users/runner/Library/Android/sdk/platform-tools/adb shell am instrument -w -e package org.smartregister.fhircore.performance -e "androidx.benchmark.suppressErrors" ACTIVITY-MISSING,CODE-COVERAGE,DEBUGGABLE,UNLOCKED,EMULATOR -e additionalTestOutputDir "/sdcard/Download/" -e "androidx.benchmark.dryRunMode.enable" "true" org.smartregister.opensrp.ecbis.test/org.smartregister.fhircore.quest.QuestTestRunner && /Users/runner/Library/Android/sdk/platform-tools/adb pull /sdcard/Download/org.smartregister.opensrp.ecbis-benchmarkData.json quest/    
 
-      - name: Run Quest module unit and instrumentation tests and generate coverage report
-        uses: reactivecircus/android-emulator-runner@v2
-        with: 
-          working-directory: android
-          api-level: ${{ matrix.api-level }}
-          arch: x86_64
-          force-avd-creation: true
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: ./gradlew -PlocalPropertiesFile=local.properties :quest:clean && ./gradlew -PlocalPropertiesFile=local.properties :quest:connectedEcbisDebugAndroidTest --stacktrace || true && ./gradlew -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace || true
+      - name: Check performance results
+        working-directory: android
+        run: ./gradlew :quest:checkPerformanceLimits --stacktrace
 
       - name: Start SSH session
         uses: luchihoratiu/debug-via-ssh@main
         with:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
           SSH_PASS: ${{ secrets.SSH_PASS }}
-
-      - name: Check performance results
-        working-directory: android
-        run: ./gradlew :quest:checkPerformanceLimits --stacktrace
 
       - name: Upload Quest module test coverage report to Codecov
         if: matrix.api-level == 30 # Only upload coverage on API level 30
