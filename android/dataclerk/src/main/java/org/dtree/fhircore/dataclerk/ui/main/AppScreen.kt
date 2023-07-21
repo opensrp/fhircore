@@ -17,21 +17,26 @@
 package org.dtree.fhircore.dataclerk.ui.main
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import org.dtree.fhircore.dataclerk.ui.home.HomeScreen
+import org.dtree.fhircore.dataclerk.ui.home.HomeViewModel
 import org.dtree.fhircore.dataclerk.ui.patient.PatientScreen
 
 @Composable
-fun AppScreen(appMainViewModel: AppMainViewModel, sync: () -> Unit) {
+fun AppScreen(
+  appMainViewModel: AppMainViewModel,
+  homeViewModel: HomeViewModel = hiltViewModel(),
+  sync: () -> Unit
+) {
   val navController = rememberNavController()
-
   NavHost(navController = navController, startDestination = "home") {
     composable("home") {
-      HomeScreen(appMainViewModel = appMainViewModel, sync = sync) {
+      HomeScreen(appMainViewModel = appMainViewModel, homeViewModel = homeViewModel, sync = sync) {
         navController.navigate("patient/${it.resourceId}")
       }
     }

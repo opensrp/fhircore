@@ -16,8 +16,10 @@
 
 package org.dtree.fhircore.dataclerk.ui.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -25,8 +27,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Chip
-import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -43,10 +44,12 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import org.dtree.fhircore.dataclerk.ui.main.PatientItem
 import org.dtree.fhircore.dataclerk.ui.patient.Constants
 import org.dtree.fhircore.dataclerk.util.getFormattedAge
+import org.smartregister.fhircore.engine.ui.components.ErrorMessage
+import timber.log.Timber
 
 @Composable
 fun PatientList(viewModel: HomeViewModel, navigate: (PatientItem) -> Unit) {
-  val patients = viewModel.getPatients().collectAsLazyPagingItems()
+  val patients = viewModel.patientsPaging.collectAsLazyPagingItems()
 
   LazyColumn(
     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -59,8 +62,12 @@ fun PatientList(viewModel: HomeViewModel, navigate: (PatientItem) -> Unit) {
     }
     when (val state = patients.loadState.refresh) { // FIRST LOAD
       is LoadState.Error -> {
-        // TODO Error Item
-        // state.error to get error message
+        item {
+          ErrorMessage(
+            message = state.error.also { Timber.e(it) }.localizedMessage!!,
+            onClickRetry = { patients.retry() }
+          )
+        }
       }
       is LoadState.Loading -> { // Loading UI
         item {
@@ -79,8 +86,12 @@ fun PatientList(viewModel: HomeViewModel, navigate: (PatientItem) -> Unit) {
     }
     when (val state = patients.loadState.append) { // Pagination
       is LoadState.Error -> {
-        // TODO Pagination Error Item
-        // state.error to get error message
+        item {
+          ErrorMessage(
+            message = state.error.also { Timber.e(it) }.localizedMessage!!,
+            onClickRetry = { patients.retry() }
+          )
+        }
       }
       is LoadState.Loading -> { // Pagination Loading UI
         item {
@@ -100,7 +111,6 @@ fun PatientList(viewModel: HomeViewModel, navigate: (PatientItem) -> Unit) {
   }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PatientItemCard(patient: PatientItem, onClick: () -> Unit) {
   OutlinedCard(modifier = Modifier.fillMaxWidth().clickable { onClick() }) {
@@ -114,7 +124,20 @@ fun PatientItemCard(patient: PatientItem, onClick: () -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
       ) {
-        Chip(onClick = {}) { Text(text = "Id: #${patient.id}") }
+        Box(
+          modifier =
+            Modifier.background(
+                color = MaterialTheme.colorScheme.primary,
+                shape = RoundedCornerShape(8.dp)
+              )
+              .padding(8.dp)
+        ) {
+          Text(
+            text = "Id: #${patient.id}",
+            style =
+              MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onPrimary)
+          )
+        }
         Text(text = getFormattedAge(patient, LocalContext.current.resources))
       }
     }

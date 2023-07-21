@@ -25,6 +25,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlin.math.max
 import kotlinx.coroutines.launch
+import org.dtree.fhircore.dataclerk.ui.home.HomeViewModel
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -36,13 +37,16 @@ import timber.log.Timber
 @AndroidEntryPoint
 class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
   private val appMainViewModel by viewModels<AppMainViewModel>()
+  private val homeViewModel by viewModels<HomeViewModel>()
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
   var lastSyncState: SyncJobStatus? = null
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     setContent {
-      AppTheme() { AppScreen(appMainViewModel) { appMainViewModel.sync(syncBroadcaster) } }
+      AppTheme() {
+        AppScreen(appMainViewModel, homeViewModel) { appMainViewModel.sync(syncBroadcaster) }
+      }
     }
 
     syncBroadcaster.registerSyncListener(this, lifecycleScope)

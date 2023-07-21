@@ -22,6 +22,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -29,6 +30,7 @@ import javax.inject.Inject
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -75,6 +77,12 @@ constructor(
 
   suspend fun getResource(resourceId: String): Resource {
     return defaultRepository.loadResource(Reference().apply { this.reference = resourceId })
+  }
+
+  suspend fun patientCount(): Long {
+    return fhirEngine.count(
+      Search(ResourceType.Patient).apply { filter(Patient.ACTIVE, { value = of(true) }) }
+    )
   }
 }
 

@@ -20,13 +20,12 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -37,13 +36,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.fhir.sync.SyncJobStatus
-import org.dtree.fhircore.dataclerk.ui.main.AppMainUiState
 import org.dtree.fhircore.dataclerk.ui.main.AppMainViewModel
 import org.dtree.fhircore.dataclerk.ui.main.PatientItem
 import org.smartregister.fhircore.engine.R
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,7 +61,22 @@ fun HomeScreen(
   val syncState by appMainViewModel.syncSharedFlow.collectAsState(initial = null)
 
   Scaffold(
-    topBar = { TopAppBar(title = { Text(text = appState.appTitle) }) },
+    topBar = {
+      Column(Modifier.fillMaxWidth()) {
+        TopAppBar(
+          title = { Text(text = appState.appTitle) },
+          actions = {
+            AppScreenBody(
+              syncState = syncState,
+              sync = sync,
+            )
+          }
+        )
+        SyncStatusBar(
+          syncState = syncState,
+        )
+      }
+    },
     bottomBar = {
       if (!appState.isInitialSync)
         Button(
@@ -73,64 +86,63 @@ fun HomeScreen(
     }
   ) { paddingValues ->
     Column(Modifier.padding(paddingValues)) {
-      //      AppScreenBody(
-      //              paddingValues = paddingValues,
-      //              appState = appState,
-      //              syncState = syncState,
-      //              sync = sync,
-      //      )
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        val count by homeViewModel.patientCount
+        Text(text = "Patients: $count")
+        Text(text = "Last Sync: ${appState.lastSyncTime}")
+      }
       PatientList(viewModel = homeViewModel, navigate = openPatient)
     }
   }
 }
 
 @Composable
-fun AppScreenBody(
-  paddingValues: PaddingValues,
-  appState: AppMainUiState,
+fun SyncStatusBar(
   syncState: SyncJobStatus?,
-  sync: (() -> Unit)
 ) {
-  Column(
-    horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement =
-      if (appState.isInitialSync) Arrangement.Center else Arrangement.SpaceAround,
-    modifier = Modifier.padding(paddingValues).fillMaxSize()
-  ) {
-    Column(
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.spacedBy(12.dp),
+  if (syncState is SyncJobStatus.InProgress) {
+    val progress =
+      syncState
+        .let { it.completed.toDouble().div(it.total) }
+        .let { if (it.isNaN()) 0.0 else it }
+        .times(100)
+        .div(100)
+        .toFloat()
+    LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), progress = progress)
+  } else if (syncState is SyncJobStatus.Started) {
+    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+  }
+}
+
+@Composable
+fun AppScreenBody(syncState: SyncJobStatus?, sync: () -> Unit) {
+  Row() {
+    Button(
+      onClick = sync,
+      enabled = !(syncState is SyncJobStatus.InProgress || syncState is SyncJobStatus.Started)
     ) {
       when (syncState) {
         is SyncJobStatus.InProgress, is SyncJobStatus.Started -> {
           Text(
             text =
               if (syncState is SyncJobStatus.Started) stringResource(R.string.syncing_initiated)
-              else stringResource(R.string.syncing_in_progress)
+              else "${(syncState as SyncJobStatus.InProgress).syncOperation.name.lowercase()}ing...",
           )
-          CircularProgressIndicator()
-          if (syncState is SyncJobStatus.InProgress) {
-            Text(
-              text = "${syncState.syncOperation} ${syncState.completed} out of ${syncState.total}"
-            )
-          }
         }
         is SyncJobStatus.Finished -> {
-          Text(text = "Sync finished")
+          Text(text = "Sync (finished)")
         }
         is SyncJobStatus.Glitch, is SyncJobStatus.Failed -> {
-          Text(text = "Sync failed")
+          Text(text = "Sync (failed)")
         }
         else -> {
-          Text(text = "Synced")
+          Text(text = "Run Sync")
         }
       }
-      Button(
-        onClick = sync,
-        enabled = !(syncState is SyncJobStatus.InProgress || syncState is SyncJobStatus.Started)
-      ) { Text(text = "Run Sync") }
     }
-
-    Text(text = "Last Sync: ${appState.lastSyncTime}")
   }
 }
