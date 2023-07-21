@@ -29,11 +29,6 @@ data class AppMainUiState(
   val registrationButton: String,
 )
 
-data class AppRegistryState(
-  val loading: Boolean = true,
-  val patients: List<PatientItem> = emptyList(),
-)
-
 fun appMainUiStateOf(
   appTitle: String = "FHIR App",
   username: String = "",

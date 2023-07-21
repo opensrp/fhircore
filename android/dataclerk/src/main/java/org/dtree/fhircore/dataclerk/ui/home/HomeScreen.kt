@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.fhir.sync.SyncJobStatus
 import org.dtree.fhircore.dataclerk.ui.main.AppMainUiState
 import org.dtree.fhircore.dataclerk.ui.main.AppMainViewModel
@@ -48,6 +49,7 @@ import org.smartregister.fhircore.engine.R
 @Composable
 fun HomeScreen(
   appMainViewModel: AppMainViewModel,
+  homeViewModel: HomeViewModel = hiltViewModel(),
   sync: () -> Unit,
   openPatient: (PatientItem) -> Unit
 ) {
@@ -77,7 +79,7 @@ fun HomeScreen(
       //              syncState = syncState,
       //              sync = sync,
       //      )
-      PatientList(viewModel = appMainViewModel, navigate = openPatient)
+      PatientList(viewModel = homeViewModel, navigate = openPatient)
     }
   }
 }

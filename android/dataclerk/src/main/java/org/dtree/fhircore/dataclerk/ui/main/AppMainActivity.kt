@@ -46,12 +46,7 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     }
 
     syncBroadcaster.registerSyncListener(this, lifecycleScope)
-    appMainViewModel.run {
-      lifecycleScope.launch {
-        retrieveAppMainUiState(syncBroadcaster)
-        fetchData()
-      }
-    }
+    appMainViewModel.run { lifecycleScope.launch { retrieveAppMainUiState(syncBroadcaster) } }
 
     syncBroadcaster.runSync()
   }

@@ -32,29 +32,71 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import org.dtree.fhircore.dataclerk.ui.main.AppMainViewModel
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
 import org.dtree.fhircore.dataclerk.ui.main.PatientItem
 import org.dtree.fhircore.dataclerk.ui.patient.Constants
 import org.dtree.fhircore.dataclerk.util.getFormattedAge
 
 @Composable
-fun PatientList(viewModel: AppMainViewModel, navigate: (PatientItem) -> Unit) {
-  val state by viewModel.patientListState
+fun PatientList(viewModel: HomeViewModel, navigate: (PatientItem) -> Unit) {
+  val patients = viewModel.getPatients().collectAsLazyPagingItems()
 
-  if (state.loading) {
-    CircularProgressIndicator()
-  }
   LazyColumn(
     verticalArrangement = Arrangement.spacedBy(8.dp),
     contentPadding = PaddingValues(8.dp)
   ) {
-    items(state.patients) { patient -> PatientItemCard(patient, onClick = { navigate(patient) }) }
+    items(items = patients.itemSnapshotList, key = { it?.resourceId ?: "" }) { patient ->
+      if (patient != null) {
+        PatientItemCard(patient, onClick = { navigate(patient) })
+      }
+    }
+    when (val state = patients.loadState.refresh) { // FIRST LOAD
+      is LoadState.Error -> {
+        // TODO Error Item
+        // state.error to get error message
+      }
+      is LoadState.Loading -> { // Loading UI
+        item {
+          Column(
+            modifier = Modifier.fillParentMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+          ) {
+            Text(modifier = Modifier.padding(8.dp), text = "Refresh Loading")
+
+            CircularProgressIndicator(color = Color.Black)
+          }
+        }
+      }
+      else -> {}
+    }
+    when (val state = patients.loadState.append) { // Pagination
+      is LoadState.Error -> {
+        // TODO Pagination Error Item
+        // state.error to get error message
+      }
+      is LoadState.Loading -> { // Pagination Loading UI
+        item {
+          Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+          ) {
+            Text(text = "Pagination Loading")
+
+            CircularProgressIndicator(color = Color.Black)
+          }
+        }
+      }
+      else -> {}
+    }
   }
 }
 

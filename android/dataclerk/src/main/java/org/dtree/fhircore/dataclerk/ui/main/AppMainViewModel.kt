@@ -62,7 +62,6 @@ constructor(
   }
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
   val appMainUiState: MutableState<AppMainUiState> = mutableStateOf(appMainUiStateOf())
-  val patientListState: MutableState<AppRegistryState> = mutableStateOf(AppRegistryState())
   val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
 
   private val applicationConfiguration: ApplicationConfiguration =
@@ -79,18 +78,6 @@ constructor(
         isInitialSync = syncBroadcaster.isInitialSync(),
         registrationButton = patientRegisterConfiguration.newClientButtonText
       )
-  }
-
-  fun fetchData() {
-    viewModelScope.launch {
-      try {
-        patientListState.value = patientListState.value.copy(loading = true)
-        val data = dataStore.loadPatients()
-        patientListState.value = patientListState.value.copy(patients = data, loading = false)
-      } catch (e: Exception) {
-        patientListState.value = patientListState.value.copy(loading = false)
-      }
-    }
   }
 
   fun retrieveLastSyncTimestamp(): String? =

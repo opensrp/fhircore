@@ -55,7 +55,7 @@ constructor(
     return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
   }
 
-  suspend fun loadPatients(): List<PatientItem> {
+  suspend fun loadPatients(page: Int = 1): List<PatientItem> {
     // TODO: replace with _tag search when update is out
     return fhirEngine
       .search<Patient> {
