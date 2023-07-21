@@ -285,7 +285,13 @@ constructor(
             toggleProgressIndicatorVisibility(true)
             val result =
               reportConfigurations.flatMap { config ->
-                val subjects = measureReportRepository.fetchSubjects(config)
+                val subjects = mutableListOf<String>()
+                subjects.addAll(measureReportRepository.fetchSubjects(config))
+
+                // If a practitioner Id is available, add it to the list of subjects
+                if (practitionerId?.isNotBlank() == true) {
+                  subjects.add("${Practitioner().resourceType.name}/$practitionerId")
+                }
 
                 val existing =
                   retrievePreviouslyGeneratedMeasureReports(
