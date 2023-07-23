@@ -1,0 +1,378 @@
+{
+  "resourceType": "PlanDefinition",
+  "id": "385987",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2023-07-22T20:22:25.771+00:00"
+  },
+  "contained": [
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-init-activity",
+      "title": "IPC CarePlan",
+      "status": "active",
+      "description": "This action will assess careplan on registration to init careplan",
+      "kind": "CarePlan",
+      "dynamicValue": [
+        {
+          "path": "title",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.title"
+          }
+        },
+        {
+          "path": "description",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.description"
+          }
+        },
+        {
+          "path": "instantiatesCanonical",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.id.replaceMatches('/_history/.*', '')"
+          }
+        },
+        {
+          "path": "status",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'active'"
+          }
+        },
+        {
+          "path": "intent",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'plan'"
+          }
+        },
+        {
+          "path": "created",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "now()"
+          }
+        },
+        {
+          "path": "subject.reference",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.id.replaceMatches('/_history/.*', '')"
+          }
+        },
+        {
+          "path": "author",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.generalPractitioner.first()"
+          }
+        },
+        {
+          "path": "period.start",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.birthDate"
+          }
+        },
+        {
+          "path": "period.end",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.birthDate + 4017 'days'"
+          }
+        },
+        {
+          "path": "activity.detail.kind",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'Task'"
+          }
+        },
+        {
+          "path": "activity.detail.status",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'in-progress'"
+          }
+        },
+        {
+          "path": "activity.detail.description",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'This action will assess careplan on registration to init careplan'"
+          }
+        },
+        {
+          "path": "activity.detail.performer",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.generalPractitioner.first()"
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-ipc-task-activity",
+      "title": "IPC Activity",
+      "status": "active",
+      "description": "This is the IPC scheduled Task.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "33879002",
+            "display": "Administration of IPC Task"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "42284007",
+            "display": "IPC"
+          }
+        ],
+        "text": "IPC"
+      },
+      "dosage": [
+        {
+          "sequence": 0,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 1825,
+              "durationUnit": "d",
+              "period": 6,
+              "periodUnit": "wk"
+            }
+          }
+        },
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 1825,
+              "durationUnit": "d",
+              "period": 6,
+              "periodUnit": "wk"
+            }
+          }
+        },
+        {
+          "sequence": 2,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 1825,
+              "durationUnit": "d",
+              "period": 6,
+              "periodUnit": "wk"
+            }
+          }
+        },
+        {
+          "sequence": 3,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 1825,
+              "durationUnit": "d",
+              "period": 6,
+              "periodUnit": "wk"
+            }
+          }
+        },
+        {
+          "sequence": 4,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 1825,
+              "durationUnit": "d",
+              "period": 6,
+              "periodUnit": "wk"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-spi-task-activity",
+      "title": "SPI Activity",
+      "status": "active",
+      "description": "This is the SPI scheduled Task.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "33879002",
+            "display": "Administration of SPI Task"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "111164008",
+            "display": "SPI"
+          }
+        ],
+        "text": "SPI"
+      },
+      "dosage": [
+        {
+          "sequence": 0,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 1825,
+              "durationUnit": "d",
+              "period": 6,
+              "periodUnit": "wk"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-sbirt-task-activity",
+      "title": "SBRIT Activity",
+      "status": "active",
+      "description": "This is the SBIRT.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "33879002",
+            "display": "Administration of SBIRT Task"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "429511000124109",
+            "display": "SBIRT"
+          }
+        ],
+        "text": "SBIRT"
+      },
+      "dosage": [
+        {
+          "sequence": 0,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 1825,
+              "durationUnit": "d",
+              "period": 6,
+              "periodUnit": "wk"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "name": "IPC",
+  "title": "IPC",
+  "status": "active",
+  "description": "This scheduled will be used to track the Patient's IPC Activities.",
+  "action": [
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "definitionCanonical": "#careplan-init-activity"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-task-activity",
+      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-spi-task-activity",
+      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-sbirt-task-activity",
+      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
+    }
+  ]
+}
