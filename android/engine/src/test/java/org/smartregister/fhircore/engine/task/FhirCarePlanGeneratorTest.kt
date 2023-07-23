@@ -1285,6 +1285,30 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Test
   @ExperimentalCoroutinesApi
+  fun `Generate CarePlan should generate ipc schedule`() = runTest {
+    val planDefinitionResources =
+      loadPlanDefinitionResources("ipc-schedule", listOf("register-temp"))
+    val planDefinition = planDefinitionResources.planDefinition
+    val patient = planDefinitionResources.patient
+    val questionnaireResponses = planDefinitionResources.questionnaireResponses
+    val resourcesSlot = planDefinitionResources.resourcesSlot
+    val vaccines = makeVaccinesMapForPatient(patient)
+
+    fhirCarePlanGenerator
+      .generateOrUpdateCarePlan(
+        planDefinition,
+        patient,
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
+          ),
+      )!!
+      .also { println(it.encodeResourceToString()) }
+  }
+
+  @Test
+  @ExperimentalCoroutinesApi
   fun `test generateOrUpdateCarePlan returns success even when evaluatedValue is null`() =
     runBlocking {
       val planDefinitionResources =

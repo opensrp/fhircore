@@ -1,0 +1,147 @@
+map "http://hl7.org/fhir/StructureMap/385988" = 'IPC Activity'
+
+uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
+uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
+
+group IPCSchedule(source src : Parameters, target careplan: CarePlan) {
+    src -> evaluate(src, $this.parameter.where(name='subject').resource) as subject,
+            evaluate(src, $this.parameter.where(name='definition').resource) as definition,
+            evaluate(src, $this.parameter.where(name='depends-on').resource.entry.where(resource is QuestionnaireResponse).resource) as questionnaireResponse,
+            evaluate(src, $this.parameter.where(name='period').value) as period,
+            evaluate(src, $this.parameter.where(name='version').value) as version
+            then extractTask(period, version, subject, definition, careplan) "rule_careplan";
+}
+
+group extractTask(
+    source period: Period,
+    source version: Integer,
+    source subject : Patient,
+    source definition: ActivityDefinition,
+    target careplan: CarePlan) {
+
+    // fill task into careplan contained and add reference in activity.outcome
+    subject -> create('Task') as task,
+        // dosage[version] does not work, hence skipping the item from given index via skip.first
+        evaluate(definition, $this.dosage.skip(version).first()) as currentDose then {
+        subject -> task.id = uuid(),
+               task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
+               task.status = 'requested',
+               task.intent = 'plan',
+               task.executionPeriod = period,
+               task.priority = 'routine',
+               // dosage[version] does not work, hence skipping the item from given index via skip.first
+               task.description = evaluate(definition, $this.product.text + ' ' + currentDose.select(sequence.toString())),
+               task.for = create('Reference') as patientReference, patientReference.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
+               task.basedOn = reference(careplan),
+               task.authoredOn = evaluate(subject, now()),
+               task.requester = evaluate(subject, $this.generalPractitioner.first()),
+               task.owner = evaluate(subject, $this.generalPractitioner.first()),
+               task.code = evaluate(definition, code),
+               task.reasonCode = evaluate(definition, product) "rule_task_data";
+
+        subject then extractPeriod(subject, task) "rule_task_period_extraction";
+
+        subject -> task.reasonReference = create('Reference') as reasonReference, reasonReference.reference = 'Questionnaire/385989' "rule_task_reason_reference";
+
+        // task groupIdentifier
+        subject -> task.groupIdentifier = create('Identifier') as groupIdentifier then {
+            subject -> groupIdentifier.value = evaluate(definition, $this.dosage.skip(version).first().select(timing.repeat.period.toString() + '_' + timing.repeat.periodUnit)) "rule_group_identifierule_value";
+            subject -> groupIdentifier.use = "secondary" "rule_group_identifierule_use";
+        } "rule_group_identifier";
+
+        subject -> evaluate(task, $this.groupIdentifier.value) as groupIdentifierValue then {
+            subject where(groupIdentifierValue = '108_mo') then {
+                subject -> evaluate(subject, "3285") as maxDays then extractTaskRestriction(subject, task, definition, version, maxDays) "rule_task_restriction";
+            } "rule_create_restriction_end_duration_9_years";
+
+            subject where(groupIdentifierValue = '114_mo') then {
+                subject -> evaluate(subject, "3467.5") as maxDays then extractTaskRestriction(subject, task, definition, version, maxDays) "rule_task_restriction";
+            } "rule_create_restriction_end_duration_9half_years";
+
+            subject where(groupIdentifierValue != '114_mo' and groupIdentifierValue != "108_mo") then {
+                subject -> evaluate(subject, "1825") as maxDays then extractTaskRestriction(subject, task, definition, version, maxDays) "rule_task_restriction";
+            } "rule_create_restriction_end_duration_5_years";
+        } "rule_create_restriction_end_duration";
+
+        //add task.input for task dependencies
+        subject -> task.input = create('Task_Input') as inputTask then {
+            subject -> inputTask.type = create("CodeableConcept") as concept then {
+                subject-> concept.coding = c("http://snomed.info/sct","371154000") as coding then {
+                        subject -> coding.display = "Dependent (qualifier value)" "rule_coding_display";
+                    } "rule_task_concept_coding";
+                } "rule_codeable_concept";
+            subject -> inputTask.value = 28 "rule_input_value";//TODO discuss implementation on how we can make this dynamic for each dosage
+         } "rule_task_input";
+
+        subject -> evaluate(definition, $this.product.text + ' ' + (currentDose.sequence - 1).toString()) as preReqName,
+            evaluate(careplan, $this.contained.where(description.contains(preReqName))) as preReqTask then {
+                subject where(preReqTask.exists()) -> task.partOf = create('Reference') as partOfReference then {
+                    subject -> partOfReference.reference = evaluate(preReqTask, 'Task/' + id) "rule_task_reference_id";
+                } "rule_task_part_of";
+            } "rule_dosage";
+
+        subject then extractTaskReferenceInput(subject, task, definition, version, careplan) "rule_task_reference_input";
+
+        // create activity.detail of type/kind Task for this Task if not exists
+        subject where(careplan.activity.where(detail.kind = 'Task').exists().not()) -> careplan.activity = create('CarePlan_Activity') as activity then {
+            subject -> activity.detail = create('CarePlan_ActivityDetail') as ActivityDefinition then {
+                subject -> ActivityDefinition.kind = 'Task' "rule_activity_detail_data";
+            } "rule_activity_detail";
+        } "rule_careplan_activity";
+
+        // add task to careplan irrespective of its validity
+        subject then {
+            subject -> evaluate(careplan, activity.where(detail.kind = 'Task')) as activity, activity.outcomeReference = reference(task) "rule_careplan_task_reference";
+            subject -> careplan.contained = task "rule_add_task";
+        } "rule_careplan_task";
+    } "rule_task";
+}
+
+group extractTaskReferenceInput(source subject: Patient, target task: Task, source definition: ActivityDefinition, source version: Integer, source careplan: CarePlan) {
+    subject -> evaluate(task, $this.partOf.last()) as taskPartOfReference then {
+        subject where(taskPartOfReference.empty().not()) then {
+            subject -> task.input = create('Task_Input') as inputTask then {
+                subject -> inputTask.type = create("CodeableConcept") as concept then {
+                    subject-> concept.coding = c("http://snomed.info/sct","900000000000457003") as coding then {
+                        subject -> coding.display = "Reference set attribute (foundation metadata concept)" "rule_coding_display";
+                    } "rule_task_concept_coding";
+                } "rule_codeable_concept";
+                subject -> inputTask.value = create('Reference') as partOfReference then {
+                        subject -> partOfReference.reference = evaluate(subject, taskPartOfReference.reference.toString()) "rule_task_reference_id";
+                } "rule_task_part_of_reference";
+            } "rule_task_input";
+        } "rule_task_part_of_reference_exists";
+    } "rule_task_part_of_reference";
+}
+
+group extractTaskRestriction(source subject: Patient, target task: Task, source definition: ActivityDefinition, source version: Integer, source restrictionEndDate: String) {
+    subject -> evaluate(task, $this.executionPeriod.start) as start then {
+        subject -> evaluate(subject, $this.birthDate) as patientBirthDate then {
+            subject -> create("Task_Restriction") as taskRestriction then {
+                subject->taskRestriction.period = create("Period") as taskRestrictionPeriod then {
+                    subject -> taskRestrictionPeriod.start = create('dateTime') as startDateTime,
+                        startDateTime.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "rule_period_start";
+
+                    subject -> taskRestrictionPeriod.end = create('dateTime') as endDateTime,
+                        endDateTime.value = evaluate(start, (($this + (((restrictionEndDate).toString() + ' \'days\'')).toQuantity()).value.substring(0,10)) + 'T00:00:00.00Z') "rule_period_end";
+
+                    subject -> task.restriction = taskRestriction "rule_restriction_period";
+                } "rule_task_restriction_period";
+            } "rule_task_restriction";
+        } "rule_birth_date";
+    } "rule_task_execution_period";
+}
+
+group extractPeriod(source subject: Patient, target task: Task) {
+    subject -> evaluate(task, $this.executionPeriod.start) as start, evaluate(task, $this.executionPeriod.end) as end then {
+        subject -> create('Period') as period then {
+            subject -> period.start = create('dateTime') as startDateTime,
+                startDateTime.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "rule_period_start";
+
+            subject -> period.end = create('dateTime') as endDateTime,
+                endDateTime.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "rule_period_end";
+
+            subject -> task.executionPeriod = period "rule_execution_period";
+        } "rule_period";
+    } "rule_task_execution_period";
+}

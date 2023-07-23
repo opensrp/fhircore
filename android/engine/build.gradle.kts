@@ -27,7 +27,7 @@ android {
     buildConfigField(
       "boolean",
       "IS_NON_PROXY_APK",
-      "${project.hasProperty("isNonProxy") && property("isNonProxy").toString().toBoolean()}",
+      "true",
     )
   }
 
