@@ -385,8 +385,9 @@ task("checkPerformanceLimits") {
       "build"
     )
 
-  if (mainFolder != null && mainFolder.exists()) {
-    val resultsFile = File(mainFolder, "org.smartregister.opensrp-benchmarkData.json")
+  val resultsFile = File(mainFolder, "org.smartregister.opensrp-benchmarkData.json")
+
+  if (mainFolder != null && mainFolder.exists() && resultsFile != null && resultsFile.exists()) {
 
     // Read the expectations file
     val expectedResultsMap: HashMap<String, HashMap<String, Double>> = hashMapOf()
