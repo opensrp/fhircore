@@ -20,6 +20,7 @@ import android.os.Parcelable
 import androidx.compose.foundation.layout.Arrangement
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
@@ -40,6 +41,7 @@ data class RowProperties(
   val arrangement: RowArrangement? = null,
   val wrapContent: Boolean = false,
   val children: List<ViewProperties> = emptyList(),
+  val actions: List<ActionConfig> = emptyList(),
 ) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): RowProperties {
     return this.copy(
