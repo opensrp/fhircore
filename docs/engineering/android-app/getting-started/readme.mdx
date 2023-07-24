@@ -23,6 +23,9 @@ OAUTH_SCOPE=openid
 FHIR_BASE_URL=https://fhir.labs.smartregister.org/fhir/
 ```
 
+#### Gateway vs Non Gateway backend
+The codebase supports building a release that uses the [FHIR Gateway backend](https://github.com/opensrp/fhir-gateway) and one that doesn't. The **proxy** mode is the _default_ but if your backend is not using the [FHIR Gateway](https://github.com/opensrp/fhir-gateway/releases) you need to specify this by switching to the correct build type variant. To switch between the two one needs to change to a variant with the `debugNonProxy` build type. e.g for the flavor `opensrp` select the variant `opensrpDebugNonProxy`
+
 ### App release
 
 In order for the `assembleRelease` and/or `bundleRelease` Gradle tasks to work for instance when you need to generate a signed release version of the APK (or AAB), a keystore is required.

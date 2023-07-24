@@ -184,13 +184,12 @@ constructor(
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
           is SyncJobStatus.Finished,
-          is SyncJobStatus.Failed, -> {
-            if (event.state is SyncJobStatus.Finished) {
-              sharedPreferencesHelper.write(
-                SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-                formatLastSyncTimestamp(event.state.timestamp),
-              )
-            }
+          is SyncJobStatus.Failed,
+          is SyncJobStatus.Glitch, -> {
+            sharedPreferencesHelper.write(
+              SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+              formatLastSyncTimestamp(event.state.timestamp),
+            )
             viewModelScope.launch { retrieveAppMainUiState() }
           }
           else ->
