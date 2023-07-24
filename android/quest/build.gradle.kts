@@ -385,7 +385,7 @@ task("checkPerformanceLimits") {
       "build"
     )
 
-  val resultsFile = File(mainFolder, "org.smartregister.opensrp-benchmarkData.json")
+  val resultsFile = project.file("org.smartregister.opensrp.ecbis-benchmarkData.json")
 
   if (mainFolder != null && mainFolder.exists() && resultsFile != null && resultsFile.exists()) {
 
