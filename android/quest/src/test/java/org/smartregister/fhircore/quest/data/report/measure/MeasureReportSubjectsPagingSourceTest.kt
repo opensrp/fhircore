@@ -50,7 +50,7 @@ class MeasureReportSubjectsPagingSourceTest : RobolectricTest() {
 
   @Test
   fun loadShouldReturnResults() {
-    coEvery { reportRepository.retrieveSubjects(0) } returns
+    coEvery { reportRepository.retrieveSubjects() } returns
       listOf(
         ResourceData(
           baseResourceId = "resourceId",

@@ -57,12 +57,12 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectVie
 @Composable
 fun MeasureReportResultScreen(
   navController: NavController,
-  measureReportViewModel: MeasureReportViewModel
+  measureReportViewModel: MeasureReportViewModel,
 ) {
   val uiState = measureReportViewModel.reportTypeSelectorUiState.value
 
   // Previously selected measure from the list of supported measures
-  val measureReportRowData = measureReportViewModel.measureReportConfigList
+  val measureReportRowData = measureReportViewModel.reportConfigurations
 
   MeasureReportResultPage(
     screenTitle = measureReportRowData.firstOrNull()?.module ?: "",
@@ -71,7 +71,7 @@ fun MeasureReportResultScreen(
     endDate = uiState.endDate,
     subjectViewData = uiState.subjectViewData,
     measureReportIndividualResult = measureReportViewModel.measureReportIndividualResult.value,
-    measureReportPopulationResult = measureReportViewModel.measureReportPopulationResults.value
+    measureReportPopulationResult = measureReportViewModel.measureReportPopulationResults.value,
   )
 }
 
@@ -84,7 +84,7 @@ fun MeasureReportResultPage(
   subjectViewData: Set<MeasureReportSubjectViewData>,
   measureReportIndividualResult: MeasureReportIndividualResult?,
   measureReportPopulationResult: List<MeasureReportPopulationResult>?,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Scaffold(
     topBar = {
@@ -96,16 +96,16 @@ fun MeasureReportResultPage(
           }
         },
         contentColor = Color.White,
-        backgroundColor = MaterialTheme.colors.primary
+        backgroundColor = MaterialTheme.colors.primary,
       )
-    }
+    },
   ) { innerPadding ->
     Column(
       modifier =
         modifier
           .padding(innerPadding)
           .background(color = colorResource(id = R.color.backgroundGray))
-          .fillMaxSize()
+          .fillMaxSize(),
     ) {
       Column(modifier = modifier.padding(16.dp)) {
         Spacer(modifier = modifier.height(16.dp))
@@ -113,7 +113,7 @@ fun MeasureReportResultPage(
         // Display date range e.g. 1 Apr, 2020 - 28 Apr, 2022
         Row(
           horizontalArrangement = Arrangement.SpaceAround,
-          verticalAlignment = Alignment.CenterVertically
+          verticalAlignment = Alignment.CenterVertically,
         ) {
           DateRangeItem(text = startDate, showBackground = false)
           Text("-", fontSize = 18.sp, modifier = modifier.padding(horizontal = 8.dp))

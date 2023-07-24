@@ -27,7 +27,10 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
@@ -56,7 +59,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -99,7 +102,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    coEvery { measureReportPagingSource.retrieveSubjects(0) } returns
+    coEvery { measureReportPagingSource.retrieveSubjects() } returns
       listOf(
         ResourceData(
           baseResourceId = Faker.buildPatient().id,
@@ -149,41 +152,47 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnEventOnSelectMeasure() {
-    val measureReportConfig =
-      MeasureReportConfig(
+    val reportConfiguration =
+      ReportConfiguration(
         id = "measureId",
         title = "Measure 1",
         description = "Measure report for testing",
         url = "http://nourl.com",
-        module = "Module1"
+        module = "Module1",
       )
+    every { measureReportViewModel.evaluateMeasure(any(), any()) } just runs
+    measureReportViewModel.reportTypeSelectorUiState.value =
+      ReportTypeSelectorUiState(startDate = "21 Jan, 2022", endDate = "27 Jan, 2022")
     measureReportViewModel.onEvent(
       MeasureReportEvent.OnSelectMeasure(
-        measureReportConfig = listOf(measureReportConfig),
-        navController = navController
-      )
+        reportConfigurations = listOf(reportConfiguration),
+        navController = navController,
+        practitionerId = "practitioner-id",
+      ),
     )
-    val routeSlot = slot<String>()
 
     // config updated for the view model
-    val viewModelConfig = measureReportViewModel.measureReportConfigList
-    Assert.assertEquals(viewModelConfig.first().id, measureReportConfig.id)
-    Assert.assertEquals(viewModelConfig.first().module, measureReportConfig.module)
+    val viewModelConfig = measureReportViewModel.reportConfigurations
+    Assert.assertEquals(viewModelConfig.first().id, reportConfiguration.id)
+    Assert.assertEquals(viewModelConfig.first().module, reportConfiguration.module)
 
-    verify { navController.navigate(capture(routeSlot)) }
-
-    Assert.assertEquals("reportTypeSelector?screenTitle=Module1", routeSlot.captured)
+    verify {
+      measureReportViewModel.evaluateMeasure(
+        navController = navController,
+        practitionerId = "practitioner-id",
+      )
+    }
   }
 
   @Test
-  fun testOnEventOnSelectGenerateReport() {
-    val measureReportConfig =
-      MeasureReportConfig(
+  fun testOnEventOnDateSelected() {
+    val reportConfiguration =
+      ReportConfiguration(
         id = "measureId",
         title = "Measure 1",
         description = "Measure report for testing",
         url = "http://nourl.com",
-        module = "Module1"
+        module = "Module1",
       )
     val sampleSubjectViewData =
       mutableSetOf(
@@ -191,20 +200,22 @@ class MeasureReportViewModelTest : RobolectricTest() {
           type = ResourceType.Patient,
           logicalId = "member1",
           display = "Willy Mark, M, 28",
-          family = "Orion"
-        )
+          family = "Orion",
+        ),
       )
 
-    measureReportViewModel.measureReportConfigList.add(measureReportConfig)
+    measureReportViewModel.reportConfigurations.add(reportConfiguration)
     measureReportViewModel.reportTypeSelectorUiState.value =
       ReportTypeSelectorUiState("21 Jan, 2022", "21 Feb, 2022", false, sampleSubjectViewData)
 
     measureReportViewModel.onEvent(
-      MeasureReportEvent.GenerateReport(context = application, navController = navController),
-      "2022-10-31".parseDate(SDF_YYYY_MM_DD)
+      MeasureReportEvent.OnDateSelected(context = application, navController = navController),
+      "2022-10-31".parseDate(SDF_YYYY_MM_DD),
     )
 
-    verify { measureReportViewModel.evaluateMeasure(navController) }
+    val routeSlot = slot<String>()
+    verify { navController.navigate(capture(routeSlot)) }
+    Assert.assertEquals("reportMeasuresModule", routeSlot.captured)
   }
 
   @Test

@@ -97,12 +97,13 @@ const val YEAR_TEST_TAG = "YEAR_TEST_TAG"
 const val MONTH_TEST_TAG = "MONTH_TEST_TAG"
 
 @Composable
-fun ReportTypeSelectorScreen(
+fun ReportDateSelectorScreen(
   reportId: String,
+  practitionerId: String = "",
   screenTitle: String,
   navController: NavController,
   measureReportViewModel: MeasureReportViewModel,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   val context = LocalContext.current
   val uiState = measureReportViewModel.reportTypeSelectorUiState.value
@@ -120,14 +121,14 @@ fun ReportTypeSelectorScreen(
       // Reset UI state
       measureReportViewModel.resetState()
       navController.popBackStack(
-        route = MeasureReportNavigationScreen.MeasureReportList.route,
-        inclusive = false
+        route = MeasureReportNavigationScreen.MeasureReportModule.route,
+        inclusive = false,
       )
     },
-    onGenerateReport = { date ->
+    onSelectReportDate = { date ->
       measureReportViewModel.onEvent(
-        MeasureReportEvent.GenerateReport(navController, context),
-        date
+        MeasureReportEvent.OnDateSelected(navController, context, practitionerId = practitionerId),
+        date,
       )
     },
     onDateRangeSelected = { newDateRange ->
@@ -136,7 +137,7 @@ fun ReportTypeSelectorScreen(
     onReportTypeSelected = {
       measureReportViewModel.onEvent(MeasureReportEvent.OnReportTypeChanged(it, navController))
     },
-    onSubjectRemoved = { measureReportViewModel.onEvent(MeasureReportEvent.OnSubjectRemoved(it)) }
+    onSubjectRemoved = { measureReportViewModel.onEvent(MeasureReportEvent.OnSubjectRemoved(it)) },
   )
 }
 
@@ -151,10 +152,10 @@ fun ReportFilterSelector(
   reportPeriodRange: Map<String, List<ReportRangeSelectionData>>,
   modifier: Modifier = Modifier,
   onBackPressed: () -> Unit,
-  onGenerateReport: (date: Date?) -> Unit,
+  onSelectReportDate: (date: Date?) -> Unit,
   onDateRangeSelected: (Pair<Long, Long>) -> Unit,
   onReportTypeSelected: (MeasureReportType) -> Unit,
-  onSubjectRemoved: (MeasureReportSubjectViewData) -> Unit
+  onSubjectRemoved: (MeasureReportSubjectViewData) -> Unit,
 ) {
   Scaffold(
     topBar = {
@@ -214,7 +215,7 @@ fun ReportFilterSelector(
     ) {
       if (showFixedRangeSelection) {
         FixedMonthYearListing(
-          onMonthSelected = onGenerateReport,
+          onMonthSelected = onSelectReportDate,
           showProgressIndicator = uiState.showProgressIndicator,
           reportGenerationRange = reportPeriodRange,
           innerPadding = innerPadding
@@ -228,7 +229,7 @@ fun ReportFilterSelector(
               uiState.endDate.isNotEmpty() &&
               (uiState.subjectViewData != null ||
                 reportTypeState.value == MeasureReportType.SUMMARY),
-          onGenerateReportClicked = { onGenerateReport.invoke(null) },
+          onGenerateReportClicked = { onSelectReportDate.invoke(null) },
           showProgressIndicator = uiState.showProgressIndicator,
           dateRange = dateRange!!,
           onDateRangeSelected = onDateRangeSelected,
@@ -266,7 +267,7 @@ fun DateRangeSelector(
             Text(
               text = stringResource(R.string.please_wait),
               textAlign = TextAlign.Center,
-              modifier = modifier.padding(vertical = 16.dp).testTag(PLEASE_WAIT_TEST_TAG)
+              modifier = modifier.padding(vertical = 16.dp).testTag(PLEASE_WAIT_TEST_TAG),
             )
           }
         } else {
@@ -318,9 +319,9 @@ fun FixedMonthYearListing(
           }
         }
       } else {
-        Box(
-          modifier = modifier.fillMaxSize(),
-        ) { LazyMonthList(reportRangeList = reportGenerationRange) { onMonthSelected(it.date) } }
+        Box(modifier = modifier.fillMaxSize()) {
+          LazyMonthList(reportRangeList = reportGenerationRange) { onMonthSelected(it.date) }
+        }
       }
     }
   }
@@ -406,11 +407,9 @@ fun SubjectSelectionBox(
   reportTypeState: MutableState<MeasureReport.MeasureReportType>,
   onReportTypeSelected: (MeasureReport.MeasureReportType) -> Unit,
   onSubjectRemoved: (MeasureReportSubjectViewData) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
-  Column(
-    modifier = modifier.fillMaxWidth(),
-  ) {
+  Column(modifier = modifier.fillMaxWidth()) {
     Row(verticalAlignment = Alignment.CenterVertically) {
       Text(
         text = stringResource(id = R.string.subject),
@@ -520,8 +519,8 @@ fun SubjectSelectionIndividualPreview() {
         MeasureReportSubjectViewData(ResourceType.Patient, "2", "Jane Doe"),
         MeasureReportSubjectViewData(ResourceType.Patient, "3", "John Doe"),
         MeasureReportSubjectViewData(ResourceType.Patient, "4", "Lorem Ipsm"),
-        MeasureReportSubjectViewData(ResourceType.Patient, "5", "Mary Magdalene")
-      )
+        MeasureReportSubjectViewData(ResourceType.Patient, "5", "Mary Magdalene"),
+      ),
   )
 }
 
@@ -549,10 +548,10 @@ fun FixedRangeListPreview() {
     dateRange = null,
     reportPeriodRange = ranges,
     onBackPressed = {},
-    onGenerateReport = {},
+    onSelectReportDate = {},
     onDateRangeSelected = {},
     onReportTypeSelected = {},
-    onSubjectRemoved = {}
+    onSubjectRemoved = {},
   )
 }
 
@@ -572,9 +571,9 @@ fun ReportFilterPreview() {
     dateRange = dateRange,
     reportPeriodRange = mapOf(),
     onBackPressed = {},
-    onGenerateReport = {},
+    onSelectReportDate = {},
     onDateRangeSelected = {},
     onReportTypeSelected = {},
-    onSubjectRemoved = {}
+    onSubjectRemoved = {},
   )
 }
