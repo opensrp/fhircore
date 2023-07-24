@@ -17,9 +17,9 @@
 package org.smartregister.fhircore.quest.navigation
 
 sealed class MeasureReportNavigationScreen(val route: String) {
-  object MeasureReportList : MeasureReportNavigationScreen("reportMeasuresList")
+  object MeasureReportModule : MeasureReportNavigationScreen("reportMeasuresModule")
 
-  object ReportTypeSelector : MeasureReportNavigationScreen("reportTypeSelector")
+  object ReportDateSelector : MeasureReportNavigationScreen("reportDateSelector")
 
   object SubjectsList : MeasureReportNavigationScreen("subjectsList")
 

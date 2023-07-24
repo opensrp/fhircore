@@ -124,11 +124,12 @@ class MeasureReportRepositoryTest : RobolectricTest() {
     runBlocking(Dispatchers.Default) {
       val measureReport =
         measureReportRepository.evaluatePopulationMeasure(
-          "bad-measure-url",
-          today().firstDayOfMonth().formatDate(SDF_YYYY_MM_DD),
-          today().lastDayOfMonth().formatDate(SDF_YYYY_MM_DD),
-          emptyList(),
-          emptyList(),
+          measureUrl = "bad-measure-url",
+          startDateFormatted = today().firstDayOfMonth().formatDate(SDF_YYYY_MM_DD),
+          endDateFormatted = today().lastDayOfMonth().formatDate(SDF_YYYY_MM_DD),
+          subjects = emptyList(),
+          existing = emptyList(),
+          practitionerId = null,
         )
       assertEquals(measureReport.size, 0)
     }
