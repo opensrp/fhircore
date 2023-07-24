@@ -239,7 +239,7 @@ fun QuestionnaireResponse.getEncounterId(): String? {
 }
 
 fun Resource.generateMissingId() {
-  if (logicalId.isBlank()) id = UUID.randomUUID().toString()
+  if (id.isNullOrEmpty()) id = UUID.randomUUID().toString()
 }
 
 fun Resource.appendOrganizationInfo(authenticatedOrganizationIds: List<String>?) {

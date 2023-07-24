@@ -177,7 +177,7 @@ constructor(
 
       val extractionDate = Date()
 
-      // Create a list resource to store the references for generated resources
+      // Create a ListResource to store the references for generated resources
       val listResource =
         ListResource().apply {
           id = UUID.randomUUID().toString()
@@ -198,7 +198,7 @@ constructor(
           applyResourceMetadata()
           defaultRepository.addOrUpdate(resource = this)
 
-          // List resource as member of a (configured) Group
+          // Add resource as member of a (configured) Group
           group?.let { bundleEntryResource.addMemberToGroup(it) }
 
           // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
@@ -212,7 +212,8 @@ constructor(
         }
       }
 
-      val subject = retrieveSubject(questionnaire, bundle)
+      val subject =
+        retrieveSubject(questionnaire, bundle)?.apply { id = "$resourceType/$logicalId" }
 
       // Update Group resource to save members
       group?.let { defaultRepository.addOrUpdate(resource = it) }
@@ -256,6 +257,8 @@ constructor(
             bundle = bundle,
           )
         }
+
+        softDeleteResources(questionnaireConfig)
       }
     }
   }
@@ -457,6 +460,78 @@ constructor(
         )
       ) {
         group.addMember(Group.GroupMemberComponent().apply { entity = asReference() })
+      }
+    }
+  }
+
+  /**
+   * This function triggers removal of [Resource] s as per the [QuestionnaireConfig.groupResource]
+   * or [QuestionnaireConfig.removeResource] config properties.
+   */
+  fun softDeleteResources(questionnaireConfig: QuestionnaireConfig) {
+    if (questionnaireConfig.groupResource != null) {
+      removeGroup(
+        groupId = questionnaireConfig.groupResource!!.groupIdentifier,
+        removeGroup = questionnaireConfig.groupResource?.removeGroup ?: false,
+        deactivateMembers = questionnaireConfig.groupResource!!.deactivateMembers,
+      )
+      removeGroupMember(
+        memberId = questionnaireConfig.resourceIdentifier,
+        removeMember = questionnaireConfig.groupResource?.removeMember ?: false,
+        groupIdentifier = questionnaireConfig.groupResource!!.groupIdentifier,
+        memberResourceType = questionnaireConfig.groupResource!!.memberResourceType,
+      )
+    }
+
+    if (
+      questionnaireConfig.removeResource == true &&
+        questionnaireConfig.resourceType != null &&
+        !questionnaireConfig.resourceIdentifier.isNullOrEmpty()
+    ) {
+      viewModelScope.launch {
+        defaultRepository.delete(
+          resourceType = questionnaireConfig.resourceType!!,
+          resourceId = questionnaireConfig.resourceIdentifier!!,
+          softDelete = true,
+        )
+      }
+    }
+  }
+
+  private fun removeGroup(groupId: String, removeGroup: Boolean, deactivateMembers: Boolean) {
+    if (removeGroup) {
+      viewModelScope.launch(dispatcherProvider.io()) {
+        try {
+          defaultRepository.removeGroup(
+            groupId = groupId,
+            isDeactivateMembers = deactivateMembers,
+            configComputedRuleValues = emptyMap(),
+          )
+        } catch (exception: Exception) {
+          Timber.e(exception)
+        }
+      }
+    }
+  }
+
+  private fun removeGroupMember(
+    memberId: String?,
+    groupIdentifier: String?,
+    memberResourceType: ResourceType?,
+    removeMember: Boolean,
+  ) {
+    if (removeMember && !memberId.isNullOrEmpty()) {
+      viewModelScope.launch(dispatcherProvider.io()) {
+        try {
+          defaultRepository.removeGroupMember(
+            memberId = memberId,
+            groupId = groupIdentifier,
+            groupMemberResourceType = memberResourceType,
+            configComputedRuleValues = emptyMap(),
+          )
+        } catch (exception: Exception) {
+          Timber.e(exception)
+        }
       }
     }
   }
