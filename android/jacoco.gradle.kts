@@ -4,9 +4,9 @@ val isApplication = (project.name == "quest")
 val actualProjectName = if(isApplication) "opensrp" else project.name
 
 task<Exec>("fhircoreInstrumentedTests") {
-  val taskName = "connected${if (isApplication)  actualProjectName.capitalize() else ""}DebugAndroidTest"
+  val taskName = ":quest:connected${if (isApplication)  actualProjectName.capitalize() else ""}DebugAndroidTest"
 
-  commandLine(taskName, "-- tests org.smartregister.fhircore")
+  commandLine(".././gradlew", "$taskName -- tests org.smartregister.fhircore")
 }
 
 /*task<Exec>("fhircorePerformanceTests") {
