@@ -382,13 +382,11 @@ task("checkPerformanceLimits") {
 
   val mainFolder =
     project.file(
-      "build/outputs/connected_android_test_additional_output/opensrpDebugAndroidTest/connected"
+      "quest"
     )
 
   if (mainFolder != null && mainFolder.exists()) {
-
-    val performanceFileFolder = mainFolder.listFiles().first()
-    val resultsFile = File(performanceFileFolder, "org.smartregister.opensrp-benchmarkData.json")
+    val resultsFile = File(mainFolder, "org.smartregister.opensrp-benchmarkData.json")
 
     // Read the expectations file
     val expectedResultsMap: HashMap<String, HashMap<String, Double>> = hashMapOf()
