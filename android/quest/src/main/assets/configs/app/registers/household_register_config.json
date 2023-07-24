@@ -2,7 +2,7 @@
   "appId": "app",
   "configType": "register",
   "id": "householdRegister",
-  "pageSize": 1,
+  "pageSize": 20,
   "fhirResource": {
     "baseResource": {
       "resource": "Group",

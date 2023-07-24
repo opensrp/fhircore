@@ -431,6 +431,8 @@ task("checkPerformanceLimits") {
             throw Exception(
               "$fullName test passes the threshold of $expectedMaxTiming Ns. The timing is $median Ns",
             )
+          } else {
+            System.out.println("$fullName took $median vs $expectedMaxTiming")
           }
         }
       }

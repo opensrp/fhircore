@@ -1,6 +1,43 @@
 {
-  "HouseholdRegisterPerformanceTests2#benchmarkPage0": {
-    "max": 6.8054019E7,
-    "delta": 1.8054019E7
+  "HouseholdRegisterPerformanceTests#benchmarkPage0": {
+    "max": 1.62365E9,
+    "delta": 1.0E9
+  },
+
+  "HouseholdRegisterPerformanceTests#benchmarkPage1": {
+    "max": 1.62365E9,
+    "delta": 1.0E9
+  },
+
+  "HouseholdRegisterPerformanceTests#benchmarkPage2": {
+    "max": 1.62365E9,
+    "delta": 1.0E9
+  },
+
+  "HouseholdRegisterPerformanceTests#benchmarkPage3": {
+    "max": 1.62365E9,
+    "delta": 1.0E9
+  },
+
+  "HouseholdRegisterPerformanceTests#benchmarkPage4": {
+    "max": 1.62365E9,
+    "delta": 1.0E9
+  },
+
+  "HouseholdRegisterPerformanceTests#benchmarkPage5": {
+    "max": 1.62365E9,
+    "delta": 1.0E9
+  },
+  "ChildRegisterPerformanceTests$benchmarkPage0": {
+    "max": 1.2481365E9,
+    "delta": 1.0E9
+  },
+  "ChildRegisterPerformanceTests$benchmarkPage1": {
+    "max": 1.5858145E9,
+    "delta": 1.0E9
+  },
+  "ChildRegisterPerformanceTests$benchmarkPage2": {
+    "max": 2.680707E9,
+    "delta": 1.0E9
   }
 }
