@@ -382,7 +382,7 @@ task("checkPerformanceLimits") {
 
   val mainFolder =
     project.file(
-      "quest"
+      "build"
     )
 
   if (mainFolder != null && mainFolder.exists()) {
