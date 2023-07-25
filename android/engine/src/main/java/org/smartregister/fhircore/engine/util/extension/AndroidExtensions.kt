@@ -25,8 +25,10 @@ import android.content.res.Resources
 import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.LocaleList
+import android.os.Parcelable
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color as ComposeColor
@@ -41,6 +43,7 @@ import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.LightColors
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.ui.theme.WarningColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import timber.log.Timber
 
 const val ERROR_COLOR = "errorColor"
@@ -185,3 +188,31 @@ fun Context.isDeviceOnline(): Boolean {
  * List.first() and List.last() extensions
  */
 fun <T> List<T>.second(): T = this[1]
+
+@ExcludeFromJacocoGeneratedReport
+inline fun <reified T : Parcelable> Intent.parcelable(key: String): T? =
+  when {
+    SDK_INT >= 33 -> getParcelableExtra(key, T::class.java)
+    else -> @Suppress("DEPRECATION") getParcelableExtra(key) as? T
+  }
+
+@ExcludeFromJacocoGeneratedReport
+inline fun <reified T : Parcelable> Bundle.parcelable(key: String): T? =
+  when {
+    SDK_INT >= 33 -> getParcelable(key, T::class.java)
+    else -> @Suppress("DEPRECATION") getParcelable(key) as? T
+  }
+
+@ExcludeFromJacocoGeneratedReport
+inline fun <reified T : Parcelable> Bundle.parcelableArrayList(key: String): ArrayList<T>? =
+  when {
+    SDK_INT >= 33 -> getParcelableArrayList(key, T::class.java)
+    else -> @Suppress("DEPRECATION") getParcelableArrayList(key)
+  }
+
+@ExcludeFromJacocoGeneratedReport
+inline fun <reified T : Parcelable> Intent.parcelableArrayList(key: String): ArrayList<T>? =
+  when {
+    SDK_INT >= 33 -> getParcelableArrayListExtra(key, T::class.java)
+    else -> @Suppress("DEPRECATION") getParcelableArrayListExtra(key)
+  }

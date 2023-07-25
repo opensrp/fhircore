@@ -223,8 +223,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     populationResources.add(patient)
     val result =
       QuestionnaireActivity.intentArgs(
-        questionnaireResponse = questionnaireResponse,
-        populationResources = populationResources,
         questionnaireConfig =
           QuestionnaireConfig(
             id = "my-form",

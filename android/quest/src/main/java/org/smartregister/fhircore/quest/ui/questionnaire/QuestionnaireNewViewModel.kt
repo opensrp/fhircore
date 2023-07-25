@@ -99,7 +99,7 @@ constructor(
    */
   suspend fun retrieveQuestionnaire(
     questionnaireConfig: QuestionnaireConfig,
-    actionParameters: Array<ActionParameter>?,
+    actionParameters: List<ActionParameter>?,
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty()) return null
 
@@ -148,7 +148,7 @@ constructor(
     questionnaire: Questionnaire,
     currentQuestionnaireResponse: QuestionnaireResponse,
     questionnaireConfig: QuestionnaireConfig,
-    actionParameters: Array<ActionParameter>?,
+    actionParameters: List<ActionParameter>?,
     context: Context,
   ) {
     viewModelScope.launch(SupervisorJob()) {
@@ -359,7 +359,7 @@ constructor(
    * questionnaire is submitted, the affected resources last modified/updated date will also be
    * updated.
    */
-  suspend fun updateResourcesLastUpdatedProperty(actionParameters: Array<ActionParameter>?) {
+  suspend fun updateResourcesLastUpdatedProperty(actionParameters: List<ActionParameter>?) {
     val updateOnEditParams =
       actionParameters?.filter {
         it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT && it.value.isNotEmpty()

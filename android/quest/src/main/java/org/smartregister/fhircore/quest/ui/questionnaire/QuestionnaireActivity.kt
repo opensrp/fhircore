@@ -573,7 +573,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
 
     fun intentArgs(
-      questionnaireResponse: QuestionnaireResponse? = null,
       populationResources: ArrayList<Resource> = ArrayList(),
       questionnaireConfig: QuestionnaireConfig? = null,
       actionParams: List<ActionParameter> = emptyList(),
@@ -587,9 +586,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           Pair(BASE_RESOURCE_TYPE, baseResourceType),
         )
         .apply {
-          questionnaireResponse?.let {
-            putString(QUESTIONNAIRE_RESPONSE, it.encodeResourceToString())
-          }
           val resourcesList = populationResources.map { it.encodeResourceToString() }
           if (resourcesList.isNotEmpty()) {
             putStringArrayList(

@@ -20,17 +20,21 @@ import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.navArgs
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.parcelable
+import org.smartregister.fhircore.engine.util.extension.parcelableArrayList
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
@@ -41,7 +45,8 @@ import timber.log.Timber
 class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
 
   val viewModel by viewModels<QuestionnaireNewViewModel>()
-  private val questionnaireFragmentArgs by navArgs<QuestionnaireNewActivityArgs>()
+  private lateinit var questionnaireConfig: QuestionnaireConfig
+  private lateinit var actionParameters: ArrayList<ActionParameter>
   private lateinit var viewBinding: QuestionnaireActivityBinding
   private var questionnaire: Questionnaire? = null
 
@@ -51,6 +56,15 @@ class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
     setTheme(R.style.AppTheme_Questionnaire)
     viewBinding = QuestionnaireActivityBinding.inflate(layoutInflater)
     setContentView(viewBinding.root)
+    with(intent) {
+      parcelable<QuestionnaireConfig>(QUESTIONNAIRE_CONFIG)?.also { questionnaireConfig = it }
+      actionParameters = parcelableArrayList(QUESTIONNAIRE_ACTION_PARAMETERS) ?: arrayListOf()
+    }
+
+    if (!::questionnaireConfig.isInitialized) {
+      showToast(getString(R.string.missing_questionnaire_config))
+      finish()
+    }
 
     if (savedInstanceState == null) renderQuestionnaire()
 
@@ -64,15 +78,14 @@ class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
     )
   }
 
-  private fun renderQuestionnaire() {
-    val questionnaireConfig = questionnaireFragmentArgs.questionnaireConfig
-    val actionParameters = questionnaireFragmentArgs.params
+  override fun onSaveInstanceState(outState: Bundle) {
+    super.onSaveInstanceState(outState)
+    outState.clear()
+  }
 
+  private fun renderQuestionnaire() {
     lifecycleScope.launch {
-      if (
-        supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) == null &&
-          questionnaireConfig != null
-      ) {
+      if (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) == null) {
         viewBinding.questionnaireToolbar.apply {
           title = questionnaireConfig.title
           setNavigationIcon(R.drawable.ic_arrow_back)
@@ -112,56 +125,68 @@ class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
       this,
     ) { _, _ ->
       val questionnaireResponse = retrieveQuestionnaireResponse()
-      questionnaireFragmentArgs.questionnaireConfig?.let { questionnaireConfig ->
-        // Close questionnaire if opened in read only mode or if experimental
-        if (questionnaireConfig.type.isReadOnly() || questionnaire?.experimental == false) {
-          finish()
-        }
-        if (questionnaireResponse != null && questionnaire != null) {
-          viewModel.handleQuestionnaireSubmission(
-            questionnaire = questionnaire!!,
-            currentQuestionnaireResponse = questionnaireResponse,
-            questionnaireConfig = questionnaireConfig,
-            actionParameters = questionnaireFragmentArgs.params,
-            context = this,
-          )
-        }
+
+      // Close questionnaire if opened in read only mode or if experimental
+      if (questionnaireConfig.type.isReadOnly() || questionnaire?.experimental == false) {
+        finish()
+      }
+      if (questionnaireResponse != null && questionnaire != null) {
+        viewModel.handleQuestionnaireSubmission(
+          questionnaire = questionnaire!!,
+          currentQuestionnaireResponse = questionnaireResponse,
+          questionnaireConfig = questionnaireConfig,
+          actionParameters = actionParameters,
+          context = this,
+        )
       }
     }
   }
 
   private fun handleBackPress() {
-    val questionnaireConfig = questionnaireFragmentArgs.questionnaireConfig
-    if (questionnaireConfig != null) {
-      if (questionnaireConfig.type.isReadOnly()) {
-        finish()
-      } else if (questionnaireConfig.saveDraft) {
-        AlertDialogue.showCancelAlert(
-          context = this,
-          message = R.string.questionnaire_in_progress_alert_back_pressed_message,
-          title = R.string.questionnaire_alert_back_pressed_title,
-          confirmButtonListener = {
-            retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
-              viewModel.saveDraftQuestionnaire(questionnaireResponse)
-            }
-          },
-          confirmButtonText = R.string.questionnaire_alert_back_pressed_save_draft_button_title,
-          neutralButtonListener = { finish() },
-          neutralButtonText = R.string.questionnaire_alert_back_pressed_button_title,
-        )
-      } else {
-        AlertDialogue.showConfirmAlert(
-          context = this,
-          message = R.string.questionnaire_alert_back_pressed_message,
-          title = R.string.questionnaire_alert_back_pressed_title,
-          confirmButtonListener = { finish() },
-          confirmButtonText = R.string.questionnaire_alert_back_pressed_button_title,
-        )
-      }
+    if (questionnaireConfig.type.isReadOnly()) {
+      finish()
+    } else if (questionnaireConfig.saveDraft) {
+      AlertDialogue.showCancelAlert(
+        context = this,
+        message = R.string.questionnaire_in_progress_alert_back_pressed_message,
+        title = R.string.questionnaire_alert_back_pressed_title,
+        confirmButtonListener = {
+          retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
+            viewModel.saveDraftQuestionnaire(questionnaireResponse)
+          }
+        },
+        confirmButtonText = R.string.questionnaire_alert_back_pressed_save_draft_button_title,
+        neutralButtonListener = { finish() },
+        neutralButtonText = R.string.questionnaire_alert_back_pressed_button_title,
+      )
+    } else {
+      AlertDialogue.showConfirmAlert(
+        context = this,
+        message = R.string.questionnaire_alert_back_pressed_message,
+        title = R.string.questionnaire_alert_back_pressed_title,
+        confirmButtonListener = { finish() },
+        confirmButtonText = R.string.questionnaire_alert_back_pressed_button_title,
+      )
     }
   }
 
   private fun retrieveQuestionnaireResponse(): QuestionnaireResponse? =
     (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment?)
       ?.getQuestionnaireResponse()
+
+  companion object {
+
+    const val QUESTIONNAIRE_CONFIG = "questionnaireConfig"
+    const val QUESTIONNAIRE_ACTION_PARAMETERS = "questionnaireActionParameters"
+    const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnairePopulationResources"
+
+    fun intentArgs(
+      questionnaireConfig: QuestionnaireConfig,
+      actionParams: List<ActionParameter>,
+    ): Bundle =
+      bundleOf(
+        Pair(QUESTIONNAIRE_CONFIG, questionnaireConfig),
+        Pair(QUESTIONNAIRE_ACTION_PARAMETERS, actionParams),
+      )
+  }
 }

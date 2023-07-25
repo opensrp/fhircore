@@ -77,7 +77,7 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireNewActivity
 import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMonthPeriodWorker
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
@@ -237,13 +237,17 @@ constructor(
     viewModelScope.launch {
       val location = registerRepository.loadResource<Location>(locationId)?.encodeResourceToString()
       if (context is QuestionnaireHandler) {
-        context.launchQuestionnaire<Any>(
+        context.launchQuestionnaire(
           context = context,
-          intentBundle =
+          extraIntentBundle =
             bundleOf(
-              Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location)),
+              Pair(
+                QuestionnaireNewActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
+                arrayListOf(location),
+              ),
             ),
           questionnaireConfig = questionnaireConfig,
+          actionParams = emptyArray(),
         )
       }
     }

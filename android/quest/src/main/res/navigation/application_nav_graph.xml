@@ -83,17 +83,4 @@
             app:argType="string"
             app:nullable="false" />
     </fragment>
-
-    <activity
-        android:id="@+id/questionnaireActivity"
-        android:name="org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireNewActivity">
-        <argument
-            android:name="questionnaireConfig"
-            app:argType="org.smartregister.fhircore.engine.configuration.QuestionnaireConfig"
-            app:nullable="true" />
-        <argument
-            android:name="params"
-            app:argType="org.smartregister.fhircore.engine.domain.model.ActionParameter[]"
-            app:nullable="true" />
-    </activity>
 </navigation>

@@ -38,7 +38,5 @@ sealed class MainNavigationScreen(
 
   object GeoWidget : MainNavigationScreen(route = R.id.geoWidgetFragment)
 
-  object Questionnaire : MainNavigationScreen(route = R.id.questionnaireActivity)
-
   fun eventId(id: String) = route.toString() + "_" + id
 }
