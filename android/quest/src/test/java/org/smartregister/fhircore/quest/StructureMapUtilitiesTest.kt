@@ -473,8 +473,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val transformSupportServices = TransformSupportServices(contextR4)
     val structureMapUtilities =
       org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val structureMap =
-      structureMapUtilities.parse(childReferralStructureMap, "ChildReferral")
+    val structureMap = structureMapUtilities.parse(childReferralStructureMap, "ChildReferral")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val targetResource = Bundle()
     val baseElement =
@@ -509,8 +508,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val transformSupportServices = TransformSupportServices(contextR4)
     val structureMapUtilities =
       org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val structureMap =
-      structureMapUtilities.parse(childReferralStructureMap, "ChildRoutineVisit")
+    val structureMap = structureMapUtilities.parse(childReferralStructureMap, "ChildRoutineVisit")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val targetResource = Bundle()
     val baseElement =
@@ -522,7 +520,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
 
     println(structureMap.encodeResourceToString())
-    //println(targetResource.encodeResourceToString())
+    // println(targetResource.encodeResourceToString())
 
     Assert.assertEquals(12, targetResource.entry.size)
     Assert.assertEquals("Encounter", targetResource.entry[0].resource.resourceType.toString())
@@ -545,8 +543,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val transformSupportServices = TransformSupportServices(contextR4)
     val structureMapUtilities =
       org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val structureMap =
-      structureMapUtilities.parse(childReferralStructureMap, "SickChildAssessment")
+    val structureMap = structureMapUtilities.parse(childReferralStructureMap, "SickChildAssessment")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val targetResource = Bundle()
     val baseElement =
@@ -558,13 +555,12 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
 
     println(structureMap.encodeResourceToString())
-//    println(targetResource.encodeResourceToString())
+    //    println(targetResource.encodeResourceToString())
 
     Assert.assertEquals(12, targetResource.entry.size)
     Assert.assertEquals("Encounter", targetResource.entry[0].resource.resourceType.toString())
     Assert.assertEquals("Observation", targetResource.entry[1].resource.resourceType.toString())
   }
-
 
   @Test
   fun `perform child sick followup form extraction`() {
@@ -582,8 +578,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val transformSupportServices = TransformSupportServices(contextR4)
     val structureMapUtilities =
       org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val structureMap =
-      structureMapUtilities.parse(childReferralStructureMap, "SickChildAssessment")
+    val structureMap = structureMapUtilities.parse(childReferralStructureMap, "SickChildAssessment")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val targetResource = Bundle()
     val baseElement =
@@ -601,5 +596,4 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     Assert.assertEquals("Encounter", targetResource.entry[0].resource.resourceType.toString())
     Assert.assertEquals("Observation", targetResource.entry[1].resource.resourceType.toString())
   }
-
 }
