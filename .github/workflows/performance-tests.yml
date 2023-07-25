@@ -51,9 +51,9 @@ jobs:
             ~/.android/adb*
           key: avd-${{ matrix.api-level }}
 
-      - name: Download sample database for performance tests
-        working-directory: android
-        run: wget -q https://github.com/ekigamba/debug-jacoco-reports/releases/download/v0.0.1/resources.db -P quest/src/androidTest/assets/
+      - name: Unzip resources.zip to produce resources.db for testing
+        working-directory: android/quest/src/androidTest/assets/
+        run: tar -xf resources.zip
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
