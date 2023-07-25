@@ -30,7 +30,7 @@ group extractTask(
                task.executionPeriod = period,
                task.priority = 'routine',
                // dosage[version] does not work, hence skipping the item from given index via skip.first
-               task.description = evaluate(definition, $this.product.text + ' ' + currentDose.select(sequence.toString())),
+               task.description = evaluate(definition, $this.product.text),
                task.for = create('Reference') as patientReference, patientReference.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
                task.basedOn = reference(careplan),
                task.authoredOn = evaluate(subject, now()),
@@ -41,7 +41,8 @@ group extractTask(
 
         subject then extractPeriod(subject, task) "rule_task_period_extraction";
 
-        subject -> task.reasonReference = create('Reference') as reasonReference, reasonReference.reference = 'Questionnaire/385989' "rule_task_reason_reference";
+        //TODO Change based on activity code
+        subject -> task.reasonReference = create('Reference') as reasonReference, reasonReference.reference = 'Questionnaire/0000' "rule_task_reason_reference";
 
         // task groupIdentifier
         subject -> task.groupIdentifier = create('Identifier') as groupIdentifier then {
