@@ -179,8 +179,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       //        Timber.e(it.encodeResourceToString())
       questionnaireFragmentBuilder.setQuestionnaireResponse(it.encodeResourceToString())
     }
-    intent.getStringExtra(QUESTIONNAIRE_LAUNCH_CONTEXT)?.let {
-      questionnaireFragmentBuilder.setQuestionnaireLaunchContext(it)
+    intent.getStringArrayListExtra(QUESTIONNAIRE_LAUNCH_CONTEXT)?.let {
+      questionnaireFragmentBuilder.setQuestionnaireLaunchContexts(it)
     }
 
     fragment = questionnaireFragmentBuilder.build()
@@ -486,7 +486,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
       questionnaireResponse: QuestionnaireResponse? = null,
       backReference: String? = null,
-      launchContext: Resource? = null,
+      launchContexts: ArrayList<Resource>? = null,
       populationResources: ArrayList<out Resource> = ArrayList()
     ) =
       bundleOf(
@@ -507,8 +507,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               resourcesList.toCollection(ArrayList())
             )
           }
-          launchContext?.let {
-            putString(QUESTIONNAIRE_LAUNCH_CONTEXT, it.encodeResourceToString())
+          launchContexts?.takeIf { it.isNotEmpty() }?.let { list ->
+            putStringArrayList(
+              QUESTIONNAIRE_LAUNCH_CONTEXT,
+              ArrayList(list.map { it.encodeResourceToString() })
+            )
           }
         }
   }

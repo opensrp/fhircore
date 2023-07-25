@@ -97,7 +97,7 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
   groupIdentifier: String? = null,
   questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
   intentBundle: Bundle = Bundle.EMPTY,
-  launchContext: Resource? = null,
+  launchContexts: ArrayList<Resource>? = null,
   populationResources: ArrayList<Resource>? = null
 ) {
   this.startActivity(
@@ -109,7 +109,7 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
           groupIdentifier = groupIdentifier,
           formName = questionnaireId,
           questionnaireType = questionnaireType,
-          launchContext = launchContext,
+          launchContexts = launchContexts,
           populationResources = populationResources ?: ArrayList()
         )
       )
@@ -122,7 +122,7 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaireForRes
   questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
   backReference: String? = null,
   intentBundle: Bundle = Bundle.EMPTY,
-  launchContext: Resource? = null,
+  launchContexts: ArrayList<Resource>? = null,
   populationResources: ArrayList<Resource>? = null
 ) {
   (this as Activity).startActivityForResult(
@@ -134,7 +134,7 @@ inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaireForRes
           formName = questionnaireId,
           questionnaireType = questionnaireType,
           backReference = backReference,
-          launchContext = launchContext,
+          launchContexts = launchContexts,
           populationResources = populationResources ?: ArrayList()
         )
       ),
