@@ -19,6 +19,11 @@ group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle
                 encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH","home health"),
                 encounter.serviceType= cc("http://terminology.hl7.org/CodeSystem/service-type", "497","Home Visits- Sick Child Assessment") "r_enc_data";
 
+            src -> encounter.period = create('Period') as enPeriod then {
+                    src -> enPeriod.start = evaluate(src, now()) "rule_encounter_per_start";
+                    src -> enPeriod.end = evaluate(src, now()) "rule_encounter_per_end";
+            } "rule_encounter_per";
+
             src.subject as subj -> encounter.subject = subj "rule_subj";
 
             src then ExtractObservations(src, bundle, encounter) "r_extract_obs";
@@ -167,10 +172,10 @@ group ExtractUrgentChildReferral(source src: QuestionnaireResponse, target bundl
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144006' "r_obs_c_coding_code";
+                    src -> coding.code = '275821008' "r_obs_c_coding_code";
                     src -> coding.display = 'Urgent Child Referral' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Urgent Child Referral' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -221,10 +226,10 @@ group ExtractIdentifyProblems(source src: QuestionnaireResponse, target bundle: 
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144007' "r_obs_c_coding_code";
-                    src -> coding.display = 'Identify Problems' "r_obs_c_coding_display";
+                    src -> coding.code = '441308009' "r_obs_c_coding_code";
+                    src -> coding.display = 'New diagnosis - Identify Problems' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'New diagnosis - Identify Problems' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -249,10 +254,10 @@ group ExtractIdentifyProblems(source src: QuestionnaireResponse, target bundle: 
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144008' "r_obs_c_coding_code";
+                    src -> coding.code = '49727002' "r_obs_c_coding_code";
                     src -> coding.display = 'Child has Cough' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Child has Cough' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -279,10 +284,10 @@ group ExtractIdentifyProblems(source src: QuestionnaireResponse, target bundle: 
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144022' "r_obs_c_coding_code";
+                    src -> coding.code = '162442009' "r_obs_c_coding_code";
                     src -> coding.display = 'Days child has cough' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Days child has cough' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -307,10 +312,10 @@ group ExtractIdentifyProblems(source src: QuestionnaireResponse, target bundle: 
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144022' "r_obs_c_coding_code";
-                    src -> coding.display = 'Breath Below 2M' "r_obs_c_coding_display";
+                    src -> coding.code = '86290005' "r_obs_c_coding_code";
+                    src -> coding.display = 'Respiratory rate - Breath Below 2M' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Respiratory rate - Breath Below 2M' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -335,10 +340,10 @@ group ExtractIdentifyProblems(source src: QuestionnaireResponse, target bundle: 
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144023' "r_obs_c_coding_code";
-                    src -> coding.display = 'Breath Below 11M' "r_obs_c_coding_display";
+                    src -> coding.code = '86290005' "r_obs_c_coding_code";
+                    src -> coding.display = 'Respiratory rate - Breath Below 11M' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Respiratory rate - Breath Below 11M' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -363,10 +368,10 @@ group ExtractIdentifyProblems(source src: QuestionnaireResponse, target bundle: 
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144024' "r_obs_c_coding_code";
-                    src -> coding.display = 'Breath Below 59M' "r_obs_c_coding_display";
+                    src -> coding.code = '86290005' "r_obs_c_coding_code";
+                    src -> coding.display = 'Respiratory rate - Breath Below 59M' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Respiratory rate - Breath Below 59M' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -391,10 +396,10 @@ group ExtractChildHasRunningStomach(source src: QuestionnaireResponse, target bu
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144025' "r_obs_c_coding_code";
-                    src -> coding.display = 'Child has Running Stomach' "r_obs_c_coding_display";
+                    src -> coding.code = '62315008' "r_obs_c_coding_code";
+                    src -> coding.display = 'Diarrhea - Child has Running Stomach' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Diarrhea - Child has Running Stomach' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -421,10 +426,10 @@ group ExtractDaysChildHadRunningStomach(source src: QuestionnaireResponse, targe
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144026' "r_obs_c_coding_code";
+                    src -> coding.code = '162442009' "r_obs_c_coding_code";
                     src -> coding.display = 'Days child has Running Stomach' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Days child has Running Stomach' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -449,10 +454,10 @@ group ExtractChildHasFever(source src: QuestionnaireResponse, target bundle: Bun
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144027' "r_obs_c_coding_code";
+                    src -> coding.code = '386661006' "r_obs_c_coding_code";
                     src -> coding.display = 'Child has Fever' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Child has Fever' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -479,10 +484,10 @@ group ExtractDaysChildHadFever(source src: QuestionnaireResponse, target bundle:
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144026' "r_obs_c_coding_code";
+                    src -> coding.code = '162442009' "r_obs_c_coding_code";
                     src -> coding.display = 'Days child had Fever' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Days child had Fever' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -507,10 +512,10 @@ group ExtractPrereferralTreatment(source src: QuestionnaireResponse, target bund
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144028' "r_obs_c_coding_code";
+                    src -> coding.code = '182991002' "r_obs_c_coding_code";
                     src -> coding.display = 'Prereferral Treatment' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Prereferral Treatment' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -535,10 +540,10 @@ group ExtractORSAvailable(source src: QuestionnaireResponse, target bundle: Bund
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144005' "r_obs_c_coding_code";
+                    src -> coding.code = '715045000' "r_obs_c_coding_code";
                     src -> coding.display = 'ORS Available' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'ORS Available' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -565,10 +570,10 @@ group ExtractORSGivenToChild(source src: QuestionnaireResponse, target bundle: B
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144005' "r_obs_c_coding_code";
+                    src -> coding.code = '182833002' "r_obs_c_coding_code";
                     src -> coding.display = 'ORS given to Child' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'ORS given to Child' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -594,10 +599,10 @@ group ExtractAmoxicillinRedPackAvailable(source src: QuestionnaireResponse, targ
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144030' "r_obs_c_coding_code";
-                    src -> coding.display = 'Amoxicilling Red Pack' "r_obs_c_coding_display";
+                    src -> coding.code = '715045000' "r_obs_c_coding_code";
+                    src -> coding.display = 'Amoxicilling Red Pack Available' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Amoxicilling Red Pack Available' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -624,10 +629,10 @@ group ExtractAmoxicillinGreenPackAvailable(source src: QuestionnaireResponse, ta
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144030' "r_obs_c_coding_code";
-                    src -> coding.display = 'Amoxicilling Green Pack' "r_obs_c_coding_display";
+                    src -> coding.code = '715045000' "r_obs_c_coding_code";
+                    src -> coding.display = 'Amoxicilling Green Pack Available' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Amoxicilling Green Pack Available' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -654,10 +659,10 @@ group ExtractAmoxicillinRedPackGiven(source src: QuestionnaireResponse, target b
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144031' "r_obs_c_coding_code";
+                    src -> coding.code = '182833002' "r_obs_c_coding_code";
                     src -> coding.display = 'Amoxicilling Red Pack Given' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Amoxicilling Red Pack Given' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -682,10 +687,10 @@ group ExtractAmoxicillinGreenPackGiven(source src: QuestionnaireResponse, target
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144031' "r_obs_c_coding_code";
+                    src -> coding.code = '182833002' "r_obs_c_coding_code";
                     src -> coding.display = 'Amoxicilling Green Pack Given' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Amoxicilling Green Pack Given' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -710,10 +715,10 @@ group ExtractAntiMalariACTYellowPackAvailable(source src: QuestionnaireResponse,
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144032' "r_obs_c_coding_code";
-                    src -> coding.display = 'AntiMalariaCTYellowPack' "r_obs_c_coding_display";
+                    src -> coding.code = '715045000' "r_obs_c_coding_code";
+                    src -> coding.display = 'AntiMalaria ACT Yellow Pack Available' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'AntiMalaria ACT Yellow Pack Available' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -740,10 +745,10 @@ group ExtractAntiMalariACTBluePackAvailable(source src: QuestionnaireResponse, t
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144032' "r_obs_c_coding_code";
-                    src -> coding.display = 'AntiMalariaCTBluePack' "r_obs_c_coding_display";
+                    src -> coding.code = '715045000' "r_obs_c_coding_code";
+                    src -> coding.display = 'AntiMalaria ACT Blue Pack Available' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'AntiMalaria ACT Blue Pack Available' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -770,10 +775,10 @@ group ExtractAntiMalarialACTYellowPackGiven(source src: QuestionnaireResponse, t
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144033' "r_obs_c_coding_code";
-                    src -> coding.display = 'AntiMalarialACTYellowPackGiven' "r_obs_c_coding_display";
+                    src -> coding.code = '182833002' "r_obs_c_coding_code";
+                    src -> coding.display = 'AntiMalarial ACT Yellow Pack Given' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'AntiMalarial ACT Yellow Pack Given' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -798,10 +803,10 @@ group ExtractAntiMalarialACTBluePackGiven(source src: QuestionnaireResponse, tar
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144033' "r_obs_c_coding_code";
-                    src -> coding.display = 'AntiMalarialACTBluePackGiven' "r_obs_c_coding_display";
+                    src -> coding.code = '182833002' "r_obs_c_coding_code";
+                    src -> coding.display = 'AntiMalarial ACT Blue Pack Given' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'AntiMalarial ACT Blue Pack Given' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -826,10 +831,10 @@ group ExtractArtesunateAvailable(source src: QuestionnaireResponse, target bundl
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144035' "r_obs_c_coding_code";
-                    src -> coding.display = 'ArtesunateAvailable' "r_obs_c_coding_display";
+                    src -> coding.code = '715045000' "r_obs_c_coding_code";
+                    src -> coding.display = 'Artesunate Available' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Artesunate Available' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -856,10 +861,10 @@ group ExtractOneArtesunateGiven(source src: QuestionnaireResponse, target bundle
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144036' "r_obs_c_coding_code";
-                    src -> coding.display = 'OneArtesunateGiven' "r_obs_c_coding_display";
+                    src -> coding.code = '182833002' "r_obs_c_coding_code";
+                    src -> coding.display = 'One Artesunate Given' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'One Artesunate Given' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -884,10 +889,10 @@ group ExtractTwoArtesunateGiven(source src: QuestionnaireResponse, target bundle
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144037' "r_obs_c_coding_code";
-                    src -> coding.display = 'TwoArtesunateGiven' "r_obs_c_coding_display";
+                    src -> coding.code = '182833002' "r_obs_c_coding_code";
+                    src -> coding.display = 'Two Artesunate Given' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Two Artesunate Given' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -912,10 +917,10 @@ group ExtractCheckForMalaria(source src: QuestionnaireResponse, target bundle: B
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144038' "r_obs_c_coding_code";
-                    src -> coding.display = 'CheckForMalaria' "r_obs_c_coding_display";
+                    src -> coding.code = '171140005' "r_obs_c_coding_code";
+                    src -> coding.display = 'Malaria screening' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Malaria screening' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -940,10 +945,10 @@ group ExtractRDTKitsAvailable(source src: QuestionnaireResponse, target bundle: 
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144039' "r_obs_c_coding_code";
-                    src -> coding.display = 'RDTKitsAvailable' "r_obs_c_coding_display";
+                    src -> coding.code = '43222004' "r_obs_c_coding_code";
+                    src -> coding.display = 'RDT Kits Available' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'RDT Kits Available' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -969,10 +974,10 @@ group ExtractRDTConducted(source src: QuestionnaireResponse, target bundle: Bund
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144050' "r_obs_c_coding_code";
-                    src -> coding.display = 'RDTConducted' "r_obs_c_coding_display";
+                    src -> coding.code = '171140005' "r_obs_c_coding_code";
+                    src -> coding.display = 'RDT Conducted' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'RDT Conducted' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -997,10 +1002,10 @@ group ExtractMalariaTestResults(source src: QuestionnaireResponse, target bundle
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144051' "r_obs_c_coding_code";
-                    src -> coding.display = 'MalariaTestResults' "r_obs_c_coding_display";
+                    src -> coding.code = '711108003' "r_obs_c_coding_code";
+                    src -> coding.display = 'Malaria Test Results' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Malaria Test Results' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1026,10 +1031,10 @@ group ExtractRetestConducted(source src: QuestionnaireResponse, target bundle: B
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144051' "r_obs_c_coding_code";
-                    src -> coding.display = 'RetestConducted' "r_obs_c_coding_display";
+                    src -> coding.code = '171140005' "r_obs_c_coding_code";
+                    src -> coding.display = 'Retest Conducted' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Retest Conducted' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1054,10 +1059,10 @@ group ExtractTreatAndAdvice(source src: QuestionnaireResponse, target bundle: Bu
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144052' "r_obs_c_coding_code";
-                    src -> coding.display = 'TreatAndAdvice' "r_obs_c_coding_display";
+                    src -> coding.code = '182991002' "r_obs_c_coding_code";
+                    src -> coding.display = 'Treat And Advice' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Treat And Advice' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1082,10 +1087,10 @@ group ExtractCoughTreatmentAmoxicillinRedPackAvailable(source src: Questionnaire
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144053' "r_obs_c_coding_code";
-                    src -> coding.display = 'CoughTreatmentAmoxicillinRedPackAvailable' "r_obs_c_coding_display";
+                    src -> coding.code = '715045000' "r_obs_c_coding_code";
+                    src -> coding.display = 'Cough Treatment Amoxicillin Red Pack Available' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Cough Treatment Amoxicillin Red Pack Available' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1111,10 +1116,10 @@ group ExtractCoughTreatmentAmoxicillinGreenPackAvailable(source src: Questionnai
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144053' "r_obs_c_coding_code";
-                    src -> coding.display = 'CoughTreatmentAmoxicillinGreenPackAvailable' "r_obs_c_coding_display";
+                    src -> coding.code = '715045000' "r_obs_c_coding_code";
+                    src -> coding.display = 'Cough Treatment Amoxicillin Green Pack Available' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Cough Treatment Amoxicillin Green Pack Available' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1140,10 +1145,10 @@ group ExtractTenAmoxicillin250mgRedPackGiven(source src: QuestionnaireResponse, 
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144054' "r_obs_c_coding_code";
-                    src -> coding.display = 'TenAmoxicillin250mgRedPackGiven' "r_obs_c_coding_display";
+                    src -> coding.code = '182833002' "r_obs_c_coding_code";
+                    src -> coding.display = 'Ten Amoxicillin 250mg Red Pack Given' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Ten Amoxicillin 250mg Red Pack Given' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1168,10 +1173,10 @@ group ExtractTwentyAmoxicillin250mgGreenPack(source src: QuestionnaireResponse, 
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144055' "r_obs_c_coding_code";
-                    src -> coding.display = 'TwentyAmoxicillin250mgGreenPack' "r_obs_c_coding_display";
+                    src -> coding.code = '182833002' "r_obs_c_coding_code";
+                    src -> coding.display = 'Twenty Amoxicillin 250mg Green Pack Given' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Twenty Amoxicillin 250mg Green Pack Given' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1197,10 +1202,10 @@ group ExtractORSDiarrhoeaTreatmentAvailable(source src: QuestionnaireResponse, t
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144056' "r_obs_c_coding_code";
-                    src -> coding.display = 'ORSDiarrhoeaTreatmentAvailable' "r_obs_c_coding_display";
+                    src -> coding.code = '715045000' "r_obs_c_coding_code";
+                    src -> coding.display = 'ORS Diarrhoea Treatment Available' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'ORS Diarrhoea Treatment Available' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1230,10 +1235,10 @@ group ExtractORSForDrinkingGiven(source src: QuestionnaireResponse, target bundl
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144057' "r_obs_c_coding_code";
-                    src -> coding.display = 'ORSForDrinkingGiven' "r_obs_c_coding_display";
+                    src -> coding.code = '182833002' "r_obs_c_coding_code";
+                    src -> coding.display = 'ORS For Drinking Given' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'ORS For Drinking Given' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1258,10 +1263,10 @@ group ExtractORSPackGiven(source src: QuestionnaireResponse, target bundle: Bund
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144058' "r_obs_c_coding_code";
-                    src -> coding.display = 'ORSPackGiven' "r_obs_c_coding_display";
+                    src -> coding.code = '182833002' "r_obs_c_coding_code";
+                    src -> coding.display = 'ORS Pack Given' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'ORS Pack Given' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1287,10 +1292,10 @@ group ExtractZincAvailable(source src: QuestionnaireResponse, target bundle: Bun
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144058' "r_obs_c_coding_code";
-                    src -> coding.display = 'ZincAvailable' "r_obs_c_coding_display";
+                    src -> coding.code = '715045000' "r_obs_c_coding_code";
+                    src -> coding.display = 'Zinc Available' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Zinc Available' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1315,10 +1320,10 @@ group ExtractFiveZincGiven(source src: QuestionnaireResponse, target bundle: Bun
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144059' "r_obs_c_coding_code";
-                    src -> coding.display = 'FiveZincGiven' "r_obs_c_coding_display";
+                    src -> coding.code = '182833002' "r_obs_c_coding_code";
+                    src -> coding.display = 'Five Zinc Given' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Five Zinc Given' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1343,10 +1348,10 @@ group Extract10ZincTabsGiven(source src: QuestionnaireResponse, target bundle: B
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144060' "r_obs_c_coding_code";
-                    src -> coding.display = '10ZincTabsGiven' "r_obs_c_coding_display";
+                    src -> coding.code = '182833002' "r_obs_c_coding_code";
+                    src -> coding.display = '10 Zinc Tabs Given' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = '10 Zinc Tabs Given' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1371,10 +1376,10 @@ group ExtractFeverTreatmentAvailable(source src: QuestionnaireResponse, target b
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144061' "r_obs_c_coding_code";
-                    src -> coding.display = 'FeverTreatmentAvailable' "r_obs_c_coding_display";
+                    src -> coding.code = '715045000' "r_obs_c_coding_code";
+                    src -> coding.display = 'Fever Treatment Available' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Fever Treatment Available' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1400,10 +1405,10 @@ group ExtractSixTabsACTYellowPackGiven(source src: QuestionnaireResponse, target
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144062' "r_obs_c_coding_code";
-                    src -> coding.display = 'SixTabsACTYellowPackGiven' "r_obs_c_coding_display";
+                    src -> coding.code = '182833002' "r_obs_c_coding_code";
+                    src -> coding.display = 'Six Tabs ACT Yellow Pack Given' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Six Tabs ACT Yellow Pack Given' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1428,10 +1433,10 @@ group ExtractTwelveTabsACTBluePackGiven(source src: QuestionnaireResponse, targe
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144063' "r_obs_c_coding_code";
-                    src -> coding.display = 'TwelveTabsACTBluePackGiven' "r_obs_c_coding_display";
+                    src -> coding.code = '182833002' "r_obs_c_coding_code";
+                    src -> coding.display = 'Twelve Tabs ACT Blue Pack Given' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Twelve Tabs ACT Blue Pack Given' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1456,10 +1461,10 @@ group ExtractChildReferral(source src: QuestionnaireResponse, target bundle: Bun
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144064' "r_obs_c_coding_code";
-                    src -> coding.display = 'ChildReferral' "r_obs_c_coding_display";
+                    src -> coding.code = '275821008' "r_obs_c_coding_code";
+                    src -> coding.display = 'Referral of child' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Referral of child' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -1486,10 +1491,10 @@ group ExtractWasChildReferred(source src: QuestionnaireResponse, target bundle: 
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144063' "r_obs_c_coding_code";
-                    src -> coding.display = 'WasChildReferred' "r_obs_c_coding_display";
+                    src -> coding.code = '275821008' "r_obs_c_coding_code";
+                    src -> coding.display = 'Was Child Referred' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Was Child Referred' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";

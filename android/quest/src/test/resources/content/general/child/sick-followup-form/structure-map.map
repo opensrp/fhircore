@@ -41,10 +41,10 @@ group ExtractChildFeeling(source src: QuestionnaireReponse, target bundle: Bundl
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144002' "r_obs_c_coding_code";
+                    src -> coding.code = '418138009' "r_obs_c_coding_code";
                     src -> coding.display = 'Hows Child Feeling' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Hows Child Feeling' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -68,10 +68,10 @@ group ExtractTreatmentCompleted(source src: QuestionnaireReponse, target bundle:
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144002' "r_obs_c_coding_code";
+                    src -> coding.code = '182992009' "r_obs_c_coding_code";
                     src -> coding.display = 'Treatment completed' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Treatment completed' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -96,10 +96,10 @@ group ExtractAnyNewProblem(source src: QuestionnaireReponse, target bundle: Bund
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144002' "r_obs_c_coding_code";
-                    src -> coding.display = 'Any New Problem' "r_obs_c_coding_display";
+                    src -> coding.code = '441308009' "r_obs_c_coding_code";
+                    src -> coding.display = 'New diagnosis' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'New diagnosis' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";

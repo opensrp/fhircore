@@ -17,6 +17,12 @@ group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle
                 encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH","home health"),
                 encounter.serviceType= cc("http://terminology.hl7.org/CodeSystem/service-type", "425","Referral") "r_enc_data";
             src.subject as subj -> encounter.subject = subj "rule_subj";
+
+            src as period -> encounter.period = create('Period') as enPeriod then {
+                src -> enPeriod.start = evaluate(src, now()) "rule_encounter_per_start";
+                src -> enPeriod.end = evaluate(src, now()) "rule_encounter_per_end";
+            } "rule_encounter_per";
+
             src then ExtractObservations(src, bundle, encounter) "r_extract_obs";
         } "r_encounter";
 }
@@ -37,14 +43,23 @@ group ExtractPatientGoToFacility(source src: QuestionnaireResponse, target bundl
         src->bundle.entry as entry,
         entry.resource = create("Observation") as obs then {
             src->obs.id = uuid(),
-                obs.code = cc("http://www.snomed.org/", "710562003","Assessment of sanitation"),
+                //obs.code = cc("http://www.snomed.org/", "257622000","Healthcare facility - Attended"),
                 obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
                 obs.encounter = reference(encounter),
                 obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
             src->obs.subject = create("Reference") as ref then {
                 src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
-            }
-            "r_obs_sub_date_ws";
+            } "r_obs_subj_ref";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '257622000' "r_obs_c_coding_code";
+                    src -> coding.display = 'Healthcare facility - Attended' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Healthcare facility - Attended' "r_obs_c_text";
+            } "r_obs_code";
+
             src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
         }
         "r_obs_date_ws";
@@ -66,10 +81,10 @@ group ExtractNameOfHealthFacility(source src: QuestionnaireResponse, target bund
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144002' "r_obs_c_coding_code";
-                    src -> coding.display = 'Current chronological age' "r_obs_c_coding_display";
+                    src -> coding.code = '257622000' "r_obs_c_coding_code";
+                    src -> coding.display = 'Healthcare facility - Name' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Healthcare facility - Name' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -93,10 +108,10 @@ group ExtractDiagnosis(source src: QuestionnaireResponse, target bundle: Bundle,
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144002' "r_obs_c_coding_code";
-                    src -> coding.display = 'Current chronological age' "r_obs_c_coding_display";
+                    src -> coding.code = '439401001' "r_obs_c_coding_code";
+                    src -> coding.display = 'Diagnosis' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Diagnosis' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -113,7 +128,7 @@ group ExtractFollowUpCareNeeded(source src: QuestionnaireResponse, target bundle
         src->bundle.entry as entry,
         entry.resource = create("Observation") as obs then {
             src->obs.id = uuid(),
-                //obs.code = cc("http://www.snomed.org/", "424144002","Current chronological age"),
+                //obs.code = cc("http://www.snomed.org/", "183654001","Follow-up Needed"),
                 obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
                 obs.encounter = reference(encounter),
                 obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
@@ -121,10 +136,10 @@ group ExtractFollowUpCareNeeded(source src: QuestionnaireResponse, target bundle
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '424144002' "r_obs_c_coding_code";
-                    src -> coding.display = 'Current chronological age' "r_obs_c_coding_display";
+                    src -> coding.code = '183654001' "r_obs_c_coding_code";
+                    src -> coding.display = 'Follow-up Needed' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = 'Follow-up Needed' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -149,10 +164,10 @@ group ExtractDateOfReturn(source src: QuestionnaireResponse, target bundle: Bund
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '7241000122103' "r_obs_c_coding_code";
-                    src -> coding.display = 'Date of immunization' "r_obs_c_coding_display";
+                    src -> coding.code = '390840006' "r_obs_c_coding_code";
+                    src -> coding.display = 'Next appointment' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Date of immunization' "r_obs_c_text";
+                src -> code.text = 'Next appointment' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
@@ -177,10 +192,10 @@ group ExtractAssessAndReferral(source src: QuestionnaireResponse, target bundle:
             src -> obs.code = create('CodeableConcept') as code then {
                 src -> code.coding = create('Coding') as coding then {
                     src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
-                    src -> coding.code = '4241440033' "r_obs_c_coding_code";
-                    src -> coding.display = 'Current chronological age' "r_obs_c_coding_display";
+                    src -> coding.code = '275821008' "r_obs_c_coding_code";
+                    src -> coding.display = ' Referral of child' "r_obs_c_coding_display";
                 } "r_obs_c_coding";
-                src -> code.text = 'Current chronological age' "r_obs_c_text";
+                src -> code.text = ' Referral of child' "r_obs_c_text";
             } "r_obs_code";
 
             src.subject as subj -> obs.subject = subj "rule_subj_obs_ws";
