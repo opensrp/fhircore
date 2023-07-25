@@ -405,9 +405,9 @@ task("evaluatePerformanceBenchmarkResults") {
       // Loop through the results file updating the results
       JSONObject(FileReader(resultsFile).readText()).run {
         getJSONArray("benchmarks").forEachIndexed { index, any ->
-          val benchmark = any as JSONObject
-          val fullName = benchmark.getTestName()
-          val timings = benchmark.getJSONObject("metrics").getJSONObject("timeNs")
+          val benchmarkResult = any as JSONObject
+          val fullName = benchmarkResult.getTestName()
+          val timings = benchmarkResult.getJSONObject("metrics").getJSONObject("timeNs")
 
           val median = timings.getDouble("median")
           val expectedTimings = expectedResultsMap[fullName]
@@ -418,13 +418,16 @@ task("evaluatePerformanceBenchmarkResults") {
             )
           } else {
             val expectedMaxTiming = (expectedTimings.get("max") ?: 0e1)
+            val timingMargin = (expectedTimings.get("margin") ?: 0e1)
 
-            if (median > expectedMaxTiming) {
+            if (median > (expectedMaxTiming + timingMargin)) {
               throw Exception(
-                "$fullName test passes the threshold of $expectedMaxTiming Ns. The timing is $median Ns",
+                "$fullName test passes the threshold of ${expectedMaxTiming + timingMargin} Ns. The timing is $median Ns",
               )
+            } else if (median <= (expectedMaxTiming - timingMargin)) {
+              System.out.println("Improvement: Test $fullName took $median vs min of ${expectedMaxTiming - timingMargin}")
             } else {
-              System.out.println("Test $fullName took $median vs $expectedMaxTiming")
+              System.out.println("Test $fullName took $median vs Range[${expectedMaxTiming - timingMargin} to ${expectedMaxTiming + timingMargin}] Ns")
             }
           }
         }
