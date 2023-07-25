@@ -70,6 +70,7 @@ import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent
@@ -116,7 +117,6 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.model.practitioner.FhirPractitionerDetails
-import org.smartregister.model.practitioner.KeycloakUserDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 
 @HiltAndroidTest
@@ -148,7 +148,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // Write practitioner and organization to shared preferences
     sharedPreferencesHelper.write(
       SharedPreferenceKey.PRACTITIONER_ID.name,
-      practitionerDetails().fhirPractitionerDetails.practitionerId.valueToString(),
+      practitionerDetails().fhirPractitionerDetails.id,
     )
 
     sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("105"))
@@ -1208,11 +1208,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   private fun practitionerDetails(): PractitionerDetails {
     return PractitionerDetails().apply {
-      userDetail = KeycloakUserDetails().apply { id = "12345" }
       fhirPractitionerDetails =
         FhirPractitionerDetails().apply {
           id = "12345"
-          practitionerId = StringType("12345")
+          practitioner = Practitioner().apply { id = "12345" }
         }
     }
   }
