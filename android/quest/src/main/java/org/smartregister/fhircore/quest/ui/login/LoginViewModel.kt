@@ -312,7 +312,7 @@ constructor(
 
       sharedPreferences.write(
         key = SharedPreferenceKey.PRACTITIONER_ID.name,
-        value = practitionerDetails.fhirPractitionerDetails?.practitionerId.valueToString(),
+        value = practitionerDetails.fhirPractitionerDetails?.id,
       )
       sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS.name, practitionerDetails)
       sharedPreferences.write(ResourceType.CareTeam.name, careTeamIds)
