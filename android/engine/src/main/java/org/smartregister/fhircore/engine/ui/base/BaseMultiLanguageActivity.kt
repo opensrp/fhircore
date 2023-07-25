@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.ui.base
 import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import java.lang.UnsupportedOperationException
 import java.util.Locale
 import javax.inject.Inject
@@ -26,6 +27,10 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
+/**
+ * Base class for all activities used in the app. Every activity should extend this class for
+ * multi-language support.
+ */
 abstract class BaseMultiLanguageActivity : AppCompatActivity() {
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
@@ -33,6 +38,8 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     inject()
     super.onCreate(savedInstanceState)
+    // Disable dark theme on All Activities.
+    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
   }
 
   override fun attachBaseContext(baseContext: Context) {

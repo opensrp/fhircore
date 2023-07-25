@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
@@ -52,7 +51,6 @@ class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     setTheme(R.style.AppTheme_Questionnaire)
     viewBinding = QuestionnaireActivityBinding.inflate(layoutInflater)
     setContentView(viewBinding.root)

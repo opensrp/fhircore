@@ -247,7 +247,7 @@ constructor(
               ),
             ),
           questionnaireConfig = questionnaireConfig,
-          actionParams = emptyArray(),
+          actionParams = emptyList(),
         )
       }
     }
