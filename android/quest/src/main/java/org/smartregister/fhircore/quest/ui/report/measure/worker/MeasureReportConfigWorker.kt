@@ -89,7 +89,8 @@ constructor(
               startDateFormatted,
               endDateFormatted,
               subjects,
-              existing
+              existing,
+              null
             )
           }
         }

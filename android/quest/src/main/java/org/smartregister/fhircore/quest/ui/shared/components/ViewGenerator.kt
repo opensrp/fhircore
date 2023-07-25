@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.shared.components
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -56,6 +57,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.util.extensions.conditional
+import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val COLUMN_DIVIDER_TEST_TAG = "horizontalDividerTestTag"
 
@@ -88,7 +90,19 @@ fun GenerateView(
           FlowColumn(modifier = modifier.padding(properties.padding.dp)) {
             properties.children.forEach { properties ->
               GenerateView(
-                modifier = generateModifier(properties),
+                modifier =
+                  generateModifier(properties)
+                    .conditional(
+                      properties.clickable.toBoolean(),
+                      {
+                        clickable {
+                          (properties as RowProperties).actions.handleClickEvent(
+                            navController,
+                            resourceData
+                          )
+                        }
+                      },
+                    ),
                 properties = properties,
                 resourceData = resourceData,
                 navController = navController
@@ -105,7 +119,20 @@ fun GenerateView(
                 ViewAlignment.CENTER -> Alignment.CenterHorizontally
                 ViewAlignment.NONE -> Alignment.Start
               },
-            modifier = modifier.padding(properties.padding.dp),
+            modifier =
+              modifier
+                .padding(properties.padding.dp)
+                .conditional(
+                  properties.clickable.toBoolean(),
+                  {
+                    clickable {
+                      (properties as RowProperties).actions.handleClickEvent(
+                        navController,
+                        resourceData
+                      )
+                    }
+                  },
+                ),
             verticalArrangement =
               if (isWeighted) Arrangement.spacedBy(properties.spacedBy.dp)
               else properties.arrangement?.position ?: Arrangement.Top
@@ -134,7 +161,19 @@ fun GenerateView(
           FlowRow(modifier = modifier.padding(properties.padding.dp)) {
             properties.children.forEach { properties ->
               GenerateView(
-                modifier = generateModifier(properties),
+                modifier =
+                  generateModifier(properties)
+                    .conditional(
+                      properties.clickable.toBoolean(),
+                      {
+                        clickable {
+                          (properties as RowProperties).actions.handleClickEvent(
+                            navController,
+                            resourceData
+                          )
+                        }
+                      },
+                    ),
                 properties = properties.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
                 navController = navController
@@ -151,7 +190,20 @@ fun GenerateView(
                 ViewAlignment.CENTER -> Alignment.CenterVertically
                 ViewAlignment.NONE -> Alignment.CenterVertically
               },
-            modifier = modifier.padding(properties.padding.dp),
+            modifier =
+              modifier
+                .padding(properties.padding.dp)
+                .conditional(
+                  properties.clickable.toBoolean(),
+                  {
+                    clickable {
+                      (properties as RowProperties).actions.handleClickEvent(
+                        navController,
+                        resourceData
+                      )
+                    }
+                  },
+                ),
             horizontalArrangement =
               if (isWeighted) Arrangement.spacedBy(properties.spacedBy.dp)
               else properties.arrangement?.position ?: Arrangement.Start

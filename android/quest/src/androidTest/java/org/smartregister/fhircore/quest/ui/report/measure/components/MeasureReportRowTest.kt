@@ -26,7 +26,7 @@ import io.mockk.verify
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 
 class MeasureReportRowTest {
 
@@ -35,7 +35,7 @@ class MeasureReportRowTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   private val measureReportConfig =
-    MeasureReportConfig(
+    ReportConfiguration(
       id = "101",
       title = "2+ ANC Contacts",
       description = "Pregnant women with at least two ANC Contacts",

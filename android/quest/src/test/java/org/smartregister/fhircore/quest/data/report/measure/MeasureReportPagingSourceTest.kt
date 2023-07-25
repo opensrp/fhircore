@@ -38,8 +38,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
@@ -53,6 +53,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 @HiltAndroidTest
 class MeasureReportPagingSourceTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val fhirEngine: FhirEngine = mockk()
@@ -73,8 +74,8 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
           context = ApplicationProvider.getApplicationContext(),
           configurationRegistry = configurationRegistry,
           fhirPathDataExtractor = fhirPathDataExtractor,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider
-        )
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+        ),
       )
     resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)
 
@@ -92,8 +93,8 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
-          configRulesExecutor = mockk()
-        )
+          configRulesExecutor = mockk(),
+        ),
       )
 
     measureReportPagingSource =
@@ -101,18 +102,18 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
         measureReportConfiguration,
         registerConfiguration,
         registerRepository,
-        resourceDataRulesExecutor
+        resourceDataRulesExecutor,
       )
   }
 
   @Test
   fun testGetRefreshKey() {
-    val measureReportConfig = MeasureReportConfig()
+    val reportConfiguration = ReportConfiguration()
     val page =
-      PagingSource.LoadResult.Page<Int, MeasureReportConfig>(
-        listOf(measureReportConfig),
+      PagingSource.LoadResult.Page<Int, ReportConfiguration>(
+        listOf(reportConfiguration),
         null,
-        null
+        null,
       )
     val pages = listOf(page)
     val pagingConfig = PagingConfig(1)
@@ -136,7 +137,7 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
   fun testRetrieveSubjectsWithResults() {
     coEvery { fhirEngine.search<Patient>(any<Search>()) } returns listOf(Patient())
     runBlocking(Dispatchers.Default) {
-      val data = measureReportPagingSource.retrieveSubjects(0)
+      val data = measureReportPagingSource.retrieveSubjects()
       Assert.assertEquals(1, data.size)
     }
   }
