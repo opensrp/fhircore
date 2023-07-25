@@ -2,7 +2,9 @@
 
 Configurations used to configure widgets. FHIR Core uses widgets to render views. Examples are rows, columns, cards, and buttons.
 
-## Flex alignment widgets
+## LIST widget
+
+### Flex alignment widgets
 
 To display items in flexRow below sample JSON config works fine. Replace **COMPOUND_TEXT** with your preferred widget component. Please note, the below json borrows from **LIST** component properties
 
@@ -30,9 +32,9 @@ To display items in flexRow below sample JSON config works fine. Replace **COMPO
     ]
     }
    }
- ```
+```
 
-## Display resources inside another list
+### Display resources inside another list
 To display list resources inside a list and execute it's rules , add it an attribute called **resources** inside your list and define it's parameters as shown in the list below
 If the config doesn't have a **resources** attribute, the app logic defaults to using relatedResources and executes rules in the rule config section.
 ``` json
@@ -85,19 +87,9 @@ If the config doesn't have a **resources** attribute, the app logic defaults to 
     ]
   }
 }
- ```
+```
 
-## Config properties of list resources using the above json config
-|Property | Description | Required | Default |
-|--|--|:--:|:--:|
-id | Unique identifier for the resource | no but highly recommended | app defaults to using resourceType.Name|
-relatedResourceId | Unique identifier for the relatedResources | no but highly recommended | app defaults to using resourceType.Name|
-resourceType | The resource to to get/fetch data from e.g Task or Careplan | yes | |
-conditionalFhirPathExpression | FhirPathExpression to get to use when filtering the resource defined in resourceType section | no | app defaults to using relatedResources types and fhirPathexpression|
-sortConfig | Configuration used for sorting LIST widget resource | no | |
-
-
-## Config properties of a list widget
+### Config properties of LIST
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 id | Unique identifier for the application | Yes | |
@@ -109,6 +101,14 @@ registerCard | card to display widgets at | Yes |  |
 views | the desired widgets and their properties to be displayed | | |
 resources | the list resources to execute rules for | No but should be included if you want to display data as described in the sub-title|emptyList() |
 
+### Config properties of nested LIST
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+id | Unique identifier for the resource | no but highly recommended | app defaults to using resourceType.Name|
+relatedResourceId | Unique identifier for the relatedResources | no but highly recommended | app defaults to using resourceType.Name|
+resourceType | The resource to to get/fetch data from e.g Task or Careplan | yes | |
+conditionalFhirPathExpression | FhirPathExpression to get to use when filtering the resource defined in resourceType section | no | app defaults to using relatedResources types and fhirPathexpression|
+sortConfig | Configuration used for sorting LIST widget resource | no | |
 
 ## How to use COMPOUND_TEXT
 Defines the configuration properties for a Compound Text view, which is a view that displays two text strings with an optional separator between them. This view can also have actions associated with each text string.
@@ -131,8 +131,7 @@ Defines the configuration properties for a Compound Text view, which is a view t
               }
 ```
 
-
-## Config properties of COMPOUND_TEXT
+### Config properties of COMPOUND_TEXT
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 viewType | First viewType should be a list. This will help in iterating over the data to display | Yes | |
@@ -157,7 +156,6 @@ secondaryTextFontWeight | The font weight of the secondary text | | [TextFontWei
 primaryTextActions | The list of actions associated with the primary text. If the list is empty, no actions will be displayed | | |
 secondaryTextActions | The list of actions associated with the secondary text. If the list is empty, no actions will be displayed | | |
 overflow | Determines how the text should be truncated if it is too long to fit | | [TextOverflow.ELLIPSIS] |
-
 
 ## SERVICE_CARD widgets
 Displays Patient's details ,other related services and tasks. The details field within the SERVICE_CARD display patient's name and ID.
@@ -202,8 +200,7 @@ Displays Patient's details ,other related services and tasks. The details field 
       }
 ```
 
-
-## Config properties of SERVICE_CARD
+### Config properties of SERVICE_CARD
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 viewType | First viewType should be a list. This will help in iterating over the data to display | Yes | [ViewType.SERVICE_CARD]|
@@ -222,7 +219,6 @@ servicememberIcons | A String value that represents the icons for the service me
 serviceButton | A ButtonProperties object that represents a button displayed in the service card | Yes | null |
 services | A list of ButtonProperties that represent the services associated with the service card | yes | null |
 actions | A list of ActionConfig objects that represent the actions that can be performed on the service card | yes | emptyList() |
-
 
 ## COLUMN widgets
 The column widgets are used to create a vertical layout container that can hold multiple child views. The purpose of the "COLUMN" is to arrange child views in a vertical column, with the child views stacked on top of one another in the order in which they are added.
@@ -251,8 +247,7 @@ The column widgets are used to create a vertical layout container that can hold 
                 }
  ```
 
-
-## Config properties of COLUMN
+### Config properties of COLUMN
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 viewType | First viewType should be a list. This will help in iterating over the data to display | Yes | [ViewType.COLUMN]|
@@ -287,7 +282,7 @@ Displays icons or images.
     }
 ```
 
-## Config properties of IMAGE
+### Config properties of IMAGE
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
 viewType |  | Yes | [ViewType.IMAGE]|
@@ -298,3 +293,173 @@ size | Size of the image in pixels | | 24 |
 imageConfig | The property that points to the actual image. It can either point to a local drawable or a server side Binary file| | [ViewAlignment.None]|
 padding | Determines whether the view should fill its parent's width | | false |
 shape | Used to clip the image into a shape e.g into a circle or rectangle | | false |
+
+## ROW widgets
+The purpose of the row is to act as a container for organizing and laying out its child views horizontally.
+
+
+```json
+{
+  "viewType": "ROW",
+  "arrangement": "SPACE_BETWEEN",
+  "fillMaxWidth": true,
+  "children": [
+    {
+      "viewType": "COLUMN",
+      "children": [
+        {
+          "viewType": "COMPOUND_TEXT",
+          "primaryText": "Last restock",
+          "primaryTextColor": "#5A5A5A",
+          "fontSize": 18.0
+        },
+        {
+          "viewType": "COMPOUND_TEXT",
+          "primaryText": "Previous restock ",
+          "fontSize": 16.0,
+          "secondaryText": "@{lastRestockedDate}"
+        }
+      ]
+    },
+    {
+      "viewType": "COMPOUND_TEXT",
+      "primaryText": "@{lastRestockedAmount}",
+      "primaryTextColor": "#000000",
+      "fontSize": 16.0
+    }
+  ]
+}
+```
+
+### Config properties of ROW
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType | Specifies the type of view | Yes | [ViewType]|
+weight | The weight of the row. It determines how much space this row should occupy relative to other rows in a layout that uses weights.| No | The default is 0 |
+backgroundColor | The background color of the row.It is specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No |  Null |
+padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
+borderRadius | The radius of the row's corners in pixels. Setting this value creates rounded corners for the row.| | 0 |
+alignment | Specifies the alignment of the row's content within the row. | | [ViewAlignment.NONE]|
+fillMaxWidth | If set to true, the row will attempt to occupy the maximum available width in its parent layout. | | false |
+fillMaxHeight | If set to true, the row will attempt to occupy the maximum available height in its parent layout. | | false |
+clickable |  Indicates whether the row is clickable. If set to "true", the row can be interacted with and handle click events. | | false |
+visible | Specifies the visibility of the row. If set to "true", the row will be visible, otherwise, if set to "false", it will be hidden | | true |
+spacedBy |  The spacing between the children views of the row, in pixels. | | 8|
+arrangement |  Specifies the arrangement of the children views within the row. | | |
+wrapContent |  If set to true, the row's width and height will adjust to wrap its content tightly. | | false |
+children |   A list of **ViewProperties** objects representing the children views within the row. | | emptyList()|
+
+## VIEW Widget
+Defines the hierarchical stucture of views to be rendered. It contains various properties that define its appearance and behavior.
+
+``` json
+"views": [
+            {
+                "viewType": "COLUMN",
+                "children": [
+                    {
+                        "viewType": "SERVICE_CARD",
+                        "details": [
+                            {
+                                "viewType": "COMPOUND_TEXT",
+                                "primaryText": "@{patientName}",
+                                "primaryTextColor": "#000000"
+                            },
+                            {
+                                "viewType": "COMPOUND_TEXT",
+                                "primaryText": "{{ id.patient.id }}",
+                                "fontSize": 14.0,
+                                "primaryTextColor": "#000000"
+                            }
+                        ],
+                        "showVerticalDivider": false,
+                        "serviceButton": {
+                            "visible": true,
+                            "text": "{{ anc.visit }}",
+                            "status": "DUE",
+                            "smallSized": true
+                        },
+                        "actions": [
+                            {
+                                "trigger": "ON_CLICK",
+                                "workflow": "LAUNCH_PROFILE",
+                                "id": "defaultProfile",
+                                "params": [
+                                    {
+                                        "key": "patientId",
+                                        "value": "@{patientId}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+```
+
+### Config properties of VIEW
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType | Specifies the type of view. It acts as a discriminator to identify the type of view during runtime. | Yes | [ViewType]|
+weight |  It defines the weight of the view, which is typically used in layout containers with weighted distribution to control the amount of space a view occupies relative to other views.|  | Float |
+backgroundColor | t represents the background color of the view, specified as a color code in the format "#RRGGBB" or "#AARRGGBB". If null, it indicates a transparent background. | | String? |
+padding |  It defines the padding around the content of the view, in pixels. | No | Int |
+borderRadius |  It specifies the radius of the view's corners in pixels. Setting this property creates rounded corners for the view.| | Int |
+alignment | Specifies the alignment of the row's content within the row. | | [ViewAlignment]|
+fillMaxWidth | It indicates whether the view should attempt to occupy the maximum available width in its parent layout. | | Boolean |
+fillMaxHeight | It indicates whether the view should attempt to occupy the maximum available height in its parent layout. | | Boolean |
+clickable |  Indicates whether the view is clickable. If set to "true", the row can be interacted with and handle click events. | | String |
+visible | Specifies the visibility of the view. If set to "true", the row will be visible, otherwise, if set to "false", it will be hidden | | String |
+
+### Divider Widget
+
+The Divider widget allows one to visually separate and organize different components within a graphical user interface (GUI).
+It creates a horizontal line that acts as a visual boundary, enhancing the overall aesthetics and user experience.
+
+To use the Divider widget in the app, one has to define the JSON file as follows:
+```json
+{
+  "viewType": "BORDER",
+  "thickness": 0.8
+}
+```
+The JSON configuration instructs the app to create a Divider widget with the following properties:
+
+- View Type: The `viewType: BORDER` setting specifies the  type of widget that will be rendered, and in this case, it is set to `"BORDER"` type which renders a solid horizontal line as the divider.
+- Thickness: The `thickness: 0.8` setting determines the width of the Divider. By adjusting the thickness value, one can precisely control the Divider's visual appearance.
+
+### Config properties of DIVIDER
+
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType | The type of widget that will be rendered in this case it is the `BORDER` view. | Yes | [ViewType.BORDER]|
+thickness | The width of the Divider. | No | 0.5 |
+backgroundColor | The background color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No | #FFFFFF |
+visible | A string value that determines whether the view should be visible | No| true |
+padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
+
+## Spacer Widget
+
+The Spacer widget is used to create a flexible, empty space between two views. It is used to create a space between two views in a layout, and it is also used to create a space between the edge of a view and its parent layout.
+
+To use the Divider widget in the app, one has to define the JSON file as follows:
+
+```json
+{
+  "viewType": "SPACER",
+  "height": 10
+}
+```
+After defining the above JSON example a view will be rendered with the following properties:
+- View Type: The `viewType: SPACER` setting specifies that the widget that will be rendered is a spacer, which creates an empty space or gap between other UI elements.
+- Height: The `height: 10` setting determines the height of the spacer. By setting the height value to 10, the spacer will have a height of 10 density-independent pixels which scales appropriately across different screen densities, ensuring consistent visual appearance on various devices.
+
+### Config properties of SPACER
+
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType | The type of widget that will be rendered in this case it is the `SPACER` view. | Yes | [ViewType.SPACER]|
+height | The height of the Spacer. | Yes | _ |
+backgroundColor | The background color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No | #FFFFFF |
+padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
