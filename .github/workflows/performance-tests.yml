@@ -1,6 +1,6 @@
 # This workflow will run the performance tests
 
-name: CI
+name: Performance Tests
 
 on:
   pull_request:
@@ -12,7 +12,7 @@ env:
  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
 jobs:
-  quest-tests:
+  quest-performance-tests:
     runs-on: macos-latest
     strategy:
       matrix:
@@ -80,4 +80,4 @@ jobs:
 
       - name: Check performance results
         working-directory: android
-        run: ./gradlew :quest:checkPerformanceLimits --stacktrace
+        run: ./gradlew :quest:evaluatePerformanceBenchmarkResults --stacktrace

@@ -377,68 +377,63 @@ dependencies {
   ktlint(project(":linting"))
 }
 
-task("checkPerformanceLimits") {
-  val expectationsFile = project.file("expected-results.json")
-
-  val mainFolder =
-    project.file(
-      "build"
-    )
-
+task("evaluatePerformanceBenchmarkResults") {
+  val expectedPerformanceLimitsFile = project.file("expected-results.json")
   val resultsFile = project.file("org.smartregister.opensrp.ecbis-benchmarkData.json")
 
-  if (mainFolder != null && mainFolder.exists() && resultsFile != null && resultsFile.exists()) {
+  doLast {
+    if (resultsFile.exists()) {
+      // Read the expectations file
+      val expectedResultsMap: HashMap<String, HashMap<String, Double>> = hashMapOf()
 
-    // Read the expectations file
-    val expectedResultsMap: HashMap<String, HashMap<String, Double>> = hashMapOf()
+      JSONObject(FileReader(expectedPerformanceLimitsFile).readText()).run {
+        keys().forEach { key ->
+          val resultMaxDeltaMap: HashMap<String, Double> = hashMapOf()
+          val methodExpectedResults = this.getJSONObject(key)
 
-    JSONObject(FileReader(expectationsFile).readText()).run {
-      keys().forEach { key ->
-        val resultMaxDeltaMap: HashMap<String, Double> = hashMapOf()
-        val methodExpectedResults = this.getJSONObject(key)
+          methodExpectedResults.keys().forEach { expectedResultsKey ->
+            resultMaxDeltaMap.put(
+              expectedResultsKey,
+              methodExpectedResults.getDouble(expectedResultsKey),
+            )
+          }
 
-        methodExpectedResults.keys().forEach { expectedResultsKey ->
-          resultMaxDeltaMap.put(
-            expectedResultsKey,
-            methodExpectedResults.getDouble(expectedResultsKey),
-          )
+          expectedResultsMap[key] = resultMaxDeltaMap
         }
-
-        expectedResultsMap[key] = resultMaxDeltaMap
       }
-    }
 
-    // Loop through the results file updating the results
-    JSONObject(FileReader(resultsFile).readText()).run {
-      getJSONArray("benchmarks").forEachIndexed { index, any ->
-        val benchmark = any as JSONObject
-        val fullName = benchmark.getTestName()
-        val timings = benchmark.getJSONObject("metrics").getJSONObject("timeNs")
+      // Loop through the results file updating the results
+      JSONObject(FileReader(resultsFile).readText()).run {
+        getJSONArray("benchmarks").forEachIndexed { index, any ->
+          val benchmark = any as JSONObject
+          val fullName = benchmark.getTestName()
+          val timings = benchmark.getJSONObject("metrics").getJSONObject("timeNs")
 
-        /*
-        val min = timings.getDouble("minimum")
-        val max = timings.getDouble("maximum")
-         */
-        val median = timings.getDouble("median")
-        val expectedTimings = expectedResultsMap[fullName]
+          val median = timings.getDouble("median")
+          val expectedTimings = expectedResultsMap[fullName]
 
-        if (expectedTimings == null) {
-          System.out.println("Timings for $fullName could not be found")
-        } else {
-          val expectedMaxTiming = (expectedTimings.get("max") ?: 0e1)
-
-          if (median > expectedMaxTiming) {
-            throw Exception(
-              "$fullName test passes the threshold of $expectedMaxTiming Ns. The timing is $median Ns",
+          if (expectedTimings == null) {
+            System.err.println(
+              "Metrics for $fullName could not be found in expected-results.json. Kindly add this to the file"
             )
           } else {
-            System.out.println("$fullName took $median vs $expectedMaxTiming")
+            val expectedMaxTiming = (expectedTimings.get("max") ?: 0e1)
+
+            if (median > expectedMaxTiming) {
+              throw Exception(
+                "$fullName test passes the threshold of $expectedMaxTiming Ns. The timing is $median Ns",
+              )
+            } else {
+              System.out.println("Test $fullName took $median vs $expectedMaxTiming")
+            }
           }
         }
       }
+    } else {
+      throw Exception(
+        "Results file could not be found in  ${resultsFile.path}. Make sure this file is on the devices. It should be listed in the previous step after adb shell ls /sdcard/Download/"
+      )
     }
-  } else {
-    System.out.println("Results file could not be found in ")
   }
 }
 
