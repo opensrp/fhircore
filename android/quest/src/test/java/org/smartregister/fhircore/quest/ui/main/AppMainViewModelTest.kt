@@ -52,7 +52,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -72,6 +71,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -82,6 +82,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 class AppMainViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @Inject lateinit var gson: Gson
   @Inject lateinit var workManager: WorkManager
 
@@ -118,7 +119,7 @@ class AppMainViewModelTest : RobolectricTest() {
           dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
           workManager = workManager,
           fhirCarePlanGenerator = fhirCarePlanGenerator,
-        )
+        ),
       )
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
   }
@@ -128,7 +129,7 @@ class AppMainViewModelTest : RobolectricTest() {
     val appMainEvent =
       AppMainEvent.SwitchLanguage(
         Language("en", "English"),
-        mockkClass(Activity::class, relaxed = true)
+        mockkClass(Activity::class, relaxed = true),
       )
 
     appMainViewModel.onEvent(appMainEvent)
@@ -176,7 +177,7 @@ class AppMainViewModelTest : RobolectricTest() {
     appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(stateFinished, "Some timestamp"))
     Assert.assertEquals(
       appMainViewModel.formatLastSyncTimestamp(timestamp),
-      sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+      sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null),
     )
     coVerify { appMainViewModel.retrieveAppMainUiState() }
   }
@@ -189,8 +190,8 @@ class AppMainViewModelTest : RobolectricTest() {
         navController = navController,
         profileId = "profileId",
         resourceId = "resourceId",
-        resourceConfig = resourceConfig
-      )
+        resourceConfig = resourceConfig,
+      ),
     )
 
     val intSlot = slot<Int>()
@@ -203,7 +204,7 @@ class AppMainViewModelTest : RobolectricTest() {
     Assert.assertEquals("resourceId", bundleSlot.captured.getString(NavigationArg.RESOURCE_ID))
     Assert.assertEquals(
       resourceConfig,
-      bundleSlot.captured.getParcelable(NavigationArg.RESOURCE_CONFIG)
+      bundleSlot.captured.getParcelable(NavigationArg.RESOURCE_CONFIG),
     )
   }
 
@@ -214,13 +215,13 @@ class AppMainViewModelTest : RobolectricTest() {
         listOf(
           ActionConfig(
             trigger = ActionTrigger.ON_CLICK,
-            workflow = ApplicationWorkflow.LAUNCH_SETTINGS
-          )
-        )
+            workflow = ApplicationWorkflow.LAUNCH_SETTINGS,
+          ),
+        ),
       )
     val navMenu = spyk(NavigationMenuConfig(id = "menuId", display = "Menu Item", actions = action))
     appMainViewModel.onEvent(
-      AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navMenu)
+      AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navMenu),
     )
     // We have triggered workflow for launching report
     val intSlot = slot<Int>()
@@ -236,8 +237,8 @@ class AppMainViewModelTest : RobolectricTest() {
     appMainViewModel.onEvent(
       AppMainEvent.OpenRegistersBottomSheet(
         navController = navController,
-        registersList = emptyList()
-      )
+        registersList = emptyList(),
+      ),
     )
 
     // Assert fragment that was launched is RegisterBottomSheetFragment
@@ -257,7 +258,7 @@ class AppMainViewModelTest : RobolectricTest() {
     val questionnaireSubmission =
       QuestionnaireSubmission(
         questionnaireConfig = QuestionnaireConfig(taskId = "Task/12345", id = "questionnaireId"),
-        questionnaireResponse = QuestionnaireResponse()
+        questionnaireResponse = QuestionnaireResponse(),
       )
     appMainViewModel.onQuestionnaireSubmission(questionnaireSubmission)
 

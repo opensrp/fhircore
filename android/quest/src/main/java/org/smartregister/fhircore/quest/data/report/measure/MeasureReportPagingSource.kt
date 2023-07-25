@@ -21,8 +21,8 @@ import androidx.paging.PagingState
 import com.google.android.fhir.search.search
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -32,14 +32,14 @@ class MeasureReportPagingSource(
   private val measureReportConfiguration: MeasureReportConfiguration,
   private val registerConfiguration: RegisterConfiguration,
   private val registerRepository: RegisterRepository,
-  private val resourceDataRulesExecutor: ResourceDataRulesExecutor
-) : PagingSource<Int, MeasureReportConfig>() {
+  private val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+) : PagingSource<Int, ReportConfiguration>() {
 
-  override fun getRefreshKey(state: PagingState<Int, MeasureReportConfig>): Int? {
+  override fun getRefreshKey(state: PagingState<Int, ReportConfiguration>): Int? {
     return state.anchorPosition
   }
 
-  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MeasureReportConfig> {
+  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ReportConfiguration> {
     return try {
       LoadResult.Page(data = measureReportConfiguration.reports, prevKey = null, nextKey = null)
     } catch (exception: Exception) {
@@ -47,7 +47,7 @@ class MeasureReportPagingSource(
     }
   }
 
-  suspend fun retrieveSubjects(count: Int): List<ResourceData> {
+  suspend fun retrieveSubjects(): List<ResourceData> {
     val xFhirQuery =
       measureReportConfiguration.reports.firstOrNull()?.subjectXFhirQuery
         ?: ResourceType.Patient.name
@@ -56,7 +56,7 @@ class MeasureReportPagingSource(
         repositoryResourceData =
           RepositoryResourceData(resourceRulesEngineFactId = it.resourceType.name, resource = it),
         ruleConfigs = registerConfiguration.registerCard.rules,
-        params = emptyMap()
+        params = emptyMap(),
       )
     }
   }

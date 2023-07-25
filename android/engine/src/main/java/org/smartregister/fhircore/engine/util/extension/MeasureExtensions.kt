@@ -27,7 +27,7 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.ResourceType
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 
 // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
@@ -124,7 +124,7 @@ suspend inline fun retrievePreviouslyGeneratedMeasureReports(
 }
 
 suspend inline fun fetchReportSubjects(
-  config: MeasureReportConfig,
+  config: ReportConfiguration,
   fhirEngine: FhirEngine,
   defaultRepository: DefaultRepository
 ): List<String> {
