@@ -171,14 +171,14 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".ecbis"
       versionNameSuffix = "-ecbis"
-      manifestPlaceholders["appLabel"] = "MOH eCBIS Preview"
+      manifestPlaceholders["appLabel"] = "MOH eCBIS"
     }
 
-    create("ecbis_production") {
+    create("ecbis_preview") {
       dimension = "apps"
-      applicationIdSuffix = ".ecbis_production"
-      versionNameSuffix = "-ecbis_production"
-      manifestPlaceholders["appLabel"] = "MOH eCBIS"
+      applicationIdSuffix = ".ecbis_preview"
+      versionNameSuffix = "-ecbis_preview"
+      manifestPlaceholders["appLabel"] = "MOH eCBIS preview"
     }
 
     create("g6pd") {
