@@ -168,7 +168,7 @@ class ReportTypeSelectorScreenTest {
         dateRange = null,
         reportPeriodRange = mapOf(),
         onBackPressed = {},
-        onGenerateReport = {},
+        onSelectReportDate = {},
         onDateRangeSelected = {},
         onReportTypeSelected = {},
         onSubjectRemoved = {},

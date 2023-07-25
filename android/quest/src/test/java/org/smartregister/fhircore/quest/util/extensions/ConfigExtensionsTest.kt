@@ -95,6 +95,42 @@ class ConfigExtensionsTest : RobolectricTest() {
   }
 
   @Test
+  fun testLaunchProfileWithConfiguredResourceIdActionOnClick() {
+    val resourceConfig = FhirResourceConfig(ResourceConfig(resource = ResourceType.Patient))
+    val params =
+      listOf(
+        ActionParameter(
+          paramType = ActionParameterType.RESOURCE_ID,
+          key = "patientId",
+          value = "configured-patient-id",
+        ),
+      )
+    val clickAction =
+      ActionConfig(
+        id = "profileId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE,
+        resourceConfig = resourceConfig,
+        params = params,
+      )
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
+    Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
+    Assert.assertEquals(4, slotBundle.captured.size())
+    Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
+    Assert.assertEquals(
+      "configured-patient-id",
+      slotBundle.captured.getString(NavigationArg.RESOURCE_ID),
+    )
+    Assert.assertEquals(
+      resourceConfig,
+      slotBundle.captured.getParcelable(NavigationArg.RESOURCE_CONFIG),
+    )
+  }
+
+  @Test
   fun testLaunchRegisterActionOnClick() {
     val clickAction =
       ActionConfig(
@@ -147,14 +183,23 @@ class ConfigExtensionsTest : RobolectricTest() {
         id = "reportId",
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_REPORT,
+        params =
+          listOf(
+            ActionParameter(
+              value = "practitioner_id",
+              key = "practitionerId",
+              paramType = ActionParameterType.RESOURCE_ID,
+            ),
+          ),
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(MainNavigationScreen.Reports.route, slotInt.captured)
-    Assert.assertEquals(1, slotBundle.captured.size())
+    Assert.assertEquals(2, slotBundle.captured.size())
     Assert.assertEquals("reportId", slotBundle.captured.getString(NavigationArg.REPORT_ID))
+    Assert.assertEquals("practitioner_id", slotBundle.captured.getString(NavigationArg.RESOURCE_ID))
   }
 
   @Test

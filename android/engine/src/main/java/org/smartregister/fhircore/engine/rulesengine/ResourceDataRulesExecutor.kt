@@ -115,7 +115,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
       val listItemRelatedResources = mutableMapOf<String, List<Resource>>()
       listResource.relatedResources.forEach { relatedListResource ->
         val retrieveRelatedResources: List<Resource>? =
-          relatedListResource.fhirPathExpression?.let {
+          relatedListResource.fhirPathExpression.let {
             rulesFactory.rulesEngineService.retrieveRelatedResources(
               resource = resource,
               relatedResourceKey = relatedListResource.relatedResourceId
