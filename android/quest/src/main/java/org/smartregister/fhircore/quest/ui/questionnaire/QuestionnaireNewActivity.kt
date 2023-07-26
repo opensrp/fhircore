@@ -23,10 +23,16 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.LinkedList
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
@@ -38,6 +44,7 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireNewViewModel.Companion.CONTAINED_LIST_TITLE
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -91,6 +98,12 @@ class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
         }
 
         questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig, actionParameters)
+
+        if (questionnaire == null) {
+          showToast(getString(R.string.questionnaire_not_found))
+          finish()
+        }
+
         if (questionnaire?.subjectType.isNullOrEmpty()) {
           showToast(getString(R.string.missing_subject_type))
           Timber.e(
@@ -98,24 +111,84 @@ class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
           )
           finish()
         }
-        val questionnaireJson = questionnaire?.asJson()
-        if (questionnaire?.id.isNullOrEmpty() || questionnaireJson.isNullOrEmpty()) {
-          showToast(getString(R.string.questionnaire_not_found))
-          finish()
-        }
-        val questionnaireFragment =
-          QuestionnaireFragment.builder().setQuestionnaire(questionnaireJson!!).build()
+
+        val questionnaireFragmentBuilder = buildQuestionnaireFragment(questionnaire!!)
+
         supportFragmentManager.commit {
           setReorderingAllowed(true)
-          add(R.id.container, questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
+          add(R.id.container, questionnaireFragmentBuilder.build(), QUESTIONNAIRE_FRAGMENT_TAG)
         }
-      }
 
-      registerFragmentResultListener()
+        registerFragmentResultListener()
+      }
     }
   }
 
-  private fun Questionnaire?.asJson(): String? = this?.encodeResourceToString()
+  private suspend fun buildQuestionnaireFragment(
+    questionnaire: Questionnaire,
+  ): QuestionnaireFragment.Builder {
+    val questionnaireFragmentBuilder =
+      QuestionnaireFragment.builder().setQuestionnaire(questionnaire.json())
+
+    val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
+    val resourceType =
+      questionnaireConfig.resourceType ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
+    val resourceIdentifier = questionnaireConfig.resourceIdentifier
+
+    val populationResources = LinkedList<Resource>()
+
+    if (resourceType != null && !resourceIdentifier.isNullOrEmpty()) {
+      val subjectResource = viewModel.loadResource(resourceType, resourceIdentifier)
+
+      if (subjectResource != null) {
+        val launchContexts = listOf(subjectResource.json())
+        questionnaireFragmentBuilder.setQuestionnaireLaunchContexts(launchContexts)
+        populationResources.add(subjectResource)
+      }
+
+      // Get previously extracted resources from the QuestionnaireResponse.contained for population
+      val latestQuestionnaireResponse =
+        viewModel.searchLatestQuestionnaireResponse(
+          resourceId = resourceIdentifier,
+          resourceType = resourceType,
+          questionnaireId = questionnaire.id,
+        )
+      latestQuestionnaireResponse?.contained?.forEach { resource ->
+        if (
+          resource is ListResource && resource.title.equals(CONTAINED_LIST_TITLE, ignoreCase = true)
+        ) {
+          resource.entry?.forEach { listEntryComponent ->
+            if (listEntryComponent.hasItem()) {
+              viewModel.loadResource(listEntryComponent.item)?.let { populationResources.add(it) }
+            }
+          }
+        } else {
+          viewModel.loadResource(resource.resourceType, resource.logicalId)?.let {
+            populationResources.add(it)
+          }
+        }
+      }
+    }
+
+    val configuredPopulationResources = viewModel.retrievePopulationResources(actionParameters)
+
+    val questionnaireResponse =
+      ResourceMapper.populate(
+        questionnaire = questionnaire,
+        resources = populationResources.plus(configuredPopulationResources).toTypedArray(),
+      )
+
+    val validQuestionnaireResponse =
+      viewModel.validateQuestionnaireResponse(questionnaire, questionnaireResponse, this)
+
+    if (validQuestionnaireResponse && !resourceIdentifier.isNullOrEmpty()) {
+      questionnaireFragmentBuilder.setQuestionnaireResponse(questionnaireResponse.json())
+    }
+
+    return questionnaireFragmentBuilder
+  }
+
+  private fun Resource.json(): String = this.encodeResourceToString()
 
   private fun registerFragmentResultListener() {
     supportFragmentManager.setFragmentResultListener(

@@ -142,6 +142,8 @@ constructor(
       else -> listOf()
     }
 
+  suspend inline fun <reified R : Resource> search(search: Search) = fhirEngine.search<R>(search)
+
   /**
    * Saves a resource in the database. It also updates the [Resource.meta.lastUpdated] and generates
    * the [Resource.id] if it is missing before saving the resource.

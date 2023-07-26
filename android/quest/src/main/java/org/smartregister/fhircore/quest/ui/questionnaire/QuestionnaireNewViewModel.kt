@@ -27,6 +27,7 @@ import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValid
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
 import java.util.UUID
@@ -535,6 +536,58 @@ constructor(
       }
     }
   }
+
+  /**
+   * This function searches and returns the latest [QuestionnaireResponse] for the given
+   * [resourceId] that was extracted from the [Questionnaire] identified as [questionnaireId].
+   * Returns null if non is found.
+   */
+  suspend fun searchLatestQuestionnaireResponse(
+    resourceId: String,
+    resourceType: ResourceType,
+    questionnaireId: String,
+  ): QuestionnaireResponse? {
+    val search =
+      Search(ResourceType.QuestionnaireResponse).apply {
+        filter(QuestionnaireResponse.SUBJECT, { value = "$resourceType/$resourceId" })
+        filter(
+          QuestionnaireResponse.QUESTIONNAIRE,
+          { value = "${ResourceType.Questionnaire}/$questionnaireId" },
+        )
+      }
+    val questionnaireResponses: List<QuestionnaireResponse> = defaultRepository.search(search)
+    return questionnaireResponses.maxByOrNull { it.meta.lastUpdated }
+  }
+
+  suspend fun retrievePopulationResources(actionParameters: List<ActionParameter>): List<Resource> {
+    return actionParameters
+      .filter {
+        it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE &&
+          it.resourceType != null &&
+          it.value.isNotEmpty()
+      }
+      .mapNotNull {
+        try {
+          loadResource(it.resourceType!!, it.value)
+        } catch (resourceNotFoundException: ResourceNotFoundException) {
+          null
+        }
+      }
+  }
+
+  suspend fun loadResource(resourceType: ResourceType, resourceIdentifier: String): Resource? =
+    try {
+      defaultRepository.loadResource(resourceIdentifier, resourceType)
+    } catch (resourceNotFoundException: ResourceNotFoundException) {
+      null
+    }
+
+  suspend fun loadResource(reference: Reference): Resource? =
+    try {
+      defaultRepository.loadResource(reference)
+    } catch (resourceNotFoundException: ResourceNotFoundException) {
+      null
+    }
 
   companion object {
     const val CONTAINED_LIST_TITLE = "GeneratedResourcesList"
