@@ -11,7 +11,7 @@
         "workflow": "LAUNCH_QUESTIONNAIRE",
         "id": "householdRegister",
         "questionnaire": {
-          "id": "253",
+          "id": "2870",
           "title": "Add Household",
           "saveButtonText": "Add Household",
           "setPractitionerDetails": true,

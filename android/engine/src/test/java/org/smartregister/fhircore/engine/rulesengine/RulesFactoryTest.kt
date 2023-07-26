@@ -771,6 +771,12 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun testGenerateRandomNumberOfVariableLength() {
+    val generatedNumber = rulesEngineService.generateRandomVariableDigitInt(10000, 99999)
+    Assert.assertEquals(generatedNumber.toString().length, 5)
+  }
+
+  @Test
   fun testFilterListShouldReturnMatchingResource() {
     val resources =
       listOf(

@@ -329,6 +329,15 @@ constructor(
       (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
 
     /**
+     * This function generates a random variable digit integer between a user defined range. It may generate
+     * duplicate outputs on subsequent function calls.
+     *
+     * @return An Integer.
+     */
+    fun generateRandomVariableDigitInt(minimum: Int, maximum: Int): Int =
+      (minimum..maximum).random()
+
+    /**
      * This function filters resources provided the condition extracted from the
      * [fhirPathExpression] is met
      */
