@@ -214,7 +214,12 @@ constructor(
       }
 
       val subject =
-        retrieveSubject(questionnaire, bundle)?.apply { id = "$resourceType/$logicalId" }
+        retrieveSubject(
+            questionnaire = questionnaire,
+            questionnaireConfig = questionnaireConfig,
+            bundle = bundle,
+          )
+          ?.apply { id = "$resourceType/$logicalId" }
 
       // Update Group resource to save members
       group?.let { defaultRepository.addOrUpdate(resource = it) }
@@ -235,7 +240,7 @@ constructor(
       updateResourcesLastUpdatedProperty(actionParameters)
 
       if (subject != null && bundle != null) {
-        // Generate CarePlan using configured plan definitions and execute cql
+        // Generate CarePlan using configured plan definitions
         val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
         generateCarePlan(
           subject = subject,
@@ -258,9 +263,9 @@ constructor(
             bundle = bundle,
           )
         }
-
-        softDeleteResources(questionnaireConfig)
       }
+
+      softDeleteResources(questionnaireConfig)
     }
   }
 
@@ -426,13 +431,26 @@ constructor(
   }
 
   /**
-   * This function returns the first resource of type [Questionnaire.subjectType] retrieved from the
-   * [Bundle.entry]
+   * This retrieves and returns [Resource] as subject if [QuestionnaireConfig.resourceType] and
+   * [QuestionnaireConfig.resourceIdentifier] are provided. This will be the typical case for
+   * subsequent [Questionnaire] submissions where the [QuestionnaireResponse.subject] already
+   * exists. For instances where the [Questionnaire] is submitted the first time (e.g. during
+   * registration events), the subject [Resource] will be included and accessed from the extracted
+   * resources in the [Bundle.entry]
    */
-  fun retrieveSubject(
+  suspend fun retrieveSubject(
     questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
     bundle: Bundle?,
   ): Resource? {
+    val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
+    val resourceType =
+      questionnaireConfig.resourceType ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
+    val resourceIdentifier = questionnaireConfig.resourceIdentifier
+
+    if (resourceType != null && !resourceIdentifier.isNullOrEmpty()) {
+      return loadResource(resourceType, resourceIdentifier)
+    }
     questionnaire.subjectType.forEach {
       val resourceType = ResourceType.valueOf(it.code)
       return bundle
@@ -559,6 +577,13 @@ constructor(
     return questionnaireResponses.maxByOrNull { it.meta.lastUpdated }
   }
 
+  /**
+   * Return [Resource]s to be used in the launch context of the questionnaire. Launch context allows
+   * information to be passed into questionnaire based on the context in which the questionnaire is
+   * being evaluated. For example, what patient, what encounter, what user, etc. is "in context" at
+   * the time the questionnaire response is being completed:
+   * https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-launchContext.html
+   */
   suspend fun retrievePopulationResources(actionParameters: List<ActionParameter>): List<Resource> {
     return actionParameters
       .filter {
@@ -575,6 +600,7 @@ constructor(
       }
   }
 
+  /** Load [Resource] of type [ResourceType] for the provided [resourceIdentifier] */
   suspend fun loadResource(resourceType: ResourceType, resourceIdentifier: String): Resource? =
     try {
       defaultRepository.loadResource(resourceIdentifier, resourceType)

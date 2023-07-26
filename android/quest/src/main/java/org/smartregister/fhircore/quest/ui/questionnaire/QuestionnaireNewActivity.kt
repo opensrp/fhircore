@@ -134,7 +134,6 @@ class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
     val resourceIdentifier = questionnaireConfig.resourceIdentifier
 
     if (resourceType != null && !resourceIdentifier.isNullOrEmpty()) {
-
       // Add subject and other configured resource to launchContext
       val launchContextResources =
         LinkedList<Resource>().apply {
