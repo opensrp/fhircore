@@ -18,6 +18,8 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.content.Context
 import android.widget.Toast
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
@@ -37,6 +39,7 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
 import org.hl7.fhir.r4.model.Patient
@@ -94,6 +97,10 @@ constructor(
       ?.extractLogicalIdUuid()
   }
 
+  private val _questionnaireProgressStateLiveData = MutableLiveData<QuestionnaireProgressState?>()
+  val questionnaireProgressStateLiveData: LiveData<QuestionnaireProgressState?>
+    get() = _questionnaireProgressStateLiveData
+
   /**
    * This function retrieves the [Questionnaire] as configured via the [QuestionnaireConfig]. The
    * retrieved [Questionnaire] can be pre-populated with computed values from the Rules engine.
@@ -102,7 +109,7 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
     actionParameters: List<ActionParameter>?,
   ): Questionnaire? {
-    if (questionnaireConfig.id.isEmpty()) return null
+    if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
 
     // Compute questionnaire config rules and add extra questionnaire params to action parameters
     val questionnaireComputedValues =
@@ -151,6 +158,7 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
     actionParameters: List<ActionParameter>,
     context: Context,
+    onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit,
   ) {
     viewModelScope.launch(SupervisorJob()) {
       val questionnaireResponseValid =
@@ -266,6 +274,12 @@ constructor(
       }
 
       softDeleteResources(questionnaireConfig)
+
+      // On successful submission callback
+      val idTypes =
+        bundle?.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
+          ?: emptyList()
+      onSuccessfulSubmission(idTypes, currentQuestionnaireResponse)
     }
   }
 
@@ -607,6 +621,11 @@ constructor(
     } catch (resourceNotFoundException: ResourceNotFoundException) {
       null
     }
+
+  /** Update the current progress state of the questionnaire. */
+  fun setProgressState(questionnaireState: QuestionnaireProgressState) {
+    _questionnaireProgressStateLiveData.postValue(questionnaireState)
+  }
 
   companion object {
     const val CONTAINED_LIST_TITLE = "GeneratedResourcesList"

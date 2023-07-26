@@ -36,6 +36,7 @@ import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import java.io.Serializable
 import java.util.Locale
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
@@ -208,6 +209,13 @@ inline fun <reified T : Parcelable> Bundle.parcelableArrayList(key: String): Arr
   when {
     SDK_INT >= 33 -> getParcelableArrayList(key, T::class.java)
     else -> @Suppress("DEPRECATION") getParcelableArrayList(key)
+  }
+
+@ExcludeFromJacocoGeneratedReport
+inline fun <reified T : Serializable> Intent.serializable(key: String): T? =
+  when {
+    SDK_INT >= 33 -> getSerializableExtra(key, T::class.java)
+    else -> @Suppress("DEPRECATION") getSerializableExtra(key) as? T
   }
 
 @ExcludeFromJacocoGeneratedReport

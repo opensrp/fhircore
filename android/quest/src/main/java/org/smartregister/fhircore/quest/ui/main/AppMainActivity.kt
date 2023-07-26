@@ -34,6 +34,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -45,6 +46,8 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.addDateTimeIndex
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.extension.parcelable
+import org.smartregister.fhircore.engine.util.extension.serializable
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
@@ -52,7 +55,7 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireNewActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import timber.log.Timber
@@ -158,22 +161,28 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   override suspend fun onSubmitQuestionnaire(activityResult: ActivityResult) {
     if (activityResult.resultCode == RESULT_OK) {
       val questionnaireResponse: QuestionnaireResponse? =
-        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
+        activityResult.data?.serializable(QuestionnaireNewActivity.QUESTIONNAIRE_RESPONSE)
           as QuestionnaireResponse?
+      val extractedResourceIds =
+        activityResult.data?.serializable(
+          QuestionnaireNewActivity.QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS,
+        ) as List<IdType>?
+          ?: emptyList()
       val questionnaireConfig =
-        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG)
+        activityResult.data?.parcelable(QuestionnaireNewActivity.QUESTIONNAIRE_CONFIG)
           as QuestionnaireConfig?
 
-      if (questionnaireConfig != null) {
+      if (questionnaireConfig != null && questionnaireResponse != null) {
         eventBus.triggerEvent(
           AppEvent.OnSubmitQuestionnaire(
             QuestionnaireSubmission(
-              questionnaireConfig,
-              questionnaireResponse ?: QuestionnaireResponse(),
+              questionnaireConfig = questionnaireConfig,
+              questionnaireResponse = questionnaireResponse,
+              extractedResourceIds = extractedResourceIds,
             ),
           ),
         )
-      }
+      } else Timber.e("QuestionnaireConfig & QuestionnaireResponse are both null")
     }
   }
 

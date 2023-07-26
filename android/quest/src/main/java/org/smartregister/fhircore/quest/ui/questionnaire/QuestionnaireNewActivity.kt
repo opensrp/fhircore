@@ -16,7 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.questionnaire
 
+import android.app.Activity
+import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
@@ -25,6 +29,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.Serializable
 import java.util.LinkedList
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Questionnaire
@@ -53,6 +58,7 @@ class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
   private lateinit var actionParameters: ArrayList<ActionParameter>
   private lateinit var viewBinding: QuestionnaireActivityBinding
   private var questionnaire: Questionnaire? = null
+  private var alertDialog: AlertDialog? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -67,6 +73,22 @@ class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
     if (!::questionnaireConfig.isInitialized) {
       showToast(getString(R.string.missing_questionnaire_config))
       finish()
+    }
+
+    viewModel.questionnaireProgressStateLiveData.observe(this) { progressState ->
+      alertDialog =
+        if (progressState?.active == false) {
+          alertDialog?.dismiss()
+          null
+        } else {
+          when (progressState) {
+            is QuestionnaireProgressState.ExtractionInProgress ->
+              AlertDialogue.showProgressAlert(this, R.string.extraction_in_progress)
+            is QuestionnaireProgressState.QuestionnaireLaunch ->
+              AlertDialogue.showProgressAlert(this, R.string.loading_questionnaire)
+            null -> null
+          }
+        }
     }
 
     if (savedInstanceState == null) renderQuestionnaire()
@@ -89,12 +111,12 @@ class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
   private fun renderQuestionnaire() {
     lifecycleScope.launch {
       if (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) == null) {
+        viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(true))
         viewBinding.questionnaireToolbar.apply {
           title = questionnaireConfig.title
           setNavigationIcon(R.drawable.ic_arrow_back)
           setNavigationOnClickListener { handleBackPress() }
         }
-
         questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig, actionParameters)
 
         if (questionnaire == null) {
@@ -118,6 +140,8 @@ class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
         }
 
         registerFragmentResultListener()
+
+        viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
       }
     }
   }
@@ -188,17 +212,32 @@ class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
       val questionnaireResponse = retrieveQuestionnaireResponse()
 
       // Close questionnaire if opened in read only mode or if experimental
-      if (questionnaireConfig.type.isReadOnly() || questionnaire?.experimental == false) {
+      if (questionnaireConfig.type.isReadOnly() || questionnaire?.experimental == true) {
         finish()
       }
       if (questionnaireResponse != null && questionnaire != null) {
-        viewModel.handleQuestionnaireSubmission(
-          questionnaire = questionnaire!!,
-          currentQuestionnaireResponse = questionnaireResponse,
-          questionnaireConfig = questionnaireConfig,
-          actionParameters = actionParameters,
-          context = this,
-        )
+        viewModel.run {
+          setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
+          handleQuestionnaireSubmission(
+            questionnaire = questionnaire!!,
+            currentQuestionnaireResponse = questionnaireResponse,
+            questionnaireConfig = questionnaireConfig,
+            actionParameters = actionParameters,
+            context = this@QuestionnaireNewActivity,
+          ) { idTypes, questionnaireResponse ->
+            // Dismiss progress indicator dialog, submit result then finish activity
+            setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
+            setResult(
+              Activity.RESULT_OK,
+              Intent().apply {
+                putExtra(QUESTIONNAIRE_RESPONSE, questionnaireResponse as Serializable)
+                putExtra(QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS, idTypes as Serializable)
+                putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
+              },
+            )
+            finish()
+          }
+        }
       }
     }
   }
@@ -238,6 +277,8 @@ class QuestionnaireNewActivity : BaseMultiLanguageActivity() {
   companion object {
 
     const val QUESTIONNAIRE_CONFIG = "questionnaireConfig"
+    const val QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS = "questionnaireExtractedResourceIds"
+    const val QUESTIONNAIRE_RESPONSE = "questionnaireResponse"
     const val QUESTIONNAIRE_ACTION_PARAMETERS = "questionnaireActionParameters"
     const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnairePopulationResources"
 
