@@ -24,7 +24,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.TestOnly
@@ -239,7 +239,7 @@ constructor(
 
   fun savePractitionerDetails(bundle: Bundle, postProcess: () -> Unit) {
     if (bundle.entry.isNullOrEmpty()) return
-    viewModelScope.launch {
+    runBlocking {
       val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
 
       val careTeams = practitionerDetails.fhirPractitionerDetails?.careTeams ?: listOf()
@@ -249,37 +249,29 @@ constructor(
         practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
 
       val careTeamIds =
-        withContext(dispatcherProvider.io()) {
-          defaultRepository.create(true, *careTeams.toTypedArray()).map {
-            it.extractLogicalIdUuid()
-          }
-        }
-      val organizationIds =
-        withContext(dispatcherProvider.io()) {
-          defaultRepository.create(true, *organizations.toTypedArray()).map {
-            it.extractLogicalIdUuid()
-          }
-        }
-      val locationIds =
-        withContext(dispatcherProvider.io()) {
-          defaultRepository.create(true, *locations.toTypedArray()).map {
-            it.extractLogicalIdUuid()
-          }
-        }
+        defaultRepository.create(false, *careTeams.toTypedArray()).map { it.extractLogicalIdUuid() }
+      sharedPreferences.write(ResourceType.CareTeam.name, careTeamIds)
 
+      val organizationIds =
+        defaultRepository.create(false, *organizations.toTypedArray()).map {
+          it.extractLogicalIdUuid()
+        }
+      sharedPreferences.write(ResourceType.Organization.name, organizationIds)
+
+      val locationIds =
+        defaultRepository.create(false, *locations.toTypedArray()).map { it.extractLogicalIdUuid() }
+      sharedPreferences.write(ResourceType.Location.name, locationIds)
+
+      sharedPreferences.write(
+        SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
+        locationHierarchies
+      )
       sharedPreferences.write(
         key = SharedPreferenceKey.PRACTITIONER_ID.name,
         value = practitionerDetails.fhirPractitionerDetails?.practitionerId.valueToString()
       )
 
       sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS.name, practitionerDetails)
-      sharedPreferences.write(ResourceType.CareTeam.name, careTeamIds)
-      sharedPreferences.write(ResourceType.Organization.name, organizationIds)
-      sharedPreferences.write(ResourceType.Location.name, locationIds)
-      sharedPreferences.write(
-        SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
-        locationHierarchies
-      )
 
       postProcess()
     }
