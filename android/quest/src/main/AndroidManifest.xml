@@ -53,11 +53,6 @@
             android:exported="false"
             android:theme="@style/AppTheme" />
 
-        <activity
-            android:name=".ui.questionnaire.QuestionnaireNewActivity"
-            android:exported="false"
-            android:theme="@style/AppTheme" />
-
         <activity android:name=".HiltActivityForTest" />
 
         <service

@@ -24,15 +24,13 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.core.os.bundleOf
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireNewActivity
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 
 interface QuestionnaireHandler {
 
   val startForResult: ActivityResultLauncher<Intent>
 
-  /**
-   * This function launches [QuestionnaireNewActivity] and returns [ActivityResult] on submission.
-   */
+  /** This function launches [QuestionnaireActivity] and returns [ActivityResult] on submission. */
   fun launchQuestionnaire(
     context: Context,
     extraIntentBundle: Bundle = bundleOf(),
@@ -41,9 +39,9 @@ interface QuestionnaireHandler {
   ) {
     if (questionnaireConfig != null) {
       startForResult.launch(
-        Intent(context, QuestionnaireNewActivity::class.java)
+        Intent(context, QuestionnaireActivity::class.java)
           .putExtras(
-            QuestionnaireNewActivity.intentArgs(
+            QuestionnaireActivity.intentArgs(
               questionnaireConfig = questionnaireConfig,
               actionParams = actionParams,
             ),

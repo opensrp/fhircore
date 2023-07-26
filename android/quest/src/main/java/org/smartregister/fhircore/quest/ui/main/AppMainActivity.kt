@@ -55,7 +55,7 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireNewActivity
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import timber.log.Timber
@@ -161,15 +161,15 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   override suspend fun onSubmitQuestionnaire(activityResult: ActivityResult) {
     if (activityResult.resultCode == RESULT_OK) {
       val questionnaireResponse: QuestionnaireResponse? =
-        activityResult.data?.serializable(QuestionnaireNewActivity.QUESTIONNAIRE_RESPONSE)
+        activityResult.data?.serializable(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
           as QuestionnaireResponse?
       val extractedResourceIds =
         activityResult.data?.serializable(
-          QuestionnaireNewActivity.QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS,
+          QuestionnaireActivity.QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS,
         ) as List<IdType>?
           ?: emptyList()
       val questionnaireConfig =
-        activityResult.data?.parcelable(QuestionnaireNewActivity.QUESTIONNAIRE_CONFIG)
+        activityResult.data?.parcelable(QuestionnaireActivity.QUESTIONNAIRE_CONFIG)
           as QuestionnaireConfig?
 
       if (questionnaireConfig != null && questionnaireResponse != null) {
