@@ -66,23 +66,23 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
             display = context.getString(R.string.sync_strategy_organization_display)
           }
       ),
-            ResourceTag(
-                    type = SharedPreferenceKey.PRACTITIONER_ID.name,
-                    tag =
-                    Coding().apply {
-                        system = context.getString(R.string.sync_strategy_practitioner_system)
-                        display = context.getString(R.string.sync_strategy_practitioner_display)
-                    },
-                    isResource = false
-            ),
-            ResourceTag(
-                    type = SharedPreferenceKey.APP_ID.name,
-                    tag =
-                    Coding().apply {
-                        system = context.getString(R.string.sync_strategy_appid_system)
-                        display = context.getString(R.string.application_id)
-                    },
-                    isResource = false
-            )
+      ResourceTag(
+        type = SharedPreferenceKey.PRACTITIONER_ID.name,
+        tag =
+          Coding().apply {
+            system = context.getString(R.string.sync_strategy_practitioner_system)
+            display = context.getString(R.string.sync_strategy_practitioner_display)
+          },
+        isResource = false
+      ),
+      ResourceTag(
+        type = SharedPreferenceKey.APP_ID.name,
+        tag =
+          Coding().apply {
+            system = context.getString(R.string.sync_strategy_appid_system)
+            display = context.getString(R.string.application_id)
+          },
+        isResource = false
+      )
     )
 }

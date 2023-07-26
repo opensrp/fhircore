@@ -22,13 +22,11 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.appointment.MissedFHIRAppointmentsWorker
 import org.smartregister.fhircore.engine.appointment.ProposedWelcomeServiceAppointmentsWorker
 import org.smartregister.fhircore.engine.sync.ResourceTag
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.task.WelcomeServiceBackToCarePlanWorker
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
@@ -56,7 +54,7 @@ interface ConfigService {
   fun provideResourceTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
     val tags = mutableListOf<Coding>()
     defineResourceTags().forEach { strategy ->
-      if (strategy.isResource.not())  {
+      if (strategy.isResource.not()) {
         val id = sharedPreferencesHelper.read(strategy.type, null)
         if (id.isNullOrBlank()) {
           strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }

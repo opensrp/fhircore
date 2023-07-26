@@ -52,26 +52,26 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-  @Inject lateinit var dispatcherProvider: DispatcherProvider
+  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   val context = ApplicationProvider.getApplicationContext<Context>()
   @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
-  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
   private val testAppId = "default"
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
   lateinit var configurationRegistry: ConfigurationRegistry
   var fhirEngine: FhirEngine = mockk()
 
   @Before
+  @ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
     fhirResourceDataSource = mockk()
+    sharedPreferencesHelper = mockk()
+
     configurationRegistry =
       ConfigurationRegistry(
         context,
