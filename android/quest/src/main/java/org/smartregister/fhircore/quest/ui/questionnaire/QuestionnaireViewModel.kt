@@ -121,7 +121,7 @@ constructor(
     readOnlyLinkIds: List<String>? = emptyList(),
   ): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
-      if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditMode()) {
+      if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditable()) {
         item.prepareQuestionsForReadingOrEditing(
           QUESTIONNAIRE_RESPONSE_ITEM,
           questionnaireConfig.type.isReadOnly(),
@@ -239,7 +239,7 @@ constructor(
           // TODO https://github.com/opensrp/fhircore/issues/900
           // for edit mode replace client and resource subject ids.
           // Ideally ResourceMapper should allow this internally via structure-map
-          if (questionnaireConfig.type.isEditMode()) {
+          if (questionnaireConfig.type.isEditable()) {
             if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
               bundleEntry.resource.id = questionnaireResponse.subject.extractId()
             } else {
@@ -259,7 +259,7 @@ constructor(
           saveBundleResources(bundle)
         }
 
-        if (questionnaireConfig.type.isEditMode() && editQuestionnaireResponse != null) {
+        if (questionnaireConfig.type.isEditable() && editQuestionnaireResponse != null) {
           questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
         }
 
@@ -268,7 +268,7 @@ constructor(
         // TODO https://github.com/opensrp/fhircore/issues/900
         // reassess following i.e. deleting/updating older resources because one resource
         // might have generated other flow in subsequent followups
-        if (questionnaireConfig.type.isEditMode() && editQuestionnaireResponse != null) {
+        if (questionnaireConfig.type.isEditable() && editQuestionnaireResponse != null) {
           editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
         performExtraction(questionnaireResponse, questionnaireConfig, questionnaire, bundle)

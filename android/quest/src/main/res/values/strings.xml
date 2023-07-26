@@ -105,5 +105,6 @@
     <string name="application_version" translatable="false">Application Version</string>
     <string name="missing_subject_type">Missing subject type on questionnaire. Provide Questionnaire.subjectType to resolve.</string>
     <string name="missing_questionnaire_config">QuestionnaireConfig is required but missing.</string>
+    <string name="error_populating_questionnaire">Unable to populate the questionnaire. Invalid Response.</string>
 
 </resources>

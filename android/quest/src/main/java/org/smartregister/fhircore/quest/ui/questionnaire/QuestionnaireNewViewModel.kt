@@ -119,7 +119,7 @@ constructor(
 
     val questionnaire =
       defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
-        if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditMode()) {
+        if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditable()) {
           item.prepareQuestionsForReadingOrEditing(
             readOnly = questionnaireConfig.type.isReadOnly(),
             readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds,
@@ -149,7 +149,7 @@ constructor(
     questionnaire: Questionnaire,
     currentQuestionnaireResponse: QuestionnaireResponse,
     questionnaireConfig: QuestionnaireConfig,
-    actionParameters: List<ActionParameter>?,
+    actionParameters: List<ActionParameter>,
     context: Context,
   ) {
     viewModelScope.launch(SupervisorJob()) {
@@ -578,13 +578,6 @@ constructor(
   suspend fun loadResource(resourceType: ResourceType, resourceIdentifier: String): Resource? =
     try {
       defaultRepository.loadResource(resourceIdentifier, resourceType)
-    } catch (resourceNotFoundException: ResourceNotFoundException) {
-      null
-    }
-
-  suspend fun loadResource(reference: Reference): Resource? =
-    try {
-      defaultRepository.loadResource(reference)
     } catch (resourceNotFoundException: ResourceNotFoundException) {
       null
     }

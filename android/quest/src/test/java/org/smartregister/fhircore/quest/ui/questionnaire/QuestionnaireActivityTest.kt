@@ -556,13 +556,13 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   fun testOnClickEditButtonShouldSetEditModeToTrue() = runTest {
     val questionnaire = Questionnaire().apply { experimental = false }
     ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
-    Assert.assertFalse(questionnaireConfig.type.isEditMode())
+    Assert.assertFalse(questionnaireConfig.type.isEditable())
 
     questionnaireActivity.onClick(questionnaireActivity.findViewById(R.id.btn_edit_qr))
 
     val updatedQuestionnaireConfig =
       ReflectionHelpers.getField<QuestionnaireConfig>(questionnaireActivity, "questionnaireConfig")
-    Assert.assertTrue(updatedQuestionnaireConfig.type.isEditMode())
+    Assert.assertTrue(updatedQuestionnaireConfig.type.isEditable())
   }
 
   @Test

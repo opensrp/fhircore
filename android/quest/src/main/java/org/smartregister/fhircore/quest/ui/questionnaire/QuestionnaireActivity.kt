@@ -220,7 +220,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
       if (questionnaireConfig.type.isReadOnly() || questionnaire.experimental) {
         text = context.getString(R.string.done)
-      } else if (questionnaireConfig.type.isEditMode()) {
+      } else if (questionnaireConfig.type.isEditable()) {
         // setting the save button text from Questionnaire Config
         text = questionnaireConfig.saveButtonText ?: getString(R.string.str_save)
       }
@@ -229,7 +229,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     supportActionBar?.apply {
       setDisplayHomeAsUpEnabled(true)
       title =
-        if (questionnaireConfig.type.isEditMode()) {
+        if (questionnaireConfig.type.isEditable()) {
           "${getString(R.string.edit)} ${questionnaireConfig.title}"
         } else {
           questionnaireConfig.title

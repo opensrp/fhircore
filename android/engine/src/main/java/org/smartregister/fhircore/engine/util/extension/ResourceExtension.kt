@@ -62,6 +62,8 @@ import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import timber.log.Timber
 
+const val REFERENCE = "reference"
+const val PARTOF = "part-of"
 private val fhirR4JsonParser = FhirContext.forR4Cached().getCustomJsonParser()
 
 fun Base?.valueToString(): String {
@@ -426,6 +428,3 @@ suspend fun Task.updateDependentTaskDueDate(
     }
   }
 }
-
-const val REFERENCE = "reference"
-const val PARTOF = "part-of"
