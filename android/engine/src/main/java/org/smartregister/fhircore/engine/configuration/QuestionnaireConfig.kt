@@ -50,6 +50,7 @@ data class QuestionnaireConfig(
   val configRules: List<RuleConfig>? = null,
   val extraParams: List<ActionParameter>? = null,
   val onSubmitActions: List<ActionConfig>? = null,
+  val barcodeLinkId: String = "patient-barcode",
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =

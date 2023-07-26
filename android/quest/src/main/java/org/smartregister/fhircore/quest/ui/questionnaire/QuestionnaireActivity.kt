@@ -281,6 +281,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     const val QUESTIONNAIRE_RESPONSE = "questionnaireResponse"
     const val QUESTIONNAIRE_ACTION_PARAMETERS = "questionnaireActionParameters"
     const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnairePopulationResources"
+    const val QUESTIONNAIRE_BARCODE = "pa"
 
     fun intentArgs(
       questionnaireConfig: QuestionnaireConfig,

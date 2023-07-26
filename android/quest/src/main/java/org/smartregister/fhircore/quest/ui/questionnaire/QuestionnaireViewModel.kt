@@ -48,6 +48,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -65,6 +66,7 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
@@ -139,6 +141,18 @@ constructor(
           ?.let { actionParam ->
             item.prePopulateInitialValues(DEFAULT_PLACEHOLDER_PREFIX, actionParam)
           }
+
+        // Set barcode to the configured linkId default: "patient-barcode"
+        if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
+          find(questionnaireConfig.barcodeLinkId)?.apply {
+            initial =
+              mutableListOf(
+                Questionnaire.QuestionnaireItemInitialComponent()
+                  .setValue(StringType(questionnaireConfig.resourceIdentifier)),
+              )
+            readOnly = true
+          }
+        }
       }
     return questionnaire
   }
