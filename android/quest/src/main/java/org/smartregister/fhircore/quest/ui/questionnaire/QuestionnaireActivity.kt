@@ -179,16 +179,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             )
             .apply { generateMissingItems(questionnaire) }
 
-        val questionnaireResponseValid =
-          questionnaireViewModel.isQuestionnaireResponseValid(
-            questionnaire = questionnaire,
-            questionnaireResponse = questionnaireResponse,
-            context = questionnaireActivity,
-          )
-        if (!questionnaireResponseValid) {
-          showToast(getString(R.string.questionnaire_response_broken))
-          finish()
-        }
 
         // Only add the fragment once, when the activity is first created.
         if (savedInstanceState == null) renderFragment()
