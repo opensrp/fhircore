@@ -307,6 +307,7 @@ tasks.withType<Test> {
   maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
 
   if (!name.toLowerCase().contains("performance")) {
+    System.out.println("Trying to exclude the performance package from task name [$name]")
     exclude("org.smartregister.fhircore.performance.*")
   }
 }
@@ -370,13 +371,20 @@ dependencies {
   androidTestImplementation(libs.ui.test.junit4)
   androidTestImplementation(libs.hilt.android.testing)
   androidTestImplementation(libs.mockk.android)
-  androidTestImplementation("androidx.benchmark:benchmark-junit4:1.1.1")
+  androidTestImplementation(libs.benchmark.junit)
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }
   ktlint(project(":linting"))
 }
 
+/*
+
+This task compares the performance benchmark results to the expected benchmark results
+and throws an error if the result is past the expected result and margin. A message will
+also be printed if the performance significantly improves.
+
+ */
 task("evaluatePerformanceBenchmarkResults") {
   val expectedPerformanceLimitsFile = project.file("expected-results.json")
   val resultsFile = project.file("org.smartregister.opensrp.ecbis-benchmarkData.json")
@@ -414,7 +422,7 @@ task("evaluatePerformanceBenchmarkResults") {
 
           if (expectedTimings == null) {
             System.err.println(
-              "Metrics for $fullName could not be found in expected-results.json. Kindly add this to the file"
+              "Metrics for $fullName could not be found in expected-results.json. Kindly add this to the file",
             )
           } else {
             val expectedMaxTiming = (expectedTimings.get("max") ?: 0e1)
@@ -425,16 +433,20 @@ task("evaluatePerformanceBenchmarkResults") {
                 "$fullName test passes the threshold of ${expectedMaxTiming + timingMargin} Ns. The timing is $median Ns",
               )
             } else if (median <= (expectedMaxTiming - timingMargin)) {
-              System.out.println("Improvement: Test $fullName took $median vs min of ${expectedMaxTiming - timingMargin}")
+              System.out.println(
+                "Improvement: Test $fullName took $median vs min of ${expectedMaxTiming - timingMargin}",
+              )
             } else {
-              System.out.println("Test $fullName took $median vs Range[${expectedMaxTiming - timingMargin} to ${expectedMaxTiming + timingMargin}] Ns")
+              System.out.println(
+                "Test $fullName took $median vs Range[${expectedMaxTiming - timingMargin} to ${expectedMaxTiming + timingMargin}] Ns",
+              )
             }
           }
         }
       }
     } else {
       throw Exception(
-        "Results file could not be found in  ${resultsFile.path}. Make sure this file is on the devices. It should be listed in the previous step after adb shell ls /sdcard/Download/"
+        "Results file could not be found in  ${resultsFile.path}. Make sure this file is on the devices. It should be listed in the previous step after adb shell ls /sdcard/Download/",
       )
     }
   }
