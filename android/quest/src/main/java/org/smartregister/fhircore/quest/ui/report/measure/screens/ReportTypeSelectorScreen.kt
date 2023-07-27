@@ -97,12 +97,13 @@ const val YEAR_TEST_TAG = "YEAR_TEST_TAG"
 const val MONTH_TEST_TAG = "MONTH_TEST_TAG"
 
 @Composable
-fun ReportTypeSelectorScreen(
+fun ReportDateSelectorScreen(
   reportId: String,
+  practitionerId: String = "",
   screenTitle: String,
   navController: NavController,
   measureReportViewModel: MeasureReportViewModel,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   val context = LocalContext.current
   val uiState = measureReportViewModel.reportTypeSelectorUiState.value
@@ -120,14 +121,14 @@ fun ReportTypeSelectorScreen(
       // Reset UI state
       measureReportViewModel.resetState()
       navController.popBackStack(
-        route = MeasureReportNavigationScreen.MeasureReportList.route,
-        inclusive = false
+        route = MeasureReportNavigationScreen.MeasureReportModule.route,
+        inclusive = false,
       )
     },
-    onGenerateReport = { date ->
+    onSelectReportDate = { date ->
       measureReportViewModel.onEvent(
-        MeasureReportEvent.GenerateReport(navController, context),
-        date
+        MeasureReportEvent.OnDateSelected(navController, context, practitionerId = practitionerId),
+        date,
       )
     },
     onDateRangeSelected = { newDateRange ->
@@ -136,7 +137,7 @@ fun ReportTypeSelectorScreen(
     onReportTypeSelected = {
       measureReportViewModel.onEvent(MeasureReportEvent.OnReportTypeChanged(it, navController))
     },
-    onSubjectRemoved = { measureReportViewModel.onEvent(MeasureReportEvent.OnSubjectRemoved(it)) }
+    onSubjectRemoved = { measureReportViewModel.onEvent(MeasureReportEvent.OnSubjectRemoved(it)) },
   )
 }
 
@@ -151,10 +152,10 @@ fun ReportFilterSelector(
   reportPeriodRange: Map<String, List<ReportRangeSelectionData>>,
   modifier: Modifier = Modifier,
   onBackPressed: () -> Unit,
-  onGenerateReport: (date: Date?) -> Unit,
+  onSelectReportDate: (date: Date?) -> Unit,
   onDateRangeSelected: (Pair<Long, Long>) -> Unit,
   onReportTypeSelected: (MeasureReportType) -> Unit,
-  onSubjectRemoved: (MeasureReportSubjectViewData) -> Unit
+  onSubjectRemoved: (MeasureReportSubjectViewData) -> Unit,
 ) {
   Scaffold(
     topBar = {
@@ -164,41 +165,41 @@ fun ReportFilterSelector(
             text = screenTitle,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
-            modifier = modifier.testTag(SCREEN_TITLE)
+            modifier = modifier.testTag(SCREEN_TITLE),
           )
         },
         navigationIcon = {
           IconButton(onClick = onBackPressed) { Icon(Icons.Filled.ArrowBack, null) }
         },
         contentColor = Color.White,
-        backgroundColor = MaterialTheme.colors.primary
+        backgroundColor = MaterialTheme.colors.primary,
       )
-    }
+    },
   ) { innerPadding ->
     Row(
       modifier =
         modifier.conditional(
           uiState.showProgressIndicator,
           { modifier.alpha(0f) },
-          { modifier.alpha(1f) }
-        )
+          { modifier.alpha(1f) },
+        ),
     ) {
       SubjectSelectionBox(
         radioOptions =
           listOf(
             MeasureReportTypeData(
               textResource = R.string.all,
-              measureReportType = MeasureReportType.SUMMARY
+              measureReportType = MeasureReportType.SUMMARY,
             ),
             MeasureReportTypeData(
               textResource = R.string.individual,
-              measureReportType = MeasureReportType.INDIVIDUAL
-            )
+              measureReportType = MeasureReportType.INDIVIDUAL,
+            ),
           ),
         subjects = uiState.subjectViewData,
         reportTypeState = reportTypeState,
         onReportTypeSelected = onReportTypeSelected,
-        onSubjectRemoved = onSubjectRemoved
+        onSubjectRemoved = onSubjectRemoved,
       )
     }
 
@@ -209,15 +210,15 @@ fun ReportFilterSelector(
         modifier.conditional(
           showSubjectSelection,
           { modifier.padding(top = 100.dp) },
-          { modifier.fillMaxSize() }
-        )
+          { modifier.fillMaxSize() },
+        ),
     ) {
       if (showFixedRangeSelection) {
         FixedMonthYearListing(
-          onMonthSelected = onGenerateReport,
+          onMonthSelected = onSelectReportDate,
           showProgressIndicator = uiState.showProgressIndicator,
           reportGenerationRange = reportPeriodRange,
-          innerPadding = innerPadding
+          innerPadding = innerPadding,
         )
       } else {
         DateRangeSelector(
@@ -228,11 +229,11 @@ fun ReportFilterSelector(
               uiState.endDate.isNotEmpty() &&
               (uiState.subjectViewData != null ||
                 reportTypeState.value == MeasureReportType.SUMMARY),
-          onGenerateReportClicked = { onGenerateReport.invoke(null) },
+          onGenerateReportClicked = { onSelectReportDate.invoke(null) },
           showProgressIndicator = uiState.showProgressIndicator,
           dateRange = dateRange!!,
           onDateRangeSelected = onDateRangeSelected,
-          innerPadding = innerPadding
+          innerPadding = innerPadding,
         )
       }
     }
@@ -249,7 +250,7 @@ fun DateRangeSelector(
   onGenerateReportClicked: () -> Unit,
   modifier: Modifier = Modifier,
   showProgressIndicator: Boolean = false,
-  innerPadding: PaddingValues
+  innerPadding: PaddingValues,
 ) {
   Box(modifier = modifier.padding(innerPadding)) {
     Column(modifier = modifier.fillMaxSize().testTag(SHOW_DATE_PICKER_FORM_TAG)) {
@@ -261,12 +262,12 @@ fun DateRangeSelector(
           ) {
             CircularProgressIndicator(
               modifier = modifier.size(40.dp).testTag(SHOW_PROGRESS_INDICATOR_TAG),
-              strokeWidth = 2.dp
+              strokeWidth = 2.dp,
             )
             Text(
               text = stringResource(R.string.please_wait),
               textAlign = TextAlign.Center,
-              modifier = modifier.padding(vertical = 16.dp).testTag(PLEASE_WAIT_TEST_TAG)
+              modifier = modifier.padding(vertical = 16.dp).testTag(PLEASE_WAIT_TEST_TAG),
             )
           }
         } else {
@@ -274,13 +275,13 @@ fun DateRangeSelector(
             startDate = startDate,
             endDate = endDate,
             dateRange = dateRange,
-            onDateRangeSelected = onDateRangeSelected
+            onDateRangeSelected = onDateRangeSelected,
           )
           Column(modifier = modifier.fillMaxHeight(), verticalArrangement = Arrangement.Bottom) {
             Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
               GenerateReportButton(
                 generateReportEnabled = generateReport,
-                onGenerateReportClicked = onGenerateReportClicked
+                onGenerateReportClicked = onGenerateReportClicked,
               )
             }
           }
@@ -308,19 +309,19 @@ fun FixedMonthYearListing(
           ) {
             CircularProgressIndicator(
               modifier = modifier.size(40.dp).testTag(SHOW_PROGRESS_INDICATOR_TAG),
-              strokeWidth = 2.dp
+              strokeWidth = 2.dp,
             )
             Text(
               text = stringResource(R.string.please_wait),
               textAlign = TextAlign.Center,
-              modifier = modifier.padding(vertical = 16.dp).testTag(PLEASE_WAIT_TEST_TAG)
+              modifier = modifier.padding(vertical = 16.dp).testTag(PLEASE_WAIT_TEST_TAG),
             )
           }
         }
       } else {
-        Box(
-          modifier = modifier.fillMaxSize(),
-        ) { LazyMonthList(reportRangeList = reportGenerationRange) { onMonthSelected(it.date) } }
+        Box(modifier = modifier.fillMaxSize()) {
+          LazyMonthList(reportRangeList = reportGenerationRange) { onMonthSelected(it.date) }
+        }
       }
     }
   }
@@ -335,7 +336,7 @@ fun FixedMonthYearListing(
 fun LazyMonthList(
   modifier: Modifier = Modifier,
   reportRangeList: Map<String, List<ReportRangeSelectionData>>,
-  selectedMonth: (ReportRangeSelectionData) -> Unit
+  selectedMonth: (ReportRangeSelectionData) -> Unit,
 ) {
   LazyColumn {
     reportRangeList.forEach { (year, monthList) ->
@@ -343,13 +344,13 @@ fun LazyMonthList(
         Row(
           modifier = modifier.fillMaxWidth().background(color = SearchHeaderColor).padding(16.dp),
           verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.SpaceBetween
+          horizontalArrangement = Arrangement.SpaceBetween,
         ) {
           Text(
             text = year,
             fontSize = 14.sp,
             color = DefaultColor,
-            modifier = Modifier.testTag(YEAR_TEST_TAG)
+            modifier = Modifier.testTag(YEAR_TEST_TAG),
           )
           Icon(
             Icons.Filled.KeyboardArrowDown,
@@ -363,7 +364,7 @@ fun LazyMonthList(
         itemContent = { index, item ->
           ListItem(data = item, selectedMonth = selectedMonth)
           if (index < monthList.lastIndex) Divider(color = DividerColor, thickness = 0.8.dp)
-        }
+        },
       )
     }
   }
@@ -373,7 +374,7 @@ fun LazyMonthList(
 private fun ListItem(
   modifier: Modifier = Modifier,
   data: ReportRangeSelectionData,
-  selectedMonth: (ReportRangeSelectionData) -> Unit
+  selectedMonth: (ReportRangeSelectionData) -> Unit,
 ) {
   Row(
     modifier =
@@ -383,18 +384,18 @@ private fun ListItem(
         .padding(16.dp)
         .testTag(TEST_MONTH_CLICK_TAG),
     verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.SpaceBetween
+    horizontalArrangement = Arrangement.SpaceBetween,
   ) {
     Text(
       text = data.month,
       fontSize = 16.sp,
       style = MaterialTheme.typography.h5,
-      modifier = Modifier.testTag(MONTH_TEST_TAG)
+      modifier = Modifier.testTag(MONTH_TEST_TAG),
     )
     Icon(
       imageVector = Icons.Filled.KeyboardArrowRight,
       contentDescription = null,
-      tint = DefaultColor.copy(alpha = 0.7f)
+      tint = DefaultColor.copy(alpha = 0.7f),
     )
   }
 }
@@ -406,16 +407,14 @@ fun SubjectSelectionBox(
   reportTypeState: MutableState<MeasureReport.MeasureReportType>,
   onReportTypeSelected: (MeasureReport.MeasureReportType) -> Unit,
   onSubjectRemoved: (MeasureReportSubjectViewData) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
-  Column(
-    modifier = modifier.fillMaxWidth(),
-  ) {
+  Column(modifier = modifier.fillMaxWidth()) {
     Row(verticalAlignment = Alignment.CenterVertically) {
       Text(
         text = stringResource(id = R.string.subject),
         fontSize = 18.sp,
-        fontWeight = FontWeight.Bold
+        fontWeight = FontWeight.Bold,
       )
       radioOptions.forEach { reportTypeData ->
         RadioButton(
@@ -423,7 +422,7 @@ fun SubjectSelectionBox(
           onClick = {
             reportTypeState.value = reportTypeData.measureReportType
             onReportTypeSelected(reportTypeState.value)
-          }
+          },
         )
         Text(
           text = stringResource(id = reportTypeData.textResource),
@@ -432,19 +431,20 @@ fun SubjectSelectionBox(
             modifier.clickable {
               reportTypeState.value = reportTypeData.measureReportType
               onReportTypeSelected(reportTypeState.value)
-            }
+            },
         )
       }
       Spacer(modifier = modifier.size(4.dp))
     }
-    if (reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL && subjects.isNotEmpty()
+    if (
+      reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL && subjects.isNotEmpty()
     ) {
       Row(modifier = modifier.padding(start = 24.dp)) {
         Spacer(modifier = modifier.size(8.dp))
         SubjectSelector(
           subjects = subjects,
           onAddSubject = { onReportTypeSelected(reportTypeState.value) },
-          onRemoveSubject = { onSubjectRemoved(it) }
+          onRemoveSubject = { onSubjectRemoved(it) },
         )
       }
     }
@@ -455,18 +455,18 @@ fun SubjectSelectionBox(
 fun GenerateReportButton(
   generateReportEnabled: Boolean,
   onGenerateReportClicked: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Column {
     Button(
       enabled = generateReportEnabled,
       onClick = onGenerateReportClicked,
-      modifier = modifier.fillMaxWidth()
+      modifier = modifier.fillMaxWidth(),
     ) {
       Text(
         color = Color.White,
         text = stringResource(id = R.string.generate_report),
-        modifier = modifier.padding(8.dp)
+        modifier = modifier.padding(8.dp),
       )
     }
   }
@@ -486,12 +486,12 @@ fun SubjectSelectionAllPreview() {
         MeasureReportTypeData(
           textResource = R.string.individual,
           measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL,
-        )
+        ),
       ),
     reportTypeState = reportTypeState,
     onReportTypeSelected = {},
     onSubjectRemoved = {},
-    subjects = setOf()
+    subjects = setOf(),
   )
 }
 
@@ -509,7 +509,7 @@ fun SubjectSelectionIndividualPreview() {
         MeasureReportTypeData(
           textResource = R.string.individual,
           measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL,
-        )
+        ),
       ),
     reportTypeState = reportTypeState,
     onReportTypeSelected = {},
@@ -520,8 +520,8 @@ fun SubjectSelectionIndividualPreview() {
         MeasureReportSubjectViewData(ResourceType.Patient, "2", "Jane Doe"),
         MeasureReportSubjectViewData(ResourceType.Patient, "3", "John Doe"),
         MeasureReportSubjectViewData(ResourceType.Patient, "4", "Lorem Ipsm"),
-        MeasureReportSubjectViewData(ResourceType.Patient, "5", "Mary Magdalene")
-      )
+        MeasureReportSubjectViewData(ResourceType.Patient, "5", "Mary Magdalene"),
+      ),
   )
 }
 
@@ -549,10 +549,10 @@ fun FixedRangeListPreview() {
     dateRange = null,
     reportPeriodRange = ranges,
     onBackPressed = {},
-    onGenerateReport = {},
+    onSelectReportDate = {},
     onDateRangeSelected = {},
     onReportTypeSelected = {},
-    onSubjectRemoved = {}
+    onSubjectRemoved = {},
   )
 }
 
@@ -572,9 +572,9 @@ fun ReportFilterPreview() {
     dateRange = dateRange,
     reportPeriodRange = mapOf(),
     onBackPressed = {},
-    onGenerateReport = {},
+    onSelectReportDate = {},
     onDateRangeSelected = {},
     onReportTypeSelected = {},
-    onSubjectRemoved = {}
+    onSubjectRemoved = {},
   )
 }

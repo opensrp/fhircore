@@ -61,7 +61,7 @@ class KujakuFhirCoreConverter {
 
   fun generateFeatureCollection(
     context: Context,
-    resourcesGroups: List<List<Resource>>
+    resourcesGroups: List<List<Resource>>,
   ): FeatureCollection {
     checkConversionGuide(context)
 

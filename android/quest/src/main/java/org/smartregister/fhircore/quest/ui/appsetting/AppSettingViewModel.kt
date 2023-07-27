@@ -23,7 +23,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.net.UnknownHostException
-import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,6 +33,7 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -63,7 +64,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configService: ConfigService,
   val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
 
   val showProgressBar = MutableLiveData(false)
@@ -101,7 +102,8 @@ constructor(
     viewModelScope.launch {
       try {
         Timber.i("Fetching configs for app $appId")
-        val urlPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
+        val urlPath =
+          "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=${ConfigurationRegistry.DEFAULT_COUNT}"
         val compositionResource =
           withContext(dispatcherProvider.io()) { fetchComposition(urlPath, context) }
             ?: return@launch
@@ -111,33 +113,40 @@ constructor(
           .retrieveCompositionSections()
           .asSequence()
           .filter { it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier() }
-          .groupBy { it.focus.reference.substringBefore("/") }
+          .groupBy {
+            it.focus.reference.substringBefore(ConfigurationRegistry.TYPE_REFERENCE_DELIMITER)
+          }
           .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
           .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-            val ids = entry.value.joinToString(",") { it.focus.extractId() }
-            val resourceUrlPath =
-              entry.key +
-                "?${Composition.SP_RES_ID}=$ids" +
-                "&_count=${configService.provideConfigurationSyncPageSize()}"
+            val chunkedResourceIdList =
+              entry.value.chunked(ConfigurationRegistry.MANIFEST_PROCESSOR_BATCH_SIZE)
+            chunkedResourceIdList.forEach { parentIt ->
+              val ids = parentIt.joinToString(",") { it.focus.extractId() }
+              val resourceUrlPath =
+                "${entry.key}?${Composition.SP_RES_ID}=$ids&_count=${ConfigurationRegistry.DEFAULT_COUNT}"
+              Timber.d("Fetching config: $resourceUrlPath")
+              fhirResourceDataSource.getResource(resourceUrlPath).entry.forEach {
+                bundleEntryComponent ->
+                defaultRepository.createRemote(false, bundleEntryComponent.resource)
 
-            Timber.d("Fetching config: $resourceUrlPath")
-
-            fhirResourceDataSource.getResource(resourceUrlPath).entry.forEach { bundleEntryComponent
-              ->
-              defaultRepository.createRemote(false, bundleEntryComponent.resource)
-
-              if (bundleEntryComponent.resource is Binary) {
-                val binary = bundleEntryComponent.resource as Binary
-                binary.data.decodeToString().decodeBase64()?.string(Charset.defaultCharset())?.let {
-                  val config =
-                    it.tryDecodeJson<RegisterConfiguration>()
-                      ?: it.tryDecodeJson<ProfileConfiguration>()
-
-                  when (config) {
-                    is RegisterConfiguration ->
-                      config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
-                    is ProfileConfiguration ->
-                      config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
+                if (bundleEntryComponent.resource is Binary) {
+                  val binary = bundleEntryComponent.resource as Binary
+                  binary.data.decodeToString().decodeBase64()?.string(StandardCharsets.UTF_8)?.let {
+                    val registerConfig = it.tryDecodeJson<RegisterConfiguration>()
+                    if (registerConfig != null) {
+                      if (registerConfig.configType == ConfigType.Profile.name) {
+                        val profileConfig = it.tryDecodeJson<ProfileConfiguration>()
+                        profileConfig
+                          ?.fhirResource
+                          ?.dependentResourceTypes(
+                            patientRelatedResourceTypes,
+                          )
+                      } else {
+                        registerConfig.fhirResource.dependentResourceTypes(
+                          patientRelatedResourceTypes,
+                        )
+                      }
+                    }
                   }
                 }
               }
@@ -154,9 +163,11 @@ constructor(
         _error.postValue(context.getString(R.string.error_loading_config_no_internet))
         showProgressBar.postValue(false)
       } catch (httpException: HttpException) {
-        if ((400..503).contains(httpException.response()!!.code()))
+        if ((400..503).contains(httpException.response()!!.code())) {
           _error.postValue(context.getString(R.string.error_loading_config_general))
-        else _error.postValue(context.getString(R.string.error_loading_config_http_error))
+        } else {
+          _error.postValue(context.getString(R.string.error_loading_config_http_error))
+        }
         showProgressBar.postValue(false)
       }
     }
@@ -194,7 +205,7 @@ constructor(
   fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) =
     sharedPreferencesHelper.write(
       SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-      resourceTypes.distinctBy { it.name }
+      resourceTypes.distinctBy { it.name },
     )
 
   private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {

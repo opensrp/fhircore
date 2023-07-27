@@ -37,16 +37,16 @@ import androidx.navigation.NavController
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportRow
 
 @Composable
 fun MeasureReportListScreen(
   mainNavController: NavController,
-  dataList: Flow<PagingData<MeasureReportConfig>>,
-  onReportMeasureClicked: (List<MeasureReportConfig>) -> Unit,
-  modifier: Modifier = Modifier
+  dataList: Flow<PagingData<ReportConfiguration>>,
+  onReportMeasureClicked: (List<ReportConfiguration>) -> Unit,
+  modifier: Modifier = Modifier,
 ) {
   val lazyReportItems = dataList.collectAsLazyPagingItems().itemSnapshotList.groupBy { it?.module }
 
@@ -60,9 +60,9 @@ fun MeasureReportListScreen(
           }
         },
         contentColor = Color.White,
-        backgroundColor = MaterialTheme.colors.primary
+        backgroundColor = MaterialTheme.colors.primary,
       )
-    }
+    },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       LazyColumn(modifier = modifier.background(Color.White).fillMaxSize()) {
@@ -71,7 +71,7 @@ fun MeasureReportListScreen(
             key?.let { it1 ->
               MeasureReportRow(
                 it1,
-                { onReportMeasureClicked(lazyReportItems[key] as List<MeasureReportConfig>) }
+                { onReportMeasureClicked(lazyReportItems[key] as List<ReportConfiguration>) },
               )
             }
           }

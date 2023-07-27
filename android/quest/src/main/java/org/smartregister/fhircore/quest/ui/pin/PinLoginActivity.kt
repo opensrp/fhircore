@@ -40,7 +40,9 @@ import org.smartregister.p2p.P2PLibrary
 class PinLoginActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
   @Inject lateinit var p2pSenderTransferDao: P2PSenderTransferDao
+
   @Inject lateinit var p2pReceiverTransferDao: P2PReceiverTransferDao
   val pinViewModel by viewModels<PinViewModel>()
 
@@ -80,8 +82,8 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
           dbPassphrase = username,
           username = username,
           senderTransferDao = p2pSenderTransferDao,
-          receiverTransferDao = p2pReceiverTransferDao
-        )
+          receiverTransferDao = p2pReceiverTransferDao,
+        ),
       )
     }
     finish()

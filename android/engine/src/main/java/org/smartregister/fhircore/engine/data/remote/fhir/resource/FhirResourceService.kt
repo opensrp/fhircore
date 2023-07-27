@@ -25,6 +25,7 @@ import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -36,24 +37,30 @@ interface FhirResourceService {
 
   @GET suspend fun getResource(@Url url: String): Bundle
 
+  @GET
+  suspend fun getResourceWithGatewayModeHeader(
+    @Header("FHIR-Gateway-Mode") fhirGatewayMode: String? = null,
+    @Url url: String,
+  ): Bundle
+
   @PUT("{resourceType}/{id}")
   suspend fun insertResource(
     @Path("resourceType") resourceType: String,
     @Path("id") id: String,
-    @Body body: RequestBody
+    @Body body: RequestBody,
   ): Resource
 
   @PATCH("{resourceType}/{id}")
   suspend fun updateResource(
     @Path("resourceType") resourceType: String,
     @Path("id") id: String,
-    @Body body: RequestBody
+    @Body body: RequestBody,
   ): OperationOutcome
 
   @DELETE("{resourceType}/{id}")
   suspend fun deleteResource(
     @Path("resourceType") resourceType: String,
-    @Path("id") id: String
+    @Path("id") id: String,
   ): OperationOutcome
 
   @GET suspend fun fetchImage(@Url url: String): ResponseBody?
@@ -61,6 +68,6 @@ interface FhirResourceService {
   @GET("{resourceType}/_search")
   suspend fun searchResource(
     @Path("resourceType") resourceType: String,
-    @QueryMap(encoded = false) searchParameters: Map<String, String>
+    @QueryMap(encoded = false) searchParameters: Map<String, String>,
   ): Bundle
 }

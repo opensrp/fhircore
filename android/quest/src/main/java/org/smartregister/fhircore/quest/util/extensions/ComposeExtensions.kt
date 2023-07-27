@@ -32,7 +32,7 @@ import androidx.compose.ui.Modifier
 fun Modifier.conditional(
   condition: Boolean,
   ifTrue: Modifier.() -> Modifier,
-  ifFalse: (Modifier.() -> Modifier)? = null
+  ifFalse: (Modifier.() -> Modifier)? = null,
 ): Modifier {
   return when {
     condition -> then(ifTrue(Modifier))

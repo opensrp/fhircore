@@ -73,7 +73,7 @@ fun List(
         text = viewProperties.emptyList?.message ?: "",
         modifier = modifier.padding(8.dp).align(Alignment.Center),
         color = DefaultColor,
-        fontStyle = FontStyle.Italic
+        fontStyle = FontStyle.Italic,
       )
     }
   } else {
@@ -81,9 +81,11 @@ fun List(
       modifier =
         modifier
           .background(
-            viewProperties.backgroundColor?.interpolate(resourceData.computedValuesMap).parseColor()
+            viewProperties.backgroundColor
+              ?.interpolate(resourceData.computedValuesMap)
+              .parseColor(),
           )
-          .testTag(VERTICAL_ORIENTATION)
+          .testTag(VERTICAL_ORIENTATION),
     ) {
       when (viewProperties.orientation) {
         ListOrientation.VERTICAL ->
@@ -92,7 +94,7 @@ fun List(
               modifier
                 .conditional(viewProperties.fillMaxWidth, { fillMaxWidth() })
                 .conditional(viewProperties.fillMaxHeight, { fillMaxHeight() })
-                .testTag(VERTICAL_ORIENTATION)
+                .testTag(VERTICAL_ORIENTATION),
           ) {
             currentListResourceData.forEachIndexed { index, listResourceData ->
               Spacer(modifier = modifier.height(6.dp))
@@ -100,8 +102,8 @@ fun List(
                 modifier =
                   Modifier.padding(
                     horizontal = viewProperties.padding.dp,
-                    vertical = viewProperties.padding.div(4).dp
-                  )
+                    vertical = viewProperties.padding.div(4).dp,
+                  ),
               ) {
                 AnimatedVisibility(
                   visible = true,
@@ -109,7 +111,7 @@ fun List(
                     slideInVertically {
                       // Slide in from 40 dp from the top.
                       with(density) { -40.dp.roundToPx() }
-                    }
+                    },
                 ) {
                   ViewRenderer(
                     viewProperties = viewProperties.registerCard.views,
@@ -119,8 +121,9 @@ fun List(
                 }
               }
               Spacer(modifier = modifier.height(6.dp))
-              if (index < currentListResourceData.lastIndex && viewProperties.showDivider)
+              if (index < currentListResourceData.lastIndex && viewProperties.showDivider) {
                 Divider(color = DividerColor, thickness = 0.5.dp)
+              }
             }
           }
         ListOrientation.HORIZONTAL ->
@@ -173,14 +176,14 @@ private fun ListWithHorizontalOrientationPreview() {
                     primaryText = "ANC Danger Signs",
                     primaryTextColor = "#D2760D",
                     primaryTextBackgroundColor = "#FFECD6",
-                    padding = 8
+                    padding = 8,
                   ),
                   CompoundTextProperties(
                     viewType = ViewType.COMPOUND_TEXT,
                     primaryText = "TB Danger Signs",
                     primaryTextColor = "#D2760D",
                     primaryTextBackgroundColor = "#FFECD6",
-                    padding = 8
+                    padding = 8,
                   ),
                   CompoundTextProperties(
                     viewType = ViewType.COMPOUND_TEXT,
@@ -190,15 +193,15 @@ private fun ListWithHorizontalOrientationPreview() {
                     padding = 8,
                   ),
                 ),
-            )
+            ),
         ),
       navController = rememberNavController(),
       resourceData =
         ResourceData(
           baseResourceId = "baseId",
           baseResourceType = ResourceType.Patient,
-          computedValuesMap = emptyMap()
-        )
+          computedValuesMap = emptyMap(),
+        ),
     )
   }
 }
@@ -239,7 +242,7 @@ private fun ListWithVerticalOrientationPreview() {
                     viewType = ViewType.COMPOUND_TEXT,
                     primaryText = "HIV",
                     primaryTextColor = "#508BE8",
-                  )
+                  ),
                 ),
             ),
         ),
@@ -248,8 +251,8 @@ private fun ListWithVerticalOrientationPreview() {
         ResourceData(
           baseResourceId = "baseId",
           baseResourceType = ResourceType.Patient,
-          computedValuesMap = emptyMap()
-        )
+          computedValuesMap = emptyMap(),
+        ),
     )
   }
 }

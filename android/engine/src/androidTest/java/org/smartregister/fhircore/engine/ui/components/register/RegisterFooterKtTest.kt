@@ -38,7 +38,7 @@ class RegisterFooterKtTest {
         currentPage = 2,
         pagesCount = 5,
         previousButtonClickListener = {},
-        nextButtonClickListener = {}
+        nextButtonClickListener = {},
       )
     }
 
@@ -52,7 +52,7 @@ class RegisterFooterKtTest {
     composeRule
       .onNodeWithTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG)
       .assertTextEquals(
-        ApplicationProvider.getApplicationContext<Application>().getString(R.string.str_previous)
+        ApplicationProvider.getApplicationContext<Application>().getString(R.string.str_previous),
       )
 
     composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertExists()
@@ -62,7 +62,7 @@ class RegisterFooterKtTest {
       .onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG)
       .assertTextEquals(
         ApplicationProvider.getApplicationContext<Application>()
-          .getString(R.string.str_page_info, 2, 5)
+          .getString(R.string.str_page_info, 2, 5),
       )
 
     composeRule.onNodeWithTag(SEARCH_FOOTER_NEXT_BUTTON_TAG).assertExists()
@@ -71,7 +71,7 @@ class RegisterFooterKtTest {
     composeRule
       .onNodeWithTag(SEARCH_FOOTER_NEXT_BUTTON_TAG)
       .assertTextEquals(
-        ApplicationProvider.getApplicationContext<Application>().getString(R.string.str_next)
+        ApplicationProvider.getApplicationContext<Application>().getString(R.string.str_next),
       )
   }
 }

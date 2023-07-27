@@ -28,7 +28,7 @@ class MeasureReportSubjectViewDataMapper
 @Inject
 constructor(
   @ApplicationContext val context: Context,
-  val fhirPathDataExtractor: FhirPathDataExtractor
+  val fhirPathDataExtractor: FhirPathDataExtractor,
 ) : DataMapper<ResourceData, MeasureReportSubjectViewData> {
 
   override fun transformInputToOutputModel(inputModel: ResourceData): MeasureReportSubjectViewData {
@@ -49,7 +49,7 @@ constructor(
       type = inputModel.baseResourceType,
       logicalId = inputModel.baseResourceId,
       display = inputModel.computedValuesMap["practitionerName"]?.toString() ?: "",
-      family = ""
+      family = "",
     )
   }
 }

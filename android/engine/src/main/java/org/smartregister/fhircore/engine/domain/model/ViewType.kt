@@ -55,5 +55,5 @@ enum class ViewType {
   @JsonNames("image", "Image") IMAGE,
 
   /** A type of view component used to render divider between views */
-  @JsonNames("border", "Border") BORDER
+  @JsonNames("border", "Border") BORDER,
 }

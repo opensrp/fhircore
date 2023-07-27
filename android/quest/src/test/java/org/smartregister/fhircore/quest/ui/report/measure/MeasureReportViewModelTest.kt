@@ -27,7 +27,10 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
@@ -56,7 +59,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
-import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -68,6 +71,7 @@ import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -76,17 +80,23 @@ import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDat
 
 @HiltAndroidTest
 class MeasureReportViewModelTest : RobolectricTest() {
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
+
   @Inject lateinit var measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
+
   @Inject lateinit var registerRepository: RegisterRepository
+
   @Inject lateinit var defaultRepository: DefaultRepository
+
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+
+  @Inject lateinit var measureReportRepository: MeasureReportRepository
   private val fhirEngine: FhirEngine = mockk()
   private val fhirOperator: FhirOperator = mockk()
   private val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
-  private val measureReportRepository = mockk<MeasureReportRepository>()
+  private val measureReportPagingSource = mockk<MeasureReportPagingSource>()
   private val navController: NavController = mockk(relaxUnitFun = true)
   private val invalidReportId = "invalidSupplyChainMeasureReport"
   private val reportId = "supplyChainMeasureReport"
@@ -97,13 +107,13 @@ class MeasureReportViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    coEvery { measureReportRepository.retrieveSubjects(0) } returns
+    coEvery { measureReportPagingSource.retrieveSubjects() } returns
       listOf(
         ResourceData(
           baseResourceId = Faker.buildPatient().id,
           baseResourceType = ResourceType.Patient,
           computedValuesMap = emptyMap(),
-        )
+        ),
       )
 
     measureReportViewModel =
@@ -117,8 +127,9 @@ class MeasureReportViewModelTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
           defaultRepository = defaultRepository,
-          resourceDataRulesExecutor = resourceDataRulesExecutor
-        )
+          resourceDataRulesExecutor = resourceDataRulesExecutor,
+          measureReportRepository = measureReportRepository,
+        ),
       )
   }
 
@@ -146,41 +157,47 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnEventOnSelectMeasure() {
-    val measureReportConfig =
-      MeasureReportConfig(
+    val reportConfiguration =
+      ReportConfiguration(
         id = "measureId",
         title = "Measure 1",
         description = "Measure report for testing",
         url = "http://nourl.com",
-        module = "Module1"
+        module = "Module1",
       )
+    every { measureReportViewModel.evaluateMeasure(any(), any()) } just runs
+    measureReportViewModel.reportTypeSelectorUiState.value =
+      ReportTypeSelectorUiState(startDate = "21 Jan, 2022", endDate = "27 Jan, 2022")
     measureReportViewModel.onEvent(
       MeasureReportEvent.OnSelectMeasure(
-        measureReportConfig = listOf(measureReportConfig),
-        navController = navController
-      )
+        reportConfigurations = listOf(reportConfiguration),
+        navController = navController,
+        practitionerId = "practitioner-id",
+      ),
     )
-    val routeSlot = slot<String>()
 
     // config updated for the view model
-    val viewModelConfig = measureReportViewModel.measureReportConfigList
-    Assert.assertEquals(viewModelConfig.first().id, measureReportConfig.id)
-    Assert.assertEquals(viewModelConfig.first().module, measureReportConfig.module)
+    val viewModelConfig = measureReportViewModel.reportConfigurations
+    Assert.assertEquals(viewModelConfig.first().id, reportConfiguration.id)
+    Assert.assertEquals(viewModelConfig.first().module, reportConfiguration.module)
 
-    verify { navController.navigate(capture(routeSlot)) }
-
-    Assert.assertEquals("reportTypeSelector?screenTitle=Module1", routeSlot.captured)
+    verify {
+      measureReportViewModel.evaluateMeasure(
+        navController = navController,
+        practitionerId = "practitioner-id",
+      )
+    }
   }
 
   @Test
-  fun testOnEventOnSelectGenerateReport() {
-    val measureReportConfig =
-      MeasureReportConfig(
+  fun testOnEventOnDateSelected() {
+    val reportConfiguration =
+      ReportConfiguration(
         id = "measureId",
         title = "Measure 1",
         description = "Measure report for testing",
         url = "http://nourl.com",
-        module = "Module1"
+        module = "Module1",
       )
     val sampleSubjectViewData =
       mutableSetOf(
@@ -188,20 +205,22 @@ class MeasureReportViewModelTest : RobolectricTest() {
           type = ResourceType.Patient,
           logicalId = "member1",
           display = "Willy Mark, M, 28",
-          family = "Orion"
-        )
+          family = "Orion",
+        ),
       )
 
-    measureReportViewModel.measureReportConfigList.add(measureReportConfig)
+    measureReportViewModel.reportConfigurations.add(reportConfiguration)
     measureReportViewModel.reportTypeSelectorUiState.value =
       ReportTypeSelectorUiState("21 Jan, 2022", "21 Feb, 2022", false, sampleSubjectViewData)
 
     measureReportViewModel.onEvent(
-      MeasureReportEvent.GenerateReport(context = application, navController = navController),
-      "2022-10-31".parseDate(SDF_YYYY_MM_DD)
+      MeasureReportEvent.OnDateSelected(context = application, navController = navController),
+      "2022-10-31".parseDate(SDF_YYYY_MM_DD),
     )
 
-    verify { measureReportViewModel.evaluateMeasure(navController) }
+    val routeSlot = slot<String>()
+    verify { navController.navigate(capture(routeSlot)) }
+    Assert.assertEquals("reportMeasuresModule", routeSlot.captured)
   }
 
   @Test
@@ -220,7 +239,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   private fun dateTimestamp(startTimeString: String) =
     LocalDateTime.parse(
         startTimeString,
-        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH)
+        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH),
       )
       .atZone(ZoneId.systemDefault())
       .toInstant()
@@ -230,7 +249,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   fun testOnEventOnReportTypeChanged() {
     // Test with report type INDIVIDUAL
     measureReportViewModel.onEvent(
-      MeasureReportEvent.OnReportTypeChanged(MeasureReportType.INDIVIDUAL, navController)
+      MeasureReportEvent.OnReportTypeChanged(MeasureReportType.INDIVIDUAL, navController),
     )
     Assert.assertEquals(MeasureReportType.INDIVIDUAL, measureReportViewModel.reportTypeState.value)
     val routeSlot = slot<String>()
@@ -239,11 +258,11 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
     // Test with report type other than INDIVIDUAL
     measureReportViewModel.onEvent(
-      MeasureReportEvent.OnReportTypeChanged(MeasureReportType.SUMMARY, navController)
+      MeasureReportEvent.OnReportTypeChanged(MeasureReportType.SUMMARY, navController),
     )
     Assert.assertEquals(
       0,
-      measureReportViewModel.reportTypeSelectorUiState.value.subjectViewData.size
+      measureReportViewModel.reportTypeSelectorUiState.value.subjectViewData.size,
     )
   }
 
@@ -254,7 +273,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
         type = ResourceType.Patient,
         logicalId = "member1",
         display = "Willy Mark, M, 28",
-        family = "Orion"
+        family = "Orion",
       )
     measureReportViewModel.onEvent(MeasureReportEvent.OnSubjectSelected(sampleSubjectViewData))
     val subjectViewData =
@@ -281,14 +300,14 @@ class MeasureReportViewModelTest : RobolectricTest() {
         this.id = "report-group-1"
         this.addPopulation().apply {
           this.code.addCoding(
-            MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) }
+            MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) },
           )
           this.count = 3
         }
 
         this.addPopulation().apply {
           this.code.addCoding(
-            MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) }
+            MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) },
           )
           this.count = 4
         }
@@ -297,14 +316,14 @@ class MeasureReportViewModelTest : RobolectricTest() {
           this.value = CodeableConcept().apply { text = "Stratum #1" }
           this.addPopulation().apply {
             this.code.addCoding(
-              MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) }
+              MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) },
             )
             this.count = 1
           }
 
           this.addPopulation().apply {
             this.code.addCoding(
-              MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) }
+              MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) },
             )
             this.count = 2
           }
@@ -330,19 +349,19 @@ class MeasureReportViewModelTest : RobolectricTest() {
       Observation().apply {
         code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code")) }
         value = StringType("ABC")
-      }
+      },
     )
     measureReport.contained.add(
       Observation().apply {
         code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code")) }
         value = StringType("CDE")
-      }
+      },
     )
     measureReport.contained.add(
       Observation().apply {
         code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code")) }
         value = StringType("EFG")
-      }
+      },
     )
 
     val result = measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport))
@@ -367,19 +386,19 @@ class MeasureReportViewModelTest : RobolectricTest() {
       Observation().apply {
         code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code 1")) }
         value = CodeableConcept().apply { addCoding().code = "2" }
-      }
+      },
     )
     measureReport.contained.add(
       Observation().apply {
         code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code 2")) }
         value = CodeableConcept().apply { addCoding().code = "4" }
-      }
+      },
     )
     measureReport.contained.add(
       Observation().apply {
         code = CodeableConcept().apply { addCoding(Coding(null, "populationId", "Test Code 3")) }
         value = CodeableConcept().apply { addCoding().code = "6" }
-      }
+      },
     )
 
     measureReport.subject = Reference().apply { reference = "Group/1" }

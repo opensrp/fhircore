@@ -44,7 +44,7 @@ class AppSettingScreenTest {
         appId = appId,
         onAppIdChanged = listenersSpy.onAppIdChanged,
         fetchConfiguration = listenersSpy.onLoadConfigurations,
-        error = ""
+        error = "",
       )
     }
 
@@ -60,7 +60,7 @@ class AppSettingScreenTest {
         appId = appId,
         onAppIdChanged = listenersSpy.onAppIdChanged,
         fetchConfiguration = listenersSpy.onLoadConfigurations,
-        error = ""
+        error = "",
       )
     }
 
@@ -77,7 +77,7 @@ class AppSettingScreenTest {
         appId = appId,
         onAppIdChanged = listenersSpy.onAppIdChanged,
         fetchConfiguration = listenersSpy.onLoadConfigurations,
-        error = error
+        error = error,
       )
     }
 

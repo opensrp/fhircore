@@ -30,6 +30,7 @@ val json = Json {
 
 /**
  * Decode string to an entity of type [T]
+ *
  * @param jsonInstance the custom json object used to decode the specified string
  * @return the decoded object of type [T]
  */
@@ -38,6 +39,7 @@ inline fun <reified T> String.decodeJson(jsonInstance: Json? = null): T =
 
 /**
  * Decode string to an entity of type [T] or return null if json is invalid
+ *
  * @param jsonInstance the custom json object used to decode the specified string
  * @return the decoded object of type [T]
  */
@@ -46,6 +48,7 @@ inline fun <reified T> String.tryDecodeJson(jsonInstance: Json? = null): T? =
 
 /**
  * Encode the type [T] into a Json string
+ *
  * @param jsonInstance the custom json object used to decode the specified string
  * @return the encoded json string from given type [T]
  */

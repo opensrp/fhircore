@@ -19,60 +19,52 @@ package org.smartregister.fhircore.quest.util.extensions
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
-import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
+
+const val PRACTITIONER_ID = "practitionerId"
 
 fun List<ActionConfig>.handleClickEvent(
   navController: NavController,
   resourceData: ResourceData? = null,
   navMenu: NavigationMenuConfig? = null,
-  questionnaireResponse: QuestionnaireResponse? = null
 ) {
-  val onClickAction = this.find { it.trigger == ActionTrigger.ON_CLICK }
+  val onClickAction =
+    this.find { it.trigger.isIn(ActionTrigger.ON_CLICK, ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION) }
   onClickAction?.let { theConfig ->
     val computedValuesMap = resourceData?.computedValuesMap ?: emptyMap()
     val actionConfig = theConfig.interpolate(computedValuesMap)
+    val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
+    val practitionerId =
+      interpolatedParams
+        .find { it.paramType == ActionParameterType.RESOURCE_ID && it.key == PRACTITIONER_ID }
+        ?.value
+    val resourceId =
+      interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
+        ?: resourceData?.baseResourceId
     when (onClickAction.workflow) {
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
           val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
 
-          val intentBundle =
-            when (questionnaireConfigInterpolated.type) {
-              QuestionnaireType.EDIT, QuestionnaireType.READ_ONLY -> {
-                actionConfig.paramsBundle(resourceData?.computedValuesMap ?: emptyMap()).apply {
-                  putString(
-                    QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
-                    questionnaireResponse?.encodeResourceToString()
-                      ?: QuestionnaireResponse().encodeResourceToString()
-                  )
-                }
-              }
-              else -> bundleOf()
-            }
-
           if (navController.context is QuestionnaireHandler) {
             (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
               context = navController.context,
-              intentBundle = intentBundle,
               questionnaireConfig = questionnaireConfigInterpolated,
               actionParams = interpolateActionParamsValue(actionConfig, resourceData).toList(),
               baseResourceId = resourceData?.baseResourceId,
-              baseResourceType = resourceData?.baseResourceType?.name
+              baseResourceType = resourceData?.baseResourceType?.name,
             )
           }
         }
@@ -82,9 +74,9 @@ fun List<ActionConfig>.handleClickEvent(
           val args =
             bundleOf(
               NavigationArg.PROFILE_ID to id,
-              NavigationArg.RESOURCE_ID to resourceData?.baseResourceId,
+              NavigationArg.RESOURCE_ID to resourceId,
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
-              NavigationArg.PARAMS to interpolateActionParamsValue(actionConfig, resourceData)
+              NavigationArg.PARAMS to interpolatedParams,
             )
           navController.navigate(MainNavigationScreen.Profile.route, args)
         }
@@ -93,32 +85,38 @@ fun List<ActionConfig>.handleClickEvent(
         val args =
           bundleOf(
             Pair(NavigationArg.REGISTER_ID, actionConfig.id ?: navMenu?.id),
-            Pair(
-              NavigationArg.SCREEN_TITLE,
-              resourceData?.let { actionConfig.display } ?: navMenu?.display ?: ""
-            ),
+            Pair(NavigationArg.SCREEN_TITLE, actionConfig.display ?: navMenu?.display ?: ""),
             Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
-            Pair(NavigationArg.PARAMS, interpolateActionParamsValue(actionConfig, resourceData))
+            Pair(NavigationArg.PARAMS, interpolateActionParamsValue(actionConfig, resourceData)),
           )
 
-        // Register is the entry point destination, clear back stack with every register switch
-        val currentDestinationId = navController.currentDestination?.id
-        val sameRegisterId =
+        // If value != null, we are navigating FROM a register; disallow same register navigation
+        val currentRegisterId =
+          navController.currentBackStackEntry?.arguments?.getString(NavigationArg.REGISTER_ID)
+        val sameRegisterNavigation =
           args.getString(NavigationArg.REGISTER_ID) ==
             navController.previousBackStackEntry?.arguments?.getString(NavigationArg.REGISTER_ID)
-        if (currentDestinationId != null &&
-            currentDestinationId != navController.graph.id &&
-            !sameRegisterId
-        ) {
+
+        if (!currentRegisterId.isNullOrEmpty() && sameRegisterNavigation) {
+          return
+        } else {
           navController.navigate(
             resId = MainNavigationScreen.Home.route,
             args = args,
-            navOptions = navOptions(currentDestinationId, inclusive = false)
+            navOptions =
+              navController.currentDestination?.id?.let {
+                navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
+              },
           )
-        } else return
+        }
       }
       ApplicationWorkflow.LAUNCH_REPORT -> {
-        val args = bundleOf(Pair(NavigationArg.REPORT_ID, actionConfig.id))
+        val args =
+          bundleOf(
+            Pair(NavigationArg.REPORT_ID, actionConfig.id),
+            Pair(NavigationArg.RESOURCE_ID, practitionerId?.extractLogicalIdUuid() ?: ""),
+          )
+
         navController.navigate(MainNavigationScreen.Reports.route, args)
       }
       ApplicationWorkflow.LAUNCH_SETTINGS ->
@@ -127,7 +125,7 @@ fun List<ActionConfig>.handleClickEvent(
       ApplicationWorkflow.LAUNCH_MAP ->
         navController.navigate(
           MainNavigationScreen.GeoWidget.route,
-          bundleOf(NavigationArg.CONFIG_ID to actionConfig.id)
+          bundleOf(NavigationArg.CONFIG_ID to actionConfig.id),
         )
       else -> return
     }
@@ -135,8 +133,7 @@ fun List<ActionConfig>.handleClickEvent(
 }
 
 fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =
-  actionConfig
-    .params
+  actionConfig.params
     .map { it.interpolate(resourceData?.computedValuesMap ?: emptyMap()) }
     .toTypedArray()
 
@@ -151,7 +148,7 @@ fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = tr
  * to a map of [ActionParameter.key] against [ActionParameter](value).
  */
 fun Array<ActionParameter>?.toParamDataMap(): Map<String, String> =
-  this?.asSequence()?.filter { it.paramType == ActionParameterType.PARAMDATA }?.associate {
-    it.key to it.value
-  }
+  this?.asSequence()
+    ?.filter { it.paramType == ActionParameterType.PARAMDATA }
+    ?.associate { it.key to it.value }
     ?: emptyMap()
