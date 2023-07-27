@@ -42,7 +42,32 @@ group extractTask(
         subject then extractPeriod(subject, task) "rule_task_period_extraction";
 
         //TODO Change based on activity code
-        subject -> task.reasonReference = create('Reference') as reasonReference, reasonReference.reference = 'Questionnaire/0000' "rule_task_reason_reference";
+          //subject -> task.reasonReference = create('Reference') as reasonReference, reasonReference.reference = 'Questionnaire/0000' "rule_task_reason_reference";
+
+          subject -> task.reasonReference = create('Reference') as reasonReference then {
+                //subject -> reasonReference.reference = 'Questionnaire/001' "embed_938";
+                 subject where(definition.code.where(coding.code = '422840070')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/001' "embed_1";
+                } "rule_name_000";
+                subject where(definition.code.where(coding.code = '422840071')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/002' "embed_2";
+                } "rule_name_001";
+                  subject where(definition.code.where(coding.code = '422840072')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/003' "embed_3";
+                } "rule_name_002";
+                 subject where(definition.code.where(coding.code = '422840073')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/004' "embed_4";
+                } "rule_name_003";
+                  subject where(definition.code.where(coding.code = '422840074')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/005' "embed_5";
+                } "rule_name_004";
+                  subject where(definition.code.where(coding.code = '422840075')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/005' "embed_6";
+                } "rule_name_005";
+                  subject where(definition.code.where(coding.code = '422840076')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/006' "embed_7";
+                } "rule_name_006";
+          } "rule_name_007";
 
         // task groupIdentifier
         subject -> task.groupIdentifier = create('Identifier') as groupIdentifier then {

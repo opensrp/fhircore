@@ -125,7 +125,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "33879002",
+            "code": "422840070",
             "display": "Administration of IPC Task"
           }
         ]
@@ -134,7 +134,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "42284007",
+            "code": "422840070",
             "display": "PHQ-9"
           }
         ],
@@ -166,7 +166,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "33879002",
+            "code": "422840071",
             "display": "Administration of IPC Task"
           }
         ]
@@ -175,7 +175,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "42284007",
+            "code": "422840071",
             "display": "GAD-7"
           }
         ],
@@ -207,7 +207,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "33879002",
+            "code": "422840072",
             "display": "Administration of IPC Task"
           }
         ]
@@ -216,7 +216,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "42284007",
+            "code": "422840072",
             "display": "PC-PTSD"
           }
         ],
@@ -248,7 +248,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "33879002",
+            "code": "422840073",
             "display": "Administration of IPC Task"
           }
         ]
@@ -257,7 +257,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "42284007",
+            "code": "422840073",
             "display": "Mood Rating Scale"
           }
         ],
@@ -289,7 +289,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "33879002",
+            "code": "422840074",
             "display": "Administration of IPC Task"
           }
         ]
@@ -298,7 +298,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "42284007",
+            "code": "422840074",
             "display": "IPC"
           }
         ],
@@ -330,7 +330,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "33879002",
+            "code": "422840075",
             "display": "Administration of SPI Task"
           }
         ]
@@ -339,7 +339,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "111164008",
+            "code": "422840075",
             "display": "SPI"
           }
         ],
@@ -371,7 +371,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "33879002",
+            "code": "422840076",
             "display": "Administration of SBIRT Task"
           }
         ]
@@ -380,7 +380,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "429511000124109",
+            "code": "422840076",
             "display": "SBIRT"
           }
         ],
