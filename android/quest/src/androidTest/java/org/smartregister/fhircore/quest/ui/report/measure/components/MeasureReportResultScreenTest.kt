@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.Faker
+import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.ReportTypeSelectorUiState
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
@@ -56,6 +57,7 @@ class MeasureReportResultScreenTest {
   private var registerRepository: RegisterRepository = mockk(relaxed = true)
   private var defaultRepository: DefaultRepository = mockk(relaxed = true)
   private var resourceDataRulesExecutor: ResourceDataRulesExecutor = mockk(relaxed = true)
+  private var measureReportRepository: MeasureReportRepository = mockk(relaxed = true)
   private val navController: NavController = mockk(relaxUnitFun = true)
 
   @Before
@@ -71,7 +73,8 @@ class MeasureReportResultScreenTest {
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
           defaultRepository = defaultRepository,
-          resourceDataRulesExecutor = resourceDataRulesExecutor
+          resourceDataRulesExecutor = resourceDataRulesExecutor,
+          measureReportRepository = measureReportRepository
         )
       )
   }
