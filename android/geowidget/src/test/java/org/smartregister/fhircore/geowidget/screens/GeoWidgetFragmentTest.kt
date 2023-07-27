@@ -60,7 +60,7 @@ import org.smartregister.fhircore.geowidget.shadows.ShadowMapbox
 @Config(
   sdk = [Build.VERSION_CODES.O_MR1],
   shadows = [ShadowConnectivityReceiver::class, ShadowKujakuMapView::class, ShadowMapbox::class],
-  application = HiltTestApplication::class
+  application = HiltTestApplication::class,
 )
 @HiltAndroidTest
 class GeoWidgetFragmentTest {
@@ -146,7 +146,7 @@ class GeoWidgetFragmentTest {
     ReflectionHelpers.setField(
       mockedGeoWidgetFragment,
       "geoWidgetViewModel\$delegate",
-      lazy { geoWidgetViewModel }
+      lazy { geoWidgetViewModel },
     )
 
     mockedGeoWidgetFragment.onResume()
@@ -170,7 +170,7 @@ class GeoWidgetFragmentTest {
     ReflectionHelpers.setField(
       mockedGeoWidgetFragment,
       "geoWidgetViewModel\$delegate",
-      lazy { geoWidgetViewModel }
+      lazy { geoWidgetViewModel },
     )
 
     mockedGeoWidgetFragment.onResume()
@@ -214,11 +214,11 @@ class GeoWidgetFragmentTest {
     every { geoWidgetFragment.setFeatureClickListener() } just runs
     every {
       geoWidgetViewModel.geoWidgetEventLiveData.postValue(
-        GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration)
+        GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration),
       )
     } just runs
     geoWidgetViewModel.geoWidgetEventLiveData.postValue(
-      GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration)
+      GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration),
     )
 
     GeoWidgetEvent.OpenProfile(familyId, mockk())
@@ -226,7 +226,7 @@ class GeoWidgetFragmentTest {
 
     verify {
       geoWidgetViewModel.geoWidgetEventLiveData.postValue(
-        GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration)
+        GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration),
       )
     }
   }
@@ -276,7 +276,7 @@ class GeoWidgetFragmentTest {
     ReflectionHelpers.setField(
       mockedGeoWidgetFragment,
       "geoWidgetActivityArgs\$delegate",
-      geowidgetActivityArgs2
+      geowidgetActivityArgs2,
     )
 
     every { mockedGeoWidgetFragment["setupViews"]() } returns mockk<LinearLayout>()
@@ -305,7 +305,7 @@ class GeoWidgetFragmentTest {
     ReflectionHelpers.setField(
       mockedGeoWidgetFragment,
       "geoWidgetActivityArgs\$delegate",
-      geowidgetActivityArgs2
+      geowidgetActivityArgs2,
     )
 
     every { mockedGeoWidgetFragment["setupViews"]() } returns mockk<LinearLayout>()
@@ -334,7 +334,7 @@ class GeoWidgetFragmentTest {
     ReflectionHelpers.setField(
       mockedGeoWidgetFragment,
       "geoWidgetActivityArgs\$delegate",
-      geowidgetActivityArgs2
+      geowidgetActivityArgs2,
     )
 
     every { mockedGeoWidgetFragment["setupViews"]() } returns mockk<LinearLayout>()

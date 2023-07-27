@@ -69,7 +69,7 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?
+    savedInstanceState: Bundle?,
   ): View? {
     Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
     geoWidgetConfiguration = geoWidgetConfiguration()
@@ -80,7 +80,7 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
   private fun geoWidgetConfiguration(): GeoWidgetConfiguration =
     configurationRegistry.retrieveConfiguration(
       ConfigType.GeoWidget,
-      geoWidgetActivityArgs.configId
+      geoWidgetActivityArgs.configId,
     )
 
   /** Create the fragment views. Add the toolbar and KujakuMapView to a LinearLayout */
@@ -157,15 +157,15 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
               geoWidgetViewModel.geoWidgetEventLiveData.postValue(
                 GeoWidgetEvent.RegisterClient(
                   location.idElement.value,
-                  geoWidgetConfiguration.registrationQuestionnaire
-                )
+                  geoWidgetConfiguration.registrationQuestionnaire,
+                ),
               )
             }
           }
         }
 
         override fun onCancel() {}
-      }
+      },
     )
   }
 
@@ -182,7 +182,7 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
             }
           }
       },
-      "quest-data-points"
+      "quest-data-points",
     )
   }
 
@@ -222,8 +222,8 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
       mapboxMap.easeCamera(
         CameraUpdateFactory.newLatLngBounds(
           LatLngBounds.from(paddedBbox[3], paddedBbox[2], paddedBbox[1], paddedBbox[0]),
-          50
-        )
+          50,
+        ),
       )
     }
   }
