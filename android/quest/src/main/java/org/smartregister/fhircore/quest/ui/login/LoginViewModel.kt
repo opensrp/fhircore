@@ -56,6 +56,7 @@ import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.BuildConfig
+import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
 import timber.log.Timber
@@ -304,6 +305,8 @@ constructor(
         val organizations = practitionerDetails.fhirPractitionerDetails?.organizations ?: listOf()
         val locations = practitionerDetails.fhirPractitionerDetails?.locations ?: listOf()
         val practitioners = practitionerDetails.fhirPractitionerDetails?.practitioners ?: listOf()
+        val practitionerId =
+          practitionerDetails.fhirPractitionerDetails?.practitionerId.valueToString()
         val locationHierarchies =
           practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
 
@@ -337,34 +340,57 @@ constructor(
           defaultRepository.createRemote(false, *it)
         }
 
-        // The assumption here is that only 1 practitioner is returned from the server in the
-        // practitioner details
-        practitioners[0].identifier.forEach { identifier ->
-          if (identifier.hasUse() &&
-              identifier.use == org.hl7.fhir.r4.model.Identifier.IdentifierUse.SECONDARY &&
-              identifier.hasValue() &&
-              identifier.value == userInfo.keycloakUuid
-          ) {
-            sharedPreferences.write(
-              key = SharedPreferenceKey.PRACTITIONER_ID.name,
-              value = practitionerDetails.fhirPractitionerDetails?.id
-            )
-            sharedPreferences.write(
-              SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-              practitionerDetails
-            )
-            sharedPreferences.write(ResourceType.CareTeam.name, careTeamIds)
-            sharedPreferences.write(ResourceType.Organization.name, organizationIds)
-            sharedPreferences.write(ResourceType.Location.name, locationIds)
-            sharedPreferences.write(
-              SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
-              locationHierarchies
-            )
+        if (practitionerId.isNotEmpty()) {
+          writePractitionerDetailsToShredPref(
+            practitionerDetails,
+            careTeamIds,
+            organizationIds,
+            locationIds,
+            locationHierarchies
+          )
+        } else {
+          // The assumption here is that only 1 practitioner is returned from the server in the
+          // practitioner details
+          practitioners.first().identifier.forEach { identifier ->
+            if (identifier.hasUse() &&
+                identifier.use == org.hl7.fhir.r4.model.Identifier.IdentifierUse.SECONDARY &&
+                identifier.hasValue() &&
+                identifier.value == userInfo.keycloakUuid
+            ) {
+              writePractitionerDetailsToShredPref(
+                practitionerDetails,
+                careTeamIds,
+                organizationIds,
+                locationIds,
+                locationHierarchies
+              )
+            }
           }
         }
       }
       postProcess()
     }
+  }
+
+  private fun writePractitionerDetailsToShredPref(
+    fhirPractitionerDetails: PractitionerDetails,
+    careTeams: List<String>,
+    organizations: List<String>,
+    locations: List<String>,
+    locationHierarchies: List<LocationHierarchy>
+  ) {
+    sharedPreferences.write(
+      key = SharedPreferenceKey.PRACTITIONER_ID.name,
+      value = fhirPractitionerDetails.fhirPractitionerDetails?.id
+    )
+    sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS.name, fhirPractitionerDetails)
+    sharedPreferences.write(ResourceType.CareTeam.name, careTeams)
+    sharedPreferences.write(ResourceType.Organization.name, organizations)
+    sharedPreferences.write(ResourceType.Location.name, locations)
+    sharedPreferences.write(
+      SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
+      locationHierarchies
+    )
   }
 
   fun downloadNowWorkflowConfigs() {
