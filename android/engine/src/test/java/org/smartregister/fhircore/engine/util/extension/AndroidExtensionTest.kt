@@ -107,4 +107,30 @@ class AndroidExtensionTest : RobolectricTest() {
     )
     verify { ctx.startActivityForResult(any(), withArg { assertEquals(0, it) }) }
   }
+
+  @Test
+  fun launchQuestionnaireForResultCallsStartActivityForResultWithNullLaunchContexts() {
+    val ctx = spyk<Activity>()
+    every { ctx.packageName } returns context.packageName
+    every { ctx.startActivityForResult(any(), any()) } just runs
+    ctx.launchQuestionnaireForResult<QuestionnaireActivity>(
+      "testQuestionnaire",
+      launchContexts = null,
+      populationResources = arrayListOf()
+    )
+    verify { ctx.startActivityForResult(any(), withArg { assertEquals(0, it) }) }
+  }
+
+  @Test
+  fun launchQuestionnaireCallsStartActivityForResultWithNullLaunchContexts() {
+    val ctx = spyk<Activity>()
+    every { ctx.packageName } returns context.packageName
+    every { ctx.startActivity(any()) } just runs
+    ctx.launchQuestionnaire<QuestionnaireActivity>(
+      "testQuestionnaire",
+      launchContexts = null,
+      populationResources = arrayListOf()
+    )
+    verify { ctx.startActivity(any()) }
+  }
 }
