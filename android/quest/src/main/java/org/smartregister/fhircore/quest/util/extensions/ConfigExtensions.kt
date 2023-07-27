@@ -26,11 +26,14 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
+
+const val PRACTITIONER_ID = "practitionerId"
 
 fun List<ActionConfig>.handleClickEvent(
   navController: NavController,
@@ -42,6 +45,14 @@ fun List<ActionConfig>.handleClickEvent(
   onClickAction?.let { theConfig ->
     val computedValuesMap = resourceData?.computedValuesMap ?: emptyMap()
     val actionConfig = theConfig.interpolate(computedValuesMap)
+    val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
+    val practitionerId =
+      interpolatedParams
+        .find { it.paramType == ActionParameterType.RESOURCE_ID && it.key == PRACTITIONER_ID }
+        ?.value
+    val resourceId =
+      interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
+        ?: resourceData?.baseResourceId
     when (onClickAction.workflow) {
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
@@ -59,10 +70,6 @@ fun List<ActionConfig>.handleClickEvent(
         }
       }
       ApplicationWorkflow.LAUNCH_PROFILE -> {
-        val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
-        val resourceId =
-          interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
-            ?: resourceData?.baseResourceId
         actionConfig.id?.let { id ->
           val args =
             bundleOf(
@@ -104,7 +111,12 @@ fun List<ActionConfig>.handleClickEvent(
         }
       }
       ApplicationWorkflow.LAUNCH_REPORT -> {
-        val args = bundleOf(Pair(NavigationArg.REPORT_ID, actionConfig.id))
+        val args =
+          bundleOf(
+            Pair(NavigationArg.REPORT_ID, actionConfig.id),
+            Pair(NavigationArg.RESOURCE_ID, practitionerId?.extractLogicalIdUuid() ?: ""),
+          )
+
         navController.navigate(MainNavigationScreen.Reports.route, args)
       }
       ApplicationWorkflow.LAUNCH_SETTINGS ->
