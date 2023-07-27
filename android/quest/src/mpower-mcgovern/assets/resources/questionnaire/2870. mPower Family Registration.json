@@ -1,11 +1,19 @@
 {
   "resourceType": "Questionnaire",
-  "language": "en-GB",
   "id": "2870",
   "name": "mPower Family Registration",
   "title": "mPower Family Registration",
   "description": "mPower Family Registration",
   "publisher": "mPower",
+  "meta": {
+    "security": [
+      {
+        "code": "3",
+        "display": "Helsehjelp",
+        "system": "urn:oid:2.16.578.1.12.4.1.1.7618"
+      }
+    ]
+  },
   "useContext": [
     {
       "code": {
@@ -69,43 +77,17 @@
     {
       "extension": [
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-          "valueInteger": 99999
-        },
-        {
-          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-          "valueString": "Enter the correct number between 10,000 and 99,999"
-        },
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
-          "valueInteger": 10000
-        }
-      ],
-      "linkId": "d0f0d69f-968f-4268-e3a3-cc7168ff5fd0",
-      "text": "mPower ID",
-      "type": "integer",
-      "required": true,
-      "readOnly": true,
-      "initial": [
-        {
-          "valueInteger": 45678
-        }
-      ]
-    },
-    {
-      "extension": [
-        {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "Group.identifier[0].value"
+            "expression": "Group.identifier.where(use = 'official').value.toInteger()"
           }
         },
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "%resource.descendants().where(linkId='d8ec7c8a-a097-4c61-941e-6b0555cd85c9').answer.value.code.toString() + %resource.descendants().where(linkId='493577a1-014d-421a-82f8-06d152465cda').answer.value.code.toString() + %resource.descendants().where(linkId='006ae859-b8f3-48d4-8edf-15488279f13d').answer.value.code.toString() + %resource.descendants().where(linkId='7acfee59-a537-4c04-8e98-805d0e00ef0f').answer.value.code.toString() + %resource.descendants().where(linkId='68dd884c-e73a-4ed8-86b9-9dac35047118').answer.value.code.toString() + %resource.descendants().where(linkId='c7260703-368e-4f07-80d5-641cca06cfeb').answer.value.code.toString() + %resource.descendants().where(linkId='438b82e0-b4b4-45a5-824a-f8ffaa0a0449').answer.value.code.toString() + %resource.descendants().where(linkId='82c6f732-d896-4660-85d6-1576ad54d16a').answer.value.code.toString() + %resource.descendants().where(linkId='f7df871e-cfea-4921-8dcc-4202ff7bbb1b').answer.value.code.toString() + %resource.descendants().where(linkId='78de534b-af4c-4831-81b7-a5188226bf2f').answer.value.code.toString() + %resource.descendants().where(linkId='d0f0d69f-968f-4268-e3a3-cc7168ff5fd0').answer.value.toString()"
+            "expression": "%resource.descendants().where(linkId='d8ec7c8a-a097-4c61-941e-6b0555cd85c9').answer.value.code.toString() + %resource.descendants().where(linkId='493577a1-014d-421a-82f8-06d152465cda').answer.value.code.toString() + %resource.descendants().where(linkId='006ae859-b8f3-48d4-8edf-15488279f13d').answer.value.code.toString() + %resource.descendants().where(linkId='7acfee59-a537-4c04-8e98-805d0e00ef0f').answer.value.code.toString() + %resource.descendants().where(linkId='68dd884c-e73a-4ed8-86b9-9dac35047118').answer.value.code.toString() + %resource.descendants().where(linkId='c7260703-368e-4f07-80d5-641cca06cfeb').answer.value.code.toString() + %resource.descendants().where(linkId='438b82e0-b4b4-45a5-824a-f8ffaa0a0449').answer.value.code.toString() + %resource.descendants().where(linkId='82c6f732-d896-4660-85d6-1576ad54d16a').answer.value.code.toString() + %resource.descendants().where(linkId='f7df871e-cfea-4921-8dcc-4202ff7bbb1b').answer.value.code.toString() + %resource.descendants().where(linkId='78de534b-af4c-4831-81b7-a5188226bf2f').answer.value.code.toString() + %resource.descendants().where(linkId='0eb238ad-e009-434b-c56f-88e7dc860daa').answer.value.code.toString()"
           }
         }
       ],
@@ -122,7 +104,7 @@
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "Group.identifier[0].value.toString().substring(0, 16)"
+            "expression": "Group.identifier.where(use = 'official').value.toString().substring(0, 16)"
           }
         },
         {
@@ -146,6 +128,13 @@
       "required": true,
       "extension": [
         {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Group.identifier.where(use = 'usual').value.toInteger()"
+          }
+        },
+        {
           "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
           "valueCodeableConcept": {
             "coding": [
@@ -161,7 +150,7 @@
         {
           "valueCoding": {
             "id": "f1f767bf-bbe3-4b86-80d3-315a98314280",
-            "code": "mst.-tahara(ss-1)",
+            "code": "12345",
             "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
             "display": "Mst. Tahara(SS-1)"
           }
@@ -169,7 +158,7 @@
         {
           "valueCoding": {
             "id": "24a4cb76-43ee-46e9-df3b-8d4109e17fe7",
-            "code": "mst.-arbi(ss-2)",
+            "code": "23456",
             "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
             "display": "Mst. Arbi(SS-2)"
           }
@@ -177,7 +166,7 @@
         {
           "valueCoding": {
             "id": "c18f3c30-5701-4c09-db62-d88781c917eb",
-            "code": "mst.-shakhina(ss-3)",
+            "code": "34567",
             "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
             "display": "Mst. Shakhina(SS-3)"
           }
@@ -185,7 +174,7 @@
         {
           "valueCoding": {
             "id": "ec384d34-4ddc-42ae-8b95-055d74abc44e",
-            "code": "msi.-fatama(ss-4)",
+            "code": "45678",
             "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
             "display": "Msi. Fatama(SS-4)"
           }
@@ -193,7 +182,7 @@
         {
           "valueCoding": {
             "id": "63ecf3d7-7b96-41b5-9ba4-c3c2e8d6b769",
-            "code": "mst.-mohima.(ss-5)",
+            "code": "56789",
             "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
             "display": "Mst. Mohima.(SS-5)"
           }
@@ -201,7 +190,7 @@
         {
           "valueCoding": {
             "id": "581f2e73-00b6-493a-80cb-b0b7d051e155",
-            "code": "mst.-momona(ss-6)",
+            "code": "67891",
             "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
             "display": "Mst. Momona(SS-6)"
           }
@@ -209,7 +198,7 @@
         {
           "valueCoding": {
             "id": "9d6279a5-ba69-49fb-9ea6-ef5215230355",
-            "code": "mst.-jahora(ss-7)",
+            "code": "78912",
             "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
             "display": "Mst. Jahora(SS-7)"
           }
@@ -217,7 +206,7 @@
         {
           "valueCoding": {
             "id": "55cfaed5-31e6-4961-81cf-c44f018bf151",
-            "code": "umme(ss-8)",
+            "code": "89123",
             "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
             "display": "Umme(SS-8)"
           }
@@ -225,7 +214,7 @@
         {
           "valueCoding": {
             "id": "02e6703c-36e1-4232-d477-8091e1d5a1c5",
-            "code": "mst.-hadisa(ss-9)",
+            "code": "91234",
             "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
             "display": "Mst. Hadisa(SS-9)"
           }
@@ -233,472 +222,470 @@
         {
           "valueCoding": {
             "id": "eb2d0610-61ac-4a3c-92ad-1d569749dfdd",
-            "code": "mst.-sabana(ss-10)",
+            "code": "98765",
             "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
             "display": "Mst. Sabana(SS-10)"
           }
         }
+      ]
+    },
+    {
+      "linkId": "d8ec7c8a-a097-4c61-941e-6b0555cd85c9",
+      "type": "choice",
+      "text": "গ্রামের নাম",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
+            "code": "4057600020907020",
+            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
+            "display": "GOURINAGAR"
+          }
+        }
       ],
-      "item": [
+      "extension": [
         {
-          "linkId": "d8ec7c8a-a097-4c61-941e-6b0555cd85c9",
-          "type": "choice",
-          "text": "গ্রামের নাম",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
-                "code": "4057600020907020",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "GOURINAGAR"
-              }
-            }
-          ],
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "Group.identifier[0].value.toString().substring(0, 16)"
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                    "code": "drop-down"
-                  }
-                ]
-              }
-            }
-          ],
-          "enableWhen": [
-            {
-              "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
-              "operator": "=",
-              "answerCoding": {
-                "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-                "code": "mst.-tahara(ss-1)"
-              }
-            }
-          ]
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Group.identifier.where(use = 'official').value.toString().substring(0, 16)"
+          }
         },
         {
-          "linkId": "493577a1-014d-421a-82f8-06d152465cda",
-          "type": "choice",
-          "text": "গ্রামের নাম",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
-                "code": "4057600020904000",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "DARIAPUR"
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
               }
-            }
-          ],
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "Group.identifier[0].value.toString().substring(0, 16)"
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                    "code": "drop-down"
-                  }
-                ]
-              }
-            }
-          ],
-          "enableWhen": [
-            {
-              "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
-              "operator": "=",
-              "answerCoding": {
-                "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-                "code": "mst.-arbi(ss-2)"
-              }
-            }
-          ]
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
+            "code": "12345"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "493577a1-014d-421a-82f8-06d152465cda",
+      "type": "choice",
+      "text": "গ্রামের নাম",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
+            "code": "4057600020904000",
+            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
+            "display": "DARIAPUR"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Group.identifier.where(use = 'official').value.toString().substring(0, 16)"
+          }
         },
         {
-          "linkId": "006ae859-b8f3-48d4-8edf-15488279f13d",
-          "type": "choice",
-          "text": "গ্রামের নাম",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
-                "code": "4057600020916000",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "PURANDARPUR"
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
               }
-            }
-          ],
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "Group.identifier[0].value.toString().substring(0, 16)"
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                    "code": "drop-down"
-                  }
-                ]
-              }
-            }
-          ],
-          "enableWhen": [
-            {
-              "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
-              "operator": "=",
-              "answerCoding": {
-                "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-                "code": "mst.-shakhina(ss-3)"
-              }
-            }
-          ]
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
+            "code": "23456"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "006ae859-b8f3-48d4-8edf-15488279f13d",
+      "type": "choice",
+      "text": "গ্রামের নাম",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
+            "code": "4057600020916000",
+            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
+            "display": "PURANDARPUR"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Group.identifier.where(use = 'official').value.toString().substring(0, 16)"
+          }
         },
         {
-          "linkId": "7acfee59-a537-4c04-8e98-805d0e00ef0f",
-          "type": "choice",
-          "text": "গ্রামের নাম",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
-                "code": "4057600020916001",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "PURANDARPUR - 01"
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
               }
-            }
-          ],
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "Group.identifier[0].value.toString().substring(0, 16)"
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                    "code": "drop-down"
-                  }
-                ]
-              }
-            }
-          ],
-          "enableWhen": [
-            {
-              "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
-              "operator": "=",
-              "answerCoding": {
-                "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-                "code": "msi.-fatama(ss-4)"
-              }
-            }
-          ]
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
+            "code": "34567"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "7acfee59-a537-4c04-8e98-805d0e00ef0f",
+      "type": "choice",
+      "text": "গ্রামের নাম",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
+            "code": "4057600020916001",
+            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
+            "display": "PURANDARPUR - 01"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Group.identifier.where(use = 'official').value.toString().substring(0, 16)"
+          }
         },
         {
-          "linkId": "68dd884c-e73a-4ed8-86b9-9dac35047118",
-          "type": "choice",
-          "text": "গ্রামের নাম",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
-                "code": "4057600020904002",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "DARIAPUR - 02"
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
               }
-            }
-          ],
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "Group.identifier[0].value.toString().substring(0, 16)"
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                    "code": "drop-down"
-                  }
-                ]
-              }
-            }
-          ],
-          "enableWhen": [
-            {
-              "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
-              "operator": "=",
-              "answerCoding": {
-                "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-                "code": "mst.-mohima.(ss-5)"
-              }
-            }
-          ]
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
+            "code": "45678"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "68dd884c-e73a-4ed8-86b9-9dac35047118",
+      "type": "choice",
+      "text": "গ্রামের নাম",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
+            "code": "4057600020904002",
+            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
+            "display": "DARIAPUR - 02"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Group.identifier.where(use = 'official').value.toString().substring(0, 16)"
+          }
         },
         {
-          "linkId": "c7260703-368e-4f07-80d5-641cca06cfeb",
-          "type": "choice",
-          "text": "গ্রামের নাম",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
-                "code": "4057600020902000",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "BIDYADHARPUR"
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
               }
-            }
-          ],
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "Group.identifier[0].value.toString().substring(0, 16)"
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                    "code": "drop-down"
-                  }
-                ]
-              }
-            }
-          ],
-          "enableWhen": [
-            {
-              "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
-              "operator": "=",
-              "answerCoding": {
-                "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-                "code": "mst.-momona(ss-6)"
-              }
-            }
-          ]
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
+            "code": "56789"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "c7260703-368e-4f07-80d5-641cca06cfeb",
+      "type": "choice",
+      "text": "গ্রামের নাম",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
+            "code": "4057600020902000",
+            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
+            "display": "BIDYADHARPUR"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Group.identifier.where(use = 'official').value.toString().substring(0, 16)"
+          }
         },
         {
-          "linkId": "438b82e0-b4b4-45a5-824a-f8ffaa0a0449",
-          "type": "choice",
-          "text": "গ্রামের নাম",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
-                "code": "4057600020904001",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "DARIAPUR - 01"
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
               }
-            }
-          ],
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "Group.identifier[0].value.toString().substring(0, 16)"
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                    "code": "drop-down"
-                  }
-                ]
-              }
-            }
-          ],
-          "enableWhen": [
-            {
-              "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
-              "operator": "=",
-              "answerCoding": {
-                "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-                "code": "mst.-jahora(ss-7)"
-              }
-            }
-          ]
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
+            "code": "67891"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "438b82e0-b4b4-45a5-824a-f8ffaa0a0449",
+      "type": "choice",
+      "text": "গ্রামের নাম",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
+            "code": "4057600020904001",
+            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
+            "display": "DARIAPUR - 01"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Group.identifier.where(use = 'official').value.toString().substring(0, 16)"
+          }
         },
         {
-          "linkId": "82c6f732-d896-4660-85d6-1576ad54d16a",
-          "type": "choice",
-          "text": "গ্রামের নাম",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
-                "code": "4057600020904004",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "DARIAPUR - 04"
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
               }
-            }
-          ],
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "Group.identifier[0].value.toString().substring(0, 16)"
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                    "code": "drop-down"
-                  }
-                ]
-              }
-            }
-          ],
-          "enableWhen": [
-            {
-              "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
-              "operator": "=",
-              "answerCoding": {
-                "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-                "code": "umme(ss-8)"
-              }
-            }
-          ]
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
+            "code": "78912"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "82c6f732-d896-4660-85d6-1576ad54d16a",
+      "type": "choice",
+      "text": "গ্রামের নাম",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
+            "code": "4057600020904004",
+            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
+            "display": "DARIAPUR - 04"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Group.identifier.where(use = 'official').value.toString().substring(0, 16)"
+          }
         },
         {
-          "linkId": "f7df871e-cfea-4921-8dcc-4202ff7bbb1b",
-          "type": "choice",
-          "text": "গ্রামের নাম",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
-                "code": "4057600020904003",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "DARIAPUR - 03"
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
               }
-            }
-          ],
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "Group.identifier[0].value.toString().substring(0, 16)"
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                    "code": "drop-down"
-                  }
-                ]
-              }
-            }
-          ],
-          "enableWhen": [
-            {
-              "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
-              "operator": "=",
-              "answerCoding": {
-                "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-                "code": "mst.-hadisa(ss-9)"
-              }
-            }
-          ]
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
+            "code": "89123"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "f7df871e-cfea-4921-8dcc-4202ff7bbb1b",
+      "type": "choice",
+      "text": "গ্রামের নাম",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
+            "code": "4057600020904003",
+            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
+            "display": "DARIAPUR - 03"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Group.identifier.where(use = 'official').value.toString().substring(0, 16)"
+          }
         },
         {
-          "linkId": "78de534b-af4c-4831-81b7-a5188226bf2f",
-          "type": "choice",
-          "text": "গ্রামের নাম",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
-                "code": "4057600020911000",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "KHANPUR"
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
               }
-            }
-          ],
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "Group.identifier[0].value.toString().substring(0, 16)"
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
+            "code": "91234"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "78de534b-af4c-4831-81b7-a5188226bf2f",
+      "type": "choice",
+      "text": "গ্রামের নাম",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "fbeee17c-faaf-48fe-b863-ec17ca55de95",
+            "code": "4057600020911000",
+            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
+            "display": "KHANPUR"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Group.identifier.where(use = 'official').value.toString().substring(0, 16)"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
               }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                    "code": "drop-down"
-                  }
-                ]
-              }
-            }
-          ],
-          "enableWhen": [
-            {
-              "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
-              "operator": "=",
-              "answerCoding": {
-                "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-                "code": "mst.-sabana(ss-10)"
-              }
-            }
-          ]
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
+            "code": "98765"
+          }
         }
       ]
     },
@@ -949,461 +936,400 @@
       ]
     },
     {
-      "linkId": "9999d2e8-18db-4402-97ff-3ddc50294bdf",
-      "type": "group",
-      "required": false,
-      "enableWhen": [
+      "linkId": "023ca3f7-5591-46c6-8002-2fb31415c069",
+      "type": "choice",
+      "text": "খানা প্রধানের পেশা *",
+      "required": true,
+      "answerOption": [
         {
-          "question": "aaafd263-5e5b-4b78-bbc6-e01be0eb72ec",
-          "operator": "exists",
-          "answerBoolean": true
+          "valueCoding": {
+            "id": "7252d241-82fb-4055-806a-84db5a56b44c",
+            "code": "farmer",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "কৃষি কাজ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ad6d3b36-300a-411a-830e-6f69c6f0b591",
+            "code": "textile",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "গার্মেন্টস কর্মী"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "820deedc-3685-4335-faa6-3581cef84d03",
+            "code": "service",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "চাকুরি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "de77cff3-bded-4ee6-f00f-187b845e3752",
+            "code": "technician",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "প্রযুক্তিগত কর্মী (যেমন: ড্রাইভার/ ইলেকট্রিশিয়ান/ওয়েল্ডিং/মেকানিকস/রং মিস্ত্রি/রাজমিস্ত্রি)"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "9951abf6-76c3-468d-865e-1215f21e7154",
+            "code": "labour",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "দিন মজুর"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b3d900e5-b943-466c-8cb1-eb819debed00",
+            "code": "shopkeeper",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "বিক্রেতা/দোকানদার/সবজি বা মাছ বিক্রেতা/খুচরা বিক্রেতা/মোবাইল কার্ড বিক্রেতা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "0fa0c0ec-53e0-401c-e487-f2b3bf12d9a3",
+            "code": "businessman",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "ব্যবসায়ী"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "0fe66321-2597-4e2e-aee4-1ec6ced6b564",
+            "code": "expatriate",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "বৈদেশিক কাজ/ কর্মী"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "172a654f-5943-40c8-d6ae-0481b842dbf7",
+            "code": "selfemployed",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "স্ব-নিযুক্ত"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "f6b02df2-ddda-4591-978d-7cc5aa97c12a",
+            "code": "unemployed",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "বেকার"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b275592e-db1e-4e8f-9807-b7afc7f08e67",
+            "code": "other",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "অন্যান্য"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
         }
       ],
       "item": [
         {
-          "linkId": "023ca3f7-5591-46c6-8002-2fb31415c069",
-          "type": "choice",
-          "text": "খানা প্রধানের পেশা *",
+          "linkId": "9ea9fc08-0545-42e9-80e0-dab3da021c35",
+          "type": "string",
+          "text": "অন্যান্য পেশা লিখুন *",
           "required": true,
-          "answerOption": [
+          "enableWhen": [
             {
-              "valueCoding": {
-                "id": "7252d241-82fb-4055-806a-84db5a56b44c",
-                "code": "farmer",
+              "question": "023ca3f7-5591-46c6-8002-2fb31415c069",
+              "operator": "=",
+              "answerCoding": {
                 "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
-                "display": "কৃষি কাজ"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "ad6d3b36-300a-411a-830e-6f69c6f0b591",
-                "code": "textile",
-                "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
-                "display": "গার্মেন্টস কর্মী"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "820deedc-3685-4335-faa6-3581cef84d03",
-                "code": "service",
-                "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
-                "display": "চাকুরি"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "de77cff3-bded-4ee6-f00f-187b845e3752",
-                "code": "technician",
-                "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
-                "display": "প্রযুক্তিগত কর্মী (যেমন: ড্রাইভার/ ইলেকট্রিশিয়ান/ওয়েল্ডিং/মেকানিকস/রং মিস্ত্রি/রাজমিস্ত্রি)"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "9951abf6-76c3-468d-865e-1215f21e7154",
-                "code": "labour",
-                "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
-                "display": "দিন মজুর"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "b3d900e5-b943-466c-8cb1-eb819debed00",
-                "code": "shopkeeper",
-                "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
-                "display": "বিক্রেতা/দোকানদার/সবজি বা মাছ বিক্রেতা/খুচরা বিক্রেতা/মোবাইল কার্ড বিক্রেতা"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "0fa0c0ec-53e0-401c-e487-f2b3bf12d9a3",
-                "code": "businessman",
-                "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
-                "display": "ব্যবসায়ী"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "0fe66321-2597-4e2e-aee4-1ec6ced6b564",
-                "code": "expatriate",
-                "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
-                "display": "বৈদেশিক কাজ/ কর্মী"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "172a654f-5943-40c8-d6ae-0481b842dbf7",
-                "code": "selfemployed",
-                "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
-                "display": "স্ব-নিযুক্ত"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "f6b02df2-ddda-4591-978d-7cc5aa97c12a",
-                "code": "unemployed",
-                "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
-                "display": "বেকার"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "b275592e-db1e-4e8f-9807-b7afc7f08e67",
-                "code": "other",
-                "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
-                "display": "অন্যান্য"
-              }
-            }
-          ],
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                    "code": "drop-down"
-                  }
-                ]
-              }
-            }
-          ],
-          "_text": {
-            "extension": [
-              {
-                "url": "http://hl7.org/fhir/StructureDefinition/rendering-markdown",
-                "valueMarkdown": "খানা প্রধানের পেশা **\\***"
-              }
-            ]
-          },
-          "item": [
-            {
-              "linkId": "9ea9fc08-0545-42e9-80e0-dab3da021c35",
-              "type": "string",
-              "text": "অন্যান্য পেশা লিখুন *",
-              "required": true,
-              "enableWhen": [
-                {
-                  "question": "023ca3f7-5591-46c6-8002-2fb31415c069",
-                  "operator": "=",
-                  "answerCoding": {
-                    "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
-                    "code": "other"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "linkId": "5d0d2f3c-ca4b-4752-831b-0d604c6b0d98",
-          "type": "choice",
-          "text": "খানার আর্থিক অবস্থা *",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "id": "ec4914c2-ec87-4cf1-8b42-ccf06507af23",
-                "code": "less_than_6K",
-                "system": "urn:uuid:8751f985-72c3-47c7-8e27-d06706111628",
-                "display": "মাসিক আয় ৬০০০ টাকার কম"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "fb4a25d1-02be-4ebb-c372-7752a9f47e20",
-                "code": "less_than_7K",
-                "system": "urn:uuid:8751f985-72c3-47c7-8e27-d06706111628",
-                "display": "মাসিক আয় ৭০০০ টাকার কম"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "f1a462d2-9357-4e9c-8787-cea208936f71",
-                "code": "7K_to_12K",
-                "system": "urn:uuid:8751f985-72c3-47c7-8e27-d06706111628",
-                "display": "মাসিক আয় ৭০০১ - ১২০০০ টাকার মধ্যে"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "ac3d9c70-6139-4db2-b6f7-09a0d1b94873",
-                "code": "more_than_12K",
-                "system": "urn:uuid:8751f985-72c3-47c7-8e27-d06706111628",
-                "display": "মাসিক আয় ১২০০০ টাকার ঊর্ধ্বে"
-              }
-            }
-          ],
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                    "code": "drop-down"
-                  }
-                ]
+                "code": "other"
               }
             }
           ]
-        },
-        {
-          "linkId": "e15f53d6-552f-47ca-997c-e475221fabb0",
-          "type": "choice",
-          "text": "সম্পদের তালিকা",
-          "repeats": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "id": "fc234670-74e6-4e65-8e70-54594e11ff5f",
-                "code": "টেলিভিশন",
-                "system": "urn:uuid:747ea5fb-2796-46b5-808c-0d1f90bc6a5d",
-                "display": "টেলিভিশন"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "9933379e-8865-4da7-8f32-b9563964ca96",
-                "code": "রেফ্রিজারেটর",
-                "system": "urn:uuid:747ea5fb-2796-46b5-808c-0d1f90bc6a5d",
-                "display": "রেফ্রিজারেটর"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "939bbf90-ee3d-4700-b98d-d848bf7326de",
-                "code": "আলমারি/ওয়ারড্রব",
-                "system": "urn:uuid:747ea5fb-2796-46b5-808c-0d1f90bc6a5d",
-                "display": "আলমারি/ওয়ারড্রব"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "21d4ba7e-7788-4b63-8d86-25b50d5d875e",
-                "code": "বৈদ্যুতিক-ফ্যান",
-                "system": "urn:uuid:747ea5fb-2796-46b5-808c-0d1f90bc6a5d",
-                "display": "বৈদ্যুতিক ফ্যান"
-              }
-            }
-          ],
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                    "code": "check-box"
-                  }
-                ]
-              }
-            }
-          ],
-          "code": [
-            {
-              "code": "1",
-              "display": "Default",
-              "system": "http://helsenorge.no/fhir/CodeSystem/RenderOptions",
-              "id": "5cadaf4e-6223-49fa-8f20-511933c1b1ff"
-            }
-          ],
-          "item": [
-            {
-              "linkId": "62498542-e2f4-4cdd-87b9-77c09ea43e17",
-              "type": "text",
-              "required": false,
-              "repeats": false,
-              "readOnly": true,
-              "maxLength": 250,
-              "_text": {
-                "extension": [
-                  {
-                    "url": "http://hl7.org/fhir/StructureDefinition/rendering-markdown",
-                    "valueMarkdown": "test"
-                  }
-                ]
-              },
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                        "code": "help"
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "linkId": "bc1d24fc-3254-4fac-f210-0b4f0c159dc9",
-          "type": "choice",
-          "text": "মেঝে কি দিয়ে তৈরি *",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "id": "b024a102-8080-42f6-93db-ec98bba91dc4",
-                "code": "cement",
-                "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
-                "display": "সিমেন্ট"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "ec985f90-ebcf-428c-dc41-6932e23b8739",
-                "code": "sand",
-                "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
-                "display": "বালি/কাদা"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "139b0932-bd8f-446e-de4b-5851596041c3",
-                "code": "other",
-                "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
-                "display": "অন্যান্য"
-              }
-            }
-          ],
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                    "code": "drop-down"
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "linkId": "7e1b63bb-c609-498f-d3f7-5b47c792acb1",
-          "type": "choice",
-          "text": "দেয়াল কি দিয়ে তৈরি *",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "id": "b024a102-8080-42f6-93db-ec98bba91dc4",
-                "code": "brick",
-                "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
-                "display": "ইট"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "ec985f90-ebcf-428c-dc41-6932e23b8739",
-                "code": "tin",
-                "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
-                "display": "টিন"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "6c1b5a98-3598-4791-8a7c-65396ce7206a",
-                "code": "soil",
-                "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
-                "display": "মাটি"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "139b0932-bd8f-446e-de4b-5851596041c3",
-                "code": "other",
-                "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
-                "display": "অন্যান্য"
-              }
-            }
-          ],
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                    "code": "drop-down"
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "linkId": "b513eafb-777d-4908-83b5-0d4836e061c6",
-          "type": "choice",
-          "text": "ছাদ কি দিয়ে তৈরি *",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "id": "b024a102-8080-42f6-93db-ec98bba91dc4",
-                "code": "brick",
-                "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
-                "display": "ইট"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "ec985f90-ebcf-428c-dc41-6932e23b8739",
-                "code": "tin",
-                "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
-                "display": "টিন"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "6c1b5a98-3598-4791-8a7c-65396ce7206a",
-                "code": "bamboo",
-                "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
-                "display": "বাঁশ"
-              }
-            },
-            {
-              "valueCoding": {
-                "id": "139b0932-bd8f-446e-de4b-5851596041c3",
-                "code": "other",
-                "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
-                "display": "অন্যান্য"
-              }
-            }
-          ],
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                    "code": "drop-down"
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "linkId": "859563b7-7509-4756-89c1-1e1286d12955",
-          "type": "integer",
-          "text": "বসত জমির পরিমাণ কত শতাংশ",
-          "required": false
-        },
-        {
-          "linkId": "462d5637-ce8f-4a45-9c63-185d3816bb94",
-          "type": "integer",
-          "text": "চাষের যোগ্য জমির পরিমাণ কত শতাংশ",
-          "required": false
         }
       ]
+    },
+    {
+      "linkId": "5d0d2f3c-ca4b-4752-831b-0d604c6b0d98",
+      "type": "choice",
+      "text": "খানার আর্থিক অবস্থা *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "ec4914c2-ec87-4cf1-8b42-ccf06507af23",
+            "code": "less_than_6K",
+            "system": "urn:uuid:8751f985-72c3-47c7-8e27-d06706111628",
+            "display": "মাসিক আয় ৬০০০ টাকার কম"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "fb4a25d1-02be-4ebb-c372-7752a9f47e20",
+            "code": "less_than_7K",
+            "system": "urn:uuid:8751f985-72c3-47c7-8e27-d06706111628",
+            "display": "মাসিক আয় ৭০০০ টাকার কম"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "f1a462d2-9357-4e9c-8787-cea208936f71",
+            "code": "7K_to_12K",
+            "system": "urn:uuid:8751f985-72c3-47c7-8e27-d06706111628",
+            "display": "মাসিক আয় ৭০০১ - ১২০০০ টাকার মধ্যে"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ac3d9c70-6139-4db2-b6f7-09a0d1b94873",
+            "code": "more_than_12K",
+            "system": "urn:uuid:8751f985-72c3-47c7-8e27-d06706111628",
+            "display": "মাসিক আয় ১২০০০ টাকার ঊর্ধ্বে"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "e15f53d6-552f-47ca-997c-e475221fabb0",
+      "type": "choice",
+      "text": "সম্পদের তালিকা",
+      "repeats": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "fc234670-74e6-4e65-8e70-54594e11ff5f",
+            "code": "Television",
+            "system": "urn:uuid:747ea5fb-2796-46b5-808c-0d1f90bc6a5d",
+            "display": "টেলিভিশন"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "9933379e-8865-4da7-8f32-b9563964ca96",
+            "code": "Refridgarator",
+            "system": "urn:uuid:747ea5fb-2796-46b5-808c-0d1f90bc6a5d",
+            "display": "রেফ্রিজারেটর"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "939bbf90-ee3d-4700-b98d-d848bf7326de",
+            "code": "Closet",
+            "system": "urn:uuid:747ea5fb-2796-46b5-808c-0d1f90bc6a5d",
+            "display": "আলমারি/ওয়ারড্রব"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "21d4ba7e-7788-4b63-8d86-25b50d5d875e",
+            "code": "Electric_Fan",
+            "system": "urn:uuid:747ea5fb-2796-46b5-808c-0d1f90bc6a5d",
+            "display": "বৈদ্যুতিক ফ্যান"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "check-box"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "bc1d24fc-3254-4fac-f210-0b4f0c159dc9",
+      "type": "choice",
+      "text": "মেঝে কি দিয়ে তৈরি *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "b024a102-8080-42f6-93db-ec98bba91dc4",
+            "code": "cement",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "সিমেন্ট"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ec985f90-ebcf-428c-dc41-6932e23b8739",
+            "code": "sand",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "বালি/কাদা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "139b0932-bd8f-446e-de4b-5851596041c3",
+            "code": "other",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "অন্যান্য"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "7e1b63bb-c609-498f-d3f7-5b47c792acb1",
+      "type": "choice",
+      "text": "দেয়াল কি দিয়ে তৈরি *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "b024a102-8080-42f6-93db-ec98bba91dc4",
+            "code": "brick",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "ইট"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ec985f90-ebcf-428c-dc41-6932e23b8739",
+            "code": "tin",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "টিন"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "6c1b5a98-3598-4791-8a7c-65396ce7206a",
+            "code": "soil",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "মাটি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "139b0932-bd8f-446e-de4b-5851596041c3",
+            "code": "other",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "অন্যান্য"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "b513eafb-777d-4908-83b5-0d4836e061c6",
+      "type": "choice",
+      "text": "ছাদ কি দিয়ে তৈরি *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "b024a102-8080-42f6-93db-ec98bba91dc4",
+            "code": "brick",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "ইট"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ec985f90-ebcf-428c-dc41-6932e23b8739",
+            "code": "tin",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "টিন"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "6c1b5a98-3598-4791-8a7c-65396ce7206a",
+            "code": "bamboo",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "বাঁশ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "139b0932-bd8f-446e-de4b-5851596041c3",
+            "code": "other",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "অন্যান্য"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "859563b7-7509-4756-89c1-1e1286d12955",
+      "type": "integer",
+      "text": "বসত জমির পরিমাণ কত শতাংশ",
+      "required": false
+    },
+    {
+      "linkId": "462d5637-ce8f-4a45-9c63-185d3816bb94",
+      "type": "integer",
+      "text": "চাষের যোগ্য জমির পরিমাণ কত শতাংশ",
+      "required": false
     }
   ]
 }

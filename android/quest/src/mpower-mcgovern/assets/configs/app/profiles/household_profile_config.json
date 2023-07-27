@@ -111,6 +111,7 @@
             "id": "252",
             "title": "Add household member",
             "saveButtonText": "Add Member",
+            "resourceType": "Patient",
             "groupResource": {
               "groupIdentifier": "@{familyLogicalId}",
               "memberResourceType": "Patient"
@@ -1054,13 +1055,14 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "253",
+            "id": "2870",
             "title": "{{add.family}}",
             "saveButtonText": "Update household details",
             "setPractitionerDetails": true,
             "setOrganizationDetails": true,
             "type": "EDIT",
             "resourceIdentifier": "@{familyLogicalId}",
+            "resourceType": "Group",
             "params": [
               {
                 "key": "familyLogicalId",
