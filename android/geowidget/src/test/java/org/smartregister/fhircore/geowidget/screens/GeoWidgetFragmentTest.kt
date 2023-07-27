@@ -50,6 +50,7 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.geowidget.BuildConfig
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.shadows.ShadowConnectivityReceiver
 import org.smartregister.fhircore.geowidget.shadows.ShadowKujakuMapView
@@ -304,7 +305,7 @@ class GeoWidgetFragmentTest {
     val methodCallParams = ShadowMapbox.getLastMethodCall()
     Assert.assertNotNull(methodCallParams["getInstance"])
     Assert.assertEquals(mockContext, methodCallParams["getInstance"]!![0])
-    Assert.assertEquals("sample", methodCallParams["getInstance"]!![1])
+    Assert.assertEquals(BuildConfig.MAPBOX_SDK_TOKEN, methodCallParams["getInstance"]!![1])
   }
 
   @Test
