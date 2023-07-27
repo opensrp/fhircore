@@ -67,6 +67,7 @@ import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
+import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
@@ -188,7 +189,7 @@ constructor(
         return@launch
       }
 
-      currentQuestionnaireResponse.processMetadata(questionnaire)
+      currentQuestionnaireResponse.processMetadata(questionnaire, questionnaireConfig)
 
       val bundle =
         performExtraction(
@@ -216,53 +217,51 @@ constructor(
         }
 
       bundle?.entry?.forEach { bundleEntryComponent ->
-        val bundleEntryResource: Resource? = bundleEntryComponent.resource
-        bundleEntryResource?.run {
+        bundleEntryComponent.resource?.run {
           applyResourceMetadata()
           defaultRepository.addOrUpdate(resource = this)
+          val subjectType = questionnaireSubjectType(questionnaire, questionnaireConfig)
 
-          // Add resource as member of a (configured) Group
-          group?.let { bundleEntryResource.addMemberToGroup(it) }
+          if (
+            currentQuestionnaireResponse.subject.reference.isNullOrEmpty() &&
+              subjectType != null &&
+              this.resourceType == subjectType &&
+              logicalId.isNotEmpty()
+          ) {
+            currentQuestionnaireResponse.subject = this.logicalId.asReference(subjectType)
+          }
+
+          group?.let { addMemberToGroup(it) }
 
           // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
           val listEntryComponent =
             ListEntryComponent().apply {
               deleted = false
               date = extractionDate
-              item = bundleEntryResource.asReference()
+              item = asReference()
             }
           listResource.addEntry(listEntryComponent)
         }
       }
 
-      val subject =
-        retrieveSubject(
-            questionnaire = questionnaire,
-            questionnaireConfig = questionnaireConfig,
-            bundle = bundle,
-          )
-          ?.apply { id = "$resourceType/$logicalId" }
-
       // Update Group resource to save members
       group?.let { defaultRepository.addOrUpdate(resource = it) }
 
-      // Save questionnaire response
-      if (subject != null) {
+      // Save questionnaire response only if subject is present
+      if (currentQuestionnaireResponse.subject != null) {
         defaultRepository.addOrUpdate(
-          resource =
-            currentQuestionnaireResponse.apply {
-              setQuestionnaire("${questionnaire.resourceType}/${questionnaire.logicalId}")
-              setSubject(subject.asReference())
-              addContained(listResource)
-            },
+          resource = currentQuestionnaireResponse.apply { addContained(listResource) },
         )
       }
 
-      // Update _lastUpdated for resources configured via ActionParameterType.UPDATE_DATE_ON_EDIT
       updateResourcesLastUpdatedProperty(actionParameters)
 
+      // Important to load subject resource to retrieve ID (as reference) correctly
+      val subjectIdType = IdType(currentQuestionnaireResponse.subject.reference)
+      val subject =
+        loadResource(ResourceType.valueOf(subjectIdType.resourceType), subjectIdType.idPart)
+
       if (subject != null && bundle != null) {
-        // Generate CarePlan using configured plan definitions
         val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
         generateCarePlan(
           subject = subject,
@@ -270,14 +269,12 @@ constructor(
           questionnaireConfig = questionnaireConfig,
         )
 
-        // Execute CQL
         executeCql(
           subject = subject,
           bundle = newBundle,
           questionnaire = questionnaire,
         )
 
-        // Cascade update statuses of resources closed by this Questionnaire submission
         viewModelScope.launch {
           fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
             questionnaireConfig = questionnaireConfig,
@@ -289,7 +286,6 @@ constructor(
 
       softDeleteResources(questionnaireConfig)
 
-      // On successful submission callback
       val idTypes =
         bundle?.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
           ?: emptyList()
@@ -302,13 +298,34 @@ constructor(
       addEntry(Bundle.BundleEntryComponent().apply { resource = currentQuestionnaireResponse })
     }
 
-  private fun QuestionnaireResponse.processMetadata(questionnaire: Questionnaire) {
+  private fun QuestionnaireResponse.processMetadata(
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
+  ) {
     status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
     authored = Date()
+
     questionnaire.useContext
       .filter { it.hasValueCodeableConcept() }
       .forEach { it.valueCodeableConcept.coding.forEach { coding -> this.meta.addTag(coding) } }
     applyResourceMetadata()
+    setQuestionnaire("${questionnaire.resourceType}/${questionnaire.logicalId}")
+
+    // Set subject if exists
+    val resourceType = questionnaireSubjectType(questionnaire, questionnaireConfig)
+    val resourceIdentifier = questionnaireConfig.resourceIdentifier
+    if (resourceType != null && !resourceIdentifier.isNullOrEmpty()) {
+      subject = resourceIdentifier.asReference(resourceType)
+    }
+  }
+
+  private fun questionnaireSubjectType(
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
+  ): ResourceType? {
+    val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
+    return questionnaireConfig.resourceType
+      ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
   }
 
   private fun Resource?.applyResourceMetadata(): Resource? {
@@ -316,6 +333,7 @@ constructor(
       appendOrganizationInfo(authenticatedOrganizationIds)
       appendPractitionerInfo(practitionerId)
       updateLastUpdated()
+      generateMissingId()
     }
     return this
   }
@@ -456,37 +474,6 @@ constructor(
         }
         .onFailure { Timber.e(it) }
     }
-  }
-
-  /**
-   * This retrieves and returns [Resource] as subject if [QuestionnaireConfig.resourceType] and
-   * [QuestionnaireConfig.resourceIdentifier] are provided. This will be the typical case for
-   * subsequent [Questionnaire] submissions where the [QuestionnaireResponse.subject] already
-   * exists. For instances where the [Questionnaire] is submitted the first time (e.g. during
-   * registration events), the subject [Resource] will be included and accessed from the extracted
-   * resources in the [Bundle.entry]
-   */
-  suspend fun retrieveSubject(
-    questionnaire: Questionnaire,
-    questionnaireConfig: QuestionnaireConfig,
-    bundle: Bundle?,
-  ): Resource? {
-    val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
-    val resourceType =
-      questionnaireConfig.resourceType ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
-    val resourceIdentifier = questionnaireConfig.resourceIdentifier
-
-    if (resourceType != null && !resourceIdentifier.isNullOrEmpty()) {
-      return loadResource(resourceType, resourceIdentifier)
-    }
-    questionnaire.subjectType.forEach {
-      val resourceType = ResourceType.valueOf(it.code)
-      return bundle
-        ?.entry
-        ?.firstOrNull { entryComponent -> entryComponent.resource.resourceType == resourceType }
-        ?.resource
-    }
-    return null
   }
 
   /** Adds [Resource] to [Group.member] */
