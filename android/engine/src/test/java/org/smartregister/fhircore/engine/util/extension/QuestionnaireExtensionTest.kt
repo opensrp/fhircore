@@ -175,7 +175,7 @@ class QuestionnaireExtensionTest {
   fun testQuestionnaireFindWithFieldTypeDefinition() {
     Assert.assertEquals(
       emptyList<Questionnaire.QuestionnaireItemComponent>(),
-      questionniare.find(FieldType.DEFINITION, "")
+      questionniare.find(FieldType.DEFINITION, ""),
     )
   }
 
@@ -183,7 +183,7 @@ class QuestionnaireExtensionTest {
   fun testQuestionnaireFindWithFieldTypeType() {
     Assert.assertEquals(
       emptyList<Questionnaire.QuestionnaireItemComponent>(),
-      questionniare.find(FieldType.TYPE, "")
+      questionniare.find(FieldType.TYPE, ""),
     )
   }
 
@@ -195,7 +195,7 @@ class QuestionnaireExtensionTest {
     questionniare.item = listOf(questionnaireItemComponent)
     Assert.assertEquals(
       listOf(questionnaireItemComponent),
-      questionniare.find(FieldType.DEFINITION, value)
+      questionniare.find(FieldType.DEFINITION, value),
     )
   }
 
@@ -207,7 +207,7 @@ class QuestionnaireExtensionTest {
     questionniare.item = listOf(questionnaireItemComponent)
     Assert.assertEquals(
       listOf(questionnaireItemComponent),
-      questionniare.find(FieldType.TYPE, value.toString())
+      questionniare.find(FieldType.TYPE, value.toString()),
     )
   }
 
@@ -223,7 +223,7 @@ class QuestionnaireExtensionTest {
     questionniare.item = listOf(questionnaireItemComponent)
     Assert.assertEquals(
       listOf(innerQuestionnaireItemComponent),
-      questionniare.find(FieldType.LINK_ID, id)
+      questionniare.find(FieldType.LINK_ID, id),
     )
   }
 
@@ -235,7 +235,7 @@ class QuestionnaireExtensionTest {
     listOf(questionnaireItemComponent).prePopulateInitialValues("", emptyList())
     Assert.assertEquals(
       emptyList<Questionnaire.QuestionnaireItemInitialComponent>(),
-      questionnaireItemComponent.initial
+      questionnaireItemComponent.initial,
     )
   }
 
@@ -248,7 +248,7 @@ class QuestionnaireExtensionTest {
     listOf(questionnaireItemComponent).prePopulateInitialValues("!", prePopulationParams)
     Assert.assertNotEquals(
       emptyList<Questionnaire.QuestionnaireItemInitialComponent>(),
-      questionnaireItemComponent.initial
+      questionnaireItemComponent.initial,
     )
   }
 
@@ -265,11 +265,11 @@ class QuestionnaireExtensionTest {
     listOf(questionnaireItemComponent).prePopulateInitialValues("!", prePopulationParams)
     Assert.assertEquals(
       emptyList<Questionnaire.QuestionnaireItemInitialComponent>(),
-      questionnaireItemComponent.initial
+      questionnaireItemComponent.initial,
     )
     Assert.assertNotEquals(
       emptyList<Questionnaire.QuestionnaireItemInitialComponent>(),
-      innerQuestionnaireItemComponent.initial
+      innerQuestionnaireItemComponent.initial,
     )
   }
 
@@ -284,7 +284,7 @@ class QuestionnaireExtensionTest {
           Expression().apply {
             language = "text/fhirpath"
             expression = "expression"
-          }
+          },
         )
       }
     val actionParams =
@@ -294,8 +294,8 @@ class QuestionnaireExtensionTest {
           linkId = theLinkId,
           dataType = DataType.INTEGER,
           key = "my-key",
-          value = "100"
-        )
+          value = "100",
+        ),
       )
     listOf(questionnaireItemComponent).prePopulateInitialValues("@{", actionParams)
     Assert.assertFalse(questionnaireItemComponent.hasExtension(EXTENSION_INITIAL_EXPRESSION_URL))
@@ -312,7 +312,7 @@ class QuestionnaireExtensionTest {
           Expression().apply {
             language = "text/fhirpath"
             expression = "expression"
-          }
+          },
         )
       }
     listOf(questionnaireItemComponent).prePopulateInitialValues("", emptyList())

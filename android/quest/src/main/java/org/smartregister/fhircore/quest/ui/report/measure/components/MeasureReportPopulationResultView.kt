@@ -66,7 +66,7 @@ private fun PopulationResultCard(
           .clip(RoundedCornerShape(8.dp))
           .background(color = colorResource(id = R.color.white))
           .padding(16.dp)
-          .fillMaxWidth()
+          .fillMaxWidth(),
     ) {
       Column {
         Row(modifier = modifier.fillMaxWidth()) {
@@ -75,14 +75,14 @@ private fun PopulationResultCard(
             color = colorResource(id = R.color.black),
             fontSize = 16.sp,
             modifier = modifier.weight(1.0f).testTag(POPULATION_INDICATOR_TITLE),
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Start,
           )
           Text(
             text = resultItem.measureReportDenominator.let { it?.toString() ?: "0" },
             color = colorResource(id = R.color.black),
             fontSize = 16.sp,
             modifier = modifier.weight(1.0f).testTag(POPULATION_COUNT_TEST_TAG),
-            textAlign = TextAlign.End
+            textAlign = TextAlign.End,
           )
         }
         resultItem.dataList.forEach {
@@ -92,14 +92,14 @@ private fun PopulationResultCard(
               color = colorResource(id = R.color.black),
               fontSize = 15.sp,
               modifier = modifier.weight(1.0f).testTag(DETAILS_INDICATOR_TITLE),
-              textAlign = TextAlign.Start
+              textAlign = TextAlign.Start,
             )
             Text(
               text = it.count,
               color = colorResource(id = R.color.black),
               fontSize = 15.sp,
               modifier = modifier.weight(1.0f).testTag(DETAILS_COUNT_TEST_TAG),
-              textAlign = TextAlign.End
+              textAlign = TextAlign.End,
             )
           }
         }
@@ -127,9 +127,9 @@ fun MeasureReportPopulationResultPreview() {
               title = "Title Individual Result",
               percentage = "50.0",
               count = "1",
-            )
-          )
-      )
+            ),
+          ),
+      ),
     )
   MeasureReportPopulationResultView(dataList = dataList)
 }

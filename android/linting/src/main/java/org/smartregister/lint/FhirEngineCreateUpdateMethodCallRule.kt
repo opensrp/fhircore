@@ -51,7 +51,8 @@ class FhirEngineCreateUpdateMethodCallRule :
 
     val parent = node.parent(ElementType.DOT_QUALIFIED_EXPRESSION)
 
-    if (parent != null &&
+    if (
+      parent != null &&
         node.elementType == ElementType.REFERENCE_EXPRESSION &&
         node.text == FHIR_ENGINE_VARIABLE_NAME
     ) {

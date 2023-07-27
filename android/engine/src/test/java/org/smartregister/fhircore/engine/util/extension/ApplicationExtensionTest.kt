@@ -69,7 +69,7 @@ class ApplicationExtensionTest : RobolectricTest() {
 
     Assert.assertEquals(
       arrayListOf(Language("en", "English"), Language("sw", "Swahili")),
-      languages
+      languages,
     )
   }
 

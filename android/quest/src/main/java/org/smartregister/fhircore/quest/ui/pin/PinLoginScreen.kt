@@ -84,7 +84,7 @@ fun PinLoginScreen(viewModel: PinViewModel) {
     forgotPin = viewModel::forgotPin,
     onSetPin = viewModel::onSetPin,
     onShowPinError = viewModel::onShowPinError,
-    onPinEntered = viewModel::pinLogin
+    onPinEntered = viewModel::pinLogin,
   )
 }
 
@@ -114,10 +114,10 @@ fun PinLoginPage(
         PinTopBar(
           showMenu = showMenu,
           onShowMenu = { showMenu = it },
-          onMenuLoginClicked = onMenuLoginClicked
+          onMenuLoginClicked = onMenuLoginClicked,
         )
       }
-    }
+    },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       if (showForgotPinDialog) {
@@ -129,7 +129,7 @@ fun PinLoginPage(
           if (pinUiState.setupPin) {
             PinLogoSection(
               showLogo = pinUiState.showLogo,
-              title = stringResource(id = R.string.set_pin)
+              title = stringResource(id = R.string.set_pin),
             )
           } else {
             PinLogoSection(showLogo = pinUiState.showLogo, title = pinUiState.appName)
@@ -140,7 +140,7 @@ fun PinLoginPage(
             fontWeight = FontWeight.Normal,
             fontSize = 20.sp,
             modifier =
-              modifier.padding(bottom = 12.dp, top = 20.dp).align(Alignment.CenterHorizontally)
+              modifier.padding(bottom = 12.dp, top = 20.dp).align(Alignment.CenterHorizontally),
           )
 
           PinInput(
@@ -148,12 +148,11 @@ fun PinLoginPage(
             pinLength = pinUiState.pinLength,
             onPinSet = { enteredPin -> newPin = enteredPin },
             onShowPinError = onShowPinError,
-            onPinEntered = onPinEntered
+            onPinEntered = onPinEntered,
           )
 
           // Only show error message and forgot password when not setting the pin
           if (!pinUiState.setupPin) {
-
             if (pinUiState.showProgressBar) CircularProgressBar()
 
             if (showError) {
@@ -163,9 +162,9 @@ fun PinLoginPage(
                 fontWeight = FontWeight.Normal,
                 fontSize = 16.sp,
                 color = DangerColor,
-                modifier = modifier.padding(vertical = 8.dp).align(Alignment.CenterHorizontally)
+                modifier = modifier.padding(vertical = 8.dp).align(Alignment.CenterHorizontally),
               )
-            } else
+            } else {
               Text(
                 text = stringResource(R.string.forgot_pin),
                 color = MaterialTheme.colors.primary.copy(alpha = 0.8f),
@@ -175,10 +174,10 @@ fun PinLoginPage(
                     .padding(top = 24.dp)
                     .align(Alignment.CenterHorizontally)
                     .clickable { showForgotPinDialog = !showForgotPinDialog }
-                    .bringIntoViewRequester(bringIntoViewRequester)
+                    .bringIntoViewRequester(bringIntoViewRequester),
               )
+            }
           } else {
-
             // Enable button when a new PIN of required length is entered
             Button(
               onClick = { onSetPin(newPin) },
@@ -191,16 +190,16 @@ fun PinLoginPage(
               colors =
                 ButtonDefaults.buttonColors(
                   disabledContentColor = Color.Gray,
-                  contentColor = Color.White
+                  contentColor = Color.White,
                 ),
-              elevation = null
+              elevation = null,
             ) {
               Box(modifier = Modifier.padding(8.dp), contentAlignment = Alignment.Center) {
                 if (pinUiState.showProgressBar) {
                   CircularProgressIndicator(
                     modifier = modifier.size(18.dp).testTag(CIRCULAR_PROGRESS_INDICATOR),
                     strokeWidth = 1.6.dp,
-                    color = Color.White
+                    color = Color.White,
                   )
                 } else {
                   Text(text = stringResource(id = R.string.set_pin).uppercase())
@@ -226,7 +225,7 @@ private fun PinLogoSection(modifier: Modifier = Modifier, showLogo: Boolean, tit
             .align(Alignment.CenterHorizontally)
             .requiredHeight(120.dp)
             .requiredWidth(140.dp)
-            .testTag(PIN_LOGO_IMAGE)
+            .testTag(PIN_LOGO_IMAGE),
       )
     }
     Text(
@@ -234,7 +233,7 @@ private fun PinLogoSection(modifier: Modifier = Modifier, showLogo: Boolean, tit
       textAlign = TextAlign.Center,
       fontWeight = FontWeight.Bold,
       fontSize = 22.sp,
-      modifier = modifier.padding(8.dp)
+      modifier = modifier.padding(8.dp),
     )
   }
 }
@@ -243,7 +242,7 @@ private fun PinLogoSection(modifier: Modifier = Modifier, showLogo: Boolean, tit
 private fun PinTopBar(
   showMenu: Boolean,
   onShowMenu: (Boolean) -> Unit,
-  onMenuLoginClicked: (Boolean) -> Unit
+  onMenuLoginClicked: (Boolean) -> Unit,
 ) {
   TopAppBar(
     title = { Text(text = "") },
@@ -251,19 +250,16 @@ private fun PinTopBar(
       IconButton(onClick = { onShowMenu(true) }) {
         Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
       }
-      DropdownMenu(
-        expanded = showMenu,
-        onDismissRequest = { onShowMenu(false) },
-      ) {
-        DropdownMenuItem(
-          onClick = { onMenuLoginClicked(false) },
-        ) { Text(text = stringResource(id = R.string.pin_menu_login)) }
+      DropdownMenu(expanded = showMenu, onDismissRequest = { onShowMenu(false) }) {
+        DropdownMenuItem(onClick = { onMenuLoginClicked(false) }) {
+          Text(text = stringResource(id = R.string.pin_menu_login))
+        }
 
-        DropdownMenuItem(
-          onClick = { onMenuLoginClicked(true) },
-        ) { Text(text = stringResource(id = R.string.settings)) }
+        DropdownMenuItem(onClick = { onMenuLoginClicked(true) }) {
+          Text(text = stringResource(id = R.string.settings))
+        }
       }
-    }
+    },
   )
 }
 
@@ -271,7 +267,7 @@ private fun PinTopBar(
 fun ForgotPinDialog(
   forgotPin: () -> Unit,
   onDismissDialog: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   AlertDialog(
     onDismissRequest = onDismissDialog,
@@ -279,18 +275,18 @@ fun ForgotPinDialog(
       Text(
         text = stringResource(R.string.forgot_pin),
         fontWeight = FontWeight.Bold,
-        fontSize = 20.sp
+        fontSize = 20.sp,
       )
     },
     text = { Text(text = stringResource(R.string.please_contact_supervisor), fontSize = 16.sp) },
     buttons = {
       Row(
         modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
-        horizontalArrangement = Arrangement.End
+        horizontalArrangement = Arrangement.End,
       ) {
         Text(
           text = stringResource(R.string.cancel),
-          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() }
+          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() },
         )
         Text(
           color = MaterialTheme.colors.primary,
@@ -299,10 +295,10 @@ fun ForgotPinDialog(
             modifier.padding(horizontal = 10.dp).clickable {
               onDismissDialog()
               forgotPin()
-            }
+            },
         )
       }
-    }
+    },
   )
 }
 
@@ -317,13 +313,13 @@ private fun PinSetupPreview() {
         appName = "MOH eCBIS",
         setupPin = true,
         pinLength = 4,
-        showLogo = true
+        showLogo = true,
       ),
     onSetPin = {},
     onMenuLoginClicked = {},
     onShowPinError = {},
     forgotPin = {},
-    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
+    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
   )
 }
 
@@ -339,13 +335,13 @@ private fun PinSetupPreviewWithProgress() {
         setupPin = true,
         pinLength = 4,
         showLogo = true,
-        showProgressBar = true
+        showProgressBar = true,
       ),
     onSetPin = {},
     onMenuLoginClicked = {},
     onShowPinError = {},
     forgotPin = {},
-    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
+    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
   )
 }
 
@@ -360,12 +356,12 @@ private fun PinLoginPreview() {
         appName = "MOH eCBIS",
         setupPin = false,
         pinLength = 4,
-        showLogo = true
+        showLogo = true,
       ),
     onSetPin = {},
     onMenuLoginClicked = {},
     onShowPinError = {},
     forgotPin = {},
-    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> }
+    onPinEntered = { _: CharArray, _: (Boolean) -> Unit -> },
   )
 }

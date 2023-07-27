@@ -16,12 +16,16 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import android.os.Parcelable
 import androidx.compose.foundation.layout.Arrangement
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class ColumnProperties(
   override val viewType: ViewType,
   override val weight: Float = 0f,
@@ -37,13 +41,14 @@ data class ColumnProperties(
   val wrapContent: Boolean = false,
   val arrangement: ColumnArrangement? = null,
   val children: List<ViewProperties> = emptyList(),
-  val showDivider: String = "false"
-) : ViewProperties() {
+  val showDivider: String = "false",
+  val actions: List<ActionConfig> = emptyList(),
+) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): ColumnProperties {
     return this.copy(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),
       visible = visible.interpolate(computedValuesMap),
-      showDivider = showDivider.interpolate(computedValuesMap)
+      showDivider = showDivider.interpolate(computedValuesMap),
     )
   }
 }
@@ -54,5 +59,5 @@ enum class ColumnArrangement(val position: Arrangement.Vertical) {
   SPACE_EVENLY(Arrangement.SpaceEvenly),
   CENTER(Arrangement.Center),
   TOP(Arrangement.Top),
-  BOTTOM(Arrangement.Bottom)
+  BOTTOM(Arrangement.Bottom),
 }

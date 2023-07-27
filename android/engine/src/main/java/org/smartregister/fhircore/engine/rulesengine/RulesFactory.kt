@@ -26,7 +26,7 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
 import org.hl7.fhir.r4.model.Base
-import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
@@ -62,7 +62,7 @@ constructor(
   @ApplicationContext val context: Context,
   val configurationRegistry: ConfigurationRegistry,
   val fhirPathDataExtractor: FhirPathDataExtractor,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
   private var facts: Facts = Facts()
@@ -133,7 +133,7 @@ constructor(
       configurationRegistry.localizationHelper.parseTemplate(
         LocalizationHelper.STRINGS_BASE_BUNDLE_NAME,
         Locale.getDefault(),
-        "{{${value.translationPropertyKey()}}}"
+        "{{${value.translationPropertyKey()}}}",
       )
 
     /**
@@ -145,26 +145,33 @@ constructor(
      * @param resource The parent resource for which the related resources will be retrieved
      * @param relatedResourceKey The key representing the relatedResources in the map
      * @param referenceFhirPathExpression A fhir path expression used to retrieve the subject
-     * reference Id from the related resources
+     *   reference Id from the related resources
      */
     @Suppress("UNCHECKED_CAST")
     @JvmOverloads
     fun retrieveRelatedResources(
       resource: Resource,
       relatedResourceKey: String,
-      referenceFhirPathExpression: String,
-      relatedResourcesMap: Map<String, List<Resource>>? = null
+      referenceFhirPathExpression: String?,
+      relatedResourcesMap: Map<String, List<Resource>>? = null,
     ): List<Resource> {
       val value: List<Resource> =
         relatedResourcesMap?.get(relatedResourceKey)
-          ?: if (facts.getFact(relatedResourceKey) != null)
+          ?: if (facts.getFact(relatedResourceKey) != null) {
             facts.getFact(relatedResourceKey).value as List<Resource>
-          else emptyList()
+          } else {
+            emptyList()
+          }
 
-      return value.filter {
-        resource.logicalId ==
-          fhirPathDataExtractor.extractValue(it, referenceFhirPathExpression).extractLogicalIdUuid()
-      }
+      return if (referenceFhirPathExpression.isNullOrEmpty()) {
+        value
+      } else
+        value.filter {
+          resource.logicalId ==
+            fhirPathDataExtractor
+              .extractValue(it, referenceFhirPathExpression)
+              .extractLogicalIdUuid()
+        }
     }
 
     /**
@@ -180,7 +187,7 @@ constructor(
     fun retrieveParentResource(
       childResource: Resource,
       parentResourceType: String,
-      fhirPathExpression: String
+      fhirPathExpression: String,
     ): Resource? {
       val value = facts.getFact(parentResourceType).value as List<Resource>
       val parentResourceId =
@@ -204,7 +211,7 @@ constructor(
     fun evaluateToBoolean(
       resources: List<Resource>?,
       fhirPathExpression: String,
-      matchAll: Boolean = false
+      matchAll: Boolean = false,
     ): Boolean =
       if (matchAll) {
         resources?.all { base ->
@@ -233,16 +240,19 @@ constructor(
     fun mapResourcesToLabeledCSV(
       resources: List<Resource>?,
       fhirPathExpression: String,
-      label: String
+      label: String,
     ): String =
       resources
         ?.mapNotNull {
-          if (fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
+          if (
+            fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
               base.isBooleanPrimitive && base.primitiveValue().toBoolean()
             }
-          )
+          ) {
             label
-          else null
+          } else {
+            null
+          }
         }
         ?.distinctBy { it }
         ?.joinToString(",")
@@ -257,7 +267,7 @@ constructor(
     fun mapResourceToLabeledCSV(
       resource: Resource,
       fhirPathExpression: String,
-      label: String
+      label: String,
     ): String = mapResourcesToLabeledCSV(listOf(resource), fhirPathExpression, label)
 
     /** This function extracts the patient's age from the patient resource */
@@ -297,7 +307,7 @@ constructor(
     fun formatDate(
       inputDate: String,
       inputDateFormat: String,
-      expectedFormat: String = SDF_E_MMM_DD_YYYY
+      expectedFormat: String = SDF_E_MMM_DD_YYYY,
     ): String? = inputDate.parseDate(inputDateFormat)?.formatDate(expectedFormat)
 
     /**
@@ -340,7 +350,7 @@ constructor(
     fun joinToString(
       sourceString: MutableList<String?>,
       regex: String = DEFAULT_REGEX,
-      separator: String = DEFAULT_STRING_SEPARATOR
+      separator: String = DEFAULT_STRING_SEPARATOR,
     ): String {
       sourceString.removeIf { it == null }
       val inputString = sourceString.joinToString()
@@ -357,7 +367,7 @@ constructor(
 
     fun mapResourcesToExtractedValues(
       resources: List<Resource>?,
-      fhirPathExpression: String
+      fhirPathExpression: String,
     ): List<Any> {
       if (fhirPathExpression.isEmpty()) {
         return emptyList()
@@ -371,7 +381,7 @@ constructor(
 
     fun retrieveCount(
       parentResourceId: String,
-      relatedResourceCounts: List<RelatedResourceCount>?
+      relatedResourceCounts: List<RelatedResourceCount>?,
     ): Long =
       relatedResourceCounts
         ?.find { parentResourceId.equals(it.parentResourceId, ignoreCase = true) }
@@ -387,25 +397,24 @@ constructor(
     fun sortResources(
       resources: List<Resource>?,
       fhirPathExpression: String,
-      dataType: Enumerations.DataType,
-      order: Order = Order.ASCENDING
+      dataType: String,
+      order: String = Order.ASCENDING.name,
     ): List<Resource>? {
       val mappedResources =
         resources?.mapNotNull {
           val extractedValue: Base? =
             fhirPathDataExtractor.extractData(it, fhirPathExpression).firstOrNull()
           val sortingValue: Comparable<*>? =
-            when (dataType) {
-              Enumerations.DataType.BOOLEAN -> extractedValue?.castToBoolean(extractedValue)?.value
-              Enumerations.DataType.DATE -> extractedValue?.castToDate(extractedValue)?.value
-              Enumerations.DataType.DATETIME ->
-                extractedValue?.castToDateTime(extractedValue)?.value
-              Enumerations.DataType.DECIMAL -> extractedValue?.castToDecimal(extractedValue)?.value
-              Enumerations.DataType.INTEGER -> extractedValue?.castToInteger(extractedValue)?.value
-              Enumerations.DataType.STRING -> extractedValue?.castToString(extractedValue)?.value
+            when (DataType.valueOf(dataType)) {
+              DataType.BOOLEAN -> extractedValue?.castToBoolean(extractedValue)?.value
+              DataType.DATE -> extractedValue?.castToDate(extractedValue)?.value
+              DataType.DATETIME -> extractedValue?.castToDateTime(extractedValue)?.value
+              DataType.DECIMAL -> extractedValue?.castToDecimal(extractedValue)?.value
+              DataType.INTEGER -> extractedValue?.castToInteger(extractedValue)?.value
+              DataType.STRING -> extractedValue?.castToString(extractedValue)?.value
               else -> {
                 Timber.e(
-                  "Sorting only works for primitive types, sorting by the data type $dataType is not allowed. Implement sorting strategy for the data type $dataType."
+                  "Sorting only works for primitive types, sorting by the data type $dataType is not allowed. Implement sorting strategy for the data type $dataType.",
                 )
                 null
               }
@@ -413,7 +422,7 @@ constructor(
           if (sortingValue != null) Pair(sortingValue, it) else null
         }
 
-      return when (order) {
+      return when (Order.valueOf(order)) {
         Order.ASCENDING -> mappedResources?.sortedWith(compareBy { it.first })?.map { it.second }
         Order.DESCENDING ->
           mappedResources?.sortedWith(compareByDescending { it.first })?.map { it.second }
@@ -434,7 +443,7 @@ constructor(
             Task.TaskStatus.ACCEPTED,
             Task.TaskStatus.REJECTED,
             Task.TaskStatus.DRAFT,
-            Task.TaskStatus.ONHOLD -> {
+            Task.TaskStatus.ONHOLD, -> {
               Timber.e("Task.status is null", Exception())
               ServiceStatus.UPCOMING.name
             }

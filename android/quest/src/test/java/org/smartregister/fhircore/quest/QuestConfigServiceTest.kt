@@ -36,6 +36,7 @@ class QuestConfigServiceTest : RobolectricTest() {
 
   @Inject lateinit var configService: QuestConfigService
   val context = ApplicationProvider.getApplicationContext<Context>()!!
+
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
@@ -43,7 +44,6 @@ class QuestConfigServiceTest : RobolectricTest() {
 
   @Test
   fun testProvideAuthConfigurationShouldReturnConfigs() {
-
     val authConfiguration = configService.provideAuthConfiguration()
 
     Assert.assertNotNull(authConfiguration)
@@ -53,7 +53,7 @@ class QuestConfigServiceTest : RobolectricTest() {
     Assert.assertEquals(BuildConfig.OAUTH_CLIENT_SECRET, authConfiguration.clientSecret)
     Assert.assertEquals(
       context.getString(R.string.authenticator_account_type),
-      authConfiguration.accountType
+      authConfiguration.accountType,
     )
   }
 }

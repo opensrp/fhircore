@@ -67,22 +67,21 @@ fun MemberProfileBottomSheetView(
   buttonProperties: List<ButtonProperties>,
   ResourceData: ResourceData,
   navController: NavController,
-  onViewProfile: () -> Unit
+  onViewProfile: () -> Unit,
 ) {
   Column {
-
     // Top section displays the name, gender and age for member
     Spacer(modifier = modifier.height(16.dp))
     Row(
       horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.CenterVertically,
-      modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
+      modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
     ) {
       Column(modifier = modifier.wrapContentWidth(Alignment.Start)) {
         Text(
           text = stringResource(id = R.string.what_to_do),
           fontWeight = FontWeight.SemiBold,
-          modifier = modifier.padding(bottom = 4.dp)
+          modifier = modifier.padding(bottom = 4.dp),
         )
         Text(text = title, color = DefaultColor.copy(0.8f))
       }
@@ -93,10 +92,11 @@ fun MemberProfileBottomSheetView(
         modifier =
           modifier.clickable {
             coroutineScope.launch {
-              if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+              if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
                 bottomSheetScaffoldState.bottomSheetState.collapse()
+              }
             }
-          }
+          },
       )
     }
     Spacer(modifier = modifier.height(8.dp))
@@ -123,7 +123,7 @@ fun MemberProfileBottomSheetView(
         modifier
           .fillMaxWidth()
           .clickable { onViewProfile() }
-          .padding(horizontal = 16.dp, vertical = 16.dp)
+          .padding(horizontal = 16.dp, vertical = 16.dp),
     )
     Spacer(modifier = modifier.height(16.dp))
   }
@@ -139,7 +139,7 @@ private fun MemberProfileBottomSheetViewPreview() {
     buttonProperties = emptyList(),
     navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
-    ResourceData = ResourceData("id", ResourceType.Patient, emptyMap())
+    ResourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
   )
 }
 
@@ -154,10 +154,10 @@ private fun MemberProfileBottomSheetViewWithFormDataPreview() {
       listOf(
         ButtonProperties(text = "Issue bednet", status = "OVERDUE"),
         ButtonProperties(text = "Sick child", status = "UPCOMING"),
-        ButtonProperties(text = "Pregnancy visit", status = "COMPLETED")
+        ButtonProperties(text = "Pregnancy visit", status = "COMPLETED"),
       ),
     navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
-    ResourceData = ResourceData("id", ResourceType.Patient, emptyMap())
+    ResourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
   )
 }

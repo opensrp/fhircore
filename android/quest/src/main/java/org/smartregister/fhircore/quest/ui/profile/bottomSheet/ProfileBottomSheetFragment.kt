@@ -37,7 +37,7 @@ constructor(
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?
+    savedInstanceState: Bundle?,
   ): View {
     return ComposeView(requireContext()).apply {
       setContent {
@@ -46,12 +46,13 @@ constructor(
             onSaveClick = onSaveClick,
             eligibleManagingEntities = eligibleManagingEntities,
             onDismiss = { dismiss() },
-            managingEntity = managingEntity
+            managingEntity = managingEntity,
           )
         }
       }
     }
   }
+
   companion object {
     const val TAG = "ProfileBottomSheetTag"
   }

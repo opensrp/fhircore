@@ -45,7 +45,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Spotless check engine module
-        run: ./gradlew :engine:spotlessCheck --stacktrace && ./gradlew :engine:ktlintCheck --stacktrace
+        run: ./gradlew -PlocalPropertiesFile=local.properties :engine:spotlessCheck :engine:ktlintCheck --stacktrace
         working-directory: android 
       
       - name: Load AVD cache
@@ -78,7 +78,7 @@ jobs:
           force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew :engine:clean && ./gradlew :engine:fhircoreJacocoReport --stacktrace
+          script: ./gradlew -PlocalPropertiesFile=local.properties :engine:clean :engine:fhircoreJacocoReport --stacktrace
 
       - name: Upload Engine module test coverage report to Codecov
         if: matrix.api-level == 30 # Only upload coverage on API level 30
@@ -117,7 +117,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Spotless check geowidget module
-        run: ./gradlew :geowidget:spotlessCheck --stacktrace
+        run: ./gradlew -PlocalPropertiesFile=local.properties :geowidget:spotlessCheck --stacktrace
         working-directory: android 
       
       - name: Load AVD cache
@@ -150,7 +150,7 @@ jobs:
           force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew :geowidget:clean && ./gradlew :geowidget:fhircoreJacocoReport --stacktrace
+          script: ./gradlew -PlocalPropertiesFile=local.properties :geowidget:clean :geowidget:fhircoreJacocoReport --stacktrace
 
       - name: Upload Geowidget module test coverage report to Codecov
         if: matrix.api-level == 30 # Only upload coverage on API level 30
@@ -188,7 +188,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
  
       - name: Spotless check quest application
-        run: ./gradlew :quest:spotlessCheck --stacktrace && ./gradlew :quest:ktlintCheck --stacktrace
+        run: ./gradlew -PlocalPropertiesFile=local.properties :quest:spotlessCheck --stacktrace :quest:ktlintCheck --stacktrace
         working-directory: android 
       
       - name: Load AVD cache
@@ -221,7 +221,7 @@ jobs:
           force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew :quest:clean && ./gradlew :quest:fhircoreJacocoReport --stacktrace
+          script: ./gradlew -PlocalPropertiesFile=local.properties :quest:clean :quest:fhircoreJacocoReport --stacktrace
 
       - name: Upload Quest module test coverage report to Codecov
         if: matrix.api-level == 30 # Only upload coverage on API level 30

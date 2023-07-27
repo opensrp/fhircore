@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.AlertDialog
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -76,6 +77,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
@@ -85,6 +87,7 @@ import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
+import org.smartregister.fhircore.quest.ui.pin.CIRCULAR_PROGRESS_INDICATOR
 
 const val RESET_DATABASE_DIALOG = "resetDatabaseDialog"
 const val USER_SETTING_ROW_LOGOUT = "userSettingRowLogout"
@@ -108,8 +111,9 @@ fun UserSettingScreen(
   appVersionPair: Pair<Int, String>? = null,
   allowP2PSync: Boolean,
   lastSyncTime: String?,
+  showProgressIndicatorFlow: MutableStateFlow<Boolean>,
   unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>>,
-  dismissInsightsView: () -> Unit
+  dismissInsightsView: () -> Unit,
 ) {
   val context = LocalContext.current
   val (showProgressBar, messageResource) = progressBarState
@@ -126,33 +130,33 @@ fun UserSettingScreen(
           }
         },
         contentColor = Color.White,
-        backgroundColor = MaterialTheme.colors.primary
+        backgroundColor = MaterialTheme.colors.primary,
       )
-    }
+    },
   ) {
     Column(modifier = modifier.background(Color.White)) {
       if (!username.isNullOrEmpty()) {
         Column(
           modifier = modifier.background(Color.White).padding(vertical = 24.dp).fillMaxWidth(),
-          horizontalAlignment = Alignment.CenterHorizontally
+          horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           Box(
             modifier = modifier.clip(CircleShape).background(color = LighterBlue).size(80.dp),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
           ) {
             Text(
               text = username.first().uppercase(),
               textAlign = TextAlign.Center,
               fontWeight = FontWeight.Bold,
               fontSize = 28.sp,
-              color = BlueTextColor
+              color = BlueTextColor,
             )
           }
           Text(
             text = username.capitalize(Locale.current),
             fontSize = 22.sp,
             modifier = modifier.padding(vertical = 12.dp),
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
           )
         }
       }
@@ -171,7 +175,7 @@ fun UserSettingScreen(
             text = stringResource(R.string.settings).uppercase(),
             fontSize = 18.sp,
             color = contentColor,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
           )
         }
       }
@@ -182,7 +186,7 @@ fun UserSettingScreen(
         icon = Icons.Rounded.Sync,
         text = stringResource(id = R.string.sync),
         clickListener = { onEvent(UserSettingsEvent.SyncData(context)) },
-        modifier = modifier
+        modifier = modifier,
       )
 
       // Language option
@@ -193,14 +197,14 @@ fun UserSettingScreen(
               .fillMaxWidth()
               .clickable { expanded = true }
               .padding(vertical = 16.dp, horizontal = 20.dp),
-          horizontalArrangement = Arrangement.SpaceBetween
+          horizontalArrangement = Arrangement.SpaceBetween,
         ) {
           Row(modifier = Modifier.align(Alignment.CenterVertically)) {
             Icon(
               painterResource(R.drawable.ic_language),
               stringResource(R.string.language),
               tint = BlueTextColor,
-              modifier = Modifier.size(26.dp)
+              modifier = Modifier.size(26.dp),
             )
             Spacer(modifier = modifier.width(20.dp))
             Text(text = stringResource(id = R.string.language), fontSize = 18.sp)
@@ -212,17 +216,19 @@ fun UserSettingScreen(
               fontSize = 18.sp,
               fontWeight = FontWeight.Medium,
               color = contentColor,
-              modifier = modifier.wrapContentWidth(Alignment.End)
+              modifier = modifier.wrapContentWidth(Alignment.End),
             )
             DropdownMenu(
               expanded = expanded,
               onDismissRequest = { expanded = false },
-              modifier = modifier.wrapContentWidth(Alignment.End)
+              modifier = modifier.wrapContentWidth(Alignment.End),
             ) {
               for (language in languages) {
                 DropdownMenuItem(
-                  onClick = { onEvent(UserSettingsEvent.SwitchLanguage(language, context)) }
-                ) { Text(text = language.displayName, fontSize = 18.sp) }
+                  onClick = { onEvent(UserSettingsEvent.SwitchLanguage(language, context)) },
+                ) {
+                  Text(text = language.displayName, fontSize = 18.sp)
+                }
               }
             }
           }
@@ -230,7 +236,7 @@ fun UserSettingScreen(
             imageVector = Icons.Rounded.ChevronRight,
             "",
             tint = Color.LightGray,
-            modifier = modifier.wrapContentWidth(Alignment.End)
+            modifier = modifier.wrapContentWidth(Alignment.End),
           )
         }
         Divider(color = DividerColor)
@@ -248,7 +254,7 @@ fun UserSettingScreen(
           },
           onDismissDialog = {
             onEvent(UserSettingsEvent.ShowResetDatabaseConfirmationDialog(false))
-          }
+          },
         )
       }
 
@@ -257,7 +263,7 @@ fun UserSettingScreen(
           icon = Icons.Rounded.DeleteForever,
           text = stringResource(id = R.string.clear_database),
           clickListener = { onEvent(UserSettingsEvent.ShowResetDatabaseConfirmationDialog(true)) },
-          modifier = modifier.testTag(USER_SETTING_ROW_RESET_DATA)
+          modifier = modifier.testTag(USER_SETTING_ROW_RESET_DATA),
         )
       }
 
@@ -267,7 +273,7 @@ fun UserSettingScreen(
           text = stringResource(id = R.string.transfer_data),
           clickListener = { onEvent(UserSettingsEvent.SwitchToP2PScreen(context)) },
           modifier = modifier.testTag(USER_SETTING_ROW_P2P),
-          canSwitchToScreen = true
+          canSwitchToScreen = true,
         )
       }
 
@@ -275,7 +281,8 @@ fun UserSettingScreen(
         icon = Icons.Rounded.Insights,
         text = stringResource(id = R.string.insights),
         clickListener = { onEvent(UserSettingsEvent.ShowInsightsView(true, context)) },
-        modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS)
+        modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS),
+        showProgressIndicator = showProgressIndicatorFlow.collectAsState().value,
       )
 
       UserSettingRow(
@@ -284,12 +291,12 @@ fun UserSettingScreen(
         clickListener = { onEvent(UserSettingsEvent.Logout(context)) },
         modifier = modifier.testTag(USER_SETTING_ROW_LOGOUT),
         iconTint = colorResource(id = R.color.colorError),
-        textColor = colorResource(id = R.color.colorError)
+        textColor = colorResource(id = R.color.colorError),
       )
 
       Column(
         modifier =
-          modifier.background(color = colorResource(id = R.color.backgroundGray)).fillMaxWidth()
+          modifier.background(color = colorResource(id = R.color.backgroundGray)).fillMaxWidth(),
       ) {
         Spacer(modifier = Modifier.weight(1f))
 
@@ -297,14 +304,14 @@ fun UserSettingScreen(
           painterResource(R.drawable.logo_fhir_core),
           "content description",
           modifier = modifier.requiredHeight(40.dp).align(Alignment.CenterHorizontally),
-          contentScale = ContentScale.Fit
+          contentScale = ContentScale.Fit,
         )
 
         Text(
           color = contentColor,
           fontSize = 16.sp,
           text = stringResource(id = R.string.app_version, versionCode, versionName),
-          modifier = modifier.padding(top = 12.dp).align(Alignment.CenterHorizontally)
+          modifier = modifier.padding(top = 12.dp).align(Alignment.CenterHorizontally),
         )
 
         Text(
@@ -312,7 +319,7 @@ fun UserSettingScreen(
           fontSize = 16.sp,
           text = stringResource(id = R.string.last_sync, lastSyncTime ?: ""),
           modifier =
-            modifier.padding(bottom = 12.dp, top = 2.dp).align(Alignment.CenterHorizontally)
+            modifier.padding(bottom = 12.dp, top = 2.dp).align(Alignment.CenterHorizontally),
         )
       }
 
@@ -333,7 +340,8 @@ fun UserSettingRow(
   modifier: Modifier = Modifier,
   canSwitchToScreen: Boolean = false,
   iconTint: Color = BlueTextColor,
-  textColor: Color = LoginDarkColor
+  textColor: Color = LoginDarkColor,
+  showProgressIndicator: Boolean = false,
 ) {
   Row(
     modifier =
@@ -341,7 +349,7 @@ fun UserSettingRow(
         .fillMaxWidth()
         .clickable { clickListener() }
         .padding(vertical = 16.dp, horizontal = 20.dp),
-    horizontalArrangement = Arrangement.SpaceBetween
+    horizontalArrangement = Arrangement.SpaceBetween,
   ) {
     Row {
       Icon(imageVector = icon, "", tint = iconTint)
@@ -356,6 +364,13 @@ fun UserSettingRow(
         modifier = modifier.wrapContentWidth(Alignment.End),
       )
     }
+    if (showProgressIndicator) {
+      CircularProgressIndicator(
+        modifier =
+          modifier.size(18.dp).testTag(CIRCULAR_PROGRESS_INDICATOR).wrapContentWidth(Alignment.End),
+        strokeWidth = 1.6.dp,
+      )
+    }
   }
   Divider(color = DividerColor)
 }
@@ -364,7 +379,7 @@ fun UserSettingRow(
 fun ConfirmClearDatabaseDialog(
   permanentResetDatabase: () -> Unit,
   onDismissDialog: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   AlertDialog(
     onDismissRequest = onDismissDialog,
@@ -372,18 +387,18 @@ fun ConfirmClearDatabaseDialog(
       Text(
         text = stringResource(R.string.clear_database_title),
         fontWeight = FontWeight.Bold,
-        fontSize = 18.sp
+        fontSize = 18.sp,
       )
     },
     text = { Text(text = stringResource(R.string.clear_database_message), fontSize = 16.sp) },
     buttons = {
       Row(
         modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
-        horizontalArrangement = Arrangement.End
+        horizontalArrangement = Arrangement.End,
       ) {
         Text(
           text = stringResource(R.string.cancel),
-          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() }
+          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() },
         )
         Text(
           color = MaterialTheme.colors.primary,
@@ -392,11 +407,11 @@ fun ConfirmClearDatabaseDialog(
             modifier.padding(horizontal = 10.dp).clickable {
               permanentResetDatabase()
               onDismissDialog()
-            }
+            },
         )
       }
     },
-    modifier = Modifier.testTag(RESET_DATABASE_DIALOG)
+    modifier = Modifier.testTag(RESET_DATABASE_DIALOG),
   )
 }
 
@@ -416,7 +431,8 @@ fun UserSettingPreview() {
     appVersionPair = Pair(1, "1.0.1"),
     allowP2PSync = true,
     lastSyncTime = "05:30 PM, Mar 3",
+    showProgressIndicatorFlow = MutableStateFlow(false),
     unsyncedResourcesFlow = MutableSharedFlow(),
-    dismissInsightsView = {}
+    dismissInsightsView = {},
   )
 }

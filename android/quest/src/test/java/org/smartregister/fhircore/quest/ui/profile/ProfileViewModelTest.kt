@@ -50,7 +50,9 @@ import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 class ProfileViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var profileViewModel: ProfileViewModel
@@ -67,7 +69,7 @@ class ProfileViewModelTest : RobolectricTest() {
       ResourceData(
         baseResourceId = expectedBaseResource.logicalId,
         baseResourceType = expectedBaseResource.resourceType,
-        computedValuesMap = emptyMap()
+        computedValuesMap = emptyMap(),
       )
     registerRepository =
       spyk(
@@ -77,8 +79,8 @@ class ProfileViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
-          configRulesExecutor = mockk()
-        )
+          configRulesExecutor = mockk(),
+        ),
       )
     coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns
       RepositoryResourceData(resource = Faker.buildPatient())
@@ -86,7 +88,7 @@ class ProfileViewModelTest : RobolectricTest() {
     runBlocking {
       configurationRegistry.loadConfigurations(
         context = InstrumentationRegistry.getInstrumentation().targetContext,
-        appId = APP_DEBUG
+        appId = APP_DEBUG,
       ) {}
     }
 
@@ -96,7 +98,7 @@ class ProfileViewModelTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         dispatcherProvider = coroutineTestRule.testDispatcherProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
-        resourceDataRulesExecutor = resourceDataRulesExecutor
+        resourceDataRulesExecutor = resourceDataRulesExecutor,
       )
   }
 
@@ -107,7 +109,7 @@ class ProfileViewModelTest : RobolectricTest() {
       profileViewModel.retrieveProfileUiState(
         "householdProfile",
         "sampleId",
-        paramsList = emptyArray()
+        paramsList = emptyArray(),
       )
     }
 
@@ -134,9 +136,9 @@ class ProfileViewModelTest : RobolectricTest() {
           ManagingEntityConfig(
             eligibilityCriteriaFhirPathExpression = "Patient.active",
             resourceType = ResourceType.Patient,
-            nameFhirPathExpression = "Patient.name.given"
-          )
-      )
+            nameFhirPathExpression = "Patient.name.given",
+          ),
+      ),
     )
     coVerify { registerRepository.changeManagingEntity(any(), any(), any()) }
   }

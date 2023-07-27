@@ -22,7 +22,6 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
 import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
-import ca.uhn.fhir.i18n.Msg.code
 import com.google.android.fhir.sync.ResourceSyncException
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
@@ -63,7 +62,6 @@ import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -77,6 +75,7 @@ import retrofit2.Response
 @HiltAndroidTest
 class RegisterFragmentTest : RobolectricTest() {
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+
   @Inject lateinit var eventBus: EventBus
 
   @BindValue
@@ -88,10 +87,10 @@ class RegisterFragmentTest : RobolectricTest() {
       RegisterViewModel(
         registerRepository = mockk(relaxed = true),
         configurationRegistry = configurationRegistry,
-        sharedPreferencesHelper = mockk(relaxed = true),
+        sharedPreferencesHelper = Faker.buildSharedPreferencesHelper(),
         dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
-        resourceDataRulesExecutor = mockk()
-      )
+        resourceDataRulesExecutor = mockk(),
+      ),
     )
 
   private lateinit var navController: TestNavHostController
@@ -118,10 +117,10 @@ class RegisterFragmentTest : RobolectricTest() {
                 ResourceData(
                   baseResourceId = "patient",
                   baseResourceType = ResourceType.Patient,
-                  computedValuesMap = emptyMap()
-                )
-              )
-            )
+                  computedValuesMap = emptyMap(),
+                ),
+              ),
+            ),
           )
       }
 
@@ -160,7 +159,7 @@ class RegisterFragmentTest : RobolectricTest() {
         message = "Household member has been added",
         actionLabel = "UNDO",
         duration = SnackbarDuration.Short,
-        snackBarActions = emptyList()
+        snackBarActions = emptyList(),
       )
     val registerViewModel = mockk<RegisterViewModel>()
     this.coroutineTestRule.launch {
@@ -175,48 +174,56 @@ class RegisterFragmentTest : RobolectricTest() {
   @Test
   @OptIn(ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class)
   fun `test On Sync Progress emits progress percentage`() = runTest {
-    val downloadProgressSyncStatus: SyncJobStatus =
+    val downloadProgressSyncStatus: SyncJobStatus.InProgress =
       SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 1000, 300)
-    val uploadProgressSyncStatus: SyncJobStatus =
+    val uploadProgressSyncStatus: SyncJobStatus.InProgress =
       SyncJobStatus.InProgress(SyncOperation.UPLOAD, 100, 85)
-    val registerFragment = mockk<RegisterFragment>()
+
+    val registerFragment = spyk(registerFragment)
 
     coEvery { registerFragment.onSync(downloadProgressSyncStatus) } answers { callOriginal() }
     coEvery { registerFragment.onSync(uploadProgressSyncStatus) } answers { callOriginal() }
-    coEvery { registerFragment.emitPercentageProgress(any(), any()) } just runs
 
     registerFragment.onSync(downloadProgressSyncStatus)
     registerFragment.onSync(uploadProgressSyncStatus)
 
-    coVerify(exactly = 1) { registerFragment.emitPercentageProgress(30, false) }
-    coVerify(exactly = 1) { registerFragment.emitPercentageProgress(85, true) }
-  }
+    coVerify(exactly = 1) { registerViewModel.emitPercentageProgressState(30, false) }
 
-  @Test
-  fun testHandleRefreshLiveDataCallsRetrieveRegisterUiState() {
-    val registerFragmentSpy = spyk(registerFragment)
-    val registerViewModel = mockk<RegisterViewModel>()
-    every { registerViewModel.retrieveRegisterUiState(any(), any(), any(), any()) } just runs
-    every { registerFragmentSpy getProperty "registerViewModel" } returns registerViewModel
+    coVerify(exactly = 1) { registerViewModel.emitPercentageProgressState(85, true) }
 
-    registerFragmentSpy.handleRefreshLiveData()
-
-    verify {
-      registerViewModel.retrieveRegisterUiState(
-        registerId = "householdRegister",
-        screenTitle = "All HouseHolds",
-        params = emptyArray(),
-        clearCache = true
-      )
+    coVerify(exactly = 1) {
+      registerFragment.emitPercentageProgress(downloadProgressSyncStatus, false)
+    }
+    coVerify(exactly = 1) {
+      registerFragment.emitPercentageProgress(uploadProgressSyncStatus, true)
     }
   }
 
   @Test
-  fun testOnViewCreatedCallsHandleRefreshLiveData() = runTest {
-    registerFragment.onViewCreated(mockk(), mockk())
-    eventBus.triggerEvent(AppEvent.RefreshCache(QuestionnaireConfig(id = "refresh")))
-    verify { registerViewModel.retrieveRegisterUiState(any(), any(), any(), any()) }
-  }
+  @OptIn(ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class)
+  fun `test On Sync Progress emits correct download progress percentage after a glitch`() =
+    runTest {
+      val downloadProgressSyncStatus: SyncJobStatus.InProgress =
+        SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 1000, 300)
+      val downloadProgressSyncStatusAfterGlitchReset: SyncJobStatus.InProgress =
+        SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 200, 100)
+
+      val registerFragment = spyk(registerFragment)
+
+      registerFragment.onSync(downloadProgressSyncStatus)
+      registerFragment.onSync(downloadProgressSyncStatusAfterGlitchReset)
+
+      coVerify(exactly = 1) {
+        registerFragment.emitPercentageProgress(downloadProgressSyncStatus, false)
+      }
+
+      coVerify(exactly = 1) {
+        registerFragment.emitPercentageProgress(downloadProgressSyncStatusAfterGlitchReset, false)
+      }
+
+      coVerify(exactly = 1) { registerViewModel.emitPercentageProgressState(30, false) }
+      coVerify(exactly = 1) { registerViewModel.emitPercentageProgressState(90, false) }
+    }
 
   @Test
   fun testHandleQuestionnaireSubmissionCallsRegisterViewModelPaginateRegisterDataAndEmitSnackBarState() {
@@ -227,19 +234,13 @@ class RegisterFragmentTest : RobolectricTest() {
     val questionnaireSubmission =
       QuestionnaireSubmission(
         questionnaireConfig = questionnaireConfig,
-        questionnaireResponse = questionnaireResponse
+        questionnaireResponse = questionnaireResponse,
       )
     val registerFragmentSpy = spyk(registerFragment)
 
     coEvery { registerViewModel.emitSnackBarState(any()) } just runs
     runBlocking { registerFragmentSpy.handleQuestionnaireSubmission(questionnaireSubmission) }
-    coVerify {
-      registerViewModel.paginateRegisterData(
-        registerId = "householdRegister",
-        loadAll = false,
-        clearCache = true
-      )
-    }
+    coVerify { registerFragmentSpy.refreshRegisterData() }
     coVerify { registerViewModel.emitSnackBarState(snackBarMessageConfig) }
   }
 
@@ -247,7 +248,7 @@ class RegisterFragmentTest : RobolectricTest() {
   fun testOnSyncWithFailedJobStatusNonAuthErrorRendersSyncFailedMessage() {
     val syncJobStatus =
       SyncJobStatus.Failed(
-        listOf(ResourceSyncException(ResourceType.Patient, Exception("Sync For Patient Failed")))
+        listOf(ResourceSyncException(ResourceType.Patient, Exception("Sync For Patient Failed"))),
       )
     val registerFragmentSpy = spyk(registerFragment)
     registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)
@@ -257,7 +258,6 @@ class RegisterFragmentTest : RobolectricTest() {
 
   @Test
   fun testOnSyncWithFailedJobStatusNonAuthErrorNullExceptionsRendersSyncFailedMessage() {
-
     val syncJobStatus: SyncJobStatus.Failed = mockk()
 
     every { syncJobStatus.exceptions } throws NullPointerException()
@@ -283,11 +283,11 @@ class RegisterFragmentTest : RobolectricTest() {
                   .message("Your credentials are undesirable")
                   .protocol(Protocol.HTTP_1_1)
                   .request(Request.Builder().url("http://fhircore.org/fhir/").build())
-                  .build()
-              )
-            )
-          )
-        )
+                  .build(),
+              ),
+            ),
+          ),
+        ),
       )
     val registerFragmentSpy = spyk(registerFragment)
     registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)

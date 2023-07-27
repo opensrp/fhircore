@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.shared.components
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -56,6 +57,7 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.quest.util.extensions.conditional
+import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val COLUMN_DIVIDER_TEST_TAG = "horizontalDividerTestTag"
 
@@ -64,7 +66,7 @@ fun GenerateView(
   modifier: Modifier = Modifier,
   properties: ViewProperties,
   resourceData: ResourceData,
-  navController: NavController
+  navController: NavController,
 ) {
   if (properties.visible.toBoolean()) {
     when (properties.viewType) {
@@ -73,14 +75,14 @@ fun GenerateView(
           modifier = modifier,
           compoundTextProperties = properties as CompoundTextProperties,
           resourceData = resourceData,
-          navController = navController
+          navController = navController,
         )
       ViewType.BUTTON ->
         ActionableButton(
           modifier = modifier,
           buttonProperties = properties as ButtonProperties,
           navController = navController,
-          resourceData = resourceData
+          resourceData = resourceData,
         )
       ViewType.COLUMN -> {
         val children = (properties as ColumnProperties).children
@@ -88,10 +90,21 @@ fun GenerateView(
           FlowColumn(modifier = modifier.padding(properties.padding.dp)) {
             properties.children.forEach { properties ->
               GenerateView(
-                modifier = generateModifier(properties),
+                modifier =
+                  generateModifier(properties)
+                    .conditional(
+                      properties.clickable.toBoolean(),
+                      {
+                        clickable {
+                          (properties as RowProperties)
+                            .actions
+                            .handleClickEvent(navController, resourceData)
+                        }
+                      },
+                    ),
                 properties = properties,
                 resourceData = resourceData,
-                navController = navController
+                navController = navController,
               )
             }
           }
@@ -105,23 +118,38 @@ fun GenerateView(
                 ViewAlignment.CENTER -> Alignment.CenterHorizontally
                 ViewAlignment.NONE -> Alignment.Start
               },
-            modifier = modifier.padding(properties.padding.dp),
+            modifier =
+              modifier
+                .padding(properties.padding.dp)
+                .conditional(
+                  properties.clickable.toBoolean(),
+                  {
+                    clickable {
+                      (properties as RowProperties)
+                        .actions
+                        .handleClickEvent(navController, resourceData)
+                    }
+                  },
+                ),
             verticalArrangement =
-              if (isWeighted) Arrangement.spacedBy(properties.spacedBy.dp)
-              else properties.arrangement?.position ?: Arrangement.Top
+              if (isWeighted) {
+                Arrangement.spacedBy(properties.spacedBy.dp)
+              } else {
+                properties.arrangement?.position ?: Arrangement.Top
+              },
           ) {
             children.forEachIndexed { index, child ->
               GenerateView(
                 modifier = generateModifier(child),
                 properties = child.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
-                navController = navController
+                navController = navController,
               )
               if (properties.showDivider.toBoolean() && index < children.lastIndex) {
                 Divider(
                   color = DividerColor,
                   thickness = 0.5.dp,
-                  modifier = Modifier.testTag(COLUMN_DIVIDER_TEST_TAG)
+                  modifier = Modifier.testTag(COLUMN_DIVIDER_TEST_TAG),
                 )
               }
             }
@@ -134,10 +162,21 @@ fun GenerateView(
           FlowRow(modifier = modifier.padding(properties.padding.dp)) {
             properties.children.forEach { properties ->
               GenerateView(
-                modifier = generateModifier(properties),
+                modifier =
+                  generateModifier(properties)
+                    .conditional(
+                      properties.clickable.toBoolean(),
+                      {
+                        clickable {
+                          (properties as RowProperties)
+                            .actions
+                            .handleClickEvent(navController, resourceData)
+                        }
+                      },
+                    ),
                 properties = properties.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
-                navController = navController
+                navController = navController,
               )
             }
           }
@@ -151,17 +190,32 @@ fun GenerateView(
                 ViewAlignment.CENTER -> Alignment.CenterVertically
                 ViewAlignment.NONE -> Alignment.CenterVertically
               },
-            modifier = modifier.padding(properties.padding.dp),
+            modifier =
+              modifier
+                .padding(properties.padding.dp)
+                .conditional(
+                  properties.clickable.toBoolean(),
+                  {
+                    clickable {
+                      (properties as RowProperties)
+                        .actions
+                        .handleClickEvent(navController, resourceData)
+                    }
+                  },
+                ),
             horizontalArrangement =
-              if (isWeighted) Arrangement.spacedBy(properties.spacedBy.dp)
-              else properties.arrangement?.position ?: Arrangement.Start
+              if (isWeighted) {
+                Arrangement.spacedBy(properties.spacedBy.dp)
+              } else {
+                properties.arrangement?.position ?: Arrangement.Start
+              },
           ) {
             for (child in children) {
               GenerateView(
                 modifier = generateModifier(child),
                 properties = child.interpolate(resourceData.computedValuesMap),
                 resourceData = resourceData,
-                navController = navController
+                navController = navController,
               )
             }
           }
@@ -172,21 +226,21 @@ fun GenerateView(
           modifier = modifier,
           serviceCardProperties = properties as ServiceCardProperties,
           resourceData = resourceData,
-          navController = navController
+          navController = navController,
         )
       ViewType.CARD ->
         CardView(
           modifier = modifier,
           viewProperties = properties as CardViewProperties,
           resourceData = resourceData,
-          navController = navController
+          navController = navController,
         )
       ViewType.PERSONAL_DATA ->
         PersonalDataView(
           modifier = modifier,
           personalDataCardProperties = properties as PersonalDataProperties,
           resourceData = resourceData,
-          navController = navController
+          navController = navController,
         )
       ViewType.SPACER ->
         SpacerView(modifier = modifier, spacerProperties = properties as SpacerProperties)
@@ -225,7 +279,9 @@ fun ColumnScope.generateModifier(viewProperties: ViewProperties): Modifier {
   var modifier =
     if (viewProperties.weight > 0) {
       Modifier.weight(viewProperties.weight)
-    } else Modifier
+    } else {
+      Modifier
+    }
 
   modifier = modifier.applyCommonProperties(viewProperties)
 

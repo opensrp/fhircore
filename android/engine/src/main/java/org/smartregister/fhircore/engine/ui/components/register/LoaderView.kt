@@ -28,6 +28,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,28 +54,29 @@ fun LoaderDialog(
   modifier: Modifier = Modifier,
   dialogMessage: String = stringResource(id = R.string.syncing),
   percentageProgressFlow: Flow<Int> = flowOf(0),
-  isSyncUploadFlow: Flow<Boolean> = flowOf(false)
+  isSyncUploadFlow: Flow<Boolean> = flowOf(false),
 ) {
+  val currentPercentage = percentageProgressFlow.collectAsState(0).value
   val openDialog = remember { mutableStateOf(true) }
   if (openDialog.value) {
     Dialog(
       onDismissRequest = { openDialog.value = true },
-      properties = DialogProperties(dismissOnBackPress = true)
+      properties = DialogProperties(dismissOnBackPress = true),
     ) {
       Box(Modifier.size(240.dp, 180.dp)) {
         Column(
           modifier = modifier.padding(8.dp),
           verticalArrangement = Arrangement.Center,
-          horizontalAlignment = Alignment.CenterHorizontally
+          horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           Surface(
             color = Color.Black.copy(alpha = 0.56f),
             modifier = modifier.fillMaxSize(),
-            shape = RoundedCornerShape(8)
+            shape = RoundedCornerShape(8),
           ) {
             Column(
               verticalArrangement = Arrangement.Center,
-              horizontalAlignment = Alignment.CenterHorizontally
+              horizontalAlignment = Alignment.CenterHorizontally,
             ) {
               CircularProgressIndicator(
                 color = Color.White,
@@ -83,20 +85,22 @@ fun LoaderDialog(
               )
               Row(
                 horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
               ) {
                 Text(
                   fontSize = 16.sp,
                   color = Color.White,
                   text =
-                    if (dialogMessage == stringResource(id = R.string.syncing))
+                    if (dialogMessage == stringResource(id = R.string.syncing)) {
                       stringResource(
                         id =
-                          if (isSyncUploadFlow.collectAsState(initial = false).value)
+                          if (isSyncUploadFlow.collectAsState(initial = false).value) {
                             R.string.syncing_up
-                          else R.string.syncing_down
+                          } else R.string.syncing_down,
                       )
-                    else dialogMessage,
+                    } else {
+                      dialogMessage
+                    },
                   modifier =
                     modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(vertical = 16.dp),
                 )
@@ -105,11 +109,7 @@ fun LoaderDialog(
                   Text(
                     fontSize = 15.sp,
                     color = Color.White,
-                    text =
-                      stringResource(
-                        id = R.string.percentage_progress,
-                        percentageProgressFlow.collectAsState(0).value
-                      ),
+                    text = stringResource(id = R.string.percentage_progress, currentPercentage),
                     modifier = modifier.padding(horizontal = 3.dp, vertical = 16.dp),
                   )
                 }
@@ -118,6 +118,11 @@ fun LoaderDialog(
           }
         }
       }
+    }
+  }
+  SideEffect {
+    if (currentPercentage >= 100) {
+      openDialog.value = false
     }
   }
 }

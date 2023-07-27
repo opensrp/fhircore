@@ -55,13 +55,15 @@ import org.smartregister.fhircore.geowidget.shadows.ShadowKujakuMapView
 @Config(
   sdk = [Build.VERSION_CODES.O_MR1],
   shadows = [ShadowConnectivityReceiver::class, ShadowKujakuMapView::class],
-  application = HiltTestApplication::class
+  application = HiltTestApplication::class,
 )
 @HiltAndroidTest
 class GeoWidgetFragmentTest {
   lateinit var geowidgetFragment: GeoWidgetFragment
   var kujakuMapView = mockk<KujakuMapView>()
+
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
   lateinit var kujakuMapViewLifecycle: String
 
@@ -138,7 +140,7 @@ class GeoWidgetFragmentTest {
     ReflectionHelpers.setField(
       mockedGeoWidgetFragment,
       "geoWidgetViewModel\$delegate",
-      lazy { geoWidgetViewModel }
+      lazy { geoWidgetViewModel },
     )
 
     mockedGeoWidgetFragment.onResume()
@@ -162,7 +164,7 @@ class GeoWidgetFragmentTest {
     ReflectionHelpers.setField(
       mockedGeoWidgetFragment,
       "geoWidgetViewModel\$delegate",
-      lazy { geoWidgetViewModel }
+      lazy { geoWidgetViewModel },
     )
 
     mockedGeoWidgetFragment.onResume()
@@ -206,11 +208,11 @@ class GeoWidgetFragmentTest {
     every { geoWidgetFragment.setFeatureClickListener() } just runs
     every {
       geoWidgetViewModel.geoWidgetEventLiveData.postValue(
-        GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration)
+        GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration),
       )
     } just runs
     geoWidgetViewModel.geoWidgetEventLiveData.postValue(
-      GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration)
+      GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration),
     )
 
     GeoWidgetEvent.OpenProfile(familyId, mockk())
@@ -218,7 +220,7 @@ class GeoWidgetFragmentTest {
 
     verify {
       geoWidgetViewModel.geoWidgetEventLiveData.postValue(
-        GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration)
+        GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration),
       )
     }
   }
@@ -242,5 +244,15 @@ class GeoWidgetFragmentTest {
     geowidgetFragment.zoomToPointsOnMap(featureCollection)
 
     verify { kujakuMapView.getMapAsync(any()) }
+  }
+
+  @Test
+  fun `enableFamilyRegistration should open FamilyRegistrationWithCoordinates`() {
+    every { kujakuMapView.addPoint(any(), any()) } just runs
+    val mockedGeoWidgetFragment = spyk(geowidgetFragment)
+    every { mockedGeoWidgetFragment.requireContext() } returns mockk()
+    mockedGeoWidgetFragment.enableFamilyRegistration()
+
+    verify { kujakuMapView.addPoint(eq(true), any()) }
   }
 }

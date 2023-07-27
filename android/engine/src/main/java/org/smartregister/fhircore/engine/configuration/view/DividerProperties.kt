@@ -16,11 +16,14 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class DividerProperties(
   override val viewType: ViewType = ViewType.BORDER,
   override val weight: Float = 0f,
@@ -33,11 +36,11 @@ data class DividerProperties(
   override val clickable: String = "false",
   override val visible: String = "true",
   val thickness: Float = 0.5f,
-) : ViewProperties() {
+) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): DividerProperties {
     return this.copy(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),
-      visible = visible.interpolate(computedValuesMap)
+      visible = visible.interpolate(computedValuesMap),
     )
   }
 }

@@ -16,11 +16,14 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class PersonalDataProperties(
   override val viewType: ViewType = ViewType.PERSONAL_DATA,
   override val weight: Float = 0f,
@@ -32,8 +35,8 @@ data class PersonalDataProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   override val visible: String = "true",
-  val personalDataItems: List<PersonalDataItem> = emptyList()
-) : ViewProperties() {
+  val personalDataItems: List<PersonalDataItem> = emptyList(),
+) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): PersonalDataProperties {
     return this.copy(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),
@@ -42,15 +45,16 @@ data class PersonalDataProperties(
         personalDataItems.map {
           PersonalDataItem(
             label = it.label.interpolate(computedValuesMap),
-            displayValue = it.displayValue.interpolate(computedValuesMap)
+            displayValue = it.displayValue.interpolate(computedValuesMap),
           )
-        }
+        },
     )
   }
 }
 
 @Serializable
+@Parcelize
 data class PersonalDataItem(
   val label: CompoundTextProperties,
-  val displayValue: CompoundTextProperties
-)
+  val displayValue: CompoundTextProperties,
+) : Parcelable, java.io.Serializable

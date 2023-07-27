@@ -40,6 +40,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 @HiltAndroidTest
 class RulesEngineServiceTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @Inject lateinit var rulesFactory: RulesFactory
   private lateinit var rulesEngineService: RulesFactory.RulesEngineService
   private val tasks =
@@ -58,7 +59,7 @@ class RulesEngineServiceTest : RobolectricTest() {
         id = "task3"
         description = "Covid vaccination"
         executionPeriod = Period().apply { start = DateTime.now().minusDays(1).toDate() }
-      }
+      },
     )
 
   @Before
@@ -99,8 +100,8 @@ class RulesEngineServiceTest : RobolectricTest() {
         listOf(
           RelatedResourceCount(relatedResourceType = ResourceType.Task, "abc", 20),
           RelatedResourceCount(relatedResourceType = ResourceType.Task, "zyx", 40),
-          RelatedResourceCount(relatedResourceType = ResourceType.Task, "xyz", 40)
-        )
+          RelatedResourceCount(relatedResourceType = ResourceType.Task, "xyz", 40),
+        ),
       )
     Assert.assertEquals(100, totalCount)
 
@@ -114,7 +115,7 @@ class RulesEngineServiceTest : RobolectricTest() {
       listOf(
         RelatedResourceCount(relatedResourceType = ResourceType.Task, "abc", 20),
         RelatedResourceCount(relatedResourceType = ResourceType.Task, "zyx", 40),
-        RelatedResourceCount(relatedResourceType = ResourceType.Task, "xyz", 40)
+        RelatedResourceCount(relatedResourceType = ResourceType.Task, "xyz", 40),
       )
     val theCount = rulesEngineService.retrieveCount("xyz", relatedResourceCounts)
     Assert.assertEquals(40, theCount)
@@ -130,20 +131,20 @@ class RulesEngineServiceTest : RobolectricTest() {
       rulesEngineService.sortResources(
         tasks,
         "Task.description",
-        Enumerations.DataType.STRING,
-        Order.ASCENDING
+        Enumerations.DataType.STRING.name,
+        Order.ASCENDING.name,
       )
     Assert.assertEquals(3, sortedResources?.size)
     Assert.assertTrue(
       listOf("Covid vaccination", "Issue bed net", "Malaria vaccination").sorted() ==
-        sortedResources?.map { (it as Task).description }
+        sortedResources?.map { (it as Task).description },
     )
     val sortedByDateResources =
       rulesEngineService.sortResources(
         resources = tasks,
         fhirPathExpression = "Task.executionPeriod.start",
-        dataType = Enumerations.DataType.DATETIME,
-        order = Order.ASCENDING
+        dataType = Enumerations.DataType.DATETIME.name,
+        order = Order.ASCENDING.name,
       )
     Assert.assertEquals(listOf("task1", "task3", "task2"), sortedByDateResources?.map { it.id })
   }
@@ -154,24 +155,24 @@ class RulesEngineServiceTest : RobolectricTest() {
       rulesEngineService.sortResources(
         tasks,
         "Task.description",
-        Enumerations.DataType.STRING,
-        Order.DESCENDING
+        Enumerations.DataType.STRING.name,
+        Order.DESCENDING.name,
       )
     Assert.assertEquals(3, sortedResources?.size)
     Assert.assertTrue(
       listOf("Covid vaccination", "Issue bed net", "Malaria vaccination").reversed() ==
-        sortedResources?.map { (it as Task).description }
+        sortedResources?.map { (it as Task).description },
     )
     val sortedByDateResources =
       rulesEngineService.sortResources(
         tasks,
         "Task.executionPeriod.start",
-        Enumerations.DataType.DATETIME,
-        Order.DESCENDING
+        Enumerations.DataType.DATETIME.name,
+        Order.DESCENDING.name,
       )
     Assert.assertEquals(
       listOf("task1", "task3", "task2").reversed(),
-      sortedByDateResources?.map { it.id }
+      sortedByDateResources?.map { it.id },
     )
   }
 
@@ -181,7 +182,7 @@ class RulesEngineServiceTest : RobolectricTest() {
 
     Assert.assertEquals(
       ServiceStatus.UPCOMING.name,
-      rulesEngineService.generateTaskServiceStatus(task)
+      rulesEngineService.generateTaskServiceStatus(task),
     )
   }
 
@@ -191,7 +192,7 @@ class RulesEngineServiceTest : RobolectricTest() {
 
     Assert.assertEquals(
       ServiceStatus.UPCOMING.name,
-      rulesEngineService.generateTaskServiceStatus(task)
+      rulesEngineService.generateTaskServiceStatus(task),
     )
   }
 
@@ -208,7 +209,7 @@ class RulesEngineServiceTest : RobolectricTest() {
 
     Assert.assertEquals(
       ServiceStatus.IN_PROGRESS.name,
-      rulesEngineService.generateTaskServiceStatus(task)
+      rulesEngineService.generateTaskServiceStatus(task),
     )
   }
 
@@ -218,7 +219,7 @@ class RulesEngineServiceTest : RobolectricTest() {
 
     Assert.assertEquals(
       ServiceStatus.COMPLETED.name,
-      rulesEngineService.generateTaskServiceStatus(task)
+      rulesEngineService.generateTaskServiceStatus(task),
     )
   }
 
@@ -228,13 +229,12 @@ class RulesEngineServiceTest : RobolectricTest() {
 
     Assert.assertEquals(
       ServiceStatus.EXPIRED.name,
-      rulesEngineService.generateTaskServiceStatus(task)
+      rulesEngineService.generateTaskServiceStatus(task),
     )
   }
 
   @Test
   fun `generateTaskServiceStatus() should return OVERDUE when Task#executionPeriod#hasEnd() and Task#executionPeriod#end#before(today())`() {
-
     val sdf = SimpleDateFormat("dd/MM/yyyy")
     val startDate: Date? = sdf.parse("01/01/2023")
     val endDate: Date? = sdf.parse("01/02/2023")
@@ -251,13 +251,12 @@ class RulesEngineServiceTest : RobolectricTest() {
 
     Assert.assertEquals(
       ServiceStatus.OVERDUE.name,
-      rulesEngineService.generateTaskServiceStatus(task)
+      rulesEngineService.generateTaskServiceStatus(task),
     )
   }
 
   @Test
   fun `generateTaskServiceStatus() should not return OVERDUE when Task#executionPeriod#hasEnd() andTask#executionPeriod#end#before(today()) and Task#status is not INPROGRESS or READY`() {
-
     val sdf = SimpleDateFormat("dd/MM/yyyy")
     val startDate: Date? = sdf.parse("01/01/2023")
     val endDate: Date? = sdf.parse("01/02/2023")
@@ -274,7 +273,7 @@ class RulesEngineServiceTest : RobolectricTest() {
 
     Assert.assertEquals(
       ServiceStatus.UPCOMING.name,
-      rulesEngineService.generateTaskServiceStatus(task)
+      rulesEngineService.generateTaskServiceStatus(task),
     )
   }
 }

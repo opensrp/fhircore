@@ -49,7 +49,7 @@ const val RESULT_VIEW_INDICATOR_DESCRIPTION = "resultViewIndicatorDescription"
 fun MeasureReportIndividualResultView(
   modifier: Modifier = Modifier,
   subjectViewData: MeasureReportSubjectViewData,
-  isMatchedIndicator: Boolean = true
+  isMatchedIndicator: Boolean = true,
 ) {
   Box(
     modifier =
@@ -58,18 +58,18 @@ fun MeasureReportIndividualResultView(
         .background(color = colorResource(id = R.color.white))
         .wrapContentWidth()
         .testTag(INDIVIDUAL_RESULT_VIEW_CONTAINER_TEST_TAG),
-    contentAlignment = Alignment.Center
+    contentAlignment = Alignment.Center,
   ) {
     Column(
       modifier = Modifier.wrapContentWidth().padding(16.dp),
       verticalArrangement = Arrangement.Center,
-      horizontalAlignment = Alignment.Start
+      horizontalAlignment = Alignment.Start,
     ) {
       Text(
         color = SubtitleTextColor,
         text = subjectViewData.display,
         fontSize = 16.sp,
-        modifier = Modifier.wrapContentWidth().testTag(PERSONAL_DETAILS_TEST_TAG)
+        modifier = Modifier.wrapContentWidth().testTag(PERSONAL_DETAILS_TEST_TAG),
       )
     }
   }
@@ -83,8 +83,8 @@ private fun MeasureReportIndividualResultViewPreview() {
       MeasureReportSubjectViewData(
         display = "Jacky Coughlin, F, 27",
         logicalId = "12444",
-        type = ResourceType.Patient
+        type = ResourceType.Patient,
       ),
-    isMatchedIndicator = true
+    isMatchedIndicator = true,
   )
 }

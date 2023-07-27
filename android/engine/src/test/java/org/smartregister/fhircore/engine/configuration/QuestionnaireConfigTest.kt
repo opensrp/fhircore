@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration
 
 import dagger.hilt.android.testing.HiltAndroidTest
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
@@ -62,16 +63,16 @@ class QuestionnaireConfigTest : RobolectricTest() {
         groupResource =
           GroupResourceConfig(
             groupIdentifier = "@{groupIdentifier}",
-            memberResourceType = "Condition",
+            memberResourceType = ResourceType.Condition,
             removeMember = true,
             removeGroup = true,
-            deactivateMembers = false
+            deactivateMembers = false,
           ),
         taskId = "@{taskId}",
         saveDraft = true,
         eventWorkflows = listOf(EventWorkflow()),
         planDefinitions = listOf("@{planDef1}"),
-        readOnlyLinkIds = listOf("@{linkId1}", "@{linkId2}")
+        readOnlyLinkIds = listOf("@{linkId1}", "@{linkId2}"),
       )
 
     val map =
@@ -86,7 +87,7 @@ class QuestionnaireConfigTest : RobolectricTest() {
         "dialogActionButtonText" to "Yes",
         "planDef1" to "97c5f33b-389c-4ecb-abd3-46c5a3ac4026",
         "linkId1" to "1",
-        "linkId2" to "2"
+        "linkId2" to "2",
       )
 
     val interpolatedConfig = questionnaireConfig.interpolate(map)
@@ -101,7 +102,7 @@ class QuestionnaireConfigTest : RobolectricTest() {
     Assert.assertEquals("Yes", interpolatedConfig.confirmationDialog?.actionButtonText)
     Assert.assertEquals(
       "97c5f33b-389c-4ecb-abd3-46c5a3ac4026",
-      interpolatedConfig.planDefinitions?.firstOrNull()
+      interpolatedConfig.planDefinitions?.firstOrNull(),
     )
     Assert.assertEquals("1", interpolatedConfig.readOnlyLinkIds!![0])
     Assert.assertEquals("2", interpolatedConfig.readOnlyLinkIds!![1])
@@ -131,7 +132,7 @@ class QuestionnaireConfigTest : RobolectricTest() {
   @Test
   fun testDefaultGroupResourceConfig() {
     val groupIdentifier = "groupIdentifier"
-    val memberResourceType = "Condition"
+    val memberResourceType = ResourceType.Condition
     val groupResourceConfig = GroupResourceConfig(groupIdentifier, memberResourceType)
     groupResourceConfig.apply {
       Assert.assertEquals(groupIdentifier, this.groupIdentifier)

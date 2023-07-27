@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.engine.task
 
 import androidx.annotation.VisibleForTesting
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.util.TerserUtil
 import com.google.android.fhir.FhirEngine
@@ -75,7 +73,7 @@ constructor(
   val fhirPathEngine: FHIRPathEngine,
   val transformSupportServices: TransformSupportServices,
   val defaultRepository: DefaultRepository,
-  val workManager: WorkManager
+  val fhirTaskUtil: FhirTaskUtil,
 ) {
   val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
@@ -84,7 +82,7 @@ constructor(
   suspend fun generateOrUpdateCarePlan(
     planDefinitionId: String,
     subject: Resource,
-    data: Bundle = Bundle()
+    data: Bundle = Bundle(),
   ): CarePlan? {
     return generateOrUpdateCarePlan(fhirEngine.get(planDefinitionId), subject, data)
   }
@@ -92,9 +90,8 @@ constructor(
   suspend fun generateOrUpdateCarePlan(
     planDefinition: PlanDefinition,
     subject: Resource,
-    data: Bundle = Bundle()
+    data: Bundle = Bundle(),
   ): CarePlan? {
-
     // Only one CarePlan per plan, update or init a new one if not exists
     val output =
       fhirEngine
@@ -120,7 +117,6 @@ constructor(
         val definition = action.activityDefinition(planDefinition)
 
         if (action.hasTransform()) {
-
           val taskPeriods = action.taskPeriods(definition, output)
 
           taskPeriods.forEachIndexed { index, period ->
@@ -139,17 +135,15 @@ constructor(
               transformSupportServices.simpleWorkerContext,
               source,
               structureMap,
-              output
+              output,
             )
           }
         }
 
         if (definition.hasDynamicValue()) {
           definition.dynamicValue.forEach { dynamicValue ->
-            if (definition.kind == ActivityDefinition.ActivityDefinitionKind.CAREPLAN)
-              dynamicValue
-                .expression
-                .expression
+            if (definition.kind == ActivityDefinition.ActivityDefinitionKind.CAREPLAN) {
+              dynamicValue.expression.expression
                 .let { fhirPathEngine.evaluate(null, input, planDefinition, subject, it) }
                 ?.takeIf { it.isNotEmpty() }
                 ?.let { evaluatedValue ->
@@ -160,10 +154,12 @@ constructor(
                     FhirContext.forR4Cached(),
                     dynamicValue.path.removePrefix("${definition.kind.display}."),
                     output,
-                    evaluatedValue.first()
+                    evaluatedValue.first(),
                   )
                 }
-            else throw UnsupportedOperationException("${definition.kind} not supported")
+            } else {
+              throw UnsupportedOperationException("${definition.kind} not supported")
+            }
           }
         }
         carePlanModified = true
@@ -172,42 +168,43 @@ constructor(
 
     if (carePlanModified) saveCarePlan(output)
 
-    // Schedule onetime immediate job that updates the status of the tasks
-    workManager.enqueue(OneTimeWorkRequestBuilder<FhirTaskPlanWorker>().build())
+    fhirTaskUtil.updateUpcomingTasksToDue()
 
     return if (output.hasActivity()) output else null
   }
 
   private suspend fun saveCarePlan(output: CarePlan) {
-    output.also { Timber.d(it.encodeResourceToString()) }.also { carePlan ->
-      // Save embedded resources inside as independent entries, clear embedded and save carePlan
-      val dependents = carePlan.contained.map { it }
+    output
+      .also { Timber.d(it.encodeResourceToString()) }
+      .also { carePlan ->
+        // Save embedded resources inside as independent entries, clear embedded and save carePlan
+        val dependents = carePlan.contained.map { it }
 
-      carePlan.contained.clear()
+        carePlan.contained.clear()
 
-      // Save CarePlan only if it has activity, otherwise just save contained/dependent resources
-      if (output.hasActivity()) defaultRepository.create(true, carePlan)
+        // Save CarePlan only if it has activity, otherwise just save contained/dependent resources
+        if (output.hasActivity()) defaultRepository.create(true, carePlan)
 
-      dependents.forEach { defaultRepository.create(true, it) }
+        dependents.forEach { defaultRepository.create(true, it) }
 
-      if (carePlan.status == CarePlan.CarePlanStatus.COMPLETED)
-        carePlan
-          .activity
-          .flatMap { it.outcomeReference }
-          .filter { it.reference.startsWith(ResourceType.Task.name) }
-          .mapNotNull { getTask(it.extractId()) }
-          .forEach {
-            if (it.status.isIn(TaskStatus.REQUESTED, TaskStatus.READY, TaskStatus.INPROGRESS)) {
-              cancelTaskByTaskId(it.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
+        if (carePlan.status == CarePlan.CarePlanStatus.COMPLETED) {
+          carePlan.activity
+            .flatMap { it.outcomeReference }
+            .filter { it.reference.startsWith(ResourceType.Task.name) }
+            .mapNotNull { getTask(it.extractId()) }
+            .forEach {
+              if (it.status.isIn(TaskStatus.REQUESTED, TaskStatus.READY, TaskStatus.INPROGRESS)) {
+                cancelTaskByTaskId(it.logicalId, "${carePlan.fhirType()} ${carePlan.status}")
+              }
             }
-          }
-    }
+        }
+      }
   }
 
   suspend fun updateTaskDetailsByResourceId(
     id: String,
     status: TaskStatus,
-    reason: String? = null
+    reason: String? = null,
   ) {
     getTask(id)
       ?.apply {
@@ -233,7 +230,7 @@ constructor(
   private fun PlanDefinition.PlanDefinitionActionComponent.passesConditions(
     focus: Resource?,
     root: Resource?,
-    base: Base
+    base: Base,
   ) =
     this.condition.all {
       require(it.kind == PlanDefinition.ActionConditionKind.APPLICABILITY) {
@@ -248,22 +245,21 @@ constructor(
     }
 
   private fun PlanDefinition.PlanDefinitionActionComponent.activityDefinition(
-    planDefinition: PlanDefinition
+    planDefinition: PlanDefinition,
   ) =
-    planDefinition.contained.filter { it.resourceType == ResourceType.ActivityDefinition }.first {
-      it.logicalId == this.definitionCanonicalType.value
-    } as
-      ActivityDefinition
+    planDefinition.contained
+      .filter { it.resourceType == ResourceType.ActivityDefinition }
+      .first { it.logicalId == this.definitionCanonicalType.value } as ActivityDefinition
 
   private fun PlanDefinition.PlanDefinitionActionComponent.taskPeriods(
     definition: ActivityDefinition,
-    carePlan: CarePlan
+    carePlan: CarePlan,
   ): List<Period> {
     return when {
       definition.hasDosage() -> extractTaskPeriodsFromDosage(definition.dosage, carePlan)
       definition.hasTiming() && !definition.hasTimingTiming() ->
         throw IllegalArgumentException(
-          "Timing component should only be Timing. Can not handle ${timing.fhirType()}"
+          "Timing component should only be Timing. Can not handle ${timing.fhirType()}",
         )
       else -> extractTaskPeriodsFromTiming(definition.timingTiming, carePlan)
     }
@@ -291,16 +287,17 @@ constructor(
       DateTimeType(if (timing.repeat.hasCount()) carePlan.period.start else Date())
 
     for (i in 1..count) {
-      if (periodExpression.isNotBlank() && offsetDate.hasValue())
+      if (periodExpression.isNotBlank() && offsetDate.hasValue()) {
         evaluateToDate(offsetDate, "\$this + $periodExpression")?.let { offsetDate = it }
+      }
 
       Period()
         .apply {
           start = offsetDate.value
           end =
-            if (durationExpression.isNotBlank() && offsetDate.hasValue())
+            if (durationExpression.isNotBlank() && offsetDate.hasValue()) {
               evaluateToDate(offsetDate, "\$this + $durationExpression")?.value
-            else carePlan.period.end
+            } else carePlan.period.end
         }
         .also { taskPeriods.add(it) }
     }
@@ -310,9 +307,9 @@ constructor(
 
   private fun extractTaskPeriodsFromDosage(dosage: List<Dosage>, carePlan: CarePlan): List<Period> {
     val taskPeriods = mutableListOf<Period>()
-    dosage.flatMap { extractTaskPeriodsFromTiming(it.timing, carePlan) }.also {
-      taskPeriods.addAll(it)
-    }
+    dosage
+      .flatMap { extractTaskPeriodsFromTiming(it.timing, carePlan) }
+      .also { taskPeriods.addAll(it) }
 
     return taskPeriods
   }
@@ -325,12 +322,12 @@ constructor(
    *
    * @param questionnaireConfig The QuestionnaireConfig that contains the CarePlanConfigs
    * @param subject The subject to evaluate CarePlanConfig FHIR path expressions against if the
-   * CarePlanConfig does not reference a resource.
+   *   CarePlanConfig does not reference a resource.
    */
   suspend fun conditionallyUpdateResourceStatus(
     questionnaireConfig: QuestionnaireConfig,
     subject: Resource,
-    bundle: Bundle
+    bundle: Bundle,
   ) {
     questionnaireConfig.eventWorkflows
       .filter { it.eventType == EventType.RESOURCE_CLOSURE }
@@ -343,7 +340,7 @@ constructor(
               subject = subject,
               bundle = bundle,
               triggerConditions = currentResourceTriggerConditions?.conditionalFhirPathExpressions,
-              matchAll = currentResourceTriggerConditions?.matchAll!!
+              matchAll = currentResourceTriggerConditions?.matchAll!!,
             )
 
           if (resourceClosureConditionsMet) {
@@ -364,11 +361,12 @@ constructor(
       }
     }
   }
+
   fun evaluateToBoolean(
     subject: Resource,
     bundle: Bundle,
     triggerConditions: List<String>?,
-    matchAll: Boolean = false
+    matchAll: Boolean = false,
   ): Boolean {
     return if (matchAll) {
       triggerConditions?.all { triggerCondition ->
