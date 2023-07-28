@@ -43,7 +43,7 @@ import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureRepo
 
 @Composable
 fun MeasureReportListScreen(
-  mainNavController: NavController,
+  navController: NavController,
   dataList: Flow<PagingData<ReportConfiguration>>,
   onReportMeasureClicked: (List<ReportConfiguration>) -> Unit,
   modifier: Modifier = Modifier
@@ -55,7 +55,7 @@ fun MeasureReportListScreen(
       TopAppBar(
         title = { Text(text = stringResource(R.string.reports)) },
         navigationIcon = {
-          IconButton(onClick = { mainNavController.popBackStack() }) {
+          IconButton(onClick = { navController.popBackStack() }) {
             Icon(Icons.Filled.ArrowBack, null)
           }
         },
