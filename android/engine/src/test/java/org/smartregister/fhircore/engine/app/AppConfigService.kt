@@ -24,6 +24,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.sync.ResourceTag
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 
 class AppConfigService @Inject constructor(@ApplicationContext val context: Context) :
   ConfigService {
@@ -63,12 +64,13 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
           }
       ),
       ResourceTag(
-        type = ResourceType.Practitioner.name,
+        type = SharedPreferenceKey.PRACTITIONER_ID.name,
         tag =
           Coding().apply {
             system = PRACTITIONER_SYSTEM
             display = PRACTITIONER_DISPLAY
-          }
+          },
+        isResource = false
       )
     )
 
