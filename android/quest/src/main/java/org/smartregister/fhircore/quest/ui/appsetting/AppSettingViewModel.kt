@@ -247,6 +247,9 @@ constructor(
       )
     }
 
-    return Bundle().apply { entry = bundleEntryComponents }
+    return Bundle().apply {
+      type = Bundle.BundleType.BATCH
+      entry = bundleEntryComponents
+    }
   }
 }
