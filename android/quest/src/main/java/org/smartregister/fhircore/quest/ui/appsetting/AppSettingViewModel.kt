@@ -27,8 +27,10 @@ import java.nio.charset.Charset
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.RequestBody.Companion.toRequestBody
 import okio.ByteString.Companion.decodeBase64
 import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.BuildConfig
@@ -40,11 +42,13 @@ import org.smartregister.fhircore.engine.configuration.profile.ProfileConfigurat
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
@@ -120,36 +124,45 @@ constructor(
             val chunkedResourceIdList =
               entry.value.chunked(ConfigurationRegistry.MANIFEST_PROCESSOR_BATCH_SIZE)
             chunkedResourceIdList.forEach { parentIt ->
-              val ids = parentIt.joinToString(",") { it.focus.extractId() }
-              val resourceUrlPath =
-                "${entry.key}?${Composition.SP_RES_ID}=$ids&_count=${ConfigurationRegistry.HAPI_FHIR_DEFAULT_COUNT}"
-              Timber.d("Fetching config: $resourceUrlPath")
+              Timber.d("Fetching config resource ${entry.key}: with ids $parentIt")
+              fhirResourceDataSource.post(
+                  "",
+                  generateRequestBundle(entry.key, parentIt.map { it.focus.extractId() })
+                    .encodeResourceToString()
+                    .toRequestBody(NetworkModule.JSON_MEDIA_TYPE)
+                )
+                .entry
+                .forEach { bundleEntryComponent ->
+                  if (bundleEntryComponent.resource != null) {
 
-              fhirResourceDataSource.getResource(resourceUrlPath).entry.forEach {
-                bundleEntryComponent ->
-                defaultRepository.createRemote(false, bundleEntryComponent.resource)
+                    defaultRepository.createRemote(false, bundleEntryComponent.resource)
 
-                if (bundleEntryComponent.resource is Binary) {
-                  val binary = bundleEntryComponent.resource as Binary
-                  binary
-                    .data
-                    .decodeToString()
-                    .decodeBase64()
-                    ?.string(Charset.defaultCharset())
-                    ?.let {
-                      val config =
-                        it.tryDecodeJson<RegisterConfiguration>()
-                          ?: it.tryDecodeJson<ProfileConfiguration>()
+                    if (bundleEntryComponent.resource is Binary) {
+                      val binary = bundleEntryComponent.resource as Binary
+                      binary
+                        .data
+                        .decodeToString()
+                        .decodeBase64()
+                        ?.string(Charset.defaultCharset())
+                        ?.let {
+                          val config =
+                            it.tryDecodeJson<RegisterConfiguration>()
+                              ?: it.tryDecodeJson<ProfileConfiguration>()
 
-                      when (config) {
-                        is RegisterConfiguration ->
-                          config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
-                        is ProfileConfiguration ->
-                          config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
-                      }
+                          when (config) {
+                            is RegisterConfiguration ->
+                              config.fhirResource.dependentResourceTypes(
+                                patientRelatedResourceTypes
+                              )
+                            is ProfileConfiguration ->
+                              config.fhirResource.dependentResourceTypes(
+                                patientRelatedResourceTypes
+                              )
+                          }
+                        }
                     }
+                  }
                 }
-              }
             }
           }
 
@@ -218,4 +231,22 @@ constructor(
 
   fun hasDebugSuffix(): Boolean =
     appId.value?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true && BuildConfig.DEBUG
+
+  private fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
+    val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
+
+    idList.forEach {
+      bundleEntryComponents.add(
+        Bundle.BundleEntryComponent().apply {
+          request =
+            Bundle.BundleEntryRequestComponent().apply {
+              url = "$resourceType/$it"
+              method = Bundle.HTTPVerb.GET
+            }
+        }
+      )
+    }
+
+    return Bundle().apply { entry = bundleEntryComponents }
+  }
 }
