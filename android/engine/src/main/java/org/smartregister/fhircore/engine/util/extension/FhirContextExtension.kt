@@ -28,8 +28,8 @@ fun FhirContext.getCustomJsonParser(): IParser {
         listOf(
           PractitionerDetails::class.java,
           FhirPractitionerDetails::class.java,
-          LocationHierarchy::class.java
-        )
+          LocationHierarchy::class.java,
+        ),
       )
     }
     .newJsonParser()
