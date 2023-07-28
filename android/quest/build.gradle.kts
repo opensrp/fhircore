@@ -54,7 +54,7 @@ android {
     minSdk = 26
     targetSdk = 33
     versionCode = 3
-    versionName = "0.2.4"
+    versionName = "0.2.5"
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
