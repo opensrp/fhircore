@@ -754,9 +754,9 @@ constructor(
   )
 
   companion object {
-    const val SNOMED_SYSTEM = "http://www.snomed.org/"
-    const val PATIENT_CONDITION_RESOLVED_CODE = "370996005"
-    const val PATIENT_CONDITION_RESOLVED_DISPLAY = "resolved"
+    const val SNOMED_SYSTEM = "http://hl7.org/fhir/R4B/valueset-condition-clinical.html"
+    const val PATIENT_CONDITION_RESOLVED_CODE = "resolved"
+    const val PATIENT_CONDITION_RESOLVED_DISPLAY = "Resolved"
     const val PNC_CONDITION_TO_CLOSE_RESOURCE_ID = "pncConditionToClose"
     const val SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID = "sickChildConditionToClose"
   }
