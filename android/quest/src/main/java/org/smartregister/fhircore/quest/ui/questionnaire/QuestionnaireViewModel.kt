@@ -49,6 +49,7 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
+import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -65,6 +66,7 @@ import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
@@ -211,17 +213,10 @@ constructor(
           date = extractionDate
         }
 
-      val group =
-        questionnaireConfig.groupResource?.groupIdentifier?.let { groupId ->
-          defaultRepository.loadResource<Group>(groupId)
-        }
-
       bundle?.entry?.forEach { bundleEntryComponent ->
         bundleEntryComponent.resource?.run {
           applyResourceMetadata()
-          defaultRepository.addOrUpdate(resource = this)
           val subjectType = questionnaireSubjectType(questionnaire, questionnaireConfig)
-
           if (
             currentQuestionnaireResponse.subject.reference.isNullOrEmpty() &&
               subjectType != null &&
@@ -231,7 +226,14 @@ constructor(
             currentQuestionnaireResponse.subject = this.logicalId.asReference(subjectType)
           }
 
-          group?.let { addMemberToGroup(it) }
+          // TODO Fix StructureMaps to use the QuestionnaireResponse subject directly
+          if (this.resourceType == subjectType) {
+            this.id = currentQuestionnaireResponse.subject.extractId()
+          }
+
+          defaultRepository.addOrUpdate(resource = this)
+
+          addMemberToConfiguredGroup(questionnaireConfig.groupResource)
 
           // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
           val listEntryComponent =
@@ -243,9 +245,6 @@ constructor(
           listResource.addEntry(listEntryComponent)
         }
       }
-
-      // Update Group resource to save members
-      group?.let { defaultRepository.addOrUpdate(resource = it) }
 
       // Save questionnaire response only if subject is present
       if (currentQuestionnaireResponse.subject != null) {
@@ -476,25 +475,36 @@ constructor(
     }
   }
 
-  /** Adds [Resource] to [Group.member] */
-  fun Resource.addMemberToGroup(group: Group) {
-    this.run {
-      if (
-        this.resourceType.isIn(
-          ResourceType.CareTeam,
-          ResourceType.Device,
-          ResourceType.Group,
-          ResourceType.HealthcareService,
-          ResourceType.Location,
-          ResourceType.Organization,
-          ResourceType.Patient,
-          ResourceType.Practitioner,
-          ResourceType.PractitionerRole,
-          ResourceType.Specimen,
-        )
-      ) {
-        group.addMember(Group.GroupMemberComponent().apply { entity = asReference() })
-      }
+  /**
+   * Adds [Resource] to [Group.member] if the member does not exist and if [Resource.logicalId] is
+   * NOT the same as the retrieved [GroupResourceConfig.groupIdentifier] (Cannot add a [Group] as
+   * member of itself.
+   */
+  private suspend fun Resource.addMemberToConfiguredGroup(groupConfig: GroupResourceConfig?) {
+    val group: Group =
+      groupConfig?.groupIdentifier?.let { loadResource(ResourceType.Group, it) } as Group? ?: return
+    val reference = asReference()
+    val member = group.member.find { it.entity == reference }
+
+    // Cannot add Group as member of itself; Cannot not duplicate existing members
+    if (this.logicalId == group.logicalId || member != null) return
+
+    if (
+      this.resourceType.isIn(
+        ResourceType.CareTeam,
+        ResourceType.Device,
+        ResourceType.Group,
+        ResourceType.HealthcareService,
+        ResourceType.Location,
+        ResourceType.Organization,
+        ResourceType.Patient,
+        ResourceType.Practitioner,
+        ResourceType.PractitionerRole,
+        ResourceType.Specimen,
+      )
+    ) {
+      group.addMember(Group.GroupMemberComponent().apply { entity = reference })
+      defaultRepository.addOrUpdate(resource = group)
     }
   }
 

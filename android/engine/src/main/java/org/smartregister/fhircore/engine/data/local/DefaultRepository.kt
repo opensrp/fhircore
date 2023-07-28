@@ -229,7 +229,8 @@ constructor(
       resource.updateLastUpdated()
       try {
         fhirEngine.get(resource.resourceType, resource.logicalId).run {
-          fhirEngine.update(updateFrom(resource))
+          val updateFrom = updateFrom(resource)
+          fhirEngine.update(updateFrom)
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         create(addMandatoryTags, resource)
