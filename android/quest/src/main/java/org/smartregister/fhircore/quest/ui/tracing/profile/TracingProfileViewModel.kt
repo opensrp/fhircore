@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.tracing.profile
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.runtime.MutableState
@@ -44,8 +45,6 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -137,7 +136,8 @@ constructor(
 
     when (event) {
       is TracingProfileEvent.LoadQuestionnaire ->
-        event.context.launchQuestionnaire<QuestionnaireActivity>(
+        QuestionnaireActivity.launchQuestionnaire(
+          event.context,
           event.questionnaireId,
           clientIdentifier = patientId,
           populationResources = profile.populationResources
@@ -145,7 +145,8 @@ constructor(
       is TracingProfileEvent.OverflowMenuClick -> {
         when (event.menuId) {
           R.id.edit_profile ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
+            QuestionnaireActivity.launchQuestionnaire(
+              event.context,
               questionnaireId = EDIT_PROFILE_FORM,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.EDIT
@@ -162,7 +163,8 @@ constructor(
         }
       }
       is TracingProfileEvent.OpenTaskForm ->
-        event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
+        QuestionnaireActivity.launchQuestionnaireForResult(
+          event.context as Activity,
           questionnaireId = event.taskFormId,
           clientIdentifier = patientId,
           backReference = event.taskId.asReference(ResourceType.Task).reference,
@@ -170,7 +172,8 @@ constructor(
         )
       is TracingProfileEvent.LoadOutComesForm -> {
         profile.isHomeTracing?.let { isHomeTracing ->
-          event.context.launchQuestionnaire<QuestionnaireActivity>(
+          QuestionnaireActivity.launchQuestionnaire(
+            event.context,
             // TODO: Replace with actual tracing outcomes url
             if (isHomeTracing) "tests/home_outcome.json" else "tests/phone_outcome.json",
             clientIdentifier = patientId,

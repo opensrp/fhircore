@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
@@ -514,5 +515,58 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             )
           }
         }
+
+    fun launchQuestionnaire(
+      context: Context,
+      questionnaireId: String,
+      clientIdentifier: String? = null,
+      groupIdentifier: String? = null,
+      questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
+      intentBundle: Bundle = Bundle.EMPTY,
+      launchContexts: ArrayList<Resource>? = null,
+      populationResources: ArrayList<Resource>? = null
+    ) {
+      context.startActivity(
+        Intent(context, QuestionnaireActivity::class.java)
+          .putExtras(intentBundle)
+          .putExtras(
+            intentArgs(
+              clientIdentifier = clientIdentifier,
+              groupIdentifier = groupIdentifier,
+              formName = questionnaireId,
+              questionnaireType = questionnaireType,
+              launchContexts = launchContexts,
+              populationResources = populationResources ?: ArrayList()
+            )
+          )
+      )
+    }
+
+    fun launchQuestionnaireForResult(
+      context: Activity,
+      questionnaireId: String,
+      clientIdentifier: String? = null,
+      questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
+      backReference: String? = null,
+      intentBundle: Bundle = Bundle.EMPTY,
+      launchContexts: ArrayList<Resource>? = null,
+      populationResources: ArrayList<Resource>? = null
+    ) {
+      context.startActivityForResult(
+        Intent(context, QuestionnaireActivity::class.java)
+          .putExtras(intentBundle)
+          .putExtras(
+            intentArgs(
+              clientIdentifier = clientIdentifier,
+              formName = questionnaireId,
+              questionnaireType = questionnaireType,
+              backReference = backReference,
+              launchContexts = launchContexts,
+              populationResources = populationResources ?: ArrayList()
+            )
+          ),
+        0
+      )
+    }
   }
 }

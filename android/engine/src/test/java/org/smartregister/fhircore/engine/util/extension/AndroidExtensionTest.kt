@@ -16,21 +16,16 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.app.Activity
 import android.app.Application
-import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.just
-import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
-import org.hl7.fhir.r4.model.Resource
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -38,8 +33,6 @@ import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 
 class AndroidExtensionTest : RobolectricTest() {
   private lateinit var context: Application
@@ -82,193 +75,5 @@ class AndroidExtensionTest : RobolectricTest() {
 
     // Fixes a compose and activity test failure
     Shadows.shadowOf(Looper.getMainLooper()).idle()
-  }
-
-  @Test
-  fun launchQuestionnaireCallsStartActivity() {
-    val ctx = mockk<Context>()
-    every { ctx.packageName } returns context.packageName
-    every { ctx.startActivity(any()) } just runs
-    ctx.launchQuestionnaire<QuestionnaireActivity>(
-      "testQuestionnaire",
-      clientIdentifier = null,
-      populationResources = arrayListOf()
-    )
-
-    verify { ctx.startActivity(any()) }
-  }
-
-  @Test
-  fun launchQuestionnaireForResultCallsStartActivityForResultWithRequestCode() {
-    val ctx = spyk<Activity>()
-    every { ctx.packageName } returns context.packageName
-    every { ctx.startActivityForResult(any(), any()) } just runs
-    ctx.launchQuestionnaireForResult<QuestionnaireActivity>(
-      "testQuestionnaire",
-      clientIdentifier = null,
-      populationResources = arrayListOf()
-    )
-    verify { ctx.startActivityForResult(any(), withArg { assertEquals(0, it) }) }
-  }
-
-  @Test
-  fun launchQuestionnaireForResultCallsStartActivityForResultWithNullLaunchContexts() {
-    val ctx = spyk<Activity>()
-    every { ctx.packageName } returns context.packageName
-    every { ctx.startActivityForResult(any(), any()) } just runs
-    ctx.launchQuestionnaireForResult<QuestionnaireActivity>(
-      "testQuestionnaire",
-      launchContexts = null,
-      populationResources = arrayListOf()
-    )
-    verify { ctx.startActivityForResult(any(), withArg { assertEquals(0, it) }) }
-  }
-
-  @Test
-  fun launchQuestionnaireCallsStartActivityForResultWithNullLaunchContexts() {
-    val ctx = spyk<Activity>()
-    every { ctx.packageName } returns context.packageName
-    every { ctx.startActivity(any()) } just runs
-    ctx.launchQuestionnaire<QuestionnaireActivity>(
-      "testQuestionnaire",
-      launchContexts = null,
-      populationResources = arrayListOf()
-    )
-    verify { ctx.startActivity(any()) }
-  }
-
-  @Test
-  fun launchQuestionnaire_StartActivityCalledWithAllParameters() {
-    val questionnaireId = "questionnaire_id"
-    val clientIdentifier = "client_identifier"
-    val groupIdentifier = "group_identifier"
-    val intentBundle = Bundle.EMPTY
-    val questionnaireType = QuestionnaireType.DEFAULT
-    val launchContexts = mockk<ArrayList<Resource>>(relaxed = true)
-    val populationResources = mockk<ArrayList<Resource>>(relaxed = true)
-
-    val ctx = spyk<Activity>()
-    every { ctx.packageName } returns context.packageName
-    every { ctx.startActivity(any()) } just runs
-
-    ctx.launchQuestionnaire<QuestionnaireActivity>(
-      questionnaireId = questionnaireId,
-      clientIdentifier = clientIdentifier,
-      groupIdentifier = groupIdentifier,
-      intentBundle = intentBundle,
-      questionnaireType = questionnaireType,
-      launchContexts = launchContexts,
-      populationResources = populationResources
-    )
-
-    val expectedIntent =
-      Intent(ctx, QuestionnaireActivity::class.java)
-        .putExtras(intentBundle)
-        .putExtras(
-          QuestionnaireActivity.intentArgs(
-            clientIdentifier = clientIdentifier,
-            groupIdentifier = groupIdentifier,
-            formName = questionnaireId,
-            questionnaireType = questionnaireType,
-            launchContexts = launchContexts,
-            populationResources = populationResources
-          )
-        )
-
-    verify {
-      ctx.startActivity(
-        withArg {
-          assertEquals(
-            expectedIntent.getStringExtra("clientIdentifier"),
-            it.getStringExtra("clientIdentifier")
-          )
-          assertEquals(
-            expectedIntent.getStringExtra("groupIdentifier"),
-            it.getStringExtra("groupIdentifier")
-          )
-          assertEquals(expectedIntent.getStringExtra("formName"), it.getStringExtra("formName"))
-          assertEquals(
-            expectedIntent.getStringExtra("questionnaireType"),
-            it.getStringExtra("questionnaireType")
-          )
-          assertEquals(
-            expectedIntent.getStringArrayListExtra("launchContexts"),
-            it.getStringArrayListExtra("launchContexts")
-          )
-          assertEquals(
-            expectedIntent.getStringArrayListExtra("populationResources"),
-            it.getStringArrayListExtra("populationResources")
-          )
-        }
-      )
-    }
-  }
-
-  @Test
-  fun launchQuestionnaireCallsStartActivityForResultWithAllParameters() {
-    val questionnaireId = "questionnaire_id"
-    val clientIdentifier = "client_identifier"
-    val backReference = "back_reference"
-    val intentBundle = Bundle.EMPTY
-    val questionnaireType = QuestionnaireType.DEFAULT
-    val launchContexts = mockk<ArrayList<Resource>>(relaxed = true)
-    val populationResources = mockk<ArrayList<Resource>>(relaxed = true)
-
-    val ctx = spyk<Activity>()
-    every { ctx.packageName } returns context.packageName
-    every { ctx.startActivityForResult(any(), any()) } just runs
-
-    ctx.launchQuestionnaireForResult<QuestionnaireActivity>(
-      questionnaireId = questionnaireId,
-      clientIdentifier = clientIdentifier,
-      questionnaireType = questionnaireType,
-      backReference = backReference,
-      intentBundle = intentBundle,
-      launchContexts = launchContexts,
-      populationResources = populationResources
-    )
-
-    val expectedIntent =
-      Intent(ctx, QuestionnaireActivity::class.java)
-        .putExtras(intentBundle)
-        .putExtras(
-          QuestionnaireActivity.intentArgs(
-            clientIdentifier = clientIdentifier,
-            backReference = backReference,
-            formName = questionnaireId,
-            questionnaireType = questionnaireType,
-            launchContexts = launchContexts,
-            populationResources = populationResources
-          ),
-        )
-
-    verify {
-      ctx.startActivityForResult(
-        withArg {
-          assertEquals(
-            expectedIntent.getStringExtra("clientIdentifier"),
-            it.getStringExtra("clientIdentifier")
-          )
-          assertEquals(
-            expectedIntent.getStringExtra("backReference"),
-            it.getStringExtra("backReference")
-          )
-          assertEquals(expectedIntent.getStringExtra("formName"), it.getStringExtra("formName"))
-          assertEquals(
-            expectedIntent.getStringExtra("questionnaireType"),
-            it.getStringExtra("questionnaireType")
-          )
-          assertEquals(
-            expectedIntent.getStringArrayListExtra("launchContexts"),
-            it.getStringArrayListExtra("launchContexts")
-          )
-          assertEquals(
-            expectedIntent.getStringArrayListExtra("populationResources"),
-            it.getStringArrayListExtra("populationResources")
-          )
-        },
-        0
-      )
-    }
   }
 }
