@@ -305,11 +305,6 @@ tasks.withType<Test> {
   minHeapSize = "4608m"
   maxHeapSize = "4608m"
   maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
-
-  if (!name.toLowerCase().contains("performance")) {
-    System.out.println("Trying to exclude the performance package from task name [$name]")
-    exclude("org.smartregister.fhircore.performance.*")
-  }
 }
 
 configurations {

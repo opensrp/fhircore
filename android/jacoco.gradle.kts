@@ -112,9 +112,10 @@ tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
       include(
         listOf(
           "outputs/unit_test_code_coverage/${moduleVariant}UnitTest/test${if(isApplication) actualProjectName.capitalize() else ""}DebugUnitTest.exec",
-          "outputs/code_coverage/${moduleVariant}AndroidTest/connected/**/*.ec"
+          "outputs/code_coverage/${moduleVariant}AndroidTest/connected/**/*.ec",
         )
       )
-    }
+    },
+    "${project.projectDir}/coverage.ec"
   )
 }
