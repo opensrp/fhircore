@@ -4,16 +4,8 @@
   "name": "mPower Family Registration",
   "title": "mPower Family Registration",
   "description": "mPower Family Registration",
-  "publisher": "mPower",
-  "meta": {
-    "security": [
-      {
-        "code": "3",
-        "display": "Helsehjelp",
-        "system": "urn:oid:2.16.578.1.12.4.1.1.7618"
-      }
-    ]
-  },
+  "status": "draft",
+  "publisher": "mPower-mcGovern",
   "useContext": [
     {
       "code": {
@@ -1120,6 +1112,7 @@
       "type": "choice",
       "text": "সম্পদের তালিকা",
       "repeats": true,
+      "required": true,
       "answerOption": [
         {
           "valueCoding": {
@@ -1151,6 +1144,20 @@
             "code": "Electric_Fan",
             "system": "urn:uuid:747ea5fb-2796-46b5-808c-0d1f90bc6a5d",
             "display": "বৈদ্যুতিক ফ্যান"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+              "valueBoolean": true
+            }
+          ],
+          "valueCoding": {
+            "id": "826e1137-2b5d-450d-be0f-5ecd00c05b53",
+            "code": "chk_none",
+            "system": "urn:uuid:747ea5fb-2796-46b5-808c-0d1f90bc6a5d",
+            "display": "কোনোটিই নেই"
           }
         }
       ],
