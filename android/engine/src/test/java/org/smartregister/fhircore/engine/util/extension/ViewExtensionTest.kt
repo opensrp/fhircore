@@ -248,12 +248,11 @@ class ViewExtensionTest : RobolectricTest() {
     val motionEvent = MotionEvent.obtain(5L, 5L, 10, 5F, 5F, 0)
     motionEvent.action = MotionEvent.ACTION_UP
 
-    val onClicked = spyk({})
-    editText.addOnDrawableClickListener(DrawablePosition.DRAWABLE_RIGHT, onClicked)
+    var onClicked = false
+    editText.addOnDrawableClickListener(DrawablePosition.DRAWABLE_RIGHT) { onClicked = true }
 
     verify { editText.setOnTouchListener(capture(onTouchListenerSlot)) }
     Assert.assertTrue(onTouchListenerSlot.captured.onTouch(editText, motionEvent))
-
-    verify { onClicked.invoke() }
+    Assert.assertTrue(onClicked)
   }
 }

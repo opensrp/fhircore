@@ -24,7 +24,8 @@ import io.mockk.mockk
 import io.mockk.spyk
 import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType
 import okhttp3.ResponseBody
 import okio.BufferedSource
@@ -40,7 +41,7 @@ import retrofit2.Call
 import retrofit2.Response
 
 class ReferenceUrlResolverTest : RobolectricTest() {
-  @get:Rule val coroutineTestRule = CoroutineTestRule()
+  @OptIn(ExperimentalCoroutinesApi::class) @get:Rule val coroutineTestRule = CoroutineTestRule()
   private lateinit var referenceUrlResolver: ReferenceUrlResolver
 
   private val fhirEngine = mockk<FhirEngine>()
@@ -54,57 +55,51 @@ class ReferenceUrlResolverTest : RobolectricTest() {
   }
 
   @Test
-  fun testResolveBinaryResourceShouldReturnBinary() {
-    coroutineTestRule.runBlockingTest {
-      val binary = Binary().apply { id = "bId" }
-      coEvery { fhirEngine.get(ResourceType.Binary, any()) } returns binary
-      Assert.assertEquals(
-        binary,
-        referenceUrlResolver.resolveBinaryResource(
-          "https://fhir-server.org/Binary/sample-binary-image"
-        )
+  fun testResolveBinaryResourceShouldReturnBinary() = runTest {
+    val binary = Binary().apply { id = "bId" }
+    coEvery { fhirEngine.get(ResourceType.Binary, any()) } returns binary
+    Assert.assertEquals(
+      binary,
+      referenceUrlResolver.resolveBinaryResource(
+        "https://fhir-server.org/Binary/sample-binary-image"
       )
-    }
+    )
   }
 
   @Test
-  fun testResolveImageUrlWithNullBodyShouldReturnNull() {
-    coroutineTestRule.runBlockingTest {
-      val mockResponse = mockk<Call<ResponseBody?>>()
-      every { mockResponse.execute() } returns Response.success(null)
-      every { fhirResourceService.fetchImage(any()) } returns mockResponse
-      Assert.assertNull(referenceUrlResolver.resolveBitmapUrl("https://image-server.com/8929839"))
-    }
+  fun testResolveImageUrlWithNullBodyShouldReturnNull() = runTest {
+    val mockResponse = mockk<Call<ResponseBody?>>()
+    every { mockResponse.execute() } returns Response.success(null)
+    every { fhirResourceService.fetchImage(any()) } returns mockResponse
+    Assert.assertNull(referenceUrlResolver.resolveBitmapUrl("https://image-server.com/8929839"))
   }
 
   @Test
-  fun testResolveImageUrlShouldReturnBitmap() {
-    coroutineTestRule.runBlockingTest {
-      val mockResponseBody: ResponseBody =
-        spyk(
-          object : ResponseBody() {
-            override fun contentLength(): Long = 1L
+  fun testResolveImageUrlShouldReturnBitmap() = runTest {
+    val mockResponseBody: ResponseBody =
+      spyk(
+        object : ResponseBody() {
+          override fun contentLength(): Long = 1L
 
-            override fun contentType(): MediaType? = null
+          override fun contentType(): MediaType? = null
 
-            override fun source(): BufferedSource = mockk()
-          }
+          override fun source(): BufferedSource = mockk()
+        }
+      )
+
+    val mockResponse = Response.success<ResponseBody?>(mockResponseBody)
+
+    every { mockResponseBody.byteStream() } returns
+      (ByteArrayInputStream(
+        "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7".toByteArray(
+          Charset.forName("UTF-8")
         )
-
-      val mockResponse = Response.success<ResponseBody?>(mockResponseBody)
-
-      every { mockResponseBody.byteStream() } returns
-        (ByteArrayInputStream(
-          "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7".toByteArray(
-            Charset.forName("UTF-8")
-          )
-        ))
-      val callResponse = mockk<Call<ResponseBody?>>()
-      every { callResponse.execute() } returns mockResponse
-      every { fhirResourceService.fetchImage(any()) } returns callResponse
-      val bitmap = referenceUrlResolver.resolveBitmapUrl("https://image-server.com/8929839")
-      Assert.assertNotNull(bitmap)
-      Assert.assertTrue(bitmap is Bitmap)
-    }
+      ))
+    val callResponse = mockk<Call<ResponseBody?>>()
+    every { callResponse.execute() } returns mockResponse
+    every { fhirResourceService.fetchImage(any()) } returns callResponse
+    val bitmap = referenceUrlResolver.resolveBitmapUrl("https://image-server.com/8929839")
+    Assert.assertNotNull(bitmap)
+    Assert.assertTrue(bitmap is Bitmap)
   }
 }

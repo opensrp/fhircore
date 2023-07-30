@@ -45,6 +45,7 @@ class ErrorMessageKtTest : RobolectricTest() {
 
   @Before
   fun setUp() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
       ErrorMessage(message = errorMessage, onClickRetry = { listenerObjectSpy.onRetry() })
     }

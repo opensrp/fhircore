@@ -109,7 +109,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.2'
+        kotlinCompilerExtensionVersion '1.4.8'
     }
 
     testOptions {
@@ -120,6 +120,23 @@ android {
             includeAndroidResources = true
             returnDefaultValues = true
             all {
+
+                testLogging {
+                    // set options for log level LIFECYCLE
+                    events "failed"
+                    exceptionFormat "full"
+
+                    // set options for log level DEBUG
+                    debug {
+                        events "started", "skipped", "failed"
+                        exceptionFormat "full"
+                    }
+
+                    // remove standard output/error logging from --info builds
+                    // by assigning only 'failed' and 'skipped' events
+                    info.events = ["failed", "skipped"]
+                }
+
                 beforeTest { testDescriptor ->
                     println "${testDescriptor.className} > ${testDescriptor.name} STARTED"
                 }
@@ -201,6 +218,7 @@ dependencies {
     testRuntimeOnly deps.junit5_engine
     testRuntimeOnly deps.junit5_engine_vintage
     testImplementation deps.robolectric
+    testImplementation deps.atsl.core
     testImplementation deps.atsl.ext_junit
     testImplementation deps.atsl.ext_junit_ktx
     testImplementation deps.coroutines.test
@@ -208,7 +226,7 @@ dependencies {
     debugImplementation deps.fragment_testing
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
 
     // analytics
     implementation platform('com.google.firebase:firebase-bom:31.2.0')

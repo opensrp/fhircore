@@ -61,6 +61,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
 
   @Test
   fun testSearchHeaderComponent() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent { RegisterHeader(resultCount = 20) }
     composeRule.onNodeWithTag(SEARCH_HEADER_TEXT_TAG).assertExists()
     composeRule.onNodeWithTag(SEARCH_HEADER_TEXT_TAG).assertIsDisplayed()
@@ -83,6 +84,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
 
   @Test
   fun testSearchFooterWithTenAsResultCount() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
       RegisterFooter(
         resultCount = 50,
@@ -113,6 +115,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
 
   @Test
   fun testSearchFooterWithTenAsResultsSplitInThreePages() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
       RegisterFooter(
         resultCount = 50,
@@ -143,6 +146,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
 
   @Test
   fun testSearchFooterWithResultsFittingOnePage() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
       RegisterFooter(
         resultCount = 20,
@@ -169,6 +173,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
 
   @Test
   fun testNoResultsComponent() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent { NoResults() }
     composeRule.onNodeWithText("No results", useUnmergedTree = true).assertExists()
     composeRule.onNodeWithText("No results", useUnmergedTree = true).assertIsDisplayed()
@@ -176,6 +181,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
 
   @Test
   fun testPaginatedRegisterShouldShowNoResultsView() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
       PaginatedRegister(
         loadState = LoadState.NotLoading(false),
@@ -239,6 +245,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
 
   @Test
   fun testPaginatedRegisterShouldDisplayResultsBodyWithFooter() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
       PaginatedRegister(
         loadState = LoadState.NotLoading(true),
@@ -275,6 +282,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
 
   @Test
   fun testPaginatedRegisterShouldDisplayResultsBodyWithNoFooter() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
       PaginatedRegister(
         loadState = LoadState.NotLoading(true),
@@ -308,6 +316,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
 
   @Test
   fun testPaginatedRegisterShouldDisplayResultsBodyWithFooterAbsolute() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
       PaginatedRegister(
         loadState = LoadState.NotLoading(true),
@@ -341,6 +350,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
 
   @Test
   fun testPaginatedRegisterShouldDisplayResultsBodyWithNoFooterAbsolute() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
       PaginatedRegister(
         loadState = LoadState.NotLoading(true),

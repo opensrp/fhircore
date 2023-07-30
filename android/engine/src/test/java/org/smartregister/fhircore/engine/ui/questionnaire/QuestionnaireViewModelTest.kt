@@ -48,7 +48,6 @@ import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Appointment
@@ -448,7 +447,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
-    coroutineRule.runBlockingTest {
+    runTest {
       val questionnaireResponse = QuestionnaireResponse()
 
       questionnaireViewModel.extractAndSaveResources(
@@ -1115,27 +1114,25 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testAppendPatientsAndRelatedPersonsToGroupsShouldAddMembersToGroup() {
-    coroutineRule.runBlockingTest {
-      val patient = samplePatient()
-      val familyGroup =
-        Group().apply {
-          id = "grp1"
-          name = "Mandela Family"
-        }
-      coEvery { fhirEngine.get<Group>(familyGroup.id) } returns familyGroup
-      questionnaireViewModel.appendPatientsAndRelatedPersonsToGroups(patient, familyGroup.id)
-      Assert.assertEquals(1, familyGroup.member.size)
+  fun testAppendPatientsAndRelatedPersonsToGroupsShouldAddMembersToGroup() = runTest {
+    val patient = samplePatient()
+    val familyGroup =
+      Group().apply {
+        id = "grp1"
+        name = "Mandela Family"
+      }
+    coEvery { fhirEngine.get<Group>(familyGroup.id) } returns familyGroup
+    questionnaireViewModel.appendPatientsAndRelatedPersonsToGroups(patient, familyGroup.id)
+    Assert.assertEquals(1, familyGroup.member.size)
 
-      val familyGroup2 = Group().apply { id = "grp2" }
-      coEvery { fhirEngine.get<Group>(familyGroup2.id) } returns familyGroup2
-      // Sets the managing entity
-      questionnaireViewModel.appendPatientsAndRelatedPersonsToGroups(
-        RelatedPerson().apply { id = "rel1" },
-        familyGroup2.id
-      )
-      Assert.assertNotNull(familyGroup2.managingEntity)
-    }
+    val familyGroup2 = Group().apply { id = "grp2" }
+    coEvery { fhirEngine.get<Group>(familyGroup2.id) } returns familyGroup2
+    // Sets the managing entity
+    questionnaireViewModel.appendPatientsAndRelatedPersonsToGroups(
+      RelatedPerson().apply { id = "rel1" },
+      familyGroup2.id
+    )
+    Assert.assertNotNull(familyGroup2.managingEntity)
   }
 
   @Test
