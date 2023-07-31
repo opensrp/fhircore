@@ -24,15 +24,11 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import android.os.Build
-import android.os.Bundle
 import android.os.LocaleList
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import java.util.Locale
-import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import timber.log.Timber
 
 fun Context.showToast(message: String, toastLength: Int = Toast.LENGTH_LONG) =
@@ -89,55 +85,4 @@ fun Context.getDrawable(name: String): Drawable {
 
 fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
   return values.any { this == it }
-}
-
-inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaire(
-  questionnaireId: String,
-  clientIdentifier: String? = null,
-  groupIdentifier: String? = null,
-  questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
-  intentBundle: Bundle = Bundle.EMPTY,
-  launchContext: Resource? = null,
-  populationResources: ArrayList<Resource>? = null
-) {
-  this.startActivity(
-    Intent(this, Q::class.java)
-      .putExtras(intentBundle)
-      .putExtras(
-        QuestionnaireActivity.intentArgs(
-          clientIdentifier = clientIdentifier,
-          groupIdentifier = groupIdentifier,
-          formName = questionnaireId,
-          questionnaireType = questionnaireType,
-          launchContext = launchContext,
-          populationResources = populationResources ?: ArrayList()
-        )
-      )
-  )
-}
-
-inline fun <reified Q : QuestionnaireActivity> Context.launchQuestionnaireForResult(
-  questionnaireId: String,
-  clientIdentifier: String? = null,
-  questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
-  backReference: String? = null,
-  intentBundle: Bundle = Bundle.EMPTY,
-  launchContext: Resource? = null,
-  populationResources: ArrayList<Resource>? = null
-) {
-  (this as Activity).startActivityForResult(
-    Intent(this, Q::class.java)
-      .putExtras(intentBundle)
-      .putExtras(
-        QuestionnaireActivity.intentArgs(
-          clientIdentifier = clientIdentifier,
-          formName = questionnaireId,
-          questionnaireType = questionnaireType,
-          backReference = backReference,
-          launchContext = launchContext,
-          populationResources = populationResources ?: ArrayList()
-        )
-      ),
-    0
-  )
 }

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.family.profile
 
+import android.app.Activity
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -36,8 +37,6 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.engine.util.extension.yearsPassed
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -96,7 +95,8 @@ constructor(
   fun onEvent(event: FamilyProfileEvent) {
     when (event) {
       is FamilyProfileEvent.AddMember ->
-        event.context.launchQuestionnaire<QuestionnaireActivity>(
+        QuestionnaireActivity.launchQuestionnaire(
+          event.context,
           questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
           groupIdentifier = event.familyId
         )
@@ -112,7 +112,8 @@ constructor(
         event.navController.navigate(route = MainNavigationScreen.PatientProfile.route + urlParams)
       }
       is FamilyProfileEvent.OpenTaskForm ->
-        event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
+        QuestionnaireActivity.launchQuestionnaireForResult(
+          event.context as Activity,
           questionnaireId = event.taskFormId,
           clientIdentifier = event.patientId,
           backReference = event.taskId.asReference(ResourceType.Task).reference
@@ -120,13 +121,15 @@ constructor(
       is FamilyProfileEvent.OverflowMenuClick -> {
         when (event.menuId) {
           R.id.family_details ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
+            QuestionnaireActivity.launchQuestionnaire(
+              event.context,
               questionnaireId = FAMILY_REGISTRATION_FORM,
               clientIdentifier = event.familyId,
               questionnaireType = QuestionnaireType.EDIT
             )
           R.id.remove_family ->
-            event.context.launchQuestionnaire<RemoveFamilyQuestionnaireActivity>(
+            RemoveFamilyQuestionnaireActivity.launchQuestionnaire(
+              event.context,
               questionnaireId = REMOVE_FAMILY_FORM,
               clientIdentifier = event.familyId
             )

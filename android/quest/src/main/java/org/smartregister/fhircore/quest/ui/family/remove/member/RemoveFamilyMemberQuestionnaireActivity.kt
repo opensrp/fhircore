@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.quest.ui.family.remove.member
 
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
 import androidx.activity.viewModels
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.util.extension.extractName
@@ -41,5 +44,20 @@ class RemoveFamilyMemberQuestionnaireActivity :
 
   override fun setRemoveDialogMessage(profileName: String): String {
     return getString(R.string.remove_family_member_warning, profileName)
+  }
+
+  companion object {
+    fun launchQuestionnaire(
+      context: Context,
+      questionnaireId: String,
+      clientIdentifier: String? = null,
+      intentBundle: Bundle = Bundle.EMPTY
+    ) {
+      context.startActivity(
+        Intent(context, RemoveFamilyMemberQuestionnaireActivity::class.java)
+          .putExtras(intentBundle)
+          .putExtras(intentArgs(formName = questionnaireId, clientIdentifier = clientIdentifier))
+      )
+    }
   }
 }
