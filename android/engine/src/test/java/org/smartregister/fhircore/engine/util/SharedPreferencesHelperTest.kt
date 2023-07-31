@@ -103,10 +103,11 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
   fun writeObjectUsingSerialized() {
     val questionnaireConfig =
       QuestionnaireConfig(form = "123", identifier = "123", title = "my-questionnaire")
-    sharedPreferencesHelper.write("object", questionnaireConfig)
+    sharedPreferencesHelper.write("object", questionnaireConfig, encodeWithGson = false)
     Assert.assertEquals(
       questionnaireConfig.identifier,
-      sharedPreferencesHelper.read<QuestionnaireConfig>("object")?.identifier
+      sharedPreferencesHelper.read<QuestionnaireConfig>("object", decodeWithGson = false)
+        ?.identifier
     )
   }
 
@@ -121,7 +122,20 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
   }
 
   @Test
-  fun testReadObject() {
+  fun testReadObjectWithSerialized() {
+    val questionnaireConfig =
+      QuestionnaireConfig(form = "123", identifier = "123", title = "my-questionnaire")
+    sharedPreferencesHelper.write("key", questionnaireConfig, encodeWithGson = false)
+
+    val readConfig =
+      sharedPreferencesHelper.read<QuestionnaireConfig>("key", decodeWithGson = false)
+
+    Assert.assertNotNull(readConfig?.form)
+    Assert.assertEquals(questionnaireConfig.identifier, readConfig?.identifier)
+  }
+
+  @Test
+  fun testReadObjectWithJson() {
     val practitioner = Practitioner().apply { id = "1234" }
     sharedPreferencesHelper.write(LOGGED_IN_PRACTITIONER, practitioner, encodeWithGson = true)
 
