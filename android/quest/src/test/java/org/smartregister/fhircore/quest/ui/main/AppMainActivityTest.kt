@@ -51,6 +51,7 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 
 @OptIn(ExperimentalMaterialApi::class)
 @HiltAndroidTest

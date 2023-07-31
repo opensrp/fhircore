@@ -55,7 +55,7 @@ fun Questionnaire.extractByStructureMap() =
 
 fun Questionnaire.cqfLibraryIds() =
   this.extension
-    .filter { it.url.contains("cqf-library") }
+    .filter { it.url.contains("cqf-library", ignoreCase = true) }
     .mapNotNull { it.value?.asStringValue()?.replace("Library/", "") }
 
 fun QuestionnaireResponse.findSubject(bundle: Bundle?) =
@@ -155,9 +155,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
   forEach { item ->
     prePopulationParams
       .firstOrNull {
-        it.linkId == item.linkId &&
-          !it.value.isNullOrEmpty() &&
-          !it.value.contains(interpolationPrefix)
+        it.linkId == item.linkId && it.value.isNotEmpty() && !it.value.contains(interpolationPrefix)
       }
       ?.let { actionParam ->
         /**

@@ -45,7 +45,6 @@ import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
@@ -233,7 +232,7 @@ constructor(
 
           defaultRepository.addOrUpdate(resource = this)
 
-          addMemberToConfiguredGroup(questionnaireConfig.groupResource)
+          addMemberToConfiguredGroup(this, questionnaireConfig.groupResource)
 
           // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
           val listEntryComponent =
@@ -392,12 +391,12 @@ constructor(
    * has an answer.
    */
   fun saveDraftQuestionnaire(questionnaireResponse: QuestionnaireResponse) {
-    val questionnaireHasAnswer =
-      questionnaireResponse.item.any {
-        it.answer.any { answerComponent -> answerComponent.hasValue() }
-      }
-    if (questionnaireHasAnswer) {
-      viewModelScope.launch(dispatcherProvider.io()) {
+    viewModelScope.launch {
+      val questionnaireHasAnswer =
+        questionnaireResponse.item.any {
+          it.answer.any { answerComponent -> answerComponent.hasValue() }
+        }
+      if (questionnaireHasAnswer) {
         questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
         defaultRepository.addOrUpdate(addMandatoryTags = true, resource = questionnaireResponse)
       }
@@ -418,10 +417,24 @@ constructor(
 
     updateOnEditParams?.forEach { param ->
       try {
-        val resource = defaultRepository.loadResource(Reference(param.value))
-        defaultRepository.addOrUpdate(resource = resource)
+        defaultRepository.run {
+          val resourceType = param.resourceType
+          if (resourceType != null) {
+            loadResource(resourceType, param.value)?.let { addOrUpdate(resource = it) }
+          } else {
+            val valueResourceType = param.value.substringBefore("/")
+            val valueResourceId = param.value.substringAfter("/")
+            addOrUpdate(
+              resource = loadResource(valueResourceId, ResourceType.valueOf(valueResourceType)),
+            )
+          }
+        }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         Timber.e("Unable to update resource's _lastUpdated", resourceNotFoundException)
+      } catch (illegalArgumentException: IllegalArgumentException) {
+        Timber.e(
+          "No enum constant org.hl7.fhir.r4.model.ResourceType.${param.value.substringBefore("/")}",
+        )
       }
     }
   }
@@ -480,17 +493,17 @@ constructor(
    * NOT the same as the retrieved [GroupResourceConfig.groupIdentifier] (Cannot add a [Group] as
    * member of itself.
    */
-  private suspend fun Resource.addMemberToConfiguredGroup(groupConfig: GroupResourceConfig?) {
+  suspend fun addMemberToConfiguredGroup(resource: Resource, groupConfig: GroupResourceConfig?) {
     val group: Group =
       groupConfig?.groupIdentifier?.let { loadResource(ResourceType.Group, it) } as Group? ?: return
-    val reference = asReference()
-    val member = group.member.find { it.entity == reference }
+    val reference = resource.asReference()
+    val member = group.member.find { it.entity.reference.equals(reference.reference, true) }
 
     // Cannot add Group as member of itself; Cannot not duplicate existing members
-    if (this.logicalId == group.logicalId || member != null) return
+    if (resource.logicalId == group.logicalId || member != null) return
 
     if (
-      this.resourceType.isIn(
+      resource.resourceType.isIn(
         ResourceType.CareTeam,
         ResourceType.Device,
         ResourceType.Group,
