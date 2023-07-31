@@ -92,6 +92,7 @@ constructor(
       }
     }
   }
+
   fun fetchRemoteConfigurations(appId: String, context: Context) {
     viewModelScope.launch {
       try {
