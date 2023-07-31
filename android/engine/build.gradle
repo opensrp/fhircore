@@ -208,7 +208,7 @@ dependencies {
         exclude group: 'com.google.android.fhir', module: 'common'
         exclude group: 'com.google.android.fhir', module: 'engine'
     }
-    api('org.smartregister:data-capture:1.0.0-preview5-SNAPSHOT') {
+    api('org.smartregister:data-capture:1.0.0-preview14.3-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
