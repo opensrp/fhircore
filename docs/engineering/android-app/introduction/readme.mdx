@@ -54,6 +54,18 @@ The application syncs particular resources (conventionally, Composition and Bina
 
 ### Testing
 
-This FHIR Core repository includes:
-1. Unit tests
-2. UI and integration tests
+The OpenSRP Android app includes automated style, coverage, unit, user inteface / integartion, and performance testing. All tests are run through github actions on pull request and must be passed for a pull request to be merged without an admin override.
+
+#### Style and coverage tests
+
+We use [ktlint](https://github.com/pinterest/ktlint) via [spotless](https://github.com/diffplug/spotless) to run style checks against the entire codebase. We target to make these style checks as strict as possible in order to reduce bikeshedding in code reviews. 
+
+#### Unit tests
+
+Unit tests are divided among the [engine](https://github.com/opensrp/fhircore/tree/main/android/engine/src/test), [geowidget](https://github.com/opensrp/fhircore/tree/main/android/geowidget/src/test/java/org/smartregister/fhircore/geowidget), and [quest](https://github.com/opensrp/fhircore/tree/main/android/quest/src/test) modules. These can be run locally and are run automatically through github actions when you submit a pull request. All tests must pass for a pull request to be merged.
+
+#### User interface and integration tests
+
+We run tests against screen renderings that function as user interface and integations tests. These are defined in the [quest](https://github.com/opensrp/fhircore/tree/main/android/quest/src/test) module. These can be run locally and are run automatically through github actions when you submit a pull request. All tests must pass for a pull request to be merged.
+
+#### Performance tests
