@@ -43,7 +43,6 @@
 
         <activity
             android:name=".ui.main.AppMainActivity"
-            android:exported="false"
             android:launchMode="singleTop"
             android:clearTaskOnLaunch="true" />
 
