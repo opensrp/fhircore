@@ -40,7 +40,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
 import org.robolectric.android.controller.ActivityController
+import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -141,17 +143,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
 
   @Test
   fun testThatActivityRendersConfiguredQuestionnaire() = runTest {
-    coEvery {
-      questionnaireViewModel.retrieveQuestionnaire(questionnaireConfig, emptyList())
-    } returns questionnaire
-
-    val bundle = QuestionnaireActivity.intentBundle(questionnaireConfig, emptyList())
-    questionnaireActivityController =
-      Robolectric.buildActivity(
-        QuestionnaireActivity::class.java,
-        Intent().apply { putExtras(bundle) },
-      )
-    questionnaireActivity = questionnaireActivityController.create().resume().get()
+    setupActivity()
     Assert.assertTrue(questionnaireActivity.supportFragmentManager.fragments.isNotEmpty())
     val firstFragment = questionnaireActivity.supportFragmentManager.fragments.firstOrNull()
     Assert.assertTrue(firstFragment is QuestionnaireFragment)
@@ -171,5 +163,27 @@ class QuestionnaireActivityTest : RobolectricTest() {
       fragmentQuestionnaire?.item?.map { it.linkId }?.sorted()?.joinToString(",")
 
     Assert.assertEquals(sortedQuestionnaireItemLinkIds, sortedFragmentQuestionnaireItemLinkIds)
+  }
+
+  @Test
+  fun testThatOnBackPressShowsConfirmationAlertDialog() {
+    setupActivity()
+    questionnaireActivity.onBackPressedDispatcher.onBackPressed()
+    val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+    Assert.assertNotNull(dialog)
+  }
+
+  private fun setupActivity() {
+    coEvery {
+      questionnaireViewModel.retrieveQuestionnaire(questionnaireConfig, emptyList())
+    } returns questionnaire
+
+    val bundle = QuestionnaireActivity.intentBundle(questionnaireConfig, emptyList())
+    questionnaireActivityController =
+      Robolectric.buildActivity(
+        QuestionnaireActivity::class.java,
+        Intent().apply { putExtras(bundle) },
+      )
+    questionnaireActivity = questionnaireActivityController.create().resume().get()
   }
 }
