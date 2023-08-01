@@ -41,7 +41,7 @@ interface QuestionnaireHandler {
       startForResult.launch(
         Intent(context, QuestionnaireActivity::class.java)
           .putExtras(
-            QuestionnaireActivity.intentArgs(
+            QuestionnaireActivity.intentBundle(
               questionnaireConfig = questionnaireConfig,
               actionParams = actionParams,
             ),

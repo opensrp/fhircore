@@ -316,7 +316,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     const val QUESTIONNAIRE_ACTION_PARAMETERS = "questionnaireActionParameters"
     const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnairePopulationResources"
 
-    fun intentArgs(
+    fun intentBundle(
       questionnaireConfig: QuestionnaireConfig,
       actionParams: List<ActionParameter>,
     ): Bundle =
