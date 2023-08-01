@@ -183,6 +183,13 @@ android {
             versionCode 20
             versionName "0.1.10"
         }
+        mwcoreProd {
+            dimension "apps"
+            applicationIdSuffix ".mwcoreProd"
+            versionNameSuffix "-mwcoreProd"
+            versionCode 1
+            versionName "0.0.1"
+        }
         afyayangu {
             dimension "apps"
             applicationIdSuffix ".afyayangu"
