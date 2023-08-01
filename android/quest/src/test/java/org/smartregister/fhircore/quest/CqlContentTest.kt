@@ -61,7 +61,7 @@ class CqlContentTest : RobolectricTest() {
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
   private lateinit var evaluator: LibraryEvaluator
   private lateinit var defaultRepository: DefaultRepository
-  val fhirEngine = mockk<FhirEngine>()
+  private val fhirEngine = mockk<FhirEngine>()
 
   @Before
   fun setUp() {
@@ -112,8 +112,6 @@ class CqlContentTest : RobolectricTest() {
           .map { it.parseSampleResource() as Resource }
           .forEach { addEntry().apply { resource = it } }
       }
-
-    val fhirEngine = mockk<FhirEngine>()
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns

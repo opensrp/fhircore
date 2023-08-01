@@ -200,57 +200,12 @@ constructor(
           context = context,
         )
 
-      val extractionDate = Date()
-
-      // Create a ListResource to store the references for generated resources
-      val listResource =
-        ListResource().apply {
-          id = UUID.randomUUID().toString()
-          status = ListResource.ListStatus.CURRENT
-          mode = ListResource.ListMode.WORKING
-          title = CONTAINED_LIST_TITLE
-          date = extractionDate
-        }
-
-      bundle?.entry?.forEach { bundleEntryComponent ->
-        bundleEntryComponent.resource?.run {
-          applyResourceMetadata()
-          val subjectType = questionnaireSubjectType(questionnaire, questionnaireConfig)
-          if (
-            currentQuestionnaireResponse.subject.reference.isNullOrEmpty() &&
-              subjectType != null &&
-              this.resourceType == subjectType &&
-              logicalId.isNotEmpty()
-          ) {
-            currentQuestionnaireResponse.subject = this.logicalId.asReference(subjectType)
-          }
-
-          // TODO Fix StructureMaps to use the QuestionnaireResponse subject directly
-          if (this.resourceType == subjectType) {
-            this.id = currentQuestionnaireResponse.subject.extractId()
-          }
-
-          defaultRepository.addOrUpdate(resource = this)
-
-          addMemberToConfiguredGroup(this, questionnaireConfig.groupResource)
-
-          // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
-          val listEntryComponent =
-            ListEntryComponent().apply {
-              deleted = false
-              date = extractionDate
-              item = asReference()
-            }
-          listResource.addEntry(listEntryComponent)
-        }
-      }
-
-      // Save questionnaire response only if subject is present
-      if (currentQuestionnaireResponse.subject != null) {
-        defaultRepository.addOrUpdate(
-          resource = currentQuestionnaireResponse.apply { addContained(listResource) },
-        )
-      }
+      saveExtractedResources(
+        bundle = bundle,
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig,
+        currentQuestionnaireResponse = currentQuestionnaireResponse,
+      )
 
       updateResourcesLastUpdatedProperty(actionParameters)
 
@@ -273,13 +228,11 @@ constructor(
           questionnaire = questionnaire,
         )
 
-        viewModelScope.launch {
-          fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
-            questionnaireConfig = questionnaireConfig,
-            subject = subject,
-            bundle = bundle,
-          )
-        }
+        fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
+          questionnaireConfig = questionnaireConfig,
+          subject = subject,
+          bundle = bundle,
+        )
       }
 
       softDeleteResources(questionnaireConfig)
@@ -288,6 +241,65 @@ constructor(
         bundle?.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
           ?: emptyList()
       onSuccessfulSubmission(idTypes, currentQuestionnaireResponse)
+    }
+  }
+
+  suspend fun saveExtractedResources(
+    bundle: Bundle?,
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
+    currentQuestionnaireResponse: QuestionnaireResponse,
+  ) {
+    val extractionDate = Date()
+
+    // Create a ListResource to store the references for generated resources
+    val listResource =
+      ListResource().apply {
+        id = UUID.randomUUID().toString()
+        status = ListResource.ListStatus.CURRENT
+        mode = ListResource.ListMode.WORKING
+        title = CONTAINED_LIST_TITLE
+        date = extractionDate
+      }
+
+    bundle?.entry?.forEach { bundleEntryComponent ->
+      bundleEntryComponent.resource?.run {
+        applyResourceMetadata()
+        val subjectType = questionnaireSubjectType(questionnaire, questionnaireConfig)
+        if (
+          currentQuestionnaireResponse.subject.reference.isNullOrEmpty() &&
+            subjectType != null &&
+            this.resourceType == subjectType &&
+            logicalId.isNotEmpty()
+        ) {
+          currentQuestionnaireResponse.subject = this.logicalId.asReference(subjectType)
+        }
+
+        // TODO Fix StructureMaps to use the QuestionnaireResponse subject directly
+        if (this.resourceType == subjectType) {
+          this.id = currentQuestionnaireResponse.subject.extractId()
+        }
+
+        defaultRepository.addOrUpdate(resource = this)
+
+        addMemberToConfiguredGroup(this, questionnaireConfig.groupResource)
+
+        // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
+        val listEntryComponent =
+          ListEntryComponent().apply {
+            deleted = false
+            date = extractionDate
+            item = asReference()
+          }
+        listResource.addEntry(listEntryComponent)
+      }
+    }
+
+    // Save questionnaire response only if subject is present
+    if (currentQuestionnaireResponse.subject != null) {
+      defaultRepository.addOrUpdate(
+        resource = currentQuestionnaireResponse.apply { addContained(listResource) },
+      )
     }
   }
 
@@ -353,13 +365,16 @@ constructor(
           ResourceMapper.extract(
             questionnaire = questionnaire,
             questionnaireResponse = questionnaireResponse,
-            StructureMapExtractionContext(
-              context = context,
-              transformSupportServices = transformSupportServices,
-              structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
-                structureMapUrl?.substringAfterLast("/")?.let { defaultRepository.loadResource(it) }
-              },
-            ),
+            structureMapExtractionContext =
+              StructureMapExtractionContext(
+                context = context,
+                transformSupportServices = transformSupportServices,
+                structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
+                  structureMapUrl?.substringAfterLast("/")?.let {
+                    defaultRepository.loadResource(it)
+                  }
+                },
+              ),
           )
         } else {
           ResourceMapper.extract(

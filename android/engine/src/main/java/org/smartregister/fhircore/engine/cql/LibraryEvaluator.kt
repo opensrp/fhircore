@@ -228,32 +228,36 @@ class LibraryEvaluator @Inject constructor(val defaultRepository: DefaultReposit
   ): List<String> {
     initialize()
 
-    val library = defaultRepository.fhirEngine.get<LibraryResource>(libraryId)
+    val library = defaultRepository.loadResource<LibraryResource>(libraryId)
 
     val helpers =
-      library.relatedArtifact
-        .filter { it.hasResource() && it.resource.startsWith("Library/") }
-        .mapNotNull {
-          defaultRepository.fhirEngine.get<LibraryResource>(it.resource.replace("Library/", ""))
+      library
+        ?.relatedArtifact
+        ?.filter { it.hasResource() && it.resource.startsWith("Library/") }
+        ?.mapNotNull {
+          defaultRepository.loadResource<LibraryResource>(it.resource.substringAfter("/"))
         }
 
-    loadConfigs(
-      library,
-      helpers,
-      Bundle(),
-      // TODO check and handle when data bundle has multiple Patient resources
-      createBundle(
-        listOfNotNull(
-          patient,
-          *data.entry.map { it.resource }.toTypedArray(),
-          *defaultRepository.search(library.dataRequirementFirstRep).toTypedArray(),
-        ),
-      ),
-    )
+    if (library != null && helpers != null) {
+      loadConfigs(
+        library = library,
+        helpers = helpers,
+        valueSet = Bundle(),
+        // TODO check and handle when data bundle has multiple Patient resources
+        data =
+          createBundle(
+            listOfNotNull(
+              patient,
+              *data.entry.map { it.resource }.toTypedArray(),
+              *defaultRepository.search(library.dataRequirementFirstRep).toTypedArray(),
+            ),
+          ),
+      )
+    }
 
     val result =
       libEvaluator!!.evaluate(
-        VersionedIdentifier().withId(library.name).withVersion(library.version),
+        VersionedIdentifier().withId(library?.name).withVersion(library?.version),
         patient?.let { Pair.of("Patient", it.logicalId) },
         null,
         null,

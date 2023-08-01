@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
@@ -26,21 +27,31 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.runs
+import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.unmockkObject
+import io.mockk.verify
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.IntegerType
+import org.hl7.fhir.r4.model.ListResource
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Type
@@ -66,13 +77,16 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
+import org.smartregister.fhircore.engine.util.extension.isToday
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.extension.yesterday
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.KeycloakUserDetails
 import org.smartregister.model.practitioner.PractitionerDetails
+import timber.log.Timber
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -94,7 +108,16 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private val context: Application = ApplicationProvider.getApplicationContext()
   private val libraryEvaluator: LibraryEvaluator = mockk(relaxed = true, relaxUnitFun = true)
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
-  private val patient = Faker.buildPatient()
+  private val patient =
+    Faker.buildPatient().apply {
+      address =
+        listOf(
+          Address().apply {
+            city = "Mombasa"
+            country = "Kenya"
+          },
+        )
+    }
   private val fhirCarePlanGenerator: FhirCarePlanGenerator =
     mockk(relaxUnitFun = true, relaxed = true)
 
@@ -160,6 +183,260 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         }
     }
   }
+
+  // TODO Write integration test for QuestionnaireActivity to compliment this unit test;
+  @Test
+  fun testHandleQuestionnaireSubmission() = runTest {
+    mockkObject(ResourceMapper)
+    val questionnaire =
+      extractionQuestionnaire().apply {
+        // Use StructureMap for extraction
+        extension = samplePatientRegisterQuestionnaire.extension
+      }
+    val questionnaireResponse = extractionQuestionnaireResponse()
+    val actionParameters = emptyList<ActionParameter>()
+    val onSuccessfulSubmission =
+      spyk({ idsTypes: List<IdType>, _: QuestionnaireResponse -> Timber.i(idsTypes.toString()) })
+
+    // Throw ResourceNotFoundException existing QuestionnaireResponse
+    coEvery { fhirEngine.get(ResourceType.Patient, patient.logicalId) } returns patient
+    coEvery { fhirEngine.get(ResourceType.QuestionnaireResponse, any()) } throws
+      ResourceNotFoundException("QuestionnaireResponse", "")
+    coEvery { fhirEngine.create(resource = anyVararg()) } returns listOf(patient.logicalId)
+    coEvery { fhirEngine.update(resource = anyVararg()) } just runs
+
+    // Mock returned bundle after extraction refer to FhirExtractionTest.kt for extraction test
+    coEvery {
+      ResourceMapper.extract(
+        questionnaire = questionnaire,
+        questionnaireResponse = questionnaireResponse,
+        structureMapExtractionContext = any(),
+      )
+    } returns
+      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
+
+    questionnaireViewModel.handleQuestionnaireSubmission(
+      questionnaire = questionnaire,
+      currentQuestionnaireResponse = questionnaireResponse,
+      actionParameters = actionParameters,
+      context = context,
+      questionnaireConfig = questionnaireConfig,
+      onSuccessfulSubmission = onSuccessfulSubmission,
+    )
+
+    // Verify QuestionnaireResponse was validated
+    verify {
+      questionnaireViewModel.validateQuestionnaireResponse(
+        questionnaire,
+        questionnaireResponse,
+        context,
+      )
+    }
+
+    // Assert that the QuestionnaireResponse metadata were set
+    Assert.assertEquals(
+      QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED,
+      questionnaireResponse.status,
+    )
+    Assert.assertTrue(questionnaireResponse.authored.isToday())
+    Assert.assertEquals(
+      "${questionnaire.resourceType}/${questionnaire.logicalId}",
+      questionnaireResponse.questionnaire,
+    )
+    Assert.assertNotNull(questionnaireResponse.id)
+    Assert.assertNotNull(questionnaireResponse.meta.lastUpdated)
+
+    // Verify perform extraction was invoked
+    coVerify {
+      questionnaireViewModel.performExtraction(
+        extractByStructureMap = true,
+        questionnaire = questionnaire,
+        questionnaireResponse = questionnaireResponse,
+        context = context,
+      )
+    }
+
+    // Verify that the questionnaire response and extracted resources were saved
+    val bundleSlot = slot<Bundle>()
+    coVerify {
+      questionnaireViewModel.saveExtractedResources(
+        bundle = capture(bundleSlot),
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig,
+        currentQuestionnaireResponse = questionnaireResponse,
+      )
+    }
+
+    val bundle = bundleSlot.captured
+    Assert.assertNotNull(bundle)
+    Assert.assertTrue(bundle.entryFirstRep?.resource is Patient)
+    Assert.assertEquals(patient.id, bundle.entryFirstRep?.resource?.id)
+    bundle.entry.forEach {
+      // Every extracted resource saved and optionally added to configured group
+      val resource = it.resource
+      Assert.assertNotNull(resource.id)
+      Assert.assertNotNull(resource.meta.lastUpdated)
+      coVerify { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = resource) }
+      /*coVerify {
+        questionnaireViewModel.addMemberToConfiguredGroup(resource = resource, groupConfig = null)
+      }*/
+    }
+    // QuestionnaireResponse should have, subject and contained properties set then it's saved
+    Assert.assertEquals("Patient/" + patient.logicalId, questionnaireResponse.subject.reference)
+    coVerify {
+      defaultRepository.addOrUpdate(addMandatoryTags = true, resource = questionnaireResponse)
+    }
+    Assert.assertEquals(1, questionnaireResponse.contained.size)
+    Assert.assertTrue(questionnaireResponse.contained.firstOrNull() is ListResource)
+    val listResource = questionnaireResponse.contained.firstOrNull() as ListResource
+    Assert.assertEquals(ListResource.ListStatus.CURRENT, listResource.status)
+    Assert.assertEquals(ListResource.ListMode.WORKING, listResource.mode)
+    Assert.assertEquals(CONTAINED_LIST_TITLE, listResource.title)
+    Assert.assertTrue(listResource.date.isToday())
+
+    val subjectSlot = slot<Resource>()
+    val idsTypesSlot = slot<List<IdType>>()
+
+    // Mock result for subject (Patient) that is reloaded via loadResource function
+    coEvery { questionnaireViewModel.loadResource(ResourceType.Patient, patient.logicalId) } returns
+      patient
+
+    // Verify other function calls in order of execution after saving resources
+    coVerifyOrder {
+      questionnaireViewModel.updateResourcesLastUpdatedProperty(actionParameters)
+
+      questionnaireViewModel.generateCarePlan(
+        subject = capture(subjectSlot),
+        bundle = capture(bundleSlot),
+        questionnaireConfig = questionnaireConfig,
+      )
+
+      questionnaireViewModel.executeCql(
+        subject = capture(subjectSlot),
+        bundle = capture(bundleSlot),
+        questionnaire = questionnaire,
+      )
+
+      fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
+        questionnaireConfig = questionnaireConfig,
+        subject = capture(subjectSlot),
+        bundle = capture(bundleSlot),
+      )
+
+      questionnaireViewModel.softDeleteResources(questionnaireConfig)
+
+      onSuccessfulSubmission(capture(idsTypesSlot), questionnaireResponse)
+    }
+
+    // ID of extracted resources passed to the onSuccessfulSubmission callback
+    Assert.assertEquals(idsTypesSlot.captured.firstOrNull()?.idPart, patient.logicalId)
+
+    unmockkObject(ResourceMapper)
+  }
+
+  @Test
+  fun testPerformExtractionWithStructureMap() = runTest {
+    mockkObject(ResourceMapper)
+    val questionnaire = extractionQuestionnaire()
+    val theQuestionnaireResponse = extractionQuestionnaireResponse()
+
+    coEvery {
+      ResourceMapper.extract(
+        questionnaire = questionnaire,
+        questionnaireResponse = theQuestionnaireResponse,
+        structureMapExtractionContext = any(),
+      )
+    } returns
+      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
+    val bundle =
+      questionnaireViewModel.performExtraction(
+        extractByStructureMap = true,
+        questionnaire = questionnaire,
+        questionnaireResponse = theQuestionnaireResponse,
+        context = context,
+      )
+    Assert.assertNotNull(bundle)
+    Assert.assertTrue(bundle?.entryFirstRep?.resource is Patient)
+    Assert.assertEquals(patient.id, bundle?.entryFirstRep?.resource?.id)
+    unmockkObject(ResourceMapper)
+  }
+
+  @Test
+  fun testPerformExtractionWithDefinitionBasedExtraction() = runTest {
+    mockkObject(ResourceMapper)
+    val questionnaire = extractionQuestionnaire()
+    val theQuestionnaireResponse = extractionQuestionnaireResponse()
+
+    coEvery { ResourceMapper.extract(questionnaire, theQuestionnaireResponse) } returns
+      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
+    val bundle =
+      questionnaireViewModel.performExtraction(
+        extractByStructureMap = false,
+        questionnaire = questionnaire,
+        questionnaireResponse = theQuestionnaireResponse,
+        context = context,
+      )
+    Assert.assertNotNull(bundle)
+    Assert.assertTrue(bundle?.entryFirstRep?.resource is Patient)
+    Assert.assertEquals(patient.id, bundle?.entryFirstRep?.resource?.id)
+    unmockkObject(ResourceMapper)
+  }
+
+  private fun extractionQuestionnaireResponse() =
+    QuestionnaireResponse().apply {
+      addItem(
+        QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+          linkId = "patient-name"
+          addAnswer(
+            QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
+              .setValue(StringType("Nelson Mandela")),
+          )
+        },
+      )
+      addItem(
+        QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+          linkId = "patient-address"
+          addAnswer(
+            QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
+              .setValue(StringType("Mombasa")),
+          )
+        },
+      )
+      addItem(
+        QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+          linkId = "country-of-residence"
+          addAnswer(
+            QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
+              .setValue(StringType("Kenya")),
+          )
+        },
+      )
+    }
+
+  private fun extractionQuestionnaire() =
+    Questionnaire().apply {
+      id = questionnaireConfig.id
+      name = questionnaireConfig.title
+      addSubjectType("Patient")
+      addItem(
+        Questionnaire.QuestionnaireItemComponent().apply {
+          linkId = "patient-name"
+          type = Questionnaire.QuestionnaireItemType.STRING
+        },
+      )
+      addItem(
+        Questionnaire.QuestionnaireItemComponent().apply {
+          linkId = "patient-address"
+          type = Questionnaire.QuestionnaireItemType.STRING
+        },
+      )
+      addItem(
+        Questionnaire.QuestionnaireItemComponent().apply {
+          linkId = "country-of-residence"
+          type = Questionnaire.QuestionnaireItemType.STRING
+        },
+      )
+    }
 
   @Test
   fun testRetrieveQuestionnaireShouldReturnValidQuestionnaire() = runTest {
