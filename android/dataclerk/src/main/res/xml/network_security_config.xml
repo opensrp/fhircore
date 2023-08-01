@@ -3,5 +3,7 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">fhir-dev.d-tree.org</domain>
         <domain includeSubdomains="true">fhir-proxy-dev-1.d-tree.org</domain>
+        <domain includeSubdomains="true">fhir-mwcore-staging.d-tree.org</domain>
+        <domain includeSubdomains="true">fhir.d-tree.org</domain>
     </domain-config>
 </network-security-config>
