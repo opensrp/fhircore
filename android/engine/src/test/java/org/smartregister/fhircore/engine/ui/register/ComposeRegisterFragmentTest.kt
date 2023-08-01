@@ -33,7 +33,6 @@ import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.mockk
 import io.mockk.spyk
 import java.time.OffsetDateTime
 import org.junit.After
@@ -44,7 +43,6 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.util.DataMapper
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
@@ -61,9 +59,7 @@ class ComposeRegisterFragmentTest : RobolectricTest() {
   @get:Rule(order = 1)
   val activityScenarioRule = ActivityScenarioRule(HiltActivityForTest::class.java)
 
-  val defaultRepository: DefaultRepository = mockk()
-
-  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository)
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
 
   private lateinit var testComposeRegisterFragment: TestComposableRegisterFragment
 

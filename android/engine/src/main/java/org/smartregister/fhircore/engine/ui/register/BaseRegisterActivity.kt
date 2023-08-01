@@ -67,20 +67,21 @@ import org.smartregister.fhircore.engine.navigation.NavigationBottomSheet
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.util.DateUtils
-import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.DrawablePosition
 import org.smartregister.fhircore.engine.util.extension.addOnDrawableClickListener
 import org.smartregister.fhircore.engine.util.extension.asString
 import org.smartregister.fhircore.engine.util.extension.getDrawable
 import org.smartregister.fhircore.engine.util.extension.hide
+import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.show
@@ -165,7 +166,10 @@ abstract class BaseRegisterActivity :
       is SyncJobStatus.Glitch -> {
         progressSync.hide()
         val lastSyncTimestamp =
-          sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, getString(R.string.syncing_retry))
+          sharedPreferencesHelper.read(
+            SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+            getString(R.string.syncing_retry)
+          )
         tvLastSyncTimestamp.text = lastSyncTimestamp?.formatSyncDate() ?: ""
         containerProgressSync.apply {
           background = this.getDrawable(R.drawable.ic_sync)
@@ -452,7 +456,7 @@ abstract class BaseRegisterActivity :
     when (item.itemId) {
       R.id.menu_item_language -> renderSelectLanguageDialog(this)
       R.id.menu_item_logout -> {
-        accountAuthenticator.logout()
+        accountAuthenticator.logout { launchActivityWithNoBackStackHistory<LoginActivity>() }
         manipulateDrawer(open = false)
       }
       else -> {
@@ -491,7 +495,7 @@ abstract class BaseRegisterActivity :
   private fun refreshSelectedLanguage(language: Language, context: Activity) {
     updateLanguage(language)
     context.setAppLocale(language.tag)
-    sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, language.tag)
+    sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, language.tag)
     context.refresh()
   }
 
@@ -708,7 +712,7 @@ abstract class BaseRegisterActivity :
         401
     ) {
       showToast(getString(R.string.session_expired))
-      accountAuthenticator.logout()
+      accountAuthenticator.logout { launchActivityWithNoBackStackHistory<LoginActivity>() }
     } else {
       if (exceptions.map { it.exception }.any {
           it is InterruptedIOException || it is UnknownHostException

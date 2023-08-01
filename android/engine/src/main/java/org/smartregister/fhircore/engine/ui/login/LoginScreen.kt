@@ -74,6 +74,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -109,6 +110,8 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
   val password by loginViewModel.password.observeAsState("")
   val loginErrorState by loginViewModel.loginErrorState.observeAsState(null)
   val showProgressBar by loginViewModel.showProgressBar.observeAsState(false)
+  val context = LocalContext.current
+
   AnimatedContent(targetState = loadingConfig) {
     if (!loadingConfig) {
       LoginPage(
@@ -118,7 +121,7 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
         password = password,
         onPasswordChanged = { loginViewModel.onPasswordUpdated(it) },
         forgotPassword = { loginViewModel.forgotPassword() },
-        onLoginButtonClicked = { loginViewModel.attemptRemoteLogin() },
+        onLoginButtonClicked = { loginViewModel.login(context = context) },
         loginErrorState = loginErrorState,
         showProgressBar = showProgressBar,
       )
@@ -191,6 +194,7 @@ fun LoginPage(
           text = viewConfiguration.applicationName,
           fontWeight = FontWeight.Bold,
           fontSize = 32.sp,
+          textAlign = TextAlign.Center,
           modifier =
             modifier
               .wrapContentWidth()
@@ -276,7 +280,7 @@ fun LoginPage(
           color = MaterialTheme.colors.error,
           text =
             when (loginErrorState) {
-              LoginErrorState.UNKNOWN_HOST, LoginErrorState.NETWORK_ERROR ->
+              LoginErrorState.UNKNOWN_HOST ->
                 stringResource(
                   id = R.string.login_error,
                   stringResource(R.string.login_call_fail_error_message)
@@ -287,6 +291,16 @@ fun LoginPage(
                   stringResource(R.string.invalid_login_credentials)
                 )
               null -> ""
+              LoginErrorState.MULTI_USER_LOGIN_ATTEMPT ->
+                stringResource(
+                  id = R.string.login_error,
+                  stringResource(R.string.multi_user_login_attempt)
+                )
+              LoginErrorState.ERROR_FETCHING_USER ->
+                stringResource(
+                  id = R.string.login_error,
+                  stringResource(R.string.error_fetching_user_details)
+                )
             },
           modifier =
             modifier

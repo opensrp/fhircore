@@ -79,8 +79,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   val defaultRepository: DefaultRepository = mockk()
   @BindValue
-  var configurationRegistry: ConfigurationRegistry =
-    Faker.buildTestConfigurationRegistry("g6pd", defaultRepository)
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry("g6pd")
   @Inject lateinit var patientItemMapper: PatientItemMapper
 
   lateinit var questPatientDetailViewModel: ListDataDetailViewModel
@@ -154,7 +153,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   @Test
   fun testOnTestResultItemClickListenerShouldStartQuestionnaireActivity() {
     runBlocking {
-      configurationRegistry = Faker.buildTestConfigurationRegistry("quest", defaultRepository)
+      configurationRegistry = Faker.buildTestConfigurationRegistry("quest")
       questPatientDetailActivity.configurationRegistry = configurationRegistry
     }
 
@@ -193,7 +192,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   @Test
   fun testOnTestResultItemClickListenerEmptyQuestionnaireIdShouldShowAlertDialog() {
     runBlocking {
-      configurationRegistry = Faker.buildTestConfigurationRegistry("quest", defaultRepository)
+      configurationRegistry = Faker.buildTestConfigurationRegistry("quest")
       questPatientDetailActivity.configurationRegistry = configurationRegistry
     }
 

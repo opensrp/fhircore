@@ -107,6 +107,8 @@
     <string name="eCBIS_app_name" translatable="false">eCBIS</string>
     <string name="invalid_login_credentials">username or password is invalid</string>
     <string name="invalid_form_id">"Invalid form id attached"</string>
+    <string name="multi_user_login_attempt">Attempted to login with a different provider</string>
+    <string name="error_fetching_user_details">Failed to fetch user details</string>
     <string name="no">No</string>
     <string name="yes">Yes</string>
     <string name="required_constraint_validation_error_msg">There is no response to the required field.</string>
@@ -138,4 +140,17 @@
     <string name="next_appointment_date">Next Appointment Date</string>
     <string name="new_visit_created_title">New Visit Created</string>
     <string name="new_visit_created_message">A new visit for the patient has been successfully created.</string>
+    <string name="sync_strategy_careteam_system" translatable="false">http://smartregister.org/fhir/care-team-tag</string>
+    <string name="sync_strategy_location_system" translatable="false">http://smartregister.org/fhir/location-tag</string>
+    <string name="sync_strategy_organization_system" translatable="false">http://smartregister.org/fhir/organization-tag</string>
+    <string name="sync_strategy_practitioner_system" translatable="false">http://smartregister.org/fhir/practitioner-tag</string>
+    <string name="sync_strategy_appid_system" translatable="false">http://smartregister.org/fhir/appid-tag</string>
+    <string name="sync_strategy_careteam_display" translatable="false">Practitioner CareTeam</string>
+    <string name="sync_strategy_location_display" translatable="false">Practitioner Location</string>
+    <string name="sync_strategy_organization_display" translatable="false">Practitioner Organization</string>
+    <string name="sync_strategy_practitioner_display" translatable="false">Practitioner</string>
+    <string name="initializing">Initializing settings &#8230;</string>
+    <string name="error_loading_config_http_error">Could not load configuration. Please try again later</string>
+    <string name="error_loading_config_no_internet">Could not load configuration. Please check your internet connection</string>
+    <string name="error_loading_config_general">Error connecting to the server. Please contact the system administrator</string>
 </resources>

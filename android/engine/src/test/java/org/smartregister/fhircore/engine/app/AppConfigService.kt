@@ -19,8 +19,12 @@ package org.smartregister.fhircore.engine.app
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.sync.ResourceTag
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 
 class AppConfigService @Inject constructor(@ApplicationContext val context: Context) :
   ConfigService {
@@ -32,4 +36,52 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
       clientSecret = "siri-fake",
       accountType = context.packageName
     )
+
+  override fun defineResourceTags() =
+    listOf(
+      ResourceTag(
+        type = ResourceType.CareTeam.name,
+        tag =
+          Coding().apply {
+            system = CARETEAM_SYSTEM
+            display = CARETEAM_DISPLAY
+          }
+      ),
+      ResourceTag(
+        type = ResourceType.Location.name,
+        tag =
+          Coding().apply {
+            system = LOCATION_SYSTEM
+            display = LOCATION_DISPLAY
+          }
+      ),
+      ResourceTag(
+        type = ResourceType.Organization.name,
+        tag =
+          Coding().apply {
+            system = ORGANIZATION_SYSTEM
+            display = ORGANIZATION_DISPLAY
+          }
+      ),
+      ResourceTag(
+        type = SharedPreferenceKey.PRACTITIONER_ID.name,
+        tag =
+          Coding().apply {
+            system = PRACTITIONER_SYSTEM
+            display = PRACTITIONER_DISPLAY
+          },
+        isResource = false
+      )
+    )
+
+  companion object {
+    const val CARETEAM_SYSTEM = "http://fake.tag.com/CareTeam#system"
+    const val CARETEAM_DISPLAY = "Practitioner CareTeam"
+    const val ORGANIZATION_SYSTEM = "http://fake.tag.com/Organization#system"
+    const val ORGANIZATION_DISPLAY = "Practitioner Organization"
+    const val LOCATION_SYSTEM = "http://fake.tag.com/Location#system"
+    const val LOCATION_DISPLAY = "Practitioner Location"
+    const val PRACTITIONER_SYSTEM = "http://fake.tag.com/Practitioner#system"
+    const val PRACTITIONER_DISPLAY = "Practitioner"
+  }
 }

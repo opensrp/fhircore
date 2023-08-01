@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.app.fakes
 
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
@@ -32,9 +34,9 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -47,7 +49,7 @@ import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponse
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest.Companion.readFile
 
 object Faker {
-
+  private const val APP_DEBUG = "quest"
   fun buildPatient(
     id: String = "sampleId",
     family: String = "Mandela",
@@ -165,23 +167,23 @@ object Faker {
 
   fun loadTestConfigurationRegistryData(
     appId: String,
-    defaultRepository: DefaultRepository,
+    fhirEngine: FhirEngine,
     configurationRegistry: ConfigurationRegistry
   ) {
     val composition =
       getBasePath(appId, "composition").readFile(systemPath).decodeResourceFromString() as
         Composition
-    coEvery { defaultRepository.searchCompositionByIdentifier(any()) } returns composition
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
 
-    coEvery { defaultRepository.getBinary(any()) } answers
+    coEvery { fhirEngine.get(ResourceType.Binary, any()) } answers
       {
         val sectionComponent =
           composition.section.find {
-            this.args.first().toString() == it.focus.reference.substringAfter("Binary/")
+            this.args[1].toString() == it.focus.reference.substringAfter("Binary/")
           }
-        val classification = sectionComponent!!.focus.identifier.value
+        val configName = sectionComponent!!.focus.identifier.value
         Binary().apply {
-          content = getBasePath(appId, classification).readFile(systemPath).toByteArray()
+          content = getBasePath(appId, configName).readFile(systemPath).toByteArray()
         }
       }
 
@@ -193,13 +195,13 @@ object Faker {
   }
 
   fun buildTestConfigurationRegistry(
-    appId: String,
-    defaultRepository: DefaultRepository
+    appId: String? = null,
   ): ConfigurationRegistry {
+    val fhirEngine: FhirEngine = mockk()
     val configurationRegistry =
-      spyk(ConfigurationRegistry(mockk(), mockk(), mockk(), mockk(), defaultRepository))
+      spyk(ConfigurationRegistry(mockk(), fhirEngine, mockk(), mockk(), mockk()))
 
-    loadTestConfigurationRegistryData(appId, defaultRepository, configurationRegistry)
+    loadTestConfigurationRegistryData(appId ?: APP_DEBUG, fhirEngine, configurationRegistry)
 
     return configurationRegistry
   }

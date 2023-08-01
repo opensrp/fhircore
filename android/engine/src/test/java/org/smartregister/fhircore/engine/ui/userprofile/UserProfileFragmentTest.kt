@@ -21,10 +21,12 @@ import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.Lifecycle
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -54,7 +56,7 @@ class UserProfileFragmentTest : RobolectricTest() {
   val activityScenarioRule = ActivityScenarioRule(HiltActivityForTest::class.java)
 
   @get:Rule(order = 2) val instantTaskExecutorRule = InstantTaskExecutorRule()
-
+  private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   @BindValue var accountAuthenticator: AccountAuthenticator = mockk()
   @BindValue
   var userProfileViewModel: UserProfileViewModel =
@@ -84,11 +86,11 @@ class UserProfileFragmentTest : RobolectricTest() {
 
   @Test
   fun testThatProfileIsDestroyedWhenUserLogsOut() {
-    every { accountAuthenticator.logout() } just runs
+    every { accountAuthenticator.logout(any<() -> Unit>()) } just runs
 
     launchUserProfileFragment()
     activityScenarioRule.scenario.moveToState(Lifecycle.State.RESUMED)
-    userProfileFragment.userProfileViewModel.logoutUser()
+    userProfileFragment.userProfileViewModel.logoutUser(context)
     Assert.assertNotNull(userProfileFragment.userProfileViewModel.onLogout.value)
     Assert.assertTrue(userProfileFragment.userProfileViewModel.onLogout.value!!)
   }

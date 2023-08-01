@@ -22,6 +22,7 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.logicalId
 import java.util.Date
+import java.util.LinkedList
 import java.util.UUID
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BaseDateTimeType
@@ -29,6 +30,7 @@ import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
@@ -48,7 +50,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
-private val fhirR4JsonParser = FhirContext.forR4Cached().newJsonParser()
+private val fhirR4JsonParser = FhirContext.forR4Cached().getCustomJsonParser()
 
 fun Base?.valueToString(): String {
   return when {
@@ -276,6 +278,42 @@ fun ArrayList<Resource>.asCarePlanDomainResource(): ArrayList<CarePlan> {
   return list
 }
 
+/**
+ * A function that extracts only the UUID part of a resource logicalId.
+ *
+ * Examples:
+ *
+ * 1. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/2" returns
+ * "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
+ *
+ * 2. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4" returns "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
+ */
+fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")
+
 fun Resource.addTags(tags: List<Coding>) {
   tags.forEach { this.meta.addTag(it) }
+}
+
+/**
+ * Composition sections can be nested. This function retrieves all the nested composition sections
+ * and returns a flattened list of all [Composition.SectionComponent] for the given [Composition]
+ * resource
+ */
+fun Composition.retrieveCompositionSections(): List<Composition.SectionComponent> {
+  val sections = mutableListOf<Composition.SectionComponent>()
+  val sectionsQueue = LinkedList<Composition.SectionComponent>()
+  this.section.forEach {
+    if (!it.section.isNullOrEmpty()) {
+      it.section.forEach { sectionComponent -> sectionsQueue.addLast(sectionComponent) }
+    }
+    sections.add(it)
+  }
+  while (sectionsQueue.isNotEmpty()) {
+    val sectionComponent = sectionsQueue.removeFirst()
+    if (!sectionComponent.section.isNullOrEmpty()) {
+      sectionComponent.section.forEach { sectionsQueue.addLast(it) }
+    }
+    sections.add(sectionComponent)
+  }
+  return sections
 }

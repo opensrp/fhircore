@@ -27,7 +27,6 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.mockk
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Ignore
@@ -56,8 +55,7 @@ class PatientRegisterFragmentTest : RobolectricTest() {
   @get:Rule val composeRule = createComposeRule()
 
   @BindValue
-  var configurationRegistry: ConfigurationRegistry =
-    Faker.buildTestConfigurationRegistry("g6pd", mockk())
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry("g6pd")
 
   private lateinit var registerFragment: PatientRegisterFragment
 

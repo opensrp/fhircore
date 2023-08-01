@@ -8,5 +8,6 @@
   ],
   "applicationName": "Quest",
   "appLogoIconResourceFile": "ic_liberia",
-  "count": "100"
+  "count": "100",
+  "syncStrategies": ["Organization", "Location", "CareTeam", "Practitioner"]
 }

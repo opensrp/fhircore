@@ -21,17 +21,14 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
-import org.hl7.fhir.r4.model.Parameters
-import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.SearchParameter
+import org.hl7.fhir.r4.model.Coding
 import org.smartregister.fhircore.engine.appointment.MissedFHIRAppointmentsWorker
 import org.smartregister.fhircore.engine.appointment.ProposedWelcomeServiceAppointmentsWorker
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.FhirConfiguration
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.sync.ResourceTag
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.task.WelcomeServiceBackToCarePlanWorker
-import timber.log.Timber
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
 /** An interface that provides the application configurations. */
 interface ConfigService {
@@ -46,6 +43,41 @@ interface ConfigService {
         ExistingPeriodicWorkPolicy.UPDATE,
         PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
       )
+  }
+
+  fun defineResourceTags(): List<ResourceTag>
+
+  /**
+   * Provide a list of [Coding] that represents [ResourceTag]. [Coding] can be directly appended to
+   * a FHIR resource.
+   */
+  fun provideResourceTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
+    val tags = mutableListOf<Coding>()
+    defineResourceTags().forEach { strategy ->
+      if (strategy.isResource.not()) {
+        val id = sharedPreferencesHelper.read(strategy.type, null)
+        if (id.isNullOrBlank()) {
+          strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+        } else {
+          strategy.tag.let { tag ->
+            tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
+          }
+        }
+      } else {
+        val ids = sharedPreferencesHelper.read<List<String>>(strategy.type)
+        if (ids.isNullOrEmpty()) {
+          strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+        } else {
+          ids.forEach { id ->
+            strategy.tag.let { tag ->
+              tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
+            }
+          }
+        }
+      }
+    }
+
+    return tags
   }
 
   fun unschedulePlan(context: Context) {
@@ -86,71 +118,5 @@ interface ConfigService {
         ExistingPeriodicWorkPolicy.UPDATE,
         workRequest
       )
-  }
-
-  /** Retrieve registry sync params */
-  fun loadRegistrySyncParams(
-    configurationRegistry: ConfigurationRegistry,
-    authenticatedUserInfo: UserInfo?,
-  ): Map<ResourceType, Map<String, String>> {
-    val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
-
-    val syncConfig =
-      configurationRegistry.retrieveConfiguration<FhirConfiguration<Parameters>>(
-        AppConfigClassification.SYNC
-      )
-
-    val appConfig =
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        AppConfigClassification.APPLICATION
-      )
-
-    // TODO Does not support nested parameters i.e. parameters.parameters...
-    // TODO: expressionValue supports for Organization and Publisher literals for now
-    syncConfig.resource.parameter.map { it.resource as SearchParameter }.forEach { sp ->
-      val paramName = sp.name // e.g. organization
-      val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement
-      val paramExpression = sp.expression
-      val expressionValue =
-        when (paramName) {
-          ConfigurationRegistry.ORGANIZATION -> authenticatedUserInfo?.organization
-          ConfigurationRegistry.PUBLISHER -> authenticatedUserInfo?.questionnairePublisher
-          ConfigurationRegistry.ID -> paramExpression
-          ConfigurationRegistry.COUNT -> appConfig.count
-          else -> null
-        }?.let {
-          // replace the evaluated value into expression for complex expressions
-          // e.g. #organization -> 123
-          // e.g. patient.organization eq #organization -> patient.organization eq 123
-          paramExpression.replace(paramLiteral, it)
-        }
-
-      // for each entity in base create and add param map
-      // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital ],..]
-      sp.base.forEach { base ->
-        val resourceType = ResourceType.fromCode(base.code)
-        val pair = pairs.find { it.first == resourceType }
-        if (pair == null) {
-          pairs.add(
-            Pair(
-              resourceType,
-              expressionValue?.let { mapOf(sp.code to expressionValue) } ?: mapOf()
-            )
-          )
-        } else {
-          expressionValue?.let {
-            // add another parameter if there is a matching resource type
-            // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105, _count=100})]
-            val updatedPair = pair.second.toMutableMap().apply { put(sp.code, expressionValue) }
-            val index = pairs.indexOfFirst { it.first == resourceType }
-            pairs.set(index, Pair(resourceType, updatedPair))
-          }
-        }
-      }
-    }
-
-    Timber.i("SYNC CONFIG $pairs")
-
-    return mapOf(*pairs.toTypedArray())
   }
 }

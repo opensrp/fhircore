@@ -30,6 +30,7 @@ internal class CircularPercentageIndicatorKtTest : RobolectricTest() {
 
   @Test
   fun testCircularPercentageIndicatorWithText() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent { CircularPercentageIndicator(percentage = textPercentage) }
     composeRule.onNodeWithTag(CIRCULAR_PERCENTAGE_INDICATOR).assertExists()
     composeRule.onNodeWithTag(CIRCULAR_CANVAS_CIRCLE_TAG).assertExists()

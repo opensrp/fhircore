@@ -22,6 +22,8 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.AppointmentRegisterFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.RegisterFilter
@@ -34,17 +36,27 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterRepository
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 class AppRegisterRepository
 @Inject
 constructor(
   override val fhirEngine: FhirEngine,
   override val dispatcherProvider: DefaultDispatcherProvider,
+  override val sharedPreferencesHelper: SharedPreferencesHelper,
+  override val configurationRegistry: ConfigurationRegistry,
   val registerDaoFactory: RegisterDaoFactory,
+  override val configService: ConfigService,
   val tracer: PerformanceReporter
 ) :
   RegisterRepository,
-  DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider) {
+  DefaultRepository(
+    fhirEngine = fhirEngine,
+    dispatcherProvider = dispatcherProvider,
+    sharedPreferencesHelper = sharedPreferencesHelper,
+    configurationRegistry = configurationRegistry,
+    configService = configService
+  ) {
 
   override suspend fun loadRegisterData(
     currentPage: Int,

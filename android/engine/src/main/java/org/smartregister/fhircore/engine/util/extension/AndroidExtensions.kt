@@ -18,15 +18,21 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Build
+import android.os.Bundle
 import android.os.LocaleList
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import java.util.Locale
 import org.smartregister.fhircore.engine.R
 import timber.log.Timber
@@ -85,4 +91,50 @@ fun Context.getDrawable(name: String): Drawable {
 
 fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
   return values.any { this == it }
+}
+
+fun Context.getActivity(): AppCompatActivity? =
+  when (this) {
+    is AppCompatActivity -> this
+    is ContextWrapper -> baseContext.getActivity()
+    else -> null
+  }
+
+/** This function checks if the device is online */
+fun Context.isDeviceOnline(): Boolean {
+  val connectivityManager =
+    this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+  val network = connectivityManager.activeNetwork ?: return false
+  val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+
+  // Device can be connected to the internet through any of these NetworkCapabilities
+  val transports: List<Int> =
+    listOf(
+      NetworkCapabilities.TRANSPORT_ETHERNET,
+      NetworkCapabilities.TRANSPORT_CELLULAR,
+      NetworkCapabilities.TRANSPORT_WIFI,
+      NetworkCapabilities.TRANSPORT_VPN
+    )
+
+  return transports.any { capabilities.hasTransport(it) }
+}
+
+/**
+ * This function launches another [Activity] on top of the current. The current [Activity] is
+ * cleared from the back stack for launching the next activity then the current [Activity] is
+ * finished based on [finishLauncherActivity] condition.
+ */
+inline fun <reified A : Activity> Activity.launchActivityWithNoBackStackHistory(
+  finishLauncherActivity: Boolean = true,
+  bundle: Bundle = bundleOf()
+) {
+  startActivity(
+    Intent(this, A::class.java).apply {
+      addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+      addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+      addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+      putExtras(bundle)
+    }
+  )
+  if (finishLauncherActivity) finish()
 }

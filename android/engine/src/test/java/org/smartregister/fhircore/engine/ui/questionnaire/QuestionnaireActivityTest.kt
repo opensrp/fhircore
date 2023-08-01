@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.questionnaire
 
+import android.accounts.AccountManager
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.Application
@@ -68,8 +69,10 @@ import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.di.AnalyticsModule
+import org.smartregister.fhircore.engine.di.CoreModule
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
@@ -80,7 +83,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.distinctifyLinkId
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 
-@UninstallModules(AnalyticsModule::class)
+@UninstallModules(AnalyticsModule::class, CoreModule::class)
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
@@ -102,12 +105,16 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @BindValue @JvmField val performanceReporter: PerformanceReporter = FakePerformanceReporter()
 
+  @BindValue val accountManager = mockk<AccountManager>()
+
+  @BindValue val syncBroadcaster = mockk<SyncBroadcaster>()
+
   @BindValue
   val questionnaireViewModel: QuestionnaireViewModel =
     spyk(
       QuestionnaireViewModel(
         fhirEngine = mockk(),
-        defaultRepository = mockk(),
+        defaultRepository = mockk { coEvery { addOrUpdate(true, any()) } just runs },
         configurationRegistry = mockk(),
         transformSupportServices = mockk(),
         dispatcherProvider = dispatcherProvider,
@@ -130,6 +137,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "1234")
       }
 
+    every { syncBroadcaster.runSync(any()) } just runs
     coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
 
     val questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
@@ -469,7 +477,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   fun testHandleQuestionnaireSubmitShouldShowErrorAlertOnInvalidData() = runTest {
     val questionnaire = buildQuestionnaireWithConstraints()
 
-    coEvery { questionnaireViewModel.defaultRepository.addOrUpdate(any()) } just runs
+    coEvery { questionnaireViewModel.defaultRepository.addOrUpdate(resource = any()) } just runs
     every { questionnaireFragment.getQuestionnaireResponse() } returns
       QuestionnaireResponse().apply {
         addItem().apply { linkId = "1" }
@@ -589,7 +597,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testPostSaveSuccessfulWithExtractionMessageShouldShowAlert() {
+  fun testPostSaveSuccessfulWithExtractionMessageShouldShowAlert() = runTest {
     questionnaireActivity.questionnaireViewModel.extractionProgressMessage.postValue("ABC")
     questionnaireActivity.postSaveSuccessful(QuestionnaireResponse())
 

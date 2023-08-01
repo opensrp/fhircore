@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.engine.app.fakes
 
+import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
@@ -24,19 +27,22 @@ import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest.Companion.readFile
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 
 object Faker {
-
+  private const val APP_DEBUG = "default/debug"
   private val systemPath =
     (System.getProperty("user.dir") +
       File.separator +
@@ -48,35 +54,68 @@ object Faker {
       File.separator)
 
   fun loadTestConfigurationRegistryData(
-    defaultRepository: DefaultRepository,
+    fhirEngine: FhirEngine,
     configurationRegistry: ConfigurationRegistry
   ) {
     val composition =
       getBasePath("composition").readFile(systemPath).decodeResourceFromString() as Composition
-    coEvery { defaultRepository.searchCompositionByIdentifier(any()) } returns composition
-
-    coEvery { defaultRepository.getBinary(any()) } answers
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    coEvery { fhirEngine.get(ResourceType.Binary, any()) } answers
       {
         val sectionComponent =
           composition.section.find {
-            this.args.first().toString() == it.focus.reference.substringAfter("Binary/")
+            this.args[1].toString() == it.focus.reference.substringAfter("Binary/")
           }
         val configName = sectionComponent!!.focus.identifier.value
         Binary().apply { content = getBasePath(configName).readFile(systemPath).toByteArray() }
       }
-
-    runBlocking { configurationRegistry.loadConfigurations(appId = "default") {} }
+    runBlocking {
+      configurationRegistry.loadConfigurations(
+        appId = APP_DEBUG.substringBefore("/"),
+      ) {}
+    }
   }
 
   private fun getBasePath(configName: String): String {
     return "/configs/default/config_$configName.json"
   }
 
-  fun buildTestConfigurationRegistry(defaultRepository: DefaultRepository): ConfigurationRegistry {
-    val configurationRegistry =
-      spyk(ConfigurationRegistry(mockk(), mockk(), mockk(), mockk(), defaultRepository))
+  fun buildTestConfigurationRegistry(): ConfigurationRegistry {
+    val fhirResourceService = mockk<FhirResourceService>()
+    val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
+    coEvery { fhirResourceService.getResource(any()) } returns Bundle()
+    val fhirEngine: FhirEngine = mockk()
 
-    loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
+    val composition =
+      getBasePath("composition").readFile(systemPath).decodeResourceFromString() as Composition
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+
+    coEvery { fhirEngine.get(ResourceType.Binary, any()) } answers
+      {
+        val sectionComponent =
+          composition.section.find {
+            this.args[1].toString() == it.focus.reference.substringAfter("Binary/")
+          }
+        val configName = sectionComponent!!.focus.identifier.value
+        Binary().apply { content = getBasePath(configName).readFile(systemPath).toByteArray() }
+      }
+
+    val configurationRegistry =
+      spyk(
+        ConfigurationRegistry(
+          fhirEngine = fhirEngine,
+          fhirResourceDataSource = fhirResourceDataSource,
+          sharedPreferencesHelper = mockk(),
+          dispatcherProvider = mockk(),
+          context = ApplicationProvider.getApplicationContext(),
+        )
+      )
+
+    runBlocking {
+      configurationRegistry.loadConfigurations(
+        appId = APP_DEBUG.substringBefore("/"),
+      ) {}
+    }
 
     return configurationRegistry
   }

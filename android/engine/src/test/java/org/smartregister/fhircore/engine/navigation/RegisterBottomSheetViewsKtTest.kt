@@ -20,17 +20,13 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import io.mockk.spyk
-import io.mockk.verify
-import org.junit.Before
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 
 class RegisterBottomSheetViewsKtTest : RobolectricTest() {
-
-  private val mockListener: (String) -> Unit = spyk({})
 
   @get:Rule val composeRule = createComposeRule()
 
@@ -40,15 +36,10 @@ class RegisterBottomSheetViewsKtTest : RobolectricTest() {
       RegisterItem(uniqueTag = "UniqueTag2", title = "Menu 2", isSelected = false)
     )
 
-  @Before
-  fun setUp() {
-    composeRule.setContent {
-      RegisterBottomSheet(registers = registerItems, itemListener = mockListener)
-    }
-  }
-
   @Test
   fun testThatMenuItemsAreShowing() {
+    composeRule.mainClock.autoAdvance = false
+    composeRule.setContent { RegisterBottomSheet(registers = registerItems, itemListener = {}) }
     composeRule.onNodeWithText("Menu 1").assertExists()
     composeRule.onNodeWithText("Menu 2").assertExists()
 
@@ -58,9 +49,14 @@ class RegisterBottomSheetViewsKtTest : RobolectricTest() {
 
   @Test
   fun testThatMenuClickCallsTheListener() {
+    var itemListenerCalled = false
+    composeRule.mainClock.autoAdvance = false
+    composeRule.setContent {
+      RegisterBottomSheet(registers = registerItems, itemListener = { itemListenerCalled = true })
+    }
     val menu2 = composeRule.onNodeWithText("Menu 2")
     menu2.assertExists()
     menu2.performClick()
-    verify { mockListener(any()) }
+    Assert.assertTrue(itemListenerCalled)
   }
 }

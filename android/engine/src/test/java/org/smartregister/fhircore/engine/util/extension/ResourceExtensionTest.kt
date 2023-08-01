@@ -714,4 +714,15 @@ class ResourceExtensionTest : RobolectricTest() {
     carePlan.addTags(meta)
     Assert.assertTrue(carePlan.meta.tag.isEmpty())
   }
+
+  @Test
+  fun logicalIdFromFhirPathExtractedIdReturnsCorrectValue() {
+    val logicalId = "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/2"
+    Assert.assertEquals("0acda8c9-3fa3-40ae-abcd-7d1fba7098b4", logicalId.extractLogicalIdUuid())
+    val otherLogicalId = "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4"
+    Assert.assertEquals(
+      "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4",
+      otherLogicalId.extractLogicalIdUuid()
+    )
+  }
 }

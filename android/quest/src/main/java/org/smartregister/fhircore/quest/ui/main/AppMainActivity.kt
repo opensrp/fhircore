@@ -105,13 +105,13 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
           AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp())
         )
         Timber.w(
-          (if (state.exceptions != null) state.exceptions else emptyList()).joinToString {
+          (if (state?.exceptions != null) state.exceptions else emptyList()).joinToString {
             it.exception.message.toString()
           }
         )
       }
       is SyncJobStatus.Failed -> {
-        if (!state.exceptions.isNullOrEmpty() &&
+        if (!state?.exceptions.isNullOrEmpty() &&
             state.exceptions.first().resourceType == ResourceType.Flag
         ) {
           showToast(state.exceptions.first().exception.message!!)
@@ -119,10 +119,10 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         }
         showToast(getString(R.string.sync_failed_text))
         val hasAuthError =
-          state.exceptions != null &&
-            state.exceptions.any {
-              it.exception is HttpException && (it.exception as HttpException).code() == 401
-            }
+          state?.exceptions?.any {
+            it.exception is HttpException && (it.exception as HttpException).code() == 401
+          }
+            ?: false
         val message = if (hasAuthError) R.string.session_expired else R.string.sync_check_internet
         showToast(getString(message))
         appMainViewModel.onEvent(
@@ -138,11 +138,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
             AppMainEvent.RefreshAuthToken { intent -> authActivityLauncherForResult.launch(intent) }
           )
         }
-        Timber.e(
-          (if (state.exceptions != null) state.exceptions else emptyList()).joinToString {
-            it.exception.message.toString()
-          }
-        )
+        Timber.w(state?.exceptions?.joinToString { it.exception.message.toString() })
         scheduleFhirBackgroundWorkers()
       }
       is SyncJobStatus.Finished -> {
@@ -171,12 +167,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     }
   }
 
-  fun setupTimeOutListener() {
+  private fun setupTimeOutListener() {
     if (application is QuestApplication) {
       (application as QuestApplication).onInActivityListener =
         object : OnInActivityListener {
           override fun onTimeout() {
-            appMainViewModel.onTimeOut()
+            appMainViewModel.onTimeOut(application)
           }
         }
     }

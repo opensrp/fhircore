@@ -18,14 +18,15 @@ package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import dagger.hilt.android.testing.BindValue
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.spyk
-import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -42,48 +43,47 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-  @Inject lateinit var dispatcherProvider: DispatcherProvider
+  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   val context = ApplicationProvider.getApplicationContext<Context>()
-
-  @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
-
+  @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
   private val testAppId = "default"
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
   lateinit var configurationRegistry: ConfigurationRegistry
-  val defaultRepository: DefaultRepository = mockk()
+  var fhirEngine: FhirEngine = mockk()
 
   @Before
+  @ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
-    fhirResourceDataSource = spyk(FhirResourceDataSource(mockk()))
+    fhirResourceDataSource = mockk()
+    sharedPreferencesHelper = mockk()
+
     configurationRegistry =
       ConfigurationRegistry(
         context,
+        fhirEngine,
         fhirResourceDataSource,
         sharedPreferencesHelper,
-        dispatcherProvider,
-        defaultRepository
+        coroutineRule.testDispatcherProvider,
       )
+    coEvery { fhirResourceDataSource.loadData(any()) } returns
+      Bundle().apply { entry = mutableListOf() }
+    Assert.assertNotNull(configurationRegistry)
+    Faker.loadTestConfigurationRegistryData(fhirEngine, configurationRegistry)
   }
 
   @Test
   fun testLoadConfiguration() {
-    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
-
     Assert.assertEquals(testAppId, configurationRegistry.appId)
     Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
     Assert.assertTrue(configurationRegistry.workflowPointsMap.containsKey("default|application"))
@@ -94,8 +94,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun testRetrieveConfigurationShouldReturnLoginViewConfiguration() {
-    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
-
     val retrievedConfiguration =
       configurationRegistry.retrieveConfiguration<LoginViewConfiguration>(
         AppConfigClassification.LOGIN
@@ -117,8 +115,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun testRetrievePinConfigurationShouldReturnLoginViewConfiguration() {
-    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
-
     val retrievedConfiguration =
       configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigClassification.PIN)
 
@@ -140,8 +136,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testRetrieveConfigurationWithNoEntryShouldReturnNewConfiguration() {
     configurationRegistry.appId = "testApp"
 
-    Assert.assertTrue(configurationRegistry.workflowPointsMap.isEmpty())
-    Assert.assertTrue(configurationRegistry.configurationsMap.isEmpty())
+    configurationRegistry.workflowPointsMap.clear()
+    configurationRegistry.configurationsMap.clear()
 
     val retrievedConfiguration =
       configurationRegistry.retrieveConfiguration<PinViewConfiguration>(AppConfigClassification.PIN)
@@ -151,32 +147,18 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun testLoadConfigurationRegistry() {
-    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
-
-    coVerify { defaultRepository.searchCompositionByIdentifier(testAppId) }
-    coVerify { defaultRepository.getBinary("62938") }
-    coVerify { defaultRepository.getBinary("62940") }
-    coVerify { defaultRepository.getBinary("62952") }
-    coVerify { defaultRepository.getBinary("87021") }
-    coVerify { defaultRepository.getBinary("63003") }
-    coVerify { defaultRepository.getBinary("63011") }
-    coVerify { defaultRepository.getBinary("63007") }
-    coVerify { defaultRepository.getBinary("56181") }
+    runTest { configurationRegistry.fetchNonWorkflowConfigResources() }
+    coVerify { fhirEngine.search<Composition>(any<Search>()) }
   }
 
   @Test
   fun testIsAppIdInitialized() {
-    Assert.assertFalse(configurationRegistry.isAppIdInitialized())
-
-    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
-
+    runBlocking { configurationRegistry.loadConfigurations(testAppId) {} }
     Assert.assertTrue(configurationRegistry.isAppIdInitialized())
   }
 
   @Test
   fun testIsWorkflowPointName() {
-    Faker.loadTestConfigurationRegistryData(defaultRepository, configurationRegistry)
-
     Assert.assertEquals("$testAppId|123", configurationRegistry.workflowPointName("123"))
     Assert.assertEquals("$testAppId|abbb", configurationRegistry.workflowPointName("abbb"))
   }
@@ -185,7 +167,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   fun testLoadConfigurationsLocally_shouldReturn_8_workflows() {
     runTest {
-      Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
+      configurationRegistry.workflowPointsMap.clear()
       configurationRegistry.loadConfigurationsLocally("$testAppId/debug") { Assert.assertTrue(it) }
       Assert.assertEquals(9, configurationRegistry.workflowPointsMap.size)
 
@@ -208,7 +190,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   fun testLoadConfigurationsLocally_shouldReturn_empty_workflows() {
     runTest {
-      Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
+      configurationRegistry.workflowPointsMap.clear()
       configurationRegistry.loadConfigurationsLocally("") { Assert.assertFalse(it) }
       Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
     }
@@ -217,19 +199,12 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   fun testFetchNonWorkflowConfigResources() = runTest {
     val dispatcher = StandardTestDispatcher(testScheduler)
-    coEvery { configurationRegistry.repository.searchCompositionByIdentifier(testAppId) } returns
-      Composition().apply {
-        addSection().apply { this.focus = Reference().apply { reference = "Questionnaire/123" } }
-      }
-    coEvery { configurationRegistry.fhirResourceDataSource.loadData(any()) } returns Bundle()
-
     configurationRegistry.appId = testAppId
     configurationRegistry.fetchNonWorkflowConfigResources(dispatcher)
 
-    //    coVerify { configurationRegistry.repository.searchCompositionByIdentifier(any()) }
     advanceUntilIdle()
     coVerify {
-      configurationRegistry.fhirResourceDataSource.loadData(
+      fhirResourceDataSource.loadData(
         withArg { Assert.assertTrue(it.startsWith("Questionnaire", ignoreCase = true)) }
       )
     }
@@ -238,13 +213,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   fun testFetchNonWorkflowConfigResourcesWithNoEntry() {
     configurationRegistry.appId = "testApp"
-    Assert.assertEquals(0, configurationRegistry.workflowPointsMap.size)
-
-    coEvery { defaultRepository.searchCompositionByIdentifier(any()) } returns null
+    configurationRegistry.workflowPointsMap.clear()
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf()
 
     runBlocking { configurationRegistry.fetchNonWorkflowConfigResources() }
 
-    //    coVerify { defaultRepository.searchCompositionByIdentifier("testApp") }
     coVerify(inverse = true) { fhirResourceDataSource.loadData(any()) }
   }
 
@@ -264,5 +237,45 @@ class ConfigurationRegistryTest : RobolectricTest() {
         this.focus = Reference().apply { reference = "Questionnaire/123" }
       }
     Assert.assertFalse(configurationRegistry.isWorkflowPoint(sectionComponent))
+  }
+
+  @Test
+  @ExperimentalCoroutinesApi
+  fun testAddOrUpdate() {
+    // when does not exist
+    val patient = Faker.buildPatient()
+    coEvery { fhirEngine.get(patient.resourceType, patient.logicalId) } returns patient
+    coEvery { fhirEngine.update(any()) } returns Unit
+
+    runTest {
+      val previousLastUpdate = patient.meta.lastUpdated
+      configurationRegistry.addOrUpdate(patient)
+      Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
+    }
+
+    // when exists
+    runTest {
+      val previousLastUpdate = patient.meta.lastUpdated
+      configurationRegistry.addOrUpdate(patient)
+      Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
+    }
+  }
+
+  @Test
+  @ExperimentalCoroutinesApi
+  fun testAddOrUpdateCatchesResourceNotFound() {
+    val patient = Faker.buildPatient()
+    coEvery { fhirEngine.get(patient.resourceType, patient.logicalId) } throws
+      ResourceNotFoundException("", "")
+    coEvery { fhirEngine.create(any()) } returns listOf()
+
+    runTest {
+      val previousLastUpdate = patient.meta.lastUpdated
+      configurationRegistry.addOrUpdate(patient)
+      Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
+    }
+
+    coVerify(inverse = true) { fhirEngine.update(any()) }
+    coVerify { fhirEngine.create(patient) }
   }
 }

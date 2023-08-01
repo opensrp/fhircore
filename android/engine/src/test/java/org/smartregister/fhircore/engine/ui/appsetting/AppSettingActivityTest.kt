@@ -18,121 +18,126 @@ package org.smartregister.fhircore.engine.ui.appsetting
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.ext.junit.rules.activityScenarioRule
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.gson.Gson
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
+import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.annotation.Config
+import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
-import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.IS_LOGGED_IN
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
-@Config(application = HiltTestApplication::class)
-@RunWith(AndroidJUnit4::class)
-class AppSettingActivityTest {
+class AppSettingActivityTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) var activityScenarioRule = activityScenarioRule<AppSettingActivity>()
 
   val context: Context =
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
-  @BindValue val sharedPreferencesHelper = SharedPreferencesHelper(context)
+  @Inject lateinit var gson: Gson
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @BindValue val secureSharedPreference = mockk<SecureSharedPreference>()
   @BindValue val accountAuthenticator = mockk<AccountAuthenticator>()
-  @BindValue
-  var configurationRegistry = Faker.buildTestConfigurationRegistry(defaultRepository = mockk())
+  @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  private lateinit var appSettingActivityActivity: AppSettingActivity
+
+  private lateinit var appSettingActivityActivitySpy: AppSettingActivity
 
   @Before
   fun setUp() {
     hiltRule.inject()
+
+    appSettingActivityActivity =
+      Robolectric.buildActivity(AppSettingActivity::class.java).create().resume().get()
+
+    appSettingActivityActivitySpy = spyk(appSettingActivityActivity, recordPrivateCalls = true)
+    every { appSettingActivityActivitySpy.finish() } returns Unit
   }
 
   @Test
   fun testAppSettingActivity_withAppId_hasNotBeenSubmitted() {
     every { accountAuthenticator.hasActiveSession() } returns false
 
-    activityScenarioRule.scenario.recreate()
-    activityScenarioRule.scenario.onActivity { activity ->
-      Assert.assertEquals(false, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
-      Assert.assertEquals(null, activity.sharedPreferencesHelper.read(APP_ID_CONFIG, null))
-      Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
-    }
+    Assert.assertEquals(
+      false,
+      appSettingActivityActivity.sharedPreferencesHelper.read(IS_LOGGED_IN, false)
+    )
+    Assert.assertEquals(
+      null,
+      appSettingActivityActivity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+    )
+    Assert.assertEquals(false, appSettingActivityActivity.accountAuthenticator.hasActiveSession())
   }
 
   @Test
   fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasNotLoggedIn() {
-    sharedPreferencesHelper.write(APP_ID_CONFIG, "default")
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "default")
     every { accountAuthenticator.hasActiveSession() } returns false
 
-    activityScenarioRule.scenario.recreate()
-    activityScenarioRule.scenario.onActivity { activity ->
-      Assert.assertEquals(false, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
-      Assert.assertEquals("default", activity.sharedPreferencesHelper.read(APP_ID_CONFIG, null))
-      Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
-    }
+    Assert.assertEquals(
+      false,
+      appSettingActivityActivity.sharedPreferencesHelper.read(IS_LOGGED_IN, false)
+    )
+    Assert.assertEquals(
+      "default",
+      appSettingActivityActivity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+    )
+    Assert.assertEquals(false, appSettingActivityActivity.accountAuthenticator.hasActiveSession())
   }
 
   @Test
   fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasLoggedIn() {
     sharedPreferencesHelper.write(IS_LOGGED_IN, true)
-    sharedPreferencesHelper.write(APP_ID_CONFIG, "default")
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "default")
     every { accountAuthenticator.hasActiveSession() } returns true
 
-    activityScenarioRule.scenario.recreate()
-    activityScenarioRule.scenario.onActivity { activity ->
-      Assert.assertEquals(true, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
-      Assert.assertEquals("default", activity.sharedPreferencesHelper.read(APP_ID_CONFIG, null))
-      Assert.assertEquals(true, activity.accountAuthenticator.hasActiveSession())
-    }
+    Assert.assertEquals(
+      true,
+      appSettingActivityActivity.sharedPreferencesHelper.read(IS_LOGGED_IN, false)
+    )
+    Assert.assertEquals(
+      "default",
+      appSettingActivityActivity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+    )
+    Assert.assertEquals(true, appSettingActivityActivity.accountAuthenticator.hasActiveSession())
   }
 
   @Test
   fun testAppSettingActivity_withAppId_hasBeenSubmitted_withUser_hasLoggedIn_withSessionToken_hasExpired() {
     sharedPreferencesHelper.write(IS_LOGGED_IN, true)
-    sharedPreferencesHelper.write(APP_ID_CONFIG, "default")
+    sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, "default")
     every { accountAuthenticator.hasActiveSession() } returns false
 
-    activityScenarioRule.scenario.recreate()
-    activityScenarioRule.scenario.onActivity { activity ->
-      Assert.assertEquals(true, activity.sharedPreferencesHelper.read(IS_LOGGED_IN, false))
-      Assert.assertEquals("default", activity.sharedPreferencesHelper.read(APP_ID_CONFIG, null))
-      Assert.assertEquals(false, activity.accountAuthenticator.hasActiveSession())
-    }
+    Assert.assertEquals(
+      true,
+      appSettingActivityActivity.sharedPreferencesHelper.read(IS_LOGGED_IN, false)
+    )
+    Assert.assertEquals(
+      "default",
+      appSettingActivityActivity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+    )
+    Assert.assertEquals(false, appSettingActivityActivity.accountAuthenticator.hasActiveSession())
   }
 
   @Test
-  fun testAppSettingActivity_withConfig_hasBeenLoaded() {
-    sharedPreferencesHelper.write(APP_ID_CONFIG, "default/debug")
-    every { accountAuthenticator.hasActiveSession() } returns true
-
-    activityScenarioRule.scenario.recreate()
-    activityScenarioRule.scenario.onActivity { activity ->
-      activity.configurationRegistry.workflowPointsMap.let { workflows ->
-        Assert.assertEquals(9, workflows.size)
-        Assert.assertEquals(true, workflows.containsKey("default|application"))
-        Assert.assertEquals(true, workflows.containsKey("default|login"))
-        Assert.assertEquals(true, workflows.containsKey("default|app_feature"))
-        Assert.assertEquals(true, workflows.containsKey("default|patient_register"))
-        Assert.assertEquals(true, workflows.containsKey("default|patient_task_register"))
-        Assert.assertEquals(true, workflows.containsKey("default|pin"))
-        Assert.assertEquals(true, workflows.containsKey("default|patient_details_view"))
-        Assert.assertEquals(true, workflows.containsKey("default|result_details_navigation"))
-        Assert.assertEquals(true, workflows.containsKey("default|sync"))
-      }
+  fun testThatConfigsAreLoadedWhenAppSettingsIsLaunched() {
+    appSettingActivityActivity.let { activity ->
+      Assert.assertTrue(activity != null)
+      Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
     }
   }
 }

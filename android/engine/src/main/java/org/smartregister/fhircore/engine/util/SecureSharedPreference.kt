@@ -21,8 +21,10 @@ import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.Base64
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
@@ -42,32 +44,33 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
   private fun getMasterKey() =
     MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
 
-  fun saveCredentials(authCredentials: AuthCredentials) {
+  fun saveCredentials(username: String, password: CharArray) {
+    val randomSaltBytes = get256RandomBytes()
+
     secureSharedPreferences.edit {
-      putString(KEY_LATEST_CREDENTIALS_PREFERENCE, authCredentials.encodeJson())
+      putString(
+        SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name,
+        AuthCredentials(
+            username = username,
+            salt = Base64.getEncoder().encodeToString(randomSaltBytes),
+            passwordHash = password.toPasswordHash(randomSaltBytes),
+          )
+          .encodeJson()
+      )
     }
   }
 
   fun deleteCredentials() {
-    secureSharedPreferences.edit { remove(KEY_LATEST_CREDENTIALS_PREFERENCE) }
+    secureSharedPreferences.edit { remove(SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name) }
   }
 
   fun retrieveSessionToken() = retrieveCredentials()?.sessionToken
 
   fun retrieveSessionUsername() = retrieveCredentials()?.username
 
-  fun deleteSession() {
-    retrieveCredentials()?.run {
-      this.sessionToken = null
-      this.refreshToken = null
-
-      saveCredentials(this)
-    }
-  }
-
   fun retrieveCredentials(): AuthCredentials? {
     return secureSharedPreferences
-      .getString(KEY_LATEST_CREDENTIALS_PREFERENCE, null)
+      .getString(SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name, null)
       ?.decodeJson<AuthCredentials>()
   }
 
@@ -81,9 +84,10 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     secureSharedPreferences.edit { remove(KEY_SESSION_PIN) }
   }
 
+  @VisibleForTesting fun get256RandomBytes() = 256.getRandomBytesOfSize()
+
   companion object {
     const val SECURE_STORAGE_FILE_NAME = "fhircore_secure_preferences"
-    const val KEY_LATEST_CREDENTIALS_PREFERENCE = "LATEST_SUCCESSFUL_SESSION_CREDENTIALS"
     const val KEY_SESSION_PIN = "KEY_SESSION_PIN"
   }
 }

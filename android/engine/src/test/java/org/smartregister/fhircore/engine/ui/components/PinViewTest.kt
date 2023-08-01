@@ -41,6 +41,7 @@ class PinViewTest : RobolectricTest() {
   @ExperimentalComposeUiApi
   @Test
   fun testPinCell() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
       PinCell(
         indexValue = "3",
@@ -57,6 +58,7 @@ class PinViewTest : RobolectricTest() {
   @ExperimentalComposeUiApi
   @Test
   fun testPinCellDotted() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent { PinCell(isDotted = true, indexValue = "3", fullEditValue = "123") }
     composeRule.onNodeWithTag(PIN_VIEW_CELL_DOTTED).assertExists()
     composeRule.onNodeWithTag(PIN_VIEW_CELL_TEXT).assertExists()
@@ -65,6 +67,7 @@ class PinViewTest : RobolectricTest() {
   @ExperimentalComposeUiApi
   @Test
   fun testPinCellViewError() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
       PinCell(isDotted = false, indexValue = "4", fullEditValue = "1234", showError = true)
     }
@@ -75,6 +78,7 @@ class PinViewTest : RobolectricTest() {
   @ExperimentalComposeUiApi
   @Test
   fun testPinCellViewDottedError() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
       PinCell(isDotted = true, indexValue = "3", fullEditValue = "123", showError = true)
     }

@@ -26,7 +26,6 @@ import com.google.android.fhir.sync.Sync
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
 import org.junit.After
@@ -56,8 +55,7 @@ class PatientTaskFragmentTest : RobolectricTest() {
   @get:Rule val composeRule = createComposeRule()
 
   @BindValue
-  var configurationRegistry: ConfigurationRegistry =
-    Faker.buildTestConfigurationRegistry("g6pd", mockk())
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry("g6pd")
 
   private lateinit var patientTaskFragment: PatientTaskFragment
 

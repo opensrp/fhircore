@@ -29,6 +29,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import java.util.Date
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Appointment
@@ -54,6 +55,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.TracingAgeFilterEnum
 import org.smartregister.fhircore.engine.data.local.TracingRegisterFilter
@@ -66,7 +68,6 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -82,18 +83,30 @@ class TracingRegisterDaoTest : RobolectricTest() {
   private val fhirEngine = mockk<FhirEngine>()
   private val tracingRepository = spyk(TracingRepository(fhirEngine))
   private val dispatcherProvider = DefaultDispatcherProvider()
-  private val defaultRepository = DefaultRepository(fhirEngine, dispatcherProvider)
-  private val configurationRegistry = Faker.buildTestConfigurationRegistry(spyk(defaultRepository))
+  private lateinit var defaultRepository: DefaultRepository
+  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var tracingRegisterDao: TracingRegisterDao
+  @get:Rule(order = 2) var coroutineRule = CoroutineTestRule()
 
+  @Inject lateinit var configService: ConfigService
   @Before
   fun setUp() {
     hiltRule.inject()
-
+    defaultRepository =
+      spyk(
+        DefaultRepository(
+          fhirEngine = fhirEngine,
+          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          configurationRegistry = configurationRegistry,
+          configService = configService
+        )
+      )
     coEvery { configurationRegistry.retrieveDataFilterConfiguration(any()) } returns emptyList()
 
-    every { sharedPreferencesHelper.read(LOGGED_IN_PRACTITIONER, null) } returns
-      Practitioner().apply { id = "123" }.encodeResourceToString()
+    every {
+      sharedPreferencesHelper.read<Practitioner>(LOGGED_IN_PRACTITIONER, decodeWithGson = true)
+    } returns Practitioner().apply { id = "123" }
 
     tracingRegisterDao =
       HomeTracingRegisterDao(
@@ -451,10 +464,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
   @Test
   fun loadProfileDataReturnsExpectedProfileData() = runTest {
     val practitioner =
-      sharedPreferencesHelper.read<Practitioner>(
-        LOGGED_IN_PRACTITIONER,
-        decodeFhirResource = true
-      )!!
+      sharedPreferencesHelper.read<Practitioner>(LOGGED_IN_PRACTITIONER, decodeWithGson = true)!!
     val guardian0 = RelatedPerson().apply { id = "guardian0" }
     val guardian1 = Faker.buildPatient("guardian1")
 

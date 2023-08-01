@@ -58,7 +58,7 @@ import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
-import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
@@ -287,7 +287,8 @@ constructor(
     return appFeatureManager.appFeatureHasSetting(REGISTER_FORM_ID_KEY)
   }
 
-  fun isFirstTimeSync() = sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null).isNullOrBlank()
+  fun isFirstTimeSync() =
+    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null).isNullOrBlank()
 
   fun progressMessage() =
     if (searchText.value.isEmpty()) {

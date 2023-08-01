@@ -49,7 +49,7 @@ class AppSyncWorkerTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @Inject lateinit var fhirEngine: FhirEngine
   @BindValue val dataStore: AppDataStore = mockk()
-  @BindValue val syncParamsManager: SyncParametersManager = mockk()
+  @BindValue val syncParamsManager: SyncListenerManager = mockk()
   private lateinit var appSyncWorker: AppSyncWorker
 
   @Before
@@ -79,16 +79,16 @@ class AppSyncWorkerTest : RobolectricTest() {
 
   @Test
   fun getDownloadWorkManagerCallsSyncParameterManagerParams() {
-    every { syncParamsManager.getSyncParams() } returns emptyMap()
+    every { syncParamsManager.loadSyncParams() } returns emptyMap()
     val downloadManager = appSyncWorker.getDownloadWorkManager()
     Assert.assertNotNull(downloadManager)
     Assert.assertTrue(downloadManager is ResourceParamsBasedDownloadWorkManager)
-    verify(exactly = 1) { syncParamsManager.getSyncParams() }
+    verify(exactly = 1) { syncParamsManager.loadSyncParams() }
   }
 
   @Test
   fun getDownloadWorkManagerContextGetsAndSavesTimestampToDataStore() = runTest {
-    every { syncParamsManager.getSyncParams() } returns emptyMap()
+    every { syncParamsManager.loadSyncParams() } returns emptyMap()
 
     val oldTimestamp = "2023-04-20T07:24:47.111Z"
     val newTimestamp = "2023-04-20T10:17:18.111Z"

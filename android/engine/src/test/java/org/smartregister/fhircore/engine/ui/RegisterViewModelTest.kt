@@ -27,6 +27,7 @@ import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -36,7 +37,6 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.register.RegisterViewModel
@@ -54,11 +54,8 @@ class RegisterViewModelTest : RobolectricTest() {
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
-  @BindValue var defaultRepository: DefaultRepository = mockk()
-
   @BindValue
-  var configurationRegistry: ConfigurationRegistry =
-    Faker.buildTestConfigurationRegistry(defaultRepository)
+  var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Inject lateinit var configService: ConfigService
 
@@ -123,12 +120,10 @@ class RegisterViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testPatientExistsShouldReturnTrue() {
-    coroutineTestRule.runBlockingTest {
-      val patientExists = viewModel.patientExists("barcodeId")
-      Assert.assertNotNull(patientExists.value)
-      Assert.assertTrue(patientExists.value!!.isSuccess)
-    }
+  fun testPatientExistsShouldReturnTrue() = runTest {
+    val patientExists = viewModel.patientExists("barcodeId")
+    Assert.assertNotNull(patientExists.value)
+    Assert.assertTrue(patientExists.value!!.isSuccess)
   }
 
   @Test

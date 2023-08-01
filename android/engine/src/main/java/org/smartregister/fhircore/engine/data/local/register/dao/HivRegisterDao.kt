@@ -380,7 +380,7 @@ constructor(
         if (!this.active) throw IllegalStateException("Patient already deleted")
         this.active = false
       }
-    defaultRepository.addOrUpdate(patient)
+    defaultRepository.addOrUpdate(true, patient)
   }
 
   suspend fun transformChildrenPatientToRegisterData(patients: List<Patient>): List<RegisterData> {

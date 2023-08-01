@@ -37,7 +37,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 /**
@@ -63,7 +63,7 @@ constructor(
     )
 
   private val _lastSyncTimestamp =
-    MutableLiveData(sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, ""))
+    MutableLiveData(sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, ""))
   val lastSyncTimestamp
     get() = _lastSyncTimestamp
 
@@ -79,7 +79,7 @@ constructor(
 
   var selectedLanguage =
     MutableLiveData(
-      sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.UK.toLanguageTag())
+      sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.UK.toLanguageTag())
     )
 
   val registerViewConfiguration: MutableLiveData<RegisterViewConfiguration> = MutableLiveData()
@@ -111,7 +111,7 @@ constructor(
 
   fun setLastSyncTimestamp(lastSyncTimestamp: String) {
     if (lastSyncTimestamp.isNotEmpty()) {
-      sharedPreferencesHelper.write(LAST_SYNC_TIMESTAMP, lastSyncTimestamp)
+      sharedPreferencesHelper.write(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, lastSyncTimestamp)
     }
     _lastSyncTimestamp.value = lastSyncTimestamp
   }

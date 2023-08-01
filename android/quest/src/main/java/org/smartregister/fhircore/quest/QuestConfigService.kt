@@ -20,8 +20,12 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.sync.ResourceTag
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 
 @Singleton
 class QuestConfigService @Inject constructor(@ApplicationContext val context: Context) :
@@ -34,5 +38,51 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
       clientId = BuildConfig.OAUTH_CIENT_ID,
       clientSecret = BuildConfig.OAUTH_CLIENT_SECRET,
       accountType = context.getString(R.string.authenticator_account_type)
+    )
+
+  override fun defineResourceTags() =
+    listOf(
+      ResourceTag(
+        type = ResourceType.CareTeam.name,
+        tag =
+          Coding().apply {
+            system = context.getString(R.string.sync_strategy_careteam_system)
+            display = context.getString(R.string.sync_strategy_careteam_display)
+          }
+      ),
+      ResourceTag(
+        type = ResourceType.Location.name,
+        tag =
+          Coding().apply {
+            system = context.getString(R.string.sync_strategy_location_system)
+            display = context.getString(R.string.sync_strategy_location_display)
+          }
+      ),
+      ResourceTag(
+        type = ResourceType.Organization.name,
+        tag =
+          Coding().apply {
+            system = context.getString(R.string.sync_strategy_organization_system)
+            display = context.getString(R.string.sync_strategy_organization_display)
+          }
+      ),
+      ResourceTag(
+        type = SharedPreferenceKey.PRACTITIONER_ID.name,
+        tag =
+          Coding().apply {
+            system = context.getString(R.string.sync_strategy_practitioner_system)
+            display = context.getString(R.string.sync_strategy_practitioner_display)
+          },
+        isResource = false
+      ),
+      ResourceTag(
+        type = SharedPreferenceKey.APP_ID.name,
+        tag =
+          Coding().apply {
+            system = context.getString(R.string.sync_strategy_appid_system)
+            display = context.getString(R.string.application_id)
+          },
+        isResource = false
+      )
     )
 }

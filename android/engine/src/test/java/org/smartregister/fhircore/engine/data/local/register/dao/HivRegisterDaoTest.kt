@@ -20,6 +20,9 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -28,6 +31,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import java.util.Calendar
 import java.util.Date
+import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
@@ -57,6 +61,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.WorkflowPoint
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
@@ -64,26 +69,27 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.clinicVisitOrder
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 
+@HiltAndroidTest
 @OptIn(ExperimentalCoroutinesApi::class)
-class HivRegisterDaoTest : RobolectricTest() {
-
+internal class HivRegisterDaoTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
-
   @get:Rule(order = 2) val coroutineTestRule = CoroutineTestRule()
+  @get:Rule(order = 2) var coroutineRule = CoroutineTestRule()
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
+  @Inject lateinit var configService: ConfigService
   private lateinit var hivRegisterDao: HivRegisterDao
 
   private val fhirEngine: FhirEngine = mockk()
 
-  val defaultRepository: DefaultRepository =
-    DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = DefaultDispatcherProvider())
-
-  val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry(mockk())
+  lateinit var defaultRepository: DefaultRepository
+  val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   private val testPatient =
     buildPatient(
@@ -178,7 +184,15 @@ class HivRegisterDaoTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-
+    hiltRule.inject()
+    defaultRepository =
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configurationRegistry = configurationRegistry,
+        configService = configService
+      )
     coEvery { fhirEngine.get(ResourceType.Patient, "1") } returns testPatient
 
     coEvery { fhirEngine.get(ResourceType.Task, testTask1.logicalId) } returns testTask1
