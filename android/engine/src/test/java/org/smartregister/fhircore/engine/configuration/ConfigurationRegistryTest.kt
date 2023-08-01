@@ -637,7 +637,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     )
     Assert.assertEquals(
       "{\"resourceType\":\"Bundle\",\"type\":\"batch\",\"entry\":[{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-31\"}}]}",
-      requestPathArgumentSlot.last().getPayload()
+      requestPathArgumentSlot.last().getPayload(),
     )
   }
 
