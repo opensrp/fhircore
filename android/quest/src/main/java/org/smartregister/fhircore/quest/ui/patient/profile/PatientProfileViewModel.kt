@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.profile
 
+import android.app.Activity
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.os.bundleOf
@@ -52,8 +53,6 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isGuardianVisit
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaireForResult
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
@@ -212,8 +211,9 @@ constructor(
 
     when (event) {
       is PatientProfileEvent.LoadQuestionnaire ->
-        event.context.launchQuestionnaire<QuestionnaireActivity>(
-          event.questionnaireId,
+        QuestionnaireActivity.launchQuestionnaire(
+          event.context,
+          questionnaireId = event.questionnaireId,
           clientIdentifier = patientId,
           populationResources = profile.populationResources
         )
@@ -223,7 +223,8 @@ constructor(
       is PatientProfileEvent.OverflowMenuClick -> {
         when (event.menuId) {
           R.id.individual_details ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
+            QuestionnaireActivity.launchQuestionnaire(
+              event.context,
               questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.EDIT
@@ -274,54 +275,62 @@ constructor(
             }
           }
           R.id.remove_family_member ->
-            event.context.launchQuestionnaire<RemoveFamilyMemberQuestionnaireActivity>(
+            RemoveFamilyMemberQuestionnaireActivity.launchQuestionnaire(
+              event.context,
               questionnaireId = REMOVE_FAMILY_FORM,
               clientIdentifier = patientId,
               intentBundle = bundleOf(Pair(NavigationArg.FAMILY_ID, familyId))
             )
           R.id.record_as_anc ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
+            QuestionnaireActivity.launchQuestionnaire(
+              event.context,
               questionnaireId = ANC_ENROLLMENT_FORM,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.DEFAULT
             )
           R.id.edit_profile ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
+            QuestionnaireActivity.launchQuestionnaire(
+              event.context,
               questionnaireId = EDIT_PROFILE_FORM,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.DEFAULT,
               populationResources = profile.populationResources
             )
           R.id.viral_load_results ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
+            QuestionnaireActivity.launchQuestionnaire(
+              event.context,
               questionnaireId = VIRAL_LOAD_RESULTS_FORM,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.DEFAULT,
               populationResources = profile.populationResources
             )
           R.id.hiv_test_and_results ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
+            QuestionnaireActivity.launchQuestionnaire(
+              event.context,
               questionnaireId = HIV_TEST_AND_RESULTS_FORM,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.DEFAULT,
               populationResources = profile.populationResources
             )
           R.id.hiv_test_and_next_appointment ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
+            QuestionnaireActivity.launchQuestionnaire(
+              event.context,
               questionnaireId = HIV_TEST_AND_NEXT_APPOINTMENT_FORM,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.DEFAULT,
               populationResources = profile.populationResources
             )
           R.id.patient_transfer_out ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
+            QuestionnaireActivity.launchQuestionnaire(
+              event.context,
               questionnaireId = PATIENT_TRANSFER_OUT,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.DEFAULT,
               populationResources = profile.populationResources
             )
           R.id.patient_change_status ->
-            event.context.launchQuestionnaire<QuestionnaireActivity>(
+            QuestionnaireActivity.launchQuestionnaire(
+              event.context,
               questionnaireId = PATIENT_CHANGE_STATUS,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.DEFAULT,
@@ -331,7 +340,8 @@ constructor(
         }
       }
       is PatientProfileEvent.OpenTaskForm ->
-        event.context.launchQuestionnaireForResult<QuestionnaireActivity>(
+        QuestionnaireActivity.launchQuestionnaireForResult(
+          event.context as Activity,
           questionnaireId = event.taskFormId,
           clientIdentifier = patientId,
           backReference = event.taskId.asReference(ResourceType.Task).reference,

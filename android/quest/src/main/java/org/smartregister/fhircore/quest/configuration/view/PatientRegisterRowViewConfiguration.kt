@@ -86,14 +86,8 @@ data class Property(
 
 @Stable @Serializable data class DynamicColor(val valueEqual: String, val useColor: String)
 
-enum class FontWeight {
+enum class FontWeight(val weight: Int) {
   LIGHT(300),
   NORMAL(400),
-  BOLD(700);
-
-  val weight: Int
-
-  constructor(weight: Int) {
-    this.weight = weight
-  }
+  BOLD(700)
 }

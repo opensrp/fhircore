@@ -32,6 +32,7 @@ internal class CircularProgressBarKtTest : RobolectricTest() {
 
   @Test
   fun testCircularProgressBarWithText() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent { CircularProgressBar(text = textSyncing) }
     composeRule.onNodeWithText(textSyncing).assertExists()
     composeRule.onNodeWithTag(PROGRESS_MSG_TAG).assertIsDisplayed()

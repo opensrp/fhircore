@@ -619,7 +619,7 @@ constructor(
       if (entry.resource is Observation) {
         val code = (entry.resource as Observation).code.coding.first().code.toString()
         if (code.contains(questionnaireLogicalId)) bundle.addEntry(entry)
-      }
+      } else bundle.addEntry(entry)
     }
     return bundle
   }
@@ -631,13 +631,13 @@ constructor(
     val resourcesList = mutableListOf<Resource>()
 
     intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
-      var bundle = Bundle()
+      val bundle = Bundle()
       forEach {
         val resource = jsonParser.parseResource(it) as Resource
         if (resource !is Bundle) {
           resourcesList.add(jsonParser.parseResource(it) as Resource)
         } else {
-          bundle = extractRelevantObservation(resource, questionnaireLogicalId)
+          bundle.entry.addAll(extractRelevantObservation(resource, questionnaireLogicalId).entry)
         }
       }
       resourcesList.add(bundle)
@@ -664,7 +664,6 @@ constructor(
                 system = QuestionnaireActivity.WHO_IDENTIFIER_SYSTEM
               }
             )
-          Timber.e(jsonParser.encodeResourceToString(this))
         }
 
         resourcesList.add(this)
@@ -715,8 +714,6 @@ constructor(
         loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
       }
     }
-    Timber.e(resourcesList.joinToString("\n") { jsonParser.encodeResourceToString(it) })
-
     return resourcesList.toTypedArray()
   }
 

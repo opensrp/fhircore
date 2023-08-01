@@ -23,7 +23,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -136,7 +136,7 @@ class RegisterDataViewModelTest : RobolectricTest() {
   fun testReloadCurrentPageData() {
     coEvery { registerRepository.countAll() } returns 50
     registerDataViewModel.currentPage.value = 1
-    coroutineTestRule.runBlockingTest {
+    runTest {
       registerDataViewModel.reloadCurrentPageData(true)
       verify { registerDataViewModel.loadPageData(1) }
 
@@ -146,15 +146,13 @@ class RegisterDataViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testFilterRegisterData() {
-    coroutineTestRule.runBlockingTest {
-      registerDataViewModel.filterRegisterData(RegisterFilterType.SEARCH_FILTER, "20") {
-        _: RegisterFilterType,
-        content: String,
-        _: Any ->
-        content.isNotEmpty()
-      }
-      Assert.assertNotNull(registerDataViewModel.registerData.value)
+  fun testFilterRegisterData() = runTest {
+    registerDataViewModel.filterRegisterData(RegisterFilterType.SEARCH_FILTER, "20") {
+      _: RegisterFilterType,
+      content: String,
+      _: Any ->
+      content.isNotEmpty()
     }
+    Assert.assertNotNull(registerDataViewModel.registerData.value)
   }
 }

@@ -31,7 +31,6 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.extension.launchQuestionnaire
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.HivPatientGuardianRepository
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -94,14 +93,16 @@ constructor(
   fun onMenuItemClick(context: Context, menuId: Int, data: ProfileViewData) {
     when (menuId) {
       R.id.edit_profile ->
-        context.launchQuestionnaire<QuestionnaireActivity>(
+        QuestionnaireActivity.launchQuestionnaire(
+          context,
           questionnaireId = FORM.EDIT_PROFILE,
           clientIdentifier = patientId,
           populationResources =
             if (guardianResource != null) arrayListOf(guardianResource!!) else null
         )
       R.id.remove_hiv_patient ->
-        context.launchQuestionnaire<QuestionnaireActivity>(
+        QuestionnaireActivity.launchQuestionnaire(
+          context,
           questionnaireId = FORM.REMOVE_PERSON,
           clientIdentifier = patientId,
           populationResources =

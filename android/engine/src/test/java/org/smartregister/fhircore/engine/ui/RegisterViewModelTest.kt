@@ -27,6 +27,7 @@ import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -119,12 +120,10 @@ class RegisterViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testPatientExistsShouldReturnTrue() {
-    coroutineTestRule.runBlockingTest {
-      val patientExists = viewModel.patientExists("barcodeId")
-      Assert.assertNotNull(patientExists.value)
-      Assert.assertTrue(patientExists.value!!.isSuccess)
-    }
+  fun testPatientExistsShouldReturnTrue() = runTest {
+    val patientExists = viewModel.patientExists("barcodeId")
+    Assert.assertNotNull(patientExists.value)
+    Assert.assertTrue(patientExists.value!!.isSuccess)
   }
 
   @Test

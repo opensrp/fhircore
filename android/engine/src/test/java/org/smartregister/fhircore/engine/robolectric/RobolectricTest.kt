@@ -72,6 +72,11 @@ abstract class RobolectricTest {
     @JvmStatic
     @BeforeClass
     fun beforeClass() {
+      // Disable reporting of uncaught non-test related exceptions
+      Class.forName("kotlinx.coroutines.test.TestScopeKt")
+        .getDeclaredMethod("setCatchNonTestRelatedExceptions", Boolean::class.java)
+        .invoke(null, false)
+
       FakeKeyStore.setup
     }
 
