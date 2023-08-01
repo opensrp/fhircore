@@ -1,6 +1,6 @@
 # This workflow will run the performance tests
 
-name: Performance Tests
+name: PT
 
 on:
   pull_request:
