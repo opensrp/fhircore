@@ -116,7 +116,6 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.model.practitioner.FhirPractitionerDetails
-import org.smartregister.model.practitioner.KeycloakUserDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 
 @HiltAndroidTest
@@ -1208,7 +1207,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   private fun practitionerDetails(): PractitionerDetails {
     return PractitionerDetails().apply {
-      userDetail = KeycloakUserDetails().apply { id = "12345" }
       fhirPractitionerDetails =
         FhirPractitionerDetails().apply {
           id = "12345"

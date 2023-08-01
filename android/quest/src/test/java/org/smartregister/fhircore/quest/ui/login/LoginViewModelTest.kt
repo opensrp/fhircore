@@ -246,7 +246,7 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     // Login was successful savePractitionerDetails was called
     val bundleSlot = slot<Bundle>()
-    verify { loginViewModel.savePractitionerDetails(capture(bundleSlot), any()) }
+    verify { loginViewModel.savePractitionerDetails(capture(bundleSlot), any(), any()) }
 
     Assert.assertNotNull(bundleSlot.captured)
     Assert.assertTrue(bundleSlot.captured.entry.isNotEmpty())
@@ -376,7 +376,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     coEvery { keycloakService.fetchUserInfo() }.throws(SocketTimeoutException())
 
     val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
-    val fetchPractitionerCallback: (Result<Bundle>) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>, UserInfo) -> Unit = mockk(relaxed = true)
     val userInfoSlot = slot<Result<UserInfo>>()
 
     runBlocking {
@@ -384,7 +384,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     }
 
     verify { fetchUserInfoCallback(capture(userInfoSlot)) }
-    verify(exactly = 0) { fetchPractitionerCallback(any()) }
+    verify(exactly = 0) { fetchPractitionerCallback(any(), any()) }
 
     Assert.assertTrue(userInfoSlot.captured.exceptionOrNull() is SocketTimeoutException)
   }
@@ -397,7 +397,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     coEvery { keycloakService.fetchUserInfo() }.throws(UnknownHostException())
 
     val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
-    val fetchPractitionerCallback: (Result<Bundle>) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>, UserInfo) -> Unit = mockk(relaxed = true)
     val userInfoSlot = slot<Result<UserInfo>>()
 
     runBlocking {
@@ -405,7 +405,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     }
 
     verify { fetchUserInfoCallback(capture(userInfoSlot)) }
-    verify(exactly = 0) { fetchPractitionerCallback(any()) }
+    verify(exactly = 0) { fetchPractitionerCallback(any(), any()) }
 
     Assert.assertTrue(userInfoSlot.captured.exceptionOrNull() is UnknownHostException)
   }
@@ -420,7 +420,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     coEvery { fhirResourceService.getResource(any()) }.throws(UnknownHostException())
 
     val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
-    val fetchPractitionerCallback: (Result<Bundle>) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>, UserInfo) -> Unit = mockk(relaxed = true)
     val bundleSlot = slot<Result<Bundle>>()
     val userInfoSlot = slot<Result<UserInfo>>()
 
@@ -429,7 +429,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     }
 
     verify { fetchUserInfoCallback(capture(userInfoSlot)) }
-    verify { fetchPractitionerCallback(capture(bundleSlot)) }
+    verify { fetchPractitionerCallback(capture(bundleSlot), any()) }
 
     Assert.assertTrue(userInfoSlot.captured.isSuccess)
     Assert.assertEquals("awesome_uuid", userInfoSlot.captured.getOrThrow().keycloakUuid)
@@ -446,7 +446,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     coEvery { fhirResourceService.getResource(any()) }.throws(SocketTimeoutException())
 
     val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
-    val fetchPractitionerCallback: (Result<Bundle>) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>, UserInfo) -> Unit = mockk(relaxed = true)
     val bundleSlot = slot<Result<Bundle>>()
     val userInfoSlot = slot<Result<UserInfo>>()
 
@@ -455,7 +455,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     }
 
     verify { fetchUserInfoCallback(capture(userInfoSlot)) }
-    verify { fetchPractitionerCallback(capture(bundleSlot)) }
+    verify { fetchPractitionerCallback(capture(bundleSlot), any()) }
 
     Assert.assertTrue(userInfoSlot.captured.isSuccess)
     Assert.assertEquals("awesome_uuid", userInfoSlot.captured.getOrThrow().keycloakUuid)
@@ -482,6 +482,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     coEvery { defaultRepository.create(true, any()) } returns listOf()
     loginViewModel.savePractitionerDetails(
       Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = practitionerDetails() }),
+      UserInfo(),
     ) {}
     Assert.assertNotNull(
       sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
