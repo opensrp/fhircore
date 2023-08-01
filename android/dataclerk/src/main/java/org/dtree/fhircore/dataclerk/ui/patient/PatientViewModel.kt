@@ -38,6 +38,7 @@ import org.dtree.fhircore.dataclerk.ui.main.AppDataStore
 import org.dtree.fhircore.dataclerk.util.getFormattedAge
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.smartregister.fhircore.engine.util.extension.toHumanDisplay
 
 @HiltViewModel
 class PatientViewModel
@@ -64,6 +65,11 @@ constructor(
         val hashList = mutableListOf<String>()
         patient.let { patientItem ->
           data.add(PatientDetailOverview(patientItem, firstInGroup = true))
+          data.add(
+            PatientDetailProperty(
+              PatientProperty("Last Updated", patientItem.dateCreated?.toHumanDisplay() ?: "")
+            )
+          )
           data.add(PatientDetailProperty(PatientProperty("HCC/ArtNumber", patientItem.id)))
           data.add(
             PatientDetailProperty(

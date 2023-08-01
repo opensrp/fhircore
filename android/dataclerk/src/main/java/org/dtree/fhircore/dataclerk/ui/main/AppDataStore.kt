@@ -26,6 +26,7 @@ import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Date
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
@@ -98,6 +99,7 @@ data class PatientItem(
   val chwAssigned: String,
   val healthStatus: HealthStatus,
   val practitioners: List<Reference>? = null,
+  val dateCreated: Date? = null
 )
 
 data class AddressData(
@@ -133,6 +135,7 @@ internal fun Patient.toPatientItem(configuration: ApplicationConfiguration): Pat
         state = this.extractWithFhirPath("Patient.address.state"),
         text = this.extractWithFhirPath("Patient.address.text"),
         fullAddress = this.extractAddress()
-      )
+      ),
+    dateCreated = this.meta.lastUpdated
   )
 }

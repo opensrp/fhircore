@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -47,6 +48,7 @@ import org.dtree.fhircore.dataclerk.ui.main.PatientItem
 import org.dtree.fhircore.dataclerk.ui.patient.Constants
 import org.dtree.fhircore.dataclerk.util.getFormattedAge
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
+import org.smartregister.fhircore.engine.util.extension.toHumanDisplay
 import timber.log.Timber
 
 @Composable
@@ -143,6 +145,8 @@ fun PatientItemCard(patient: PatientItem, onClick: () -> Unit) {
         }
         Text(text = getFormattedAge(patient, LocalContext.current.resources))
       }
+      Box(modifier = Modifier.height(4.dp))
+      Text(text = "Updated: " + patient.dateCreated?.toHumanDisplay() ?: "")
     }
   }
 }
