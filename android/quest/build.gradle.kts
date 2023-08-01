@@ -376,9 +376,9 @@ dependencies {
 }
 
 /**
- * This task compares the performance benchmark results to the expected benchmark results
- * and throws an error if the result is past the expected result and margin. A message will
- * also be printed if the performance significantly improves.
+ * This task compares the performance benchmark results to the expected benchmark results and throws
+ * an error if the result is past the expected result and margin. A message will also be printed if
+ * the performance significantly improves.
  */
 task("evaluatePerformanceBenchmarkResults") {
   val expectedPerformanceLimitsFile = project.file("expected-results.json")
