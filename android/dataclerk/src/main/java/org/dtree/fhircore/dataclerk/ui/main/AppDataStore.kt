@@ -59,11 +59,14 @@ constructor(
   }
 
   suspend fun loadPatients(page: Int = 1): List<PatientItem> {
+    Timber.e("Page: $page")
     // TODO: replace with _tag search when update is out
     return fhirEngine
       .search<Patient> {
         filter(Patient.ACTIVE, { value = of(true) })
         sort(Patient.NAME, Order.ASCENDING)
+        count = 20
+        from = (page - 1) * 20
       }
       .map { inputModel ->
         Timber.e(jsonParser.encodeResourceToString(inputModel))

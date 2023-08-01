@@ -60,10 +60,8 @@ fun PatientList(viewModel: HomeViewModel, navigate: (PatientItem) -> Unit) {
     verticalArrangement = Arrangement.spacedBy(8.dp),
     contentPadding = PaddingValues(8.dp)
   ) {
-    items(items = patients.itemSnapshotList, key = { it?.resourceId ?: "" }) { patient ->
-      if (patient != null) {
-        PatientItemCard(patient, onClick = { navigate(patient) })
-      }
+    items(items = removeDuplicates(patients.itemSnapshotList.items)) { patient ->
+      PatientItemCard(patient, onClick = { navigate(patient) })
     }
     when (val state = patients.loadState.refresh) { // FIRST LOAD
       is LoadState.Error -> {
@@ -149,4 +147,14 @@ fun PatientItemCard(patient: PatientItem, onClick: () -> Unit) {
       Text(text = "Updated: " + patient.dateCreated?.toHumanDisplay() ?: "")
     }
   }
+}
+
+fun removeDuplicates(list: List<PatientItem>): List<PatientItem> {
+  val distinctList = mutableListOf<PatientItem>()
+  for (element in list) {
+    if (!distinctList.contains(element)) {
+      distinctList.add(element)
+    }
+  }
+  return distinctList
 }

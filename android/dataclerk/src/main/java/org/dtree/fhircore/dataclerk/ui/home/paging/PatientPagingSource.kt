@@ -24,8 +24,8 @@ import org.dtree.fhircore.dataclerk.ui.main.PatientItem
 class PatientPagingSource(private val dataStore: AppDataStore) : PagingSource<Int, PatientItem>() {
   override fun getRefreshKey(state: PagingState<Int, PatientItem>): Int? {
     return state.anchorPosition?.let { anchorPosition ->
-      state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
-        ?: state.closestPageToPosition(anchorPosition)?.nextKey?.minus(1)
+      val anchorPage = state.closestPageToPosition(anchorPosition)
+      anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
     }
   }
 
@@ -36,7 +36,7 @@ class PatientPagingSource(private val dataStore: AppDataStore) : PagingSource<In
 
       LoadResult.Page(
         data = response,
-        prevKey = if (page == 1) null else page.minus(1),
+        prevKey = null,
         nextKey = if (response.isEmpty()) null else page.plus(1),
       )
     } catch (e: Exception) {
