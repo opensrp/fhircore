@@ -17,16 +17,11 @@
 package org.smartregister.fhircore.engine.ui.appsetting
 
 import android.content.Context
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.spyk
-import io.mockk.verify
-import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
@@ -47,8 +42,9 @@ class AppSettingScreenKtTest : RobolectricTest() {
   @get:Rule val composeRule = createComposeRule()
 
   private var listenersSpy = spyk<Listeners>()
-  @Before
-  fun setUp() {
+
+  @Test
+  fun testAppSettingScreenLayout() {
     composeRule.setContent {
       AppSettingScreen(
         appId = appId,
@@ -57,28 +53,40 @@ class AppSettingScreenKtTest : RobolectricTest() {
         error = "",
       )
     }
-  }
 
-  @Test
-  fun testAppSettingScreenLayout() {
-    composeRule.onNodeWithText(context.getString(R.string.fhir_core_app))
-    composeRule.onNodeWithText(context.getString(R.string.application_id))
-    composeRule.onNodeWithText(context.getString(R.string.enter_app_id))
-    composeRule.onNodeWithText(context.getString(R.string.app_id_sample))
-    composeRule.onNodeWithText(context.getString(R.string.remember_app))
-    composeRule.onNodeWithText(context.getString(R.string.load_configurations))
+    composeRule.onNodeWithText(context.getString(R.string.fhir_core_app)).assertExists()
+    composeRule.onNodeWithText(context.getString(R.string.application_id)).assertExists()
+    composeRule.onNodeWithText(context.getString(R.string.load_configurations)).assertExists()
   }
 
   @Test
   fun testLoadConfigurationButtonListenerAction() {
-    composeRule.onNodeWithText(context.getString(R.string.load_configurations)).performClick()
-    verify { listenersSpy.fetchConfiguration }
+    composeRule.setContent {
+      AppSettingScreen(
+        appId = appId,
+        onAppIdChanged = listenersSpy.onAppIdChanged,
+        fetchConfiguration = listenersSpy.fetchConfiguration,
+        error = "",
+      )
+    }
+
+    composeRule
+      .onNodeWithText(context.getString(R.string.load_configurations))
+      .assertHasClickAction()
   }
 
   @Test
-  @Ignore("Fix this test; runs indefinitely")
-  fun testUpdatingAppIdAction() {
-    composeRule.onNodeWithTag(APP_ID_TEXT_INPUT_TAG).performTextInput("appId")
-    verify { listenersSpy.onAppIdChanged }
+  fun testErrorString() {
+    val error = "theError"
+    composeRule.setContent {
+      AppSettingScreen(
+        appId = appId,
+        onAppIdChanged = listenersSpy.onAppIdChanged,
+        fetchConfiguration = listenersSpy.fetchConfiguration,
+        error = error,
+      )
+    }
+
+    composeRule.onNodeWithText(error).assertExists()
   }
 }

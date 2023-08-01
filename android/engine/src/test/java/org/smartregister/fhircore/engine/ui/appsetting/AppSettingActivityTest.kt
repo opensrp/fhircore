@@ -132,4 +132,12 @@ class AppSettingActivityTest : RobolectricTest() {
     )
     Assert.assertEquals(false, appSettingActivityActivity.accountAuthenticator.hasActiveSession())
   }
+
+  @Test
+  fun testThatConfigsAreLoadedWhenAppSettingsIsLaunched() {
+    appSettingActivityActivity.let { activity ->
+      Assert.assertTrue(activity != null)
+      Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
+    }
+  }
 }
