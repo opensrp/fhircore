@@ -14,11 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.sync
+package org.dtree.fhircore.dataclerk
 
-import android.content.Context
-import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
-class NetworkState(private val context: Context) {
-  operator fun invoke(): Boolean = context.isDeviceOnline()
+/**
+ * Example local unit test, which will execute on the development machine (host).
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
+class ExampleUnitTest {
+  @Test
+  fun addition_isCorrect() {
+    assertEquals(4, 2 + 2)
+  }
 }

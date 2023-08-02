@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.sync
+package org.dtree.fhircore.dataclerk.di
 
-import android.content.Context
-import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import org.dtree.fhircore.dataclerk.DataClerkConfigService
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 
-class NetworkState(private val context: Context) {
-  operator fun invoke(): Boolean = context.isDeviceOnline()
+@InstallIn(SingletonComponent::class)
+@Module
+abstract class ConfigServiceModule {
+  @Binds
+  abstract fun provideConfigService(questConfigService: DataClerkConfigService): ConfigService
 }
