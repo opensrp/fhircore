@@ -27,7 +27,6 @@ import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.UploadConfiguration
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import org.hl7.fhir.r4.model.ResourceType
 
 @HiltWorker
 class AppSyncWorker
@@ -44,7 +43,7 @@ constructor(
 
   override fun getDownloadWorkManager(): DownloadWorkManager =
     OpenSrpDownloadManager(
-      syncParams = syncListenerManager.loadSyncParams().plus(ResourceType.Measure to mapOf()),
+      syncParams = syncListenerManager.loadSyncParams(),
       context = appTimeStampContext
     )
 
