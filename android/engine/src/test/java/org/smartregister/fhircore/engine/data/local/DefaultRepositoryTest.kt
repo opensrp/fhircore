@@ -859,9 +859,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(conditionSlot)) }
     val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
-    Assert.assertEquals("370996005", capturedCode.code)
-    Assert.assertEquals("http://www.snomed.org/", capturedCode.system)
-    Assert.assertEquals("resolved", capturedCode.display)
+    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
+    Assert.assertEquals(DefaultRepository.SNOMED_SYSTEM, capturedCode.system)
+    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
   }
 
   // TODO Refactor/Remove after https://github.com/opensrp/fhircore/issues/2488
@@ -896,9 +896,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(conditionSlot)) }
     val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
-    Assert.assertEquals("370996005", capturedCode.code)
-    Assert.assertEquals("http://www.snomed.org/", capturedCode.system)
-    Assert.assertEquals("resolved", capturedCode.display)
+    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
+    Assert.assertEquals(DefaultRepository.SNOMED_SYSTEM, capturedCode.system)
+    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
   }
 
   // TODO Refactor/Remove after https://github.com/opensrp/fhircore/issues/2488
@@ -933,9 +933,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(conditionSlot)) }
     val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
-    Assert.assertEquals("370996005", capturedCode.code)
-    Assert.assertEquals("http://www.snomed.org/", capturedCode.system)
-    Assert.assertEquals("resolved", capturedCode.display)
+    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
+    Assert.assertEquals(DefaultRepository.SNOMED_SYSTEM, capturedCode.system)
+    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
   }
 
   @Test

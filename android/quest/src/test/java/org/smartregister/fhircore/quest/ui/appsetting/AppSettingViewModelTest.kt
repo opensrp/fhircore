@@ -37,6 +37,7 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.hl7.fhir.r4.model.Binary
@@ -61,6 +62,7 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -153,7 +155,7 @@ class AppSettingViewModelTest : RobolectricTest() {
               }
           }
         }
-      coEvery { fhirResourceDataSource.getResource(any()) } returns
+      coEvery { fhirResourceDataSource.post(any(), any()) } returns
         Bundle().apply {
           addEntry().resource =
             Binary().apply {
@@ -181,6 +183,7 @@ class AppSettingViewModelTest : RobolectricTest() {
         }
       coEvery { defaultRepository.createRemote(any(), any()) } just runs
       coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
+      coEvery { appSettingViewModel.loadConfigurations(any()) } just runs
 
       appSettingViewModel.run {
         onApplicationIdChanged("app")
@@ -190,7 +193,7 @@ class AppSettingViewModelTest : RobolectricTest() {
       val slot = slot<List<ResourceType>>()
 
       coVerify { appSettingViewModel.fetchComposition(any(), any()) }
-      coVerify { fhirResourceDataSource.getResource(any()) }
+      coVerify { fhirResourceDataSource.post(any(), any()) }
       coVerify { defaultRepository.createRemote(any(), any()) }
       coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
 
@@ -213,7 +216,7 @@ class AppSettingViewModelTest : RobolectricTest() {
             }
         }
       }
-    coEvery { fhirResourceDataSource.getResource(any()) } returns
+    coEvery { fhirResourceDataSource.post(any(), any()) } returns
       Bundle().apply {
         addEntry().resource =
           Binary().apply {
@@ -251,7 +254,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     val slot = slot<List<ResourceType>>()
 
     coVerify { appSettingViewModel.fetchComposition(any(), any()) }
-    coVerify { fhirResourceDataSource.getResource(any()) }
+    coVerify { fhirResourceDataSource.post(any(), any()) }
     coVerify { defaultRepository.createRemote(any(), any()) }
     coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
 
@@ -385,6 +388,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testHasDebugSuffix_withSuffix_shouldReturn_true() {
+    coEvery { appSettingViewModel.isDebugVariant() } returns true
     appSettingViewModel.appId.value = "app/debug"
     Assert.assertTrue(appSettingViewModel.hasDebugSuffix())
   }
@@ -438,7 +442,7 @@ class AppSettingViewModelTest : RobolectricTest() {
       )
     }
 
-    Assert.assertEquals(31, compositionSections.size)
+    Assert.assertEquals(21, compositionSections.size)
 
     val composition =
       Composition().apply {
@@ -452,11 +456,7 @@ class AppSettingViewModelTest : RobolectricTest() {
       fhirResourceDataSource.getResource("Composition?identifier=test_app_id&_count=200")
     } returns Bundle().apply { addEntry().resource = composition }
     coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
-    coEvery {
-      fhirResourceDataSource.getResource(
-        "Binary?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30&_count=200",
-      )
-    } returns
+    coEvery { fhirResourceDataSource.post(any(), any()) } returns
       Bundle().apply {
         entry =
           listOf(
@@ -465,22 +465,6 @@ class AppSettingViewModelTest : RobolectricTest() {
                 Binary().apply {
                   data =
                     RegisterConfiguration(id = "1", appId = appId, fhirResource = mockk())
-                      .apply {}
-                      .toString()
-                      .toByteArray(StandardCharsets.UTF_8)
-                }
-            },
-          )
-      }
-    coEvery { fhirResourceDataSource.getResource("Binary?_id=id-31&_count=200") } returns
-      Bundle().apply {
-        entry =
-          listOf(
-            Bundle.BundleEntryComponent().apply {
-              resource =
-                Binary().apply {
-                  data =
-                    ProfileConfiguration(id = "2", appId = appId, fhirResource = mockk())
                       .apply {}
                       .toString()
                       .toByteArray(StandardCharsets.UTF_8)
@@ -508,16 +492,28 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     coVerify { fhirResourceDataSource.getResource(capture(requestPathArgumentSlot)) }
 
-    Assert.assertEquals(3, requestPathArgumentSlot.size)
+    Assert.assertEquals(1, requestPathArgumentSlot.size)
 
     Assert.assertEquals(
       "Composition?identifier=test_app_id&_count=200",
       requestPathArgumentSlot.first(),
     )
+
+    val urlArgumentSlot = mutableListOf<String>()
+    val requestPathPostArgumentSlot = mutableListOf<RequestBody>()
+
+    coVerify(exactly = 2) {
+      fhirResourceDataSource.post(capture(urlArgumentSlot), capture(requestPathPostArgumentSlot))
+    }
+
+    Assert.assertEquals(2, requestPathPostArgumentSlot.size)
     Assert.assertEquals(
-      "Binary?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30&_count=200",
-      requestPathArgumentSlot.second(),
+      "{\"resourceType\":\"Bundle\",\"type\":\"batch\",\"entry\":[{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-1\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-2\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-3\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-4\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-5\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-6\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-7\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-8\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-9\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-10\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-11\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-12\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-13\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-14\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-15\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-16\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-17\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-18\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-19\"}},{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-20\"}}]}",
+      requestPathPostArgumentSlot.first().getPayload(),
     )
-    Assert.assertEquals("Binary?_id=id-31&_count=200", requestPathArgumentSlot.last())
+    Assert.assertEquals(
+      "{\"resourceType\":\"Bundle\",\"type\":\"batch\",\"entry\":[{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-21\"}}]}",
+      requestPathPostArgumentSlot.last().getPayload(),
+    )
   }
 }

@@ -608,7 +608,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     }
 
-    Assert.assertEquals(31, compositionSections.size)
+    Assert.assertEquals(21, compositionSections.size)
 
     val composition =
       Composition().apply {
@@ -632,11 +632,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     Assert.assertEquals(2, requestPathArgumentSlot.size)
     Assert.assertEquals(
-      "{\"resourceType\":\"Bundle\",\"type\":\"batch\",\"entry\":[{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-1\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-2\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-3\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-4\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-5\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-6\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-7\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-8\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-9\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-10\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-11\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-12\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-13\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-14\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-15\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-16\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-17\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-18\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-19\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-20\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-21\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-22\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-23\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-24\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-25\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-26\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-27\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-28\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-29\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-30\"}}]}",
+      "{\"resourceType\":\"Bundle\",\"type\":\"batch\",\"entry\":[{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-1\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-2\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-3\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-4\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-5\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-6\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-7\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-8\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-9\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-10\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-11\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-12\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-13\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-14\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-15\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-16\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-17\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-18\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-19\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-20\"}}]}",
       requestPathArgumentSlot.first().getPayload(),
     )
     Assert.assertEquals(
-      "{\"resourceType\":\"Bundle\",\"type\":\"batch\",\"entry\":[{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-31\"}}]}",
+      "{\"resourceType\":\"Bundle\",\"type\":\"batch\",\"entry\":[{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-21\"}}]}",
       requestPathArgumentSlot.last().getPayload(),
     )
   }

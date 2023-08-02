@@ -29,10 +29,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.RequestBody.Companion.toRequestBody
 import okio.ByteString.Companion.decodeBase64
+import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
+import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -124,7 +126,9 @@ constructor(
             val chunkedResourceIdList =
               entry.value.chunked(ConfigurationRegistry.MANIFEST_PROCESSOR_BATCH_SIZE)
             chunkedResourceIdList.forEach { parentIt ->
-              Timber.d("Fetching config resource ${entry.key}: with ids $parentIt")
+              Timber.d(
+                "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
+              )
               fhirResourceDataSource
                 .post(
                   "",
@@ -231,7 +235,9 @@ constructor(
   }
 
   fun hasDebugSuffix(): Boolean =
-    appId.value?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true && BuildConfig.DEBUG
+    appId.value?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true && isDebugVariant()
+
+  @VisibleForTesting fun isDebugVariant() = BuildConfig.DEBUG
 
   private fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
     val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
