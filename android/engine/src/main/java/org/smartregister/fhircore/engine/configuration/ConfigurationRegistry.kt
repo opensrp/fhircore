@@ -590,7 +590,7 @@ constructor(
     const val FHIR_GATEWAY_MODE_HEADER_VALUE = "list-entries"
     const val ICON_PREFIX = "ic_"
     const val ID = "_id"
-    const val MANIFEST_PROCESSOR_BATCH_SIZE = 30
+    const val MANIFEST_PROCESSOR_BATCH_SIZE = 20
     const val ORGANIZATION = "organization"
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val DEFAULT_COUNT = 200
