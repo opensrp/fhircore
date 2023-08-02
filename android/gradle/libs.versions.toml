@@ -4,6 +4,7 @@ accompanist-placeholder = "0.23.1"
 activity-compose = "1.6.1"
 activity-ktx = "1.6.1"
 appcompat = "1.5.1"
+benchmark-junit = "1.1.1"
 caffeine = "2.9.1"
 cardview = "1.0.0"
 commonsJexl3 = "3.2.1"
@@ -104,6 +105,7 @@ accompanist-placeholder = { group = "com.google.accompanist", name = "accompanis
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity-ktx" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+benchmark-junit = { group = "androidx.benchmark", name = "benchmark-junit4", version.ref = "benchmark-junit" }
 caffeine = { group = "com.github.ben-manes.caffeine", name = "caffeine", version.ref = "caffeine" }
 cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
 commons-jexl3 = { module = "org.apache.commons:commons-jexl3", version.ref = "commonsJexl3" }
