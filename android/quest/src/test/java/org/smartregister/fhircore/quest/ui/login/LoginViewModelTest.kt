@@ -383,7 +383,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     coEvery { keycloakService.fetchUserInfo() }.throws(SocketTimeoutException())
 
     val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
-    val fetchPractitionerCallback: (Result<Bundle>, UserInfo) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>, UserInfo?) -> Unit = mockk(relaxed = true)
     val userInfoSlot = slot<Result<UserInfo>>()
 
     runBlocking {
@@ -404,7 +404,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     coEvery { keycloakService.fetchUserInfo() }.throws(UnknownHostException())
 
     val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
-    val fetchPractitionerCallback: (Result<Bundle>, UserInfo) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>, UserInfo?) -> Unit = mockk(relaxed = true)
     val userInfoSlot = slot<Result<UserInfo>>()
 
     runBlocking {
@@ -427,7 +427,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     coEvery { fhirResourceService.getResource(any()) }.throws(UnknownHostException())
 
     val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
-    val fetchPractitionerCallback: (Result<Bundle>, UserInfo) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>, UserInfo?) -> Unit = mockk(relaxed = true)
     val bundleSlot = slot<Result<Bundle>>()
     val userInfoSlot = slot<Result<UserInfo>>()
 
@@ -453,7 +453,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     coEvery { fhirResourceService.getResource(any()) }.throws(SocketTimeoutException())
 
     val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
-    val fetchPractitionerCallback: (Result<Bundle>, UserInfo) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>, UserInfo?) -> Unit = mockk(relaxed = true)
     val bundleSlot = slot<Result<Bundle>>()
     val userInfoSlot = slot<Result<UserInfo>>()
 
