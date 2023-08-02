@@ -46,7 +46,6 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 
 class ConfigExtensionsTest : RobolectricTest() {
@@ -275,13 +274,11 @@ class ConfigExtensionsTest : RobolectricTest() {
       )
     listOf(clickAction).handleClickEvent(navController, resourceData)
     verify {
-      (navController.context as QuestionnaireHandler).launchQuestionnaire<QuestionnaireActivity>(
+      (navController.context as QuestionnaireHandler).launchQuestionnaire(
         context = any(),
-        intentBundle = any(),
+        extraIntentBundle = any(),
         questionnaireConfig = any(),
         actionParams = emptyList(),
-        baseResourceId = patient.logicalId,
-        baseResourceType = patient.resourceType.name,
       )
     }
   }
