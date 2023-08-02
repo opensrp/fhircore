@@ -22,6 +22,7 @@ object NavigationArg {
   const val PROFILE_ID = "profileId"
   const val SCREEN_TITLE = "screenTitle"
   const val RESOURCE_ID = "resourceId"
+  const val QUESTIONNAIRE_CONFIG = "questionnaireConfig"
   const val RESOURCE_CONFIG = "resourceConfig"
   const val CONFIG_ID = "configId"
   const val REPORT_ID = "reportId"
