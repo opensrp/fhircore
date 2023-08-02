@@ -1,0 +1,155 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "019ec373-8e68-4806-aa13-aa0e64a17f53",
+  "meta": {
+    "lastUpdated": "2023-07-26T22:05:28.603+05:00",
+    "tag": [
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655"
+      },
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655"
+      },
+      {
+        "system": "https://smartregister.org/care-team-tag-id",
+        "code": "146934",
+        "display": "Practitioner CareTeam"
+      },
+      {
+        "system": "https://smartregister.org/location-tag-id",
+        "code": "54842",
+        "display": "Practitioner Location"
+      },
+      {
+        "system": "https://smartregister.org/organisation-tag-id",
+        "code": "146872",
+        "display": "Practitioner Organization"
+      },
+      {
+        "system": "https://smartregister.org/practitioner-tag-id",
+        "code": "146871",
+        "display": "Practitioner"
+      }
+    ]
+  },
+  "contained": [
+    {
+      "resourceType": "Encounter",
+      "id": "65e740e6-3c1f-42a7-8d41-591a85c2e9bc",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.4-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "status": "finished",
+      "class": {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        "code": "p"
+      },
+      "serviceType": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/service-type",
+            "code": "54"
+          }
+        ]
+      },
+      "subject": {
+        "reference": "Patient/aae51514-545f-4720-989a-909c180e00a5"
+      },
+      "participant": [
+        {
+          "individual": {
+            "reference": "Practitioner/146871"
+          }
+        }
+      ],
+      "serviceProvider": {
+        "reference": "Organization/146872"
+      }
+    }
+  ],
+  "questionnaire": "Questionnaire/59a18e82-cc67-4d84-bbde-807633cce700",
+  "status": "completed",
+  "subject": {
+    "reference": "Patient/aae51514-545f-4720-989a-909c180e00a5"
+  },
+  "authored": "2023-07-26T22:05:28+05:00",
+  "item": [
+    {
+      "linkId": "2ab9e77e-26bc-42bb-8597-bf60008d208a",
+      "text": "Did the woman make any ANC visits to the facility since the last visit? ",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "c1903287-e201-40a7-b75a-1e49b761370f",
+            "system": "urn:uuid:f966c39c-cd60-4bf1-8ee4-3d2be528f37d",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "a9f7cfe5-cf5e-4d7d-8267-ef7a67427b40",
+      "text": "Record MUAC",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "a4ccb05e-03bb-4308-ef3f-47faaef3c2bb",
+            "system": "urn:uuid:daf9dc33-1521-497c-8c2f-af5939bca326",
+            "code": "green",
+            "display": "Green"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "93d4c07c-6277-433b-8590-a154d7170b29",
+      "text": "Does the pregnant woman have danger signs?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "097abffe-159a-450c-86cd-aad791566120",
+            "system": "urn:uuid:3397039b-1245-4191-8818-eb3aadafccfa",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "3311ae0c-fb42-431b-88ac-9a6f1c7d535a",
+      "text": "Date of the next ANC visit",
+      "answer": [
+        {
+          "valueDate": "2023-08-07"
+        }
+      ]
+    }
+  ]
+}
