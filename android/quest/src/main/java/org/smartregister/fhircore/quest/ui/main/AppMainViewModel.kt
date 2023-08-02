@@ -235,13 +235,17 @@ constructor(
     viewModelScope.launch {
       val location = registerRepository.loadResource<Location>(locationId)?.encodeResourceToString()
       if (context is QuestionnaireHandler) {
-        context.launchQuestionnaire<Any>(
+        context.launchQuestionnaire(
           context = context,
-          intentBundle =
+          extraIntentBundle =
             bundleOf(
-              Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location)),
+              Pair(
+                QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
+                arrayListOf(location),
+              ),
             ),
           questionnaireConfig = questionnaireConfig,
+          actionParams = emptyList(),
         )
       }
     }
