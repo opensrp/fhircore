@@ -200,7 +200,7 @@ constructor(
     username: String,
     password: CharArray,
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
-    onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo) -> Unit,
+    onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
     val practitionerDetails =
       sharedPreferences.read<PractitionerDetails>(
@@ -241,7 +241,7 @@ constructor(
 
   suspend fun fetchPractitioner(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
-    onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo) -> Unit,
+    onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
     try {
       val userInfo = keycloakService.fetchUserInfo().body()
@@ -265,12 +265,10 @@ constructor(
           Timber.e(exception, "An error occurred fetching the practitioner details")
         }
       } else {
-        userInfo?.let {
-          onFetchPractitioner(
-            Result.failure(NullPointerException("Keycloak user is null. Failed to fetch user.")),
-            it,
-          )
-        }
+        onFetchPractitioner(
+          Result.failure(NullPointerException("Keycloak user is null. Failed to fetch user.")),
+          userInfo,
+        )
       }
     } catch (httpException: HttpException) {
       onFetchUserInfo(Result.failure(httpException))
@@ -288,7 +286,7 @@ constructor(
 
   fun savePractitionerDetails(
     bundle: FhirR4ModelBundle,
-    userInfo: UserInfo,
+    userInfo: UserInfo?,
     postProcess: () -> Unit,
   ) {
     if (bundle.entry.isNullOrEmpty()) return
@@ -351,7 +349,7 @@ constructor(
               identifier.hasUse() &&
                 identifier.use == org.hl7.fhir.r4.model.Identifier.IdentifierUse.SECONDARY &&
                 identifier.hasValue() &&
-                identifier.value == userInfo.keycloakUuid
+                identifier.value == userInfo!!.keycloakUuid
             ) {
               writePractitionerDetailsToShredPref(
                 practitionerDetails,
