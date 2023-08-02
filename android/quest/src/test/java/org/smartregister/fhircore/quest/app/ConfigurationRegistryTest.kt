@@ -106,11 +106,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
 
-    coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
+    coEvery { configurationRegistry.fhirResourceDataSource.post(any(), any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
 
     configurationRegistry.fetchNonWorkflowConfigResources()
-    coVerify { configurationRegistry.fhirResourceDataSource.getResource(any()) }
+    coVerify { configurationRegistry.fhirResourceDataSource.post(any(), any()) }
     coVerify { configurationRegistry.create(any()) }
   }
 
@@ -139,11 +139,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
 
-    coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
+    coEvery { configurationRegistry.fhirResourceDataSource.post(any(), any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
 
     configurationRegistry.fetchNonWorkflowConfigResources()
-    coVerify { configurationRegistry.fhirResourceDataSource.getResource(any()) }
+    coVerify { configurationRegistry.fhirResourceDataSource.post(any(), any()) }
     coVerify { configurationRegistry.create(any()) }
   }
 

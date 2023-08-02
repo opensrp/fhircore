@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.login
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
-import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -36,6 +35,7 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.internal.http.RealResponseBody
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Organization
+import org.hl7.fhir.r4.model.StringType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -75,8 +75,6 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
   @Inject lateinit var configService: ConfigService
-
-  @Inject lateinit var gson: Gson
   private lateinit var loginViewModel: LoginViewModel
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
   private val accountAuthenticator: AccountAuthenticator = mockk()
@@ -236,7 +234,16 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     // Mock result for retrieving a FHIR resource using user's keycloak uuid
     val bundle = Bundle()
-    val bundleEntry = Bundle.BundleEntryComponent().apply { resource = practitionerDetails() }
+    val bundleEntry =
+      Bundle.BundleEntryComponent().apply {
+        resource =
+          practitionerDetails().apply {
+            fhirPractitionerDetails =
+              FhirPractitionerDetails().apply {
+                practitionerId = StringType("my-test-practitioner-id")
+              }
+          }
+      }
     coEvery { fhirResourceService.getResource(any()) } returns bundle.addEntry(bundleEntry)
 
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
@@ -481,7 +488,18 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testSavePractitionerDetails() {
     coEvery { defaultRepository.create(true, any()) } returns listOf()
     loginViewModel.savePractitionerDetails(
-      Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = practitionerDetails() }),
+      Bundle()
+        .addEntry(
+          Bundle.BundleEntryComponent().apply {
+            resource =
+              practitionerDetails().apply {
+                fhirPractitionerDetails =
+                  FhirPractitionerDetails().apply {
+                    practitionerId = StringType("my-test-practitioner-id")
+                  }
+              }
+          },
+        ),
       UserInfo(),
     ) {}
     Assert.assertNotNull(
