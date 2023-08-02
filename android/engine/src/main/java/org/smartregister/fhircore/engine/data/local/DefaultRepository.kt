@@ -142,6 +142,8 @@ constructor(
       else -> listOf()
     }
 
+  suspend inline fun <reified R : Resource> search(search: Search) = fhirEngine.search<R>(search)
+
   /**
    * Saves a resource in the database. It also updates the [Resource.meta.lastUpdated] and generates
    * the [Resource.id] if it is missing before saving the resource.
@@ -165,8 +167,10 @@ constructor(
 
   private fun preProcessResources(addResourceTags: Boolean, vararg resource: Resource) {
     resource.onEach { currentResource ->
-      currentResource.updateLastUpdated()
-      currentResource.generateMissingId()
+      currentResource.apply {
+        updateLastUpdated()
+        generateMissingId()
+      }
       if (addResourceTags) {
         val tags = configService.provideResourceTags(sharedPreferencesHelper)
         tags.forEach {
@@ -225,7 +229,8 @@ constructor(
       resource.updateLastUpdated()
       try {
         fhirEngine.get(resource.resourceType, resource.logicalId).run {
-          fhirEngine.update(updateFrom(resource))
+          val updateFrom = updateFrom(resource)
+          fhirEngine.update(updateFrom)
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         create(addMandatoryTags, resource)
