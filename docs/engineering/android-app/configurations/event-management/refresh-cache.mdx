@@ -1,0 +1,33 @@
+# Refresh/Invalidate cache
+
+Event management implementation provides the ability to configure when to invalidate register cache after form submission.
+
+Since we currently cache the register data, we need to refresh/invalidate the cache every time a patient or family is removed from the app. This is to make sure the UI shows the correct data at all times.
+
+The `refreshContent` field in the `questionnaireConfig` determines whether the register cache should be invalidated when a form is submitted.
+
+## Sample questionnaire with `refreshContent`
+
+``` json
+       {
+         "title": "Pregnancy Outcome",
+         "titleColor": "@{patientTextColor}",
+         "visible": "@{isPregnant}",
+         "enabled": "@{patientActive}",
+         "actions": [
+           {
+             "trigger": "ON_CLICK",
+             "workflow": "LAUNCH_QUESTIONNAIRE",
+             "questionnaire": {
+               "id": "questionnaire-uuid",
+               "title": "Pregnancy outcome",
+               "resourceIdentifier": "@{patientId}",
+               "planDefinitions": [
+                 "planDefinitions-uuid"
+               ],
+               "refreshContent" : true
+             }
+           }
+         ]
+       }
+```
