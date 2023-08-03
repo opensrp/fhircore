@@ -146,7 +146,7 @@ constructor(
       end = endDateFormatted,
       reportType = reportType,
       subject = subject,
-      practitioner = practitionerId,
+      practitioner = null
     )
   }
 

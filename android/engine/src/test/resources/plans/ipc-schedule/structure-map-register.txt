@@ -46,28 +46,91 @@ group extractTask(
 
           subject -> task.reasonReference = create('Reference') as reasonReference then {
                 //subject -> reasonReference.reference = 'Questionnaire/001' "embed_938";
-                 subject where(definition.code.where(coding.code = '422840070')) then {
-                    subject -> reasonReference.reference = 'Questionnaire/001' "embed_1";
-                } "rule_name_000";
-                subject where(definition.code.where(coding.code = '422840071')) then {
-                    subject -> reasonReference.reference = 'Questionnaire/002' "embed_2";
+                 subject where(definition.code.where(coding.code = '001')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/374443' "embed_1";
                 } "rule_name_001";
-                  subject where(definition.code.where(coding.code = '422840072')) then {
-                    subject -> reasonReference.reference = 'Questionnaire/003' "embed_3";
+                subject where(definition.code.where(coding.code = '002')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381022' "embed_2";
                 } "rule_name_002";
-                 subject where(definition.code.where(coding.code = '422840073')) then {
-                    subject -> reasonReference.reference = 'Questionnaire/004' "embed_4";
+                  subject where(definition.code.where(coding.code = '003')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381023' "embed_3";
                 } "rule_name_003";
-                  subject where(definition.code.where(coding.code = '422840074')) then {
-                    subject -> reasonReference.reference = 'Questionnaire/005' "embed_5";
+                 subject where(definition.code.where(coding.code = '004')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381024' "embed_4";
                 } "rule_name_004";
-                  subject where(definition.code.where(coding.code = '422840075')) then {
-                    subject -> reasonReference.reference = 'Questionnaire/005' "embed_6";
+                  subject where(definition.code.where(coding.code = '005')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381005' "embed_5";
                 } "rule_name_005";
-                  subject where(definition.code.where(coding.code = '422840076')) then {
-                    subject -> reasonReference.reference = 'Questionnaire/006' "embed_7";
+                  subject where(definition.code.where(coding.code = '006')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381030' "embed_6";
                 } "rule_name_006";
-          } "rule_name_007";
+                  subject where(definition.code.where(coding.code = '007')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381031' "embed_7";
+                } "rule_name_007";
+                subject where(definition.code.where(coding.code = '008')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381025' "embed_8";
+                } "rule_name_008";
+                subject where(definition.code.where(coding.code = '009')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381026' "embed_9";
+                } "rule_name_009";
+                  subject where(definition.code.where(coding.code = '010')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381027' "embed_10";
+                } "rule_name_010";
+                 subject where(definition.code.where(coding.code = '011')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381028' "embed_11";
+                } "rule_name_011";
+                  subject where(definition.code.where(coding.code = '012')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381029' "embed_12";
+                } "rule_name_012";
+                  subject where(definition.code.where(coding.code = '013')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381030' "embed_13";
+                } "rule_name_013";
+                  subject where(definition.code.where(coding.code = '014')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381031' "embed_14";
+                } "rule_name_014";
+                subject where(definition.code.where(coding.code = '015')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/409077' "embed_15";
+                } "rule_name_015";
+                subject where(definition.code.where(coding.code = '016')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/409074' "embed_16";
+                } "rule_name_016";
+                  subject where(definition.code.where(coding.code = '017')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/409076' "embed_17";
+                } "rule_name_017";
+                 subject where(definition.code.where(coding.code = '018')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/409075' "embed_18";
+                } "rule_name_018";
+                  subject where(definition.code.where(coding.code = '019')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/409078' "embed_19";
+                } "rule_name_019";
+                  subject where(definition.code.where(coding.code = '020')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381030' "embed_20";
+                } "rule_name_020";
+                  subject where(definition.code.where(coding.code = '021')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381031' "embed_21";
+                } "rule_name_021";
+                subject where(definition.code.where(coding.code = '022')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/409100' "embed_22";
+                } "rule_name_022";
+                subject where(definition.code.where(coding.code = '023')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/409085' "embed_23";
+                } "rule_name_023";
+                  subject where(definition.code.where(coding.code = '024')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/409093' "embed_24";
+                } "rule_name_024";
+                 subject where(definition.code.where(coding.code = '025')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/409086' "embed_25";
+                } "rule_name_025";
+                  subject where(definition.code.where(coding.code = '026')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/409101' "embed_26";
+                } "rule_name_026";
+                  subject where(definition.code.where(coding.code = '027')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381030' "embed_27";
+                } "rule_name_027";
+                  subject where(definition.code.where(coding.code = '028')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381031' "embed_28";
+                } "rule_name_028";
+          } "rule_task_questions";
 
         // task groupIdentifier
         subject -> task.groupIdentifier = create('Identifier') as groupIdentifier then {
