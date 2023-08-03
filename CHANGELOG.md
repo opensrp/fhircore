@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Incorrect error shown for failed authentication when the credentials are invalid.
 - [P2P] Possible p2p sync slow regression #2536
+- [Event Management] Fix resource closure failure after server sync
 
 ### Changed
 - 
