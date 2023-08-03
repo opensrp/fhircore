@@ -84,7 +84,6 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
 import org.smartregister.model.practitioner.FhirPractitionerDetails
-import org.smartregister.model.practitioner.KeycloakUserDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 import timber.log.Timber
 
@@ -175,7 +174,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   private fun practitionerDetails(): PractitionerDetails {
     return PractitionerDetails().apply {
-      userDetail = KeycloakUserDetails().apply { id = "12345" }
       fhirPractitionerDetails =
         FhirPractitionerDetails().apply {
           id = "12345"
