@@ -49,7 +49,7 @@ fun MeasureReportMainScreen(
     // Display list of supported measures for reporting
     composable(MeasureReportNavigationScreen.MeasureReportModule.route) {
       MeasureReportListScreen(
-        mainNavController = mainNavController,
+        navController = navController,
         dataList = measureReportViewModel.reportMeasuresList(reportId),
         onReportMeasureClicked = { measureReportRowData ->
           measureReportViewModel.onEvent(
@@ -78,6 +78,7 @@ fun MeasureReportMainScreen(
         practitionerId = practitionerId,
         screenTitle = stringResource(R.string.select_date_range),
         navController = navController,
+        mainNavController = mainNavController,
         measureReportViewModel = measureReportViewModel,
       )
     }

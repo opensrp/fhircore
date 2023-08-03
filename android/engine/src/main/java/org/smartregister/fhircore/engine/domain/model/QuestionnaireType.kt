@@ -24,7 +24,7 @@ enum class QuestionnaireType {
 
   fun isDefault() = this == DEFAULT
 
-  fun isEditMode() = this == EDIT
+  fun isEditable() = this == EDIT
 
   fun isReadOnly() = this == READ_ONLY
 }

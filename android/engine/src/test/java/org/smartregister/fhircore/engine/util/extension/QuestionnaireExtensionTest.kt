@@ -72,19 +72,19 @@ class QuestionnaireExtensionTest {
 
   @Test
   fun testIsExtractionCandidateEmptyFalse() {
-    Assert.assertEquals(false, questionniare.isExtractionCandidate())
+    Assert.assertEquals(false, questionniare.extractByStructureMap())
   }
 
   @Test
   fun testIsExtractionCandidatePartialStringFalse() {
     questionniare.extension.add(Extension("https://questionnaire-itemExtractionContext/abc"))
-    Assert.assertEquals(false, questionniare.isExtractionCandidate())
+    Assert.assertEquals(false, questionniare.extractByStructureMap())
   }
 
   @Test
   fun testIsExtractionCandidateTrue() {
     questionniare.extension.add(Extension("https://sdc-questionnaire-itemExtractionContext/abc"))
-    Assert.assertEquals(true, questionniare.isExtractionCandidate())
+    Assert.assertEquals(true, questionniare.extractByStructureMap())
   }
 
   @Test
