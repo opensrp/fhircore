@@ -74,8 +74,8 @@ class MeasureReportResultScreenTest {
           registerRepository = registerRepository,
           defaultRepository = defaultRepository,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
-          measureReportRepository = measureReportRepository
-        )
+          measureReportRepository = measureReportRepository,
+        ),
       )
   }
 
@@ -87,8 +87,8 @@ class MeasureReportResultScreenTest {
           type = ResourceType.Patient,
           logicalId = "member1",
           display = "Wonka Mark, M, 28",
-          family = "Orion"
-        )
+          family = "Orion",
+        ),
       )
     measureReportViewModel.reportTypeSelectorUiState.value =
       ReportTypeSelectorUiState(subjectViewData = sampleSubjectViewData)
@@ -97,7 +97,7 @@ class MeasureReportResultScreenTest {
     composeTestRule.setContent {
       MeasureReportResultScreen(
         navController = navController,
-        measureReportViewModel = measureReportViewModel
+        measureReportViewModel = measureReportViewModel,
       )
     }
     composeTestRule
@@ -113,7 +113,7 @@ class MeasureReportResultScreenTest {
     composeTestRule.setContent {
       MeasureReportResultScreen(
         navController = navController,
-        measureReportViewModel = measureReportViewModel
+        measureReportViewModel = measureReportViewModel,
       )
     }
     composeTestRule
