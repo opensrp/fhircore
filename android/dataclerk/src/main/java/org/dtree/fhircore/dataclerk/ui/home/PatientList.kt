@@ -116,32 +116,24 @@ fun PatientList(viewModel: HomeViewModel, navigate: (PatientItem) -> Unit) {
 
 @Composable
 fun PatientItemCard(patient: PatientItem, onClick: () -> Unit) {
-  OutlinedCard(modifier = Modifier
-    .fillMaxWidth()
-    .clickable { onClick() }) {
-    Column(
-      Modifier
-        .padding(Constants.defaultCardPadding)
-        .fillMaxWidth()) {
+  OutlinedCard(modifier = Modifier.fillMaxWidth().clickable { onClick() }) {
+    Column(Modifier.padding(Constants.defaultCardPadding).fillMaxWidth()) {
       Text(
         text = patient.name,
         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
       )
       Row(
-        Modifier
-          .fillMaxWidth()
-          .padding(top = 8.dp),
+        Modifier.fillMaxWidth().padding(top = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
       ) {
         Box(
           modifier =
-          Modifier
-            .background(
-              color = MaterialTheme.colorScheme.primary,
-              shape = RoundedCornerShape(8.dp)
-            )
-            .padding(8.dp)
+            Modifier.background(
+                color = MaterialTheme.colorScheme.primary,
+                shape = RoundedCornerShape(8.dp)
+              )
+              .padding(8.dp)
         ) {
           Text(
             text = "Id: #${patient.id}",

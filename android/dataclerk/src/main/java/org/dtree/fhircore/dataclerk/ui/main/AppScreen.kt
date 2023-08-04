@@ -26,6 +26,7 @@ import androidx.navigation.navArgument
 import org.dtree.fhircore.dataclerk.ui.home.HomeScreen
 import org.dtree.fhircore.dataclerk.ui.home.HomeViewModel
 import org.dtree.fhircore.dataclerk.ui.patient.PatientScreen
+import org.dtree.fhircore.dataclerk.ui.search.SearchScreen
 
 @Composable
 fun AppScreen(
@@ -36,13 +37,18 @@ fun AppScreen(
   val navController = rememberNavController()
   NavHost(navController = navController, startDestination = "home") {
     composable("home") {
-      HomeScreen(appMainViewModel = appMainViewModel, homeViewModel = homeViewModel, sync = sync) {
-        navController.navigate("patient/${it.resourceId}")
-      }
+      HomeScreen(
+        appMainViewModel = appMainViewModel,
+        homeViewModel = homeViewModel,
+        sync = sync,
+        search = { navController.navigate("search") }
+      ) { navController.navigate("patient/${it.resourceId}") }
     }
     composable(
       "patient/{patientId}",
       arguments = listOf(navArgument("patientId") { type = NavType.StringType })
     ) { PatientScreen(navController, appMainViewModel = appMainViewModel) }
+
+    composable("search") { SearchScreen(navHostController = navController) }
   }
 }

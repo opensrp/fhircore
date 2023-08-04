@@ -21,13 +21,16 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
@@ -69,7 +72,7 @@ constructor(
         from = (page - 1) * 20
       }
       .map { inputModel ->
-//        Timber.e(jsonParser.encodeResourceToString(inputModel))
+        //        Timber.e(jsonParser.encodeResourceToString(inputModel))
         inputModel.toPatientItem(getApplicationConfiguration())
       }
   }
@@ -87,6 +90,26 @@ constructor(
     return fhirEngine.count(
       Search(ResourceType.Patient).apply { filter(Patient.ACTIVE, { value = of(true) }) }
     )
+  }
+
+  suspend fun search(text: String): List<PatientItem> {
+    return fhirEngine
+      .search<Patient> {
+        filter(
+          Patient.NAME,
+          {
+            modifier = StringFilterModifier.CONTAINS
+            value = text
+          }
+        )
+        filter(Patient.IDENTIFIER, { value = of(Identifier().apply { value = text }) })
+        operation = Operation.OR
+        sort(Patient.NAME, Order.ASCENDING)
+      }
+      .map { inputModel ->
+        //        Timber.e(jsonParser.encodeResourceToString(inputModel))
+        inputModel.toPatientItem(getApplicationConfiguration())
+      }
   }
 }
 
