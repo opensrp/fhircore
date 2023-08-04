@@ -687,8 +687,21 @@ constructor(
 
   suspend fun updateResourcesRecursively(resourceConfig: ResourceConfig, subject: Resource) {
     val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())
-    val computedValuesMap =
+    val initialComputedValuesMap =
       configRulesExecutor.fireRules(rules = configRules, baseResource = subject)
+
+    /**
+     * Data queries for retrieving resources require the id to be provided in the format
+     * [ResourceType/UUID] e.g Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4. When resources are synced
+     * up to the server the id is updated with history information e.g
+     * Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/1 This needs to be formatted to
+     * [ResourceType/UUID] format and updated in the computedValuesMap
+     */
+    val computedValuesMap = mutableMapOf<String, Any>()
+    initialComputedValuesMap.forEach { entry ->
+      computedValuesMap[entry.key] =
+        "${subject.resourceType.name}/${entry.value.toString().extractLogicalIdUuid()}"
+    }
 
     Timber.i("Computed values map = ${computedValuesMap.values}")
     val search =
@@ -794,9 +807,9 @@ constructor(
   )
 
   companion object {
-    const val SNOMED_SYSTEM = "http://www.snomed.org/"
-    const val PATIENT_CONDITION_RESOLVED_CODE = "370996005"
-    const val PATIENT_CONDITION_RESOLVED_DISPLAY = "resolved"
+    const val SNOMED_SYSTEM = "http://hl7.org/fhir/R4B/valueset-condition-clinical.html"
+    const val PATIENT_CONDITION_RESOLVED_CODE = "resolved"
+    const val PATIENT_CONDITION_RESOLVED_DISPLAY = "Resolved"
     const val PNC_CONDITION_TO_CLOSE_RESOURCE_ID = "pncConditionToClose"
     const val SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID = "sickChildConditionToClose"
   }

@@ -57,7 +57,7 @@ android {
     minSdk = 26
     targetSdk = 33
     versionCode = 3
-    versionName = "0.2.4"
+    versionName = "0.2.5"
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
@@ -178,6 +178,13 @@ android {
       applicationIdSuffix = ".ecbis"
       versionNameSuffix = "-ecbis"
       manifestPlaceholders["appLabel"] = "MOH eCBIS"
+    }
+
+    create("ecbis_preview") {
+      dimension = "apps"
+      applicationIdSuffix = ".ecbis_preview"
+      versionNameSuffix = "-ecbis_preview"
+      manifestPlaceholders["appLabel"] = "MOH eCBIS Preview"
     }
 
     create("g6pd") {
