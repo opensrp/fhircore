@@ -69,7 +69,7 @@ constructor(
         from = (page - 1) * 20
       }
       .map { inputModel ->
-        Timber.e(jsonParser.encodeResourceToString(inputModel))
+//        Timber.e(jsonParser.encodeResourceToString(inputModel))
         inputModel.toPatientItem(getApplicationConfiguration())
       }
   }
