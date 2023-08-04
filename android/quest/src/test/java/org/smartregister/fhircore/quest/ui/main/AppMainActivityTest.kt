@@ -36,6 +36,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import java.io.Serializable
+import java.time.OffsetDateTime
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
@@ -116,7 +117,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSyncWithSyncStateFailedRetrievesTimestamp() {
+  fun testOnSyncWithSyncStateFailedRendersUpdatedTimestampOnMainUi() {
     val viewModel = appMainActivity.appMainViewModel
     viewModel.sharedPreferencesHelper.write(
       SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
@@ -126,8 +127,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
     Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
     Assert.assertEquals(
+      appMainActivity.appMainViewModel.formatLastSyncTimestamp(OffsetDateTime.now()),
       viewModel.appMainUiState.value.lastSyncTime,
-      viewModel.retrieveLastSyncTimestamp(),
     )
   }
 
