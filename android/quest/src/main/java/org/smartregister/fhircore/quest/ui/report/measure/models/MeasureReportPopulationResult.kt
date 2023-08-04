@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.ui.report.measure.models
 
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
-import java.math.BigDecimal
 
 @Stable
 @Serializable

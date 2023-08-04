@@ -28,9 +28,9 @@ data class ReportConfiguration(
   val module: String = "",
   val subjectXFhirQuery: String? = null,
   val roundingStrategy: RoundingStrategy? = DEFAULT_ROUNDING_STRATEGY,
-  val roundingPrecision: Int? = DEFAULT_ROUNDING_PRECISION
-  ){
-  companion object{
+  val roundingPrecision: Int? = DEFAULT_ROUNDING_PRECISION,
+) {
+  companion object {
     val DEFAULT_ROUNDING_STRATEGY = RoundingStrategy.ROUND_UP
     val DEFAULT_ROUNDING_PRECISION = 0
   }
