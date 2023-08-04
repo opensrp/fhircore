@@ -231,7 +231,7 @@ constructor(
         fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
           questionnaireConfig = questionnaireConfig,
           subject = subject,
-          bundle = bundle,
+          bundle = newBundle,
         )
       }
 
