@@ -30,7 +30,6 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
-import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Questionnaire
@@ -51,7 +50,6 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
-import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -61,8 +59,6 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 class QuestionnaireActivityTest : RobolectricTest() {
 
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
-
-  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
 
   private val context: Application = ApplicationProvider.getApplicationContext()
   private lateinit var questionnaireConfig: QuestionnaireConfig
