@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration.report.measure
 
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.domain.model.RoundingStrategy
 
 @Serializable
 data class ReportConfiguration(
@@ -26,4 +27,11 @@ data class ReportConfiguration(
   val url: String = "",
   val module: String = "",
   val subjectXFhirQuery: String? = null,
-)
+  val roundingStrategy: RoundingStrategy? = DEFAULT_ROUNDING_STRATEGY,
+  val roundingPrecision: Int? = DEFAULT_ROUNDING_PRECISION
+  ){
+  companion object{
+    val DEFAULT_ROUNDING_STRATEGY = RoundingStrategy.ROUND_UP
+    val DEFAULT_ROUNDING_PRECISION = 0
+  }
+}
