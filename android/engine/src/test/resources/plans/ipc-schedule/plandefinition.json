@@ -2,8 +2,8 @@
   "resourceType": "PlanDefinition",
   "id": "385987",
   "meta": {
-    "versionId": "15",
-    "lastUpdated": "2023-08-05T11:00:31.901+00:00",
+    "versionId": "18",
+    "lastUpdated": "2023-08-05T20:23:46.740+00:00",
     "source": "#c576f898992ce954"
   },
   "contained": [
@@ -75,14 +75,14 @@
           "path": "period.start",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this.birthDate"
+            "expression": "today()"
           }
         },
         {
           "path": "period.end",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this.birthDate + 4017 'days'"
+            "expression": "today() + 365 'day'"
           }
         },
         {
@@ -139,7 +139,7 @@
             "display": "PHQ-9"
           }
         ],
-        "text": "PHQ-9 (IPC Session 1)"
+        "text": "PHQ-9"
       },
       "dosage": [
         {
@@ -180,7 +180,7 @@
             "display": "GAD-7"
           }
         ],
-        "text": "GAD-7 (IPC Session 1)"
+        "text": "GAD-7"
       },
       "dosage": [
         {
@@ -221,7 +221,7 @@
             "display": "PC-PTSD"
           }
         ],
-        "text": "PC-PTSD (IPC Session 1)"
+        "text": "PC-PTSD"
       },
       "dosage": [
         {
@@ -262,7 +262,7 @@
             "display": "Mood Rating Scale"
           }
         ],
-        "text": "Mood Rating Scale (IPC Session 1)"
+        "text": "Mood Rating Scale"
       },
       "dosage": [
         {
@@ -303,7 +303,7 @@
             "display": "IPC"
           }
         ],
-        "text": "Start IPC (IPC Session 1)"
+        "text": "Start IPC"
       },
       "dosage": [
         {
@@ -344,7 +344,7 @@
             "display": "PHQ-9"
           }
         ],
-        "text": "PHQ-9 (IPC Session 2)"
+        "text": "PHQ-9"
       },
       "dosage": [
         {
@@ -385,7 +385,7 @@
             "display": "GAD-7"
           }
         ],
-        "text": "GAD-7 (IPC Session 2)"
+        "text": "GAD-7"
       },
       "dosage": [
         {
@@ -426,7 +426,7 @@
             "display": "PC-PTSD"
           }
         ],
-        "text": "PC-PTSD (IPC Session 2)"
+        "text": "PC-PTSD"
       },
       "dosage": [
         {
@@ -467,7 +467,7 @@
             "display": "Mood Rating Scale"
           }
         ],
-        "text": "Mood Rating Scale (IPC Session 2)"
+        "text": "Mood Rating Scale"
       },
       "dosage": [
         {
@@ -508,7 +508,7 @@
             "display": "IPC"
           }
         ],
-        "text": "Start IPC (IPC Session 2)"
+        "text": "Start IPC"
       },
       "dosage": [
         {
@@ -549,7 +549,7 @@
             "display": "PHQ-9"
           }
         ],
-        "text": "PHQ-9 (IPC Session 2)"
+        "text": "PHQ-9"
       },
       "dosage": [
         {
@@ -590,7 +590,7 @@
             "display": "GAD-7"
           }
         ],
-        "text": "GAD-7 (IPC Session 3)"
+        "text": "GAD-7"
       },
       "dosage": [
         {
@@ -631,7 +631,7 @@
             "display": "PC-PTSD"
           }
         ],
-        "text": "PC-PTSD (IPC Session 3)"
+        "text": "PC-PTSD"
       },
       "dosage": [
         {
@@ -672,7 +672,7 @@
             "display": "Mood Rating Scale"
           }
         ],
-        "text": "Mood Rating Scale (IPC Session 3)"
+        "text": "Mood Rating Scale"
       },
       "dosage": [
         {
@@ -713,7 +713,7 @@
             "display": "IPC"
           }
         ],
-        "text": "Start IPC (IPC Session 3)"
+        "text": "Start IPC"
       },
       "dosage": [
         {
@@ -754,7 +754,7 @@
             "display": "PHQ-9"
           }
         ],
-        "text": "PHQ-9 (IPC Session 4)"
+        "text": "PHQ-9"
       },
       "dosage": [
         {
@@ -795,7 +795,7 @@
             "display": "GAD-7"
           }
         ],
-        "text": "GAD-7 (IPC Session 4)"
+        "text": "GAD-7"
       },
       "dosage": [
         {
@@ -836,7 +836,7 @@
             "display": "PC-PTSD"
           }
         ],
-        "text": "PC-PTSD (IPC Session 4)"
+        "text": "PC-PTSD"
       },
       "dosage": [
         {
@@ -877,7 +877,7 @@
             "display": "Mood Rating Scale"
           }
         ],
-        "text": "Mood Rating Scale (IPC Session 4)"
+        "text": "Mood Rating Scale"
       },
       "dosage": [
         {
@@ -918,7 +918,7 @@
             "display": "IPC"
           }
         ],
-        "text": "Start IPC (IPC Session 4)"
+        "text": "Start IPC"
       },
       "dosage": [
         {
