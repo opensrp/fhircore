@@ -2007,6 +2007,38 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     assertFalse(conditionsMet)
   }
 
+  @Test
+  @ExperimentalCoroutinesApi
+  fun `Generate CarePlan should generate ipc schedule`() = runTest {
+    val planDefinitionResources =
+      loadPlanDefinitionResources("ipc-schedule", listOf("register-temp"))
+    val planDefinition = planDefinitionResources.planDefinition
+    val patient = planDefinitionResources.patient
+    val questionnaireResponses = planDefinitionResources.questionnaireResponses
+    val resourcesSlot = planDefinitionResources.resourcesSlot
+    val vaccines = makeVaccinesMapForPatient(patient)
+    val bundle = Bundle()
+      .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+      .addEntry(
+        Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
+      )
+
+    fhirCarePlanGenerator
+      .generateOrUpdateCarePlan(
+        planDefinition,
+        patient,
+        Bundle()
+          .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+          .addEntry(
+            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
+          ),
+      )!!
+      .also { println(it.encodeResourceToString()) }
+
+    System.out.println(resourcesSlot.size)
+
+  }
+
   data class PlanDefinitionResources(
     val planDefinition: PlanDefinition,
     val patient: Patient,
@@ -2036,7 +2068,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val structureMapRegister =
       structureMapUtilities
         .parse(
-          "plans/$planName/structure-map-register.txt".readFile(),
+          "plans/$planName/structure-map-register.map".readFile(),
           "${planName.uppercase().replace("-", "").replace(" ", "")}CarePlan",
         )
         .also { println(it.encodeResourceToString()) }
