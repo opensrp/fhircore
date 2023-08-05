@@ -74,7 +74,7 @@ class QuestionnaireHandlerTest : RobolectricTest() {
       .launch(
         Intent(context, QuestionnaireActivity::class.java)
           .putExtras(
-            QuestionnaireActivity.intentArgs(
+            QuestionnaireActivity.intentBundle(
               questionnaireConfig = questionnaire,
               actionParams = params,
             ),

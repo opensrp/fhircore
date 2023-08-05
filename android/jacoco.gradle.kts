@@ -2,12 +2,24 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
 
 val isApplication = (project.name == "quest")
 val actualProjectName = if(isApplication) "opensrp" else project.name
+
 tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
+  val tasksList = mutableSetOf(
+    "test${if(isApplication) actualProjectName.capitalize() else ""}DebugUnitTest", // Generates unit test coverage report
+  )
+
+  /**
+   * Runs instrumentation tests for all modules except quest. Quest instrumentation tests are divided
+   * into functional tests and performance tests. Performance tests can take upto 1 hr and are not required
+   * while functional tests alone will take ~40 mins and they are required.
+   */
+  if (!isApplication) {
+    tasksList += "connected${if (isApplication)  actualProjectName.capitalize() else ""}DebugAndroidTest"
+  }
+  else {}
+
   dependsOn(
-    setOf(
-      "test${if(isApplication) actualProjectName.capitalize() else ""}DebugUnitTest", // Generates unit test coverage report
-      "connected${if (isApplication)  actualProjectName.capitalize() else ""}DebugAndroidTest" // Generates instrumentation test coverage report
-    )
+    tasksList
   )
   reports {
     xml.required.set(true)
@@ -100,9 +112,10 @@ tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
       include(
         listOf(
           "outputs/unit_test_code_coverage/${moduleVariant}UnitTest/test${if(isApplication) actualProjectName.capitalize() else ""}DebugUnitTest.exec",
-          "outputs/code_coverage/${moduleVariant}AndroidTest/connected/**/*.ec"
+          "outputs/code_coverage/${moduleVariant}AndroidTest/connected/**/*.ec",
         )
       )
-    }
+    },
+    "${project.projectDir}/coverage.ec"
   )
 }

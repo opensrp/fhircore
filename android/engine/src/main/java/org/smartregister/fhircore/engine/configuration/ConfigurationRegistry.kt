@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
+import android.database.SQLException
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
@@ -31,6 +32,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
@@ -44,12 +46,14 @@ import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fileExtension
@@ -238,7 +242,9 @@ constructor(
             if (iconConfigs.isNotEmpty()) {
               val ids = iconConfigs.joinToString(DEFAULT_STRING_SEPARATOR) { it.focus.extractId() }
               fhirResourceDataSource
-                .getResource("${ResourceType.Binary.name}?$ID=$ids")
+                .getResource(
+                  "${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT",
+                )
                 .entry
                 .forEach { addOrUpdate(it.resource) }
             }
@@ -368,16 +374,14 @@ constructor(
           }
           .forEach { resourceGroup ->
             if (resourceGroup.key == ResourceType.List.name) {
-              if (isNonProxy()) { // Backward compatibility for NON-PROXY version
+              if (isNonProxy()) {
                 val chunkedResourceIdList =
                   resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
                 chunkedResourceIdList.forEach {
-                  val resourceIds =
-                    it.joinToString(DEFAULT_STRING_SEPARATOR) { sectionComponent ->
-                      sectionComponent.focus.extractId()
-                    }
-                  fhirResourceDataSource
-                    .getResource("${resourceGroup.key}?$ID=$resourceIds")
+                  processCompositionManifestResources(
+                      resourceGroup.key,
+                      it.map { sectionComponent -> sectionComponent.focus.extractId() },
+                    )
                     .entry
                     .forEach { bundleEntryComponent ->
                       when (bundleEntryComponent.resource) {
@@ -391,8 +395,8 @@ constructor(
                               )
                             val resourceId =
                               listEntryComponent.item.reference.extractLogicalIdUuid()
-
-                            val listResourceUrlPath = "$resourceKey?$ID=$resourceId"
+                            val listResourceUrlPath =
+                              "$resourceKey?$ID=$resourceId&_count=$DEFAULT_COUNT"
                             fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
                               listEntryResourceBundle ->
                               addOrUpdate(listEntryResourceBundle.resource)
@@ -415,18 +419,57 @@ constructor(
               val chunkedResourceIdList = resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
 
               chunkedResourceIdList.forEach {
-                val resourceIds =
-                  it.joinToString(DEFAULT_STRING_SEPARATOR) { sectionComponent ->
-                    sectionComponent.focus.extractId()
-                  }
                 processCompositionManifestResources(
-                  searchPath = "${resourceGroup.key}?$ID=$resourceIds",
+                  resourceGroup.key,
+                  it.map { sectionComponent -> sectionComponent.focus.extractId() },
                 )
               }
             }
           }
       }
     }
+  }
+
+  private suspend fun processCompositionManifestResources(
+    resourceType: String,
+    resourceIdList: List<String>,
+  ): Bundle {
+    val resultBundle =
+      fhirResourceDataSource.post(
+        "",
+        generateRequestBundle(resourceType, resourceIdList)
+          .encodeResourceToString()
+          .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
+      )
+    resultBundle.entry?.forEach { bundleEntryComponent ->
+      when (bundleEntryComponent.resource) {
+        is Bundle -> {
+          val bundle = bundleEntryComponent.resource as Bundle
+          bundle.entry.forEach { entryComponent ->
+            when (entryComponent.resource) {
+              is Bundle -> {
+                val bundle = entryComponent.resource as Bundle
+                addOrUpdate(bundle)
+                bundle.entry.forEach { innerEntryComponent ->
+                  saveListEntryResource(innerEntryComponent)
+                }
+              }
+              else -> saveListEntryResource(entryComponent)
+            }
+          }
+        }
+        else -> {
+          if (bundleEntryComponent.resource != null) {
+            addOrUpdate(bundleEntryComponent.resource)
+            Timber.d(
+              "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.id}",
+            )
+          }
+        }
+      }
+    }
+
+    return resultBundle
   }
 
   private suspend fun processCompositionManifestResources(
@@ -458,7 +501,9 @@ constructor(
         }
         else -> {
           addOrUpdate(bundleEntryComponent.resource)
-          Timber.d("Fetched and processed resources $searchPath")
+          Timber.d(
+            "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.id}",
+          )
         }
       }
     }
@@ -476,6 +521,7 @@ constructor(
    * resource, or create it if not found.
    */
   suspend fun <R : Resource> addOrUpdate(resource: R) {
+    if (resource == null) return
     withContext(dispatcherProvider.io()) {
       resource.updateLastUpdated()
       try {
@@ -483,7 +529,11 @@ constructor(
           fhirEngine.update(updateFrom(resource))
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
-        create(resource)
+        try {
+          create(resource)
+        } catch (sqlException: SQLException) {
+          Timber.e(sqlException)
+        }
       }
     }
   }
@@ -501,11 +551,32 @@ constructor(
     }
   }
 
-  @VisibleForTesting fun isNonProxy() = isNonProxy_
+  @VisibleForTesting fun isNonProxy(): Boolean = isNonProxy_
 
   @VisibleForTesting
   fun setNonProxy(nonProxy: Boolean) {
     isNonProxy_ = nonProxy
+  }
+
+  private fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
+    val bundleEntryComponents = mutableListOf<BundleEntryComponent>()
+
+    idList.forEach {
+      bundleEntryComponents.add(
+        BundleEntryComponent().apply {
+          request =
+            Bundle.BundleEntryRequestComponent().apply {
+              url = "$resourceType/$it"
+              method = Bundle.HTTPVerb.GET
+            }
+        },
+      )
+    }
+
+    return Bundle().apply {
+      type = Bundle.BundleType.BATCH
+      entry = bundleEntryComponents
+    }
   }
 
   companion object {
@@ -519,8 +590,9 @@ constructor(
     const val FHIR_GATEWAY_MODE_HEADER_VALUE = "list-entries"
     const val ICON_PREFIX = "ic_"
     const val ID = "_id"
-    const val MANIFEST_PROCESSOR_BATCH_SIZE = 30
+    const val MANIFEST_PROCESSOR_BATCH_SIZE = 20
     const val ORGANIZATION = "organization"
     const val TYPE_REFERENCE_DELIMITER = "/"
+    const val DEFAULT_COUNT = 200
   }
 }

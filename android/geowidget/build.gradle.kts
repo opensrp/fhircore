@@ -29,6 +29,7 @@ android {
 
   buildTypes {
     getByName("debug") { isTestCoverageEnabled = true }
+    create("debugNonProxy") { initWith(getByName("debug")) }
 
     getByName("release") {
       isMinifyEnabled = false
@@ -50,6 +51,7 @@ android {
   buildFeatures {
     compose = true
     viewBinding = true
+    dataBinding = true
   }
 
   composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }

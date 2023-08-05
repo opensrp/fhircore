@@ -210,6 +210,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
           )
         }
       }
+      is SyncJobStatus.Glitch -> {
+        refreshRegisterData()
+      }
       is SyncJobStatus.Failed -> {
         refreshRegisterData()
         // Show error message in snackBar message
