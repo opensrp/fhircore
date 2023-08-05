@@ -2017,11 +2017,12 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val questionnaireResponses = planDefinitionResources.questionnaireResponses
     val resourcesSlot = planDefinitionResources.resourcesSlot
     val vaccines = makeVaccinesMapForPatient(patient)
-    val bundle = Bundle()
-      .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
-      .addEntry(
-        Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
-      )
+    val bundle =
+      Bundle()
+        .addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+        .addEntry(
+          Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
+        )
 
     fhirCarePlanGenerator
       .generateOrUpdateCarePlan(
@@ -2036,7 +2037,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       .also { println(it.encodeResourceToString()) }
 
     System.out.println(resourcesSlot.size)
-
   }
 
   data class PlanDefinitionResources(
