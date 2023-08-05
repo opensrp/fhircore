@@ -133,4 +133,6 @@
     <string name="unsynced_resources">Non Synchronisé</string>
     <string name="all_data_synced">Tout synchronisé</string>
     <string name="invalid_offline_login_state">La configuration de l\'utilisateur est requise. Allumez Internet</string>
+    <string name="help">Help</string>
+    <string name="select_date_range">Select Date Range</string>
 </resources>

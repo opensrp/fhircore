@@ -151,5 +151,7 @@
     <string name="unsynced_resources">Unsynced Resources</string>
     <string name="all_data_synced">All data synced</string>
     <string name="invalid_offline_login_state">User set up required. Enable your internet connection </string>
+    <string name="help">Help</string>
     <string name="select_date_range">Select Date Range</string>
+
 </resources>

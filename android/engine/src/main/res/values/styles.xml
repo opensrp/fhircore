@@ -61,6 +61,13 @@
         <item name="android:textColorSecondary">@color/white</item>
         <item name="questionnaireSubmitButtonStyle">@style/Quest.Questionnaire.SubmitButtonStyle
         </item>
+        <item name="questionnaireGroupTypeQuestionTextStyle">
+            @style/TextAppearance.Material3.HeadlineMedium
+        </item>
+        <item name="questionnaireQuestionTextStyle">
+            @style/TextAppearance.Material3.BodyLarge
+        </item>
+        <item name="questionnaireHelpHeaderStyle">@style/Quest.Questionnaire.HelpHeaderStyle</item>
     </style>
     <style name="Quest.Questionnaire.SubmitButtonStyle" parent="Questionnaire.SubmitButtonStyle">
         <item name="android:text">@string/str_save</item>
@@ -74,6 +81,10 @@
         <item name="android:textColor">@color/white</item>
         <item name="android:textSize">18sp</item>
         <item name="android:layout_gravity">bottom|start</item>
+    </style>
+
+    <style name="Quest.Questionnaire.HelpHeaderStyle" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:visibility">invisible</item>
     </style>
 
 </resources>

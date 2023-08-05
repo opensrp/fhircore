@@ -133,4 +133,6 @@
     <string name="unsynced_resources">Zilizobakia Kwa Simu</string>
     <string name="all_data_synced">Zote zimesawazishwa</string>
     <string name="invalid_offline_login_state">Usanidi wa mtumiaji unahitajika. Washa mtandao</string>
+    <string name="help">Help</string>
+    <string name="select_date_range">Select Date Range</string>
 </resources>
