@@ -39,6 +39,8 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 
+const val POPULATION_RESULT_VIEW_CONTAINER_TEST_TAG = "populationResultViewContainer"
+
 const val POPULATION_COUNT_TEST_TAG = "populationCountTestTag"
 const val POPULATION_INDICATOR_TITLE = "populationIndicatorTitle"
 
@@ -47,7 +49,9 @@ const val DETAILS_INDICATOR_TITLE = "detailsIndicatorTitle"
 
 @Composable
 fun MeasureReportPopulationResultView(dataList: List<MeasureReportPopulationResult>) {
-  LazyColumn { itemsIndexed(dataList) { _, item -> PopulationResultCard(item) } }
+  LazyColumn(modifier = Modifier.testTag(POPULATION_RESULT_VIEW_CONTAINER_TEST_TAG)) {
+    itemsIndexed(dataList) { _, item -> PopulationResultCard(item) }
+  }
 }
 
 @Composable

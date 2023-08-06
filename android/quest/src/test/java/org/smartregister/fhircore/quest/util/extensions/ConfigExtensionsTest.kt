@@ -46,7 +46,6 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 
 class ConfigExtensionsTest : RobolectricTest() {
@@ -183,14 +182,23 @@ class ConfigExtensionsTest : RobolectricTest() {
         id = "reportId",
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_REPORT,
+        params =
+          listOf(
+            ActionParameter(
+              value = "practitioner_id",
+              key = "practitionerId",
+              paramType = ActionParameterType.RESOURCE_ID,
+            ),
+          ),
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(MainNavigationScreen.Reports.route, slotInt.captured)
-    Assert.assertEquals(1, slotBundle.captured.size())
+    Assert.assertEquals(2, slotBundle.captured.size())
     Assert.assertEquals("reportId", slotBundle.captured.getString(NavigationArg.REPORT_ID))
+    Assert.assertEquals("practitioner_id", slotBundle.captured.getString(NavigationArg.RESOURCE_ID))
   }
 
   @Test
@@ -266,13 +274,11 @@ class ConfigExtensionsTest : RobolectricTest() {
       )
     listOf(clickAction).handleClickEvent(navController, resourceData)
     verify {
-      (navController.context as QuestionnaireHandler).launchQuestionnaire<QuestionnaireActivity>(
+      (navController.context as QuestionnaireHandler).launchQuestionnaire(
         context = any(),
-        intentBundle = any(),
+        extraIntentBundle = any(),
         questionnaireConfig = any(),
         actionParams = emptyList(),
-        baseResourceId = patient.logicalId,
-        baseResourceType = patient.resourceType.name,
       )
     }
   }
