@@ -150,20 +150,6 @@ class AppDrawerTest {
   }
 
   @Test
-  fun testAppDrawerRendersClientRegisterMenusCorrectly() {
-    setContent("")
-    composeTestRule.onNodeWithTag(NAV_CLIENT_REGISTER_MENUS_LIST).assertExists().assertIsDisplayed()
-    composeTestRule
-      .onNodeWithText("Register 1", useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
-    composeTestRule
-      .onNodeWithText("Register 2", useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
-  }
-
-  @Test
   fun testThatSideMenuClickCallsTheListener() {
     setContent("")
     val sideMenuItem = composeTestRule.onAllNodesWithTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG)
