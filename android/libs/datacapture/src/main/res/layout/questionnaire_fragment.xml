@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+ Copyright 2020 Google LLC
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentTop="true"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+>
+
+    <Button
+        android:id="@+id/review_mode_edit_button"
+        style="?attr/questionnaireEditButtonStyle"
+        app:icon="@drawable/ic_outline_edit_24"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/action_button_margin_horizontal"
+        android:layout_marginVertical="@dimen/action_button_margin_vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+    />
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/questionnaire_progress_indicator"
+        style="?attr/questionnaireLinearProgressIndicatorStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/review_mode_edit_button"
+        app:layout_constraintBottom_toTopOf="@id/questionnaire_edit_recycler_view"
+    />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/questionnaire_edit_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:scrollbars="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_nav_container_divider"
+        app:layout_constraintTop_toBottomOf="@+id/questionnaire_progress_indicator"
+    />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/questionnaire_review_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:scrollbars="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_nav_container_divider"
+        app:layout_constraintTop_toBottomOf="@+id/review_mode_edit_button"
+    />
+
+    <com.google.android.material.divider.MaterialDivider
+        style="?attr/questionnaireBottomNavContainerDividerStyle"
+        android:id="@+id/bottom_nav_container_divider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/bottom_nav_container"
+    />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        style="?attr/questionnaireBottomNavContainerStyle"
+        android:id="@+id/bottom_nav_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+    >
+
+        <Button
+            android:id="@+id/pagination_previous_button"
+            style="?attr/questionnaireButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/action_button_margin_horizontal"
+            android:layout_marginVertical="@dimen/action_button_margin_vertical"
+            android:text="@string/button_pagination_previous"
+            android:textAllCaps="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+        />
+
+        <Button
+            android:id="@+id/pagination_next_button"
+            style="?attr/questionnaireButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/action_button_margin_horizontal"
+            android:layout_marginVertical="@dimen/action_button_margin_vertical"
+            android:text="@string/button_pagination_next"
+            android:textAllCaps="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+        />
+
+        <Button
+            android:id="@+id/review_mode_button"
+            style="?attr/questionnaireButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/action_button_margin_horizontal"
+            android:layout_marginVertical="@dimen/action_button_margin_vertical"
+            android:text="@string/button_review"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+        />
+
+        <Button
+            style="?attr/questionnaireSubmitButtonStyle"
+            android:id="@+id/submit_questionnaire"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/action_button_margin_horizontal"
+            android:layout_marginVertical="@dimen/action_button_margin_vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
