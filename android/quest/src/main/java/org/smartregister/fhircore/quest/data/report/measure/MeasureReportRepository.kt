@@ -75,7 +75,6 @@ constructor(
     endDateFormatted: String,
     subjects: List<String>,
     existing: List<MeasureReport>,
-    practitionerId: String?,
   ): List<MeasureReport> {
     val measureReport = mutableListOf<MeasureReport>()
     try {
@@ -89,7 +88,6 @@ constructor(
                 startDateFormatted = startDateFormatted,
                 endDateFormatted = endDateFormatted,
                 subject = it,
-                practitionerId = practitionerId,
               )
             }
             .forEach { subject -> measureReport.add(subject) }
@@ -100,7 +98,6 @@ constructor(
               startDateFormatted = startDateFormatted,
               endDateFormatted = endDateFormatted,
               subject = null,
-              practitionerId = practitionerId,
             )
             .also { measureReport.add(it) }
         }
@@ -138,7 +135,6 @@ constructor(
     startDateFormatted: String,
     endDateFormatted: String,
     subject: String?,
-    practitionerId: String?,
   ): MeasureReport {
     return fhirOperator.evaluateMeasure(
       measureUrl = measureUrl,
