@@ -198,6 +198,11 @@ dependencies {
     exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "engine")
   }
+//  api(project(":datacapture")) {
+//    isTransitive = true
+//    exclude(group = "ca.uhn.hapi.fhir")
+//    exclude(group = "com.google.android.fhir", module = "engine")
+//  }
   api(libs.workflow) {
     isTransitive = true
     exclude(group = "xerces")

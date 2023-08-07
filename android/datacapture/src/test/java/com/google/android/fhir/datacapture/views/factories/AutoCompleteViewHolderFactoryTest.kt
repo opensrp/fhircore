@@ -19,7 +19,6 @@ package com.google.android.fhir.datacapture.views.factories
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
-import androidx.core.view.get
 import com.google.android.fhir.datacapture.R
 import com.google.android.fhir.datacapture.extensions.displayString
 import com.google.android.fhir.datacapture.validation.Invalid
