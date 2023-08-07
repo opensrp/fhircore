@@ -49,9 +49,6 @@ class QuestionnaireConfigTest : RobolectricTest() {
       QuestionnaireConfig(
         id = "@{id}",
         title = "@{title}",
-        setPractitionerDetails = false,
-        setOrganizationDetails = false,
-        setAppVersion = false,
         type = QuestionnaireType.EDIT,
         resourceIdentifier = "@{resourceIdentifier}",
         confirmationDialog =

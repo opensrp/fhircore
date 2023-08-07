@@ -73,9 +73,22 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
             display = context.getString(R.string.sync_strategy_practitioner_display)
           },
       ),
+      ResourceTag(
+        type = APP_VERSION,
+        tag =
+          Coding().apply {
+            system = context.getString(R.string.app_version_tag_url)
+            code = BuildConfig.VERSION_NAME
+            display = context.getString(R.string.application_version)
+          },
+      ),
     )
 
   override fun provideConfigurationSyncPageSize(): String {
     return BuildConfig.CONFIGURATION_SYNC_PAGE_SIZE
+  }
+
+  companion object {
+    private const val APP_VERSION = "AppVersion"
   }
 }
