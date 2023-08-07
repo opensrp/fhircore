@@ -32,7 +32,7 @@ import org.smartregister.fhircore.engine.util.extension.interpolate
 @Parcelize
 data class ActionConfig(
   val trigger: ActionTrigger,
-  val workflow: ApplicationWorkflow? = null,
+  val workflow: String? = null,
   val id: String? = null,
   val display: String? = null,
   val rules: List<RuleConfig>? = null,
@@ -52,6 +52,8 @@ data class ActionConfig(
 
   fun interpolate(computedValuesMap: Map<String, Any>): ActionConfig =
     this.copy(
+      id = id?.interpolate(computedValuesMap),
+      workflow = workflow?.interpolate(computedValuesMap),
       display = display?.interpolate(computedValuesMap),
       managingEntity =
         managingEntity?.copy(
