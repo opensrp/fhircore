@@ -1,0 +1,56 @@
+map "http://hl7.org/fhir/StructureMap/ebc216e9-85e3-4e9f-af9f-0ea7da009e45" = "eCHIS Sick Child Treatment Followup Visit"
+
+uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
+uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
+
+group eCHISSickChildTreatmentFollowUp(source src : Parameters, target tgt: CarePlan) {
+    src -> evaluate(src, $this.parameter.where(name='subject').resource) as subject,
+        evaluate(src, $this.parameter.where(name='definition').resource) as definition,
+        evaluate(subject, today()) as dueDate
+        then ExtractTasks(dueDate, subject, tgt) "r_careplan";
+}
+
+group ExtractTasks(
+    source dueDate: DateType,
+    source subject : Patient,
+    target careplan: CarePlan) {
+
+    subject -> dueDate as start,
+                evaluate(subject, today() + '1 \'days\''.toQuantity()) as end,
+                create('Period') as period,
+                careplan.contained = create('Task') as task then {
+
+            subject then ExtractPeriod(start, end, period) "r_task_period_extr";
+
+            subject -> task.id = uuid(),
+               task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
+               task.status = 'ready',
+               task.intent = 'plan',
+               task.executionPeriod = period,
+               task.priority = 'routine',
+               task.description = 'Sick Child Treatment Follow Up',
+               task.for = create('Reference') as ref, ref.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
+               // should refer to plandefinition since referral has no careplan
+               // task.basedOn = create('Reference') as ref, ref.reference = evaluate(careplan, $this.instantiatesCanonical.first()),
+               task.authoredOn = evaluate(subject, now()),
+               task.requester = evaluate(subject, $this.generalPractitioner.first()),
+               task.focus = create('Reference') as ref, ref.reference = 'PlanDefinition/7d23b73f-dcd4-49d7-ba4c-3f1905b277ee',
+               task.owner = evaluate(subject, $this.generalPractitioner.first()) "r_task_data";
+
+        subject where(careplan.id.exists()) -> task.basedOn = create('Reference') as ref,
+            ref.reference = evaluate(careplan, $this.id.replaceMatches('/_history/.*', '')) "r_task_based_on";
+        subject where(careplan.id.exists().not()) -> task.basedOn = reference(careplan) "r_task_based_on";
+
+        // child follow up form
+        subject -> task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/ba22966d-3177-4a5b-865f-e208d3d658f4' "r_task_reason_ref";
+
+    } "r_cp_acti_outcome";
+}
+
+group ExtractPeriod(source start: DateType, source end: DateType, target period: Period) {
+    start -> period.start = create('dateTime') as dt,
+             dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_start";
+
+    end -> period.end = create('dateTime') as dt,
+           dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_end";
+}

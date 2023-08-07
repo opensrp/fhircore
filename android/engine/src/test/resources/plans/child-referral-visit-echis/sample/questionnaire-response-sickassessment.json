@@ -1,16 +1,14 @@
 {
   "resourceType": "QuestionnaireResponse",
-  "id": "47c4ffcc-4660-48fa-a795-ca852ac81bd2",
+  "id": "cffa9ef4-76e5-4b59-b063-4536d328a79c",
   "meta": {
-    "lastUpdated": "2023-08-03T20:51:21.469+05:00",
+    "lastUpdated": "2023-08-03T19:57:07.047+05:00",
     "tag": [
       {
-        "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
-        "display": "Pregnancy Screening"
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655"
       },
       {
-        "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
-        "display": "Pregnancy Screening"
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655"
       },
       {
         "system": "https://smartregister.org/care-team-tag-id",
@@ -36,8 +34,634 @@
   },
   "contained": [
     {
+      "resourceType": "Encounter",
+      "id": "bf26c5a5-c2cf-4b82-a802-6fc52e4e47ff",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.5-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "698acddb-36d6-44aa-a266-603756cb7545",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "status": "finished",
+      "class": {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        "code": "HH"
+      },
+      "serviceType": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/service-type",
+            "code": "497"
+          }
+        ]
+      },
+      "subject": {
+        "reference": "Patient/86f09962-7578-475b-a39b-164dce092895"
+      },
+      "participant": [
+        {
+          "individual": {
+            "reference": "Practitioner/6edaafb0-0212-4069-a0e2-c6a90a080c83"
+          }
+        }
+      ],
+      "period": {
+        "start": "2023-08-03T19:57:06+05:00",
+        "end": "2023-08-03T19:57:06+05:00"
+      },
+      "serviceProvider": {
+        "reference": "Organization/d1ea93d6-5b98-4fdf-b868-18b963a08307"
+      }
+    },
+    {
+      "resourceType": "Observation",
+      "id": "e8db096b-6cb0-4ff5-a640-424b73b205fe",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.5-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "698acddb-36d6-44aa-a266-603756cb7545",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "424144002",
+            "display": "Child Age"
+          }
+        ],
+        "text": "Current chronological age"
+      },
+      "subject": {
+        "reference": "Patient/86f09962-7578-475b-a39b-164dce092895"
+      },
+      "encounter": {
+        "reference": "Encounter/bf26c5a5-c2cf-4b82-a802-6fc52e4e47ff"
+      },
+      "effectiveDateTime": "2023-08-03T19:57:06+05:00",
+      "valueInteger": 12
+    },
+    {
       "resourceType": "Condition",
-      "id": "19da25eb-2188-463d-b055-e285c75e0d07",
+      "id": "175bad41-a445-4e16-807f-398a651a0f09",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.5-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "698acddb-36d6-44aa-a266-603756cb7545",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "clinicalStatus": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+            "code": "active"
+          }
+        ]
+      },
+      "verificationStatus": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+            "code": "confirmed"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+              "code": "encounter-diagnosis"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "chest-in-drawing"
+          }
+        ],
+        "text": "Chest in-drawing"
+      },
+      "subject": {
+        "reference": "Patient/86f09962-7578-475b-a39b-164dce092895"
+      },
+      "encounter": {
+        "reference": "Encounter/bf26c5a5-c2cf-4b82-a802-6fc52e4e47ff"
+      },
+      "recordedDate": "2023-08-03T19:57:06+05:00"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "7387b004-a4cd-491f-8d85-e3321225b625",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.5-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "698acddb-36d6-44aa-a266-603756cb7545",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "49727002",
+            "display": "Child has Cough"
+          }
+        ],
+        "text": "Child has Cough"
+      },
+      "subject": {
+        "reference": "Patient/86f09962-7578-475b-a39b-164dce092895"
+      },
+      "encounter": {
+        "reference": "Encounter/bf26c5a5-c2cf-4b82-a802-6fc52e4e47ff"
+      },
+      "effectiveDateTime": "2023-08-03T19:57:06+05:00",
+      "valueString": "Yes"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "c8b63b43-2384-4693-b461-1855e1c37137",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.5-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "698acddb-36d6-44aa-a266-603756cb7545",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "62315008",
+            "display": "Diarrhea - Child has Running Stomach"
+          }
+        ],
+        "text": "Diarrhea - Child has Running Stomach"
+      },
+      "subject": {
+        "reference": "Patient/86f09962-7578-475b-a39b-164dce092895"
+      },
+      "encounter": {
+        "reference": "Encounter/bf26c5a5-c2cf-4b82-a802-6fc52e4e47ff"
+      },
+      "effectiveDateTime": "2023-08-03T19:57:06+05:00",
+      "valueString": "Yes"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "03bd2474-a87d-4a07-8dc3-5ea9921606cc",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.5-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "698acddb-36d6-44aa-a266-603756cb7545",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "386661006",
+            "display": "Child has Fever"
+          }
+        ],
+        "text": "Child has Fever"
+      },
+      "subject": {
+        "reference": "Patient/86f09962-7578-475b-a39b-164dce092895"
+      },
+      "encounter": {
+        "reference": "Encounter/bf26c5a5-c2cf-4b82-a802-6fc52e4e47ff"
+      },
+      "effectiveDateTime": "2023-08-03T19:57:06+05:00",
+      "valueString": "Yes"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "118a7ef5-1573-48dc-bc6d-73d641c39c83",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.5-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "698acddb-36d6-44aa-a266-603756cb7545",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "715045000",
+            "display": "ORS Available"
+          }
+        ],
+        "text": "ORS Available"
+      },
+      "subject": {
+        "reference": "Patient/86f09962-7578-475b-a39b-164dce092895"
+      },
+      "encounter": {
+        "reference": "Encounter/bf26c5a5-c2cf-4b82-a802-6fc52e4e47ff"
+      },
+      "effectiveDateTime": "2023-08-03T19:57:06+05:00",
+      "valueString": "No"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "9952c50a-19be-4d7c-a517-5637c49fbea7",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.5-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "698acddb-36d6-44aa-a266-603756cb7545",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "715045000",
+            "display": "Amoxicilling Green Pack Available"
+          }
+        ],
+        "text": "Amoxicilling Green Pack Available"
+      },
+      "subject": {
+        "reference": "Patient/86f09962-7578-475b-a39b-164dce092895"
+      },
+      "encounter": {
+        "reference": "Encounter/bf26c5a5-c2cf-4b82-a802-6fc52e4e47ff"
+      },
+      "effectiveDateTime": "2023-08-03T19:57:06+05:00",
+      "valueString": "No"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "dfac2563-46a8-4a28-8bee-34c82f5281ae",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.5-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "698acddb-36d6-44aa-a266-603756cb7545",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "715045000",
+            "display": "AntiMalaria ACT Yellow Pack Available"
+          }
+        ],
+        "text": "AntiMalaria ACT Yellow Pack Available"
+      },
+      "subject": {
+        "reference": "Patient/86f09962-7578-475b-a39b-164dce092895"
+      },
+      "encounter": {
+        "reference": "Encounter/bf26c5a5-c2cf-4b82-a802-6fc52e4e47ff"
+      },
+      "effectiveDateTime": "2023-08-03T19:57:06+05:00",
+      "valueString": "No"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "c1997622-9616-40f4-b156-391603a4f8a1",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.5-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "698acddb-36d6-44aa-a266-603756cb7545",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "715045000",
+            "display": "Artesunate Available"
+          }
+        ],
+        "text": "Artesunate Available"
+      },
+      "subject": {
+        "reference": "Patient/86f09962-7578-475b-a39b-164dce092895"
+      },
+      "encounter": {
+        "reference": "Encounter/bf26c5a5-c2cf-4b82-a802-6fc52e4e47ff"
+      },
+      "effectiveDateTime": "2023-08-03T19:57:06+05:00",
+      "valueString": "No"
+    },
+    {
+      "resourceType": "Condition",
+      "id": "5d43ac37-bec7-4d93-a39b-50ae238d0266",
       "meta": {
         "tag": [
           {
@@ -97,883 +721,64 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "77386006"
-          }
-        ],
-        "text": "Pregnant"
-      },
-      "subject": {
-        "reference": "Patient/cc01faee-1e89-4d15-a90e-918788632108"
-      },
-      "onsetDateTime": "2023-08-03T20:51:19+05:00",
-      "recordedDate": "2023-08-03T20:51:19+05:00"
-    },
-    {
-      "resourceType": "Encounter",
-      "id": "5380cbb9-6296-4fed-b93c-39531e0e7dd5",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "0.2.5-echis",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "698acddb-36d6-44aa-a266-603756cb7545",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "status": "finished",
-      "class": {
-        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
-        "code": "HH"
-      },
-      "serviceType": {
-        "coding": [
-          {
-            "system": "http://terminology.hl7.org/CodeSystem/service-type",
-            "code": "497"
-          }
-        ]
-      },
-      "subject": {
-        "reference": "Patient/cc01faee-1e89-4d15-a90e-918788632108"
-      },
-      "participant": [
-        {
-          "individual": {
-            "reference": "Practitioner/6edaafb0-0212-4069-a0e2-c6a90a080c83"
-          }
-        }
-      ],
-      "serviceProvider": {
-        "reference": "Organization/d1ea93d6-5b98-4fdf-b868-18b963a08307"
-      }
-    },
-    {
-      "resourceType": "Observation",
-      "id": "7c3811da-cd00-411d-9351-91c00610bc22",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "0.2.5-echis",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "698acddb-36d6-44aa-a266-603756cb7545",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "category": [
-        {
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-              "code": "social-history"
-            }
-          ]
-        }
-      ],
-      "code": {
-        "coding": [
-          {
-            "system": "http://www.snomed.org/",
-            "code": "424144002",
-            "display": "Pregnancy confirmed"
-          }
-        ],
-        "text": "Social history"
-      },
-      "subject": {
-        "reference": "Patient/cc01faee-1e89-4d15-a90e-918788632108"
-      },
-      "encounter": {
-        "reference": "Encounter/5380cbb9-6296-4fed-b93c-39531e0e7dd5"
-      },
-      "effectiveDateTime": "2023-08-03T20:51:19+05:00",
-      "valueString": "yes"
-    },
-    {
-      "resourceType": "Observation",
-      "id": "0af7aadc-3e54-4d90-a973-3fdf4a72d6c4",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "0.2.5-echis",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "698acddb-36d6-44aa-a266-603756cb7545",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "category": [
-        {
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-              "code": "social-history"
-            }
-          ]
-        }
-      ],
-      "code": {
-        "coding": [
-          {
-            "system": "http://www.snomed.org/",
             "code": "275142008",
-            "display": "Facilty name"
+            "display": "Sick Child"
           }
         ],
-        "text": "Social history"
+        "text": "Sick Child"
       },
       "subject": {
-        "reference": "Patient/cc01faee-1e89-4d15-a90e-918788632108"
+        "reference": "Patient/86f09962-7578-475b-a39b-164dce092895"
       },
       "encounter": {
-        "reference": "Encounter/5380cbb9-6296-4fed-b93c-39531e0e7dd5"
+        "reference": "Encounter/bf26c5a5-c2cf-4b82-a802-6fc52e4e47ff"
       },
-      "effectiveDateTime": "2023-08-03T20:51:19+05:00"
-    },
-    {
-      "resourceType": "Observation",
-      "id": "63b8310d-35c6-47a4-b343-da7ac90ece78",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "0.2.5-echis",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "698acddb-36d6-44aa-a266-603756cb7545",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "category": [
-        {
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-              "code": "social-history"
-            }
-          ]
-        }
-      ],
-      "code": {
-        "coding": [
-          {
-            "system": "http://www.snomed.org/",
-            "code": "129019007",
-            "display": "Mothers ANC card"
-          }
-        ],
-        "text": "Social history"
-      },
-      "subject": {
-        "reference": "Patient/cc01faee-1e89-4d15-a90e-918788632108"
-      },
-      "encounter": {
-        "reference": "Encounter/5380cbb9-6296-4fed-b93c-39531e0e7dd5"
-      },
-      "effectiveDateTime": "2023-08-03T20:51:19+05:00",
-      "valueString": "yes"
-    },
-    {
-      "resourceType": "Observation",
-      "id": "7df6c6e7-ecad-4c43-9277-05bbb22b62ca",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "0.2.5-echis",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "698acddb-36d6-44aa-a266-603756cb7545",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "category": [
-        {
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-              "code": "social-history"
-            }
-          ]
-        }
-      ],
-      "code": {
-        "coding": [
-          {
-            "system": "http://www.snomed.org/",
-            "code": "129019007",
-            "display": "LMNP known"
-          }
-        ],
-        "text": "Social history"
-      },
-      "subject": {
-        "reference": "Patient/cc01faee-1e89-4d15-a90e-918788632108"
-      },
-      "encounter": {
-        "reference": "Encounter/5380cbb9-6296-4fed-b93c-39531e0e7dd5"
-      },
-      "effectiveDateTime": "2023-08-03T20:51:19+05:00",
-      "valueString": "yes"
-    },
-    {
-      "resourceType": "Observation",
-      "id": "cfe976d6-b4e2-4516-84f4-7db6b09fea59",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "0.2.5-echis",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "698acddb-36d6-44aa-a266-603756cb7545",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "category": [
-        {
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-              "code": "social-history"
-            }
-          ]
-        }
-      ],
-      "code": {
-        "coding": [
-          {
-            "system": "http://www.snomed.org/",
-            "code": "129019007",
-            "display": "LMNP date"
-          }
-        ],
-        "text": "Social history"
-      },
-      "subject": {
-        "reference": "Patient/cc01faee-1e89-4d15-a90e-918788632108"
-      },
-      "encounter": {
-        "reference": "Encounter/5380cbb9-6296-4fed-b93c-39531e0e7dd5"
-      },
-      "effectiveDateTime": "2023-08-03T20:51:19+05:00",
-      "valueString": "2023-05-15 00:00:00"
-    },
-    {
-      "resourceType": "Observation",
-      "id": "d1de9513-3299-45ac-abf5-f1330f735873",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "0.2.5-echis",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "698acddb-36d6-44aa-a266-603756cb7545",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "category": [
-        {
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-              "code": "social-history"
-            }
-          ]
-        }
-      ],
-      "code": {
-        "coding": [
-          {
-            "system": "http://www.snomed.org/",
-            "code": "129019007",
-            "display": "GA in weeks"
-          }
-        ],
-        "text": "Social history"
-      },
-      "subject": {
-        "reference": "Patient/cc01faee-1e89-4d15-a90e-918788632108"
-      },
-      "encounter": {
-        "reference": "Encounter/5380cbb9-6296-4fed-b93c-39531e0e7dd5"
-      },
-      "effectiveDateTime": "2023-08-03T20:51:19+05:00",
-      "valueInteger": 11
-    },
-    {
-      "resourceType": "Observation",
-      "id": "68dae516-0a40-4009-9644-9f1f84ab3e4e",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "0.2.5-echis",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "698acddb-36d6-44aa-a266-603756cb7545",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "category": [
-        {
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-              "code": "social-history"
-            }
-          ]
-        }
-      ],
-      "code": {
-        "coding": [
-          {
-            "system": "http://www.snomed.org/",
-            "code": "129019007",
-            "display": "EDD date"
-          }
-        ],
-        "text": "Social history"
-      },
-      "subject": {
-        "reference": "Patient/cc01faee-1e89-4d15-a90e-918788632108"
-      },
-      "encounter": {
-        "reference": "Encounter/5380cbb9-6296-4fed-b93c-39531e0e7dd5"
-      },
-      "effectiveDateTime": "2023-08-03T20:51:19+05:00",
-      "valueString": "2024-02-15 00:00:00"
-    },
-    {
-      "resourceType": "Observation",
-      "id": "a4132f17-13a6-431f-b173-1523d29cf4da",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "0.2.5-echis",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "698acddb-36d6-44aa-a266-603756cb7545",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "category": [
-        {
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-              "code": "social-history"
-            }
-          ]
-        }
-      ],
-      "code": {
-        "coding": [
-          {
-            "system": "http://www.snomed.org/",
-            "code": "129019007",
-            "display": "ANC visit done"
-          }
-        ],
-        "text": "Social history"
-      },
-      "subject": {
-        "reference": "Patient/cc01faee-1e89-4d15-a90e-918788632108"
-      },
-      "encounter": {
-        "reference": "Encounter/5380cbb9-6296-4fed-b93c-39531e0e7dd5"
-      },
-      "effectiveDateTime": "2023-08-03T20:51:19+05:00",
-      "valueInteger": 1
-    },
-    {
-      "resourceType": "Observation",
-      "id": "e9fdc2e3-84fc-4b7a-8784-ec3ac09d470e",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "0.2.5-echis",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "698acddb-36d6-44aa-a266-603756cb7545",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "category": [
-        {
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-              "code": "social-history"
-            }
-          ]
-        }
-      ],
-      "code": {
-        "coding": [
-          {
-            "system": "http://www.snomed.org/",
-            "code": "129019007",
-            "display": "Recent ANC visit"
-          }
-        ],
-        "text": "Social history"
-      },
-      "subject": {
-        "reference": "Patient/cc01faee-1e89-4d15-a90e-918788632108"
-      },
-      "encounter": {
-        "reference": "Encounter/5380cbb9-6296-4fed-b93c-39531e0e7dd5"
-      },
-      "effectiveDateTime": "2023-08-03T20:51:19+05:00",
-      "valueString": "2023-07-01 00:00:00"
-    },
-    {
-      "resourceType": "Observation",
-      "id": "deb801a7-5c2f-4cd2-8215-d0f3fd66d6fb",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "0.2.5-echis",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "698acddb-36d6-44aa-a266-603756cb7545",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "category": [
-        {
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-              "code": "social-history"
-            }
-          ]
-        }
-      ],
-      "code": {
-        "coding": [
-          {
-            "system": "http://www.snomed.org/",
-            "code": "129019007",
-            "display": "Danger signs"
-          }
-        ],
-        "text": "Social history"
-      },
-      "subject": {
-        "reference": "Patient/cc01faee-1e89-4d15-a90e-918788632108"
-      },
-      "encounter": {
-        "reference": "Encounter/5380cbb9-6296-4fed-b93c-39531e0e7dd5"
-      },
-      "effectiveDateTime": "2023-08-03T20:51:19+05:00"
-    },
-    {
-      "resourceType": "Observation",
-      "id": "11da08fe-57b9-49d9-97c0-eb586d69a170",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "0.2.5-echis",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "698acddb-36d6-44aa-a266-603756cb7545",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "category": [
-        {
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-              "code": "social-history"
-            }
-          ]
-        }
-      ],
-      "code": {
-        "coding": [
-          {
-            "system": "http://www.snomed.org/",
-            "code": "129019007",
-            "display": "Referred to hospital"
-          }
-        ],
-        "text": "Social history"
-      },
-      "subject": {
-        "reference": "Patient/cc01faee-1e89-4d15-a90e-918788632108"
-      },
-      "encounter": {
-        "reference": "Encounter/5380cbb9-6296-4fed-b93c-39531e0e7dd5"
-      },
-      "effectiveDateTime": "2023-08-03T20:51:19+05:00",
-      "valueString": "yes"
-    },
-    {
-      "resourceType": "Observation",
-      "id": "fbe858af-d3ee-4f28-b2fc-d822cc0f72b6",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "0.2.5-echis",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "698acddb-36d6-44aa-a266-603756cb7545",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "category": [
-        {
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-              "code": "social-history"
-            }
-          ]
-        }
-      ],
-      "code": {
-        "coding": [
-          {
-            "system": "http://www.snomed.org/",
-            "code": "129019007",
-            "display": "HIV status known"
-          }
-        ],
-        "text": "Social history"
-      },
-      "subject": {
-        "reference": "Patient/cc01faee-1e89-4d15-a90e-918788632108"
-      },
-      "encounter": {
-        "reference": "Encounter/5380cbb9-6296-4fed-b93c-39531e0e7dd5"
-      },
-      "effectiveDateTime": "2023-08-03T20:51:19+05:00",
-      "valueString": "no"
-    },
-    {
-      "resourceType": "Observation",
-      "id": "a2f35ee9-68bf-49ab-90d5-513118118d55",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "0.2.5-echis",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "698acddb-36d6-44aa-a266-603756cb7545",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "category": [
-        {
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-              "code": "social-history"
-            }
-          ]
-        }
-      ],
-      "code": {
-        "coding": [
-          {
-            "system": "http://www.snomed.org/",
-            "code": "129019007",
-            "display": "Patient encouraged"
-          }
-        ],
-        "text": "Social history"
-      },
-      "subject": {
-        "reference": "Patient/cc01faee-1e89-4d15-a90e-918788632108"
-      },
-      "encounter": {
-        "reference": "Encounter/5380cbb9-6296-4fed-b93c-39531e0e7dd5"
-      },
-      "effectiveDateTime": "2023-08-03T20:51:19+05:00",
-      "valueString": "yes"
+      "onsetDateTime": "2023-08-03T19:57:06+05:00",
+      "recordedDate": "2023-08-03T19:57:06+05:00"
     }
   ],
-  "questionnaire": "Questionnaire/81fce9f9-86f2-46db-991c-9f0a4793a8c9",
+  "questionnaire": "Questionnaire/7479d3d2-d5c4-4ae7-b72c-37f2f9cbacc6",
   "status": "completed",
   "subject": {
-    "reference": "Patient/cc01faee-1e89-4d15-a90e-918788632108"
+    "reference": "Patient/TEST_PATIENT"
   },
-  "authored": "2023-08-03T20:51:19+05:00",
+  "authored": "2023-08-03T19:57:06+05:00",
   "item": [
     {
-      "linkId": "b666fc42-4505-4338-8394-662b83b0b62d",
-      "text": "Was pregnancy confirmed in a health facility?",
+      "linkId": "ea4f140b-7b40-4763-82a2-b79cc6b0402e",
+      "text": "Child age in months",
+      "answer": [
+        {
+          "valueDecimal": 12
+        }
+      ]
+    },
+    {
+      "linkId": "f95df2a7-7d43-45c4-9bdf-a94e5aa2d29a",
+      "text": "Identify any Danger signs"
+    },
+    {
+      "linkId": "585475b2-929d-4f77-d919-20d4c84feb6f",
+      "text": "Any of the following danger signs present",
       "answer": [
         {
           "valueCoding": {
-            "id": "4a53e524-95f3-4b80-8138-cd11d55d14a4",
-            "system": "urn:uuid:80b95a7a-a2df-4b40-8398-e9974098f54c",
+            "id": "7d6e8aa7-c71b-459d-e01e-c8706a867289",
+            "system": "urn:uuid:277cc9ea-b440-4e16-8881-243f57af15ee",
+            "code": "chest-in-drawing",
+            "display": "Chest in-drawing"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "45561753-7aef-4f99-b8ad-8e182ae34f89",
+      "text": "Child has a cough?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "307e9eaa-57da-42b6-85f6-ed4777923597",
+            "system": "urn:uuid:9b8642d3-4145-4e2e-d45d-08f20d6bd897",
             "code": "yes",
             "display": "Yes"
           }
@@ -981,22 +786,41 @@
       ]
     },
     {
-      "linkId": "942b6f0a-e464-4813-84a0-94dff9950008",
-      "text": "Name of the facility visited",
+      "linkId": "e42001a8-3854-4cba-8e5e-1928e579afe6",
+      "text": "How many days have the child had the cough?",
       "answer": [
         {
-          "valueString": "sdf"
+          "valueCoding": {
+            "id": "1aecaff5-ea5a-46a9-bc58-dbc5d948048c",
+            "system": "urn:uuid:9b0680f9-5413-4894-b643-1c2d711a41f8",
+            "code": "14+-days",
+            "display": "14+ days"
+          }
         }
       ]
     },
     {
-      "linkId": "06dfbae6-c154-4aba-84d0-57bc60faea95",
-      "text": "Does the woman have an ANC card?",
+      "linkId": "050e03de-7753-4ce2-85c1-2dcb956d2eaf",
+      "text": "How many breaths per minute(12-59months) ",
       "answer": [
         {
           "valueCoding": {
-            "id": "a455d75c-5b78-457a-d42a-df015024bc46",
-            "system": "urn:uuid:32494901-666c-41e5-84b6-bf677ea91629",
+            "id": "8ce3890a-b16f-49c6-bc70-4f1f6323c236",
+            "system": "urn:uuid:064da7e2-86ab-4f5f-93d4-96b041d24035",
+            "code": "40-or-more",
+            "display": "40 or more"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "8bf016c9-39c7-4967-920c-b2252e21dd5f",
+      "text": "Child has a running stomach?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "307e9eaa-57da-42b6-85f6-ed4777923597",
+            "system": "urn:uuid:9b8642d3-4145-4e2e-d45d-08f20d6bd897",
             "code": "yes",
             "display": "Yes"
           }
@@ -1004,13 +828,27 @@
       ]
     },
     {
-      "linkId": "10f4614e-2a20-4bd4-84a9-bd0ccffafb54",
-      "text": "Does she know the start date of the Last Menstrual Period?",
+      "linkId": "5ca69038-38ca-40aa-a341-c462616d92b2",
+      "text": "How many days have the child had a running stomach?",
       "answer": [
         {
           "valueCoding": {
-            "id": "d69b7570-c29c-48eb-9738-f75b11e4b39d",
-            "system": "urn:uuid:fe410617-04f2-43d6-b0d7-e0314979f6a4",
+            "id": "1aecaff5-ea5a-46a9-bc58-dbc5d948048c",
+            "system": "urn:uuid:9b0680f9-5413-4894-b643-1c2d711a41f8",
+            "code": "14+-days",
+            "display": "14+ days"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "bff8b978-9e91-45f6-8b81-22b32c61ead2",
+      "text": "Child has a fever?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "307e9eaa-57da-42b6-85f6-ed4777923597",
+            "system": "urn:uuid:9b8642d3-4145-4e2e-d45d-08f20d6bd897",
             "code": "yes",
             "display": "Yes"
           }
@@ -1018,94 +856,27 @@
       ]
     },
     {
-      "linkId": "a9782f57-2f57-4fed-e2eb-a27b819042ac",
-      "text": "Start date of the Last Normal Menstrual Period (LNMP)",
-      "answer": [
-        {
-          "valueDate": "2023-05-15"
-        }
-      ]
-    },
-    {
-      "linkId": "a887e708-85d8-4fb2-871a-9c9d90887a50",
-      "text": "Gestational age (in weeks)",
-      "answer": [
-        {
-          "valueInteger": 11
-        }
-      ]
-    },
-    {
-      "linkId": "4f04affb-22a8-4da5-88d8-78bc6d0454e7",
-      "text": "Expected date of delivery (EDD)",
-      "answer": [
-        {
-          "valueDate": "2024-02-15"
-        }
-      ]
-    },
-    {
-      "linkId": "6d0ef130-6003-4b7a-9077-6ecde50f411c",
-      "text": "How many antenatal care visits has she done so far during this pregnancy?",
-      "answer": [
-        {
-          "valueInteger": 1
-        }
-      ]
-    },
-    {
-      "linkId": "745d1a53-4999-41c4-8e87-20d6570fcf3f",
-      "text": "Date of the most recent ANC Visit",
-      "answer": [
-        {
-          "valueDate": "2023-07-01"
-        }
-      ]
-    },
-    {
-      "linkId": "f4a8880e-0e5c-478b-809f-5231fe7af97d",
-      "text": "Evaluation for Danger Signs"
-    },
-    {
-      "linkId": "cee0e372-0ba3-4ef1-da99-5db58f5fa31f",
-      "text": "Is the woman exhibiting any of the following danger signs? Select those that apply",
+      "linkId": "0819ef4e-f02e-4df7-9572-5713bf495f89",
+      "text": "How many days have the child had a fever?",
       "answer": [
         {
           "valueCoding": {
-            "id": "497ec4f1-7098-49a1-ef64-a159db4ed716",
-            "system": "urn:uuid:261f03d1-8349-489e-9e0b-d2d7f39ffed2",
-            "code": "fever",
-            "display": "Fever"
+            "id": "1aecaff5-ea5a-46a9-bc58-dbc5d948048c",
+            "system": "urn:uuid:9b0680f9-5413-4894-b643-1c2d711a41f8",
+            "code": "7+-days",
+            "display": "7+ days"
           }
         }
       ]
     },
     {
-      "linkId": "347b414f-b77c-4b56-8029-cd8adc654bcc",
-      "text": "Have you referred the woman to a hospital for danger signs?",
+      "linkId": "58206937-1e54-4383-e752-045b1430a904",
+      "text": "Is ORS available?",
       "answer": [
         {
           "valueCoding": {
-            "id": "6812d5f2-5589-48d3-d355-0779c443393a",
-            "system": "urn:uuid:b6522648-c0c4-44ae-83c0-bd80101a66ac",
-            "code": "yes",
-            "display": "Yes"
-          }
-        }
-      ]
-    },
-    {
-      "linkId": "72cef2c1-5547-4d37-8a53-10b2078432d7",
-      "text": "HIV Status Check"
-    },
-    {
-      "linkId": "04d3cb04-e42d-4b7f-8718-6d54f64b30fd",
-      "text": "Does the woman know their HIV status",
-      "answer": [
-        {
-          "valueCoding": {
-            "id": "6c6b220a-a073-4715-9622-b76bfa332b67",
-            "system": "urn:uuid:f87d5113-eb63-4b1a-84b7-4f062550cc79",
+            "id": "415ce8a4-c213-4a04-9a74-0ac4c3b76ca2",
+            "system": "urn:uuid:eb79120b-233c-46ca-8bea-13df7dc9f1ad",
             "code": "no",
             "display": "No"
           }
@@ -1113,13 +884,251 @@
       ]
     },
     {
-      "linkId": "9b9d9658-d985-49fa-8731-77962c672eb5",
-      "text": "Have you encouraged the woman to go to the nearest health facility to be tested",
+      "linkId": "206c5a5b-dc64-41cb-97a3-d6aa262f5ccf",
+      "text": "Stock Balance - 1 sachet of (ORS) Oral Rehydration Salt 20.5g/L (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "1e96f619-32b4-4b54-8635-8a263f01f74d",
+      "text": "Latest Observation ID - 1 sachet of (ORS) Oral Rehydration Salt 20.5g/L (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "1b63f92e-c48b-468a-ab53-d7db5d423b99",
+      "text": "Stockout Flag ID - 1 sachets of (ORS) Oral Rehydration Salt 20.5g/L (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "4a564178-de55-4757-c263-5b3db851b8d6",
+      "text": "Is Amoxicillin 250mg (Green Pack) available?",
       "answer": [
         {
           "valueCoding": {
-            "id": "b8ba0059-4523-4184-f34d-6d5e11317034",
-            "system": "urn:uuid:72f2f81b-8a58-40ea-8791-3f57faa01700",
+            "id": "415ce8a4-c213-4a04-9a74-0ac4c3b76ca2",
+            "system": "urn:uuid:eb79120b-233c-46ca-8bea-13df7dc9f1ad",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "254fe48e-dd6c-4428-b59c-10c8079dc8d5",
+      "text": "Stock Balance - Amoxicillin 250mg (Red Pack) - 1 tablet (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "19f9be52-cce5-442a-9f87-d6894a57b6ff",
+      "text": "Latest Observation ID - Amoxicillin 250mg (Red Pack) - 1 tablet (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "829c3eff-4903-4123-b21c-e4f613c1f01d",
+      "text": "Stockout Flag ID - Amoxicillin 250mg (Red Pack) - 1 tablet (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "7be1c8e4-e7d0-445b-8a71-d600263a0063",
+      "text": "Stock Balance - Amoxicilin 250mg (Green Pack) - 2 tablets. Amoxicillin 250mg (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "7f1b86c6-313b-42a3-ae77-541cae12b27e",
+      "text": "Latest Observation ID - Amoxicilin 250mg (Green Pack) - 2 tablets. Amoxicillin 250mg (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "32eebd31-8edc-43eb-a620-d4a30b33bc52",
+      "text": "Stockout Flag ID - Amoxicilin 250mg (Green Pack) - 2 tablets. Amoxicillin 250mg (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "04b9d905-412d-4733-a87a-e27afb2b14ad",
+      "text": "Is the Anti-Malarial ACT (Yellow Pack) available?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "415ce8a4-c213-4a04-9a74-0ac4c3b76ca2",
+            "system": "urn:uuid:eb79120b-233c-46ca-8bea-13df7dc9f1ad",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "bc8d3591-421a-42ad-9cfc-6af427581555",
+      "text": "Stock Balance - Anti-Malarial ACT (Yellow Pack) - 1 tab (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "a8583691-021f-414c-9252-519ac05bc7c8",
+      "text": "Latest Observation ID - Anti-Malarial ACT (Yellow Pack) - 1 tab (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "b5706956-e601-4dfe-ae7a-97e6c9f4a8ba",
+      "text": "Stockout Flag ID - Anti-Malarial ACT (Yellow Pack) - 1 tab (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "e8b84321-ed5c-495d-905e-3e81083320f4",
+      "text": "Stock Balance - Anti-Malarial ACT (Blue Pack) - 1 tab (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "827ac1a1-16dd-4a0c-87c4-bbe9916ceb2b",
+      "text": "Latest Observation ID - Anti-Malarial ACT (Blue Pack) - 1 tab (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "cd83576c-6297-47e7-b857-fa6bb824a379",
+      "text": "Stockout Flag ID - Anti-Malarial ACT (Blue Pack) - 1 tab (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "d9908403-8eb1-45cf-cf97-1e6d14992adc",
+      "text": "Is Artesunate suppository 100mg available?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "415ce8a4-c213-4a04-9a74-0ac4c3b76ca2",
+            "system": "urn:uuid:eb79120b-233c-46ca-8bea-13df7dc9f1ad",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "ec66a7cc-d1f6-4d5e-b161-61eb61c2922e",
+      "text": "Stock Balance - Artersunate suppository 100mg- 1 tablet. Artersunate suppository 100mg (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "cb032c71-465b-43d1-aeef-efe7241f22bb",
+      "text": "Latest Observation ID - Artersunate suppository 100mg- 1 tablet. Artersunate suppository 100mg (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "6b1ed271-28a8-4dc2-8521-f3498befc981",
+      "text": "Stockout Flag ID - Artersunate suppository 100mg- 1 tablet. Artersunate suppository 100mg (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "8b404865-2651-4ba6-8b4d-c2de0aae55f6",
+      "text": "Stock Balance - Artersunate suppository 100mg- 2 tablets. Artersunate suppository 100mg (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "caf9de81-51ca-4f4c-a523-b862f1ef22ef",
+      "text": "Latest Observation ID - Artersunate suppository 100mg- 2 tablets. Artersunate suppository 100mg (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "30ca82bd-bd6e-4b14-931d-0b6d79db5350",
+      "text": "Stockout Flag ID - Artersunate suppository 100mg- 2 tablets. Artersunate suppository 100mg (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "ee160de1-7e74-4a7a-82da-9edc320bbcac",
+      "text": "Stock Balance - Rapid Diagnostic Test (RDT) (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "05a19a6c-7378-4d0e-a299-17770b3378a3",
+      "text": "Latest Observation ID - Rapid Diagnostic Test (RDT) (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "d602ecad-be25-4687-99e6-b0fe81126440",
+      "text": "Stockout Flag ID - Rapid Diagnostic Test (RDT) (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "9ed5fdf4-dde5-4ac2-abe3-bd2a7858a5a6",
+      "text": "Stock Balance - Amoxicillin 250mg (Red Pack) - 10 tablets (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "6be08186-8e82-4d9b-8e3a-1b7a3a7dfe2b",
+      "text": "Latest Observation ID - Amoxicillin 250mg (Red Pack) - 10 tablets (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "04456994-8f00-43f3-b47b-b33f55b385c9",
+      "text": "Stockout Flag ID - Amoxicillin 250mg (Red Pack) - 10 tablets (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "55969ae5-65cf-4d9b-90eb-c198e7bc558e",
+      "text": "Stock Balance - Amoxicillin 250mg (Green Pack) - 20 tablets (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "1b9994ec-6024-44d5-92ad-f6190c95cf4d",
+      "text": "Latest Observation ID - Amoxicillin 250mg (Green Pack) - 20 tablets (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "bba7fbc4-6566-4a03-871b-7955553da13a",
+      "text": "Stockout Flag ID - Amoxicillin 250mg (Green Pack) - 20 tablets (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "b18c0ba5-c346-4546-b6c0-b99cca81845b",
+      "text": "Stock Balance - 1 sachet of (ORS) Oral Rehydration Salt 20.5g/L (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "9a47ed7f-8939-461d-8da7-f0ab636b77af",
+      "text": "Latest Observation ID - 1 sachet of (ORS) Oral Rehydration Salt 20.5g/L (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "841445f8-9734-4215-9a9e-d6e9084e73cd",
+      "text": "Stockout Flag ID - 1 sachets of (ORS) Oral Rehydration Salt 20.5g/L (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "5084d5d1-0a52-436f-85e2-9fc47f6625fe",
+      "text": "Stock Balance - 1 sachet of (ORS) Oral Rehydration Salt 20.5g/L (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "cab147f6-05f6-4276-9811-03c4685590f9",
+      "text": "Latest Observation ID - 1 sachet of (ORS) Oral Rehydration Salt 20.5g/L (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "2c4389d9-c3a7-4532-9f4b-7c3e81b2cdd9",
+      "text": "Stockout Flag ID - 1 sachets of (ORS) Oral Rehydration Salt 20.5g/L (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "802f1153-6d00-4b8e-a889-48dcc20e991d",
+      "text": "Stock Balance - 5 tablets of 10mg ZINC (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "60b4c42c-aeaa-483e-b075-6db3b3dc5cb1",
+      "text": "Latest Observation ID - 5 tablets of 10mg ZINC (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "827a1d6f-1482-4f14-b925-17efc5120fb3",
+      "text": "Stockout Flag ID - 5 tablets of 10mg ZINC (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "0805d783-7ae8-4de4-99c4-21e59afb5954",
+      "text": "Stock Balance - 10 tablets of 10mg ZINC (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "dd2ecdae-b029-4297-9513-f0c5b0eaebe4",
+      "text": "Latest Observation ID - 10 tablets of 10mg ZINC (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "fd988e7f-262c-408a-8f06-5f139b6b05e2",
+      "text": "Stockout Flag ID - 10 tablets of 10mg ZINC (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "71e22d2f-34ae-4a65-b61c-a0fac432adea",
+      "text": "Stock Balance - Anti-Malarial ACT (Yellow Pack) - 6 tabs (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "9050d789-ecde-4940-8cb2-1c55109ce24f",
+      "text": "Latest Observation ID - Anti-Malarial ACT (Yellow Pack) - 6 tabs (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "93b19b07-b2d5-4498-8bff-56d2b616c1d4",
+      "text": "Stockout Flag ID - Anti-Malarial ACT (Yellow Pack) - 6 tabs (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "31d6fde5-eda4-4295-96cd-1c8361d74b52",
+      "text": "Stock Balance - Anti-Malarial ACT (Blue Pack) - 12 tabs (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "12d9b975-c8b5-40e7-b766-cb7f7ffe1ed8",
+      "text": "Latest Observation ID - Anti-Malarial ACT (Blue Pack) - 12 tabs (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "8f143d4a-70d3-42ac-8745-ff283cac1cf6",
+      "text": "Stockout Flag ID - Anti-Malarial ACT (Blue Pack) - 12 tabs (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "5b6c0d64-94de-4bab-c9e9-3c97b6d82e75",
+      "text": "Child referral "
+    },
+    {
+      "linkId": "c487ad82-5544-49c2-8ece-332497d27f18",
+      "text": "Did you refer the child to a health facility?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "46c1564e-3c77-4755-8e8d-9d47d70019a9",
+            "system": "urn:uuid:5c38312e-da49-4b56-b2e5-38c64c2189d9",
             "code": "yes",
             "display": "Yes"
           }

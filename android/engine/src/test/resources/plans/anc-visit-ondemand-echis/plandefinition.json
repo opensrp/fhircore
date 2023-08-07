@@ -223,8 +223,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='06dfbae6-c154-4aba-84d0-57bc60faea95') and answer.value.code='yes').exists()"
-          }
+            "expression": "$this is Patient and ((%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/81fce9f9-86f2-46db-991c-9f0a4793a8c9').exists() and (%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='06dfbae6-c154-4aba-84d0-57bc60faea95') and answer.value.code='yes').exists())) or %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/59a18e82-cc67-4d84-bbde-807633cce700').exists() or %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/c75ab65d-af2e-429a-b4fe-70fe1b5078a6').descendants().where(linkId='06dfbae6-c154-4aba-84d0-57bc60faea95' and answer.value.code = 'yes').exists())"          }
         }
       ],
       "participant": [
@@ -280,7 +279,7 @@
         }
       ],
       "definitionCanonical": "#careplan-referral-closure",
-      "transform": "http://hl7.org/fhir/StructureMap/be2fc24b-8326-42d8-9c1d-168023766c9a"
+      "transform": "http://hl7.org/fhir/StructureMap/a4b157f2-6f15-4acb-b2a9-c62492178db0"
     },
     {
       "prefix": "1",
