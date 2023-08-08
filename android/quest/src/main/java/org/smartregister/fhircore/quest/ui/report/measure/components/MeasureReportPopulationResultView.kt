@@ -116,7 +116,7 @@ fun MeasureReportPopulationResultPreview() {
       MeasureReportPopulationResult(
         title = "Population Title",
         count = "2",
-        measureReportDenominator = 4,
+        measureReportDenominator = "4",
         indicatorTitle = "Still birth",
         dataList =
           listOf(
