@@ -210,29 +210,37 @@ constructor(
       updateResourcesLastUpdatedProperty(actionParameters)
 
       // Important to load subject resource to retrieve ID (as reference) correctly
-      val subjectIdType = IdType(currentQuestionnaireResponse.subject.reference)
-      val subject =
-        loadResource(ResourceType.valueOf(subjectIdType.resourceType), subjectIdType.idPart)
+      val subjectIdType: IdType? =
+        if (currentQuestionnaireResponse.subject.reference.isNullOrEmpty()) {
+          null
+        } else {
+          IdType(currentQuestionnaireResponse.subject.reference)
+        }
 
-      if (subject != null && bundle != null) {
-        val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
-        generateCarePlan(
-          subject = subject,
-          bundle = newBundle,
-          questionnaireConfig = questionnaireConfig,
-        )
+      if (subjectIdType != null) {
+        val subject =
+          loadResource(ResourceType.valueOf(subjectIdType.resourceType), subjectIdType.idPart)
 
-        executeCql(
-          subject = subject,
-          bundle = newBundle,
-          questionnaire = questionnaire,
-        )
+        if (subject != null && bundle != null) {
+          val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
+          generateCarePlan(
+            subject = subject,
+            bundle = newBundle,
+            questionnaireConfig = questionnaireConfig,
+          )
 
-        fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
-          questionnaireConfig = questionnaireConfig,
-          subject = subject,
-          bundle = newBundle,
-        )
+          executeCql(
+            subject = subject,
+            bundle = newBundle,
+            questionnaire = questionnaire,
+          )
+
+          fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
+            questionnaireConfig = questionnaireConfig,
+            subject = subject,
+            bundle = newBundle,
+          )
+        }
       }
 
       softDeleteResources(questionnaireConfig)
@@ -296,7 +304,7 @@ constructor(
     }
 
     // Save questionnaire response only if subject is present
-    if (currentQuestionnaireResponse.subject != null) {
+    if (!currentQuestionnaireResponse.subject.reference.isNullOrEmpty()) {
       defaultRepository.addOrUpdate(
         resource = currentQuestionnaireResponse.apply { addContained(listResource) },
       )
@@ -385,7 +393,7 @@ constructor(
       }
       .onFailure { exception ->
         Timber.e(exception)
-        viewModelScope.launch {
+        viewModelScope.launch(dispatcherProvider.main()) {
           if (exception is NullPointerException && exception.message!!.contains("StructureMap")) {
             context.showToast(
               context.getString(R.string.structure_map_missing_message),
