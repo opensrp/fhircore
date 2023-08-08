@@ -316,6 +316,7 @@ constructor(
         }
       }
     }
+    configsLoadedCallback(true)
   }
 
   private fun isAppConfig(referenceResourceType: String) =
