@@ -20,6 +20,7 @@ buildscript {
     classpath("de.mannodermaus.gradle.plugins:android-junit5:1.8.2.1")
     classpath("com.android.tools.build:gradle:7.1.3")
     classpath("org.jetbrains.dokka:dokka-base:1.8.20")
+    classpath("org.owasp:dependency-check-gradle:8.2.1")
   }
 }
 
@@ -49,6 +50,7 @@ subprojects {
     plugin("com.diffplug.spotless")
     plugin("org.jetbrains.dokka")
     plugin(  "jacoco")
+    plugin("org.owasp.dependencycheck")
   }
 
   configure<SpotlessExtension> {

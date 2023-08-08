@@ -1,0 +1,83 @@
+name: Dependency Check Scan
+
+on:
+  push:
+    branches:
+      # - main
+      - security-automation-additions
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      # - main
+      - security-automation-additions
+  workflow_dispatch:
+    # inputs:    
+env:
+  FHIR_BASE_URL: ${{secrets.FHIR_BASE_URL}}
+  OAUTH_BASE_URL: ${{secrets.OAUTH_BASE_URL}}
+  OAUTH_CIENT_ID: ${{secrets.OAUTH_CIENT_ID}}
+  OAUTH_CLIENT_SECRET: ${{secrets.OAUTH_CLIENT_SECRET}}
+  OAUTH_SCOPE: ${{secrets.OAUTH_SCOPE}}
+  MAPBOX_SDK_TOKEN: ${{secrets.MAPBOX_SDK_TOKEN}}
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: temurin
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        working-directory: android
+
+      - name: Run Dependency Check
+        run: |
+          cd android
+          ./gradlew dependencyCheckAggregate 
+
+      - name: Upload Dependency Check report in HTML format
+        uses: actions/upload-artifact@v2
+        with:
+          name: dependency-check-report
+          path: dependency-check-report.xml
+        
+
+      - name: Install Dependency Check CLI
+        run: |
+          wget https://github.com/jeremylong/DependencyCheck/releases/download/v8.2.1/dependency-check-8.2.1-release.zip
+          unzip dependency-check-8.2.1-release.zip
+
+      - name: Convert XML report to HTML
+        run: |
+          cd dependency-check/bin
+          ./dependency-check.sh --project "fhircore" --scan "../android" --format "HTML"
+        working-directory: android
+
+
+
+      # - name: Run Dependency Check
+      #   uses: dependency-check/Dependency-Check_Action@main
+      #   env:
+      #     JAVA_HOME: /opt/jdk
+      #   with:
+      #     project: "fhircore"
+      #     path: "."
+      #     format: 'XML'
+      #     out: 'reports'
+        
+
+      - name: Upload Dependency Check report in HTML format
+        uses: actions/upload-artifact@v2
+        with:
+          name: dependency-check-report
+          path: dependency-check-report.html
