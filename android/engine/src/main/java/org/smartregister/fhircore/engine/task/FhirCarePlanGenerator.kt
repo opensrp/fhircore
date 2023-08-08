@@ -75,7 +75,7 @@ constructor(
   val defaultRepository: DefaultRepository,
   val fhirTaskUtil: FhirTaskUtil,
 ) {
-  val structureMapUtilities by lazy {
+  private val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
   }
 

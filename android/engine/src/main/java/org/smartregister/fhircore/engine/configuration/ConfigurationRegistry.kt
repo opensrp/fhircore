@@ -36,7 +36,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Bundle.BundleEntryComponent
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Resource
@@ -83,7 +82,7 @@ constructor(
   val configCacheMap = mutableMapOf<String, Configuration>()
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
-  private var isNonProxy_ = BuildConfig.IS_NON_PROXY_APK
+  private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -435,12 +434,15 @@ constructor(
     resourceIdList: List<String>,
   ): Bundle {
     val resultBundle =
-      fhirResourceDataSource.post(
-        "",
-        generateRequestBundle(resourceType, resourceIdList)
-          .encodeResourceToString()
-          .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
-      )
+      if (isNonProxy()) {
+        fhirResourceDataSourceGetBundle(resourceType, resourceIdList)
+      } else
+        fhirResourceDataSource.post(
+          "",
+          generateRequestBundle(resourceType, resourceIdList)
+            .encodeResourceToString()
+            .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
+        )
     resultBundle.entry?.forEach { bundleEntryComponent ->
       when (bundleEntryComponent.resource) {
         is Bundle -> {
@@ -509,7 +511,7 @@ constructor(
     }
   }
 
-  private suspend fun saveListEntryResource(entryComponent: BundleEntryComponent) {
+  private suspend fun saveListEntryResource(entryComponent: Bundle.BundleEntryComponent) {
     addOrUpdate(entryComponent.resource)
     Timber.d(
       "Fetched and processed List reference ${entryComponent.resource.resourceType}/${entryComponent.resource.id}",
@@ -551,19 +553,19 @@ constructor(
     }
   }
 
-  @VisibleForTesting fun isNonProxy(): Boolean = isNonProxy_
+  @VisibleForTesting fun isNonProxy(): Boolean = _isNonProxy
 
   @VisibleForTesting
   fun setNonProxy(nonProxy: Boolean) {
-    isNonProxy_ = nonProxy
+    _isNonProxy = nonProxy
   }
 
   private fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
-    val bundleEntryComponents = mutableListOf<BundleEntryComponent>()
+    val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
 
     idList.forEach {
       bundleEntryComponents.add(
-        BundleEntryComponent().apply {
+        Bundle.BundleEntryComponent().apply {
           request =
             Bundle.BundleEntryRequestComponent().apply {
               url = "$resourceType/$it"
@@ -575,6 +577,29 @@ constructor(
 
     return Bundle().apply {
       type = Bundle.BundleType.BATCH
+      entry = bundleEntryComponents
+    }
+  }
+
+  private suspend fun fhirResourceDataSourceGetBundle(
+    resourceType: String,
+    resourceIds: List<String>,
+  ): Bundle {
+    val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
+
+    resourceIds.forEach {
+      val responseBundle =
+        fhirResourceDataSource.getResource("$resourceType?${Composition.SP_RES_ID}=$it")
+      responseBundle?.let {
+        bundleEntryComponents.add(
+          Bundle.BundleEntryComponent().apply {
+            resource = responseBundle.entry?.first()?.resource
+          },
+        )
+      }
+    }
+    return Bundle().apply {
+      type = Bundle.BundleType.COLLECTION
       entry = bundleEntryComponents
     }
   }
