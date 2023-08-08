@@ -78,7 +78,7 @@ fun MeasureReportMainScreen(
       ReportDateSelectorScreen(
         reportId = reportId,
         practitionerId = practitionerId,
-        screenTitle = stringResource(R.string.select_date_range),
+        screenTitle = stringResource(R.string.select_month),
         navController = navController,
         mainNavController = mainNavController,
         measureReportViewModel = measureReportViewModel,
