@@ -326,6 +326,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       onSuccessfulSubmission(capture(idsTypesSlot), questionnaireResponse)
     }
 
+    // Captured bundle slot should contain QuestionnaireResponse
+    Assert.assertTrue(
+      bundleSlot.captured.entry.any {
+        it.resource.resourceType == ResourceType.QuestionnaireResponse
+      },
+    )
+
     // ID of extracted resources passed to the onSuccessfulSubmission callback
     Assert.assertEquals(idsTypesSlot.captured.firstOrNull()?.idPart, patient.logicalId)
 
