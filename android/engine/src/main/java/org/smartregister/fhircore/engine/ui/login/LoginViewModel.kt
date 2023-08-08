@@ -117,8 +117,8 @@ constructor(
           Result.failure(NullPointerException("Keycloak user is null. Failed to fetch user."))
         )
       }
-    } catch (httpException: HttpException) {
-      onFetchUserInfo(Result.failure(httpException))
+    } catch (exception: Exception) {
+      onFetchUserInfo(Result.failure(exception))
     }
   }
 

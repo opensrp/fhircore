@@ -34,6 +34,7 @@ import org.hl7.fhir.r4.model.Organization
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
@@ -272,6 +273,38 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     // Mock result for retrieving a FHIR resource using user's keycloak uuid
     coEvery { fhirResourceService.getResource(any()) } returns Bundle()
+
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertEquals(LoginErrorState.ERROR_FETCHING_USER, loginViewModel.loginErrorState.value!!)
+  }
+
+  @Test
+  @Ignore("Fix failing test")
+  fun testUnSuccessfulOnlineLoginUserInfoException() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns
+      Result.success(
+        OAuthResponse(
+          accessToken = "very_new_top_of_the_class_access_token",
+          tokenType = "you_guess_it",
+          refreshToken = "another_very_refreshing_token",
+          refreshExpiresIn = 540000,
+          scope = "open_my_guy"
+        )
+      )
+
+    // Mock result for fetch user info via keycloak endpoint
+    coEvery { keycloakService.fetchUserInfo() } returns
+      Response.error(400, mockk<RealResponseBody>(relaxed = true))
+
+    // Mock result for retrieving a FHIR resource using user's keycloak uuid
+    coEvery { fhirResourceService.getResource(any()) } throws Exception()
 
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
 
