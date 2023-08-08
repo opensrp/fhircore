@@ -83,7 +83,7 @@ constructor(
   val configCacheMap = mutableMapOf<String, Configuration>()
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
-  private var isNonProxy_ = BuildConfig.IS_NON_PROXY_APK
+  private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -131,7 +131,7 @@ constructor(
             locale = Locale.getDefault(),
             template = it,
           )
-          .decodeJson<T>()
+          .decodeJson()
       }
 
   /**
@@ -221,7 +221,7 @@ constructor(
   suspend fun loadConfigurations(
     appId: String,
     context: Context,
-    configsLoadedCallback: (Boolean) -> Unit = {},
+    configsLoadedCallback: (Boolean, String) -> Unit = { _, _ -> },
   ) {
     // For appId that ends with suffix /debug e.g. app/debug, we load configurations from assets
     // extract appId by removing the suffix e.g. app from above example
@@ -229,40 +229,44 @@ constructor(
     val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
     if (loadFromAssets) {
       try {
-        context.assets
-          .open(String.format(COMPOSITION_CONFIG_PATH, parsedAppId))
-          .bufferedReader()
-          .readText()
-          .decodeResourceFromString<Composition>()
-          .run {
-            val iconConfigs =
-              retrieveCompositionSections().filter {
-                it.focus.hasIdentifier() && isIconConfig(it.focus.identifier.value)
-              }
-            if (iconConfigs.isNotEmpty()) {
-              val ids = iconConfigs.joinToString(DEFAULT_STRING_SEPARATOR) { it.focus.extractId() }
-              fhirResourceDataSource
-                .getResource(
-                  "${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT",
-                )
-                .entry
-                .forEach { addOrUpdate(it.resource) }
+        val localCompositionResource =
+          context.assets
+            .open(String.format(COMPOSITION_CONFIG_PATH, parsedAppId))
+            .bufferedReader()
+            .readText()
+            .decodeResourceFromString<Composition>()
+
+        addOrUpdate(localCompositionResource)
+
+        localCompositionResource.run {
+          val iconConfigs =
+            retrieveCompositionSections().filter {
+              it.focus.hasIdentifier() && isIconConfig(it.focus.identifier.value)
             }
-            populateConfigurationsMap(
-              composition = this,
-              loadFromAssets = true,
-              appId = parsedAppId,
-              configsLoadedCallback = configsLoadedCallback,
-              context = context,
-            )
+          if (iconConfigs.isNotEmpty()) {
+            val ids = iconConfigs.joinToString(DEFAULT_STRING_SEPARATOR) { it.focus.extractId() }
+            fhirResourceDataSource
+              .getResource(
+                "${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT",
+              )
+              .entry
+              .forEach { addOrUpdate(it.resource) }
           }
+          populateConfigurationsMap(
+            composition = this,
+            loadFromAssets = true,
+            appId = parsedAppId,
+            configsLoadedCallback = configsLoadedCallback,
+            context = context,
+          )
+        }
       } catch (fileNotFoundException: FileNotFoundException) {
         Timber.e("Missing app configs for app ID: $parsedAppId", fileNotFoundException)
-        withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
+        withContext(dispatcherProvider.main()) { configsLoadedCallback(false, parsedAppId) }
       }
     } else {
-      fhirEngine.searchCompositionByIdentifier(appId)?.run {
-        populateConfigurationsMap(context, this, false, appId, configsLoadedCallback)
+      fhirEngine.searchCompositionByIdentifier(parsedAppId)?.run {
+        populateConfigurationsMap(context, this, false, parsedAppId, configsLoadedCallback)
       }
     }
   }
@@ -272,7 +276,7 @@ constructor(
     composition: Composition,
     loadFromAssets: Boolean,
     appId: String,
-    configsLoadedCallback: (Boolean) -> Unit,
+    configsLoadedCallback: (Boolean, String) -> Unit,
   ) {
     if (loadFromAssets) {
       retrieveAssetConfigs(context, appId).forEach { fileName ->
@@ -306,7 +310,7 @@ constructor(
         }
       }
     }
-    configsLoadedCallback(true)
+    configsLoadedCallback(true, appId)
   }
 
   private fun isAppConfig(referenceResourceType: String) =
@@ -356,13 +360,15 @@ constructor(
    */
   @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources() {
-    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId: String ->
+    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
       fhirEngine.searchCompositionByIdentifier(appId)?.let { composition ->
         composition
           .retrieveCompositionSections()
-          .groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: "" }
-          .filter {
-            it.key in
+          .groupBy { section ->
+            section.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: ""
+          }
+          .filter { entry ->
+            entry.key in
               listOf(
                 ResourceType.Questionnaire.name,
                 ResourceType.StructureMap.name,
@@ -448,9 +454,9 @@ constructor(
           bundle.entry.forEach { entryComponent ->
             when (entryComponent.resource) {
               is Bundle -> {
-                val bundle = entryComponent.resource as Bundle
-                addOrUpdate(bundle)
-                bundle.entry.forEach { innerEntryComponent ->
+                val thisBundle = entryComponent.resource as Bundle
+                addOrUpdate(thisBundle)
+                thisBundle.entry.forEach { innerEntryComponent ->
                   saveListEntryResource(innerEntryComponent)
                 }
               }
@@ -489,9 +495,9 @@ constructor(
           bundle.entry.forEach { entryComponent ->
             when (entryComponent.resource) {
               is Bundle -> {
-                val bundle = entryComponent.resource as Bundle
-                addOrUpdate(bundle)
-                bundle.entry.forEach { innerEntryComponent ->
+                val thisBundle = entryComponent.resource as Bundle
+                addOrUpdate(thisBundle)
+                thisBundle.entry.forEach { innerEntryComponent ->
                   saveListEntryResource(innerEntryComponent)
                 }
               }
@@ -521,7 +527,6 @@ constructor(
    * resource, or create it if not found.
    */
   suspend fun <R : Resource> addOrUpdate(resource: R) {
-    if (resource == null) return
     withContext(dispatcherProvider.io()) {
       resource.updateLastUpdated()
       try {
@@ -551,11 +556,11 @@ constructor(
     }
   }
 
-  @VisibleForTesting fun isNonProxy(): Boolean = isNonProxy_
+  @VisibleForTesting fun isNonProxy(): Boolean = _isNonProxy
 
   @VisibleForTesting
   fun setNonProxy(nonProxy: Boolean) {
-    isNonProxy_ = nonProxy
+    _isNonProxy = nonProxy
   }
 
   private fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {

@@ -205,13 +205,16 @@ constructor(
   fun loadConfigurations(context: Context) {
     appId.value?.let { thisAppId ->
       viewModelScope.launch(dispatcherProvider.io()) {
-        configurationRegistry.loadConfigurations(thisAppId, context) { loadConfigSuccessful ->
+        configurationRegistry.loadConfigurations(thisAppId, context) {
+          loadConfigSuccessful,
+          parsedAppId,
+          ->
           showProgressBar.postValue(false)
           if (loadConfigSuccessful) {
-            sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, thisAppId)
+            sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, parsedAppId)
             context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
           } else {
-            _error.postValue(context.getString(R.string.application_not_supported, appId.value))
+            _error.postValue(context.getString(R.string.application_not_supported, parsedAppId))
           }
         }
       }

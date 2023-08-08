@@ -87,7 +87,8 @@ object Faker {
       configurationRegistry.loadConfigurations(
         appId = APP_DEBUG,
         context = InstrumentationRegistry.getInstrumentation().targetContext,
-      ) {}
+      ) { _, _ ->
+      }
     }
 
     return configurationRegistry
