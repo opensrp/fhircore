@@ -33,7 +33,6 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
-import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import okhttp3.RequestBody
 import org.hl7.fhir.r4.model.Binary
@@ -75,19 +74,17 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   @get:Rule(order = 1)
   val coroutineRule = CoroutineTestRule()
-
-  @Inject lateinit var configRegistry: ConfigurationRegistry
-  var fhirEngine: FhirEngine = mockk()
-  lateinit var context: Context
-  private lateinit var fhirResourceDataSource: FhirResourceDataSource
+  private val fhirEngine: FhirEngine = mockk()
+  private val context: Context = ApplicationProvider.getApplicationContext()
   private val fhirResourceService = mockk<FhirResourceService>()
+  private lateinit var fhirResourceDataSource: FhirResourceDataSource
+  private lateinit var configRegistry: ConfigurationRegistry
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
     fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
-    context = ApplicationProvider.getApplicationContext()
     val sharedPreferencesHelper =
       SharedPreferencesHelper(context, GsonBuilder().setLenient().create())
     configRegistry =

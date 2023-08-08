@@ -221,7 +221,7 @@ constructor(
   suspend fun loadConfigurations(
     appId: String,
     context: Context,
-    configsLoadedCallback: (Boolean, String) -> Unit = { _, _ -> },
+    configsLoadedCallback: (Boolean) -> Unit = {},
   ) {
     // For appId that ends with suffix /debug e.g. app/debug, we load configurations from assets
     // extract appId by removing the suffix e.g. app from above example
@@ -262,7 +262,7 @@ constructor(
         }
       } catch (fileNotFoundException: FileNotFoundException) {
         Timber.e("Missing app configs for app ID: $parsedAppId", fileNotFoundException)
-        withContext(dispatcherProvider.main()) { configsLoadedCallback(false, parsedAppId) }
+        withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
       }
     } else {
       fhirEngine.searchCompositionByIdentifier(parsedAppId)?.run {
@@ -276,7 +276,7 @@ constructor(
     composition: Composition,
     loadFromAssets: Boolean,
     appId: String,
-    configsLoadedCallback: (Boolean, String) -> Unit,
+    configsLoadedCallback: (Boolean) -> Unit,
   ) {
     if (loadFromAssets) {
       retrieveAssetConfigs(context, appId).forEach { fileName ->
@@ -304,13 +304,18 @@ constructor(
           val configIdentifier = it.focus.identifier.value
           val referenceResourceType = it.focus.reference.substringBefore(TYPE_REFERENCE_DELIMITER)
           if (isAppConfig(referenceResourceType) && !isIconConfig(configIdentifier)) {
-            val configBinary = fhirEngine.get<Binary>(it.focus.extractId())
-            configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
+            val extractedId = it.focus.extractId()
+            try {
+              val configBinary = fhirEngine.get<Binary>(extractedId)
+              configsJsonMap[configIdentifier] = configBinary.content.decodeToString()
+            } catch (resourceNotFoundException: ResourceNotFoundException) {
+              Timber.e("Missing Binary file with ID :$extractedId")
+              withContext(dispatcherProvider.main()) { configsLoadedCallback(false) }
+            }
           }
         }
       }
     }
-    configsLoadedCallback(true, appId)
   }
 
   private fun isAppConfig(referenceResourceType: String) =
@@ -361,7 +366,8 @@ constructor(
   @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources() {
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
-      fhirEngine.searchCompositionByIdentifier(appId)?.let { composition ->
+      val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
+      fhirEngine.searchCompositionByIdentifier(parsedAppId)?.let { composition ->
         composition
           .retrieveCompositionSections()
           .groupBy { section ->

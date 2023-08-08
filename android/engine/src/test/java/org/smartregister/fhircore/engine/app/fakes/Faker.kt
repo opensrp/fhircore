@@ -18,11 +18,14 @@ package org.smartregister.fhircore.engine.app.fakes
 
 import androidx.test.platform.app.InstrumentationRegistry
 import io.mockk.coEvery
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
@@ -49,9 +52,22 @@ object Faker {
     useAlternativeNames = true
   }
 
+  private val testDispatcher = UnconfinedTestDispatcher()
+
+  val testDispatcherProvider =
+    object : DispatcherProvider {
+      override fun default() = testDispatcher
+
+      override fun io() = testDispatcher
+
+      override fun main() = testDispatcher
+
+      override fun unconfined() = testDispatcher
+    }
+
   fun buildTestConfigurationRegistry(
     sharedPreferencesHelper: SharedPreferencesHelper = mockk(),
-    dispatcherProvider: DispatcherProvider = mockk(),
+    dispatcherProvider: DispatcherProvider = testDispatcherProvider,
   ): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
     val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
@@ -83,12 +99,13 @@ object Faker {
         ),
       )
 
+    coEvery { configurationRegistry.addOrUpdate(any()) } just runs
+
     runBlocking {
       configurationRegistry.loadConfigurations(
         appId = APP_DEBUG,
         context = InstrumentationRegistry.getInstrumentation().targetContext,
-      ) { _, _ ->
-      }
+      ) {}
     }
 
     return configurationRegistry
