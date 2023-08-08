@@ -54,7 +54,7 @@ fun MeasureReport.StratifierGroupComponent.findRatio(denominator: Int?): String 
 fun MeasureReport.StratifierGroupComponent.findPercentage(
   denominator: Int,
   roundingStrategy: RoundingStrategy,
-  roundingPrecision: Int
+  roundingPrecision: Int,
 ): String {
   return if (denominator == 0) {
     "0"
