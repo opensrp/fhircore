@@ -438,10 +438,10 @@ constructor(
         fhirResourceDataSourceGetBundle(resourceType, resourceIdList)
       } else
         fhirResourceDataSource.post(
-          "",
-          generateRequestBundle(resourceType, resourceIdList)
-            .encodeResourceToString()
-            .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
+          requestBody =
+            generateRequestBundle(resourceType, resourceIdList)
+              .encodeResourceToString()
+              .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
         )
     resultBundle.entry?.forEach { bundleEntryComponent ->
       when (bundleEntryComponent.resource) {

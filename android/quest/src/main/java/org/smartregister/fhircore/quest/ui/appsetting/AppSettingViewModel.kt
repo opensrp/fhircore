@@ -135,15 +135,15 @@ constructor(
               val resultBundle: Bundle =
                 if (isNonProxy()) {
                   fhirResourceDataSourceGetBundle(
-                    "${entry.key}",
+                    entry.key,
                     parentIt.map { it.focus.extractId() },
                   )
                 } else
                   fhirResourceDataSource.post(
-                    "",
-                    generateRequestBundle(entry.key, parentIt.map { it.focus.extractId() })
-                      .encodeResourceToString()
-                      .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
+                    requestBody =
+                      generateRequestBundle(entry.key, parentIt.map { it.focus.extractId() })
+                        .encodeResourceToString()
+                        .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
                   )
 
               resultBundle.entry.forEach { bundleEntryComponent ->
