@@ -24,6 +24,7 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.ResourceType
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
+import org.smartregister.fhircore.engine.domain.model.RoundingStrategy
 
 // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
 fun MeasureReport.StratifierGroupComponent.findPopulation(
@@ -50,10 +51,20 @@ fun MeasureReport.StratifierGroupComponent.findRatio(denominator: Int?): String 
   return "${this.findPopulation(MeasurePopulationType.NUMERATOR)?.count}/$denominator"
 }
 
-fun MeasureReport.StratifierGroupComponent.findPercentage(denominator: Int): Int {
+fun MeasureReport.StratifierGroupComponent.findPercentage(
+  denominator: Int,
+  roundingStrategy: RoundingStrategy,
+  roundingPrecision: Int,
+): String {
   return if (denominator == 0) {
-    0
-  } else findPopulation(MeasurePopulationType.NUMERATOR)?.count?.times(100)?.div(denominator) ?: 0
+    "0"
+  } else
+    findPopulation(MeasurePopulationType.NUMERATOR)
+      ?.count
+      ?.toBigDecimal()
+      ?.times(100.toBigDecimal())
+      ?.divide(denominator.toBigDecimal(), roundingPrecision, roundingStrategy.value)
+      .toString()
 }
 
 val MeasureReport.StratifierGroupComponent.displayText
