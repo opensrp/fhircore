@@ -136,6 +136,9 @@ constructor(
           _error.postValue(context.getString(R.string.error_loading_config_general))
         else _error.postValue(context.getString(R.string.error_loading_config_http_error))
         showProgressBar.postValue(false)
+      } catch (e: Exception) {
+        _error.postValue(context.getString(R.string.error_loading_config_http_error))
+        showProgressBar.postValue(false)
       }
     }
   }
