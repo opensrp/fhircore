@@ -31,6 +31,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.*
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,7 +54,6 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.domain.model.RoundingStrategy
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -67,9 +67,8 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractType
 import org.smartregister.fhircore.engine.util.extension.findPercentage
-import org.smartregister.fhircore.engine.util.extension.findPercentageRounded
 import org.smartregister.fhircore.engine.util.extension.findPopulation
-import org.smartregister.fhircore.engine.util.extension.findRatioRounded
+import org.smartregister.fhircore.engine.util.extension.findRatio
 import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.lastDayOfMonth
@@ -90,7 +89,6 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectVie
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDataMapper
 import org.smartregister.fhircore.quest.util.nonNullGetOrDefault
 import timber.log.Timber
-import java.util.*
 
 @HiltViewModel
 class MeasureReportViewModel
@@ -398,14 +396,14 @@ constructor(
               listOf(
                 MeasureReportIndividualResult(
                   title = title,
-                  count = formatted.first().measureReportDenominator?.toString() ?: "0",
+                  count = formatted.first().measureReportDenominator,
                 ),
               )
             } else {
               formatted.map {
                 MeasureReportIndividualResult(
                   title = it.title,
-                  count = it.measureReportDenominator.toString(),
+                  count = it.measureReportDenominator,
                 )
               }
             }
@@ -416,7 +414,7 @@ constructor(
             title = subject,
             indicatorTitle = subject,
             measureReportDenominator =
-              if (theIndicators.size == 1) theIndicators.first().count else null,
+              if (theIndicators.size == 1) theIndicators.first().count else "0",
             dataList = if (theIndicators.size > 1) theIndicators else emptyList(),
           ),
         )
@@ -430,10 +428,6 @@ constructor(
         Timber.d(report.encodeResourceToString())
 
         val reportConfig = nonNullGetOrDefault(indicatorUrlToConfigMap, report.measure, null)
-        val title = reportConfig?.title ?: ""
-        val roundingStrategy = reportConfig?.roundingStrategy ?: ReportConfiguration.DEFAULT_ROUNDING_STRATEGY
-        val roundingPrecision = reportConfig?.roundingPrecision ?: ReportConfiguration.DEFAULT_ROUNDING_PRECISION
-
         data.addAll(formatSupplementalData(report.contained, report.type, reportConfig))
 
         report.group
@@ -447,8 +441,15 @@ constructor(
                 .map { stratifier ->
                   MeasureReportIndividualResult(
                     title = stratifier.value.text,
-                    percentage = stratifier.findPercentageRounded(denominator!!,roundingStrategy, roundingPrecision),
-                    count = stratifier.findRatioRounded(denominator, roundingStrategy, roundingPrecision),
+                    percentage =
+                      stratifier.findPercentage(
+                        denominator!!,
+                        reportConfig?.roundingStrategy
+                          ?: ReportConfiguration.DEFAULT_ROUNDING_STRATEGY,
+                        reportConfig?.roundingPrecision
+                          ?: ReportConfiguration.DEFAULT_ROUNDING_PRECISION,
+                      ),
+                    count = stratifier.findRatio(denominator),
                     description = stratifier.id?.replace("-", " ")?.uppercase() ?: "",
                   )
                 }
@@ -457,7 +458,7 @@ constructor(
             it.first.findPopulation(MeasurePopulationType.NUMERATOR)?.let { count ->
               MeasureReportPopulationResult(
                 title = it.first.id.replace("-", " "),
-                indicatorTitle = title,
+                indicatorTitle = reportConfig?.title ?: "",
                 measureReportDenominator = count.count.toString(),
               )
             }
@@ -481,7 +482,7 @@ constructor(
   private fun formatSupplementalData(
     list: List<Resource>,
     type: MeasureReport.MeasureReportType,
-    reportConfig: ReportConfiguration?
+    reportConfig: ReportConfiguration?,
   ): List<MeasureReportPopulationResult> {
     // handle extracted supplemental data for values
     return list
@@ -506,10 +507,13 @@ constructor(
         MeasureReportPopulationResult(
           title = it.first,
           indicatorTitle = it.first,
-          measureReportDenominator = it.second.toBigDecimal().rounding(
-            reportConfig?.roundingStrategy ?: ReportConfiguration.DEFAULT_ROUNDING_STRATEGY,
-            reportConfig?.roundingPrecision ?: ReportConfiguration.DEFAULT_ROUNDING_PRECISION
-          ),
+          measureReportDenominator =
+            it.second
+              .toBigDecimal()
+              .rounding(
+                reportConfig?.roundingStrategy ?: ReportConfiguration.DEFAULT_ROUNDING_STRATEGY,
+                reportConfig?.roundingPrecision ?: ReportConfiguration.DEFAULT_ROUNDING_PRECISION,
+              ),
         )
       }
   }
