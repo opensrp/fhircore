@@ -122,29 +122,22 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
         questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig, actionParameters)
 
-        if (questionnaire == null) {
+        try {
+          val questionnaireFragmentBuilder = buildQuestionnaireFragment(questionnaire!!)
+          supportFragmentManager.commit {
+            setReorderingAllowed(true)
+            add(R.id.container, questionnaireFragmentBuilder.build(), QUESTIONNAIRE_FRAGMENT_TAG)
+          }
+
+          registerFragmentResultListener()
+
+          viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
+        } catch (nullPointerException: NullPointerException) {
           showToast(getString(R.string.questionnaire_not_found))
           finish()
+        } finally {
+          viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
         }
-
-        if (questionnaire?.subjectType.isNullOrEmpty()) {
-          showToast(getString(R.string.missing_subject_type))
-          Timber.e(
-            "Missing subject type on questionnaire. Provide Questionnaire.subjectType to resolve.",
-          )
-          finish()
-        }
-
-        val questionnaireFragmentBuilder = buildQuestionnaireFragment(questionnaire!!)
-
-        supportFragmentManager.commit {
-          setReorderingAllowed(true)
-          add(R.id.container, questionnaireFragmentBuilder.build(), QUESTIONNAIRE_FRAGMENT_TAG)
-        }
-
-        registerFragmentResultListener()
-
-        viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
       }
     }
   }
@@ -152,6 +145,13 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private suspend fun buildQuestionnaireFragment(
     questionnaire: Questionnaire,
   ): QuestionnaireFragment.Builder {
+    if (questionnaire.subjectType.isNullOrEmpty()) {
+      showToast(getString(R.string.missing_subject_type))
+      Timber.e(
+        "Missing subject type on questionnaire. Provide Questionnaire.subjectType to resolve.",
+      )
+      finish()
+    }
     val questionnaireFragmentBuilder =
       QuestionnaireFragment.builder().setQuestionnaire(questionnaire.json())
 

@@ -84,7 +84,8 @@ constructor(
     subject: Resource,
     data: Bundle = Bundle(),
   ): CarePlan? {
-    return generateOrUpdateCarePlan(fhirEngine.get(planDefinitionId), subject, data)
+    val planDefinition = defaultRepository.loadResource<PlanDefinition>(planDefinitionId)
+    return planDefinition?.let { generateOrUpdateCarePlan(it, subject, data) }
   }
 
   suspend fun generateOrUpdateCarePlan(
