@@ -99,6 +99,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         AppConfigService(context),
         Faker.json,
       )
+    configRegistry.setNonProxy(false)
     Assert.assertNotNull(configRegistry)
   }
 
@@ -329,7 +330,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery {
       fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200")
     } returns bundle
-    coEvery { fhirResourceDataSource.post(any(), any()) } returns bundle
+    coEvery { fhirResourceDataSource.getResource(any()) } returns bundle
     runTest {
       configRegistry.fhirEngine.create(composition)
       configRegistry.setNonProxy(true)
