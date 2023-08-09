@@ -49,20 +49,8 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: dependency-check-report
-          path: android/build/reports/dependency-check-report.html
+          path: android/build/reports/dependency-check-report.xml
         
-
-      - name: Install Dependency Check CLI
-        run: |
-          wget https://github.com/jeremylong/DependencyCheck/releases/download/v8.2.1/dependency-check-8.2.1-release.zip
-          unzip dependency-check-8.2.1-release.zip
-
-      - name: Convert XML report to HTML
-        run: |
-          cd dependency-check/bin
-          ./dependency-check.sh --project "fhircore" --scan "../android" --format "HTML"
-        working-directory: android
-
 
 
       # - name: Run Dependency Check
@@ -74,10 +62,3 @@ jobs:
       #     path: "."
       #     format: 'XML'
       #     out: 'reports'
-        
-
-      - name: Upload Dependency Check report in HTML format
-        uses: actions/upload-artifact@v2
-        with:
-          name: dependency-check-report
-          path: dependency-check-report.html

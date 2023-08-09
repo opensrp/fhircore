@@ -24,7 +24,10 @@ buildscript {
   }
 }
 
-plugins { id("org.jetbrains.dokka") version "1.8.20" }
+plugins {
+  id("org.jetbrains.dokka") version "1.8.20"
+  id("org.owasp.dependencycheck") version "8.2.1"
+}
 
 tasks.dokkaHtmlMultiModule {
   moduleName.set("OpenSRP")
@@ -43,6 +46,9 @@ allprojects {
     maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
     maven(url = "https://jcenter.bintray.com/")
     apply(plugin = "org.owasp.dependencycheck")
+    tasks.dependencyCheckAggregate{
+      dependencyCheck.formats.add("XML")
+    }
   }
 }
 
