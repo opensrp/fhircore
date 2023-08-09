@@ -46,6 +46,5 @@ enum class ApplicationWorkflow {
   LAUNCH_MAP,
 
   /** A workflow for changing a managing entity */
-  CHANGE_MANAGING_ENTITY,;
-
+  CHANGE_MANAGING_ENTITY,
 }

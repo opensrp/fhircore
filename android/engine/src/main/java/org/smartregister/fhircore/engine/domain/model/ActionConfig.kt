@@ -25,7 +25,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
-import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
@@ -67,6 +66,7 @@ data class ActionConfig(
           managingEntityReassignedMessage =
             managingEntity.managingEntityReassignedMessage.interpolate(computedValuesMap),
         ),
+      params = params.map { it.interpolate(computedValuesMap) },
     )
 
   companion object {
