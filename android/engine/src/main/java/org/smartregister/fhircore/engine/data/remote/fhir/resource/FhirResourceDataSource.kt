@@ -31,7 +31,7 @@ class FhirResourceDataSource @Inject constructor(private val resourceService: Fh
     return resourceService.getResource(path)
   }
 
-  suspend fun post(path: String, requestBody: RequestBody): Bundle {
+  suspend fun post(path: String = "", requestBody: RequestBody): Bundle {
     return resourceService.post(path, requestBody)
   }
 
