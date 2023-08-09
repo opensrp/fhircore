@@ -45,7 +45,7 @@ jobs:
           cd android
           ./gradlew dependencyCheckAggregate 
 
-      - name: Upload Dependency Check report in HTML format
+      - name: Upload Dependency Check report in XML format
         uses: actions/upload-artifact@v2
         with:
           name: dependency-check-report
