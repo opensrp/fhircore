@@ -371,7 +371,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
     assertEquals("", result.first().count)
     assertEquals(0, result.first().dataList.size)
     assertEquals("Test Code", result.first().indicatorTitle)
-    assertEquals(3, result.first().measureReportDenominator)
+    assertEquals("3", result.first().measureReportDenominator)
 
     assertEquals("", result.last().count)
     assertEquals(0, result.last().dataList.size)
@@ -413,7 +413,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
     assertEquals("", result.first().count)
     assertEquals(3, result.first().dataList.size)
     assertEquals("Commodity 1", result.first().indicatorTitle)
-    assertEquals(null, result.first().measureReportDenominator)
+    assertEquals("0", result.first().measureReportDenominator)
 
     assertEquals("Test Code 1", result.first().dataList.elementAt(0).title)
     assertEquals("2", result.first().dataList.elementAt(0).count)
