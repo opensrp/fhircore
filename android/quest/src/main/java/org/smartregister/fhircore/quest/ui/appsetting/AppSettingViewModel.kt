@@ -220,7 +220,7 @@ constructor(
             sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, thisAppId)
             context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
           } else {
-            _error.postValue(context.getString(R.string.application_not_supported, appId.value))
+            _error.postValue(context.getString(R.string.application_not_supported, thisAppId))
           }
         }
       }
