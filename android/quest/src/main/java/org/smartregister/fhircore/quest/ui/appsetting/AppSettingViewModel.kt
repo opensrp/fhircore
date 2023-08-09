@@ -72,6 +72,8 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
 
+  private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
+
   val showProgressBar = MutableLiveData(false)
 
   private val _appId = MutableLiveData("")
@@ -129,43 +131,50 @@ constructor(
               Timber.d(
                 "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
               )
-              fhirResourceDataSource
-                .post(
-                  "",
-                  generateRequestBundle(entry.key, parentIt.map { it.focus.extractId() })
-                    .encodeResourceToString()
-                    .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
-                )
-                .entry
-                .forEach { bundleEntryComponent ->
-                  if (bundleEntryComponent.resource != null) {
-                    defaultRepository.createRemote(false, bundleEntryComponent.resource)
 
-                    if (bundleEntryComponent.resource is Binary) {
-                      val binary = bundleEntryComponent.resource as Binary
-                      binary.data
-                        .decodeToString()
-                        .decodeBase64()
-                        ?.string(StandardCharsets.UTF_8)
-                        ?.let {
-                          val config =
-                            it.tryDecodeJson<RegisterConfiguration>()
-                              ?: it.tryDecodeJson<ProfileConfiguration>()
+              val resultBundle: Bundle =
+                if (isNonProxy()) {
+                  fhirResourceDataSourceGetBundle(
+                    entry.key,
+                    parentIt.map { it.focus.extractId() },
+                  )
+                } else
+                  fhirResourceDataSource.post(
+                    requestBody =
+                      generateRequestBundle(entry.key, parentIt.map { it.focus.extractId() })
+                        .encodeResourceToString()
+                        .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
+                  )
 
-                          when (config) {
-                            is RegisterConfiguration ->
-                              config.fhirResource.dependentResourceTypes(
-                                patientRelatedResourceTypes,
-                              )
-                            is ProfileConfiguration ->
-                              config.fhirResource.dependentResourceTypes(
-                                patientRelatedResourceTypes,
-                              )
-                          }
+              resultBundle.entry.forEach { bundleEntryComponent ->
+                if (bundleEntryComponent.resource != null) {
+                  defaultRepository.createRemote(false, bundleEntryComponent.resource)
+
+                  if (bundleEntryComponent.resource is Binary) {
+                    val binary = bundleEntryComponent.resource as Binary
+                    binary.data
+                      .decodeToString()
+                      .decodeBase64()
+                      ?.string(StandardCharsets.UTF_8)
+                      ?.let {
+                        val config =
+                          it.tryDecodeJson<RegisterConfiguration>()
+                            ?: it.tryDecodeJson<ProfileConfiguration>()
+
+                        when (config) {
+                          is RegisterConfiguration ->
+                            config.fhirResource.dependentResourceTypes(
+                              patientRelatedResourceTypes,
+                            )
+                          is ProfileConfiguration ->
+                            config.fhirResource.dependentResourceTypes(
+                              patientRelatedResourceTypes,
+                            )
                         }
-                    }
+                      }
                   }
                 }
+              }
             }
           }
 
@@ -258,5 +267,35 @@ constructor(
       type = Bundle.BundleType.BATCH
       entry = bundleEntryComponents
     }
+  }
+
+  private suspend fun fhirResourceDataSourceGetBundle(
+    resourceType: String,
+    resourceIds: List<String>,
+  ): Bundle {
+    val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
+
+    resourceIds.forEach {
+      val responseBundle =
+        fhirResourceDataSource.getResource("$resourceType?${Composition.SP_RES_ID}=$it")
+      responseBundle?.let {
+        bundleEntryComponents.add(
+          Bundle.BundleEntryComponent().apply {
+            resource = responseBundle.entry?.first()?.resource
+          },
+        )
+      }
+    }
+    return Bundle().apply {
+      type = Bundle.BundleType.COLLECTION
+      entry = bundleEntryComponents
+    }
+  }
+
+  @VisibleForTesting fun isNonProxy(): Boolean = _isNonProxy
+
+  @VisibleForTesting
+  fun setNonProxy(nonProxy: Boolean) {
+    _isNonProxy = nonProxy
   }
 }
