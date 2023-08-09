@@ -42,6 +42,7 @@ allprojects {
     mavenCentral()
     maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
     maven(url = "https://jcenter.bintray.com/")
+    apply(plugin = "org.owasp.dependencycheck")
   }
 }
 
@@ -50,7 +51,6 @@ subprojects {
     plugin("com.diffplug.spotless")
     plugin("org.jetbrains.dokka")
     plugin(  "jacoco")
-    plugin("org.owasp.dependencycheck")
   }
 
   configure<SpotlessExtension> {
