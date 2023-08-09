@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.report.measure.models
+package org.smartregister.fhircore.engine.util.extension
 
-import androidx.compose.runtime.Stable
-import kotlinx.serialization.Serializable
+import java.math.BigDecimal
+import org.smartregister.fhircore.engine.domain.model.RoundingStrategy
 
-@Stable
-@Serializable
-data class MeasureReportPopulationResult(
-  val title: String = "",
-  val count: String = "",
-  val dataList: List<MeasureReportIndividualResult> = emptyList(),
-  val indicatorTitle: String = "",
-  val measureReportDenominator: String = "0",
-)
+fun BigDecimal?.rounding(roundingStrategy: RoundingStrategy, roundingPrecision: Int): String {
+  return this?.setScale(roundingPrecision, roundingStrategy.value)?.toString() ?: "0"
+}
