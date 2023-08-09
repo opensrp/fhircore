@@ -49,7 +49,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: dependency-check-report
-          path: dependency-check-report.xml
+          path: android/build/reports/dependency-check-report.html
         
 
       - name: Install Dependency Check CLI
