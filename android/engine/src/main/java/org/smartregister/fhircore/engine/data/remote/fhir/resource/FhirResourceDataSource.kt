@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.data.remote.fhir.resource
 
 import javax.inject.Inject
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.OperationOutcome
@@ -30,11 +31,22 @@ class FhirResourceDataSource @Inject constructor(private val resourceService: Fh
     return resourceService.getResource(path)
   }
 
+  suspend fun post(path: String, requestBody: RequestBody): Bundle {
+    return resourceService.post(path, requestBody)
+  }
+
+  suspend fun getResourceWithGatewayModeHeader(
+    gatewayModeHeaderValue: String,
+    path: String,
+  ): Bundle {
+    return resourceService.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, path)
+  }
+
   suspend fun insert(resourceType: String, resourceId: String, payload: String): Resource {
     return resourceService.insertResource(
       resourceType,
       resourceId,
-      payload.toRequestBody("application/fhir+json".toMediaType())
+      payload.toRequestBody("application/fhir+json".toMediaType()),
     )
   }
 
@@ -42,7 +54,7 @@ class FhirResourceDataSource @Inject constructor(private val resourceService: Fh
     return resourceService.updateResource(
       resourceType,
       resourceId,
-      payload.toRequestBody("application/json-patch+json".toMediaType())
+      payload.toRequestBody("application/json-patch+json".toMediaType()),
     )
   }
 

@@ -52,7 +52,7 @@ class KujakuFhirCoreConverterTest {
     Assert.assertNull(ReflectionHelpers.getField(kujakuConverter, "conversionGuide"))
 
     Assert.assertNotNull(
-      kujakuConverter.checkConversionGuide(ApplicationProvider.getApplicationContext())
+      kujakuConverter.checkConversionGuide(ApplicationProvider.getApplicationContext()),
     )
   }
 
@@ -65,7 +65,7 @@ class KujakuFhirCoreConverterTest {
     val conversionGuide =
       ReflectionHelpers.getField<HashMap<String, LinkedList<Pair<String, String>>>>(
         kujakuConverter,
-        "conversionGuide"
+        "conversionGuide",
       )
 
     Assert.assertEquals("name", conversionGuide.get("Group")!!.get(0).first)
@@ -91,7 +91,7 @@ class KujakuFhirCoreConverterTest {
           Group().apply {
             name = "John Doe Fam"
             id = "90230823"
-          }
+          },
         )
         add(
           Location().apply {
@@ -104,54 +104,55 @@ class KujakuFhirCoreConverterTest {
                       contentType = "application/geo+json"
                       data =
                         Base64.encodeBase64(
-                          """{"type":"Feature","properties":{},"geometry":{"type":"Point","coordinates":[12.83203125,28.304380682962783]}}""".encodeToByteArray()
+                          """{"type":"Feature","properties":{},"geometry":{"type":"Point","coordinates":[12.83203125,28.304380682962783]}}"""
+                            .encodeToByteArray(),
                         )
-                    }
+                    },
                   )
-                }
+                },
               )
-          }
+          },
         )
-      }
+      },
     )
     resourceGroups.add(listOf(group, location))
 
     val featureCollection =
       kujakuConverter.generateFeatureCollection(
         ApplicationProvider.getApplicationContext(),
-        resourceGroups
+        resourceGroups,
       )
 
     Assert.assertEquals("John Doe Fam", featureCollection.features()!![0].getStringProperty("name"))
     Assert.assertEquals(
       "90230823",
-      featureCollection.features()!![0].getStringProperty("family-id")
+      featureCollection.features()!![0].getStringProperty("family-id"),
     )
     Assert.assertEquals(
       28.304380682962783,
       (featureCollection.features()!![0].geometry() as Point).latitude(),
-      0.0
+      0.0,
     )
     Assert.assertEquals(
       12.83203125,
       (featureCollection.features()!![0].geometry() as Point).longitude(),
-      0.0
+      0.0,
     )
 
     Assert.assertEquals("new family", featureCollection.features()!![1].getStringProperty("name"))
     Assert.assertEquals(
       "Group/1122f50c-5499-4eaa-bd53-a5364371a2ba/_history/5",
-      featureCollection.features()!![1].getStringProperty("family-id")
+      featureCollection.features()!![1].getStringProperty("family-id"),
     )
     Assert.assertEquals(
       -1.301070677485388,
       (featureCollection.features()!![1].geometry() as Point).latitude(),
-      0.0
+      0.0,
     )
     Assert.assertEquals(
       36.80826008319855,
       (featureCollection.features()!![1].geometry() as Point).longitude(),
-      0.0
+      0.0,
     )
   }
 }

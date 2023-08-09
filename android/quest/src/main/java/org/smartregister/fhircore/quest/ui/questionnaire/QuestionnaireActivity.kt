@@ -20,603 +20,309 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
+import android.os.Parcelable
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
-import androidx.annotation.VisibleForTesting
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenStarted
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.extensions.flattened
-import com.google.android.fhir.datacapture.validation.NotValidated
-import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
-import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.Date
-import java.util.UUID
-import javax.inject.Inject
+import java.io.Serializable
+import java.util.LinkedList
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.Questionnaire.QuestionnaireItemAnswerOptionComponent
-import org.hl7.fhir.r4.model.Questionnaire.QuestionnaireItemInitialComponent
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
-import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showCancelAlert
-import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
-import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
-import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.callSuspendFunctionOnField
-import org.smartregister.fhircore.engine.util.extension.FieldType
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
-import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
-import org.smartregister.fhircore.engine.util.extension.find
-import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.initialExpression
+import org.smartregister.fhircore.engine.util.extension.parcelable
+import org.smartregister.fhircore.engine.util.extension.parcelableArrayList
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
 import timber.log.Timber
 
-/**
- * Launches Questionnaire/ Implement a subclass of this [QuestionnaireActivity] to provide
- * functionality on how to [handleQuestionnaireResponse]
- */
 @AndroidEntryPoint
-open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener {
+class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
-  @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
-  @Inject lateinit var parser: IParser
-  open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
-  private lateinit var questionnaire: Questionnaire
-  internal lateinit var fragment: QuestionnaireFragment
-  private lateinit var saveProcessingAlertDialog: AlertDialog
+  val viewModel by viewModels<QuestionnaireViewModel>()
   private lateinit var questionnaireConfig: QuestionnaireConfig
-  private lateinit var actionParams: List<ActionParameter>
-  private lateinit var prePopulationParams: List<ActionParameter>
-  private var questionnaireResponse: QuestionnaireResponse = QuestionnaireResponse()
-  private var baseResourceId: String? = null
-  private var baseResourceType: ResourceType? = null
+  private lateinit var actionParameters: ArrayList<ActionParameter>
+  private lateinit var viewBinding: QuestionnaireActivityBinding
+  private var questionnaire: Questionnaire? = null
+  private var alertDialog: AlertDialog? = null
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setTheme(R.style.AppTheme_Questionnaire)
+    viewBinding = QuestionnaireActivityBinding.inflate(layoutInflater)
+    setContentView(viewBinding.root)
+    with(intent) {
+      parcelable<QuestionnaireConfig>(QUESTIONNAIRE_CONFIG)?.also { questionnaireConfig = it }
+      actionParameters = parcelableArrayList(QUESTIONNAIRE_ACTION_PARAMETERS) ?: arrayListOf()
+    }
+
+    if (!::questionnaireConfig.isInitialized) {
+      showToast(getString(R.string.missing_questionnaire_config))
+      finish()
+    }
+
+    viewModel.questionnaireProgressStateLiveData.observe(this) { progressState ->
+      alertDialog =
+        if (progressState?.active == false) {
+          alertDialog?.dismiss()
+          null
+        } else {
+          when (progressState) {
+            is QuestionnaireProgressState.ExtractionInProgress ->
+              AlertDialogue.showProgressAlert(this, R.string.extraction_in_progress)
+            is QuestionnaireProgressState.QuestionnaireLaunch ->
+              AlertDialogue.showProgressAlert(this, R.string.loading_questionnaire)
+            null -> null
+          }
+        }
+    }
+
+    if (savedInstanceState == null) renderQuestionnaire()
+
+    this.onBackPressedDispatcher.addCallback(
+      this,
+      object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+          handleBackPress()
+        }
+      },
+    )
+  }
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
     outState.clear()
   }
 
-  @Suppress("UNCHECKED_CAST")
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_questionnaire)
-
-    questionnaireConfig = (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG) as QuestionnaireConfig)
-
-    actionParams =
-      intent.getSerializableExtra(QUESTIONNAIRE_ACTION_PARAMETERS) as List<ActionParameter>?
-        ?: emptyList()
-
-    // Compute questionnaire config rules and interpolate the extra questionnaire params
-    val questionnaireComputedValues =
-      questionnaireConfig.configRules?.let {
-        questionnaireViewModel.computeQuestionnaireConfigRules(it)
-      }
-        ?: emptyMap()
-
-    val extraQuestionnaireParams =
-      questionnaireConfig.extraParams?.map { it.interpolate(questionnaireComputedValues) }
-        ?: emptyList()
-
-    prePopulationParams =
-      actionParams
-        .filter {
-          (it.paramType == ActionParameterType.PREPOPULATE ||
-            it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) &&
-            it.value.isNotEmpty() &&
-            !it.value.contains(STRING_INTERPOLATION_PREFIX)
-        }
-        .plus(extraQuestionnaireParams)
-
-    baseResourceId = intent.getStringExtra(BASE_RESOURCE_ID)
-    val strBaseResourceType = intent.getStringExtra(BASE_RESOURCE_TYPE)
-    if (!strBaseResourceType.isNullOrEmpty())
-      baseResourceType = ResourceType.fromCode(strBaseResourceType)
-
-    val questionnaireActivity = this@QuestionnaireActivity
-    questionnaireViewModel.removeOperation.observe(questionnaireActivity) {
-      if (it) {
-        setResult(
-          Activity.RESULT_OK,
-          Intent().apply { putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig) }
-        )
-        finish()
-      }
-    }
-
-    val loadProgress = showProgressAlert(questionnaireActivity, R.string.loading)
-
+  private fun renderQuestionnaire() {
     lifecycleScope.launch {
-      val questionnaire =
-        questionnaireViewModel.loadQuestionnaire(
-          questionnaireConfig = questionnaireConfig,
-          prePopulationParams = prePopulationParams
-        )
-      if (questionnaire == null) {
-        showToast(getString(R.string.questionnaire_not_found))
-        finish()
-      } else {
-        this@QuestionnaireActivity.questionnaire =
-          questionnaire.apply {
-            if (questionnaireConfig.resourceIdentifier != null) {
-              setBarcode(questionnaire, questionnaireConfig.resourceIdentifier!!)
-            }
-          }
+      if (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) == null) {
+        viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(true))
+        viewBinding.questionnaireToolbar.apply {
+          title = questionnaireConfig.title
+          setNavigationIcon(R.drawable.ic_arrow_back)
+          setNavigationOnClickListener { handleBackPress() }
+        }
 
-        questionnaireResponse =
-          questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
-              questionnaire = questionnaire,
-              subjectId = baseResourceId?.extractLogicalIdUuid(),
-              subjectType = baseResourceType,
-              questionnaireConfig = questionnaireConfig,
-              resourceMap = getResourcesFromParamsForQR()
-            )
-            .apply { generateMissingItems(questionnaire) }
+        questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig, actionParameters)
 
-        val questionnaireResponseValid =
-          questionnaireViewModel.isQuestionnaireResponseValid(
-            questionnaire = questionnaire,
-            questionnaireResponse = questionnaireResponse,
-            context = questionnaireActivity
-          )
-        if (!questionnaireResponseValid) {
-          showToast(getString(R.string.questionnaire_response_broken))
+        if (questionnaire == null) {
+          showToast(getString(R.string.questionnaire_not_found))
           finish()
         }
 
-        // Only add the fragment once, when the activity is first created.
-        if (savedInstanceState == null) renderFragment()
+        if (questionnaire?.subjectType.isNullOrEmpty()) {
+          showToast(getString(R.string.missing_subject_type))
+          Timber.e(
+            "Missing subject type on questionnaire. Provide Questionnaire.subjectType to resolve.",
+          )
+          finish()
+        }
 
-        withContext(dispatcherProvider.main()) {
-          updateViews()
-          fragment.whenStarted { loadProgress.dismiss() }
+        val questionnaireFragmentBuilder = buildQuestionnaireFragment(questionnaire!!)
+
+        supportFragmentManager.commit {
+          setReorderingAllowed(true)
+          add(R.id.container, questionnaireFragmentBuilder.build(), QUESTIONNAIRE_FRAGMENT_TAG)
+        }
+
+        registerFragmentResultListener()
+
+        viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
+      }
+    }
+  }
+
+  private suspend fun buildQuestionnaireFragment(
+    questionnaire: Questionnaire,
+  ): QuestionnaireFragment.Builder {
+    val questionnaireFragmentBuilder =
+      QuestionnaireFragment.builder().setQuestionnaire(questionnaire.json())
+
+    val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
+    val resourceType =
+      questionnaireConfig.resourceType ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
+    val resourceIdentifier = questionnaireConfig.resourceIdentifier
+
+    if (resourceType != null && !resourceIdentifier.isNullOrEmpty()) {
+      // Add subject and other configured resource to launchContext
+      val launchContextResources =
+        LinkedList<Resource>().apply {
+          viewModel.loadResource(resourceType, resourceIdentifier)?.let { add(it) }
+          addAll(
+            // Exclude the subject resource its already added
+            viewModel.retrievePopulationResources(
+              actionParameters.filterNot {
+                it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE &&
+                  resourceType == it.resourceType &&
+                  resourceIdentifier.equals(it.value, ignoreCase = true)
+              },
+            ),
+          )
+        }
+
+      if (launchContextResources.isNotEmpty()) {
+        questionnaireFragmentBuilder.setQuestionnaireLaunchContexts(
+          launchContextResources.map { it.json() },
+        )
+      }
+
+      // Populate questionnaire with latest QuestionnaireResponse
+      if (questionnaireConfig.type.isEditable()) {
+        val latestQuestionnaireResponse =
+          viewModel.searchLatestQuestionnaireResponse(
+            resourceId = resourceIdentifier,
+            resourceType = resourceType,
+            questionnaireId = questionnaire.logicalId,
+          )
+
+        val questionnaireResponse =
+          QuestionnaireResponse().apply { item = latestQuestionnaireResponse?.item }
+
+        if (viewModel.validateQuestionnaireResponse(questionnaire, questionnaireResponse, this)) {
+          questionnaireFragmentBuilder.setQuestionnaireResponse(questionnaireResponse.json())
+        } else {
+          showToast(getString(R.string.error_populating_questionnaire))
+        }
+      }
+    }
+    return questionnaireFragmentBuilder
+  }
+
+  private fun Resource.json(): String = this.encodeResourceToString()
+
+  private fun registerFragmentResultListener() {
+    supportFragmentManager.setFragmentResultListener(
+      QuestionnaireFragment.SUBMIT_REQUEST_KEY,
+      this,
+    ) { _, _ ->
+      val questionnaireResponse = retrieveQuestionnaireResponse()
+
+      // Close questionnaire if opened in read only mode or if experimental
+      if (questionnaireConfig.type.isReadOnly() || questionnaire?.experimental == true) {
+        finish()
+      }
+      if (questionnaireResponse != null && questionnaire != null) {
+        viewModel.run {
+          setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
+          handleQuestionnaireSubmission(
+            questionnaire = questionnaire!!,
+            currentQuestionnaireResponse = questionnaireResponse,
+            questionnaireConfig = questionnaireConfig,
+            actionParameters = actionParameters,
+            context = this@QuestionnaireActivity,
+          ) { idTypes, questionnaireResponse ->
+            // Dismiss progress indicator dialog, submit result then finish activity
+            setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
+            setResult(
+              Activity.RESULT_OK,
+              Intent().apply {
+                putExtra(QUESTIONNAIRE_RESPONSE, questionnaireResponse as Serializable)
+                putExtra(QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS, idTypes as Serializable)
+                putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
+              },
+            )
+            finish()
+          }
         }
       }
     }
   }
 
-  @VisibleForTesting
-  internal fun getResourcesFromParamsForQR(): Map<ResourceType?, String> =
-    actionParams
-      .filter { it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE }
-      .associate { it.resourceType to it.value }
-
-  fun updateViews() {
-    findViewById<Button>(R.id.btn_edit_qr).apply {
-      visibility = if (questionnaireConfig.type.isReadOnly()) View.VISIBLE else View.GONE
-      setOnClickListener(this@QuestionnaireActivity)
-    }
-
-    findViewById<Button>(R.id.submit_questionnaire)?.apply {
-      layoutParams.width =
-        ViewGroup.LayoutParams
-          .MATCH_PARENT // Override by Styles xml does not seem to work for this layout param
-
-      if (questionnaireConfig.type.isReadOnly() || questionnaire.experimental) {
-        text = context.getString(R.string.done)
-      } else if (questionnaireConfig.type.isEditMode()) {
-        // setting the save button text from Questionnaire Config
-        text = questionnaireConfig.saveButtonText ?: getString(R.string.str_save)
-      }
-    }
-
-    supportActionBar?.apply {
-      setDisplayHomeAsUpEnabled(true)
-      title =
-        if (questionnaireConfig.type.isEditMode())
-          "${getString(R.string.edit)} ${questionnaireConfig.title}"
-        else questionnaireConfig.title
+  private fun handleBackPress() {
+    if (questionnaireConfig.type.isReadOnly()) {
+      finish()
+    } else if (questionnaireConfig.saveDraft) {
+      AlertDialogue.showCancelAlert(
+        context = this,
+        message = R.string.questionnaire_in_progress_alert_back_pressed_message,
+        title = R.string.questionnaire_alert_back_pressed_title,
+        confirmButtonListener = {
+          retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
+            viewModel.saveDraftQuestionnaire(questionnaireResponse)
+          }
+        },
+        confirmButtonText = R.string.questionnaire_alert_back_pressed_save_draft_button_title,
+        neutralButtonListener = { finish() },
+        neutralButtonText = R.string.questionnaire_alert_back_pressed_button_title,
+      )
+    } else {
+      AlertDialogue.showConfirmAlert(
+        context = this,
+        message = R.string.questionnaire_alert_back_pressed_message,
+        title = R.string.questionnaire_alert_back_pressed_title,
+        confirmButtonListener = { finish() },
+        confirmButtonText = R.string.questionnaire_alert_back_pressed_button_title,
+      )
     }
   }
 
-  private suspend fun renderFragment() {
-    fragment =
-      fragmentBuilder(
-          Questionnaire().apply { this.extension = questionnaire.extension },
-          QuestionnaireResponse()
-        )
-        .build()
-    fragment.lifecycleScope.launchWhenCreated {
-      setInitialExpression(questionnaire)
+  private fun retrieveQuestionnaireResponse(): QuestionnaireResponse? =
+    (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment?)
+      ?.getQuestionnaireResponse()
 
-      fragment = fragmentBuilder(questionnaire, questionnaireResponse).build()
-      supportFragmentManager
-        .beginTransaction()
-        .replace(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG)
-        .commit()
-    }
-    supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
-    supportFragmentManager.setFragmentResultListener(
-      QuestionnaireFragment.SUBMIT_REQUEST_KEY,
-      this
-    ) { _, _ ->
-      if (this.getQuestionnaireConfig().type.isReadOnly() ||
-          this.getQuestionnaireObject().experimental
-      ) { // Experimental questionnaires should not be submitted
-        this.finish()
-      } else {
-        this.handleQuestionnaireSubmit()
-      }
-    }
-  }
-
-  private suspend fun fragmentBuilder(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
-  ) =
-    QuestionnaireFragment.builder().apply {
-      setQuestionnaire(questionnaire.encodeResourceToString())
-      if (!questionnaireConfig.type.isDefault()) {
-        setQuestionnaireResponse(questionnaireResponse.encodeResourceToString())
-      }
-      questionnaireConfig.resourceIdentifier?.takeIf { it.isNotBlank() }?.let {
-        val resourceId = IdType(it)
-        val resourceType =
-          resourceId.resourceType?.let { resourceType -> ResourceType.fromCode(resourceType) }
-            ?: questionnaireConfig.resourceType ?: ResourceType.Patient
-
-        setQuestionnaireLaunchContexts(
-          listOf(
-            questionnaireViewModel
-              .defaultRepository
-              .loadResource(resourceId.idPart, resourceType)
-              .encodeResourceToString()
-          )
-        )
-      }
-    }
-
-  private fun setBarcode(questionnaire: Questionnaire, code: String) {
-    questionnaire.find(QUESTIONNAIRE_ARG_BARCODE)?.apply {
-      initial = mutableListOf(QuestionnaireItemInitialComponent().setValue(StringType(code)))
-      readOnly = true
-    }
-  }
-
-  suspend fun setInitialExpression(questionnaire: Questionnaire) {
-    // TODO handle hierarchy and scope for variable items
-    // TODO add functionality to SDK instead
+  // TODO This maybe required or Not. To be called before Questionnaire is launched
+  suspend fun setInitialExpression(questionnaire: Questionnaire, fragment: QuestionnaireFragment) {
+    // TODO Remove once SDK PR https://github.com/google/android-fhir/pull/2045 is merged
     questionnaire.item.flattened().forEach { item ->
-      item
-        .initialExpression
+      item.initialExpression
         ?.takeIf { it.language == "application/x-fhir-query" }
         ?.let { expression ->
-          val answerOptions: List<QuestionnaireItemAnswerOptionComponent> =
+          val answerOptions: List<Questionnaire.QuestionnaireItemAnswerOptionComponent> =
             QuestionnaireFragment::class.callSuspendFunctionOnField(
               fragment,
               "viewModel",
               "loadAnswerExpressionOptions",
               item,
-              expression
-            ) as
-              List<QuestionnaireItemAnswerOptionComponent>
+              expression,
+            ) as List<Questionnaire.QuestionnaireItemAnswerOptionComponent>
           answerOptions
         }
         ?.let {
           it.let {
             item.initial =
               it.map {
-                QuestionnaireItemInitialComponent().apply { value = it.castToType(it.value) }
+                Questionnaire.QuestionnaireItemInitialComponent().apply {
+                  value = it.castToType(it.value)
+                }
               }
           }
         }
     }
   }
 
-  override fun onClick(view: View) {
-    if (view.id == R.id.btn_edit_qr) {
-      questionnaireConfig = questionnaireConfig.copy(type = QuestionnaireType.EDIT)
-      val loadProgress = showProgressAlert(this, R.string.loading)
-      lifecycleScope.launch(dispatcherProvider.io()) {
-        // Reload the questionnaire and reopen the fragment
-        questionnaire =
-          questionnaireViewModel.loadQuestionnaire(
-            questionnaireConfig = questionnaireConfig,
-            prePopulationParams = prePopulationParams,
-            readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds
-          )!!
-        supportFragmentManager.commit { detach(fragment) }
-        renderFragment()
-        withContext(dispatcherProvider.main()) {
-          updateViews()
-          loadProgress.dismiss()
-        }
-      }
-    } else {
-      showToast(getString(R.string.error_saving_form))
-    }
-  }
-
-  fun getQuestionnaireResponse(): QuestionnaireResponse {
-    val questionnaireFragment =
-      supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
-    return questionnaireFragment.getQuestionnaireResponse().apply {
-      // TODO this is required until require condition in [QuestionnaireResponseValidator] is fixed
-      this@QuestionnaireActivity.questionnaire.let { it.url = "${it.resourceType}/${it.logicalId}" }
-
-      if (this.logicalId.isEmpty()) {
-        this.id = UUID.randomUUID().toString()
-        this.authored = Date()
-      }
-
-      this@QuestionnaireActivity.questionnaire
-        .useContext
-        .asSequence()
-        .filter { it.hasValueCodeableConcept() }
-        .forEach { it.valueCodeableConcept.coding.forEach { coding -> this.meta.addTag(coding) } }
-
-      this.questionnaire =
-        this@QuestionnaireActivity.questionnaire.let { "${it.resourceType}/${it.logicalId}" }
-      // important to set response subject so that structure map can handle subject for all entities
-      questionnaireViewModel.handleQuestionnaireResponseSubject(
-        questionnaireConfig.resourceIdentifier,
-        this@QuestionnaireActivity.questionnaire,
-        this
-      )
-    }
-  }
-
-  fun dismissSaveProcessing() {
-    if (::saveProcessingAlertDialog.isInitialized && saveProcessingAlertDialog.isShowing)
-      saveProcessingAlertDialog.dismiss()
-  }
-
-  open fun handleSaveDraftQuestionnaire() {
-    saveProcessingAlertDialog = showProgressAlert(this, R.string.form_progress_message)
-    val questionnaireResponse = getQuestionnaireResponse()
-    if (questionnaireViewModel.partialQuestionnaireResponseHasValues(questionnaireResponse)) {
-      handlePartialQuestionnaireResponse(questionnaireResponse)
-    }
-    finish()
-  }
-
-  open fun handleQuestionnaireSubmit() {
-    saveProcessingAlertDialog = showProgressAlert(this, R.string.form_progress_message)
-
-    val questionnaireResponse = getQuestionnaireResponse()
-    if (!validQuestionnaireResponse(questionnaireResponse)) {
-      saveProcessingAlertDialog.dismiss()
-
-      AlertDialogue.showErrorAlert(
-        this,
-        R.string.questionnaire_alert_invalid_message,
-        R.string.questionnaire_alert_invalid_title
-      )
-      return
-    }
-
-    handleQuestionnaireResponse(questionnaireResponse)
-
-    questionnaireViewModel.extractionProgress.observe(this) { result ->
-      onPostSave(result, questionnaireResponse)
-    }
-  }
-
-  fun onPostSave(result: Boolean, questionnaireResponse: QuestionnaireResponse) {
-    dismissSaveProcessing()
-    if (result) {
-      postSaveSuccessful(questionnaireResponse)
-    } else {
-      Timber.e("An error occurred during extraction")
-    }
-  }
-
-  open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
-    val message = questionnaireViewModel.extractionProgressMessage.value
-    if (message?.isNotEmpty() == true)
-      AlertDialogue.showInfoAlert(
-        this,
-        message,
-        getString(R.string.done),
-        {
-          it.dismiss()
-          finishActivity(questionnaireResponse)
-        }
-      )
-    else finishActivity(questionnaireResponse)
-  }
-
-  private fun finishActivity(questionnaireResponse: QuestionnaireResponse) {
-    val parcelResponse = questionnaireResponse.copy()
-    questionnaire.find(FieldType.TYPE, Questionnaire.QuestionnaireItemType.ATTACHMENT.name)
-      .forEach { parcelResponse.find(it.linkId)?.answer?.clear() }
-    setResult(
-      Activity.RESULT_OK,
-      Intent().apply {
-        putExtra(QUESTIONNAIRE_RESPONSE, parcelResponse)
-        putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig)
-      }
-    )
-    finish()
-  }
-
-  fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) =
-    QuestionnaireResponseValidator.validateQuestionnaireResponse(
-        questionnaire = questionnaire,
-        questionnaireResponse = questionnaireResponse,
-        context = this
-      )
-      .values
-      .flatten()
-      .all { it is Valid || it is NotValidated }
-
-  open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
-    if (questionnaireConfig.confirmationDialog != null) {
-      dismissSaveProcessing()
-      confirmationDialog(
-        questionnaireConfig = questionnaireConfig,
-        questionnaireResponse = questionnaireResponse
-      )
-    } else {
-      executeExtraction(questionnaireResponse)
-    }
-  }
-
-  open fun handlePartialQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
-    dismissSaveProcessing()
-    questionnaireViewModel.savePartialQuestionnaireResponse(questionnaire, questionnaireResponse)
-  }
-
-  private fun confirmationDialog(
-    questionnaireConfig: QuestionnaireConfig,
-    questionnaireResponse: QuestionnaireResponse
-  ) {
-    AlertDialogue.showAlert(
-      context = this,
-      alertIntent = AlertIntent.CONFIRM,
-      title = questionnaireConfig.confirmationDialog!!.title,
-      message = questionnaireConfig.confirmationDialog!!.message,
-      confirmButtonListener = { dialog ->
-        if (questionnaireConfig.resourceIdentifier != null &&
-            questionnaireConfig.resourceType != null
-        ) {
-          questionnaireViewModel.deleteResource(
-            questionnaireConfig.resourceType!!,
-            questionnaireConfig.resourceIdentifier!!
-          )
-        } else if (questionnaireConfig.groupResource != null) {
-          questionnaireViewModel.removeGroup(
-            groupId = questionnaireConfig.groupResource!!.groupIdentifier,
-            removeGroup = questionnaireConfig.groupResource?.removeGroup ?: false,
-            deactivateMembers = questionnaireConfig.groupResource!!.deactivateMembers
-          )
-          questionnaireViewModel.removeGroupMember(
-            memberId = questionnaireConfig.resourceIdentifier,
-            removeMember = questionnaireConfig.groupResource?.removeMember ?: false,
-            groupIdentifier = questionnaireConfig.groupResource!!.groupIdentifier,
-            memberResourceType = questionnaireConfig.groupResource!!.memberResourceType
-          )
-        }
-        executeExtraction(questionnaireResponse, questionnaireConfig)
-        dialog.dismiss()
-      },
-      neutralButtonListener = { dialog -> dialog.dismiss() }
-    )
-  }
-
-  /** Calls the QuestionnaireViewModel to extract and save the resources. */
-  private fun executeExtraction(
-    questionnaireResponse: QuestionnaireResponse,
-    questionnaireConfig: QuestionnaireConfig = this.questionnaireConfig
-  ) {
-    questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
-
-    questionnaireViewModel.extractAndSaveResources(
-      context = this,
-      questionnaire = questionnaire,
-      questionnaireResponse = questionnaireResponse,
-      questionnaireConfig = questionnaireConfig
-    )
-  }
-
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    return when (item.itemId) {
-      android.R.id.home -> {
-        onBackPressed()
-        true
-      }
-      else -> super.onOptionsItemSelected(item)
-    }
-  }
-
-  override fun onBackPressed() {
-    if (questionnaireConfig.type.isReadOnly()) {
-      finish()
-    } else if (questionnaireConfig.saveDraft) {
-      showCancelQuestionnaireAlertDialog()
-    } else {
-      showConfirmAlertDialog()
-    }
-  }
-
-  private fun showConfirmAlertDialog() {
-    showConfirmAlert(
-      this,
-      getDismissDialogMessage(),
-      R.string.questionnaire_alert_back_pressed_title,
-      { finish() },
-      R.string.questionnaire_alert_back_pressed_button_title,
-    )
-  }
-
-  private fun showCancelQuestionnaireAlertDialog() {
-    showCancelAlert(
-      this,
-      R.string.questionnaire_in_progress_alert_back_pressed_message,
-      R.string.questionnaire_alert_back_pressed_title,
-      { handleSaveDraftQuestionnaire() },
-      R.string.questionnaire_alert_back_pressed_save_draft_button_title,
-      { finish() },
-      R.string.questionnaire_alert_back_pressed_button_title
-    )
-  }
-
-  open fun getDismissDialogMessage() = R.string.questionnaire_alert_back_pressed_message
-
-  fun getQuestionnaireObject() = questionnaire
-  fun getQuestionnaireConfig() = questionnaireConfig
-
   companion object {
-    const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
-    const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
-    const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
-    const val QUESTIONNAIRE_ARG_BARCODE = "patient-barcode"
-    const val QUESTIONNAIRE_AGE = "PR-age"
-    const val QUESTIONNAIRE_CONFIG = "questionnaire-config"
-    const val BASE_RESOURCE_ID = "base-resource-id"
-    const val BASE_RESOURCE_TYPE = "base-resource-type"
-    const val QUESTIONNAIRE_ACTION_PARAMETERS = "action-parameters"
-    const val STRING_INTERPOLATION_PREFIX = "@{"
 
-    fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
+    const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaireFragment"
+    const val QUESTIONNAIRE_CONFIG = "questionnaireConfig"
+    const val QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS = "questionnaireExtractedResourceIds"
+    const val QUESTIONNAIRE_RESPONSE = "questionnaireResponse"
+    const val QUESTIONNAIRE_ACTION_PARAMETERS = "questionnaireActionParameters"
+    const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnairePopulationResources"
 
-    fun intentArgs(
-      questionnaireResponse: QuestionnaireResponse? = null,
-      populationResources: ArrayList<Resource> = ArrayList(),
-      questionnaireConfig: QuestionnaireConfig? = null,
-      actionParams: List<ActionParameter> = emptyList(),
-      baseResourceId: String? = null,
-      baseResourceType: String? = null
-    ) =
+    fun intentBundle(
+      questionnaireConfig: QuestionnaireConfig,
+      actionParams: List<ActionParameter>,
+    ): Bundle =
       bundleOf(
         Pair(QUESTIONNAIRE_CONFIG, questionnaireConfig),
         Pair(QUESTIONNAIRE_ACTION_PARAMETERS, actionParams),
-        Pair(BASE_RESOURCE_ID, baseResourceId),
-        Pair(BASE_RESOURCE_TYPE, baseResourceType)
       )
-        .apply {
-          questionnaireResponse?.let {
-            putString(QUESTIONNAIRE_RESPONSE, it.encodeResourceToString())
-          }
-          val resourcesList = populationResources.map { it.encodeResourceToString() }
-          if (resourcesList.isNotEmpty()) {
-            putStringArrayList(
-              QUESTIONNAIRE_POPULATION_RESOURCES,
-              resourcesList.toCollection(ArrayList())
-            )
-          }
-        }
   }
 }

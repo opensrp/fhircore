@@ -27,6 +27,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
@@ -51,13 +52,14 @@ import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfig
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
 import org.smartregister.fhircore.engine.task.FhirTaskExpireWorker
-import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
+import org.smartregister.fhircore.engine.task.FhirTaskStatusUpdateWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -76,6 +78,7 @@ import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMonthPeriodWorker
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -100,9 +103,9 @@ constructor(
       appMainUiStateOf(
         navigationConfiguration =
           NavigationConfiguration(
-            sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "")!!
-          )
-      )
+            sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "")!!,
+          ),
+      ),
     )
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
@@ -116,9 +119,12 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Navigation)
   }
 
+  private val measureReportConfigurations: List<MeasureReportConfiguration> by lazy {
+    configurationRegistry.retrieveConfigurations(ConfigType.MeasureReport)
+  }
+
   fun retrieveIconsAsBitmap() {
-    navigationConfiguration
-      .clientRegisters
+    navigationConfiguration.clientRegisters
       .asSequence()
       .filter {
         it.menuIconConfig != null &&
@@ -135,17 +141,19 @@ constructor(
       }
   }
 
-  suspend fun retrieveAppMainUiState() {
-    appMainUiState.value =
-      appMainUiStateOf(
-        appTitle = applicationConfiguration.appTitle,
-        currentLanguage = loadCurrentLanguage(),
-        username = secureSharedPreference.retrieveSessionUsername() ?: "",
-        lastSyncTime = retrieveLastSyncTimestamp() ?: "",
-        languages = configurationRegistry.fetchLanguages(),
-        navigationConfiguration = navigationConfiguration,
-        registerCountMap = registerCountMap
-      )
+  suspend fun retrieveAppMainUiState(refreshAll: Boolean = true) {
+    if (refreshAll) {
+      appMainUiState.value =
+        appMainUiStateOf(
+          appTitle = applicationConfiguration.appTitle,
+          currentLanguage = loadCurrentLanguage(),
+          username = secureSharedPreference.retrieveSessionUsername() ?: "",
+          lastSyncTime = retrieveLastSyncTimestamp() ?: "",
+          languages = configurationRegistry.fetchLanguages(),
+          navigationConfiguration = navigationConfiguration,
+          registerCountMap = registerCountMap,
+        )
+    }
 
     // Count data for configured registers by populating the register count map
     viewModelScope.launch {
@@ -166,21 +174,20 @@ constructor(
         }
       }
       is AppMainEvent.SyncData -> {
-        if (event.context.isDeviceOnline())
+        if (event.context.isDeviceOnline()) {
           viewModelScope.launch { syncBroadcaster.runOneTimeSync() }
-        else
+        } else {
           event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
+        }
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
-          is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
-            if (event.state is SyncJobStatus.Finished) {
-              sharedPreferencesHelper.write(
-                SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-                formatLastSyncTimestamp(event.state.timestamp)
-              )
-            }
+          is SyncJobStatus.Finished -> {
+            sharedPreferencesHelper.write(
+              SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+              formatLastSyncTimestamp(event.state.timestamp),
+            )
             viewModelScope.launch { retrieveAppMainUiState() }
           }
           else ->
@@ -188,19 +195,18 @@ constructor(
               appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: "")
         }
       }
-      is AppMainEvent.TriggerWorkflow -> {
+      is AppMainEvent.TriggerWorkflow ->
         event.navMenu.actions?.handleClickEvent(
           navController = event.navController,
           resourceData = null,
-          navMenu = event.navMenu
+          navMenu = event.navMenu,
         )
-      }
       is AppMainEvent.OpenProfile -> {
         val args =
           bundleOf(
             NavigationArg.PROFILE_ID to event.profileId,
             NavigationArg.RESOURCE_ID to event.resourceId,
-            NavigationArg.RESOURCE_CONFIG to event.resourceConfig
+            NavigationArg.RESOURCE_CONFIG to event.resourceConfig,
           )
         event.navController.navigate(MainNavigationScreen.Profile.route, args)
       }
@@ -215,7 +221,7 @@ constructor(
           menuClickListener = {
             onEvent(AppMainEvent.TriggerWorkflow(navController = event.navController, navMenu = it))
           },
-          title = event.title
+          title = event.title,
         )
         .run { show(activity.supportFragmentManager, RegisterBottomSheetFragment.TAG) }
     }
@@ -224,36 +230,44 @@ constructor(
   fun launchFamilyRegistrationWithLocationId(
     context: Context,
     locationId: String,
-    questionnaireConfig: QuestionnaireConfig
+    questionnaireConfig: QuestionnaireConfig,
   ) {
     viewModelScope.launch {
       val location = registerRepository.loadResource<Location>(locationId)?.encodeResourceToString()
-      if (context is QuestionnaireHandler)
-        context.launchQuestionnaire<Any>(
+      if (context is QuestionnaireHandler) {
+        context.launchQuestionnaire(
           context = context,
-          intentBundle =
+          extraIntentBundle =
             bundleOf(
-              Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location))
+              Pair(
+                QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
+                arrayListOf(location),
+              ),
             ),
-          questionnaireConfig = questionnaireConfig
+          questionnaireConfig = questionnaireConfig,
+          actionParams = emptyList(),
         )
+      }
     }
   }
 
   private suspend fun List<NavigationMenuConfig>.countRegisterData() {
     // Set count for registerId against its value. Use action Id; otherwise default to menu id
-    return this.filter { it.showCount }.forEach { menuConfig ->
-      val countAction =
-        menuConfig.actions?.find { actionConfig -> actionConfig.trigger == ActionTrigger.ON_COUNT }
-      registerCountMap[countAction?.id ?: menuConfig.id] =
-        registerRepository.countRegisterData(menuConfig.id)
-    }
+    return this.filter { it.showCount }
+      .forEach { menuConfig ->
+        val countAction =
+          menuConfig.actions?.find { actionConfig ->
+            actionConfig.trigger == ActionTrigger.ON_COUNT
+          }
+        registerCountMap[countAction?.id ?: menuConfig.id] =
+          registerRepository.countRegisterData(menuConfig.id)
+      }
   }
 
   private fun loadCurrentLanguage() =
     Locale.forLanguageTag(
         sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
-          ?: Locale.ENGLISH.toLanguageTag()
+          ?: Locale.ENGLISH.toLanguageTag(),
       )
       .displayName
 
@@ -272,48 +286,57 @@ constructor(
   fun launchProfileFromGeoWidget(
     navController: NavController,
     geoWidgetConfigId: String,
-    resourceId: String
+    resourceId: String,
   ) {
     val geoWidgetConfiguration =
       configurationRegistry.retrieveConfiguration<GeoWidgetConfiguration>(
         ConfigType.GeoWidget,
-        geoWidgetConfigId
+        geoWidgetConfigId,
       )
     onEvent(
       AppMainEvent.OpenProfile(
         navController = navController,
         profileId = geoWidgetConfiguration.profileId,
         resourceId = resourceId,
-        resourceConfig = geoWidgetConfiguration.resourceConfig
-      )
+        resourceConfig = geoWidgetConfiguration.resourceConfig,
+      ),
     )
   }
 
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
     workManager.run {
-      schedulePeriodically<FhirTaskPlanWorker>(
-        workId = FhirTaskPlanWorker.WORK_ID,
+      schedulePeriodically<FhirTaskStatusUpdateWorker>(
+        workId = FhirTaskStatusUpdateWorker.WORK_ID,
         duration = Duration.tryParse(applicationConfiguration.taskStatusUpdateJobDuration),
-        requiresNetwork = false
+        requiresNetwork = false,
       )
 
       schedulePeriodically<FhirTaskExpireWorker>(
         workId = FhirTaskExpireWorker.WORK_ID,
         duration = Duration.tryParse(applicationConfiguration.taskExpireJobDuration),
-        requiresNetwork = false
+        requiresNetwork = false,
       )
 
       schedulePeriodically<FhirCompleteCarePlanWorker>(
         workId = FhirCompleteCarePlanWorker.WORK_ID,
         duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
-        requiresNetwork = false
+        requiresNetwork = false,
       )
 
-      // TODO Measure report generation is very expensive; affects app performance. Fix and revert.
-      /* // Schedule job for generating measure report in the background
-       MeasureReportWorker.scheduleMeasureReportWorker(workManager)
-      */
+      measureReportConfigurations.forEach { measureReportConfig ->
+        measureReportConfig.scheduledGenerationDuration?.let { scheduledGenerationDuration ->
+          schedulePeriodically<MeasureReportMonthPeriodWorker>(
+            workId = "${MeasureReportMonthPeriodWorker.WORK_ID}-${measureReportConfig.id}",
+            duration = Duration.tryParse(scheduledGenerationDuration),
+            requiresNetwork = false,
+            inputData =
+              workDataOf(
+                MeasureReportMonthPeriodWorker.MEASURE_REPORT_CONFIG_ID to measureReportConfig.id,
+              ),
+          )
+        }
+      }
     }
   }
 
@@ -325,8 +348,12 @@ constructor(
           QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED -> Task.TaskStatus.COMPLETED
           else -> Task.TaskStatus.COMPLETED
         }
+
       withContext(dispatcherProvider.io()) {
-        fhirCarePlanGenerator.updateTaskDetailsByResourceId(taskId.extractLogicalIdUuid(), status)
+        fhirCarePlanGenerator.updateTaskDetailsByResourceId(
+          id = taskId.extractLogicalIdUuid(),
+          status = status,
+        )
       }
     }
   }

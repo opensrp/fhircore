@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 class ExtendedFabTest {
 
   private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
+
   @get:Rule val composeRule = createComposeRule()
 
   private fun init() {
@@ -53,13 +54,13 @@ class ExtendedFabTest {
                     trigger = ActionTrigger.ON_CLICK,
                     workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
                     questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
-                  )
-                )
-            )
+                  ),
+                ),
+            ),
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController,
-        lazyListState = null
+        lazyListState = null,
       )
     }
   }
@@ -109,13 +110,13 @@ class ExtendedFabTest {
                     trigger = ActionTrigger.ON_CLICK,
                     workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
                     questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
-                  )
-                )
-            )
+                  ),
+                ),
+            ),
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController,
-        lazyListState = null
+        lazyListState = null,
       )
     }
     composeRule.run {
@@ -147,13 +148,13 @@ class ExtendedFabTest {
                     trigger = ActionTrigger.ON_CLICK,
                     workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
                     questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
-                  )
-                )
-            )
+                  ),
+                ),
+            ),
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
         navController = navController,
-        lazyListState = null
+        lazyListState = null,
       )
     }
     composeRule.run {

@@ -19,5 +19,5 @@ package org.smartregister.fhircore.quest.data.register.model
 data class RegisterPagingSourceState(
   val registerId: String,
   val currentPage: Int = 0,
-  val loadAll: Boolean = false
+  val loadAll: Boolean = false,
 )

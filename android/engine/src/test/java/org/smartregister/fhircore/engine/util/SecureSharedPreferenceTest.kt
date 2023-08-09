@@ -60,7 +60,7 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
     Assert.assertEquals("userName", secureSharedPreference.retrieveCredentials()!!.username)
     Assert.assertEquals(
       "!@#$".toCharArray().toPasswordHash(byteArrayOf(-100, 0, 100, 101)),
-      secureSharedPreference.retrieveCredentials()!!.passwordHash
+      secureSharedPreference.retrieveCredentials()!!.passwordHash,
     )
   }
 
@@ -74,12 +74,11 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
 
   @Test
   fun testSaveAndRetrievePin() {
-
     every { secureSharedPreference.get256RandomBytes() } returns byteArrayOf(-100, 0, 100, 101)
     secureSharedPreference.saveSessionPin(pin = "1234".toCharArray())
     Assert.assertEquals(
       "1234".toCharArray().toPasswordHash(byteArrayOf(-100, 0, 100, 101)),
-      secureSharedPreference.retrieveSessionPin()
+      secureSharedPreference.retrieveSessionPin(),
     )
     secureSharedPreference.deleteSessionPin()
     Assert.assertNull(secureSharedPreference.retrieveSessionPin())
@@ -87,7 +86,6 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
 
   @Test
   fun testResetSharedPrefsClearsData() {
-
     every { secureSharedPreference.get256RandomBytes() } returns byteArrayOf(-128, 100, 112, 127)
 
     secureSharedPreference.saveSessionPin(pin = "6699".toCharArray())
@@ -96,7 +94,7 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
 
     Assert.assertEquals(
       "6699".toCharArray().toPasswordHash(byteArrayOf(-128, 100, 112, 127)),
-      retrievedSessionPin
+      retrievedSessionPin,
     )
 
     secureSharedPreference.resetSharedPrefs()

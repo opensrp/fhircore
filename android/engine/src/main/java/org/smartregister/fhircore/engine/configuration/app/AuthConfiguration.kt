@@ -23,5 +23,5 @@ data class AuthConfiguration(
   var clientId: String,
   var clientSecret: String,
   var accountType: String,
-  var scope: String = "openid"
+  var scope: String = "openid",
 )

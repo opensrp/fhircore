@@ -22,5 +22,5 @@ data class MeasureReportSubjectViewData(
   val type: ResourceType,
   val logicalId: String,
   val display: String,
-  val family: String? = null
+  val family: String? = null,
 )

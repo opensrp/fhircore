@@ -21,6 +21,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.ButtonType
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
+import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
@@ -49,6 +50,7 @@ class ButtonPropertiesTest : RobolectricTest() {
       actions = emptyList(),
       buttonType = ButtonType.MEDIUM,
     )
+
   @Test
   fun testInterpolateInButtonProperties() {
     val map = mutableMapOf<String, String>()
@@ -57,11 +59,25 @@ class ButtonPropertiesTest : RobolectricTest() {
     map["enabled"] = "true"
     map["text"] = "ANC Visit"
     val interpolatedButton = buttonProperties.interpolate(map)
-    Assert.assertEquals("DUE", interpolatedButton.status)
+    Assert.assertEquals(ServiceStatus.DUE.name, interpolatedButton.status)
     Assert.assertEquals("#FFA500", interpolatedButton.backgroundColor)
     Assert.assertEquals("true", interpolatedButton.enabled)
     Assert.assertEquals("ANC Visit", interpolatedButton.text)
   }
+
+  @Test
+  fun testInterpolateInButtonPropertiesUpcoming() {
+    val map = mutableMapOf<String, String>()
+    map["backgroundColor"] = "#FFA500"
+    map["enabled"] = "true"
+    map["text"] = "ANC Visit"
+    val interpolatedButton = buttonProperties.interpolate(map)
+    Assert.assertEquals(ServiceStatus.UPCOMING.name, interpolatedButton.status)
+    Assert.assertEquals("#FFA500", interpolatedButton.backgroundColor)
+    Assert.assertEquals("true", interpolatedButton.enabled)
+    Assert.assertEquals("ANC Visit", interpolatedButton.text)
+  }
+
   @Test
   fun testStatusColorIsPopulatedCorrectly() {
     val map = mutableMapOf<String, String>()

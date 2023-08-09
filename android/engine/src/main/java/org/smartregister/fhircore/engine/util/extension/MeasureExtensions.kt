@@ -19,22 +19,22 @@ package org.smartregister.fhircore.engine.util.extension
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.search
 import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.ResourceType
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
+import org.smartregister.fhircore.engine.domain.model.RoundingStrategy
 
 // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
 fun MeasureReport.StratifierGroupComponent.findPopulation(
-  id: MeasurePopulationType
+  id: MeasurePopulationType,
 ): MeasureReport.StratifierGroupPopulationComponent? {
   return this.population.find { it.id == id.toCode() || it.code.codingFirstRep.code == id.toCode() }
 }
 
 fun MeasureReport.MeasureReportGroupComponent.findPopulation(
-  id: MeasurePopulationType
+  id: MeasurePopulationType,
 ): MeasureReport.MeasureReportGroupPopulationComponent? {
   return this.population.find { it.id == id.toCode() || it.code.codingFirstRep.code == id.toCode() }
 }
@@ -51,9 +51,20 @@ fun MeasureReport.StratifierGroupComponent.findRatio(denominator: Int?): String 
   return "${this.findPopulation(MeasurePopulationType.NUMERATOR)?.count}/$denominator"
 }
 
-fun MeasureReport.StratifierGroupComponent.findPercentage(denominator: Int): Int {
-  return if (denominator == 0) 0
-  else findPopulation(MeasurePopulationType.NUMERATOR)?.count?.times(100)?.div(denominator) ?: 0
+fun MeasureReport.StratifierGroupComponent.findPercentage(
+  denominator: Int,
+  roundingStrategy: RoundingStrategy,
+  roundingPrecision: Int,
+): String {
+  return if (denominator == 0) {
+    "0"
+  } else
+    findPopulation(MeasurePopulationType.NUMERATOR)
+      ?.count
+      ?.toBigDecimal()
+      ?.times(100.toBigDecimal())
+      ?.divide(denominator.toBigDecimal(), roundingPrecision, roundingStrategy.value)
+      .toString()
 }
 
 val MeasureReport.StratifierGroupComponent.displayText
@@ -82,17 +93,17 @@ val MeasureReport.reportingPeriodMonthsSpan
     }
 
 fun MeasureReport.MeasureReportGroupComponent.findStratumForMonth(reportingMonth: String) =
-  this.stratifier.flatMap { it.stratum }.find {
-    it.hasValue() && it.value.text.compare(reportingMonth)
-  }
+  this.stratifier
+    .flatMap { it.stratum }
+    .find { it.hasValue() && it.value.text.compare(reportingMonth) }
 
 /**
- * @return list of already generatedMeasureReports
  * @param startDateFormatted
  * @param endDateFormatted
  * @param measureUrl
  * @param fhirEngine suspend inline fun<reified R: Resource> resourceExists(startDate: Date,
- * endDate: Date, operation: Operation = Operation.AND)
+ *   endDate: Date, operation: Operation = Operation.AND)
+ * @return list of already generatedMeasureReports
  */
 suspend inline fun retrievePreviouslyGeneratedMeasureReports(
   fhirEngine: FhirEngine,
@@ -111,7 +122,7 @@ suspend inline fun retrievePreviouslyGeneratedMeasureReports(
     {
       value = of(DateTimeType(endDateFormatted))
       prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
-    }
+    },
   )
   search.filter(MeasureReport.MEASURE, { value = measureUrl })
   subjects.forEach { search.filter(MeasureReport.SUBJECT, { value = it }) }

@@ -36,7 +36,7 @@ import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 
 @Composable
 fun rememberLifecycleEvent(
-  lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+  lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
 ): Lifecycle.Event {
   var state by remember { mutableStateOf(Lifecycle.Event.ON_ANY) }
   DisposableEffect(lifecycleOwner) {
@@ -51,7 +51,7 @@ suspend fun SharedFlow<SnackBarMessageConfig>.hookSnackBar(
   scaffoldState: ScaffoldState,
   resourceData: ResourceData?,
   navController: NavController,
-  action: () -> Unit = {}
+  action: () -> Unit = {},
 ) {
   this.collectLatest { snackBarState ->
     if (snackBarState.message.isNotEmpty()) {
@@ -59,7 +59,7 @@ suspend fun SharedFlow<SnackBarMessageConfig>.hookSnackBar(
         scaffoldState.snackbarHostState.showSnackbar(
           message = snackBarState.message,
           actionLabel = snackBarState.actionLabel,
-          duration = snackBarState.duration
+          duration = snackBarState.duration,
         )
       when (snackBarResult) {
         SnackbarResult.ActionPerformed -> {
@@ -67,7 +67,7 @@ suspend fun SharedFlow<SnackBarMessageConfig>.hookSnackBar(
           action()
         }
         SnackbarResult.Dismissed -> {
-          /* Do nothing (for now) when snackBar is dismissed */
+          // Do nothing (for now) when snackBar is dismissed
         }
       }
     }

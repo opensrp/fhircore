@@ -86,7 +86,7 @@ class ResourceExtensionTest : RobolectricTest() {
             HumanName().apply {
               family = "Doe"
               given = listOf(StringType("John"))
-            }
+            },
           )
         }
       }
@@ -101,7 +101,7 @@ class ResourceExtensionTest : RobolectricTest() {
             HumanName().apply {
               family = "Kamau"
               given = listOf(StringType("Andrew"))
-            }
+            },
           )
         }
       }
@@ -111,7 +111,7 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertNotNull(patient.birthDate)
     Assert.assertEquals(
       BooleanType(true).booleanValue(),
-      (patient.deceased as BooleanType).booleanValue()
+      (patient.deceased as BooleanType).booleanValue(),
     )
     Assert.assertEquals("Kamau", patient.name[0].family)
     Assert.assertEquals("Andrew", patient.name[0].given[0].value)
@@ -134,7 +134,7 @@ class ResourceExtensionTest : RobolectricTest() {
             HumanName().apply {
               family = "Doe"
               given = listOf(StringType("John"))
-            }
+            },
           )
         }
       }
@@ -149,7 +149,7 @@ class ResourceExtensionTest : RobolectricTest() {
             HumanName().apply {
               family = "Kamau"
               given = listOf(StringType("Andrew"))
-            }
+            },
           )
         }
       }
@@ -159,7 +159,7 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertNotNull(patient.birthDate)
     Assert.assertEquals(
       BooleanType(true).booleanValue(),
-      (patient.deceased as BooleanType).booleanValue()
+      (patient.deceased as BooleanType).booleanValue(),
     )
     Assert.assertEquals("Kamau", patient.name[0].family)
     Assert.assertEquals("Andrew", patient.name[0].given[0].value)
@@ -169,7 +169,6 @@ class ResourceExtensionTest : RobolectricTest() {
 
   @Test
   fun `Resource#updateFrom() should preserve previous patient's extensions`() {
-
     val extensionVal = Extension()
     val extensionVal2 = Extension()
     extensionVal.apply { this.urlElement = UriType("hello") }
@@ -190,7 +189,7 @@ class ResourceExtensionTest : RobolectricTest() {
             HumanName().apply {
               family = "Doe"
               given = listOf(StringType("John"))
-            }
+            },
           )
         }
       }
@@ -205,7 +204,7 @@ class ResourceExtensionTest : RobolectricTest() {
             HumanName().apply {
               family = "Kamau"
               given = listOf(StringType("Andrew"))
-            }
+            },
           )
         }
       }
@@ -215,7 +214,7 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertNotNull(patient.birthDate)
     Assert.assertEquals(
       BooleanType(true).booleanValue(),
-      (patient.deceased as BooleanType).booleanValue()
+      (patient.deceased as BooleanType).booleanValue(),
     )
     Assert.assertEquals("Kamau", patient.name[0].family)
     Assert.assertEquals("Andrew", patient.name[0].given[0].value)
@@ -224,7 +223,6 @@ class ResourceExtensionTest : RobolectricTest() {
 
   @Test
   fun `Resource#updateFrom() should preserve updated patient's extensions`() {
-
     val extensionVal = Extension()
     val extensionVal2 = Extension()
     extensionVal.apply { this.urlElement = UriType("hello") }
@@ -244,7 +242,7 @@ class ResourceExtensionTest : RobolectricTest() {
             HumanName().apply {
               family = "Doe"
               given = listOf(StringType("John"))
-            }
+            },
           )
         }
       }
@@ -261,7 +259,7 @@ class ResourceExtensionTest : RobolectricTest() {
             HumanName().apply {
               family = "Kamau"
               given = listOf(StringType("Andrew"))
-            }
+            },
           )
         }
       }
@@ -271,7 +269,7 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertNotNull(patient.birthDate)
     Assert.assertEquals(
       BooleanType(true).booleanValue(),
-      (patient.deceased as BooleanType).booleanValue()
+      (patient.deceased as BooleanType).booleanValue(),
     )
     Assert.assertEquals("Kamau", patient.name[0].family)
     Assert.assertEquals("Andrew", patient.name[0].given[0].value)
@@ -280,7 +278,6 @@ class ResourceExtensionTest : RobolectricTest() {
 
   @Test
   fun `Resource#updateFrom() should preserve both resource's extensions`() {
-
     val extensionVal = Extension()
     val extensionVal2 = Extension()
     extensionVal.apply { this.urlElement = UriType("hello") }
@@ -301,7 +298,7 @@ class ResourceExtensionTest : RobolectricTest() {
             HumanName().apply {
               family = "Doe"
               given = listOf(StringType("John"))
-            }
+            },
           )
         }
       }
@@ -317,7 +314,7 @@ class ResourceExtensionTest : RobolectricTest() {
             HumanName().apply {
               family = "Kamau"
               given = listOf(StringType("Andrew"))
-            }
+            },
           )
         }
       }
@@ -327,7 +324,7 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertNotNull(patient.birthDate)
     Assert.assertEquals(
       BooleanType(true).booleanValue(),
-      (patient.deceased as BooleanType).booleanValue()
+      (patient.deceased as BooleanType).booleanValue(),
     )
     Assert.assertEquals("Kamau", patient.name[0].family)
     Assert.assertEquals("Andrew", patient.name[0].given[0].value)
@@ -345,7 +342,7 @@ class ResourceExtensionTest : RobolectricTest() {
             HumanName().apply {
               family = "Doe"
               given = listOf(StringType("John"))
-            }
+            },
           )
         }
       }
@@ -366,7 +363,7 @@ class ResourceExtensionTest : RobolectricTest() {
             HumanName().apply {
               family = "Kamau"
               given = listOf(StringType("Andrew"))
-            }
+            },
           )
         }
       }
@@ -376,7 +373,7 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertNotNull(patient.birthDate)
     Assert.assertEquals(
       BooleanType(true).booleanValue(),
-      (patient.deceased as BooleanType).booleanValue()
+      (patient.deceased as BooleanType).booleanValue(),
     )
     Assert.assertEquals("Kamau", patient.name[0].family)
     Assert.assertEquals("Andrew", patient.name[0].given[0].value)
@@ -400,7 +397,7 @@ class ResourceExtensionTest : RobolectricTest() {
             HumanName().apply {
               family = "Doe"
               given = listOf(StringType("John"))
-            }
+            },
           )
         }
       }
@@ -421,7 +418,7 @@ class ResourceExtensionTest : RobolectricTest() {
             HumanName().apply {
               family = "Kamau"
               given = listOf(StringType("Andrew"))
-            }
+            },
           )
         }
       }
@@ -431,7 +428,7 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertNotNull(patient.birthDate)
     Assert.assertEquals(
       BooleanType(true).booleanValue(),
-      (patient.deceased as BooleanType).booleanValue()
+      (patient.deceased as BooleanType).booleanValue(),
     )
     Assert.assertEquals("Kamau", patient.name[0].family)
     Assert.assertEquals("Andrew", patient.name[0].given[0].value)
@@ -483,7 +480,6 @@ class ResourceExtensionTest : RobolectricTest() {
 
   @Test
   fun `QuestionnaireResponse#getEncounterId() should return logicalId`() {
-
     val questionnaireResponse =
       QuestionnaireResponse().apply { contained = listOf(Encounter().apply { id = "1234" }) }
 
@@ -494,7 +490,6 @@ class ResourceExtensionTest : RobolectricTest() {
 
   @Test
   fun `QuestionnaireResponse#getEncounterId() replace# should return logicalId`() {
-
     val questionnaireResponse =
       QuestionnaireResponse().apply { contained = listOf(Encounter().apply { id = "#1234" }) }
 
@@ -505,7 +500,6 @@ class ResourceExtensionTest : RobolectricTest() {
 
   @Test
   fun `QuestionnaireResponse#getEncounterId() Id null should return empty id`() {
-
     val questionnaireResponse = QuestionnaireResponse().apply { contained = listOf(Encounter()) }
 
     val id = questionnaireResponse.getEncounterId()
@@ -537,7 +531,7 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertEquals("c", Coding().apply { code = "c" }.valueToString())
     Assert.assertEquals(
       "d",
-      CodeableConcept().apply { addCoding(Coding("s", "c", "d")) }.valueToString()
+      CodeableConcept().apply { addCoding(Coding("s", "c", "d")) }.valueToString(),
     )
     Assert.assertEquals(
       "3.4",
@@ -546,7 +540,7 @@ class ResourceExtensionTest : RobolectricTest() {
           this.value = BigDecimal.valueOf(3.4)
           this.unit = "G"
         }
-        .valueToString()
+        .valueToString(),
     )
     Assert.assertEquals(
       "8 Week (s)",
@@ -555,7 +549,7 @@ class ResourceExtensionTest : RobolectricTest() {
           repeat.period = BigDecimal(8.0)
           repeat.periodUnit = Timing.UnitsOfTime.WK
         }
-        .valueToString()
+        .valueToString(),
     )
     Assert.assertEquals("Doe", HumanName().apply { family = "Doe" }.valueToString())
     Assert.assertEquals(
@@ -565,7 +559,7 @@ class ResourceExtensionTest : RobolectricTest() {
           given = listOf(StringType("John"))
           family = "Doe"
         }
-        .valueToString()
+        .valueToString(),
     )
     Assert.assertEquals("John", StringType("John").valueToString())
   }
@@ -585,7 +579,7 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertEquals("d", Coding("s", "c", "d").valueToString())
     Assert.assertEquals(
       "d",
-      CodeableConcept().apply { addCoding(Coding("s", "c", "d")) }.valueToString()
+      CodeableConcept().apply { addCoding(Coding("s", "c", "d")) }.valueToString(),
     )
     Assert.assertEquals(
       "3.4",
@@ -594,7 +588,7 @@ class ResourceExtensionTest : RobolectricTest() {
           this.value = BigDecimal.valueOf(3.4)
           this.unit = "G"
         }
-        .valueToString()
+        .valueToString(),
     )
   }
 
@@ -641,15 +635,6 @@ class ResourceExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun `Resource#isPatient() should return true if resource is valid`() {
-    val resource = Patient()
-    Assert.assertFalse(resource.isPatient("1"))
-
-    resource.id = "1"
-    Assert.assertTrue(resource.isPatient("1"))
-  }
-
-  @Test
   fun `isValidResourceType() should return true if resource type is valid`() {
     Assert.assertTrue(isValidResourceType("Patient"))
     Assert.assertTrue(isValidResourceType("Group"))
@@ -669,7 +654,7 @@ class ResourceExtensionTest : RobolectricTest() {
     val otherLogicalId = "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4"
     Assert.assertEquals(
       "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4",
-      otherLogicalId.extractLogicalIdUuid()
+      otherLogicalId.extractLogicalIdUuid(),
     )
   }
 
@@ -685,7 +670,7 @@ class ResourceExtensionTest : RobolectricTest() {
     val questionnaireResponse =
       iParser.parseResource(
         QuestionnaireResponse::class.java,
-        patientRegistrationQuestionnaireResponse
+        patientRegistrationQuestionnaireResponse,
       )
 
     questionnaire.item.generateMissingItems(questionnaireResponse.item)
@@ -705,7 +690,7 @@ class ResourceExtensionTest : RobolectricTest() {
     val questionnaireResponse =
       iParser.parseResource(
         QuestionnaireResponse::class.java,
-        patientRegistrationQuestionnaireResponse
+        patientRegistrationQuestionnaireResponse,
       )
 
     questionnaireResponse.generateMissingItems(questionnaire)
@@ -721,7 +706,7 @@ class ResourceExtensionTest : RobolectricTest() {
       Questionnaire.QuestionnaireItemComponent().apply {
         linkId = "2"
         type = Questionnaire.QuestionnaireItemType.GROUP
-      }
+      },
     )
     questionnaire.item.prepareQuestionsForReadingOrEditing("", true)
 
@@ -737,7 +722,7 @@ class ResourceExtensionTest : RobolectricTest() {
       Questionnaire.QuestionnaireItemComponent().apply {
         linkId = "2"
         readOnly = true
-      }
+      },
     )
     questionnaire.item.add(Questionnaire.QuestionnaireItemComponent().apply { linkId = "3" })
     questionnaire.item.prepareQuestionsForReadingOrEditing("", readOnlyLinkIds = listOf("3"))

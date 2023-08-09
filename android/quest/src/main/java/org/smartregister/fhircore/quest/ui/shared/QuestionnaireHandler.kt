@@ -30,28 +30,26 @@ interface QuestionnaireHandler {
 
   val startForResult: ActivityResultLauncher<Intent>
 
-  fun <T> launchQuestionnaire(
+  /** This function launches [QuestionnaireActivity] and returns [ActivityResult] on submission. */
+  fun launchQuestionnaire(
     context: Context,
-    intentBundle: Bundle = bundleOf(),
+    extraIntentBundle: Bundle = bundleOf(),
     questionnaireConfig: QuestionnaireConfig? = null,
-    actionParams: List<ActionParameter> = emptyList(),
-    baseResourceId: String? = null,
-    baseResourceType: String? = null
+    actionParams: List<ActionParameter>,
   ) {
-    if (questionnaireConfig != null)
+    if (questionnaireConfig != null) {
       startForResult.launch(
         Intent(context, QuestionnaireActivity::class.java)
           .putExtras(
-            QuestionnaireActivity.intentArgs(
+            QuestionnaireActivity.intentBundle(
               questionnaireConfig = questionnaireConfig,
               actionParams = actionParams,
-              baseResourceId = baseResourceId,
-              baseResourceType = baseResourceType
-            )
+            ),
           )
-          .putExtras(intentBundle)
+          .putExtras(extraIntentBundle),
       )
+    }
   }
 
-  fun onSubmitQuestionnaire(activityResult: ActivityResult)
+  suspend fun onSubmitQuestionnaire(activityResult: ActivityResult)
 }

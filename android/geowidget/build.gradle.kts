@@ -29,6 +29,7 @@ android {
 
   buildTypes {
     getByName("debug") { isTestCoverageEnabled = true }
+    create("debugNonProxy") { initWith(getByName("debug")) }
 
     getByName("release") {
       isMinifyEnabled = false
@@ -50,6 +51,7 @@ android {
   buildFeatures {
     compose = true
     viewBinding = true
+    dataBinding = true
   }
 
   composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }
@@ -78,8 +80,8 @@ android {
         "META-INF/*.kotlin_module",
         "META-INF/AL2.0",
         "META-INF/LGPL2.1",
-        "META-INF/INDEX.LIST"
-      )
+        "META-INF/INDEX.LIST",
+      ),
     )
   }
 

@@ -39,6 +39,7 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
 const val PERSONAL_DETAILS_TEST_TAG = "personalDetailsTestTag"
+const val INDIVIDUAL_RESULT_VIEW_CONTAINER_TEST_TAG = "individualResultViewContainer"
 const val RESULT_VIEW_CHECK_ICON = "resultViewCheckIcon"
 const val RESULT_VIEW_STALLED_ICON = "resultViewStalledIcon"
 const val RESULT_VIEW_INDICATOR_STATUS = "resultViewIndicatorStatus"
@@ -48,26 +49,27 @@ const val RESULT_VIEW_INDICATOR_DESCRIPTION = "resultViewIndicatorDescription"
 fun MeasureReportIndividualResultView(
   modifier: Modifier = Modifier,
   subjectViewData: MeasureReportSubjectViewData,
-  isMatchedIndicator: Boolean = true
+  isMatchedIndicator: Boolean = true,
 ) {
   Box(
     modifier =
       modifier
         .clip(RoundedCornerShape(15.dp))
         .background(color = colorResource(id = R.color.white))
-        .wrapContentWidth(),
-    contentAlignment = Alignment.Center
+        .wrapContentWidth()
+        .testTag(INDIVIDUAL_RESULT_VIEW_CONTAINER_TEST_TAG),
+    contentAlignment = Alignment.Center,
   ) {
     Column(
       modifier = Modifier.wrapContentWidth().padding(16.dp),
       verticalArrangement = Arrangement.Center,
-      horizontalAlignment = Alignment.Start
+      horizontalAlignment = Alignment.Start,
     ) {
       Text(
         color = SubtitleTextColor,
         text = subjectViewData.display,
         fontSize = 16.sp,
-        modifier = Modifier.wrapContentWidth().testTag(PERSONAL_DETAILS_TEST_TAG)
+        modifier = Modifier.wrapContentWidth().testTag(PERSONAL_DETAILS_TEST_TAG),
       )
     }
   }
@@ -81,8 +83,8 @@ private fun MeasureReportIndividualResultViewPreview() {
       MeasureReportSubjectViewData(
         display = "Jacky Coughlin, F, 27",
         logicalId = "12444",
-        type = ResourceType.Patient
+        type = ResourceType.Patient,
       ),
-    isMatchedIndicator = true
+    isMatchedIndicator = true,
   )
 }

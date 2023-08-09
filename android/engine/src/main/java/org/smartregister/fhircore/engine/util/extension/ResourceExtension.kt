@@ -37,10 +37,12 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
@@ -60,6 +62,8 @@ import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import timber.log.Timber
 
+const val REFERENCE = "reference"
+const val PARTOF = "part-of"
 private val fhirR4JsonParser = FhirContext.forR4Cached().getCustomJsonParser()
 
 fun Base?.valueToString(): String {
@@ -78,7 +82,7 @@ fun Base?.valueToString(): String {
           .plus(
             it.periodUnit.display.replaceFirstChar { char ->
               if (char.isLowerCase()) char.titlecase(Locale.getDefault()) else char.toString()
-            }
+            },
           )
           .plus(" (s)")
       }
@@ -173,7 +177,7 @@ fun QuestionnaireResponse.generateMissingItems(questionnaire: Questionnaire) =
   questionnaire.item.generateMissingItems(this.item)
 
 fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
-  qrItems: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>
+  qrItems: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>,
 ) {
   this.forEachIndexed { index, qItem ->
     // generate complete hierarchy if response item missing otherwise check for nested items
@@ -184,27 +188,28 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
     }
   }
 }
+
 /**
  * Set all questions that are not of type [Questionnaire.QuestionnaireItemType.GROUP] to readOnly if
  * [readOnly] is true. This also generates the correct FHIRPath population expression for each
  * question when mapped to the corresponding [QuestionnaireResponse]
  */
 fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrEditing(
-  path: String,
+  path: String = "QuestionnaireResponse.item",
   readOnly: Boolean = false,
-  readOnlyLinkIds: List<String>? = emptyList()
+  readOnlyLinkIds: List<String>? = emptyList(),
 ) {
   forEach { item ->
     if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
       item.readOnly = readOnly || item.readOnly || readOnlyLinkIds?.contains(item.linkId) == true
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').answer.item",
-        readOnly
+        readOnly,
       )
     } else {
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').item",
-        readOnly
+        readOnly,
       )
     }
   }
@@ -236,22 +241,47 @@ fun QuestionnaireResponse.getEncounterId(): String? {
 }
 
 fun Resource.generateMissingId() {
-  if (logicalId.isBlank()) id = UUID.randomUUID().toString()
+  if (logicalId.isEmpty() || logicalId.isBlank()) id = UUID.randomUUID().toString()
+}
+
+fun Resource.appendOrganizationInfo(authenticatedOrganizationIds: List<String>?) {
+  // Organization reference in shared pref as "Organization/some-gibberish-uuid"
+  authenticatedOrganizationIds?.let { ids ->
+    val organizationRef =
+      ids.firstOrNull()?.extractLogicalIdUuid()?.asReference(ResourceType.Organization)
+
+    when (this) {
+      is Patient -> managingOrganization = organizationRef
+      is Group -> managingEntity = organizationRef
+      is Encounter -> serviceProvider = organizationRef
+      is Location -> managingOrganization = organizationRef
+    }
+  }
+}
+
+fun Resource.appendPractitionerInfo(practitionerId: String?) {
+  practitionerId?.let {
+    // Convert practitioner uuid to reference e.g. "Practitioner/some-gibberish-uuid"
+    val practitionerRef = it.asReference(ResourceType.Practitioner)
+
+    when (this) {
+      is Patient -> generalPractitioner = arrayListOf(practitionerRef)
+      is Encounter ->
+        participant =
+          arrayListOf(
+            Encounter.EncounterParticipantComponent().apply { individual = practitionerRef },
+          )
+    }
+  }
 }
 
 fun Resource.updateLastUpdated() {
   meta.lastUpdated = Date()
 }
 
-fun Resource.isPatient(patientId: String) =
-  this.resourceType == ResourceType.Patient && this.logicalId == patientId
+fun Resource.asReference() = Reference().apply { this.reference = "$resourceType/$logicalId" }
 
-fun Resource.asReference(): Reference {
-  val referenceValue = "${fhirType()}/$logicalId"
-  return Reference().apply { this.reference = referenceValue }
-}
-
-fun Resource.referenceValue(): String = "${fhirType()}/$logicalId"
+fun Resource.referenceValue(): String = "$resourceType/$logicalId"
 
 fun Resource.referenceParamForCondition(): ReferenceClientParam =
   when (resourceType) {
@@ -323,21 +353,17 @@ fun String.resourceClassType(): Class<out Resource> =
 fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")
 
 /**
- * You provide a suspended function in Kotlin, which updates the due date of a task's dependent
- * tasks based on the date of a related immunization. The function takes a [defaultRepository]
- * parameter that is an instance of [DefaultRepository]. It then loops through all the tasks that
- * this task is a part of, loads the dependent tasks and their related immunization resources from
- * the repository, and updates the start date of the dependent task if it's scheduled to start
- * before the immunization date plus the required number of days.
+ * This suspend function updates the due date of the dependents of the current [Task], based on the
+ * date of a related [Immunization] [Task]. The function loops through all the tasks that are
+ * part-of the current task, loads the dependent tasks and their related immunization resources from
+ * the [DefaultRepository] then updates the start date of the dependent task if it's scheduled to
+ * start before the immunization date plus the required number of days.
  *
- * We may potentially extend this function to consider the attributes of resources other than
- * immunizations.
- *
- * @param defaultRepository An instance of DefaultRepository
+ * This function can be extended in future to support other [ResourceType] s.
  */
 suspend fun Task.updateDependentTaskDueDate(
   defaultRepository: DefaultRepository,
-  fhirEngine: FhirEngine
+  fhirEngine: FhirEngine,
 ): Task {
   return apply {
     val dependentTasks =
@@ -346,7 +372,8 @@ suspend fun Task.updateDependentTaskDueDate(
       }
     dependentTasks.forEach { dependantTask ->
       dependantTask.partOf.forEach { _ ->
-        if (dependantTask.executionPeriod.hasStart() &&
+        if (
+          dependantTask.executionPeriod.hasStart() &&
             dependantTask.hasInput() &&
             dependantTask.status.equals(Task.TaskStatus.REQUESTED)
         ) {
@@ -369,9 +396,9 @@ suspend fun Task.updateDependentTaskDueDate(
                           abs(
                             Duration.between(
                                 immunizationDate.toInstant(),
-                                dependentTaskStartDate.toInstant()
+                                dependentTaskStartDate.toInstant(),
                               )
-                              .toDays()
+                              .toDays(),
                           )
                         if (difference < dependentTaskInputDuration) {
                           dependantTask
@@ -383,7 +410,7 @@ suspend fun Task.updateDependentTaskDueDate(
                             .run {
                               defaultRepository.addOrUpdate(
                                 addMandatoryTags = true,
-                                resource = dependantTask
+                                resource = dependantTask,
                               )
                             }
                         }
@@ -401,7 +428,3 @@ suspend fun Task.updateDependentTaskDueDate(
     }
   }
 }
-
-const val REFERENCE = "reference"
-const val PARTOF = "part-of"
-const val ENCOUNTER = "encounter"

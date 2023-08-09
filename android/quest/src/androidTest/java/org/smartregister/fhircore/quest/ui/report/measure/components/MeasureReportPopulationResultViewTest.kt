@@ -38,8 +38,8 @@ class MeasureReportPopulationResultViewTest {
         description = "This is sample description",
         title = "Title Individual Result",
         percentage = "50.0",
-        count = "1"
-      )
+        count = "1",
+      ),
     )
 
   private val measureReportPopulationResultList =
@@ -49,8 +49,8 @@ class MeasureReportPopulationResultViewTest {
         count = "2",
         indicatorTitle = "Indicator1",
         dataList = measureReportIndividualResultList,
-        measureReportDenominator = 2
-      )
+        measureReportDenominator = "2",
+      ),
     )
 
   @Before
@@ -75,7 +75,7 @@ class MeasureReportPopulationResultViewTest {
     composeTestRule.onNodeWithTag(POPULATION_COUNT_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule
       .onNodeWithText(
-        measureReportPopulationResultList.first().measureReportDenominator.toString().uppercase()
+        measureReportPopulationResultList.first().measureReportDenominator.uppercase(),
       )
       .assertExists()
       .assertIsDisplayed()

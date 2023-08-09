@@ -16,12 +16,16 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import android.os.Parcelable
 import androidx.compose.foundation.layout.Arrangement
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
+@Parcelize
 data class RowProperties(
   override val viewType: ViewType,
   override val weight: Float = 0f,
@@ -37,11 +41,12 @@ data class RowProperties(
   val arrangement: RowArrangement? = null,
   val wrapContent: Boolean = false,
   val children: List<ViewProperties> = emptyList(),
-) : ViewProperties() {
+  val actions: List<ActionConfig> = emptyList(),
+) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): RowProperties {
     return this.copy(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),
-      visible = visible.interpolate(computedValuesMap)
+      visible = visible.interpolate(computedValuesMap),
     )
   }
 }

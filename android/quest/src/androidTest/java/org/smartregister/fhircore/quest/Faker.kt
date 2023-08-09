@@ -32,7 +32,6 @@ object Faker {
   private const val APP_DEBUG = "app/debug"
 
   fun buildTestConfigurationRegistry(): ConfigurationRegistry {
-
     val fhirResourceService = mockk<FhirResourceService>()
     val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
     coEvery { fhirResourceService.getResource(any()) } returns Bundle()
@@ -52,14 +51,14 @@ object Faker {
           sharedPreferencesHelper = mockk(),
           dispatcherProvider = mockk(),
           configService = mockk(),
-          json = json
-        )
+          json = json,
+        ),
       )
 
     runBlocking {
       configurationRegistry.loadConfigurations(
         appId = APP_DEBUG,
-        context = InstrumentationRegistry.getInstrumentation().targetContext
+        context = InstrumentationRegistry.getInstrumentation().targetContext,
       ) {}
     }
 

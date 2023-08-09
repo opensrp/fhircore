@@ -16,10 +16,17 @@
 
 package org.smartregister.fhircore.quest.ui.shared.models
 
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 
+/**
+ * This data class represents the result of a Questionnaire submission. (Optionally,
+ * [extractedResourceIds] can be used to reference the extracted [Bundle.entry] resources.
+ */
 data class QuestionnaireSubmission(
   val questionnaireConfig: QuestionnaireConfig,
-  val questionnaireResponse: QuestionnaireResponse
+  val questionnaireResponse: QuestionnaireResponse,
+  val extractedResourceIds: List<IdType> = emptyList(),
 )

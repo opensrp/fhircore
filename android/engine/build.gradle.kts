@@ -24,10 +24,24 @@ android {
     targetSdk = 33
     testInstrumentationRunner = "org.smartregister.fhircore.engine.EngineTestRunner"
     consumerProguardFiles("consumer-rules.pro")
+    buildConfigField(
+      "boolean",
+      "IS_NON_PROXY_APK",
+      "${project.hasProperty("isNonProxy") && property("isNonProxy").toString().toBoolean()}",
+    )
   }
 
   buildTypes {
     getByName("debug") { isTestCoverageEnabled = true }
+
+    create("debugNonProxy") {
+      initWith(getByName("debug"))
+      buildConfigField(
+        "boolean",
+        "IS_NON_PROXY_APK",
+        "true",
+      )
+    }
 
     getByName("release") {
       isMinifyEnabled = false
@@ -46,6 +60,7 @@ android {
   buildFeatures {
     compose = true
     viewBinding = true
+    dataBinding = true
   }
   composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }
 
@@ -69,8 +84,8 @@ android {
         "META-INF/LGPL-3.0.txt",
         "META-INF/sun-jaxb.episode",
         "META-INF/*.kotlin_module",
-        "META-INF/INDEX.LIST"
-      )
+        "META-INF/INDEX.LIST",
+      ),
     )
   }
 
@@ -183,7 +198,11 @@ dependencies {
   api(libs.retrofit2.kotlinx.serialization.converter)
   api(libs.okhttp)
   api(libs.okhttp.logging.interceptor)
-  api(libs.easy.rules.jexl) { exclude(group = "commons-logging", module = "commons-logging") }
+  api(libs.commons.jexl3) { exclude(group = "commons-logging", module = "commons-logging") }
+  api(libs.easy.rules.jexl) {
+    exclude(group = "commons-logging", module = "commons-logging")
+    exclude(group = "org.apache.commons", module = "commons-jexl3")
+  }
   api(libs.data.capture) {
     isTransitive = true
     exclude(group = "ca.uhn.hapi.fhir")
@@ -249,6 +268,7 @@ dependencies {
   androidTestImplementation(libs.runner)
   androidTestImplementation(libs.ui.test.junit4)
   androidTestImplementation(libs.hilt.android.testing)
+  androidTestImplementation(libs.benchmark.junit)
 
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }

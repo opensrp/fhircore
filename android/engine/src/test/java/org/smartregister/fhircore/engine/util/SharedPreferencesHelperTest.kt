@@ -29,14 +29,15 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.model.practitioner.KeycloakUserDetails
 
 @HiltAndroidTest
 internal class SharedPreferencesHelperTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
   private val application = ApplicationProvider.getApplicationContext<Application>()
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
   @Inject lateinit var gson: Gson
 
   @Before
@@ -84,23 +85,12 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
     sharedPreferencesHelper.write("object", questionnaireConfig)
     Assert.assertEquals(
       questionnaireConfig.id,
-      sharedPreferencesHelper.read<QuestionnaireConfig>("object")?.id
-    )
-  }
-
-  @Test
-  fun writeObjectUsingGson() {
-    val keycloakUserDetails = KeycloakUserDetails().apply { id = "12345" }
-    sharedPreferencesHelper.write("object", keycloakUserDetails, encodeWithGson = true)
-    Assert.assertEquals(
-      keycloakUserDetails.id,
-      sharedPreferencesHelper.read<KeycloakUserDetails>("object", decodeWithGson = true)?.id
+      sharedPreferencesHelper.read<QuestionnaireConfig>("object")?.id,
     )
   }
 
   @Test
   fun testResetSharedPrefsClearsData() {
-
     sharedPreferencesHelper.write("anyBooleanKey", true)
     sharedPreferencesHelper.write("anyLongKey", 123456789)
 

@@ -39,8 +39,8 @@ abstract class RulesListener : RuleListener {
           "Timber" to Timber,
           "StringUtils" to Class.forName("org.apache.commons.lang3.StringUtils"),
           "RegExUtils" to Class.forName("org.apache.commons.lang3.RegExUtils"),
-          "Math" to Class.forName("java.lang.Math")
-        )
+          "Math" to Class.forName("java.lang.Math"),
+        ),
       )
       .silent(false)
       .strict(false)
@@ -63,11 +63,13 @@ abstract class RulesListener : RuleListener {
         is JexlException.Variable ->
           log(
             exception,
-            "${exception.localizedMessage}, consider checking for null before usage: e.g ${exception.variable} != null"
+            "${exception.localizedMessage}, consider checking for null before usage: e.g ${exception.variable} != null",
           )
         else -> log(exception, "Failed to execute rule : ${rule.name} ")
       }
-    } else log(exception)
+    } else {
+      log(exception)
+    }
 
   override fun onEvaluationError(rule: Rule, facts: Facts, exception: java.lang.Exception) {
     log(exception, "Evaluation error")
@@ -100,7 +102,7 @@ abstract class RulesListener : RuleListener {
           }
           customRule
         }
-        .toSet()
+        .toSet(),
     )
 
   companion object {

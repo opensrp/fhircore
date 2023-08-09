@@ -1,5 +1,7 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType
+import java.io.FileReader
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.json.JSONObject
 
 buildscript {
   apply(from = "../jacoco.gradle.kts")
@@ -26,14 +28,14 @@ sonar {
     property("sonar.kotlin.source.version", libs.kotlin)
     property(
       "sonar.androidLint.reportPaths",
-      "${project.buildDir}/reports/lint-results-opensrpDebug.xml"
+      "${project.buildDir}/reports/lint-results-opensrpDebug.xml",
     )
     property("sonar.host.url", System.getenv("SONAR_HOST_URL"))
     property("sonar.login", System.getenv("SONAR_TOKEN"))
     property("sonar.sourceEncoding", "UTF-8")
     property(
       "sonar.kotlin.threads",
-      (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+      (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1,
     )
     property(
       "sonar.exclusions",
@@ -42,7 +44,7 @@ sonar {
           **/.gradle/**,
           **/R.class,
           *.json,
-          *.yaml"""
+          *.yaml""",
     )
   }
 }
@@ -54,8 +56,8 @@ android {
     applicationId = "org.smartregister.opensrp"
     minSdk = 26
     targetSdk = 33
-    versionCode = 1
-    versionName = "0.2.4"
+    versionCode = 3
+    versionName = "0.2.5"
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
@@ -66,12 +68,15 @@ android {
     buildConfigField(
       "String",
       "OAUTH_CLIENT_SECRET",
-      """"${project.extra["OAUTH_CLIENT_SECRET"]}""""
+      """"${project.extra["OAUTH_CLIENT_SECRET"]}"""",
     )
     buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """"100"""")
     buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
 
     testInstrumentationRunner = "org.smartregister.fhircore.quest.QuestTestRunner"
+    testInstrumentationRunnerArguments["additionalTestOutputDir"] = "/sdcard/Download"
+    testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] =
+      "ACTIVITY-MISSING,CODE-COVERAGE,DEBUGGABLE,UNLOCKED,EMULATOR"
   }
 
   signingConfigs {
@@ -88,6 +93,8 @@ android {
 
   buildTypes {
     getByName("debug") { isTestCoverageEnabled = true }
+
+    create("debugNonProxy") { initWith(getByName("debug")) }
 
     getByName("release") {
       isMinifyEnabled = false
@@ -120,8 +127,8 @@ android {
         "META-INF/*.kotlin_module",
         "META-INF/AL2.0",
         "META-INF/LGPL2.1",
-        "META-INF/INDEX.LIST"
-      )
+        "META-INF/INDEX.LIST",
+      ),
     )
   }
 
@@ -139,6 +146,7 @@ android {
   buildFeatures {
     compose = true
     viewBinding = true
+    dataBinding = true
   }
 
   composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }
@@ -170,6 +178,13 @@ android {
       applicationIdSuffix = ".ecbis"
       versionNameSuffix = "-ecbis"
       manifestPlaceholders["appLabel"] = "MOH eCBIS"
+    }
+
+    create("ecbis_preview") {
+      dimension = "apps"
+      applicationIdSuffix = ".ecbis_preview"
+      versionNameSuffix = "-ecbis_preview"
+      manifestPlaceholders["appLabel"] = "MOH eCBIS Preview"
     }
 
     create("g6pd") {
@@ -242,7 +257,7 @@ android {
     variant.resValue(
       "string",
       "app_name",
-      "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\""
+      "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"",
     )
   }
 
@@ -267,7 +282,7 @@ val abiCodes =
     "arm64-v8a" to 3,
     "mips" to 4,
     "x86" to 5,
-    "x86_64" to 6
+    "x86_64" to 6,
   )
 
 // For each APK output variant, override versionCode with a combination of
@@ -361,8 +376,88 @@ dependencies {
   androidTestImplementation(libs.ui.test.junit4)
   androidTestImplementation(libs.hilt.android.testing)
   androidTestImplementation(libs.mockk.android)
+  androidTestImplementation(libs.benchmark.junit)
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }
   ktlint(project(":linting"))
+}
+
+/**
+ * This task compares the performance benchmark results to the expected benchmark results and throws
+ * an error if the result is past the expected result and margin. A message will also be printed if
+ * the performance significantly improves.
+ */
+task("evaluatePerformanceBenchmarkResults") {
+  val expectedPerformanceLimitsFile = project.file("expected-results.json")
+  val resultsFile = project.file("org.smartregister.opensrp.ecbis-benchmarkData.json")
+
+  doLast {
+    if (resultsFile.exists()) {
+      // Read the expectations file
+      val expectedResultsMap: HashMap<String, HashMap<String, Double>> = hashMapOf()
+
+      JSONObject(FileReader(expectedPerformanceLimitsFile).readText()).run {
+        keys().forEach { key ->
+          val resultMaxDeltaMap: HashMap<String, Double> = hashMapOf()
+          val methodExpectedResults = this.getJSONObject(key)
+
+          methodExpectedResults.keys().forEach { expectedResultsKey ->
+            resultMaxDeltaMap.put(
+              expectedResultsKey,
+              methodExpectedResults.getDouble(expectedResultsKey),
+            )
+          }
+
+          expectedResultsMap[key] = resultMaxDeltaMap
+        }
+      }
+
+      // Loop through the results file updating the results
+      JSONObject(FileReader(resultsFile).readText()).run {
+        getJSONArray("benchmarks").forEachIndexed { index, any ->
+          val benchmarkResult = any as JSONObject
+          val fullName = benchmarkResult.getTestName()
+          val timings = benchmarkResult.getJSONObject("metrics").getJSONObject("timeNs")
+
+          val median = timings.getDouble("median")
+          val expectedTimings = expectedResultsMap[fullName]
+
+          if (expectedTimings == null) {
+            System.err.println(
+              "Metrics for $fullName could not be found in expected-results.json. Kindly add this to the file",
+            )
+          } else {
+            val expectedMaxTiming = (expectedTimings.get("max") ?: 0e1)
+            val timingMargin = (expectedTimings.get("margin") ?: 0e1)
+
+            if (median > (expectedMaxTiming + timingMargin)) {
+              throw Exception(
+                "$fullName test passes the threshold of ${expectedMaxTiming + timingMargin} Ns. The timing is $median Ns",
+              )
+            } else if (median <= (expectedMaxTiming - timingMargin)) {
+              System.out.println(
+                "Improvement: Test $fullName took $median vs min of ${expectedMaxTiming - timingMargin}",
+              )
+            } else {
+              System.out.println(
+                "Test $fullName took $median vs Range[${expectedMaxTiming - timingMargin} to ${expectedMaxTiming + timingMargin}] Ns",
+              )
+            }
+          }
+        }
+      }
+    } else {
+      throw Exception(
+        "Results file could not be found in  ${resultsFile.path}. Make sure this file is on the devices. It should be listed in the previous step after adb shell ls /sdcard/Download/",
+      )
+    }
+  }
+}
+
+fun JSONObject.getTestName(): String {
+  val className = getString("className").substringAfterLast(".")
+  val methodName = getString("name").substringAfterLast("_")
+
+  return "$className#$methodName"
 }

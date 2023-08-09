@@ -62,32 +62,44 @@ class LibraryEvaluatorTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
-  private val application = ApplicationProvider.getApplicationContext<Application>()
   @Inject lateinit var gson: Gson
-  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
-  @Inject lateinit var configService: ConfigService
-  @Inject lateinit var configRulesExecutor: ConfigRulesExecutor
 
-  var evaluator: LibraryEvaluator? = null
-  var libraryData = ""
-  var helperData = ""
-  var valueSetData = ""
-  var testData = ""
-  var result = ""
-  var evaluatorId = "ANCRecommendationA2"
-  var context = "Patient"
-  var contextLabel = "mom-with-anemia"
+  @Inject lateinit var configService: ConfigService
+
+  @Inject lateinit var configRulesExecutor: ConfigRulesExecutor
+  private val application = ApplicationProvider.getApplicationContext<Application>()
+  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
+  val fhirEngine = mockk<FhirEngine>()
+  private var evaluator: LibraryEvaluator? = null
+  private var libraryData = ""
+  private var helperData = ""
+  private var valueSetData = ""
+  private var testData = ""
+  private var result = ""
+  private var evaluatorId = "ANCRecommendationA2"
+  private var context = "Patient"
+  private var contextLabel = "mom-with-anemia"
 
   @Before
   fun setUp() {
     hiltRule.inject()
+
+    val defaultRepository =
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = DefaultDispatcherProvider(),
+        sharedPreferencesHelper = SharedPreferencesHelper(application, gson),
+        configurationRegistry = configurationRegistry,
+        configService = configService,
+        configRulesExecutor = configRulesExecutor,
+      )
     try {
       libraryData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/library.json")
       helperData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/helper.json")
       valueSetData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/valueSet.json")
       testData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/patient.json")
       result = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/result.json")
-      evaluator = LibraryEvaluator().apply { initialize() }
+      evaluator = LibraryEvaluator(defaultRepository).apply { initialize() }
     } catch (e: IOException) {
       Timber.e(e, e.message)
     }
@@ -117,7 +129,7 @@ class LibraryEvaluatorTest : RobolectricTest() {
         fhirContext,
         evaluatorId,
         context,
-        contextLabel
+        contextLabel,
       )
     Assert.assertEquals(result, auxResult)
   }
@@ -161,36 +173,21 @@ class LibraryEvaluatorTest : RobolectricTest() {
     val cqlLibrary =
       parser.parseResource(
         FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/library.json")
-          .replace("#library-elm.json", Base64.getEncoder().encodeToString(cqlElm.toByteArray()))
-      ) as
-        Library
+          .replace("#library-elm.json", Base64.getEncoder().encodeToString(cqlElm.toByteArray())),
+      ) as Library
     val fhirHelpersLibrary =
       parser.parseResource(
-        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/helper.json")
-      ) as
-        Library
+        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/helper.json"),
+      ) as Library
 
     val dataBundle =
       parser.parseResource(
-        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/patient.json")
-      ) as
-        Bundle
+        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/patient.json"),
+      ) as Bundle
 
     val patient =
-      dataBundle.entry.first { it.resource.resourceType == ResourceType.Patient }.resource as
-        Patient
-
-    val fhirEngine = mockk<FhirEngine>()
-    val sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
-    val defaultRepository =
-      DefaultRepository(
-        fhirEngine,
-        DefaultDispatcherProvider(),
-        sharedPreferencesHelper,
-        configurationRegistry,
-        configService,
-        configRulesExecutor
-      )
+      dataBundle.entry.first { it.resource.resourceType == ResourceType.Patient }.resource
+        as Patient
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
@@ -202,8 +199,7 @@ class LibraryEvaluatorTest : RobolectricTest() {
         cqlLibrary.logicalId,
         patient,
         dataBundle.apply { entry.removeIf { it.resource.resourceType == ResourceType.Patient } },
-        defaultRepository,
-        true
+        true,
       )
     }
 
@@ -222,54 +218,39 @@ class LibraryEvaluatorTest : RobolectricTest() {
     val cqlLibrary =
       parser.parseResource(
         FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/library.json")
-          .replace("#library-elm.json", Base64.getEncoder().encodeToString(cqlElm.toByteArray()))
-      ) as
-        Library
+          .replace("#library-elm.json", Base64.getEncoder().encodeToString(cqlElm.toByteArray())),
+      ) as Library
     val fhirHelpersLibrary =
       parser.parseResource(
-        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/helper.json")
-      ) as
-        Library
+        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/helper.json"),
+      ) as Library
 
     val dataBundle =
       parser.parseResource(
-        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/patient.json")
-      ) as
-        Bundle
+        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/patient.json"),
+      ) as Bundle
 
     val patient =
-      dataBundle.entry.first { it.resource.resourceType == ResourceType.Patient }.resource as
-        Patient
-
-    val fhirEngine = mockk<FhirEngine>()
-    val sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
-    val defaultRepository =
-      DefaultRepository(
-        fhirEngine,
-        DefaultDispatcherProvider(),
-        sharedPreferencesHelper,
-        configurationRegistry,
-        configService,
-        configRulesExecutor
-      )
+      dataBundle.entry.first { it.resource.resourceType == ResourceType.Patient }.resource
+        as Patient
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
     coEvery { fhirEngine.create(any()) } answers { listOf() }
 
-    var result = runBlocking {
+    val result = runBlocking {
       evaluator!!.runCqlLibrary(
         cqlLibrary.logicalId,
         patient,
         dataBundle.apply { entry.removeIf { it.resource.resourceType == ResourceType.Patient } },
-        defaultRepository,
-        false
+        false,
       )
     }
 
     Assert.assertEquals(0, result.size)
   }
+
   @Test
   fun processCqlPatientBundleTest() {
     val results = evaluator!!.processCqlPatientBundle(testData)

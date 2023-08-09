@@ -44,7 +44,9 @@ import org.smartregister.p2p.P2PLibrary
 open class LoginActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var p2pSenderTransferDao: P2PSenderTransferDao
+
   @Inject lateinit var p2pReceiverTransferDao: P2PReceiverTransferDao
+
   @Inject lateinit var workManager: WorkManager
   val loginViewModel by viewModels<LoginViewModel>()
 
@@ -69,20 +71,20 @@ open class LoginActivity : BaseMultiLanguageActivity() {
       val hasActivePin = pinActive()
 
       if (isPinEnabled && hasActivePin) {
-
-        if ((loginActivity.deviceOnline() && loginActivity.isRefreshTokenActive()) ||
+        if (
+          (loginActivity.deviceOnline() && loginActivity.isRefreshTokenActive()) ||
             !loginActivity.deviceOnline()
         ) {
-
           navigateToPinLogin(launchSetup = false)
         }
       }
 
       navigateToHome.observe(loginActivity) { launchHomeScreen ->
         if (launchHomeScreen) {
-          if (!hasActivePin) downloadNowWorkflowConfigs()
-          if (isPinEnabled && !hasActivePin) navigateToPinLogin(launchSetup = true)
-          else loginActivity.navigateToHome()
+          downloadNowWorkflowConfigs()
+          if (isPinEnabled && !hasActivePin) {
+            navigateToPinLogin(launchSetup = true)
+          } else loginActivity.navigateToHome()
         }
       }
       launchDialPad.observe(loginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
@@ -90,11 +92,15 @@ open class LoginActivity : BaseMultiLanguageActivity() {
   }
 
   @VisibleForTesting open fun pinEnabled() = loginViewModel.isPinEnabled()
+
   @VisibleForTesting
   open fun pinActive() = !loginViewModel.secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
+
   @VisibleForTesting
   open fun isRefreshTokenActive() = loginViewModel.tokenAuthenticator.isCurrentRefreshTokenActive()
+
   @VisibleForTesting open fun deviceOnline() = isDeviceOnline()
+
   @OptIn(ExperimentalMaterialApi::class)
   fun navigateToHome() {
     startActivity(Intent(this, AppMainActivity::class.java))
@@ -107,8 +113,8 @@ open class LoginActivity : BaseMultiLanguageActivity() {
           dbPassphrase = username,
           username = username,
           senderTransferDao = p2pSenderTransferDao,
-          receiverTransferDao = p2pReceiverTransferDao
-        )
+          receiverTransferDao = p2pReceiverTransferDao,
+        ),
       )
     }
     finish()
@@ -116,7 +122,7 @@ open class LoginActivity : BaseMultiLanguageActivity() {
 
   private fun navigateToPinLogin(launchSetup: Boolean = false) {
     this.launchActivityWithNoBackStackHistory<PinLoginActivity>(
-      bundle = bundleOf(Pair(PinLoginActivity.PIN_SETUP, launchSetup))
+      bundle = bundleOf(Pair(PinLoginActivity.PIN_SETUP, launchSetup)),
     )
   }
 

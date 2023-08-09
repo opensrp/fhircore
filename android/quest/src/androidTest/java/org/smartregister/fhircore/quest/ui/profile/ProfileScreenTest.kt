@@ -63,17 +63,17 @@ class ProfileScreenTest {
             ResourceData(
               baseResourceId = "patientId",
               baseResourceType = ResourceType.Patient,
-              computedValuesMap = emptyMap()
+              computedValuesMap = emptyMap(),
             ),
           profileConfiguration =
-            configurationRegistry.retrieveConfiguration(ConfigType.Profile, "householdProfile")
+            configurationRegistry.retrieveConfiguration(ConfigType.Profile, "householdProfile"),
         )
       composeTestRule.setContent {
         ProfileScreen(
           navController = rememberNavController(),
           profileUiState = profileUiState,
           onEvent = spyk({}),
-          snackStateFlow = snackBarStateFlow
+          snackStateFlow = snackBarStateFlow,
         )
       }
     }

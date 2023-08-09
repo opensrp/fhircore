@@ -36,7 +36,7 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
       oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL,
       clientId = BuildConfig.OAUTH_CLIENT_ID,
       clientSecret = BuildConfig.OAUTH_CLIENT_SECRET,
-      accountType = BuildConfig.APPLICATION_ID
+      accountType = BuildConfig.APPLICATION_ID,
     )
 
   override fun defineResourceTags() =
@@ -47,7 +47,7 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
           Coding().apply {
             system = context.getString(R.string.sync_strategy_careteam_system)
             display = context.getString(R.string.sync_strategy_careteam_display)
-          }
+          },
       ),
       ResourceTag(
         type = ResourceType.Location.name,
@@ -55,7 +55,7 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
           Coding().apply {
             system = context.getString(R.string.sync_strategy_location_system)
             display = context.getString(R.string.sync_strategy_location_display)
-          }
+          },
       ),
       ResourceTag(
         type = ResourceType.Organization.name,
@@ -63,7 +63,7 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
           Coding().apply {
             system = context.getString(R.string.sync_strategy_organization_system)
             display = context.getString(R.string.sync_strategy_organization_display)
-          }
+          },
       ),
       ResourceTag(
         type = ResourceType.Practitioner.name,
@@ -71,11 +71,24 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
           Coding().apply {
             system = context.getString(R.string.sync_strategy_practitioner_system)
             display = context.getString(R.string.sync_strategy_practitioner_display)
-          }
-      )
+          },
+      ),
+      ResourceTag(
+        type = APP_VERSION,
+        tag =
+          Coding().apply {
+            system = context.getString(R.string.app_version_tag_url)
+            code = BuildConfig.VERSION_NAME
+            display = context.getString(R.string.application_version)
+          },
+      ),
     )
 
   override fun provideConfigurationSyncPageSize(): String {
     return BuildConfig.CONFIGURATION_SYNC_PAGE_SIZE
+  }
+
+  companion object {
+    private const val APP_VERSION = "AppVersion"
   }
 }

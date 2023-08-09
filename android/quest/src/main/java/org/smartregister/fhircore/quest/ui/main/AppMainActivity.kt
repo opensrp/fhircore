@@ -34,6 +34,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -45,6 +46,8 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.addDateTimeIndex
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.extension.parcelable
+import org.smartregister.fhircore.engine.util.extension.serializable
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
@@ -62,10 +65,15 @@ import timber.log.Timber
 open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, OnSyncListener {
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
+
   @Inject lateinit var configService: ConfigService
+
   @Inject lateinit var syncListenerManager: SyncListenerManager
+
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
+
   @Inject lateinit var fhirEngine: FhirEngine
+
   @Inject lateinit var eventBus: EventBus
   lateinit var navHostFragment: NavHostFragment
   val appMainViewModel by viewModels<AppMainViewModel>()
@@ -75,7 +83,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override val startForResult =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
-      if (activityResult.resultCode == Activity.RESULT_OK) onSubmitQuestionnaire(activityResult)
+      if (activityResult.resultCode == Activity.RESULT_OK) {
+        lifecycleScope.launch { onSubmitQuestionnaire(activityResult) }
+      }
     }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,8 +99,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         R.navigation.application_nav_graph,
         bundleOf(
           NavigationArg.SCREEN_TITLE to topMenuConfig.display,
-          NavigationArg.REGISTER_ID to topMenuConfigId
-        )
+          NavigationArg.REGISTER_ID to topMenuConfigId,
+        ),
       )
 
     supportFragmentManager
@@ -105,13 +115,13 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
           appMainViewModel.launchProfileFromGeoWidget(
             navHostFragment.navController,
             geoWidgetEvent.geoWidgetConfiguration.id,
-            geoWidgetEvent.data
+            geoWidgetEvent.data,
           )
         is GeoWidgetEvent.RegisterClient ->
           appMainViewModel.launchFamilyRegistrationWithLocationId(
             context = this,
             locationId = geoWidgetEvent.data,
-            questionnaireConfig = geoWidgetEvent.questionnaire
+            questionnaireConfig = geoWidgetEvent.questionnaire,
           )
       }
     }
@@ -123,9 +133,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     appMainViewModel.run {
       lifecycleScope.launch {
         retrieveAppMainUiState()
-        if (isDeviceOnline())
+        if (isDeviceOnline()) {
           syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
-        else showToast(getString(R.string.sync_failed), Toast.LENGTH_LONG)
+        } else {
+          showToast(getString(R.string.sync_failed), Toast.LENGTH_LONG)
+        }
       }
       schedulePeriodicJobs()
     }
@@ -146,56 +158,57 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     navHostFragment.navController.removeOnDestinationChangedListener(sentryNavListener)
   }
 
-  override fun onSubmitQuestionnaire(activityResult: ActivityResult) {
+  override suspend fun onSubmitQuestionnaire(activityResult: ActivityResult) {
     if (activityResult.resultCode == RESULT_OK) {
       val questionnaireResponse: QuestionnaireResponse? =
-        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE) as
-          QuestionnaireResponse?
+        activityResult.data?.serializable(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
+          as QuestionnaireResponse?
+      val extractedResourceIds =
+        activityResult.data?.serializable(
+          QuestionnaireActivity.QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS,
+        ) as List<IdType>?
+          ?: emptyList()
       val questionnaireConfig =
-        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG) as
-          QuestionnaireConfig?
+        activityResult.data?.parcelable(QuestionnaireActivity.QUESTIONNAIRE_CONFIG)
+          as QuestionnaireConfig?
 
-      lifecycleScope.launch {
-        if (questionnaireConfig != null && questionnaireResponse != null) {
-          eventBus.triggerEvent(
-            AppEvent.OnSubmitQuestionnaire(
-              QuestionnaireSubmission(questionnaireConfig, questionnaireResponse)
-            )
-          )
-        }
-        if (questionnaireConfig != null && questionnaireConfig.refreshContent) {
-          eventBus.triggerEvent(AppEvent.RefreshCache(questionnaireConfig = questionnaireConfig))
-        }
-      }
+      if (questionnaireConfig != null && questionnaireResponse != null) {
+        eventBus.triggerEvent(
+          AppEvent.OnSubmitQuestionnaire(
+            QuestionnaireSubmission(
+              questionnaireConfig = questionnaireConfig,
+              questionnaireResponse = questionnaireResponse,
+              extractedResourceIds = extractedResourceIds,
+            ),
+          ),
+        )
+      } else Timber.e("QuestionnaireConfig & QuestionnaireResponse are both null")
     }
   }
 
   override fun onSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.InProgress -> {
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(syncJobStatus, getString(R.string.syncing_in_progress))
-        )
-      }
-      is SyncJobStatus.Glitch -> {
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(syncJobStatus, appMainViewModel.retrieveLastSyncTimestamp())
-        )
-        // syncJobStatus.exceptions may be null when worker fails; hence the null safety usage
-        Timber.w(syncJobStatus?.exceptions?.joinToString { it.exception.message.toString() })
-      }
-      is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
+      is SyncJobStatus.Glitch,
+      is SyncJobStatus.Finished,
+      is SyncJobStatus.Failed, -> {
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
               syncJobStatus,
-              formatLastSyncTimestamp(syncJobStatus.timestamp)
-            )
+              formatLastSyncTimestamp(syncJobStatus.timestamp),
+            ),
           )
+        }
+        if (syncJobStatus is SyncJobStatus.Glitch) {
+          try {
+            Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
+          } catch (nullPointerException: NullPointerException) {
+            Timber.w("No exceptions reported on Sync Failure ", nullPointerException)
+          }
         }
       }
       else -> {
-        /*Do nothing */
+        // Do nothing
       }
     }
   }

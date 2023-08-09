@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.login
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
-import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -28,19 +27,21 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import okhttp3.internal.http.RealResponseBody
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Organization
+import org.hl7.fhir.r4.model.StringType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
@@ -53,11 +54,13 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.quest.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
+import retrofit2.HttpException
 import retrofit2.Response
 
 @ExperimentalCoroutinesApi
@@ -66,10 +69,12 @@ import retrofit2.Response
 internal class LoginViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
   @Inject lateinit var configService: ConfigService
-  @Inject lateinit var gson: Gson
   private lateinit var loginViewModel: LoginViewModel
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
   private val accountAuthenticator: AccountAuthenticator = mockk()
@@ -103,8 +108,8 @@ internal class LoginViewModelTest : RobolectricTest() {
           tokenAuthenticator = tokenAuthenticator,
           secureSharedPreference = secureSharedPreference,
           dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
-          workManager = workManager
-        )
+          workManager = workManager,
+        ),
       )
   }
 
@@ -131,8 +136,8 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testSuccessfulOfflineLogin() {
     val activity = mockedActivity()
-
     updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, this.thisPassword.toCharArray())
 
     every {
       accountAuthenticator.validateLoginCredentials(thisUsername, thisPassword.toCharArray())
@@ -154,6 +159,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     val activity = mockedActivity()
 
     updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, this.thisPassword.toCharArray())
 
     every {
       accountAuthenticator.validateLoginCredentials(thisUsername, thisPassword.toCharArray())
@@ -175,7 +181,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     updateCredentials()
     sharedPreferencesHelper.write(
       SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-      PractitionerDetails()
+      PractitionerDetails(),
     )
     every { tokenAuthenticator.sessionActive() } returns true
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
@@ -200,7 +206,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertEquals(
       LoginErrorState.MULTI_USER_LOGIN_ATTEMPT,
-      loginViewModel.loginErrorState.value!!
+      loginViewModel.loginErrorState.value!!,
     )
   }
 
@@ -218,8 +224,8 @@ internal class LoginViewModelTest : RobolectricTest() {
           tokenType = "you_guess_it",
           refreshToken = "another_very_refreshing_token",
           refreshExpiresIn = 540000,
-          scope = "open_my_guy"
-        )
+          scope = "open_my_guy",
+        ),
       )
 
     // Mock result for fetch user info via keycloak endpoint
@@ -228,7 +234,16 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     // Mock result for retrieving a FHIR resource using user's keycloak uuid
     val bundle = Bundle()
-    val bundleEntry = Bundle.BundleEntryComponent().apply { resource = practitionerDetails() }
+    val bundleEntry =
+      Bundle.BundleEntryComponent().apply {
+        resource =
+          practitionerDetails().apply {
+            fhirPractitionerDetails =
+              FhirPractitionerDetails().apply {
+                practitionerId = StringType("my-test-practitioner-id")
+              }
+          }
+      }
     coEvery { fhirResourceService.getResource(any()) } returns bundle.addEntry(bundleEntry)
 
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
@@ -238,7 +253,7 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     // Login was successful savePractitionerDetails was called
     val bundleSlot = slot<Bundle>()
-    verify { loginViewModel.savePractitionerDetails(capture(bundleSlot), any()) }
+    verify { loginViewModel.savePractitionerDetails(capture(bundleSlot), any(), any()) }
 
     Assert.assertNotNull(bundleSlot.captured)
     Assert.assertTrue(bundleSlot.captured.entry.isNotEmpty())
@@ -259,8 +274,8 @@ internal class LoginViewModelTest : RobolectricTest() {
           tokenType = "you_guess_it",
           refreshToken = "another_very_refreshing_token",
           refreshExpiresIn = 540000,
-          scope = "open_my_guy"
-        )
+          scope = "open_my_guy",
+        ),
       )
 
     // Mock result for fetch user info via keycloak endpoint
@@ -298,6 +313,162 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertEquals(LoginErrorState.UNKNOWN_HOST, loginViewModel.loginErrorState.value!!)
   }
 
+  @Test
+  fun testLoginWhileOfflineWithNoUserCredentialsEmitsInvalidOfflineState() {
+    updateCredentials()
+
+    loginViewModel.login(mockedActivity(isDeviceOnline = false))
+
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertEquals(
+      LoginErrorState.INVALID_OFFLINE_STATE,
+      loginViewModel.loginErrorState.value!!,
+    )
+  }
+
+  @Test
+  fun testUnsuccessfulOnlineLoginWithUnknownHostExceptionEmitsError() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns Result.failure(UnknownHostException())
+
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertEquals(LoginErrorState.UNKNOWN_HOST, loginViewModel.loginErrorState.value!!)
+  }
+
+  @Test
+  fun testUnsuccessfulOnlineLoginWithHTTPHostExceptionCode400EmitsErrorFetchingUser() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns
+      Result.failure(HttpException(Response.error<OAuthResponse>(400, mockk(relaxed = true))))
+
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertEquals(LoginErrorState.ERROR_FETCHING_USER, loginViewModel.loginErrorState.value!!)
+  }
+
+  @Test
+  fun testUnsuccessfulOnlineLoginWithHTTPHostExceptionCode401EmitsInvalidCredentialsError() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns
+      Result.failure(HttpException(Response.error<OAuthResponse>(401, mockk(relaxed = true))))
+
+    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertEquals(LoginErrorState.INVALID_CREDENTIALS, loginViewModel.loginErrorState.value!!)
+  }
+
+  @Test
+  fun `loginViewModel#fetchPractitioner() should call onFetchUserInfo with exception when SocketTimeoutException is thrown`() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+    coEvery { keycloakService.fetchUserInfo() }.throws(SocketTimeoutException())
+
+    val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>, UserInfo?) -> Unit = mockk(relaxed = true)
+    val userInfoSlot = slot<Result<UserInfo>>()
+
+    runBlocking {
+      loginViewModel.fetchPractitioner(fetchUserInfoCallback, fetchPractitionerCallback)
+    }
+
+    verify { fetchUserInfoCallback(capture(userInfoSlot)) }
+    verify(exactly = 0) { fetchPractitionerCallback(any(), any()) }
+
+    Assert.assertTrue(userInfoSlot.captured.exceptionOrNull() is SocketTimeoutException)
+  }
+
+  @Test
+  fun `loginViewModel#fetchPractitioner() should call onFetchUserInfo with exception when UnknownHostException is thrown`() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+    coEvery { keycloakService.fetchUserInfo() }.throws(UnknownHostException())
+
+    val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>, UserInfo?) -> Unit = mockk(relaxed = true)
+    val userInfoSlot = slot<Result<UserInfo>>()
+
+    runBlocking {
+      loginViewModel.fetchPractitioner(fetchUserInfoCallback, fetchPractitionerCallback)
+    }
+
+    verify { fetchUserInfoCallback(capture(userInfoSlot)) }
+    verify(exactly = 0) { fetchPractitionerCallback(any(), any()) }
+
+    Assert.assertTrue(userInfoSlot.captured.exceptionOrNull() is UnknownHostException)
+  }
+
+  @Test
+  fun `loginViewModel#fetchPractitioner() should call onFetchPractitioner with exception when UnknownHostException is thrown`() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+    coEvery { keycloakService.fetchUserInfo() } returns
+      Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
+    coEvery { fhirResourceService.getResource(any()) }.throws(UnknownHostException())
+
+    val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>, UserInfo?) -> Unit = mockk(relaxed = true)
+    val bundleSlot = slot<Result<Bundle>>()
+    val userInfoSlot = slot<Result<UserInfo>>()
+
+    runBlocking {
+      loginViewModel.fetchPractitioner(fetchUserInfoCallback, fetchPractitionerCallback)
+    }
+
+    verify { fetchUserInfoCallback(capture(userInfoSlot)) }
+    verify { fetchPractitionerCallback(capture(bundleSlot), any()) }
+
+    Assert.assertTrue(userInfoSlot.captured.isSuccess)
+    Assert.assertEquals("awesome_uuid", userInfoSlot.captured.getOrThrow().keycloakUuid)
+    Assert.assertTrue(bundleSlot.captured.exceptionOrNull() is UnknownHostException)
+  }
+
+  @Test
+  fun `loginViewModel#fetchPractitioner() should call onFetchPractitioner with exception when SocketTimeoutException is thrown`() {
+    updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    every { tokenAuthenticator.sessionActive() } returns false
+    coEvery { keycloakService.fetchUserInfo() } returns
+      Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
+    coEvery { fhirResourceService.getResource(any()) }.throws(SocketTimeoutException())
+
+    val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>, UserInfo?) -> Unit = mockk(relaxed = true)
+    val bundleSlot = slot<Result<Bundle>>()
+    val userInfoSlot = slot<Result<UserInfo>>()
+
+    runBlocking {
+      loginViewModel.fetchPractitioner(fetchUserInfoCallback, fetchPractitionerCallback)
+    }
+
+    verify { fetchUserInfoCallback(capture(userInfoSlot)) }
+    verify { fetchPractitionerCallback(capture(bundleSlot), any()) }
+
+    Assert.assertTrue(userInfoSlot.captured.isSuccess)
+    Assert.assertEquals("awesome_uuid", userInfoSlot.captured.getOrThrow().keycloakUuid)
+    Assert.assertTrue(bundleSlot.captured.exceptionOrNull() is SocketTimeoutException)
+  }
+
   private fun practitionerDetails(): PractitionerDetails {
     return PractitionerDetails().apply {
       fhirPractitionerDetails =
@@ -307,7 +478,7 @@ internal class LoginViewModelTest : RobolectricTest() {
               Organization().apply {
                 name = "the.org"
                 id = "the.org.id"
-              }
+              },
             )
         }
     }
@@ -317,10 +488,22 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testSavePractitionerDetails() {
     coEvery { defaultRepository.create(true, any()) } returns listOf()
     loginViewModel.savePractitionerDetails(
-      Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = practitionerDetails() })
+      Bundle()
+        .addEntry(
+          Bundle.BundleEntryComponent().apply {
+            resource =
+              practitionerDetails().apply {
+                fhirPractitionerDetails =
+                  FhirPractitionerDetails().apply {
+                    practitionerId = StringType("my-test-practitioner-id")
+                  }
+              }
+          },
+        ),
+      UserInfo(),
     ) {}
     Assert.assertNotNull(
-      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name)
+      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
     )
   }
 
