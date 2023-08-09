@@ -78,6 +78,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         configService = configService,
         json = Faker.json,
       )
+    configurationRegistry.setNonProxy(false)
     coEvery { fhirEngine.createRemote(any()) } just runs
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
   }
@@ -139,11 +140,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
 
-    coEvery { configurationRegistry.fhirResourceDataSource.post(any(), any()) } returns bundle
+    coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
 
     configurationRegistry.fetchNonWorkflowConfigResources()
-    coVerify { configurationRegistry.fhirResourceDataSource.post(any(), any()) }
+    coVerify { configurationRegistry.fhirResourceDataSource.getResource("List?_id=123456") }
     coVerify { configurationRegistry.create(any()) }
   }
 
