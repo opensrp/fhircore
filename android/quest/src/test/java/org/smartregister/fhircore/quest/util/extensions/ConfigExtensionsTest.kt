@@ -170,7 +170,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     val clickAction =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_SETTINGS.name
+        workflow = ApplicationWorkflow.LAUNCH_SETTINGS.name,
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
