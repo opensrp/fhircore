@@ -1,0 +1,80 @@
+map "http://hl7.org/fhir/StructureMap/4239" = 'mPower Member Referral Schedule'
+
+uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
+uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
+
+group mPowerChildReferral(source src : Parameters, target tgt: CarePlan) {
+    src -> evaluate(src, $this.parameter.where(name='subject').resource) as subject,
+            evaluate(subject, today()) as dueDate
+            then ExtractTasks(dueDate, subject, tgt) "r_careplan";
+}
+
+group ExtractTasks(
+    source dueDate: DateType,
+    source subject : Patient,
+    target careplan: CarePlan){
+
+    subject -> dueDate as start,
+                evaluate(subject, today() + '1 \'months\''.toQuantity()) as end,
+                create('Period') as period,
+                careplan.contained = create('Task') as task then {
+
+        subject then ExtractPeriod(start, end, period) "r_task_period_extr";
+
+        subject -> task.id = uuid(),
+               task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
+               task.status = 'ready',
+               task.intent = 'plan',
+               task.executionPeriod = period,
+               task.priority = 'routine',
+               task.description = 'Member referral visit',
+               task.for = create('Reference') as ref, ref.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
+               // should refer to plandefinition since referral has no careplan
+               task.basedOn = create('Reference') as ref, ref.reference = evaluate(careplan, $this.instantiatesCanonical.first()),
+               task.authoredOn = evaluate(subject, now()),
+               task.requester = evaluate(subject, $this.generalPractitioner.first()),
+               task.owner = evaluate(subject, $this.generalPractitioner.first()) "r_task_data";
+
+        subject -> task.groupIdentifier = create('Identifier') as groupIdentifier then {
+              subject -> groupIdentifier.value = "sick_child_referral_follow_visit" "rule_group_identifier_value";
+              subject -> groupIdentifier.use = "secondary" "rule_group_identifier_use";
+        } "rule_group_identifier";
+        
+        subject where(dueDate <= (subject.birthDate + '60 \'months\''.toQuantity())) -> task.reasonReference = create('Reference') as ref,
+               ref.reference = 'Questionnaire/4236' "r_task_reason_ref_child";
+
+        subject where((dueDate > (subject.birthDate + '60 \'months\''.toQuantity())) and (subject.gender = 'female')) -> task.reasonReference = create('Reference') as ref,
+               ref.reference = 'Questionnaire/4237' "r_task_reason_ref_women";
+
+        subject where(dueDate > (subject.birthDate + '60 \'months\''.toQuantity())) -> task.reasonReference = create('Reference') as ref,
+               ref.reference = 'Questionnaire/4238' "r_task_reason_ref_other_member";
+
+        // create activity.detail of type/kind Task for this Task if not exists
+        subject where(careplan.activity.where(detail.kind = 'Task').exists().not())
+                -> careplan.activity = create('CarePlan_Activity') as activity then {
+                   subject -> activity.detail = create('CarePlan_ActivityDetail') as det then {
+                       subject -> det.kind = 'Task' "r_act_det_data";
+                   } "r_act_det";
+               } "r_cp_acti";
+
+        // add task to careplan only if its valid and not expired
+        subject where(task.executionPeriod.start >= today() or task.executionPeriod.end >= today()) then {
+                 subject -> evaluate(careplan, activity.where(detail.kind = 'Task')) as activity,
+                            activity.outcomeReference = reference(task) "r_cp_task_ref";
+                 subject -> careplan.contained = task  "r_add_task";
+        } "r_cp_task";
+    } "r_cp_acti_outcome";
+}
+
+group ExtractPeriod(source start: DateType, source end: DateType, target period: Period) {
+    start -> period.start = create('dateTime') as dt,
+             dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_start";
+
+    end -> period.end = create('dateTime') as dt,
+           dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_end";
+}
+
+group extractTaskPlanDefinitionCode(source subject: Patient, target taskCode: CodeableConcept) {
+    subject -> taskCode.coding = c("http://smartregister.org/", "plan_definition") as coding, coding.display = 'Plan Definition Reference' "r_cp_cod_disp";
+    subject -> taskCode.text = 'Plan Definition Reference' "r_cp_cc_txt";
+}

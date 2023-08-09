@@ -1,0 +1,397 @@
+{
+  "resourceType": "Questionnaire",
+  "language": "en-GB",
+  "id": "4235",
+  "title": "mPower Referral Follow-up Form",
+  "description": "mPower Referral Follow-up Form",
+  "version": "0.0.1",
+  "status": "active",
+  "publisher": "mPower-mcGovern",
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/ValueSet/usage-context-type",
+        "code": "focus",
+        "display": "Clinical Focus"
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+            "display": "mPower Referral Follow-up Form"
+          }
+        ]
+      }
+    }
+  ],
+  "contact": [
+    {
+      "name": "http://www.mpower-social.com"
+    }
+  ],
+  "date": "2023-07-01T00:00:00Z",
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "c706016d-b8e9-44c7-9acb-155bb4e6092c",
+      "type": "string",
+      "required": true,
+      "readOnly": true,
+      "text": "রেফারেল এর কারণ"
+    },
+    {
+      "linkId": "9b585e14-2d7c-4391-8c89-01f5474c3f9c",
+      "type": "choice",
+      "text": "রেফারেল এর কারণ",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "0b2e1881-b37f-4f9f-8abe-fbc172b15307",
+            "code": "pregnancy_problems",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "গর্ভাবস্থার সমস্যা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "82ea21c8-15d7-483e-8283-e536b888da91",
+            "code": "delivery_problems",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "প্রসবে সমস্যা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "f1b7fbe8-4cbe-4361-c8dd-bc37452ecf44",
+            "code": "pnc_problem",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "প্রসব পরবর্তী সমস্যা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ce21d4d6-fa94-4ca9-8235-6b40d7bdd938",
+            "code": "child_problems",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "শিশু বিষয়ক সমস্যা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2052cb16-bb05-4402-8bab-836316de529b",
+            "code": "adolescent_problems",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "কিশোরী সেবা সংক্রান্ত সমস্যা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "22dad9d8-6573-4e6d-ce52-31f44d78f1b9",
+            "code": "problems_eyes",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "চোখে সমস্যা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "7c1a5f41-52b5-42c2-af33-930e7660ffcf",
+            "code": "diabetes",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "ডায়াবেটিস"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "44c78729-a0d2-4eca-8a79-e3bdf190d30c",
+            "code": "high_blood_pressure",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "উচ্চ রক্তচাপ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "66d5589c-fac0-4af6-85a9-3d1c0aed7708",
+            "code": "problems_with_birth_control",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "জন্মবিরতিকরণ পদ্ধতি সংক্রান্ত সমস্যা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ca32b68f-e942-45e6-87d4-9db8c50f53cd",
+            "code": "cataract_problem",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "চোখে ক্যাটারেক্ট (ছানি) সমস্যা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "98e6fa08-ab4e-4348-8e7a-f5c6f05721b2",
+            "code": "other",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "অন্যান্য"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "8af2f5ba-90f4-4e4b-831e-163ed7b6abb8",
+      "type": "string",
+      "text": "কোথায় রেফার করা হয়েছিল ?"
+    },
+    {
+      "linkId": "08f77e33-1747-44af-f34b-8bf5fd1b9091",
+      "type": "choice",
+      "text": "রেফারকৃত স্বাস্থ্যসেবাকেন্দ্রে গিয়েছিলো কিনা?",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "b82f38fd-a0d6-49e2-d0fa-876a2951e71b",
+            "code": "yes",
+            "system": "urn:uuid:72d52ecd-3986-4ab8-8eb7-a8349e97cf22",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "64b1e4a8-bddb-429f-8078-751d80ef2da7",
+            "code": "no",
+            "system": "urn:uuid:72d52ecd-3986-4ab8-8eb7-a8349e97cf22",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "2f56afc5-4b9d-43be-9821-9d75f7ea32e5",
+      "type": "choice",
+      "text": "অপারেশন হয়েছে কি?",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "b82f38fd-a0d6-49e2-d0fa-876a2951e71b",
+            "code": "yes",
+            "system": "urn:uuid:72d52ecd-3986-4ab8-8eb7-a8349e97cf22",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "64b1e4a8-bddb-429f-8078-751d80ef2da7",
+            "code": "no",
+            "system": "urn:uuid:72d52ecd-3986-4ab8-8eb7-a8349e97cf22",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "9b585e14-2d7c-4391-8c89-01f5474c3f9c",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "code": "cataract_problem"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "3b2b8781-cf1a-45f4-ed80-ce72ffc70300",
+      "type": "choice",
+      "text": "সমস্যা দূর হয়েছে কি?",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "b82f38fd-a0d6-49e2-d0fa-876a2951e71b",
+            "code": "completely_good",
+            "system": "urn:uuid:72d52ecd-3986-4ab8-8eb7-a8349e97cf22",
+            "display": "সপূর্ণ ভালো হয়েছে"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "64b1e4a8-bddb-429f-8078-751d80ef2da7",
+            "code": "improved",
+            "system": "urn:uuid:72d52ecd-3986-4ab8-8eb7-a8349e97cf22",
+            "display": "কিছুটা উন্নতি হয়েছে"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "79709f78-7df9-4bde-b15d-8296bfbc8517",
+            "code": "not_improved",
+            "system": "urn:uuid:72d52ecd-3986-4ab8-8eb7-a8349e97cf22",
+            "display": "কোনো উন্নতি হয় নি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "de256054-2eb8-4256-859b-075de26d9688",
+            "code": "deteriorated",
+            "system": "urn:uuid:72d52ecd-3986-4ab8-8eb7-a8349e97cf22",
+            "display": "অবস্থার অবনতি হয়েছে"
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "9b585e14-2d7c-4391-8c89-01f5474c3f9c",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "code": "cataract_problem"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "ec1e0b42-05d9-4ecb-8aae-b462ce34091e",
+      "type": "choice",
+      "text": "কোথায় গিয়েছিলো?",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "d28de9f5-d0fe-41ea-8e5b-8ed3cc7abc62",
+            "code": "not_going",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "কোথাও যায় নি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "c8da3613-bafc-45d4-8e05-561c042df2ef",
+            "code": "medical_collage_hos",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "মেডিকেল কলেজ হাসপাতাল"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "78b4a1c9-1250-4e8e-f9ab-8a79c939cb22",
+            "code": "gov_hos",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "সরকারী হাসপাতাল"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "141d98f3-7495-4f2a-8e7d-bb2a345fd078",
+            "code": "upazila_health_com",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "উপজেলা স্বাস্থ্য কমপ্লেক্স"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "84f45aee-7ff7-4d4a-8c3b-853e63f427f7",
+            "code": "non_gov_hos",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "বেসরকারি হাসপাতাল/ক্লিনিক"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "47f2815d-01a9-4bf1-bb84-a5319d6105af",
+            "code": "health_family_welfare_centre",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "স্বাস্থ্য ও পরিবার কল্যাণ কেন্দ্র"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "7f1c4218-e2f9-46ed-81d0-dcc2da237a27",
+            "code": "community_clinic",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "কমিউনিটি ক্লিনিক"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "repeats": true,
+      "enableWhen": [
+        {
+          "question": "08f77e33-1747-44af-f34b-8bf5fd1b9091",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:72d52ecd-3986-4ab8-8eb7-a8349e97cf22",
+            "code": "no"
+          }
+        }
+      ]
+    }
+  ]
+}

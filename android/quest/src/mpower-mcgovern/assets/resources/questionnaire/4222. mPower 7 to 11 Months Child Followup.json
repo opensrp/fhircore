@@ -1,0 +1,530 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "4222",
+  "title": "mPower 7 to 11 Months Child Follow-up",
+  "version": "1",
+  "status": "active",
+  "publisher": "mPower-mcGovern",
+  "contact": [
+    {
+      "name": "https://www.mpower-social.com"
+    }
+  ],
+  "subjectType": [
+    "Patient"
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "http://fhir.mpower-social.com:7070/fhir/StructureMap/4221"
+    }
+  ],
+  "date": "2023-07-31T00:00:00+06:00",
+  "item": [
+    {
+      "linkId": "e79c7764-c6c8-4d25-989a-c6d9de9351cc",
+      "type": "choice",
+      "text": "গত ২৪ ঘন্টায় শিশুকে কি কি খাওয়ানো হয়েছিল? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "d3bbe255-aabf-40ee-8530-4b01c80ff443",
+            "code": "mothers_breast_milk",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "মায়ের বুকের দুধ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "25e36445-de9a-457d-9695-51e57c82c26f",
+            "code": "cow_goat_milk",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "গরুর / ছাগলের দুধ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "54467861-9230-4b81-841a-20b7972a6444",
+            "code": "box_milk",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "কৌটা দুধ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3947a8dc-118f-48db-9cec-22e419a819cb",
+            "code": "semolina",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "সুজি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2259e1a1-b0b9-45a8-8397-327eece72c13",
+            "code": "rice_powder",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "চালের গুড়া"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "537e8df6-299a-45f9-e388-29d078d6eb23",
+            "code": "in_house_food",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "পারিবারিক / বাড়তি খাবার"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "f5f9c0f8-1e4b-49ef-ca70-af432e57be05",
+            "code": "other",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "অন্যান্য"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "repeats": true
+    },
+    {
+      "linkId": "def36150-644c-4e54-8530-4a2bafeb5a11",
+      "type": "choice",
+      "text": "বাড়তি খাবার কত মাসে শুরু করা হয়েছে ?",
+      "required": false,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "6dc76d3a-f6d6-4fa6-cd47-a5a76578f055",
+            "code": "7_month",
+            "system": "urn:uuid:8ad07f09-9022-4df5-ad45-dfeaa17bbdca",
+            "display": "৭ মাস"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "0a386e70-59ee-4496-8696-d7effe8e3f7e",
+            "code": "8_month",
+            "system": "urn:uuid:8ad07f09-9022-4df5-ad45-dfeaa17bbdca",
+            "display": "৮ মাস"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "01973879-601e-44b2-886a-9e1a42c40556",
+            "code": "9_month",
+            "system": "urn:uuid:8ad07f09-9022-4df5-ad45-dfeaa17bbdca",
+            "display": "৯ মাস"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "30b4c7a3-ab52-4063-b2a6-a4691545fe0f",
+            "code": "10_month",
+            "system": "urn:uuid:8ad07f09-9022-4df5-ad45-dfeaa17bbdca",
+            "display": "১০ মাস"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "44bff45b-aca0-43b4-89a5-4a1c87328dd7",
+            "code": "11_month",
+            "system": "urn:uuid:8ad07f09-9022-4df5-ad45-dfeaa17bbdca",
+            "display": "১১ মাস"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "fe16029a-36f4-4a68-8ba0-23990ca4f14a",
+      "type": "choice",
+      "text": "গত ২৪ ঘন্টায় পুষ্টিকণা খাওয়ানো হয়েছে ?",
+      "required": false,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "0475a564-85a7-489a-dc92-78e537691a8d",
+            "code": "yes",
+            "system": "urn:uuid:962130e1-7552-47cd-8b5c-6662fc37c580",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b06d4304-4961-481f-9a5a-4b4292a80830",
+            "code": "no",
+            "system": "urn:uuid:962130e1-7552-47cd-8b5c-6662fc37c580",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "f86d28e0-1f63-469a-8c42-c831c271da20",
+      "type": "choice",
+      "text": "নিজে নিজে বসে থাকতে পারে ?",
+      "required": false,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "0475a564-85a7-489a-dc92-78e537691a8d",
+            "code": "yes",
+            "system": "urn:uuid:962130e1-7552-47cd-8b5c-6662fc37c580",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b06d4304-4961-481f-9a5a-4b4292a80830",
+            "code": "no",
+            "system": "urn:uuid:962130e1-7552-47cd-8b5c-6662fc37c580",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "17f95b37-6df7-4841-8a9c-c8784a7bca95",
+      "type": "choice",
+      "text": "হামাগুড়ি দিতে পারে কিনা ?",
+      "required": false,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "0475a564-85a7-489a-dc92-78e537691a8d",
+            "code": "yes",
+            "system": "urn:uuid:962130e1-7552-47cd-8b5c-6662fc37c580",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b06d4304-4961-481f-9a5a-4b4292a80830",
+            "code": "no",
+            "system": "urn:uuid:962130e1-7552-47cd-8b5c-6662fc37c580",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "094d5f7c-357b-4560-8671-0ddab8154b52",
+      "type": "choice",
+      "text": "বা, মা, দা ইত্যাদি শব্দ বলতে পারে ?",
+      "required": false,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "0475a564-85a7-489a-dc92-78e537691a8d",
+            "code": "yes",
+            "system": "urn:uuid:962130e1-7552-47cd-8b5c-6662fc37c580",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b06d4304-4961-481f-9a5a-4b4292a80830",
+            "code": "no",
+            "system": "urn:uuid:962130e1-7552-47cd-8b5c-6662fc37c580",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "c0cef8e4-ce7e-4434-8cda-6ac20fd58ce8",
+      "type": "choice",
+      "text": "কোনো জটিলতা থাকলে লিখুন",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "d3bbe255-aabf-40ee-8530-4b01c80ff443",
+            "code": "diarrhea",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "ডায়রিয়া"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "25e36445-de9a-457d-9695-51e57c82c26f",
+            "code": "pneumonia",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "নিউমোনিয়া"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "54467861-9230-4b81-841a-20b7972a6444",
+            "code": "convulsions",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "খিঁচুনি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3947a8dc-118f-48db-9cec-22e419a819cb",
+            "code": "rapid_breathing",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "দ্রুত শ্বাস/ বুকের খাঁচা ডেবে যাওয়া"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2259e1a1-b0b9-45a8-8397-327eece72c13",
+            "code": "fever",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "জ্বর বা শরীর ঠান্ডা হওয়া"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "f5f9c0f8-1e4b-49ef-ca70-af432e57be05",
+            "code": "leading",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "নেতিয়ে পরা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "cdd41be9-0ec0-4d45-8023-adac5ac951ad",
+            "code": "unable_to_drink_milk",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "দুধ টেনে খেতে না পারা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "0bcecbf5-e889-40c3-9ad5-461e3e101b44",
+            "code": "red_navel",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "নাভি লাল বা ফুলে যাওয়া"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "f710b6f3-0c9a-4e45-818a-bd29dc622c53",
+            "code": "skin_rash",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "ত্বকে ফুস্করি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "0c8e84b3-c0d9-46b9-f28d-888915f15d38",
+            "code": "eye_problem",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "চোখ সমস্যা"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "repeats": true
+    },
+    {
+      "linkId": "3299bf8b-5204-4729-836f-d744cb68167c",
+      "type": "choice",
+      "text": "রেফার করা হয়েছে কিনা?",
+      "required": false,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "0475a564-85a7-489a-dc92-78e537691a8d",
+            "code": "yes",
+            "system": "urn:uuid:962130e1-7552-47cd-8b5c-6662fc37c580",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b06d4304-4961-481f-9a5a-4b4292a80830",
+            "code": "no",
+            "system": "urn:uuid:962130e1-7552-47cd-8b5c-6662fc37c580",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "3196383b-58d3-4448-8853-7d11a0ae068b",
+      "type": "choice",
+      "text": "রেফারের স্থান",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "d3bbe255-aabf-40ee-8530-4b01c80ff443",
+            "code": "medical_collage_hos",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "মেডিকেল কলেজ হাসপাতাল"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "25e36445-de9a-457d-9695-51e57c82c26f",
+            "code": "gov_hos",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "সরকারী হাসপাতাল"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "54467861-9230-4b81-841a-20b7972a6444",
+            "code": "upazila_health_com",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "উপজেলা স্বাস্থ্য কমপ্লেক্স"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3947a8dc-118f-48db-9cec-22e419a819cb",
+            "code": "non_gov_hos",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "বেসরকারি হাসপাতাল/ক্লিনিক"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2259e1a1-b0b9-45a8-8397-327eece72c13",
+            "code": "health_family_welfare_centre",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "স্বাস্থ্য ও পরিবার কল্যাণ কেন্দ্র"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "f5f9c0f8-1e4b-49ef-ca70-af432e57be05",
+            "code": "community_clinic",
+            "system": "urn:uuid:22b1bed4-e265-46dc-9bb9-7fac955dab4d",
+            "display": "কমিউনিটি ক্লিনিক"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "repeats": true,
+      "required": true,
+      "enableWhen": [
+        {
+          "question": "3299bf8b-5204-4729-836f-d744cb68167c",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:962130e1-7552-47cd-8b5c-6662fc37c580",
+            "code": "yes"
+          }
+        }
+      ]
+    }
+  ]
+}

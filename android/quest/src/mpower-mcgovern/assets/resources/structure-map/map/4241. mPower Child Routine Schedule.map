@@ -1,0 +1,110 @@
+map "http://fhir.mpower-social.com:7070/fhir/StructureMap/4241" = 'mPower Child Routine Schedule'
+
+uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
+uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
+
+group ChildRoutineCarePlan(source src : Parameters, target tgt: CarePlan) {
+
+    src -> evaluate(src, $this.parameter.where(name='subject').resource) as subject,
+        evaluate(src, $this.parameter.where(name='definition').resource) as definition,
+        evaluate(src, $this.parameter.where(name='period').value) as period,
+        evaluate(src, today()) as today
+        then ExtractTask(today, period, subject, definition, tgt) "r_careplan";
+}
+
+group ExtractTask(
+    source offset: DateType,
+    source period: Period,
+    source subject : Patient,
+    source definition: ActivityDefinition,
+    target careplan: CarePlan){
+
+    // fill task into careplan contained and add reference in activity.outcome
+    subject -> create('Task') as task then {
+        subject -> task.id = uuid(),
+               task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
+               task.identifier = create('Identifier') as iden, iden.value = 'child_routine_visit', iden.use = 'secondary',
+               task.status = 'requested',
+               task.intent = 'plan',
+               task.executionPeriod = period,
+               task.priority = 'routine',
+               task.description = evaluate(definition, $this.title),
+               task.for = create('Reference') as ref, ref.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
+               task.basedOn = reference(careplan),
+               task.authoredOn = evaluate(subject, now()),
+               task.requester = evaluate(subject, $this.generalPractitioner.first()),
+               task.owner = evaluate(subject, $this.generalPractitioner.first()) "r_task_data";
+
+        subject then extractPeriod(subject, task) "r_task_period_extr";
+
+        // use different forms for 0 month to 5 year
+        subject -> evaluate(definition, $this.id) as definitionId then {
+            subject where(definitionId = '#careplan-task-activity-0to3-month') -> task.reasonReference = create('Reference') as ref,
+                ref.reference = 'Questionnaire/4218' "r_task_reason_ref_0_to_3m";
+            subject where(definitionId = '#careplan-task-activity-4to6-month') -> task.reasonReference = create('Reference') as ref,
+               ref.reference = 'Questionnaire/4220' "r_task_reason_ref_4_to_6m";
+            subject where(definitionId = '#careplan-task-activity-7to11-month') -> task.reasonReference = create('Reference') as ref,
+               ref.reference = 'Questionnaire/4222' "r_task_reason_ref_7_to_11m";
+            subject where(definitionId = '#careplan-task-activity-12to18-month') -> task.reasonReference = create('Reference') as ref,
+               ref.reference = 'Questionnaire/4224' "r_task_reason_ref_12_to_18m";
+            subject where(definitionId = '#careplan-task-activity-19to23-month') -> task.reasonReference = create('Reference') as ref,
+               ref.reference = 'Questionnaire/4226' "r_task_reason_ref_19_to_23m";
+            subject where(definitionId = '#careplan-task-activity-24to35-month') -> task.reasonReference = create('Reference') as ref,
+               ref.reference = 'Questionnaire/4228' "r_task_reason_ref_24_to_35m";
+            subject where(definitionId = '#careplan-task-activity-36to47-month') -> task.reasonReference = create('Reference') as ref,
+               ref.reference = 'Questionnaire/4230' "r_task_reason_ref_36_to_47m";
+            subject where(definitionId = '#careplan-task-activity-48to59-month') -> task.reasonReference = create('Reference') as ref,
+               ref.reference = 'Questionnaire/4232' "r_task_reason_ref_48_to_59m";
+        } "extract_definition_id";
+
+        // create activity.detail of type/kind Task for this Task if not exists
+        subject where(careplan.activity.where(detail.kind = 'Task').exists().not())
+                -> careplan.activity = create('CarePlan_Activity') as activity then {
+                   subject -> activity.detail = create('CarePlan_ActivityDetail') as det then {
+                       subject -> det.kind = 'Task' "r_act_det_data";
+                   } "r_act_det";
+               } "r_cp_acti";
+
+        // add task to careplan only if its valid and not expired
+        subject where(task.executionPeriod.start >= today() or task.executionPeriod.end >= today()) then {
+                 subject -> evaluate(careplan, activity.where(detail.kind = 'Task')) as activity,
+                            activity.outcomeReference = reference(task) "r_cp_task_ref";
+                 subject -> careplan.contained = task  "r_add_task";
+        } "r_cp_task";
+
+        // Add the valueReference
+        subject -> task.input = create('Task_Input') as input then {
+            subject -> input.value = create('Reference') as valueRef, valueRef.reference = 'PlanDefinition/4242' "r_task_input_value_ref";
+            subject -> input.type = create('CodeableConcept') as taskCode then extractTaskPlanDefinitionCode(subject, taskCode) "r_task_input_cod";
+       } "r_task_input";
+    } "r_task";
+}
+
+group extractTaskPlanDefinitionCode(source subject: Patient, target taskCode: CodeableConcept) {
+    subject -> taskCode.coding = c("http://www.mpower-social.com/", "plan_definition") as coding, coding.display = 'Plan Definition Reference' "r_cp_cod_disp";
+    subject -> taskCode.text = 'Plan Definition Reference' "r_cp_cc_txt";
+}
+
+group extractPeriod(source subject: Patient, target task: Task) {
+    subject -> evaluate(task, $this.executionPeriod.start) as start, evaluate(task, $this.executionPeriod.end) as end then {
+        subject -> create('Period') as period then {
+
+         subject -> create('date') as startDate,
+                    startDate.value = evaluate(start, $this.value.substring(0,10)),
+                    create('date') as maxMonth,
+                    maxMonth.value = evaluate(end, $this.value.substring(0,10)),
+                    evaluate(maxMonth, $this - '1 \'days\''.toQuantity()) as endDate
+                    then extractPeriodTime(startDate, endDate, period) "r_task_period_extr";
+
+            subject -> task.executionPeriod = period "r_task_per";
+        } "rule_period";
+    } "r_per";
+}
+
+group extractPeriodTime(source start: DateType, source end: DateType, target period: Period) {
+    start -> period.start = create('dateTime') as dt,
+             dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_start";
+
+    end -> period.end = create('dateTime') as dt,
+           dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_end";
+}

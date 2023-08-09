@@ -1,0 +1,806 @@
+{
+  "resourceType": "Questionnaire",
+  "language": "en-GB",
+  "id": "4968",
+  "title": "mPower NCD Facility Service",
+  "description": "mPower NCD Facility Service",
+  "status": "active",
+  "publisher": "mPower-mcGovern",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "http://fhir.mpower-social.com:7070/fhir/StructureMap/4967"
+    }
+  ],
+  "contact": [
+    {
+      "name": "http://www.mpower-social.com"
+    }
+  ],
+  "subjectType": [
+    "Patient"
+  ],
+  "date": "2023-08-06T00:00:00+06:00",
+  "item": [
+    {
+      "linkId": "b4832b80-072b-41a6-8d42-72b10e0b2b5c",
+      "type": "choice",
+      "text": "নিচের কোন কোন সমস্যা আছে? *",
+      "required": true,
+      "repeats": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c33a5aa3-c1fd-443f-d336-2b6ec22a20d5",
+            "code": "high_blood_pressure",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "উচ্চ রক্তচাপ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ce569a8c-12f6-43b2-a752-8355d59b1fe2",
+            "code": "diabetics",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "ডায়াবেটিস"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3057f86b-608c-438c-e139-b02e02f4646d",
+            "code": "heart_disease",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "হৃদরোগ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ed64ba42-f63d-438a-f4ce-063466d47387",
+            "code": "asthma",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "হাঁপানি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "62898fbf-3722-4080-83cf-a021c8e25136",
+            "code": "tuberculosis",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "যক্ষা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "9db2a46a-3763-4961-a6bf-373798ca75ab",
+            "code": "cancer",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "ক্যান্সার"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "af49c037-f93f-4e36-86bb-85e4c95d3aae",
+            "code": "stroke",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "স্ট্রোক"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "d68c510f-619f-4b05-86cb-8c17a0cb3fb3",
+            "code": "arthritis",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "আর্থ্রাইটিস"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "e42eb4b7-1007-4c22-c9ae-9d2e939e6012",
+            "code": "kidney_problems",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "কিডনি সমস্যা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "140061f8-7c19-438e-b383-15fee4e3a155",
+            "code": "liver_problems",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "লিভার সমস্যা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "50a1c872-51d3-4184-84cb-9ab522c0a393",
+            "code": "other_option",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "অন্যান্য"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+              "valueBoolean": true
+            }
+          ],
+          "valueCoding": {
+            "id": "7aa8e7b4-20e2-401a-913c-973ecd7e1ebc",
+            "code": "no_problem",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "সমস্যা নাই"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "check-box"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "0056047e-592a-4da7-bd8b-9bca2b154b3e",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "নিয়মিত কোন ঔষধ সেবন করছেন? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "3844117b-1ff5-4279-8941-4d9cb0104b1d",
+      "type": "decimal",
+      "text": "ওজন (কেজি) *",
+      "required": true,
+      "extension": [
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "নাম্বার টাইপ হতে হবে"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxDecimalPlaces",
+          "valueInteger": 2
+        }
+      ]
+    },
+    {
+      "linkId": "b484ca18-e983-4a13-9666-cb656f411a53",
+      "type": "decimal",
+      "text": "ঊচচতা (সে.মি.) *",
+      "required": true,
+      "extension": [
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "নাম্বার টাইপ হতে হবে"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxDecimalPlaces",
+          "valueInteger": 2
+        }
+      ]
+    },
+    {
+      "linkId": "a9af24a5-9c4d-4dbe-8210-aad8d3c72cdb",
+      "type": "decimal",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "(%resource.descendants().where(linkId='3844117b-1ff5-4279-8941-4d9cb0104b1d').answer.value * 10000) / (%resource.descendants().where(linkId='b484ca18-e983-4a13-9666-cb656f411a53').answer.value * %resource.descendants().where(linkId='b484ca18-e983-4a13-9666-cb656f411a53').answer.value)"
+          }
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "নাম্বার টাইপ হতে হবে"
+        }
+      ],
+      "required": true,
+      "enableWhen": [
+        {
+          "question": "3844117b-1ff5-4279-8941-4d9cb0104b1d",
+          "operator": ">",
+          "answerDecimal": 0
+        },
+        {
+          "question": "b484ca18-e983-4a13-9666-cb656f411a53",
+          "operator": ">",
+          "answerDecimal": 0
+        }
+      ],
+      "text": "বি.এম.আই *",
+      "enableBehavior": "all",
+      "readOnly": true,
+      "item": [
+        {
+          "linkId": "c5fa8d99-d5ba-4d74-96d5-18cb452029c9",
+          "type": "display",
+          "text": "নিয়মিত ব্যায়াম এবং স্বাস্থ্যকর খাবার খেয়ে ওজন কমাতে হবে।  যেমন- তৈলাক্ত ও শর্করা জাতীয় খাবার - ভাত, আলু ইত্যাদি খাওয়া কমাতে হবে এবং  শাক-সবজি বেশি বেশি খেতে হবে",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ],
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "a9af24a5-9c4d-4dbe-8210-aad8d3c72cdb",
+              "operator": ">",
+              "answerDecimal": 25
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "9f253b26-a037-4bdd-e008-2a8c28d131b4",
+      "type": "group",
+      "text": "রক্তচাপ",
+      "required": false,
+      "item": [
+        {
+          "linkId": "c5d7612c-d650-4d01-f045-f7851bd907ed",
+          "type": "integer",
+          "text": "সিস্টোলিক (mmHg) *",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueInteger": 51
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueInteger": 219
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "51 এর সমান বা বেশি  এবং 219 এর সমান বা কম হওয়া উচিত"
+            }
+          ],
+          "required": true,
+          "item": [
+            {
+              "linkId": "52397431-ca42-455f-887f-f5c06fd83d85",
+              "type": "display",
+              "text": "ওজন বেশি থাকলে কমাতে হবে। পরিমিত (কম) লবন এবং স্বাস্থ্যকর খাদ্য খেতে হবে",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "highlight"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "required": false,
+              "enableWhen": [
+                {
+                  "question": "c5d7612c-d650-4d01-f045-f7851bd907ed",
+                  "operator": ">",
+                  "answerInteger": 140
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "be1513de-ea72-4a6a-b4d9-cb20ee55637d",
+          "type": "integer",
+          "text": "ডায়াস্টোলিক (mmHg) *",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueInteger": 21
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueInteger": 119
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "21 এর সমান বা বেশি  এবং 119 এর সমান বা কম হওয়া উচিত"
+            }
+          ],
+          "required": true,
+          "item": [
+            {
+              "linkId": "0d6aa7d7-f4a3-48dc-86cc-44287f5a6240",
+              "type": "display",
+              "text": "ওজন বেশি থাকলে কমাতে হবে। পরিমিত (কম) লবন এবং স্বাস্থ্যকর খাদ্য খেতে হবে",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "highlight"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "required": false,
+              "enableWhen": [
+                {
+                  "question": "be1513de-ea72-4a6a-b4d9-cb20ee55637d",
+                  "operator": ">",
+                  "answerInteger": 90
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "6651a9fc-4c9b-4b88-80a8-8a95f06eed7c",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "হাসপাতালে গিয়ে  রক্তচাপ পরীক্ষা করেছে কিনা?",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "c1cfc6a3-e78d-4f63-b77d-027989106174",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "এই রোগীর রক্তচাপ কি হাসপাতালে নিশ্চিত হয়েছে? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "6651a9fc-4c9b-4b88-80a8-8a95f06eed7c",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "code": "yes"
+          }
+        }
+      ],
+      "required": true
+    },
+    {
+      "linkId": "687fe11f-3ddc-4bf5-93e5-dfec58b49ed7",
+      "type": "group",
+      "text": "গ্লুকোজ(mmol/l) - রক্ত পরীক্ষা",
+      "required": false,
+      "item": [
+        {
+          "linkId": "e2f2e508-6071-4701-e214-d9669fbc0afc",
+          "type": "decimal",
+          "text": "রেন্ডম (খাওয়ার দুই ঘন্টা পর) *",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueDecimal": 3
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDecimal": 20
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxDecimalPlaces",
+              "valueInteger": 2
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "3 এর সমান বা বেশি এবং 20 এর সমান বা কম হওয়া উচিত"
+            }
+          ],
+          "required": true,
+          "item": [
+            {
+              "linkId": "bda00e4c-633f-4130-85fe-db65f8bd0089",
+              "type": "display",
+              "text": "চিনি এবং শর্করা জাতীয় খাবার কমাতে হবে, নিয়মিত ব্যায়াম করতে হবে।  তাছাড়াও নিয়মিত পরীক্ষা করতে হবে",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                        "code": "highlight"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "required": false,
+              "enableWhen": [
+                {
+                  "question": "e2f2e508-6071-4701-e214-d9669fbc0afc",
+                  "operator": ">=",
+                  "answerDecimal": 11.1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "6c7bec34-0575-412e-93f4-26c76862ae04",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "হাসপাতালে গিয়ে ডায়েবেটিস পরীক্ষা করেছে কিনা?",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "e92390e2-9582-4da2-e815-52110d5c440e",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "এই রোগীর ডায়েবেটিস কি হাসপাতালে নিশ্চিত হয়েছে? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "6c7bec34-0575-412e-93f4-26c76862ae04",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "code": "yes"
+          }
+        }
+      ],
+      "required": true
+    },
+    {
+      "linkId": "1d42768c-4a14-4549-a892-18883b3fba5d",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "রেফার করা হয়েছে কিনা? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "required": true
+    },
+    {
+      "linkId": "fe713e46-42bc-4931-8364-d4945cd0ea26",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "high_blood_pressure",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "ক্লায়েন্ট উচ্চরক্তচাপ এর ঝুঁকিতে আছে"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "7991f81f-096c-4cc5-8633-393f3d36dcee",
+            "code": "diabetics",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "ক্লায়েন্ট ডায়াবেটিস এর ঝুঁকিতে আছে"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "other",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "অন্যান্য"
+          }
+        }
+      ],
+      "text": "রেফারেল এর কারণ *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "1d42768c-4a14-4549-a892-18883b3fba5d",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "code": "yes"
+          }
+        }
+      ],
+      "required": true,
+      "item": [
+        {
+          "linkId": "446051b7-8f77-4191-86bd-a0c01c620aaa",
+          "type": "string",
+          "text": "অন্যান্য কারণ",
+          "required": true,
+          "enableWhen": [
+            {
+              "question": "fe713e46-42bc-4931-8364-d4945cd0ea26",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+                "code": "other"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "14e57261-d521-4c96-8759-07b22f0a5742",
+      "type": "choice",
+      "text": "রেফারের স্থান",
+      "required": false,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c8da3613-bafc-45d4-8e05-561c042df2ef",
+            "code": "medical_collage_hos",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "মেডিকেল কলেজ হাসপাতাল"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "78b4a1c9-1250-4e8e-f9ab-8a79c939cb22",
+            "code": "gov_hos",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "সরকারী হাসপাতাল"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "141d98f3-7495-4f2a-8e7d-bb2a345fd078",
+            "code": "upazila_health_com",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "উপজেলা স্বাস্থ্য কমপ্লেক্স"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "84f45aee-7ff7-4d4a-8c3b-853e63f427f7",
+            "code": "non_gov_hos",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "বেসরকারি হাসপাতাল/ক্লিনিক"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "47f2815d-01a9-4bf1-bb84-a5319d6105af",
+            "code": "health_family_welfare_centre",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "স্বাস্থ্য ও পরিবার কল্যাণ কেন্দ্র"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "7f1c4218-e2f9-46ed-81d0-dcc2da237a27",
+            "code": "community_clinic",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "কমিউনিটি ক্লিনিক"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "repeats": true,
+      "enableWhen": [
+        {
+          "question": "1d42768c-4a14-4549-a892-18883b3fba5d",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "code": "yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "bca2ada3-8195-4062-85e7-50c035a2c28e",
+      "type": "string",
+      "text": "উপদেশ",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,619 @@
+{
+  "resourceType": "PlanDefinition",
+  "id": "4242",
+  "contained": [
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-init-activity",
+      "title": "Child Register Handler Activity",
+      "status": "active",
+      "description": "This action will assess careplan on registration to init careplan",
+      "kind": "CarePlan",
+      "dynamicValue": [
+        {
+          "path": "title",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.title"
+          }
+        },
+        {
+          "path": "description",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.description"
+          }
+        },
+        {
+          "path": "instantiatesCanonical",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.id.replaceMatches('/_history/.*', '')"
+          }
+        },
+        {
+          "path": "status",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'active'"
+          }
+        },
+        {
+          "path": "intent",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'plan'"
+          }
+        },
+        {
+          "path": "created",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "now()"
+          }
+        },
+        {
+          "path": "subject",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.subject"
+          }
+        },
+        {
+          "path": "author",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.generalPractitioner.first()"
+          }
+        },
+        {
+          "path": "period.start",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.birthDate"
+          }
+        },
+        {
+          "path": "period.end",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.birthDate + 60 'months'"
+          }
+        },
+        {
+          "path": "activity.detail.kind",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'Task'"
+          }
+        },
+        {
+          "path": "activity.detail.status",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'in-progress'"
+          }
+        },
+        {
+          "path": "activity.detail.description",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'This action will assess careplan on registration to init careplan'"
+          }
+        },
+        {
+          "path": "activity.detail.performer",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.generalPractitioner.first()"
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-task-activity-0to3-month",
+      "title": "Child Routine Visit 0 to 3 Months",
+      "description": "This action will performed every month for a patient < 5 years old. The start date with be next month after registration while the end date will be the 60th week after birth.",
+      "status": "active",
+      "kind": "Task",
+      "timingTiming": {
+        "repeat": {
+          "count": 1,
+          "duration": 3,
+          "durationUnit": "mo",
+          "period": 0,
+          "periodUnit": "mo"
+        }
+      }
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-task-activity-4to6-month",
+      "title": "Child Routine Visit 4 to 6 Months",
+      "description": "This action will performed every month for a patient < 5 years old. The start date with be next month after registration while the end date will be the 60th week after birth.",
+      "status": "active",
+      "kind": "Task",
+      "timingTiming": {
+        "repeat": {
+          "count": 1,
+          "duration": 3,
+          "durationUnit": "mo",
+          "period": 4,
+          "periodUnit": "mo"
+        }
+      }
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-task-activity-7to11-month",
+      "title": "Child Routine Visit 7 to 11 Months",
+      "description": "This action will performed every month for a patient < 5 years old. The start date with be next month after registration while the end date will be the 60th week after birth.",
+      "status": "active",
+      "kind": "Task",
+      "timingTiming": {
+        "repeat": {
+          "count": 1,
+          "duration": 5,
+          "durationUnit": "mo",
+          "period": 7,
+          "periodUnit": "mo"
+        }
+      }
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-task-activity-12to18-month",
+      "title": "Child Routine Visit 12 to 18 Months",
+      "description": "This action will performed every month for a patient < 5 years old. The start date with be next month after registration while the end date will be the 60th week after birth.",
+      "status": "active",
+      "kind": "Task",
+      "timingTiming": {
+        "repeat": {
+          "count": 1,
+          "duration": 7,
+          "durationUnit": "mo",
+          "period": 12,
+          "periodUnit": "mo"
+        }
+      }
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-task-activity-19to23-month",
+      "title": "Child Routine Visit 19 to 23 Months",
+      "description": "This action will performed every month for a patient < 5 years old. The start date with be next month after registration while the end date will be the 60th week after birth.",
+      "status": "active",
+      "kind": "Task",
+      "timingTiming": {
+        "repeat": {
+          "count": 1,
+          "duration": 5,
+          "durationUnit": "mo",
+          "period": 19,
+          "periodUnit": "mo"
+        }
+      }
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-task-activity-24to35-month",
+      "title": "Child Routine Visit 2 to 3 Years",
+      "description": "This action will performed every month for a patient < 5 years old. The start date with be next month after registration while the end date will be the 60th week after birth.",
+      "status": "active",
+      "kind": "Task",
+      "timingTiming": {
+        "repeat": {
+          "count": 1,
+          "duration": 12,
+          "durationUnit": "mo",
+          "period": 24,
+          "periodUnit": "mo"
+        }
+      }
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-task-activity-36to47-month",
+      "title": "Child Routine Visit 3 to 4 Years",
+      "description": "This action will performed every month for a patient < 5 years old. The start date with be next month after registration while the end date will be the 60th week after birth.",
+      "status": "active",
+      "kind": "Task",
+      "timingTiming": {
+        "repeat": {
+          "count": 1,
+          "duration": 12,
+          "durationUnit": "mo",
+          "period": 36,
+          "periodUnit": "mo"
+        }
+      }
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-task-activity-48to59-month",
+      "title": "Child Routine Visit 4 to 5 Years",
+      "description": "This action will performed every month for a patient < 5 years old. The start date with be next month after registration while the end date will be the 60th week after birth.",
+      "status": "active",
+      "kind": "Task",
+      "timingTiming": {
+        "repeat": {
+          "count": 1,
+          "duration": 12,
+          "durationUnit": "mo",
+          "period": 48,
+          "periodUnit": "mo"
+        }
+      }
+    }
+  ],
+  "name": "mPower Child Routine Plan",
+  "title": "mPower Child Routine Plan",
+  "status": "active",
+  "description": "This action will performed every month for a patient < 5 years old. The start date with be next month after registration while the end date will be the 60th week after birth.",
+  "goal": [
+    {
+      "category": {
+        "coding": [
+          {
+            "system": "https://www.hl7.org/fhir/codesystem-goal-category.html",
+            "code": "nursing",
+            "display": "Nursing"
+          }
+        ]
+      },
+      "priority": {
+        "coding": [
+          {
+            "system": "https://www.hl7.org/fhir/codesystem-goal-priority.html",
+            "code": "high-priority",
+            "display": "High Priority"
+          }
+        ]
+      },
+      "start": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "32485007",
+            "display": "Admission to hospital"
+          }
+        ]
+      }
+    }
+  ],
+  "action": [
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and (today() - 60 'months') <= $this.birthDate"
+          }
+        }
+      ],
+      "definitionCanonical": "#careplan-init-activity",
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                "code": "nurse",
+                "display": "Nurse"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and (today() - 3 'months') <= $this.birthDate and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/4234').exists()"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                "code": "nurse",
+                "display": "Nurse"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-task-activity-0to3-month",
+      "transform": "http://hl7.org/fhir/StructureMap/4241"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and (today() - 6 'months') <= $this.birthDate and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/4234').exists()"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                "code": "nurse",
+                "display": "Nurse"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-task-activity-4to6-month",
+      "transform": "http://hl7.org/fhir/StructureMap/4241"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and (today() - 11 'months') <= $this.birthDate and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/4234').exists()"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                "code": "nurse",
+                "display": "Nurse"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-task-activity-7to11-month",
+      "transform": "http://hl7.org/fhir/StructureMap/4241"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and (today() - 18 'months') <= $this.birthDate and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/4234').exists()"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                "code": "nurse",
+                "display": "Nurse"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-task-activity-12to18-month",
+      "transform": "http://hl7.org/fhir/StructureMap/4241"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and (today() - 23 'months') <= $this.birthDate and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/4234').exists()"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                "code": "nurse",
+                "display": "Nurse"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-task-activity-19to23-month",
+      "transform": "http://hl7.org/fhir/StructureMap/4241"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and (today() - 35 'months') <= $this.birthDate and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/4234').exists()"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                "code": "nurse",
+                "display": "Nurse"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-task-activity-24to35-month",
+      "transform": "http://hl7.org/fhir/StructureMap/4241"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and (today() - 47 'months') <= $this.birthDate and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/4234').exists()"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                "code": "nurse",
+                "display": "Nurse"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-task-activity-36to47-month",
+      "transform": "http://hl7.org/fhir/StructureMap/4241"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and (today() - 60 'months') <= $this.birthDate and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/4234').exists()"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                "code": "nurse",
+                "display": "Nurse"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-task-activity-48to59-month",
+      "transform": "http://hl7.org/fhir/StructureMap/4241"
+    }
+  ]
+}

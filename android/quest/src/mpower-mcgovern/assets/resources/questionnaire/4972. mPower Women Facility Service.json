@@ -1,0 +1,294 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "4972",
+  "title": "mPower Women Facility Service",
+  "description": "mPower Women Facility Service",
+  "language": "en-GB",
+  "status": "active",
+  "publisher": "mPower-mcGovern",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "http://fhir.mpower-social.com:7070/fhir/StructureMap/4971"
+    }
+  ],
+  "contact": [
+    {
+      "name": "http://www.mpower-social.com"
+    }
+  ],
+  "subjectType": [
+    "Patient"
+  ],
+  "date": "2023-08-06T00:00:00+06:00",
+  "item": [
+    {
+      "linkId": "b4832b80-072b-41a6-8d42-72b10e0b2b5c",
+      "type": "choice",
+      "text": "নিচের কোন কোন সমস্যা আছে? *",
+      "required": true,
+      "repeats": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c33a5aa3-c1fd-443f-d336-2b6ec22a20d5",
+            "code": "fistula",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "ফিস্টুলা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ce569a8c-12f6-43b2-a752-8355d59b1fe2",
+            "code": "prolapse",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "প্রোল্যাপ্স"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3057f86b-608c-438c-e139-b02e02f4646d",
+            "code": "excessive_vaginal_bleeding",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "যোনিপথে অতিরিক্ত রক্তক্ষরণ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ed64ba42-f63d-438a-f4ce-063466d47387",
+            "code": "lower_abdominal_pain",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "তলপেটে ব্যথা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "62898fbf-3722-4080-83cf-a021c8e25136",
+            "code": "breast_lump_cancer",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "স্তন পিন্ড/দলা/ক্যান্সার"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "50a1c872-51d3-4184-84cb-9ab522c0a393",
+            "code": "other_option",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "অন্যান্য"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+              "valueBoolean": true
+            }
+          ],
+          "valueCoding": {
+            "id": "7aa8e7b4-20e2-401a-913c-973ecd7e1ebc",
+            "code": "no_problem",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "কোন সমস্যা নাই"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "check-box"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "0056047e-592a-4da7-bd8b-9bca2b154b3e",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "আগে কি রেফার করা হয়েছিল?",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "07f9be80-4fea-4f9b-c855-785ef4a15037",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "রেফারকৃত স্থানে কি গিয়েছিলেন?",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "0056047e-592a-4da7-bd8b-9bca2b154b3e",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "code": "yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "df9b8a04-a2d1-43c0-e8d1-7153987ff852",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "যথাযথ সেবা পেয়েছে কি? ",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "07f9be80-4fea-4f9b-c855-785ef4a15037",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "code": "yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "8ee2fc3b-0f51-45ef-9158-9706189bc4a5",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "well",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "সুস্থ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "sick",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "অসুস্থ"
+          }
+        }
+      ],
+      "text": "বর্তমান শারীরিক অবস্থা কি? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "07f9be80-4fea-4f9b-c855-785ef4a15037",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "code": "yes"
+          }
+        },
+        {
+          "question": "b4832b80-072b-41a6-8d42-72b10e0b2b5c",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "code": "fistula"
+          }
+        }
+      ],
+      "required": true,
+      "enableBehavior": "all"
+    }
+  ]
+}

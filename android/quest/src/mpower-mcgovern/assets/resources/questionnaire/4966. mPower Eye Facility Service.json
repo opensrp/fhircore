@@ -1,0 +1,393 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "4966",
+  "title": "mPower Eye Facility Service",
+  "description": "mPower Eye Facility Service",
+  "language": "en-GB",
+  "status": "active",
+  "publisher": "mPower-mcGovern",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "http://fhir.mpower-social.com:7070/fhir/StructureMap/4965"
+    }
+  ],
+  "contact": [
+    {
+      "name": "http://www.mpower-social.com"
+    }
+  ],
+  "subjectType": [
+    "Patient"
+  ],
+  "date": "2023-08-06T00:00:00+06:00",
+  "item": [
+    {
+      "linkId": "b4832b80-072b-41a6-8d42-72b10e0b2b5c",
+      "type": "choice",
+      "text": "পরীক্ষার ফলাফল *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c33a5aa3-c1fd-443f-d336-2b6ec22a20d5",
+            "code": "presbiopia",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "প্রেসবায়োপিয়া"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ce569a8c-12f6-43b2-a752-8355d59b1fe2",
+            "code": "cataract",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "ক্যাটারাক্ট"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3057f86b-608c-438c-e139-b02e02f4646d",
+            "code": "hyperopia",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "দূরদৃষ্টি সমস্যা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ed64ba42-f63d-438a-f4ce-063466d47387",
+            "code": "no_problem",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "সমস্যা নেই"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "62898fbf-3722-4080-83cf-a021c8e25136",
+            "code": "other_problem",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "অন্যান্য সমস্যা"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "384dee70-db6b-4f92-c619-8930d93d9035",
+      "type": "choice",
+      "text": "পাওয়ার *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c33a5aa3-c1fd-443f-d336-2b6ec22a20d5",
+            "code": "1",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "1"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ce569a8c-12f6-43b2-a752-8355d59b1fe2",
+            "code": "1.5",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "1.5"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3057f86b-608c-438c-e139-b02e02f4646d",
+            "code": "2",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "2"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ed64ba42-f63d-438a-f4ce-063466d47387",
+            "code": "2.5",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "2.5"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "62898fbf-3722-4080-83cf-a021c8e25136",
+            "code": "3",
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "display": "3"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "b4832b80-072b-41a6-8d42-72b10e0b2b5c",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "code": "presbiopia"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "0056047e-592a-4da7-bd8b-9bca2b154b3e",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "চশমা দেয়া হয়েছে কি? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "a297244b-7569-4772-8ba9-2e7e9a643b46",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "sv",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "সিঙ্গেল ভিশন"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "bf",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "বাই -ফোকাল"
+          }
+        }
+      ],
+      "text": "চশমার ধরণ *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "b4832b80-072b-41a6-8d42-72b10e0b2b5c",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "code": "presbiopia"
+          }
+        },
+        {
+          "question": "0056047e-592a-4da7-bd8b-9bca2b154b3e",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "code": "yes"
+          }
+        }
+      ],
+      "enableBehavior": "all"
+    },
+    {
+      "linkId": "fdfed28f-98de-477f-8d87-4a42b6ec5b11",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "sg",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "সানগ্লাস"
+          }
+        }
+      ],
+      "text": "চশমার ধরণ *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "b4832b80-072b-41a6-8d42-72b10e0b2b5c",
+          "operator": "!=",
+          "answerCoding": {
+            "system": "urn:uuid:7eae7018-a2bc-44f7-d209-d600d522dee1",
+            "code": "presbiopia"
+          }
+        },
+        {
+          "question": "0056047e-592a-4da7-bd8b-9bca2b154b3e",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "code": "yes"
+          }
+        }
+      ],
+      "enableBehavior": "all"
+    },
+    {
+      "linkId": "4958662d-2a3c-4859-871e-68c6ebd990c7",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "metal",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "মেটাল"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "plastic",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "প্লাস্টিক"
+          }
+        }
+      ],
+      "text": "চশমা বিক্রয় *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "0056047e-592a-4da7-bd8b-9bca2b154b3e",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "code": "yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "18fe4607-73d2-444f-89fe-20899664fa82",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "প্রথম চশমা ব্যবহারকারী কিনা? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "0056047e-592a-4da7-bd8b-9bca2b154b3e",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "code": "yes"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1222 @@
+{
+  "resourceType": "Questionnaire",
+  "language": "en-GB",
+  "id": "4974",
+  "title": "mPower Child Facility Service (IYCF)",
+  "description": "mPower Child Facility Service (IYCF)",
+  "status": "active",
+  "publisher": "mPower-mcGovern",
+  "contact": [
+    {
+      "name": "http://www.mpower-social.com"
+    }
+  ],
+  "subjectType": [
+    "Patient"
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "http://fhir.mpower-social.com:7070/fhir/StructureMap/4973"
+    }
+  ],
+  "date": "2023-08-06T00:00:00+06:00",
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.birthDate"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "8ee3210c-019c-4dbe-8b82-eba11eb3d287",
+      "type": "date",
+      "text": "DOB",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
+      "required": true,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "(((iif(%resource.descendants().where(linkId='8ee3210c-019c-4dbe-8b82-eba11eb3d287').answer.value.toString().substring(5, 2).toInteger() > today().toString().substring(5, 2).toInteger(), (today().toString().substring(0, 4).toInteger() - 1) - %resource.descendants().where(linkId='8ee3210c-019c-4dbe-8b82-eba11eb3d287').answer.value.toString().substring(0, 4).toInteger(), today().toString().substring(0, 4).toInteger() - %resource.descendants().where(linkId='8ee3210c-019c-4dbe-8b82-eba11eb3d287').answer.value.toString().substring(0, 4).toInteger())) * 365.25) + (iif(%resource.descendants().where(linkId='8ee3210c-019c-4dbe-8b82-eba11eb3d287').answer.value.toString().substring(5, 2).toInteger() > today().toString().substring(5, 2).toInteger(), iif(%resource.descendants().where(linkId='8ee3210c-019c-4dbe-8b82-eba11eb3d287').answer.value.toString().substring(8, 2).toInteger() > today().toString().substring(8, 2).toInteger(),(today().toString().substring(5, 2).toInteger() + 11) - %resource.descendants().where(linkId='8ee3210c-019c-4dbe-8b82-eba11eb3d287').answer.value.toString().substring(5, 2).toInteger(), (today().toString().substring(5, 2).toInteger() + 12) - %resource.descendants().where(linkId='8ee3210c-019c-4dbe-8b82-eba11eb3d287').answer.value.toString().substring(5, 2).toInteger()), iif(%resource.descendants().where(linkId='8ee3210c-019c-4dbe-8b82-eba11eb3d287').answer.value.toString().substring(8, 2).toInteger() > today().toString().substring(8, 2).toInteger(), (today().toString().substring(5, 2).toInteger() - 1) - %resource.descendants().where(linkId='8ee3210c-019c-4dbe-8b82-eba11eb3d287').answer.value.toString().substring(5, 2).toInteger(), today().toString().substring(5, 2).toInteger() - %resource.descendants().where(linkId='8ee3210c-019c-4dbe-8b82-eba11eb3d287').answer.value.toString().substring(5, 2).toInteger())) * 365.25 / 12) + (iif(%resource.descendants().where(linkId='8ee3210c-019c-4dbe-8b82-eba11eb3d287').answer.value.toString().substring(8, 2).toInteger() > today().toString().substring(8, 2).toInteger(), ((today().toString().substring(8, 2).toInteger() + 30.5) - %resource.descendants().where(linkId='8ee3210c-019c-4dbe-8b82-eba11eb3d287').answer.value.toString().substring(8, 2).toInteger()).toDecimal(), today().toString().substring(8, 2).toInteger() - %resource.descendants().where(linkId='8ee3210c-019c-4dbe-8b82-eba11eb3d287').answer.value.toString().substring(8, 2).toInteger()))).toDecimal()"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+      "type": "decimal",
+      "text": "Age in Days",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "linkId": "3844117b-1ff5-4279-8941-4d9cb0104b1d",
+      "type": "decimal",
+      "text": "ওজন (কেজি) *",
+      "required": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueDecimal": 1.5
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueDecimal": 25.0
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "1.5 এর সমান বা বেশি এবং 25 এর সমান বা কম হওয়া উচিত"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxDecimalPlaces",
+          "valueInteger": 2
+        }
+      ],
+      "item": [
+        {
+          "linkId": "50b405a3-b4b7-461a-8d91-d330c5a42872",
+          "type": "display",
+          "text": "একচেটিয়া স্তন খাওয়ানোর জন্য মাকে পরামর্শ দিন",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "3844117b-1ff5-4279-8941-4d9cb0104b1d",
+              "operator": "<",
+              "answerDecimal": 7
+            },
+            {
+              "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+              "operator": "<=",
+              "answerDecimal": 183
+            }
+          ],
+          "enableBehavior": "all"
+        },
+        {
+          "linkId": "2128157d-d04b-4712-ff96-d273c6a7dec7",
+          "type": "display",
+          "text": "মাকে প্রোটিন সমৃদ্ধ পরিপূরক খাবার যেমন ডিম, মাছ, মাংস এবং ডাল দেওয়ার পরামর্শ দিন",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "3844117b-1ff5-4279-8941-4d9cb0104b1d",
+              "operator": ">",
+              "answerDecimal": 7
+            },
+            {
+              "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+              "operator": ">=",
+              "answerDecimal": 213
+            },
+            {
+              "question": "3844117b-1ff5-4279-8941-4d9cb0104b1d",
+              "operator": "<",
+              "answerDecimal": 11
+            },
+            {
+              "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+              "operator": ">=",
+              "answerDecimal": 730
+            }
+          ],
+          "enableBehavior": "all"
+        },
+        {
+          "linkId": "7178496f-fa98-44ed-f4b6-b676a1cedaa2",
+          "type": "display",
+          "text": "উপজেলা স্বাস্থ্য কমপ্লেক্স এ রেফার করুন",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "3844117b-1ff5-4279-8941-4d9cb0104b1d",
+              "operator": "<",
+              "answerDecimal": 2.5
+            },
+            {
+              "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+              "operator": ">=",
+              "answerDecimal": 213
+            },
+            {
+              "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+              "operator": ">=",
+              "answerDecimal": 730
+            }
+          ],
+          "enableBehavior": "all"
+        }
+      ]
+    },
+    {
+      "linkId": "0056047e-592a-4da7-bd8b-9bca2b154b3e",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "শিশু পুষ্টিকণা খায় কিনা? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "40e637d0-f190-4cf7-8214-29ebfb289a30",
+          "type": "display",
+          "text": "১.পুষ্টিকনা পূর্ণ ছয় মাস থেকে পাঁচ বছর বয়সী শিশুদের পারিবারিক খাবারের পুষ্টিমান বাড়ায়।     \\n২. পুষ্টিকনা শিশুর খাওয়ার রুচি বাড়ায়। \\n৩. পুষ্টিকনা রক্তস্বল্পতা থেকে শিশুকে রক্ষা করে। \\n৪. পুষ্টিকনা শিশুকে সুস্থ রাখতে সাহায্য করে.",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "0056047e-592a-4da7-bd8b-9bca2b154b3e",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+                "code": "yes"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "7ed466bb-d6e2-456b-87ab-0b226a972650",
+          "type": "display",
+          "text": "পুষ্টিকণা না খাওয়ার কারণে:\\n১. শিশু পুষ্টিহীনতায় ভোগে\\n২. স্বাস্থ্য ক্ষীণকায় হয়\\n৩. শিশু রক্তস্বল্পতায় ভোগে\\n৪. শিশুর বাড়ন্ত অনুযায়ী মেধার বিকাশ বাধাগ্রস্ত হবে।\\n৫.খাওয়ার রুচি কমবে ",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "0056047e-592a-4da7-bd8b-9bca2b154b3e",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+                "code": "no"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "a3424c54-e70b-48bb-8bec-b97a9662a093",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "মাথার ভারসাম্য আছে কিনা? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": ">=",
+          "answerDecimal": 92
+        },
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": "<",
+          "answerDecimal": 183
+        }
+      ],
+      "enableBehavior": "all",
+      "item": [
+        {
+          "linkId": "b4c53208-f03f-49d5-e071-85e750a7ba24",
+          "type": "display",
+          "text": "সুষম ও পুষ্টিকর খাবার দিন, বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "a3424c54-e70b-48bb-8bec-b97a9662a093",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+                "code": "no"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "3654e434-12b3-464b-dd0f-f746775b9e11",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "নিজে বসতে পারে কিনা? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": ">=",
+          "answerDecimal": 183
+        },
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": "<",
+          "answerDecimal": 245
+        }
+      ],
+      "enableBehavior": "all",
+      "item": [
+        {
+          "linkId": "bb603e1d-e318-4dcb-80a4-f44c5c62af74",
+          "type": "display",
+          "text": "সুষম ও পুষ্টিকর খাবার দিন, বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "3654e434-12b3-464b-dd0f-f746775b9e11",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+                "code": "no"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "d6300c6b-fc3f-45e8-8e40-5ae734490a94",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "বিভিন্ন শব্দ করতে পারে মুখ দিয়ে - বা, মা, দা ইত্যাদি *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": ">=",
+          "answerDecimal": 183
+        },
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": "<",
+          "answerDecimal": 245
+        }
+      ],
+      "enableBehavior": "all",
+      "item": [
+        {
+          "linkId": "9f022566-0a18-4e9e-887f-3fb6a101caaf",
+          "type": "display",
+          "text": "মাকে শিশুর সাথে বেশি বেশি কথা বলতে এবং খেলতে বলুন",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "d6300c6b-fc3f-45e8-8e40-5ae734490a94",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+                "code": "no"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "4b1eca53-5afd-4dc0-bfbf-c709953dc4b9",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "হামাগুঁড়ি দিতে পারে? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": ">=",
+          "answerDecimal": 274
+        },
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": "<",
+          "answerDecimal": 306
+        }
+      ],
+      "enableBehavior": "all",
+      "item": [
+        {
+          "linkId": "6bd4b836-6d63-4bdf-a626-011b910d6241",
+          "type": "display",
+          "text": "সুষম ও পুষ্টিকর খাবার দিন, বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "4b1eca53-5afd-4dc0-bfbf-c709953dc4b9",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+                "code": "no"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "84d844ba-db32-46ba-f2e5-0b31156b7f7d",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "বাবা, মামা, দাদা  ইত্যাদি শব্দ করতে পারে কি না? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": ">=",
+          "answerDecimal": 274
+        },
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": "<",
+          "answerDecimal": 367
+        }
+      ],
+      "enableBehavior": "all",
+      "item": [
+        {
+          "linkId": "d23596b0-69a0-4d3c-ee99-430a63ba99b1",
+          "type": "display",
+          "text": "মাকে শিশুর সাথে বেশি বেশি কথা বলতে এবং খেলতে বলুন",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "84d844ba-db32-46ba-f2e5-0b31156b7f7d",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+                "code": "no"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "ed16e09c-3595-4f2e-8e88-70e6f66e0893",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "কোন কিছু ধরে দাঁড়াতে পারে? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": ">=",
+          "answerDecimal": 335
+        },
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": "<",
+          "answerDecimal": 365
+        }
+      ],
+      "enableBehavior": "all",
+      "item": [
+        {
+          "linkId": "36f5a0c5-973f-46d1-de4e-ede4566eabb6",
+          "type": "display",
+          "text": "সুষম ও পুষ্টিকর খাবার দিন, কোন কিছু ধরে দাঁড়ানোর চেষ্টা করান, বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "ed16e09c-3595-4f2e-8e88-70e6f66e0893",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+                "code": "no"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "e680953c-4c71-4548-e5c4-5e389731b2be",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "একটি সম্পূর্ণ শব্দ উচ্চারণ করতে পারে? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": ">=",
+          "answerDecimal": 365
+        },
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": "<",
+          "answerDecimal": 549
+        }
+      ],
+      "enableBehavior": "all",
+      "item": [
+        {
+          "linkId": "a62ba0cc-6bad-470c-8473-8c4dd5822f31",
+          "type": "display",
+          "text": "মাকে শিশুর সাথে বেশি বেশি কথা বলতে এবং খেলতে বলুন",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "e680953c-4c71-4548-e5c4-5e389731b2be",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+                "code": "no"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "2387eeb1-2bc6-491c-8050-8edf42a66229",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "কোন কিছু ধরে হাটতে পারে কিনা? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": ">=",
+          "answerDecimal": 365
+        },
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": "<",
+          "answerDecimal": 517
+        }
+      ],
+      "enableBehavior": "all",
+      "item": [
+        {
+          "linkId": "3c2c3d78-d3ee-4a4c-aafa-f5f80c33bfd0",
+          "type": "display",
+          "text": "সুষম ও পুষ্টিকর খাবার দিন, বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "2387eeb1-2bc6-491c-8050-8edf42a66229",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+                "code": "no"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "fcf9afa2-e807-4d3e-e3c8-9c9b42adbfc5",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "দুইটি আলাদা শব্দ বলতে পারে কিনা? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": ">=",
+          "answerDecimal": 548
+        },
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": "<",
+          "answerDecimal": 700
+        }
+      ],
+      "enableBehavior": "all",
+      "item": [
+        {
+          "linkId": "edd525b4-3251-4f0f-80de-50595dadcea6",
+          "type": "display",
+          "text": "মাকে শিশুর সাথে বেশি বেশি কথা বলতে এবং খেলতে বলুন",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "fcf9afa2-e807-4d3e-e3c8-9c9b42adbfc5",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+                "code": "no"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "54fbe49b-15f6-4c71-cea3-3cad6aaca765",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "একা একা হাঁটতে পারে কিনা? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": ">=",
+          "answerDecimal": 548
+        },
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": "<",
+          "answerDecimal": 72
+        }
+      ],
+      "enableBehavior": "all",
+      "item": [
+        {
+          "linkId": "e3c9e093-46de-458a-8143-d3415b1956a5",
+          "type": "display",
+          "text": "সুষম ও পুষ্টিকর খাবার দিন, বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন, শিশুকে হাঁটানোর চেষ্টা করতে হবে",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "54fbe49b-15f6-4c71-cea3-3cad6aaca765",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+                "code": "no"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "6406e4e0-1c00-4c5a-808c-2ce4eeb3f6e6",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "কথা(সম্পূর্ণ বাক্য) বলতে পারে কিনা? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": ">=",
+          "answerDecimal": 730
+        },
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": "<",
+          "answerDecimal": 1095
+        }
+      ],
+      "enableBehavior": "all",
+      "item": [
+        {
+          "linkId": "74705135-c632-40db-dc7a-25f6aa6a2e95",
+          "type": "display",
+          "text": "মাকে শিশুর সাথে বেশি বেশি কথা বলতে এবং খেলতে বলুন",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "6406e4e0-1c00-4c5a-808c-2ce4eeb3f6e6",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+                "code": "no"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "283f862c-2a58-4c61-9c7c-c250552406d6",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "দৌড়াতে পারে? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": ">=",
+          "answerDecimal": 732
+        },
+        {
+          "question": "e8f8dbc1-c236-4534-8920-291ae1a6eaaf",
+          "operator": "<",
+          "answerDecimal": 760
+        }
+      ],
+      "enableBehavior": "all"
+    },
+    {
+      "linkId": "1d42768c-4a14-4549-a892-18883b3fba5d",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "yes",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "no",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "না"
+          }
+        }
+      ],
+      "text": "রেফার করা হয়েছে কিনা? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "required": true
+    },
+    {
+      "linkId": "fe713e46-42bc-4931-8364-d4945cd0ea26",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "98acb28e-5e90-4c6c-8c83-233101c952b7",
+            "code": "child_problems",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "শিশু সেবা সংক্রান্ত সমস্যা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "2e522c69-7351-4f4f-8726-61bd5072c3b2",
+            "code": "other",
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "display": "অন্যান্য"
+          }
+        }
+      ],
+      "text": "রেফারেল এর কারণ *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "1d42768c-4a14-4549-a892-18883b3fba5d",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "code": "yes"
+          }
+        }
+      ],
+      "required": true,
+      "item": [
+        {
+          "linkId": "446051b7-8f77-4191-86bd-a0c01c620aaa",
+          "type": "string",
+          "text": "অন্যান্য কারণ",
+          "required": true,
+          "enableWhen": [
+            {
+              "question": "fe713e46-42bc-4931-8364-d4945cd0ea26",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+                "code": "other"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "14e57261-d521-4c96-8759-07b22f0a5742",
+      "type": "choice",
+      "text": "রেফারের স্থান",
+      "required": false,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c8da3613-bafc-45d4-8e05-561c042df2ef",
+            "code": "medical_collage_hos",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "মেডিকেল কলেজ হাসপাতাল"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "78b4a1c9-1250-4e8e-f9ab-8a79c939cb22",
+            "code": "gov_hos",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "সরকারী হাসপাতাল"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "141d98f3-7495-4f2a-8e7d-bb2a345fd078",
+            "code": "upazila_health_com",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "উপজেলা স্বাস্থ্য কমপ্লেক্স"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "84f45aee-7ff7-4d4a-8c3b-853e63f427f7",
+            "code": "non_gov_hos",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "বেসরকারি হাসপাতাল/ক্লিনিক"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "47f2815d-01a9-4bf1-bb84-a5319d6105af",
+            "code": "health_family_welfare_centre",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "স্বাস্থ্য ও পরিবার কল্যাণ কেন্দ্র"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "7f1c4218-e2f9-46ed-81d0-dcc2da237a27",
+            "code": "community_clinic",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "কমিউনিটি ক্লিনিক"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "repeats": true,
+      "enableWhen": [
+        {
+          "question": "1d42768c-4a14-4549-a892-18883b3fba5d",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7288cff3-5fc4-4f66-8f4e-af3331db7a56",
+            "code": "yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "bca2ada3-8195-4062-85e7-50c035a2c28e",
+      "type": "string",
+      "text": "উপদেশ",
+      "required": false
+    }
+  ]
+}

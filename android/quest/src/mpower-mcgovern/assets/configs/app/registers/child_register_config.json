@@ -2,6 +2,16 @@
   "appId": "app",
   "configType": "register",
   "id": "childRegister",
+  "pageSize": 20,
+  "configRules": [
+    {
+      "name": "under5",
+      "condition": "true",
+      "actions": [
+        "data.put('under5', dateService.addOrSubtractTimeUnitFromCurrentDate(5,'-','YEAR'))"
+      ]
+    }
+  ],
   "fhirResource": {
     "baseResource": {
       "resource": "Patient",

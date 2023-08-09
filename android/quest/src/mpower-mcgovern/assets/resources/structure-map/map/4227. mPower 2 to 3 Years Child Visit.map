@@ -1,0 +1,88 @@
+map "http://fhir.mpower-social.com:7070/fhir/StructureMap/4227" = "mPower 2 to 3 Years Child Visit Form"
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+
+group ChildVisit(source questionnaireResponse : QuestionnaireResponse, target bundle: Bundle) {
+    questionnaireResponse -> bundle.type = "collection" "r_bundle_type";
+    questionnaireResponse -> evaluate(questionnaireResponse, $this.subject) as refPatient then extractEncounter(questionnaireResponse, bundle, refPatient) "r_bundle_entries";
+}
+
+group extractEncounter(source questionnaireResponse : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+    questionnaireResponse -> bundle.entry as entry, entry.resource = create('Task') as dueTask then ExtractDueTask(questionnaireResponse, refPatient, dueTask) "r_extract_due_task";
+
+    questionnaireResponse -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then {
+        questionnaireResponse -> encounter.id = uuid() "r_en_id";
+        questionnaireResponse -> encounter.status = 'finished' "r_en_st";
+        questionnaireResponse -> encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH", "home health") "r_en_cls";
+        questionnaireResponse -> encounter.type = create('CodeableConcept') as concept then {
+            questionnaireResponse -> concept.coding = c("https://www.mpower-social.com/", "2_to_3y_child_visit") as coding then {
+                questionnaireResponse -> coding.display = '2 to 3 Years Child Visit' "r_en_cod_disp";
+            } "r_en_cc_cod";
+            questionnaireResponse -> concept.text = '2 to 3 Years Child Visit' "r_en_typ_text";
+        } "r_en_typ";
+        questionnaireResponse -> encounter.priority = create('CodeableConcept') as concept then {
+            questionnaireResponse -> concept.coding = c("http://terminology.hl7.org/ValueSet/v3-ActPriority", "EL") as coding then {
+                questionnaireResponse -> coding.display = 'Elective' "r_en_cod_disp";
+            } "r_en_cc_cod";
+            questionnaireResponse -> concept.text = 'Elective' "r_en_prio_text";
+        } "r_en_prio";
+        questionnaireResponse.subject as subject -> encounter.subject = subject "r_en_sub";
+        questionnaireResponse -> encounter.period = create('Period') as enPeriod then {
+            questionnaireResponse -> enPeriod.start = evaluate(questionnaireResponse, now()) "r_en_per_start";
+            questionnaireResponse -> enPeriod.end = evaluate(questionnaireResponse, now()) "r_en_per_end";
+        } "r_en_per";
+        questionnaireResponse -> encounter.reasonCode = create('CodeableConcept') as concept then {
+            questionnaireResponse -> concept.coding = c("https://www.mpower-social.com/", "2_to_3y_child_visit") as coding then {
+                questionnaireResponse -> coding.display = '2 to 3 Years Child Visit' "r_en_cod_disp";
+            } "r_en_cc_cod";
+            questionnaireResponse -> concept.text = '2 to 3 Years Child Visit' "r_en_text";
+        } "r_en_reason";
+    } "r_en";
+}
+
+group ExtractDueTask(
+    source questionnaireResponse : QuestionnaireResponse,
+    source subject : Reference,
+    target task: Task) {
+
+    questionnaireResponse -> create('Period') as period then {
+        questionnaireResponse -> evaluate(questionnaireResponse, now()) as startDate,
+                                 evaluate(questionnaireResponse, now() + '7 \'days\''.toQuantity()) as endDate
+                                 then extractPeriodTime(startDate, endDate, period) "r_task_period_extra";
+
+        questionnaireResponse -> task.executionPeriod = period "r_task_per";
+    } "r_per";
+
+    questionnaireResponse -> task.id = uuid(),
+            task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
+            task.identifier = create('Identifier') as iden, iden.value = 'followup_routine_visit', iden.use = 'secondary',
+            task.status = 'ready',
+            task.intent = 'plan',
+            task.priority = 'routine',
+            task.description = 'Referral Follow-up Visit',
+            task.for = subject,
+            task.authoredOn = evaluate(questionnaireResponse, now()),
+            task.requester = evaluate(questionnaireResponse, $this.generalPractitioner.first()),
+            task.owner = evaluate(questionnaireResponse, $this.generalPractitioner.first()),
+            task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/4235' "r_task_data";
+
+    questionnaireResponse.item as refer_reason where(linkId = 'a6847847-727d-497a-8d9f-037e9bc6d02d' and answer.value.code = 'yes') then {
+        questionnaireResponse -> task.input = create('Task_Input') as input then {
+            questionnaireResponse -> input.value = create('CodeableConcept') as taskCode then {
+                questionnaireResponse -> taskCode.coding = c("https://www.mpower-social.com/", "child_problems") as coding then {
+                    questionnaireResponse -> coding.display = 'শিশু বিষয়ক সমস্যা' "r_cp_cod_disp_v";
+                } "r_en_cc_cod";
+                questionnaireResponse -> taskCode.text = 'শিশু বিষয়ক সমস্যা' "r_en_text";
+            } "r_task_input_cod";
+       } "r_task_input";
+    } "check_refer_reason";
+}
+
+group extractPeriodTime(source start: DateType, source end: DateType, target period: Period) {
+    start -> period.start = create('dateTime') as dt,
+             dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_start";
+
+    end -> period.end = create('dateTime') as dt,
+           dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_end";
+}

@@ -1,4 +1,4 @@
-map "http://fhir.mpower-social.com:7070/fhir/StructureMap/268" = 'mPower Family Member Registration'
+map "http://fhir.mpower-social.com:7070/fhir/StructureMap/4233" = 'mPower Family Member Registration'
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
@@ -8,16 +8,14 @@ group mPowerFamilyMemberRegistration(source src : QuestionnaireResponse, target 
     src -> bundle.id = uuid() "rule_bundle_id";
     src -> bundle.type = 'collection' "rule_bundle_type";
     src -> bundle.entry as entry, entry.resource = create('Patient') as patient then
-        ExtractPatient(src, patient, bundle) "rule_bundle_entries";
+        ExtractPatient(src, patient, bundle), ExtractObservations(src, bundle) "rule_bundle_entries";
 }
 
 group ExtractPatient(source src : QuestionnaireResponse, target patient : Patient, target bundle : Bundle){
        src -> patient.id = uuid() "rule_patient_id_generation";
 
        src -> patient.name = create('HumanName') as patientName then {
-           src -> patientName.family = evaluate(src, $this.item.where(linkId = '8fb87910-d900-4eea-dbba-dcf76ee6806d').answer.value) "rule_patient_family_name";
-           src -> patientName.given = evaluate(src, $this.item.where(linkId = 'e6306275-b989-4375-8527-3a56092081b8').answer.value) "rule_patient_given_name";
-           src -> patientName.text = evaluate(src, $this.item.where(linkId = '597f4425-72b3-4bc4-8f38-b742aa3e99cd').answer.value) "rule_patient_middle_name";
+           src -> patientName.text = evaluate(src, $this.item.where(linkId = 'e6306275-b989-4375-8527-3a56092081b8').answer.value) "rule_patient_name";
            src -> patientName.use = 'official' "rule_patient_name_use";
        } "rule_patient_name";
 
@@ -53,15 +51,6 @@ group ExtractPatient(source src : QuestionnaireResponse, target patient : Patien
                 } "rule_patient_identifier_government_id_type_cod";
             } "rule_patient_identifier_government_id_type";
          } "rule_patient_identifier_birth_id";
-
-         src.item as patient_epi_id where(linkId = 'bcad728b-3755-4d3a-811d-a1d07066846a') then { 
-            src -> patientIdentifierGovernmentId.value = evaluate(patient_epi_id, $this.answer.value) "rule_patient_identifier_government_id_value";
-            src -> patientIdentifierGovernmentId.type = create('CodeableConcept') as concept then {
-                src -> concept.coding = c("https://dghs.gov.bd/", "33333333") as coding then {
-                src -> coding.display = 'EPI ID' "rule_patient_identifier_government_id_type_cod_display";
-                } "rule_patient_identifier_government_id_type_cod";
-            } "rule_patient_identifier_government_id_type";
-         } "rule_patient_identifier_epi_id";
 
          src -> patientIdentifierGovernmentId.use = "usual" "rule_patient_identifier_national_id_use";
          src -> patientIdentifierGovernmentId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_patient_identifier_period";
@@ -119,11 +108,34 @@ group ExtractPatient(source src : QuestionnaireResponse, target patient : Patien
 
        src -> patient.active = true "rule_patient_active";
 
-       src -> patient.address = create('Address') as patientAddress then {
-          src -> patientAddress.district = evaluate(src, $this.item.where(linkId ='7d9dba4c-7407-4eb2-d791-2d1834b6afcc').answer.value) "rule_patient_address_district";
-          src -> patientAddress.use = "home" "rule_patient_address_use";
-          src -> patientAddress.type = "physical" "rule_patient_address_type";
-       } "rule_patient_address";
+       src -> patient.telecom = create('ContactPoint') as patientContact then {
+           src -> patientContact.value = evaluate(src, $this.item.where(linkId = '3a731d3a-0da1-4f6e-8c18-286108c04300').answer.value) "rule_patient_tel_num";
+           src -> patientContact.system = "phone" "rule_patient_tel_sys";
+           src -> patientContact.use = "mobile" "rule_patient_tel_use";
+        } "rule_patient_tel";
+
+        src.item as patient_marital_status where(linkId = 'c5cf7fd7-eccd-45b6-8875-10a3183da552' and answer.value.exists()) then {
+            src -> evaluate(patient_marital_status, answer.value.code) as statusCode,
+                evaluate(patient_marital_status, answer.value.display) as statusCodeDisplay then {
+                src -> patient.maritalStatus = create('CodeableConcept') as concept then {
+                    src -> concept.coding = c("http://snomed.info/sct", statusCode) as coding then {
+                        src -> coding.display = statusCodeDisplay "r_en_cod_disp";
+                    } "r_en_cc_cod";
+                } "rule_patient_marital_status_code";
+            } "rule_patient_marital_status_code_evaluate";
+        } "rule_patient_marital_status";
+
+        src.item as household_relationship where((linkId = 'c33296ce-1abb-4685-8bd0-e7f7187f2e98' or linkId = 'ffe83655-d445-471d-8172-c0d3bafb8940') and answer.value.exists()) then {
+            src -> patient.contact = create('Patient_Contact') as contactRelationship then {
+                src -> evaluate(household_relationship, answer.value.display) as relationDisplay then {
+                    src -> contactRelationship.relationship = create('CodeableConcept') as concept then {
+                        src -> concept.coding = c("http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype", "relation-with-head") as coding then {
+                            src -> coding.display = relationDisplay "r_en_cod_disp";
+                        } "r_en_cc_cod";
+                    } "rule_patient_relationship_status_code";
+                } "rule_patient_relationship_code_evaluate";
+            } "rule_patient_relationship_extra";
+        } "rule_patient_relationship";
 
        src then ExtractEncounter(patient, bundle) "rule_encounter_reference";
  }
@@ -135,8 +147,6 @@ group ExtractRelatedPerson(source src : Patient, target relatedPerson : RelatedP
           src -> relatedPersonIdentifier.use = "secondary" "rule_related_person_identifier_use";
      } "rule_related_person_identifier";
      src -> relatedPerson.name = create('HumanName') as relatedPersonName then {
-          src -> relatedPersonName.family = evaluate(src, $this.name.family) "rule_related_person_family_name";
-          src -> relatedPersonName.given = evaluate(src,  $this.name.given) "rule_related_person_given_name";
           src -> relatedPersonName.text = evaluate(src,  $this.name.text) "rule_related_person_middle_name";
           src -> relatedPersonName.use = 'official' "rule_related_person_name_use";
      } "rule_related_person_name";
@@ -183,4 +193,86 @@ group ExtractEncounter(source src : Patient, target bundle: Bundle) {
             src -> concept.text = 'mPower Family Member Registration' "r_en_text";
         } "r_en_reason";
     } "r_en";
+}
+
+group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bundle) {
+     src.item as item_blood_group where(linkId ='9b62b65c-e8f9-4b4d-9cb2-cc715b73baaa' and answer.value.exists()) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_obs_id";
+            src -> obs.status = 'final' "r_obs_status";
+            src -> obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category','vital-signs', 'Vital Signs') "r_obs_category_1";
+            src -> obs.code = create('CodeableConcept') as concept then {
+                 src -> concept.coding = c("http://snomed.info/sct", "269826008") as coding then {
+                        src -> coding.display = 'ABO blood grouping' "r_cp_cod_disp";
+                 } "r_cp_cc_cod";
+            } "r_obs_code";
+            src -> obs.subject = evaluate(src, $this.subject) "r_obs_ref";
+            src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+            src -> obs.value = evaluate(item_blood_group, answer.value.code) "r_obs_value";
+        } "r_obs";
+    } "o_blood_group";
+
+     src.item as item_weight where(linkId ='0bcd75c0-2fc9-4027-9c54-23f1d0812d91' and answer.value.exists()) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_obs_id";
+            src -> obs.status = 'final' "r_obs_status";
+            src -> obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category','vital-signs', 'Vital Signs') "r_obs_category_1";
+            src -> obs.code = create('CodeableConcept') as concept then {
+                 src -> concept.coding = c("http://snomed.info/sct", "47340003") as coding then {
+                        src -> coding.display = 'Birth weight' "r_cp_cod_disp";
+                 } "r_cp_cc_cod";
+            } "r_obs_code";
+            src -> obs.subject = evaluate(src, $this.subject) "r_obs_ref";
+            src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+            src -> obs.value = evaluate(item_weight, answer.value) "r_obs_value";
+        } "r_obs";
+    } "o_blood_group";
+
+     src.item as item_visual_impaired where(linkId ='b69718e1-1140-4e4a-882a-3dd47838c612' and answer.value.exists()) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_obs_id";
+            src -> obs.status = 'final' "r_obs_status";
+            src -> obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category','social-history', 'Social History') "r_obs_category_1";
+            src -> obs.code = create('CodeableConcept') as concept then {
+                 src -> concept.coding = c("http://snomed.info/sct", "397540003") as coding then {
+                        src -> coding.display = 'Visual impairment' "r_cp_cod_disp";
+                 } "r_cp_cc_cod";
+            } "r_obs_code";
+            src -> obs.subject = evaluate(src, $this.subject) "r_obs_ref";
+            src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+            src -> obs.value = evaluate(item_visual_impaired, answer.value.code) "r_obs_value";
+        } "r_obs";
+    } "o_visual_impaired";
+
+     src.item as item_physical_dis where(linkId ='93e9278a-c9bf-47d4-b896-0987e8bcf1b0' and answer.value.exists()) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_obs_id";
+            src -> obs.status = 'final' "r_obs_status";
+            src -> obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category','social-history', 'Social History') "r_obs_category_1";
+            src -> obs.code = create('CodeableConcept') as concept then {
+                 src -> concept.coding = c("http://snomed.info/sct", "161046000") as coding then {
+                        src -> coding.display = 'Physical disability' "r_cp_cod_disp";
+                 } "r_cp_cc_cod";
+            } "r_obs_code";
+            src -> obs.subject = evaluate(src, $this.subject) "r_obs_ref";
+            src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+            src -> obs.value = evaluate(item_physical_dis, answer.value.code) "r_obs_value";
+        } "r_obs";
+    } "o_physical_dis";
+
+     src.item as item_memory_dis where(linkId ='bfc6966c-ea18-499b-8a19-e1224067aaa9' and answer.value.exists()) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_obs_id";
+            src -> obs.status = 'final' "r_obs_status";
+            src -> obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category','social-history', 'Social History') "r_obs_category_1";
+            src -> obs.code = create('CodeableConcept') as concept then {
+                 src -> concept.coding = c("http://snomed.info/sct", "386807006") as coding then {
+                        src -> coding.display = 'Memory impairment' "r_cp_cod_disp";
+                 } "r_cp_cc_cod";
+            } "r_obs_code";
+            src -> obs.subject = evaluate(src, $this.subject) "r_obs_ref";
+            src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+            src -> obs.value = evaluate(item_memory_dis, answer.value.code) "r_obs_value";
+        } "r_obs";
+    } "o_memory_dis";
 }

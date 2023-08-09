@@ -67,7 +67,7 @@
       "showCount": true,
       "menuIconConfig": {
         "type": "local",
-        "reference": "ic_childs"
+        "reference": "ic_kids"
       },
       "actions": [
         {

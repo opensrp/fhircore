@@ -148,7 +148,6 @@ fun ActionableButton(
           },
         textAlign = TextAlign.Start,
         overflow = TextOverflow.Ellipsis,
-        maxLines = 1,
         modifier =
           Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
             .conditional(status == ServiceStatus.COMPLETED.name, { weight(1f) }),

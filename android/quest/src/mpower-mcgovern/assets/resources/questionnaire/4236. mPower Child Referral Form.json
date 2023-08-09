@@ -1,0 +1,291 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "4236",
+  "language": "en-GB",
+  "version": "0.0.1",
+  "title": "mPower Child Referral Form",
+  "date": "2023-07-01T00:00:00Z",
+  "status": "active",
+  "publisher": "mPower-mcGovern",
+  "contact": [
+    {
+      "name": "http://www.mpower-social.com"
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "http://fhir.mpower-social.com:7070/fhir/StructureMap/5407"
+    }
+  ],
+  "description": "mPower Child Referral Form",
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/ValueSet/usage-context-type",
+        "code": "focus",
+        "display": "Clinical Focus"
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+            "display": "mPower Child Referral Form"
+          }
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "linkId": "9b585e14-2d7c-4391-8c89-01f5474c3f9c",
+      "type": "choice",
+      "text": "রেফারেল এর কারণ",
+      "item": [
+        {
+          "linkId": "2006fa45-c98b-44fd-8b52-6fce01676185",
+          "type": "display",
+          "text": "চোখে সমস্যা  : \\n ১.দিনে দুই থেকে তিনবার নিরাপদ পানি দিয়ে চোখ পরিষ্কার করা\\n ২.চোখে আঘাত লাগতে পারে এমন কাজে চশমা ব্যবহার করা\\n ৩.বিরতিহীন ভাবে চোখের কাজ না করা ও কাছ থেকে টিভি না দেখা\\n ৪.সবুজ শাকসবজি হলুদ ফলমূল নিয়মিত খাওয়া\\n",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ],
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "9b585e14-2d7c-4391-8c89-01f5474c3f9c",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+                "code": "problems_eyes"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "480dd2a4-a87c-4f0c-dba6-375f9f15e598",
+          "type": "display",
+          "text": "ডায়াবেটিস   : \\n ১.সর্বপ্রকার মিষ্টি জাতীয় খাবার বর্জন করা\\n ২.শর্করা জাতীয় খাবার ও মাটির নিচের সবজি কম খাওয়া\\n ৩.আশ জাতীয় খাবার ও টক জাতীয় খাবার বেশি খাওয়া\\n ৪.আলগা লবণ খাওয়া যাবে না\\n ৫.মদপান ধূমপান তামাক পরিহার করা\\n",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ],
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "9b585e14-2d7c-4391-8c89-01f5474c3f9c",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+                "code": "diabetes"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "831bd394-b46a-4e2c-923b-106e3d31eb5d",
+          "type": "display",
+          "text": "উচ্চ রক্তচাপ   : \\n ১.পাতে আলগা লবণ খাওয়া যাবেনা\\n২.লবণাক্ত খাবার এড়িয়ে চলা\\n ৩.30 মিনিট করে সপ্তাহে অন্তত 5 দিন হাটা\\n ৪.ওজন নিয়ন্ত্রণে রাখা\\n ৫.ধূমপান মদপান তামাক সেবন বর্জন করা\\n৬.তেল চর্বি জাতীয় খাবার কম খাওয়া\\n",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ],
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "9b585e14-2d7c-4391-8c89-01f5474c3f9c",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+                "code": "high_blood_pressure"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "b9fc3b0f-6b16-412c-ba0a-421f9e50783d",
+          "type": "string",
+          "text": "অন্যান্য কারণ",
+          "required": true,
+          "enableWhen": [
+            {
+              "question": "9b585e14-2d7c-4391-8c89-01f5474c3f9c",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+                "code": "other"
+              }
+            }
+          ]
+        }
+      ],
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "409a3e95-296a-487a-e700-8d10b0ccb109",
+            "code": "child_problems",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "শিশু বিষয়ক সমস্যা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "22dad9d8-6573-4e6d-ce52-31f44d78f1b9",
+            "code": "problems_eyes",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "চোখে সমস্যা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "7c1a5f41-52b5-42c2-af33-930e7660ffcf",
+            "code": "diabetes",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "ডায়াবেটিস"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "44c78729-a0d2-4eca-8a79-e3bdf190d30c",
+            "code": "high_blood_pressure",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "উচ্চ রক্তচাপ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ca32b68f-e942-45e6-87d4-9db8c50f53cd",
+            "code": "cataract_problem",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "চোখে ক্যাটারেক্ট (ছানি) সমস্যা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "98e6fa08-ab4e-4348-8e7a-f5c6f05721b2",
+            "code": "other",
+            "system": "urn:uuid:fca5e3c1-1f62-4d7c-97a4-f03303c1a659",
+            "display": "অন্যান্য"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "ec1e0b42-05d9-4ecb-8aae-b462ce34091e",
+      "type": "choice",
+      "text": "রেফারের স্থান",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c8da3613-bafc-45d4-8e05-561c042df2ef",
+            "code": "medical_collage_hos",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "মেডিকেল কলেজ হাসপাতাল"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "78b4a1c9-1250-4e8e-f9ab-8a79c939cb22",
+            "code": "gov_hos",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "সরকারী হাসপাতাল"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "141d98f3-7495-4f2a-8e7d-bb2a345fd078",
+            "code": "upazila_health_com",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "উপজেলা স্বাস্থ্য কমপ্লেক্স"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "84f45aee-7ff7-4d4a-8c3b-853e63f427f7",
+            "code": "non_gov_hos",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "বেসরকারি হাসপাতাল/ক্লিনিক"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "47f2815d-01a9-4bf1-bb84-a5319d6105af",
+            "code": "health_family_welfare_centre",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "স্বাস্থ্য ও পরিবার কল্যাণ কেন্দ্র"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "7f1c4218-e2f9-46ed-81d0-dcc2da237a27",
+            "code": "community_clinic",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "কমিউনিটি ক্লিনিক"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "repeats": true
+    },
+    {
+      "linkId": "183bc752-50a0-4674-e599-431f6102b94e",
+      "type": "string",
+      "text": "উপদেশ",
+      "required": false
+    }
+  ]
+}
