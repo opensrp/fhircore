@@ -1,0 +1,932 @@
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/d2982056-aaef-4303-9a2b-18b0c5383790" = "FP Assessment"
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+uses "http://hl7.org/fhir/StructureDefinition/Encounter" as target
+uses "http://hl7.org/fhir/StructureDefinition/Observation" as target
+
+group FPRegistration(source src: QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.type = "collection" "r_bundle_type";
+    src.item as fpStatus where(linkId = '4a0d6179-00b6-460f-826f-3de98a0a4b08' and answer.value.exists() and (answer.value.code = 'yes')) then {
+        src -> evaluate(src, $this.subject) as refPatient then ExtractFPCondition(src, bundle, refPatient) "r_bundle_entries";
+    } "rule_fam_plan_status_check";
+
+        src -> evaluate(src, $this.subject) as refPatient then ExtractEncounter(src, bundle) "r_obs_entry";
+
+}
+
+group ExtractFPCondition(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+    src -> bundle.entry as entry, entry.resource = create("Condition") as cnd then {
+    	src -> cnd.id = uuid() "r_cnd_id";
+        src -> cnd.onset = evaluate(src, now()) "r_cnd_onset_date_val";
+    	src -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_cnd_clinical_st";
+    	src -> cnd.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_cnd_verif_st";
+    	src -> cnd.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "problem-list-item", "Problem List Item") "r_cnd_category";
+    	src -> cnd.subject = refPatient "r_cnd_sub";
+    	src -> cnd.recordedDate = evaluate(src, now()) "r_cnd_recorded";
+
+    	src -> cnd.code = create("CodeableConcept") as ccPreg then {
+             src -> ccPreg.coding = c("http://snomed.info/sct", "408969000", "Contraception care management") as coding, coding.display = 'Family Planning' "r_cnd_code_coding";
+             src -> ccPreg.text = "Family Planning" "r_cnd_code_text";
+        } "r_cnd_code";
+    } "r_cnd";
+}
+
+group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle){
+    src ->bundle.entry as entry,
+        entry.resource = create("Encounter") as encounter then {
+            src->encounter.id = uuid(),
+                encounter.status = "finished",
+                encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH","home health"),
+                encounter.serviceType= cc("http://terminology.hl7.org/CodeSystem/service-type", "397619005","Family Planning") "r_enc_data";
+            src ->encounter.subject = create("Reference") as ref then {
+                src ->ref.reference = evaluate(src, "Patient/"+ $this.item.where(linkId="patient-id").answer.value) "r_enc_subject_ref";
+            }  "r_enc_subject";
+            src then ExtractObservations(src, bundle, encounter) "r_extract_obs";
+        } "r_encounter";
+}
+
+group ExtractObservations(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
+    src then
+    ExtractClientInterestedInFP(src, bundle, encounter),
+    ExtractClientSelectedMethod(src, bundle, encounter),
+    ExtractFPShortTermMethods(src, bundle, encounter),
+    ExtractFPLongTermMethods(src, bundle, encounter),
+    ExtractAnyRiskFactorsForMethod(src, bundle, encounter),
+    ExtractFPEducationDone(src, bundle, encounter),
+    ExtractMaleCondomsAvailable(src, bundle, encounter),
+    ExtractFemaleCondomsAvailable(src, bundle, encounter),
+    ExtractMicrolutAvailable(src, bundle, encounter),
+    ExtractMicrogynonAvailable(src, bundle, encounter),
+    ExtractDMPAAvailable(src, bundle, encounter),
+    ExtractDepoAvailable(src, bundle, encounter),
+    ExtractEmergencyContraceptives(src, bundle, encounter),
+    ExtractEPTabsGiven(src, bundle, encounter),
+    ExtractReferral(src, bundle, encounter),
+    ExtractReferredPatient(src, bundle, encounter) "r_enc_obs";
+
+    src -> evaluate(src, $this.subject) as refPatient then ExtractCommodityObservation(src, bundle, refPatient) "r_commodities";
+}
+
+group ExtractClientInterestedInFP(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="4a0d6179-00b6-460f-826f-3de98a0a4b08") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "423925001", "Family planning observable"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            } "r_obs_sub_date_ws";
+
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '423925001' "r_obs_c_coding_code";
+                    src -> coding.display = 'Family planning observable' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Family planning observable' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractClientSelectedMethod(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="98cd685e-fbb3-46ff-8ac3-09c6fb1faf13") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "423925001","Family planning method"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '423925001' "r_obs_c_coding_code";
+                    src -> coding.display = 'Family planning method' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Family planning method' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractFPShortTermMethods(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="c642fc27-e8d5-4ca8-8af0-f55792be3dc6") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "389095005","Family planning short-term method"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '389095005' "r_obs_c_coding_code";
+                    src -> coding.display = 'Family planning short-term method' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Family planning short-term method' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractFPLongTermMethods(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="d03d51f7-8507-463d-d059-da19ed5ce370") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "389095005","Family planning long-term method"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '389095005' "r_obs_c_coding_code";
+                    src -> coding.display = 'Family planning long-term method' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Family planning long-term method' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractAnyRiskFactorsForMethod(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="b6f9c7ac-fc52-48ea-fab2-d20173c7eff1") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "408356009","Drug side effects checked (finding)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '408356009' "r_obs_c_coding_code";
+                    src -> coding.display = 'Drug side effects checked (finding)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Drug side effects checked (finding)' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractFPEducationDone(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="f8bef615-6cd6-461a-ed6e-4cd79ace617d") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "397619005","Family planning education"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '397619005' "r_obs_c_coding_code";
+                    src -> coding.display = 'Family planning education' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Family planning education' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractMaleCondomsAvailable(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="3b24d0e1-dd41-49fc-86c6-a1ba7ad85f03") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "442450006","Male Condoms"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '442450006' "r_obs_c_coding_code";
+                    src -> coding.display = 'Male Condoms' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Male Condoms' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractMaleCondomsGiven(itemAnswer, bundle, encounter) "r_item_answer";
+
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractMaleCondomsGiven(source src: QuestionnaireResponse,target bundle:Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="484bb227-25d8-4fbd-e4d7-d399982f4a9d" and answer.value.toInteger > 0) then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "442450006","Male Condom"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '442450006' "r_obs_c_coding_code";
+                    src -> coding.display = 'Male Condoms' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Male Condoms' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractFemaleCondomsAvailable(source src: QuestionnaireResponse,target bundle:Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="390ccffe-dd32-46d1-8fe7-1631fbf1de33") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "442288006","Female condom"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '442288006' "r_obs_c_coding_code";
+                    src -> coding.display = 'Female Condoms' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Female Condoms' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractFemaleCondomsGiven(itemAnswer, bundle, encounter) "r_item_answer";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractFemaleCondomsGiven(source src: QuestionnaireResponse,target bundle:Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="d3949391-bcfd-4859-c745-5d790c8258d7" and answer.value.toInteger > 0) then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "442288006","Female condom"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '442288006' "r_obs_c_coding_code";
+                    src -> coding.display = 'Female Condoms' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Female Condoms' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractMicrolutAvailable(source src: QuestionnaireResponse,target bundle:Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="4492095d-088b-4298-cb82-23ee066c45b2") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "169467008","Microlut (Uses progestogen only oral contraception)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '169467008' "r_obs_c_coding_code";
+                    src -> coding.display = 'Microlut (Uses progestogen only oral contraception)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Microlut (Uses progestogen only oral contraception)' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractMicrolutGiven(itemAnswer, bundle, encounter) "r_item_answer";
+
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractMicrolutGiven(source src: QuestionnaireResponse,target bundle:Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="c804b918-f678-420f-ef12-9077cde91bda" and answer.value.toInteger > 0) then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "169467008","Microlut (Uses progestogen only oral contraception)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '169467008' "r_obs_c_coding_code";
+                    src -> coding.display = 'Microlut (Uses progestogen only oral contraception)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Microlut (Uses progestogen only oral contraception)' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractMicrogynonAvailable(source src: QuestionnaireResponse,target bundle:Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="829a2521-9330-443c-81da-0673eca758df") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "268458002","Microgynon (Uses combined oral contraception)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '268458002' "r_obs_c_coding_code";
+                    src -> coding.display = 'Microgynon (Uses combined oral contraception)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Microgynon (Uses combined oral contraception)' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractMicrogynonGiven(itemAnswer, bundle, encounter) "r_item_answer";
+
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractMicrogynonGiven(source src: QuestionnaireResponse,target bundle:Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="87a92524-3743-49d0-81ad-3021752a71f6" and answer.value.toInteger > 0) then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "268458002","Microgynon (Uses combined oral contraception)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '268458002' "r_obs_c_coding_code";
+                    src -> coding.display = 'Microgynon (Uses combined oral contraception)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Microgynon (Uses combined oral contraception)' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractDMPAAvailable(source src: QuestionnaireResponse,target bundle:Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="a5f0ac42-80ba-40bc-8145-e71740826635") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "268464009","Injectable DMPA (Uses depot contraception)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '268464009' "r_obs_c_coding_code";
+                    src -> coding.display = 'Injectable DMPA (Uses depot contraception)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Injectable DMPA (Uses depot contraception)' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractDMPAAdministered(itemAnswer, bundle, encounter) "r_item_answer";
+
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractDMPAAdministered(source src: QuestionnaireResponse,target bundle:Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="64fb852b-7ab7-4ef5-8eac-a447de32af60") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "268464009", "Injectable DMPA (Uses depot contraception)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '268464009' "r_obs_c_coding_code";
+                    src -> coding.display = 'Injectable DMPA (Uses depot contraception)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Injectable DMPA (Uses depot contraception)' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractDepoAvailable(source src: QuestionnaireResponse,target bundle:Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="2bf80a34-c7d7-4f3b-816b-75e60ad070c8") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "268464009","Sayana Press (Uses depot contraception)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '268464009' "r_obs_c_coding_code";
+                    src -> coding.display = 'Sayana Press (Uses depot contraception)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Sayana Press (Uses depot contraception)' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractDepoAdministered(itemAnswer, bundle, encounter) "r_item_answer";
+
+    }
+    "r_obs_item_date_ws";
+}
+
+
+group ExtractDepoAdministered(source src: QuestionnaireResponse,target bundle:Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="ae26764b-18b8-489d-8dcf-1aef6744d4b9") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "268464009","Sayana Press (Uses depot contraception)"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '268464009' "r_obs_c_coding_code";
+                    src -> coding.display = 'Sayana Press (Uses depot contraception)' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'MSayana Press (Uses depot contraception)' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractEmergencyContraceptives(source src: QuestionnaireResponse,target bundle:Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="bcde47b7-df01-41e7-f6da-38b30db80f2b") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "268463003", "Uses emergency contraception"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '268463003' "r_obs_c_coding_code";
+                    src -> coding.display = 'Uses emergency contraception' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Uses emergency contraception' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+        item.answer as itemAnswer then ExtractEPTabsGiven(itemAnswer, bundle, encounter) "r_item_answer";
+
+    }
+    "r_obs_item_date_ws";
+}
+
+
+group ExtractEPTabsGiven(source src: QuestionnaireResponse,target bundle:Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="4c8392ff-f957-4a31-a7a4-4abc641463ce" and answer.value.toInteger > 0) then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "268463003", "Uses emergency contraception"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '268463003' "r_obs_c_coding_code";
+                    src -> coding.display = 'Uses emergency contraception' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Uses emergency contraception' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractReferral(source src: QuestionnaireResponse,target bundle:Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="d0023ad7-1820-4d39-ddbd-572029c9f1c0") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "183864007", "Referral to family planning clinic"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '183864007' "r_obs_c_coding_code";
+                    src -> coding.display = 'Referral to family planning clinic' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Referral to family planning clinic' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+group ExtractReferredPatient(source src: QuestionnaireResponse,target bundle:Bundle, target encounter: Encounter){
+    src.item first as item where(linkId="47d6477f-ea6e-47f7-eb93-2844b02f69ee") and answer.count()>0 then{
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid(),
+                //obs.code = cc("http://www.snomed.org/", "183864007", "Referral to family planning clinic"),
+                obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history"),
+                obs.encounter = reference(encounter),
+                obs.effective = evaluate(src, now()) "r_obs_data_date_ws";
+            src->obs.subject = create("Reference") as ref then {
+                src->ref.reference = evaluate(src, "Patient/" + $this.item.where(linkId = "patient-id").answer.value) "r_obs_sub_ref_date_ws";
+            }
+            "r_obs_sub_date_ws";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '183864007' "r_obs_c_coding_code";
+                    src -> coding.display = 'Referral to family planning clinic' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Referral to family planning clinic' "r_obs_c_text";
+            } "r_obs_code";
+            src->obs.value = evaluate(item, $this.answer.value.code) "r_obs_value_date_ws";
+        }
+        "r_obs_date_ws";
+    }
+    "r_obs_item_date_ws";
+}
+
+group ExtractCommodityObservation(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+    // if selected method is male condom
+    src.item as male_condom where(linkId ='3b24d0e1-dd41-49fc-86c6-a1ba7ad85f03' and answer.value.exists() and answer.value.code = 'yes') then {
+        src.item as male_condom_count where(linkId ='484bb227-25d8-4fbd-e4d7-d399982f4a9d' and answer.value.exists() and answer.value.toInteger() > 0) then {
+            src -> evaluate(src, 'Group/951da426-1506-4cab-b03e-5583bdf0ca76') as refCommodity, evaluate(src, 'Pieces') as unit  then {
+                src -> create('integer') as previousBal then {
+                    src -> previousBal.value = "0" "r_instantiate_bal";
+                    src.item where (linkId = '25cc8d26-ac42-475f-be79-6f1d62a44881' and answer.value.exists()) then {
+                        src -> previousBal.value = evaluate(src, $this.item.where(linkId = '25cc8d26-ac42-475f-be79-6f1d62a44881').answer.value.toString()) "r_previous_bal_value";
+                    } "r_prev_bal_check";
+
+                    src -> evaluate(male_condom_count, $this.answer.value) as qtyDistributed then {
+                        src -> evaluate(src, (previousBal - qtyDistributed)) as runningTotal then {
+                            src then ExtractSpecificObservation(src, bundle, refCommodity, qtyDistributed, runningTotal, unit) "r_extract_obs";
+
+                            //create stockout flag if none exists and total balance is Zero or less
+                            src as stockOut where (runningTotal <= 0) then {
+                                src.item as noFlag where (linkId = '56577a66-15ae-4612-bee9-a2d4168082e8' and answer.value.empty()) then {
+                                    src then createStockOutFlag(src, bundle, refCommodity) "r_create_stockout_flag";
+                                } "r_no_flag";
+                            } "r_bal_is_zero";
+                        } "r_running_total";
+
+                    } "r_quantiy_distributed";
+                } "r_previous_balance_component";
+            } "r_male_condom_ref";
+
+            //Update the current latest observation if it exists
+            src.item as latestObservation where(linkId ='955c5b30-0f08-4720-8567-99ef58350615' and answer.value.exists()) then {
+                src ->  evaluate(src, $this.item.where(linkId = '955c5b30-0f08-4720-8567-99ef58350615').answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_update_current_latest_obs";
+            } "r_check_latest_obs";
+        } "r_male_condom_count";
+    } "r_male_condom";
+
+    // if selected method is female condom
+    src.item as female_condom where(linkId ='390ccffe-dd32-46d1-8fe7-1631fbf1de33' and answer.value.exists() and answer.value.code = 'yes') then {
+        src.item as female_condom_count where(linkId ='d3949391-bcfd-4859-c745-5d790c8258d7' and answer.value.exists() and answer.value.toInteger() > 0) then {
+            src -> evaluate(src, 'Group/b3e4806d-af0c-4943-95a4-28d5fbffa7fc') as refCommodity, evaluate(src, 'Pieces') as unit  then {
+                src -> create('integer') as previousBal then {
+                    src -> previousBal.value = "0" "r_instantiate_bal";
+                    src.item where (linkId = '48245462-0198-48ab-f5c4-ca4ca3da5403' and answer.value.exists()) then {
+                        src -> previousBal.value = evaluate(src, $this.item.where(linkId = '48245462-0198-48ab-f5c4-ca4ca3da5403').answer.value.toString()) "r_previous_bal_value";
+                    } "r_prev_bal_check";
+
+                    src -> evaluate(female_condom_count, $this.answer.value) as qtyDistributed then {
+                        src -> evaluate(src, (previousBal - qtyDistributed)) as runningTotal then {
+                            src then ExtractSpecificObservation(src, bundle, refCommodity, qtyDistributed, runningTotal, unit) "r_extract_obs";
+
+                            //create stockout flag if none exists and total balance is Zero or less
+                            src as stockOut where (runningTotal <= 0) then {
+                                src.item as noFlag where (linkId = '30be53b9-6a9c-49fd-8ae7-6e8ff1da8830' and answer.value.empty()) then {
+                                    src then createStockOutFlag(src, bundle, refCommodity) "r_create_stockout_flag";
+                                } "r_no_flag";
+                            } "r_bal_is_zero";
+                        } "r_running_total";
+
+                    } "r_quantiy_distributed";
+                } "r_previous_balance_component";
+            } "r_female_condom_ref";
+
+            //Update the current latest observation if it exists
+            src.item as latestObservation where(linkId ='3821961e-79db-4120-99db-079548307454' and answer.value.exists()) then {
+                src ->  evaluate(src, $this.item.where(linkId = '3821961e-79db-4120-99db-079548307454').answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_update_current_latest_obs";
+            } "r_check_latest_obs";
+        } "r_female_condom_count";
+    } "r_female_condom";
+
+    // if selected method is microlut
+    src.item as microlut where(linkId ='4492095d-088b-4298-cb82-23ee066c45b2' and answer.value.exists() and answer.value.code = 'yes') then {
+        src.item as microlut_count where(linkId ='c804b918-f678-420f-ef12-9077cde91bda' and answer.value.exists() and answer.value.toInteger() > 0) then {
+            src -> evaluate(src, 'Group/9738f1b3-dac8-4c71-bcaf-f1d7959b0681') as refCommodity, evaluate(src, 'Cycles') as unit  then {
+                src -> create('integer') as previousBal then {
+                    src -> previousBal.value = "0" "r_instantiate_bal";
+                    src.item where (linkId = '8f8dd1a8-528c-4415-95ce-59eaa9cc2bd3' and answer.value.exists()) then {
+                        src -> previousBal.value = evaluate(src, $this.item.where(linkId = '8f8dd1a8-528c-4415-95ce-59eaa9cc2bd3').answer.value.toString()) "r_previous_bal_value";
+                    } "r_prev_bal_check";
+
+                    src -> evaluate(microlut_count, $this.answer.value) as qtyDistributed then {
+                        src -> evaluate(src, (previousBal - qtyDistributed)) as runningTotal then {
+                            src then ExtractSpecificObservation(src, bundle, refCommodity, qtyDistributed, runningTotal, unit) "r_extract_obs";
+
+                            //create stockout flag if none exists and total balance is Zero or less
+                            src as stockOut where (runningTotal <= 0) then {
+                                src.item as noFlag where (linkId = '636108ea-07b0-4f8b-8f20-7cf0518deaca' and answer.value.empty()) then {
+                                    src then createStockOutFlag(src, bundle, refCommodity) "r_create_stockout_flag";
+                                } "r_no_flag";
+                            } "r_bal_is_zero";
+                        } "r_running_total";
+
+                    } "r_quantiy_distributed";
+                } "r_previous_balance_component";
+            } "r_microlut_ref";
+
+            //Update the current latest observation if it exists
+            src.item as latestObservation where(linkId ='6c204a32-da95-4251-bf3f-bbc6d3e69f1a' and answer.value.exists()) then {
+                src ->  evaluate(src, $this.item.where(linkId = '6c204a32-da95-4251-bf3f-bbc6d3e69f1a').answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_update_current_latest_obs";
+            } "r_check_latest_obs";
+        } "r_microlut_count";
+    } "r_microlut";
+
+    // if selected method is microgynon
+    src.item as microgynon where(linkId ='829a2521-9330-443c-81da-0673eca758df' and answer.value.exists() and answer.value.code = 'yes') then {
+        src.item as microgynon_count where(linkId ='87a92524-3743-49d0-81ad-3021752a71f6' and answer.value.exists() and answer.value.toInteger() > 0) then {
+            src -> evaluate(src, 'Group/f2734756-a6bb-4e90-bbc6-1c34f51d3d5c') as refCommodity, evaluate(src, 'Cycles') as unit  then {
+                src -> create('integer') as previousBal then {
+                    src -> previousBal.value = "0" "r_instantiate_bal";
+                    src.item where (linkId = '34925e0f-ad9c-4f6c-9873-1c51196d630a' and answer.value.exists()) then {
+                        src -> previousBal.value = evaluate(src, $this.item.where(linkId = '34925e0f-ad9c-4f6c-9873-1c51196d630a').answer.value.toString()) "r_previous_bal_value";
+                    } "r_prev_bal_check";
+
+                    src -> evaluate(microgynon_count, $this.answer.value) as qtyDistributed then {
+                        src -> evaluate(src, (previousBal - qtyDistributed)) as runningTotal then {
+                            src then ExtractSpecificObservation(src, bundle, refCommodity, qtyDistributed, runningTotal, unit) "r_extract_obs";
+
+                            //create stockout flag if none exists and total balance is Zero or less
+                            src as stockOut where (runningTotal <= 0) then {
+                                src.item as noFlag where (linkId = 'dd628ef4-1363-44ac-8d70-1ad6fc61809e' and answer.value.empty()) then {
+                                    src then createStockOutFlag(src, bundle, refCommodity) "r_create_stockout_flag";
+                                } "r_no_flag";
+                            } "r_bal_is_zero";
+                        } "r_running_total";
+
+                    } "r_quantiy_distributed";
+                } "r_previous_balance_component";
+            } "r_microgynon_ref";
+
+            //Update the current latest observation if it exists
+            src.item as latestObservation where(linkId ='4857a2ac-85c7-47aa-a246-1f0bac8ff56c' and answer.value.exists()) then {
+                src ->  evaluate(src, $this.item.where(linkId = '4857a2ac-85c7-47aa-a246-1f0bac8ff56c').answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_update_current_latest_obs";
+            } "r_check_latest_obs";
+        } "r_microgynon_count";
+    } "r_microgynon";
+
+    // if selected method is depo
+    src.item as depo where(linkId ='2bf80a34-c7d7-4f3b-816b-75e60ad070c8' and answer.value.exists() and answer.value.code = 'yes') then {
+        src.item as depo_count where(linkId ='ae26764b-18b8-489d-8dcf-1aef6744d4b9' and answer.value.exists() and answer.value.code = 'yes') then {
+            src -> evaluate(src, 'Group/2265f6c0-610d-45f4-b023-c5b7fd5eb546') as refCommodity, evaluate(src, 'Ampoules') as unit  then {
+                src -> create('integer') as previousBal then {
+                    src -> previousBal.value = "0" "r_instantiate_bal";
+                    src.item where (linkId = '5e0cde01-7df6-40b6-ad42-d8aa52a27187' and answer.value.exists()) then {
+                        src -> previousBal.value = evaluate(src, $this.item.where(linkId = '5e0cde01-7df6-40b6-ad42-d8aa52a27187').answer.value.toString()) "r_previous_bal_value";
+                    } "r_prev_bal_check";
+
+                    src -> evaluate(src, 1) as qtyDistributed then {
+                        src -> evaluate(src, (previousBal - qtyDistributed)) as runningTotal then {
+                            src then ExtractSpecificObservation(src, bundle, refCommodity, qtyDistributed, runningTotal, unit) "r_extract_obs";
+
+                            //create stockout flag if none exists and total balance is Zero or less
+                            src as stockOut where (runningTotal <= 0) then {
+                                src.item as noFlag where (linkId = 'bf3ccd65-e64e-4dc5-a524-b6b1e6e17a65' and answer.value.empty()) then {
+                                    src then createStockOutFlag(src, bundle, refCommodity) "r_create_stockout_flag";
+                                } "r_no_flag";
+                            } "r_bal_is_zero";
+                        } "r_running_total";
+
+                    } "r_quantiy_distributed";
+                } "r_previous_balance_component";
+            } "r_depo_ref";
+
+            //Update the current latest observation if it exists
+            src.item as latestObservation where(linkId ='b8de4749-8d94-40d4-9a6f-fe7fa2b15cc4' and answer.value.exists()) then {
+                src ->  evaluate(src, $this.item.where(linkId = 'b8de4749-8d94-40d4-9a6f-fe7fa2b15cc4').answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_update_current_latest_obs";
+            } "r_check_latest_obs";
+        } "r_depo_count";
+    } "r_depo";
+}
+
+group ExtractSpecificObservation(source src : QuestionnaireResponse, target bundle : Bundle, source refCommodity : Reference, source qtyDistributed: Integer, source runningBal: Integer, source unit: String) {
+    src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+        src -> obs.id = uuid() "r_obs_id";
+        src -> obs.status = 'preliminary' "r_obs_status";
+        src -> obs.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_obs_category_1";
+        src -> obs.category = cc('http://hl7.org/fhir/inventoryreport-counttype', 'subtraction', 'Subtraction')"r_obs_category_2";
+        src -> obs.code = create('CodeableConcept') as code then {
+            src -> code.coding = create('Coding') as coding then {
+                src -> coding.system = 'https://smartregister.org/' "r_obs_coding_system";
+                src -> coding.code = 'consumption' "r_obs_c_coding_code";
+                src -> coding.display = 'consumption' "r_obs_c_coding_display";
+            } "r_obs_c_coding";
+            src -> code.text = 'consumption' "r_obs_c_text";
+        } "r_obs_code";
+        src -> obs.subject = create('Reference') as ref then {
+            src -> ref.reference = refCommodity "r_obs_ref_value";
+        } "r_obs_ref";
+        src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+        src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+        src -> obs.value = create('Quantity') as qty then {
+            src -> qty.value = qtyDistributed,
+                qty.unit = unit,
+                qty.system = 'http://snomed.info/sct',
+                qty.code = '767525000' "r_obs_qty";
+        } "r_obs_value";
+        src -> obs.component as component then {
+            src -> component.code = create('CodeableConcept') as runningTotalCC then {
+                src -> runningTotalCC.coding = create('Coding') as runningTotalCCCoding then {
+                    src -> runningTotalCCCoding.system = 'http://snomed.info/sct' "r_obs_runing_total_cc_coding_system";
+                    src -> runningTotalCCCoding.code = '255619001' "r_obs_runing_total_cc_coding_code";
+                    src -> runningTotalCCCoding.display = 'Total' "r_obs_runing_total_cc_coding_display";
+                } "r_obs_running_total_cc_coding";
+                src -> runningTotalCC.text = 'Running total/Cumulative sum' "r_obs_runing_total_cc_text";
+            } "r_obs_running_total_code";
+
+            src -> component.value = create('Quantity') as runningTotalQuantity then {
+                src -> runningTotalQuantity.value = runningBal "r_obs__running_total_qty";
+            } "r_obs_running_total_quantity";
+        } "r_obs_running_total_component";
+    } "r_obs";
+}
+
+group updateLatestObservation(source src: src, target bundle : Bundle, source latestObservationId : String){
+    src -> bundle.entry as entry, entry.resource = create('Observation') as observation then {
+        src -> observation.id = create('id') as id then {
+            src -> id.value = latestObservationId "r_update_obs_id_value";
+        } "r_update_obs_id";
+        src -> observation.status = 'final' "r_update_latest_obs_to_final";
+    } "r_update_latest_obs";
+}
+
+group createStockOutFlag(source src: src, target bundle : Bundle, source refCommodity: Reference){
+    src -> bundle.entry as entry, entry.resource = create('Flag') as flag then {
+        src -> flag.id = uuid() "r_flag_id";
+        src -> flag.status = 'active' "r_flag_status";
+        src -> flag.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_flag_category";
+        src -> flag.code = cc('http://snomed.info/sct','419182006', ' Supplies not available')  "r_flag_code";
+        src -> flag.subject = create('Reference') as ref then {
+            src -> ref.reference = refCommodity "r_flag_ref_value";
+        }"r_flag_subject";
+        src -> flag.period = create('Period') as period then {
+            src -> period.start = evaluate(src, now()) "r_flag_period_start";
+        } "r_flag_period";
+    } "r_flag";
+}

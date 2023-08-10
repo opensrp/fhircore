@@ -1,0 +1,271 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "8b2e1092-6e2d-431e-a0ed-2fb370a75b73",
+  "meta": {
+    "lastUpdated": "2023-08-09T18:12:12.506+05:00",
+    "tag": [
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655"
+      },
+      {
+        "system": "https://smartregister.org/care-team-tag-id",
+        "code": "698acddb-36d6-44aa-a266-603756cb7545",
+        "display": "Practitioner CareTeam"
+      },
+      {
+        "system": "https://smartregister.org/location-tag-id",
+        "code": "0a01a180-8d2a-4400-86b5-f115768aef17",
+        "display": "Practitioner Location"
+      },
+      {
+        "system": "https://smartregister.org/organisation-tag-id",
+        "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+        "display": "Practitioner Organization"
+      },
+      {
+        "system": "https://smartregister.org/practitioner-tag-id",
+        "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+        "display": "Practitioner"
+      },
+      {
+        "system": "https://smartregister.org/app-version",
+        "code": "Not defined",
+        "display": "Application Version"
+      }
+    ]
+  },
+  "contained": [
+    {
+      "resourceType": "List",
+      "id": "710cf2ab-7521-44ae-91b2-632c110e8bb2",
+      "status": "current",
+      "mode": "working",
+      "title": "GeneratedResourcesList",
+      "date": "2023-08-09T18:12:12+05:00",
+      "entry": [
+        {
+          "deleted": false,
+          "date": "2023-08-09T18:12:12+05:00",
+          "item": {
+            "reference": "Condition/72b6f3f9-a606-4df2-9c4a-9589adcce0ce"
+          }
+        },
+        {
+          "deleted": false,
+          "date": "2023-08-09T18:12:12+05:00",
+          "item": {
+            "reference": "Condition/00d8c75e-93e5-40a6-9d59-7738589770d2"
+          }
+        },
+        {
+          "deleted": false,
+          "date": "2023-08-09T18:12:12+05:00",
+          "item": {
+            "reference": "Encounter/9b91d1ba-624d-42cd-92bf-f114546868a3"
+          }
+        },
+        {
+          "deleted": false,
+          "date": "2023-08-09T18:12:12+05:00",
+          "item": {
+            "reference": "Observation/0fb824b6-6c2d-45e6-970a-5f5dcde52530"
+          }
+        },
+        {
+          "deleted": false,
+          "date": "2023-08-09T18:12:12+05:00",
+          "item": {
+            "reference": "Observation/d584603a-6276-4b8b-b748-7ebfe78ced8f"
+          }
+        },
+        {
+          "deleted": false,
+          "date": "2023-08-09T18:12:12+05:00",
+          "item": {
+            "reference": "Observation/fe9327f2-9f33-4621-af9c-d87865213e99"
+          }
+        },
+        {
+          "deleted": false,
+          "date": "2023-08-09T18:12:12+05:00",
+          "item": {
+            "reference": "Observation/20f5f753-0e7a-4b71-9367-7a1196c1ec09"
+          }
+        }
+      ]
+    }
+  ],
+  "questionnaire": "Questionnaire/0eae99ff-624d-4309-81dc-9a701346d3e6",
+  "status": "completed",
+  "subject": {
+    "reference": "Patient/4d239136-20c0-4020-9a83-227bd4ec1809"
+  },
+  "authored": "2023-08-09T18:12:12+05:00",
+  "item": [
+    {
+      "linkId": "4a0d6179-00b6-460f-826f-3de98a0a4b08",
+      "text": "Is the client interested in enrolling to Family Planning?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "33f9b32c-c944-45f4-c835-c7bbb936b789",
+            "system": "urn:uuid:23d4cfe5-622b-4997-80a2-315161030b7c",
+            "code": "yes",
+            "display": "Yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "98cd685e-fbb3-46ff-8ac3-09c6fb1faf13",
+      "text": "Is the client interested in a short-term or long-term method?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "b15bb282-b2e9-48d5-94a8-4f4276a719b3",
+            "system": "urn:uuid:6ebd683b-5ebd-498b-8524-bf420215d71f",
+            "code": "long-term-method",
+            "display": "Long-term method"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "d03d51f7-8507-463d-d059-da19ed5ce370",
+      "text": "Select a Long-term method",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "be85d31b-73a3-4159-bad5-e23e73f8a616",
+            "system": "urn:uuid:822bcbc1-78f4-44ca-b54e-fe45d44b0215",
+            "code": "vasectomy",
+            "display": "Vasectomy"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "d0023ad7-1820-4d39-ddbd-572029c9f1c0",
+      "text": "Referral"
+    },
+    {
+      "linkId": "47d6477f-ea6e-47f7-eb93-2844b02f69ee",
+      "text": "Referred the patient to the hospital?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "c5cd16b7-3e6e-4c71-d2d8-26675a3d3e24",
+            "system": "urn:uuid:d0d334f9-d0d1-45d7-f22a-dfe116a8388a",
+            "code": "yes",
+            "display": "Yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "25cc8d26-ac42-475f-be79-6f1d62a44881",
+      "text": "Stock Balance - Male Condom (Pre-populated) (Hidden)",
+      "answer": [
+        {
+          "valueInteger": -34
+        }
+      ]
+    },
+    {
+      "linkId": "48245462-0198-48ab-f5c4-ca4ca3da5403",
+      "text": "Stock Balance - Female Condom (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "34925e0f-ad9c-4f6c-9873-1c51196d630a",
+      "text": "Stock Balance - Microgynon (Pre-populated) (Hidden)",
+      "answer": [
+        {
+          "valueInteger": 98
+        }
+      ]
+    },
+    {
+      "linkId": "8f8dd1a8-528c-4415-95ce-59eaa9cc2bd3",
+      "text": "Stock Balance - Microlut (Pre-populated) (Hidden)",
+      "answer": [
+        {
+          "valueInteger": 100
+        }
+      ]
+    },
+    {
+      "linkId": "5e0cde01-7df6-40b6-ad42-d8aa52a27187",
+      "text": "Stock Balance - Sayana Press (demo) (Pre-populated) (Hidden)",
+      "answer": [
+        {
+          "valueInteger": 80
+        }
+      ]
+    },
+    {
+      "linkId": "955c5b30-0f08-4720-8567-99ef58350615",
+      "text": "Latest Observation ID - Male Condom (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "3821961e-79db-4120-99db-079548307454",
+      "text": "Latest Observation ID - Female Condom (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "4857a2ac-85c7-47aa-a246-1f0bac8ff56c",
+      "text": "Latest Observation ID - Microgynon (Pre-populated) (Hidden)",
+      "answer": [
+        {
+          "valueString": "7e271d46-f589-4e3c-bc7f-c405947623ea"
+        }
+      ]
+    },
+    {
+      "linkId": "6c204a32-da95-4251-bf3f-bbc6d3e69f1a",
+      "text": "Latest Observation ID - Microlut (Pre-populated) (Hidden)",
+      "answer": [
+        {
+          "valueString": "2eaf75bb-7f86-4c47-b096-c49a5a9d82de"
+        }
+      ]
+    },
+    {
+      "linkId": "b8de4749-8d94-40d4-9a6f-fe7fa2b15cc4",
+      "text": "Latest Observation ID - Sayana Press (depo) (Pre-populated) (Hidden)",
+      "answer": [
+        {
+          "valueString": "5a62fd3c-460d-47b3-bc70-42d0d25322cf"
+        }
+      ]
+    },
+    {
+      "linkId": "56577a66-15ae-4612-bee9-a2d4168082e8",
+      "text": "Stockout Flag ID - Male Condom (Pre-populated) (Hidden)",
+      "answer": [
+        {
+          "valueString": "b7278632-b538-4f11-abd4-b6dc0dbd41ba"
+        }
+      ]
+    },
+    {
+      "linkId": "30be53b9-6a9c-49fd-8ae7-6e8ff1da8830",
+      "text": "Stockout Flag ID - Female Condom (Pre-populated) (Hidden)",
+      "answer": [
+        {
+          "valueString": "f9ec4b75-d492-4973-bc52-1309a29f68df"
+        }
+      ]
+    },
+    {
+      "linkId": "dd628ef4-1363-44ac-8d70-1ad6fc61809e",
+      "text": "Stockout Flag ID - Microgynon (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "636108ea-07b0-4f8b-8f20-7cf0518deaca",
+      "text": "Stockout Flag ID - Microlut (Pre-populated) (Hidden)"
+    },
+    {
+      "linkId": "bf3ccd65-e64e-4dc5-a524-b6b1e6e17a65",
+      "text": "Stockout Flag ID - Sayana Press (depo) (Pre-populated) (Hidden)"
+    }
+  ]
+}
