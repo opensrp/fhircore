@@ -65,6 +65,7 @@ data class ActionConfig(
           managingEntityReassignedMessage =
             managingEntity.managingEntityReassignedMessage.interpolate(computedValuesMap),
         ),
+      params = params.map{it.interpolate(computedValuesMap)}
     )
 
   companion object {
