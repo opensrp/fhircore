@@ -18,7 +18,9 @@ package org.smartregister.fhircore.quest
 
 import androidx.test.platform.app.InstrumentationRegistry
 import io.mockk.coEvery
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -54,6 +56,8 @@ object Faker {
           json = json,
         ),
       )
+
+    coEvery { configurationRegistry.addOrUpdate(any()) } just runs
 
     runBlocking {
       configurationRegistry.loadConfigurations(

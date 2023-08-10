@@ -16,6 +16,7 @@
         android:theme="@style/AppTheme.NoActionBar"
         android:windowSoftInputMode="adjustResize"
         tools:ignore="UnusedAttribute,LockedOrientationActivity"
+        android:enableOnBackInvokedCallback="true"
         tools:replace="android:theme">
 
         <meta-data android:name="io.sentry.auto-init" android:value="false" />
@@ -43,7 +44,6 @@
 
         <activity
             android:name=".ui.main.AppMainActivity"
-            android:exported="false"
             android:launchMode="singleTop"
             android:clearTaskOnLaunch="true" />
 

@@ -183,9 +183,7 @@ constructor(
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
-          is SyncJobStatus.Finished,
-          is SyncJobStatus.Failed,
-          is SyncJobStatus.Glitch, -> {
+          is SyncJobStatus.Finished -> {
             sharedPreferencesHelper.write(
               SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
               formatLastSyncTimestamp(event.state.timestamp),
@@ -237,13 +235,17 @@ constructor(
     viewModelScope.launch {
       val location = registerRepository.loadResource<Location>(locationId)?.encodeResourceToString()
       if (context is QuestionnaireHandler) {
-        context.launchQuestionnaire<Any>(
+        context.launchQuestionnaire(
           context = context,
-          intentBundle =
+          extraIntentBundle =
             bundleOf(
-              Pair(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES, arrayListOf(location)),
+              Pair(
+                QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
+                arrayListOf(location),
+              ),
             ),
           questionnaireConfig = questionnaireConfig,
+          actionParams = emptyList(),
         )
       }
     }

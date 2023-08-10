@@ -20,9 +20,7 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.FhirPractitionerDetails
-import org.smartregister.model.practitioner.KeycloakUserDetails
 import org.smartregister.model.practitioner.PractitionerDetails
-import org.smartregister.model.practitioner.UserBioData
 
 fun FhirContext.getCustomJsonParser(): IParser {
   return this.apply {
@@ -31,8 +29,6 @@ fun FhirContext.getCustomJsonParser(): IParser {
           PractitionerDetails::class.java,
           FhirPractitionerDetails::class.java,
           LocationHierarchy::class.java,
-          KeycloakUserDetails::class.java,
-          UserBioData::class.java,
         ),
       )
     }
