@@ -212,14 +212,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
       }
       is SyncJobStatus.Glitch -> {
         refreshRegisterData()
-        lifecycleScope.launch {
-          registerViewModel.emitSnackBarState(
-            SnackBarMessageConfig(
-              message = getString(R.string.sync_failed),
-              duration = SnackbarDuration.Long
-            )
-          )
-        }
       }
       is SyncJobStatus.Failed -> {
         refreshRegisterData()

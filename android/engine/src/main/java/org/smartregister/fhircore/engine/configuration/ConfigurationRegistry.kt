@@ -31,6 +31,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
@@ -44,12 +45,14 @@ import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fileExtension
@@ -377,12 +380,10 @@ constructor(
                 val chunkedResourceIdList =
                   resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
                 chunkedResourceIdList.forEach {
-                  val resourceIds =
-                    it.joinToString(",") { sectionComponent -> sectionComponent.focus.extractId() }
-
-                  fhirResourceDataSource.getResource(
-                      "${resourceGroup.key}?${Composition.SP_RES_ID}=$resourceIds&_count=$HAPI_FHIR_DEFAULT_COUNT"
-                    )
+                  processCompositionManifestResources(
+                    resourceGroup.key,
+                    it.map { sectionComponent -> sectionComponent.focus.extractId() }
+                  )
                     .entry
                     .forEach { bundleEntryComponent ->
                       when (bundleEntryComponent.resource) {
@@ -415,20 +416,63 @@ constructor(
                 }
               }
             } else {
+
               val chunkedResourceIdList = resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
 
               chunkedResourceIdList.forEach {
-                val resourceIds =
-                  it.joinToString(",") { sectionComponent -> sectionComponent.focus.extractId() }
                 processCompositionManifestResources(
-                  searchPath =
-                    "${resourceGroup.key}?${Composition.SP_RES_ID}=$resourceIds&_count=$HAPI_FHIR_DEFAULT_COUNT"
+                  resourceGroup.key,
+                  it.map { sectionComponent -> sectionComponent.focus.extractId() }
                 )
               }
             }
           }
       }
     }
+  }
+
+  private suspend fun processCompositionManifestResources(
+    resourceType: String,
+    resourceIdList: List<String>
+  ): Bundle {
+
+    val resultBundle =
+      fhirResourceDataSource.post(
+        "",
+        generateRequestBundle(resourceType, resourceIdList)
+          .encodeResourceToString()
+          .toRequestBody(NetworkModule.JSON_MEDIA_TYPE)
+      )
+    resultBundle.entry?.forEach { bundleEntryComponent ->
+      when (bundleEntryComponent.resource) {
+        is Bundle -> {
+          val bundle = bundleEntryComponent.resource as Bundle
+          bundle.entry.forEach { entryComponent ->
+            when (entryComponent.resource) {
+              is Bundle -> {
+
+                val bundle = entryComponent.resource as Bundle
+                addOrUpdate(bundle)
+                bundle.entry.forEach { innerEntryComponent ->
+                  saveListEntryResource(innerEntryComponent)
+                }
+              }
+              else -> saveListEntryResource(entryComponent)
+            }
+          }
+        }
+        else -> {
+          if (bundleEntryComponent.resource != null) {
+            addOrUpdate(bundleEntryComponent.resource)
+            Timber.d(
+              "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.id}"
+            )
+          }
+        }
+      }
+    }
+
+    return resultBundle
   }
 
   private suspend fun processCompositionManifestResources(
@@ -481,6 +525,7 @@ constructor(
    * resource, or create it if not found.
    */
   suspend fun <R : Resource> addOrUpdate(resource: R) {
+    if (resource == null) return
     withContext(dispatcherProvider.io()) {
       resource.updateLastUpdated()
       try {
@@ -515,6 +560,27 @@ constructor(
   @VisibleForTesting
   fun setNonProxy(nonProxy: Boolean) {
     isNonProxy_ = nonProxy
+  }
+
+  private fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
+    val bundleEntryComponents = mutableListOf<BundleEntryComponent>()
+
+    idList.forEach {
+      bundleEntryComponents.add(
+        BundleEntryComponent().apply {
+          request =
+            Bundle.BundleEntryRequestComponent().apply {
+              url = "$resourceType/$it"
+              method = Bundle.HTTPVerb.GET
+            }
+        }
+      )
+    }
+
+    return Bundle().apply {
+      type = Bundle.BundleType.BATCH
+      entry = bundleEntryComponents
+    }
   }
 
   companion object {
