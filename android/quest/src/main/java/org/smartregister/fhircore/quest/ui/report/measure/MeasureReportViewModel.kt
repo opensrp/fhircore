@@ -297,7 +297,7 @@ constructor(
                   subjects.add("${Practitioner().resourceType.name}/$practitionerId")
                 }
 
-                val existing =
+                val existingReports =
                   retrievePreviouslyGeneratedMeasureReports(
                     fhirEngine = fhirEngine,
                     startDateFormatted = startDateFormatted,
@@ -306,11 +306,23 @@ constructor(
                     subjects = listOf(),
                   )
 
+                val existingValidReports = mutableListOf<MeasureReport>()
+
+                existingReports
+                  ?.groupBy { it.subject.reference }
+                  ?.forEach { entry ->
+                    if (entry.value.size > 1 && entry.value.distinctBy { it.measure }.size <= 1) {
+                      return@forEach
+                    } else {
+                      existingValidReports.addAll(entry.value)
+                    }
+                  }
+
                 // if report is of current month or does not exist generate a new one and replace
                 // existing
                 if (endDateFormatted.parseDate(SDF_YYYY_MM_DD)!!
                     .formatDate(SDF_YYYY_MMM)
-                    .contentEquals(Date().formatDate(SDF_YYYY_MMM)) || existing.isEmpty()
+                    .contentEquals(Date().formatDate(SDF_YYYY_MMM)) || existingValidReports.isEmpty()
                 ) {
                   withContext(dispatcherProvider.io()) {
                     fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
@@ -321,11 +333,11 @@ constructor(
                     startDateFormatted = startDateFormatted,
                     endDateFormatted = endDateFormatted,
                     subjects = subjects,
-                    existing = existing,
+                    existing = existingValidReports,
                     practitionerId = practitionerId,
                   )
                 } else {
-                  existing
+                  existingValidReports
                 }
               }
 
