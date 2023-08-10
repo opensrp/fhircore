@@ -602,12 +602,12 @@ constructor(
     resourceIds.forEach {
       val responseBundle =
         fhirResourceDataSource.getResource("$resourceType?${Composition.SP_RES_ID}=$it")
-      responseBundle?.let {
-        bundleEntryComponents.add(
-          Bundle.BundleEntryComponent().apply {
-            resource = responseBundle.entry?.first()?.resource
-          },
-        )
+      responseBundle.let {
+          bundleEntryComponents.add(
+            Bundle.BundleEntryComponent().apply {
+              resource = it.entry?.firstOrNull()?.resource
+            },
+          )
       }
     }
     return Bundle().apply {
