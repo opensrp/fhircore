@@ -51,15 +51,15 @@ jobs:
           name: dependency-check-report
           path: android/build/reports/dependency-check-report.xml
           
-      - name: import dependency check report into defectdojo
-        run: |
-           curl -X POST -H "Content-Type: application/json" \
-           -H "Authorization: Token ${DEFECTDOJO_API_KEY}" \
-           -d @android/build/reports/dependency-check-report.xml \
-           "${DEFECTDOJO_API_URL}/api/v2/engagements/45/tests/247/import-scan/"
-         env:
-           DEFECTDOJO_API_URL: ${{ secrets.DEFECTDOJO_API_URL }}
-           DEFECTDOJO_API_KEY: ${{ secrets.DEFECTDOJO_API_KEY }}
+#       - name: import dependency check report into defectdojo
+#         run: |
+#            curl -X POST -H "Content-Type: application/json" \
+#            -H "Authorization: Token ${DEFECTDOJO_API_KEY}" \
+#            -d @android/build/reports/dependency-check-report.xml \
+#            "${DEFECTDOJO_API_URL}/api/v2/engagements/45/tests/247/import-scan/"
+#          env:
+#            DEFECTDOJO_API_URL: ${{ secrets.DEFECTDOJO_API_URL }}
+#            DEFECTDOJO_API_KEY: ${{ secrets.DEFECTDOJO_API_KEY }}
         
 
 
