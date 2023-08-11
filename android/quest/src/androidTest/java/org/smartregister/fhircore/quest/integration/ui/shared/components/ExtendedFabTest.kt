@@ -57,7 +57,7 @@ class ExtendedFabTest {
                 listOf(
                   ActionConfig(
                     trigger = ActionTrigger.ON_CLICK,
-                    workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+                    workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE.name,
                     questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
                   ),
                 ),
@@ -113,7 +113,7 @@ class ExtendedFabTest {
                 listOf(
                   ActionConfig(
                     trigger = ActionTrigger.ON_CLICK,
-                    workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+                    workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE.name,
                     questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
                   ),
                 ),
@@ -151,7 +151,7 @@ class ExtendedFabTest {
                 listOf(
                   ActionConfig(
                     trigger = ActionTrigger.ON_CLICK,
-                    workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+                    workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE.name,
                     questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
                   ),
                 ),
