@@ -62,7 +62,7 @@ class ActionConfigTest : RobolectricTest() {
     val actionConfig =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE.name,
         questionnaire = QuestionnaireConfig(id = "444"),
         params = actionParams,
       )
@@ -87,7 +87,7 @@ class ActionConfigTest : RobolectricTest() {
     val actionConfig =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE.name,
         questionnaire = QuestionnaireConfig(id = "444"),
         display = "Display",
         managingEntity =
@@ -116,7 +116,7 @@ class ActionConfigTest : RobolectricTest() {
     val actionConfig =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE.name,
         questionnaire = QuestionnaireConfig(id = "444"),
         display = "Display",
         managingEntity =
