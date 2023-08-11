@@ -93,6 +93,11 @@ android {
 
   buildTypes {
     getByName("debug") { isTestCoverageEnabled = true }
+    create("benchmark") {
+      signingConfig = signingConfigs.getByName("debug")
+      matchingFallbacks += listOf("debug")
+      isDebuggable = true
+    }
 
     getByName("release") {
       isMinifyEnabled = false
@@ -305,11 +310,6 @@ tasks.withType<Test> {
   minHeapSize = "4608m"
   maxHeapSize = "4608m"
   maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
-
-  if (!name.toLowerCase().contains("performance")) {
-    System.out.println("Trying to exclude the performance package from task name [$name]")
-    exclude("org.smartregister.fhircore.performance.*")
-  }
 }
 
 configurations {
@@ -372,6 +372,7 @@ dependencies {
   androidTestImplementation(libs.hilt.android.testing)
   androidTestImplementation(libs.mockk.android)
   androidTestImplementation(libs.benchmark.junit)
+  androidTestImplementation("androidx.work:work-testing:2.7.1")
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }
