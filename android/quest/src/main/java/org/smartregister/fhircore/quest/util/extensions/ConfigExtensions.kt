@@ -56,7 +56,7 @@ fun List<ActionConfig>.handleClickEvent(
     val resourceId =
       interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
         ?: resourceData?.baseResourceId
-    when (onClickAction.workflow) {
+    when (actionConfig.workflow?.let { ApplicationWorkflow.valueOf(it) }) {
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
           val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
