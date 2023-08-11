@@ -361,8 +361,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         context = context,
       )
     Assert.assertNotNull(bundle)
-    Assert.assertTrue(bundle?.entryFirstRep?.resource is Patient)
-    Assert.assertEquals(patient.id, bundle?.entryFirstRep?.resource?.id)
+    Assert.assertTrue(bundle.entryFirstRep?.resource is Patient)
+    Assert.assertEquals(patient.id, bundle.entryFirstRep?.resource?.id)
     unmockkObject(ResourceMapper)
   }
 
@@ -382,8 +382,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         context = context,
       )
     Assert.assertNotNull(bundle)
-    Assert.assertTrue(bundle?.entryFirstRep?.resource is Patient)
-    Assert.assertEquals(patient.id, bundle?.entryFirstRep?.resource?.id)
+    Assert.assertTrue(bundle.entryFirstRep?.resource is Patient)
+    Assert.assertEquals(patient.id, bundle.entryFirstRep?.resource?.id)
     unmockkObject(ResourceMapper)
   }
 
