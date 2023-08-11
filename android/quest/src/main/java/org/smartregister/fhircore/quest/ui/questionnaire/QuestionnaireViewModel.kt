@@ -221,7 +221,7 @@ constructor(
         val subject =
           loadResource(ResourceType.valueOf(subjectIdType.resourceType), subjectIdType.idPart)
 
-        if (subject != null && bundle != null) {
+        if (subject != null) {
           val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
           generateCarePlan(
             subject = subject,
@@ -246,14 +246,14 @@ constructor(
       softDeleteResources(questionnaireConfig)
 
       val idTypes =
-        bundle?.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
+        bundle.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
           ?: emptyList()
       onSuccessfulSubmission(idTypes, currentQuestionnaireResponse)
     }
   }
 
   suspend fun saveExtractedResources(
-    bundle: Bundle?,
+    bundle: Bundle,
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig,
     currentQuestionnaireResponse: QuestionnaireResponse,
@@ -270,7 +270,7 @@ constructor(
         date = extractionDate
       }
 
-    bundle?.entry?.forEach { bundleEntryComponent ->
+    bundle.entry?.forEach { bundleEntryComponent ->
       bundleEntryComponent.resource?.run {
         applyResourceMetadata()
         val subjectType = questionnaireSubjectType(questionnaire, questionnaireConfig)
@@ -366,7 +366,7 @@ constructor(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     context: Context,
-  ): Bundle? =
+  ): Bundle =
     kotlin
       .runCatching {
         if (extractByStructureMap) {
@@ -407,7 +407,7 @@ constructor(
           }
         }
       }
-      .getOrDefault(null)
+      .getOrDefault(Bundle())
 
   /**
    * This function saves [QuestionnaireResponse] as draft if any of the [QuestionnaireResponse.item]
