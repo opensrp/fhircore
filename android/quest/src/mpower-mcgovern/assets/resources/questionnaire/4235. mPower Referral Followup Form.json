@@ -29,6 +29,9 @@
       "name": "http://www.mpower-social.com"
     }
   ],
+  "subjectType": [
+    "Patient"
+  ],
   "date": "2023-07-01T00:00:00Z",
   "item": [
     {

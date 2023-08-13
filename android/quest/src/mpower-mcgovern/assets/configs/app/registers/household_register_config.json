@@ -252,27 +252,34 @@
       }
     ]
   },
-  "noResults": {
-    "title": "No households added",
-    "message": "Sorry, you haven't added any households to your register",
-    "actionButton": {
-      "id": "noResultsButton",
+  "fabActions": [
+    {
+      "id": "ActionButton",
       "visible": true,
-      "display": "Add household",
+      "animate": false,
+      "display": "Add Household",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_households"
+      },
       "actions": [
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
-          "id": "householdRegister",
           "questionnaire": {
             "id": "2870",
-            "title": "Add household",
-            "saveButtonText": "Add Household",
+            "title": "Add Household",
+            "saveButtonText": "ADD HOUSEHOLD",
             "setPractitionerDetails": true,
             "setOrganizationDetails": true
+          },
+          "snackBarMessage": {
+            "message": "New Household Added",
+            "actionLabel": "",
+            "duration": "Short"
           }
         }
       ]
     }
-  }
+  ]
 }

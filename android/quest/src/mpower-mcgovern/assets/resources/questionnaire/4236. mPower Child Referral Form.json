@@ -36,6 +36,9 @@
       }
     }
   ],
+  "subjectType": [
+    "Patient"
+  ],
   "item": [
     {
       "linkId": "9b585e14-2d7c-4391-8c89-01f5474c3f9c",

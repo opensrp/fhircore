@@ -528,7 +528,7 @@
                       "name": "taskScheduleDate",
                       "condition": "true",
                       "actions": [
-                        "data.put('taskScheduleDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"yyyy-MM-dd\"))"
+                        "data.put('taskScheduleDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
                       ]
                     },
                     {

@@ -21,7 +21,7 @@
           "filterCriteria": [
             {
               "dataType": "DATE",
-              "valueDate": "2017-03-14",
+              "computedRule": "under5",
               "prefix": "GREATERTHAN_OR_EQUALS"
             }
           ]

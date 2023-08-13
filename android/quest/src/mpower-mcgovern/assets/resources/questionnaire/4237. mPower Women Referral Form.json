@@ -35,6 +35,9 @@
       "valueCanonical": "http://fhir.mpower-social.com:7070/fhir/StructureMap/5408"
     }
   ],
+  "subjectType": [
+    "Patient"
+  ],
   "date": "2023-07-01T00:00:00Z",
   "item": [
     {
