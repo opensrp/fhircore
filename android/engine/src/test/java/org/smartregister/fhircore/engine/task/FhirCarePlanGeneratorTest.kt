@@ -1003,10 +1003,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @ExperimentalCoroutinesApi
   fun `generateOrUpdateCarePlan should generate careplan for 5 visits when lmp has passed 3 months`() =
     runTest {
-      val monthYearMap = mutableMapOf<Int, Map<Int, Int>>()
+      val monthToDateMap = mutableMapOf<Int, Map<Int, Int>>()
 
       for (i in 1..12) {
-        monthYearMap[i] =
+        monthToDateMap[i] =
           mapOf(
             1 to 2023,
             15 to 2023,
@@ -1022,9 +1022,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       }
 
       // Add leap year
-      monthYearMap[2] = monthYearMap[2]!!.plus(29 to 2020)
+      monthToDateMap[2] = monthToDateMap[2]!!.plus(29 to 2020)
 
-      monthYearMap.forEach { entry ->
+      monthToDateMap.forEach { entry ->
         entry.value.forEach { innerEntry ->
           val dateToday: Date =
             Date.from(
