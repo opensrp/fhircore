@@ -21,6 +21,7 @@ import com.google.android.fhir.datacapture.enablement.EnablementEvaluator
 import com.google.android.fhir.datacapture.extensions.packRepeatedGroups
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Type
 
 object QuestionnaireResponseValidator {
@@ -56,7 +57,9 @@ object QuestionnaireResponseValidator {
   fun validateQuestionnaireResponse(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
-    context: Context
+    context: Context,
+    questionnaireItemParentMap: Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent>,
+    launchContextMap: Map<String, Resource>?
   ): Map<String, List<ValidationResult>> {
     require(
       questionnaireResponse.questionnaire == null ||
@@ -73,6 +76,7 @@ object QuestionnaireResponseValidator {
       context,
       EnablementEvaluator(questionnaireResponse),
       linkIdToValidationResultMap,
+      questionnaire, questionnaireItemParentMap, launchContextMap
     )
 
     return linkIdToValidationResultMap
@@ -84,6 +88,9 @@ object QuestionnaireResponseValidator {
     context: Context,
     enablementEvaluator: EnablementEvaluator,
     linkIdToValidationResultMap: MutableMap<String, MutableList<ValidationResult>>,
+    questionnaire: Questionnaire,
+    questionnaireItemParentMap: Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent>,
+    launchContextMap: Map<String, Resource>?
   ): Map<String, List<ValidationResult>> {
     val questionnaireItemListIterator = questionnaireItemList.iterator()
     val questionnaireResponseItemListIterator = questionnaireResponseItemList.iterator()
@@ -98,7 +105,7 @@ object QuestionnaireResponseValidator {
         questionnaireItem = questionnaireItemListIterator.next()
       } while (questionnaireItem!!.linkId != questionnaireResponseItem.linkId)
 
-      val enabled = enablementEvaluator.evaluate(questionnaireItem, questionnaireResponseItem)
+      val enabled = enablementEvaluator.evaluate(questionnaireItem, questionnaireResponseItem, questionnaire, questionnaireItemParentMap, launchContextMap)
 
       if (enabled) {
         validateQuestionnaireResponseItem(
@@ -107,6 +114,7 @@ object QuestionnaireResponseValidator {
           context,
           enablementEvaluator,
           linkIdToValidationResultMap,
+          questionnaire, questionnaireItemParentMap, launchContextMap
         )
       }
     }
@@ -118,7 +126,10 @@ object QuestionnaireResponseValidator {
     questionnaireResponseItem: QuestionnaireResponse.QuestionnaireResponseItemComponent,
     context: Context,
     enablementEvaluator: EnablementEvaluator,
-    linkIdToValidationResultMap: MutableMap<String, MutableList<ValidationResult>>
+    linkIdToValidationResultMap: MutableMap<String, MutableList<ValidationResult>>,
+    questionnaire: Questionnaire,
+    questionnaireItemParentMap: Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent>,
+    launchContextMap: Map<String, Resource>?
   ): Map<String, List<ValidationResult>> {
 
     when (checkNotNull(questionnaireItem.type) { "Questionnaire item must have type" }) {
@@ -133,6 +144,7 @@ object QuestionnaireResponseValidator {
           context,
           enablementEvaluator,
           linkIdToValidationResultMap,
+          questionnaire, questionnaireItemParentMap, launchContextMap
         )
       else -> {
         require(questionnaireItem.repeats || questionnaireResponseItem.answer.size <= 1) {
@@ -146,6 +158,7 @@ object QuestionnaireResponseValidator {
             context,
             enablementEvaluator,
             linkIdToValidationResultMap,
+            questionnaire, questionnaireItemParentMap, launchContextMap
           )
         }
 

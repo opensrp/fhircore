@@ -19,6 +19,7 @@ package com.google.android.fhir.datacapture.fhirpath
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
+import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemComponent
 import org.hl7.fhir.r4.model.Resource
@@ -55,3 +56,19 @@ internal fun evaluateToBoolean(
     questionnaireResponseItemComponent,
     expression
   )
+
+internal fun evaluateToBoolean(
+  questionnaireResponse: QuestionnaireResponse,
+  questionnaireResponseItemComponent: QuestionnaireResponseItemComponent,
+  expression: String,
+  contextMap: Map<String, Base?>
+): Boolean {
+  val expressionNode = fhirPathEngine.parse(expression)
+  return fhirPathEngine.evaluateToBoolean(
+    contextMap,
+    questionnaireResponse,
+    questionnaireResponseItemComponent,
+    null,
+    expressionNode
+  )
+}

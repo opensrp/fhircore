@@ -19,10 +19,13 @@ package com.google.android.fhir.datacapture.enablement
 import com.google.android.fhir.compareTo
 import com.google.android.fhir.datacapture.extensions.allItems
 import com.google.android.fhir.datacapture.extensions.enableWhenExpression
+import com.google.android.fhir.datacapture.fhirpath.ExpressionEvaluator
 import com.google.android.fhir.datacapture.fhirpath.evaluateToBoolean
 import com.google.android.fhir.equals
+import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Resource
 
 /**
  * Evaluator for the enablement status of a [Questionnaire.QuestionnaireItemComponent].
@@ -100,6 +103,9 @@ internal class EnablementEvaluator(val questionnaireResponse: QuestionnaireRespo
   fun evaluate(
     questionnaireItem: Questionnaire.QuestionnaireItemComponent,
     questionnaireResponseItem: QuestionnaireResponse.QuestionnaireResponseItemComponent,
+    questionnaire: Questionnaire,
+    questionnaireItemParentMap: Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent>,
+    launchContextMap: Map<String, Resource>?
   ): Boolean {
     val enableWhenList = questionnaireItem.enableWhen
     val enableWhenExpression = questionnaireItem.enableWhenExpression
@@ -110,10 +116,22 @@ internal class EnablementEvaluator(val questionnaireResponse: QuestionnaireRespo
 
     // Evaluate `enableWhenExpression`.
     if (enableWhenExpression != null && enableWhenExpression.hasExpression()) {
+      val variablesMap = mutableMapOf<String, Base?>().apply {
+        ExpressionEvaluator.extractDependentVariables(
+          questionnaireItem.enableWhenExpression!!,
+          questionnaire,
+          questionnaireResponse,
+          questionnaireItemParentMap,
+          questionnaireItem,
+          this,
+          launchContextMap
+        )
+      }
       return evaluateToBoolean(
         questionnaireResponse,
         questionnaireResponseItem,
-        enableWhenExpression.expression
+        enableWhenExpression.expression,
+        variablesMap
       )
     }
 
