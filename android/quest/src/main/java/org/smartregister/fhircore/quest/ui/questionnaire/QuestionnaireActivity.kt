@@ -466,6 +466,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
         context = this,
+      mapOf(),
+      mapOf()
       )
       .values
       .flatten()
