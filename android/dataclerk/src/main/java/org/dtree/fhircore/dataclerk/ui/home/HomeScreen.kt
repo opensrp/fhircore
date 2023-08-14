@@ -30,6 +30,7 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -62,7 +63,8 @@ fun HomeScreen(
   appMainViewModel: AppMainViewModel,
   homeViewModel: HomeViewModel = hiltViewModel(),
   sync: () -> Unit,
-  openPatient: (PatientItem) -> Unit
+  search: () -> Unit,
+  openPatient: (PatientItem) -> Unit,
 ) {
   val appState by appMainViewModel.appMainUiState
   val context = LocalContext.current
@@ -119,6 +121,12 @@ fun HomeScreen(
                 Icon(
                   imageVector = Icons.Default.BugReport,
                   contentDescription = "Debug",
+                )
+              }
+              IconButton(onClick = { search() }) {
+                Icon(
+                  imageVector = Icons.Default.Search,
+                  contentDescription = "Search",
                 )
               }
             }

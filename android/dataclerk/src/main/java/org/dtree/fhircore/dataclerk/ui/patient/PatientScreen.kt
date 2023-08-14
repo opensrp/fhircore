@@ -68,7 +68,7 @@ fun PatientScreen(
   patientViewModel: PatientViewModel = hiltViewModel()
 ) {
   val state by patientViewModel.screenState.collectAsState()
-  val list by patientViewModel.resourceMapStatus
+
   val syncState by appMainViewModel.syncSharedFlow.collectAsState(initial = null)
   val refreshKey by appMainViewModel.refreshHash
 
@@ -98,28 +98,37 @@ fun PatientScreen(
     }
   ) { paddingValues ->
     Column(Modifier.padding(paddingValues).fillMaxSize()) {
-      val context = LocalContext.current
-      if (state is PatientDetailScreenState.Success) {
-        LazyColumn(
-          verticalArrangement = Arrangement.spacedBy(8.dp),
-          contentPadding = PaddingValues(8.dp),
-          modifier = Modifier.fillMaxSize()
-        ) {
-          items((state as PatientDetailScreenState.Success).detailsData) { data ->
-            when (data) {
-              is PatientDetailHeader -> PatientDetailsCardViewBinding(data)
-              is PatientDetailProperty -> PatientListItemViewBinding(data)
-              is PatientDetailOverview ->
-                PatientDetailsHeaderBinding(data) { patientViewModel.editPatient(context) }
-              is PatientReferenceProperty ->
-                list[data.patientProperty.value]?.let { PatientReferencePropertyBinding(data, it) }
-            }
-          }
+      PatientDetailsTab(state, patientViewModel)
+    }
+  }
+}
+
+@Composable
+fun PatientDetailsTab(
+  state: PatientDetailScreenState,
+  patientViewModel: PatientViewModel = hiltViewModel()
+) {
+  val list by patientViewModel.resourceMapStatus
+  val context = LocalContext.current
+  if (state is PatientDetailScreenState.Success) {
+    LazyColumn(
+      verticalArrangement = Arrangement.spacedBy(8.dp),
+      contentPadding = PaddingValues(8.dp),
+      modifier = Modifier.fillMaxSize()
+    ) {
+      items(state.detailsData) { data ->
+        when (data) {
+          is PatientDetailHeader -> PatientDetailsCardViewBinding(data)
+          is PatientDetailProperty -> PatientListItemViewBinding(data)
+          is PatientDetailOverview ->
+            PatientDetailsHeaderBinding(data) { patientViewModel.editPatient(context) }
+          is PatientReferenceProperty ->
+            list[data.patientProperty.value]?.let { PatientReferencePropertyBinding(data, it) }
         }
-      } else {
-        CircularProgressIndicator()
       }
     }
+  } else {
+    CircularProgressIndicator()
   }
 }
 

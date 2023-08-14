@@ -20,6 +20,7 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import org.dtree.fhircore.dataclerk.ui.main.AppDataStore
 import org.dtree.fhircore.dataclerk.ui.main.PatientItem
+import timber.log.Timber
 
 class PatientPagingSource(private val dataStore: AppDataStore) : PagingSource<Int, PatientItem>() {
   override fun getRefreshKey(state: PagingState<Int, PatientItem>): Int? {
@@ -33,11 +34,12 @@ class PatientPagingSource(private val dataStore: AppDataStore) : PagingSource<In
     return try {
       val page = params.key ?: 1
       val response = dataStore.loadPatients(page = page)
-
+      val nextPage = if (response.isEmpty()) null else page.plus(1)
+      Timber.e("next page is $nextPage")
       LoadResult.Page(
         data = response,
         prevKey = null,
-        nextKey = if (response.isEmpty()) null else page.plus(1),
+        nextKey = nextPage,
       )
     } catch (e: Exception) {
       LoadResult.Error(e)
