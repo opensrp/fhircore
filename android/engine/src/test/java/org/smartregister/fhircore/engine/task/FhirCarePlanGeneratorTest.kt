@@ -704,7 +704,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       )!!
       .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
-        assertCarePlan(carePlan, planDefinition, patient, Date(), Date().plusDays(7), 3, Date())
+        assertCarePlan(carePlan, planDefinition, patient, Date(), Date().plusDays(7), 3)
 
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
@@ -948,7 +948,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             lmp,
             lmp.plusMonths(9),
             8,
-            Date(),
           ) // 8 visits for each month of ANC
 
           resourcesSlot.forEach { println(carePlan.encodeResourceToString()) }
@@ -1161,7 +1160,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             lmp,
             lmp.plusMonths(9),
             1,
-            Date(),
           ) // 1 visits for next month of ANC
 
           resourcesSlot.forEach { println(it.encodeResourceToString()) }
@@ -1223,7 +1221,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           patient.birthDate,
           patient.birthDate.plusDays(4017),
           20,
-          Date(),
         )
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
@@ -1285,7 +1282,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           ),
       )!!
       .also { carePlan ->
-        assertCarePlan(carePlan, planDefinition, patient, referenceDate, null, 2, Date())
+        assertCarePlan(carePlan, planDefinition, patient, referenceDate, null, 2)
 
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
@@ -1377,7 +1374,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             patient.birthDate,
             patient.birthDate.plusDays(4017),
             20,
-            Date(),
           )
           resourcesSlot
             .filter { res -> res.resourceType == ResourceType.Task }
@@ -1464,7 +1460,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             patient.birthDate,
             patient.birthDate.plusDays(4017),
             20,
-            Date(),
           )
 
           resourcesSlot
@@ -2102,6 +2097,24 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       resourcesSlot,
     )
   }
+
+  private fun assertCarePlan(
+    carePlan: CarePlan,
+    planDefinition: PlanDefinition,
+    patient: Patient,
+    referenceDate: Date,
+    endDate: Date?,
+    visitTasks: Int,
+  ) =
+    assertCarePlan(
+      carePlan,
+      planDefinition,
+      patient,
+      referenceDate,
+      endDate,
+      visitTasks,
+      Date(),
+    )
 
   private fun assertCarePlan(
     carePlan: CarePlan,
