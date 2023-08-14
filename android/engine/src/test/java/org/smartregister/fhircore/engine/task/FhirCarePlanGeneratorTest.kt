@@ -40,6 +40,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.UUID
@@ -703,7 +704,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       )!!
       .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
-        assertCarePlan(carePlan, planDefinition, patient, Date(), Date().plusDays(7), 3)
+        assertCarePlan(carePlan, planDefinition, patient, Date(), Date().plusDays(7), 3, Date())
 
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
@@ -947,6 +948,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             lmp,
             lmp.plusMonths(9),
             8,
+            Date(),
           ) // 8 visits for each month of ANC
 
           resourcesSlot.forEach { println(carePlan.encodeResourceToString()) }
@@ -1001,91 +1003,122 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @ExperimentalCoroutinesApi
   fun `generateOrUpdateCarePlan should generate careplan for 5 visits when lmp has passed 3 months`() =
     runTest {
-      val planDefinitionResources = loadPlanDefinitionResources("anc-visit", listOf("register"))
-      val planDefinition = planDefinitionResources.planDefinition
-      val patient = planDefinitionResources.patient
-      val questionnaireResponses = planDefinitionResources.questionnaireResponses
-      val resourcesSlot = planDefinitionResources.resourcesSlot
+      val monthYearMap = mutableMapOf<Int, Map<Int, Int>>()
 
-      // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
-      // anc registered late so skip the tasks which passed due date
+      for (i in 1..12) {
+        monthYearMap[i] =
+          mapOf(
+            1 to 2023,
+            15 to 2023,
+            when (i) {
+              4,
+              6,
+              9,
+              11, -> 30 to 2023
+              2 -> 28 to 2023
+              else -> 31 to 2023
+            },
+          )
+      }
 
-      // NOTE : UCUM days per month as used by FHIR Standard are 30
-      // Invoking this twice to work around February edge case
-      // TO DO : Implement Permanent fix for test class - Tracked under
-      // https://github.com/opensrp/fhircore/issues/2402
+      // Add leap year
+      monthYearMap[2] = monthYearMap[2]!!.plus(29 to 2020)
 
-      val lmp = DateType(Date()).apply { add(Calendar.MONTH, -4) }
+      monthYearMap.forEach { entry ->
+        entry.value.forEach { innerEntry ->
+          val dateToday: Date =
+            Date.from(
+              LocalDate.of(innerEntry.value, entry.key, innerEntry.key)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant(),
+            )
 
-      questionnaireResponses
-        .first()
-        .find("245679f2-6172-456e-8ff3-425f5cea3243")!!
-        .answer
-        .first()
-        .value = lmp
+          val planDefinitionResources = loadPlanDefinitionResources("anc-visit", listOf("register"))
+          val planDefinition = planDefinitionResources.planDefinition
+          val patient = planDefinitionResources.patient
+          val questionnaireResponses = planDefinitionResources.questionnaireResponses
+          val resourcesSlot = planDefinitionResources.resourcesSlot
 
-      fhirCarePlanGenerator
-        .generateOrUpdateCarePlan(
-          planDefinition,
-          patient,
-          Bundle()
-            .addEntry(
-              Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
-            ),
-        )!!
-        .also { println(it.encodeResourceToString()) }
-        .also { resourcesSlot.forEach { println(it.encodeResourceToString()) } }
-        .also { carePlan ->
-          assertCarePlan(
-            carePlan,
-            planDefinition,
-            patient,
-            lmp.value,
-            fhirCarePlanGenerator
-              .evaluateToDate(DateTimeType(lmp.value), "\$this + 9 'month'")!!
-              .value,
-            5,
-          ) // 5 visits for each month of ANC
+          // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
+          // anc registered late so skip the tasks which passed due date
 
-          resourcesSlot
-            .filter { res -> res.resourceType == ResourceType.Task }
-            .map { it as Task }
-            .also { assertEquals(6, it.size) } // 5 for visit, 1 for referral
-            .also {
-              assertTrue(it.all { task -> task.status == TaskStatus.READY })
-              assertTrue(it.all { task -> task.`for`.reference == patient.asReference().reference })
-            }
-            // first 5 tasks are anc visit for each month of pregnancy
-            .take(5)
-            .run {
-              assertTrue(this.all { it.reasonReference.reference == "Questionnaire/132155" })
-              assertTrue(
-                this.all { it.basedOn.first().reference == carePlan.asReference().reference },
-              )
+          val lmp = DateType(Date()).apply { add(Calendar.MONTH, -4) }
 
-              // first visit is lmp plus 1 month and subsequent visit are every month after
-              // that until
-              // delivery
-              // skip tasks for past 3 months of late registration
+          questionnaireResponses
+            .first()
+            .find("245679f2-6172-456e-8ff3-425f5cea3243")!!
+            .answer
+            .first()
+            .value = lmp
 
-              val ancStart =
+          fhirCarePlanGenerator
+            .generateOrUpdateCarePlan(
+              planDefinition,
+              patient,
+              Bundle()
+                .addEntry(
+                  Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
+                ),
+            )!!
+            .apply { created = dateToday }
+            .also { println(it.encodeResourceToString()) }
+            .also { resourcesSlot.forEach { println(it.encodeResourceToString()) } }
+            .also { carePlan ->
+              assertCarePlan(
+                carePlan,
+                planDefinition,
+                patient,
+                lmp.value,
                 fhirCarePlanGenerator
-                  .evaluateToDate(DateTimeType(lmp.value), "\$this + 3 'month'")!!
-                  .value
-              this.forEachIndexed { index, task ->
-                assertEquals(
-                  (fhirCarePlanGenerator
-                      .evaluateToDate(
-                        DateTimeType(ancStart),
-                        "\$this + ${index + 1} 'month'",
-                      )!!
-                      .value)
-                    .asYyyyMmDd(),
-                  task.executionPeriod.start.asYyyyMmDd(),
-                )
-              }
+                  .evaluateToDate(DateTimeType(lmp.value), "\$this + 9 'month'")!!
+                  .value,
+                5,
+                dateToday,
+              ) // 5 visits for each month of ANC
+
+              resourcesSlot
+                .filter { res -> res.resourceType == ResourceType.Task }
+                .map { it as Task }
+                .also { assertEquals(6, it.size) } // 5 for visit, 1 for referral
+                .also {
+                  assertTrue(it.all { task -> task.status == TaskStatus.READY })
+                  assertTrue(
+                    it.all { task -> task.`for`.reference == patient.asReference().reference },
+                  )
+                }
+                // first 5 tasks are anc visit for each month of pregnancy
+                .take(5)
+                .run {
+                  assertTrue(this.all { it.reasonReference.reference == "Questionnaire/132155" })
+                  assertTrue(
+                    this.all { it.basedOn.first().reference == carePlan.asReference().reference },
+                  )
+
+                  // first visit is lmp plus 1 month and subsequent visit are every month after
+                  // that until
+                  // delivery
+                  // skip tasks for past 3 months of late registration
+
+                  val ancStart =
+                    fhirCarePlanGenerator
+                      .evaluateToDate(DateTimeType(lmp.value), "\$this + 3 'month'")!!
+                      .value
+                  this.forEachIndexed { index, task ->
+                    assertEquals(
+                      (fhirCarePlanGenerator
+                          .evaluateToDate(
+                            DateTimeType(ancStart),
+                            "\$this + ${index + 1} 'month'",
+                          )!!
+                          .value)
+                        .asYyyyMmDd(),
+                      task.executionPeriod.start.asYyyyMmDd(),
+                    )
+                  }
+                }
             }
         }
+      }
     }
 
   @Test
@@ -1128,6 +1161,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             lmp,
             lmp.plusMonths(9),
             1,
+            Date(),
           ) // 1 visits for next month of ANC
 
           resourcesSlot.forEach { println(it.encodeResourceToString()) }
@@ -1189,6 +1223,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           patient.birthDate,
           patient.birthDate.plusDays(4017),
           20,
+          Date(),
         )
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
@@ -1250,7 +1285,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           ),
       )!!
       .also { carePlan ->
-        assertCarePlan(carePlan, planDefinition, patient, referenceDate, null, 2)
+        assertCarePlan(carePlan, planDefinition, patient, referenceDate, null, 2, Date())
 
         resourcesSlot
           .filter { res -> res.resourceType == ResourceType.Task }
@@ -1342,6 +1377,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             patient.birthDate,
             patient.birthDate.plusDays(4017),
             20,
+            Date(),
           )
           resourcesSlot
             .filter { res -> res.resourceType == ResourceType.Task }
@@ -1428,6 +1464,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             patient.birthDate,
             patient.birthDate.plusDays(4017),
             20,
+            Date(),
           )
 
           resourcesSlot
@@ -2073,6 +2110,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     referenceDate: Date,
     endDate: Date?,
     visitTasks: Int,
+    dateToday: Date,
   ) {
     assertNotNull(UUID.fromString(carePlan.id))
     assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
@@ -2080,7 +2118,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     assertEquals(planDefinition.title, carePlan.title)
     assertEquals(planDefinition.description, carePlan.description)
     assertEquals(patient.logicalId, carePlan.subject.extractId())
-    assertEquals(DateTimeType.now().value.makeItReadable(), carePlan.created.makeItReadable())
+    assertEquals(DateTimeType(dateToday).value.makeItReadable(), carePlan.created.makeItReadable())
     assertEquals(patient.generalPractitionerFirstRep.extractId(), carePlan.author.extractId())
 
     assertEquals(referenceDate.makeItReadable(), carePlan.period.start.makeItReadable())
