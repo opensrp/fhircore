@@ -58,9 +58,9 @@ fun PatientList(viewModel: HomeViewModel, navigate: (PatientItem) -> Unit) {
 
   LazyColumn(
     verticalArrangement = Arrangement.spacedBy(8.dp),
-    contentPadding = PaddingValues(8.dp)
+    contentPadding = PaddingValues(8.dp),
   ) {
-    items(items = removeDuplicates(patients.itemSnapshotList.items)) { patient ->
+    items(items = patients.itemSnapshotList.items) { patient ->
       PatientItemCard(patient, onClick = { navigate(patient) })
     }
     when (val state = patients.loadState.refresh) { // FIRST LOAD

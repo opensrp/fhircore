@@ -163,7 +163,7 @@ constructor(
   }
 
   companion object {
-    const val EDIT_PROFILE_FORM = "edit-patient-profile"
+    const val EDIT_PROFILE_FORM = "patient-edit-profile"
   }
 }
 

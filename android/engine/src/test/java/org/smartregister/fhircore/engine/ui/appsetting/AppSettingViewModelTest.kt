@@ -167,6 +167,23 @@ class AppSettingViewModelTest : RobolectricTest() {
 
   @Test(expected = Exception::class)
   @ExperimentalCoroutinesApi
+  fun testFetchConfigurationsThrowsAnyException() = runTest {
+    val appId = "app_id"
+    appSettingViewModel.onApplicationIdChanged(appId)
+    val fhirResourceDataSource = FhirResourceDataSource(mockk())
+    coEvery { fhirResourceDataSource.getResource(ArgumentMatchers.anyString()) } throws Exception()
+    fhirResourceDataSource.getResource(ArgumentMatchers.anyString())
+    coVerify { appSettingViewModel.fetchConfigurations(context) }
+    verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
+    Assert.assertEquals(
+      context.getString(R.string.error_loading_config_http_error),
+      appSettingViewModel.error.value
+    )
+    Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
+  }
+
+  @Test(expected = Exception::class)
+  @ExperimentalCoroutinesApi
   fun testFetchConfigurationsThrowsException() = runTest {
     val context = mockk<Context>(relaxed = true)
     val appId = "app_id"
@@ -179,6 +196,23 @@ class AppSettingViewModelTest : RobolectricTest() {
     every { context.getString(R.string.error_loading_config_general) }
     Assert.assertEquals(
       context.getString(R.string.error_loading_config_no_internet),
+      appSettingViewModel.error.value
+    )
+    Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
+  }
+
+  @Test(expected = Exception::class)
+  fun testFetchRemoteConfigurationsTrowsException() = runTest {
+    val context = mockk<Context>(relaxed = true)
+    val appId = "app_id"
+    appSettingViewModel.fetchRemoteConfigurations(appId, context)
+    val fhirResourceDataSource = FhirResourceDataSource(mockk())
+    coEvery { fhirResourceDataSource.getResource(ArgumentMatchers.anyString()) } throws Exception()
+    fhirResourceDataSource.getResource(ArgumentMatchers.anyString())
+    coVerify { appSettingViewModel.fetchConfigurations(context) }
+    verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
+    Assert.assertEquals(
+      context.getString(R.string.error_loading_config_http_error),
       appSettingViewModel.error.value
     )
     Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
