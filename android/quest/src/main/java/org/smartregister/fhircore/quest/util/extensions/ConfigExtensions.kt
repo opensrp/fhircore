@@ -80,7 +80,14 @@ fun List<ActionConfig>.handleClickEvent(
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
               NavigationArg.PARAMS to interpolatedParams.toTypedArray(),
             )
-          navController.navigate(MainNavigationScreen.Profile.route, args)
+          navController.navigate(
+            resId = MainNavigationScreen.Profile.route,
+            args = args,
+            navOptions =
+            navController.currentDestination?.id?.let {
+              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
+            },
+          )
         }
       }
       ApplicationWorkflow.LAUNCH_REGISTER -> {
