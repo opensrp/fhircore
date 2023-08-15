@@ -37,10 +37,6 @@ class QuestXFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) : 
       val params = strParams.split("&")
       val search =
         Search(ResourceType.QuestionnaireResponse).apply {
-          //        filter(QuestionnaireResponse.SUBJECT, { value =
-          // "Patient/970fcf90-0383-45e1-acfa-1e3f0b7d0797" })
-          //        filter(QuestionnaireResponse.QUESTIONNAIRE, { value =
-          // "Questionnaire/$questionnaireId" })
           params.forEach {
             val paramType = it.split("=").first()
             val paramValue = it.split("=").last()
@@ -49,48 +45,14 @@ class QuestXFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) : 
             if (paramType == QuestionnaireResponse.SP_SUBJECT) {
               this.filter(QuestionnaireResponse.SUBJECT, { value = paramValue })
             }
-
-            //          if (paramType == QuestionnaireResponse.SP_PATIENT) {
-            //            Log.d("FIKRI PARAM 2", "$paramType $paramValue")
-            //            this.filter(QuestionnaireResponse.PATIENT, { value = paramValue })
-            //          }
-
             if (paramType == QuestionnaireResponse.SP_QUESTIONNAIRE) {
               this.filter(QuestionnaireResponse.QUESTIONNAIRE, { value = paramValue })
             }
           }
         }
 
-      //      val lists = fhirEngine.search<QuestionnaireResponse> {
-      //        params.forEach {
-      //          val paramType = it.split("=").first()
-      //          val paramValue = it.split("=").last()
-      //          Log.d("FIKRI PARAM", "$paramType $paramValue")
-      //
-      //          if (paramType == QuestionnaireResponse.SP_SUBJECT) {
-      //            Log.d("FIKRI PARAM 1", "$paramType $paramValue")
-      //            this.filter(QuestionnaireResponse.SUBJECT, { value = paramValue })
-      //          }
-      //
-      //          if (paramType == QuestionnaireResponse.SP_PATIENT) {
-      //            Log.d("FIKRI PARAM 2", "$paramType $paramValue")
-      //            this.filter(QuestionnaireResponse.PATIENT, { value = paramValue })
-      //          }
-      //
-      //          if (paramType == QuestionnaireResponse.SP_QUESTIONNAIRE) {
-      //            Log.d("FIKRI PARAM 3", "$paramType $paramValue")
-      //            this.filter(QuestionnaireResponse.QUESTIONNAIRE, { value = paramValue })
-      //          }
-      //        }
-      //        filter(QuestionnaireResponse.SUBJECT, { value =
-      // "Patient/970fcf90-0383-45e1-acfa-1e3f0b7d0797" })
-      //        filter(QuestionnaireResponse.QUESTIONNAIRE, { value =
-      // "Questionnaire/$questionnaireId" })
-      //      }
-
       val lists = fhirEngine.search<QuestionnaireResponse>(search)
       Log.d("FIKRI TOTAL RES", lists.size.toString())
-
       return lists
     } else {
       return fhirEngine.search(xFhirQuery)
