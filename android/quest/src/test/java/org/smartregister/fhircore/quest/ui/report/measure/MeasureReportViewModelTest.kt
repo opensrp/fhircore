@@ -291,7 +291,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
     assertEquals(1, result.size)
     assertEquals("report group 1", result.first().title)
-    assertEquals(0, result.first().dataList.size)
+    assertEquals(1, result.first().dataList.size)
   }
 
   private val measureReport =
@@ -374,7 +374,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
     assertEquals("3", result.first().measureReportDenominator)
 
     assertEquals("", result.last().count)
-    assertEquals(0, result.last().dataList.size)
+    assertEquals(1, result.last().dataList.size)
   }
 
   @Test

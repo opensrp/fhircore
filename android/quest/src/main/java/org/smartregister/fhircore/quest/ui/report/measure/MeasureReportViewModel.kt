@@ -46,7 +46,6 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
-import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -66,8 +65,8 @@ import org.smartregister.fhircore.engine.util.extension.codingOf
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractType
+import org.smartregister.fhircore.engine.util.extension.findCount
 import org.smartregister.fhircore.engine.util.extension.findPercentage
-import org.smartregister.fhircore.engine.util.extension.findPopulation
 import org.smartregister.fhircore.engine.util.extension.findRatio
 import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.formatDate
@@ -444,8 +443,8 @@ constructor(
         data.addAll(formatSupplementalData(report.contained, report.type, reportConfig))
 
         report.group
-          .map { group ->
-            val denominator = group.findPopulation(MeasurePopulationType.NUMERATOR)?.count
+          .mapNotNull { group ->
+            val denominator = group.findCount()
             group to
               group.stratifier
                 .asSequence()
@@ -456,23 +455,21 @@ constructor(
                     title = stratifier.value.text,
                     percentage =
                       stratifier.findPercentage(
-                        denominator!!,
-                        reportConfig?.roundingStrategy
-                          ?: ReportConfiguration.DEFAULT_ROUNDING_STRATEGY,
-                        reportConfig?.roundingPrecision
-                          ?: ReportConfiguration.DEFAULT_ROUNDING_PRECISION,
+                        denominator!!.count,
+                        reportConfig,
                       ),
-                    count = stratifier.findRatio(denominator),
+                    count = stratifier.findRatio(denominator.count),
                     description = stratifier.id?.replace("-", " ")?.uppercase() ?: "",
                   )
                 }
           }
           .mapNotNull {
-            it.first.findPopulation(MeasurePopulationType.NUMERATOR)?.let { count ->
+            it.first?.let { group ->
               MeasureReportPopulationResult(
                 title = it.first.id.replace("-", " "),
                 indicatorTitle = reportConfig?.title ?: "",
-                measureReportDenominator = count.count.toString(),
+                measureReportDenominator = group.findCount()?.count.toString(),
+                dataList = it.second.toList(),
               )
             }
           }
