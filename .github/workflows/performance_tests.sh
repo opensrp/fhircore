@@ -8,5 +8,5 @@
 /Users/runner/Library/Android/sdk/platform-tools/adb pull /sdcard/Download/org.smartregister.opensrp.ecbis-benchmarkData.json quest/ && \
 ./gradlew :quest:assembleOpensrpDebug --stacktrace && \
 /Users/runner/Library/Android/sdk/platform-tools/adb install quest/build/outputs/apk/opensrp/debug/quest-opensrp-debug.apk && \
-./gradlew :macrobenchmark:connectedBenchmarkAndroidTest && \
+./gradlew :macrobenchmark:connectedBenchmarkAndroidTest --stacktrace && \
 cp macrobenchmark/build/outputs/connected_android_test_additional_output/benchmark/connected/*/org.smartregister.opensrp.quest.macrobenchmark-benchmarkData.json macrobenchmark/benchmark-results.json
