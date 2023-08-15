@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.data.remote.fhir.resource
 
 import javax.inject.Inject
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.OperationOutcome
@@ -28,6 +29,10 @@ class FhirResourceDataSource @Inject constructor(private val resourceService: Fh
 
   suspend fun getResource(path: String): Bundle {
     return resourceService.getResource(path)
+  }
+
+  suspend fun post(path: String = "", requestBody: RequestBody): Bundle {
+    return resourceService.post(path, requestBody)
   }
 
   suspend fun getResourceWithGatewayModeHeader(

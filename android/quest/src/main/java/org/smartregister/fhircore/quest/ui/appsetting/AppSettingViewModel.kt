@@ -27,10 +27,14 @@ import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.RequestBody.Companion.toRequestBody
 import okio.ByteString.Companion.decodeBase64
+import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
+import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -40,11 +44,13 @@ import org.smartregister.fhircore.engine.configuration.profile.ProfileConfigurat
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
@@ -65,6 +71,8 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
+
+  private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
 
   val showProgressBar = MutableLiveData(false)
 
@@ -101,7 +109,8 @@ constructor(
     viewModelScope.launch {
       try {
         Timber.i("Fetching configs for app $appId")
-        val urlPath = "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId"
+        val urlPath =
+          "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=${ConfigurationRegistry.DEFAULT_COUNT}"
         val compositionResource =
           withContext(dispatcherProvider.io()) { fetchComposition(urlPath, context) }
             ?: return@launch
@@ -119,26 +128,50 @@ constructor(
             val chunkedResourceIdList =
               entry.value.chunked(ConfigurationRegistry.MANIFEST_PROCESSOR_BATCH_SIZE)
             chunkedResourceIdList.forEach { parentIt ->
-              val ids = parentIt.joinToString(",") { it.focus.extractId() }
-              val resourceUrlPath = "${entry.key}?${Composition.SP_RES_ID}=$ids"
-              Timber.d("Fetching config: $resourceUrlPath")
-              fhirResourceDataSource.getResource(resourceUrlPath).entry.forEach {
-                bundleEntryComponent ->
-                defaultRepository.createRemote(false, bundleEntryComponent.resource)
+              Timber.d(
+                "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
+              )
 
-                if (bundleEntryComponent.resource is Binary) {
-                  val binary = bundleEntryComponent.resource as Binary
-                  binary.data.decodeToString().decodeBase64()?.string(StandardCharsets.UTF_8)?.let {
-                    val config =
-                      it.tryDecodeJson<RegisterConfiguration>()
-                        ?: it.tryDecodeJson<ProfileConfiguration>()
+              val resultBundle: Bundle =
+                if (isNonProxy()) {
+                  fhirResourceDataSourceGetBundle(
+                    entry.key,
+                    parentIt.map { it.focus.extractId() },
+                  )
+                } else
+                  fhirResourceDataSource.post(
+                    requestBody =
+                      generateRequestBundle(entry.key, parentIt.map { it.focus.extractId() })
+                        .encodeResourceToString()
+                        .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
+                  )
 
-                    when (config) {
-                      is RegisterConfiguration ->
-                        config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
-                      is ProfileConfiguration ->
-                        config.fhirResource.dependentResourceTypes(patientRelatedResourceTypes)
-                    }
+              resultBundle.entry.forEach { bundleEntryComponent ->
+                if (bundleEntryComponent.resource != null) {
+                  defaultRepository.createRemote(false, bundleEntryComponent.resource)
+
+                  if (bundleEntryComponent.resource is Binary) {
+                    val binary = bundleEntryComponent.resource as Binary
+                    binary.data
+                      .decodeToString()
+                      .decodeBase64()
+                      ?.string(StandardCharsets.UTF_8)
+                      ?.let {
+                        val config =
+                          it.tryDecodeJson<RegisterConfiguration>()
+                            ?: it.tryDecodeJson<ProfileConfiguration>()
+
+                        when (config) {
+                          is RegisterConfiguration ->
+                            config.fhirResource.dependentResourceTypes(
+                              patientRelatedResourceTypes,
+                            )
+                          is ProfileConfiguration ->
+                            config.fhirResource.dependentResourceTypes(
+                              patientRelatedResourceTypes,
+                            )
+                        }
+                      }
                   }
                 }
               }
@@ -187,7 +220,7 @@ constructor(
             sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, thisAppId)
             context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
           } else {
-            _error.postValue(context.getString(R.string.application_not_supported, appId.value))
+            _error.postValue(context.getString(R.string.application_not_supported, thisAppId))
           }
         }
       }
@@ -211,5 +244,58 @@ constructor(
   }
 
   fun hasDebugSuffix(): Boolean =
-    appId.value?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true && BuildConfig.DEBUG
+    appId.value?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true && isDebugVariant()
+
+  @VisibleForTesting fun isDebugVariant() = BuildConfig.DEBUG
+
+  private fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
+    val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
+
+    idList.forEach {
+      bundleEntryComponents.add(
+        Bundle.BundleEntryComponent().apply {
+          request =
+            Bundle.BundleEntryRequestComponent().apply {
+              url = "$resourceType/$it"
+              method = Bundle.HTTPVerb.GET
+            }
+        },
+      )
+    }
+
+    return Bundle().apply {
+      type = Bundle.BundleType.BATCH
+      entry = bundleEntryComponents
+    }
+  }
+
+  private suspend fun fhirResourceDataSourceGetBundle(
+    resourceType: String,
+    resourceIds: List<String>,
+  ): Bundle {
+    val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
+
+    resourceIds.forEach {
+      val responseBundle =
+        fhirResourceDataSource.getResource("$resourceType?${Composition.SP_RES_ID}=$it")
+      responseBundle?.let {
+        bundleEntryComponents.add(
+          Bundle.BundleEntryComponent().apply {
+            resource = responseBundle.entry?.first()?.resource
+          },
+        )
+      }
+    }
+    return Bundle().apply {
+      type = Bundle.BundleType.COLLECTION
+      entry = bundleEntryComponents
+    }
+  }
+
+  @VisibleForTesting fun isNonProxy(): Boolean = _isNonProxy
+
+  @VisibleForTesting
+  fun setNonProxy(nonProxy: Boolean) {
+    _isNonProxy = nonProxy
+  }
 }

@@ -46,7 +46,6 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 
 class ConfigExtensionsTest : RobolectricTest() {
@@ -77,7 +76,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "profileId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_PROFILE,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
         resourceConfig = resourceConfig,
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
@@ -109,7 +108,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "profileId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_PROFILE,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
         resourceConfig = resourceConfig,
         params = params,
       )
@@ -136,7 +135,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "registerId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_REGISTER,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
         display = "menu",
         toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
       )
@@ -169,7 +168,10 @@ class ConfigExtensionsTest : RobolectricTest() {
   @Test
   fun testLaunchSettingsActionOnClick() {
     val clickAction =
-      ActionConfig(trigger = ActionTrigger.ON_CLICK, workflow = ApplicationWorkflow.LAUNCH_SETTINGS)
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_SETTINGS.name,
+      )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     verify { navController.navigate(capture(slotInt)) }
@@ -182,15 +184,24 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "reportId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_REPORT,
+        workflow = ApplicationWorkflow.LAUNCH_REPORT.name,
+        params =
+          listOf(
+            ActionParameter(
+              value = "practitioner_id",
+              key = "practitionerId",
+              paramType = ActionParameterType.RESOURCE_ID,
+            ),
+          ),
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(MainNavigationScreen.Reports.route, slotInt.captured)
-    Assert.assertEquals(1, slotBundle.captured.size())
+    Assert.assertEquals(2, slotBundle.captured.size())
     Assert.assertEquals("reportId", slotBundle.captured.getString(NavigationArg.REPORT_ID))
+    Assert.assertEquals("practitioner_id", slotBundle.captured.getString(NavigationArg.RESOURCE_ID))
   }
 
   @Test
@@ -199,7 +210,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "geoWidgetId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_MAP,
+        workflow = ApplicationWorkflow.LAUNCH_MAP.name,
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
@@ -217,7 +228,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = null,
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_REGISTER,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
         display = null,
         toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
       )
@@ -243,7 +254,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     val clickAction =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC,
+        workflow = ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC.name,
       )
     listOf(clickAction).handleClickEvent(navController, resourceData)
     verify { context.startActivity(any()) }
@@ -261,18 +272,16 @@ class ConfigExtensionsTest : RobolectricTest() {
     val clickAction =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE.name,
         questionnaire = QuestionnaireConfig(id = "qid", title = "Form"),
       )
     listOf(clickAction).handleClickEvent(navController, resourceData)
     verify {
-      (navController.context as QuestionnaireHandler).launchQuestionnaire<QuestionnaireActivity>(
+      (navController.context as QuestionnaireHandler).launchQuestionnaire(
         context = any(),
-        intentBundle = any(),
+        extraIntentBundle = any(),
         questionnaireConfig = any(),
         actionParams = emptyList(),
-        baseResourceId = patient.logicalId,
-        baseResourceType = patient.resourceType.name,
       )
     }
   }
@@ -281,7 +290,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     val actionConfig =
       ActionConfig(
         ActionTrigger.ON_CLICK,
-        ApplicationWorkflow.LAUNCH_PROFILE,
+        ApplicationWorkflow.LAUNCH_PROFILE.name,
         params =
           listOf(
             ActionParameter(
@@ -329,7 +338,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     val actionConfig =
       ActionConfig(
         ActionTrigger.ON_CLICK,
-        ApplicationWorkflow.LAUNCH_PROFILE,
+        ApplicationWorkflow.LAUNCH_PROFILE.name,
         params =
           listOf(
             ActionParameter(

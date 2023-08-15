@@ -95,7 +95,7 @@
     <string name="replace_photo">Replace photo</string>
     <string name="take_photo">Take photo</string>
     <string name="edit">Edit</string>
-    <string name="application_not_supported">Application %1$s not found</string>
+    <string name="application_not_supported">Error loading application %1$s configs</string>
     <string name="eCBIS_app_name" translatable="false">eCBIS</string>
     <string name="invalid_login_credentials">username or password is invalid</string>
     <string name="invalid_form_id">Invalid form ID attached</string>
@@ -151,5 +151,6 @@
     <string name="unsynced_resources">Unsynced Resources</string>
     <string name="all_data_synced">All data synced</string>
     <string name="invalid_offline_login_state">User set up required. Enable your internet connection </string>
+    <string name="select_month">Select Month</string>
     <string name="help"></string>
 </resources>

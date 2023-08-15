@@ -20,7 +20,9 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import io.mockk.coEvery
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import java.util.Calendar
 import java.util.Date
@@ -68,6 +70,8 @@ object Faker {
           json = json,
         ),
       )
+
+    coEvery { configurationRegistry.addOrUpdate(any()) } just runs
 
     runBlocking {
       configurationRegistry.loadConfigurations(

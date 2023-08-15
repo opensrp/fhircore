@@ -293,11 +293,13 @@ private fun ProfileTopAppBarMenuAction(
   modifier: Modifier = Modifier,
 ) {
   var showOverflowMenu by remember { mutableStateOf(false) }
-  IconButton(
-    onClick = { showOverflowMenu = !showOverflowMenu },
-    modifier = modifier.testTag(DROPDOWN_MENU_TEST_TAG),
-  ) {
-    Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null, tint = Color.White)
+  if (!profileUiState.profileConfiguration?.overFlowMenuItems.isNullOrEmpty()) {
+    IconButton(
+      onClick = { showOverflowMenu = !showOverflowMenu },
+      modifier = modifier.testTag(DROPDOWN_MENU_TEST_TAG),
+    ) {
+      Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null, tint = Color.White)
+    }
   }
 
   DropdownMenu(expanded = showOverflowMenu, onDismissRequest = { showOverflowMenu = false }) {

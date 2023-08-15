@@ -27,12 +27,21 @@ android {
     buildConfigField(
       "boolean",
       "IS_NON_PROXY_APK",
-      "${project.hasProperty("isNonProxy") && property("isNonProxy").toString().toBoolean()}",
+      "true",
     )
   }
 
   buildTypes {
     getByName("debug") { isTestCoverageEnabled = true }
+
+    create("debugNonProxy") {
+      initWith(getByName("debug"))
+      buildConfigField(
+        "boolean",
+        "IS_NON_PROXY_APK",
+        "true",
+      )
+    }
 
     getByName("release") {
       isMinifyEnabled = false
@@ -51,6 +60,7 @@ android {
   buildFeatures {
     compose = true
     viewBinding = true
+    dataBinding = true
   }
   composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }
 
@@ -263,6 +273,7 @@ dependencies {
   androidTestImplementation(libs.runner)
   androidTestImplementation(libs.ui.test.junit4)
   androidTestImplementation(libs.hilt.android.testing)
+  androidTestImplementation(libs.benchmark.junit)
 
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
