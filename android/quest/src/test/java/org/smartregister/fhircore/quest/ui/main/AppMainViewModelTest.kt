@@ -216,7 +216,7 @@ class AppMainViewModelTest : RobolectricTest() {
         listOf(
           ActionConfig(
             trigger = ActionTrigger.ON_CLICK,
-            workflow = ApplicationWorkflow.LAUNCH_SETTINGS,
+            workflow = ApplicationWorkflow.LAUNCH_SETTINGS.name,
           ),
         ),
       )

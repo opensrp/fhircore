@@ -17,8 +17,6 @@
         <item name="android:listDivider">@color/white_slightly_opaque</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
         <item name="questionnaire_theme">@style/AppTheme.Questionnaire</item>
-        <!-- This Theme override seems to be causing the radio buttons to NOT render
-        <item name="questionnaire_theme">@style/Theme.MaterialComponents.Light.DarkActionBar</item> -->
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -59,7 +57,7 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColorSecondary">@color/white</item>
-        <item name="questionnaireSubmitButtonStyle">@style/Quest.Questionnaire.SubmitButtonStyle
+        <item name="questionnaireSubmitButtonStyle">@style/AppTheme.SubmitButtonStyle</item>
         </item>
         <item name="questionnaireGroupTypeQuestionTextStyle">
             @style/TextAppearance.Material3.HeadlineMedium
@@ -67,9 +65,10 @@
         <item name="questionnaireQuestionTextStyle">
             @style/TextAppearance.Material3.BodyLarge
         </item>
-        <item name="questionnaireHelpHeaderStyle">@style/Quest.Questionnaire.HelpHeaderStyle</item>
+        <item name="questionnaireHelpHeaderStyle">@style/AppTheme.HelpHeaderStyle</item>
     </style>
-    <style name="Quest.Questionnaire.SubmitButtonStyle" parent="Questionnaire.SubmitButtonStyle">
+
+    <style name="AppTheme.SubmitButtonStyle" parent="Questionnaire.SubmitButtonStyle">
         <item name="android:text">@string/str_save</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:layout_marginVertical">15dp</item>
@@ -83,7 +82,7 @@
         <item name="android:layout_gravity">bottom|start</item>
     </style>
 
-    <style name="Quest.Questionnaire.HelpHeaderStyle" parent="TextAppearance.Material3.TitleSmall">
+    <style name="AppTheme.HelpHeaderStyle" parent="TextAppearance.Material3.TitleSmall">
         <item name="android:visibility">invisible</item>
     </style>
 
