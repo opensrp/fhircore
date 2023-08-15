@@ -20,10 +20,14 @@ buildscript {
     classpath("de.mannodermaus.gradle.plugins:android-junit5:1.8.2.1")
     classpath("com.android.tools.build:gradle:7.1.3")
     classpath("org.jetbrains.dokka:dokka-base:1.8.20")
+    classpath("org.owasp:dependency-check-gradle:8.2.1")
   }
 }
 
-plugins { id("org.jetbrains.dokka") version "1.8.20" }
+plugins {
+  id("org.jetbrains.dokka") version "1.8.20"
+  id("org.owasp.dependencycheck") version "8.2.1"
+}
 
 tasks.dokkaHtmlMultiModule {
   moduleName.set("OpenSRP")
@@ -41,6 +45,10 @@ allprojects {
     mavenCentral()
     maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
     maven(url = "https://jcenter.bintray.com/")
+    apply(plugin = "org.owasp.dependencycheck")
+    tasks.dependencyCheckAggregate{
+      dependencyCheck.formats.add("XML")
+    }
   }
 }
 

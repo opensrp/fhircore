@@ -184,6 +184,7 @@ class AppSettingViewModelTest : RobolectricTest() {
       coEvery { defaultRepository.createRemote(any(), any()) } just runs
       coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
       coEvery { appSettingViewModel.loadConfigurations(any()) } just runs
+      coEvery { appSettingViewModel.isNonProxy() } returns false
 
       appSettingViewModel.run {
         onApplicationIdChanged("app")
@@ -245,6 +246,7 @@ class AppSettingViewModelTest : RobolectricTest() {
       }
     coEvery { defaultRepository.createRemote(any(), any()) } just runs
     coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
+    coEvery { appSettingViewModel.isNonProxy() } returns false
 
     appSettingViewModel.run {
       onApplicationIdChanged("app")
@@ -451,6 +453,7 @@ class AppSettingViewModelTest : RobolectricTest() {
       }
 
     coEvery { appSettingViewModel.loadConfigurations(any()) } just runs
+    coEvery { appSettingViewModel.isNonProxy() } returns false
     coEvery { appSettingViewModel.appId } returns MutableLiveData(appId)
     coEvery {
       fhirResourceDataSource.getResource("Composition?identifier=test_app_id&_count=200")
@@ -514,6 +517,68 @@ class AppSettingViewModelTest : RobolectricTest() {
     Assert.assertEquals(
       "{\"resourceType\":\"Bundle\",\"type\":\"batch\",\"entry\":[{\"request\":{\"method\":\"GET\",\"url\":\"Binary/id-21\"}}]}",
       requestPathPostArgumentSlot.last().getPayload(),
+    )
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun `fetchConfigurations() should decode profile configuration Non Proxy`() = runTest {
+    coEvery { appSettingViewModel.fetchComposition(any(), any()) } returns
+      Composition().apply {
+        addSection().apply {
+          this.focus =
+            Reference().apply {
+              reference = "Binary/123"
+              identifier = Identifier().apply { value = "register-test" }
+            }
+        }
+      }
+    coEvery { fhirResourceDataSource.getResource(any()) } returns
+      Bundle().apply {
+        addEntry().resource =
+          Binary().apply {
+            data =
+              Base64.getEncoder()
+                .encode(
+                  JsonUtil.serialize(
+                      ProfileConfiguration(
+                        id = "1",
+                        appId = "a",
+                        fhirResource =
+                          FhirResourceConfig(
+                            baseResource = ResourceConfig(resource = ResourceType.Patient),
+                            relatedResources =
+                              listOf(
+                                ResourceConfig(resource = ResourceType.Encounter),
+                                ResourceConfig(resource = ResourceType.Task),
+                              ),
+                          ),
+                        profileParams = listOf("1"),
+                      ),
+                    )
+                    .encodeToByteArray(),
+                )
+          }
+      }
+    coEvery { defaultRepository.createRemote(any(), any()) } just runs
+    coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
+    coEvery { appSettingViewModel.isNonProxy() } returns true
+
+    appSettingViewModel.run {
+      onApplicationIdChanged("app")
+      fetchConfigurations(context)
+    }
+
+    val slot = slot<List<ResourceType>>()
+
+    coVerify { appSettingViewModel.fetchComposition(any(), any()) }
+    coVerify { fhirResourceDataSource.getResource(any()) }
+    coVerify { defaultRepository.createRemote(any(), any()) }
+    coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
+
+    Assert.assertEquals(
+      listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),
+      slot.captured,
     )
   }
 }
