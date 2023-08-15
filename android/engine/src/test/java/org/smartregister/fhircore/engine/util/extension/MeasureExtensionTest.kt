@@ -34,6 +34,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.domain.model.RoundingStrategy
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
@@ -82,11 +83,14 @@ class MeasureExtensionTest : RobolectricTest() {
 
   @Test
   fun `findPercentage should return zero for stratum when given denominator is zero`() {
+    val reportConfiguration =
+      ReportConfiguration(
+        roundingStrategy = RoundingStrategy.ROUND_UP,
+      )
     val result =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         0,
-        RoundingStrategy.ROUND_UP,
-        0,
+        reportConfiguration,
       )
 
     assertEquals("0", result)
@@ -97,26 +101,30 @@ class MeasureExtensionTest : RobolectricTest() {
     val resultTruncate =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         9,
-        RoundingStrategy.TRUNCATE,
-        0,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.TRUNCATE,
+        ),
       )
     val resultRoundUp =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         9,
-        RoundingStrategy.ROUND_UP,
-        0,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_UP,
+        ),
       )
     val resultRoundOffLower =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         9,
-        RoundingStrategy.ROUND_OFF,
-        0,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_OFF,
+        ),
       )
     val resultRoundOffUpper =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         8,
-        RoundingStrategy.ROUND_OFF,
-        0,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_OFF,
+        ),
       )
 
     assertEquals("33", resultTruncate)
@@ -130,26 +138,33 @@ class MeasureExtensionTest : RobolectricTest() {
     val resultPrecision2Truncate =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         9,
-        RoundingStrategy.TRUNCATE,
-        2,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.TRUNCATE,
+          roundingPrecision = 2,
+        ),
       )
     val resultPrecision2RoundUp =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         9,
-        RoundingStrategy.ROUND_UP,
-        2,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_UP,
+          roundingPrecision = 2,
+        ),
       )
     val resultPrecision2RoundOff =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         7,
-        RoundingStrategy.ROUND_OFF,
-        2,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_OFF,
+          roundingPrecision = 2,
+        ),
       )
     val resultPrecision0RoundUp =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         9,
-        RoundingStrategy.ROUND_UP,
-        0,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_UP,
+        ),
       )
 
     assertEquals("33.33", resultPrecision2Truncate)
