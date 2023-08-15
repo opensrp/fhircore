@@ -476,6 +476,8 @@ constructor(
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
         context = context,
+        questionnaireItemParentMap = mapOf(),
+        launchContextMap = mapOf()
       )
       .values
       .flatten()
