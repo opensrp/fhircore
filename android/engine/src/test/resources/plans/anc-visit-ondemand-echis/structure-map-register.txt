@@ -1,0 +1,126 @@
+map "http://hl7.org/fhir/StructureMap/f19f3f61-7448-4ee7-87c6-9d8546f5d84b" = 'eCHIS Pregnancy Registration'
+
+uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
+uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
+
+group eCHISPregnancyRegistration(source src : Parameters, target tgt: CarePlan) {
+    src -> evaluate(src, $this.parameter.where(name='subject').resource) as subject,
+            evaluate(src, $this.parameter.where(name='definition').resource) as definition,
+            evaluate(src, $this.parameter.where(name='period').value) as period,
+            evaluate(src, $this.parameter.where(name='depends-on').resource.entry.where(resource is QuestionnaireResponse).resource) as questionnaireResponse
+            then ExtractTask(period, subject, questionnaireResponse, tgt) "r_careplan";
+}
+
+group ExtractTask(source period: Period, source subject : Patient, source questionnaireResponse: QuestionnaireResponse, target careplan: CarePlan) {
+
+    // fill careplan period start as complex in plan-def
+    subject -> create('date') as finalLMP then {
+        subject then ExtractLMP(questionnaireResponse, finalLMP) "r-extract-lmp";
+        subject -> create('Period') as period, finalLMP as offset "rule_a";
+        questionnaireResponse where((linkId='0217ad6e-1168-4844-8700-c17664c0bf3a' or linkId='a9782f57-2f57-4fed-e2eb-a27b819042ac' or linkId='14a139ba-2604-436b-b502-808053b67720') and answer.value.exists())
+         then ExtractPeriod_9m(offset, period) "r_cp_data";
+        subject -> careplan.period = period "r-t";
+    } "rule_careplan_period" ;
+
+    // fill task into careplan contained and add reference in activity.outcome
+    subject -> create('Task') as task then {
+
+        // start of task is today OR first date of every month if future month | end is last day of given month
+        subject -> evaluate(subject, today()) as dueDate then {
+            subject -> create('date') as startOfMonth, startOfMonth.value = evaluate(dueDate, $this.value.substring(0,7) + '-01'),
+                    create('date') as start, start.value = evaluate(dueDate, iif($this = today(), $this, startOfMonth).value ),
+                    evaluate(startOfMonth, ($this + '1 \'months\''.toQuantity()) - '1 \'days\''.toQuantity()) as end,
+                    create('Period') as periodNew then {
+                subject then ExtractPeriodNew(start, end, periodNew) "r_task_period_extr";
+                subject -> task.executionPeriod = periodNew "r_task_set_period";
+            } "r_task_period_new";
+        } "r_task_start_due";
+
+        subject -> task.id = uuid(),
+        task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
+        task.identifier = create('Identifier') as iden, iden.value = 'anc_follow_visit', iden.use = 'secondary',
+        task.status = 'ready',
+        task.intent = 'plan',
+        task.priority = 'routine',
+        task.description = 'ANC Visit',
+        task.for = create('Reference') as ref, ref.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
+        task.basedOn = reference(careplan),
+        task.authoredOn = evaluate(subject, now()),
+        task.requester = evaluate(subject, $this.generalPractitioner.first()),
+        task.focus = create('Reference') as ref, ref.reference = 'PlanDefinition/738754ca-625b-4b80-bf3f-7aea219f0bde',
+        task.owner = evaluate(subject, $this.generalPractitioner.first()) "r_task_data";
+
+        subject -> task.groupIdentifier = create('Identifier') as groupIdentifier then {
+            subject -> groupIdentifier.value = "anc_follow_visit" "rule_group_identifier_value";
+            subject -> groupIdentifier.use = "secondary" "rule_group_identifier_use";
+        } "rule_group_identifier";
+
+        // anc followup form
+        subject -> task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/59a18e82-cc67-4d84-bbde-807633cce700' "r_task_reason_ref";
+
+        // Add the valueReference
+        subject -> task.input = create('Task_Input') as input then {
+            subject -> input.value = create('Reference') as valueRef, valueRef.reference = 'PlanDefinition/738754ca-625b-4b80-bf3f-7aea219f0bde' "r_task_input_value_ref";
+            subject -> input.type = create('CodeableConcept') as taskCode then extractTaskCode(subject, taskCode) "r_task_input_cod";
+        } "r_task_input";
+
+        // create activity.detail of type/kind Task for this Task if not exists
+        subject where(careplan.activity.where(detail.kind = 'Task').exists().not())
+                -> careplan.activity = create('CarePlan_Activity') as activity then {
+                   subject -> activity.detail = create('CarePlan_ActivityDetail') as det then {
+                       subject -> det.kind = 'Task' "r_act_det_data";
+                   } "r_act_det";
+               } "r_cp_acti";
+
+        // add task to careplan only if its valid and not expired
+        subject where(task.executionPeriod.start >= today() or task.executionPeriod.end >= today()) then {
+                 subject -> evaluate(careplan, activity.where(detail.kind = 'Task')) as activity,
+                            activity.outcomeReference = reference(task) "r_cp_task_ref";
+                 subject -> careplan.contained = task  "r_add_task";
+        } "r_cp_task";
+    } "r_task";
+}
+
+group extractTaskCode(source subject : Task,target concept: CodeableConcept){
+      subject-> concept.coding = c("http://smartregister.org/", "plan_definition") as coding,
+           coding.display = 'Plan Definition Reference' "r_cp_cod_disp";
+      subject ->  concept.text = 'Plan Definition Reference' "r_cp_cc_txt";
+}
+
+group ExtractPeriodNew(source start: DateType, source end: DateType, target period: Period) {
+    start -> period.start = create('dateTime') as dt,
+             dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_start";
+    end -> period.end = create('dateTime') as dt,
+           dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_end";
+}
+
+group ExtractLMP(source questionnaireResponse: QuestionnaireResponse, target lmp: DateType) {
+    questionnaireResponse -> evaluate(questionnaireResponse, $this.descendants().where(linkId='a9782f57-2f57-4fed-e2eb-a27b819042ac').answer.value) as lmp1 then {
+        questionnaireResponse.item as itemChoice where(linkId='0217ad6e-1168-4844-8700-c17664c0bf3a' and answer.value.exists()) then {
+            itemChoice where (answer.value.display = 'Up to 2 months Ago') -> lmp.value = evaluate(itemChoice, (today() - '2 \'months\''.toQuantity()).toString()) "rule_y1";
+            itemChoice where (answer.value.display = 'Up to 4 months Ago') -> lmp.value = evaluate(itemChoice, (today() - '4 \'months\''.toQuantity()).toString()) "rule_y3";
+            itemChoice where (answer.value.display = 'Up to 3 months Ago') -> lmp.value = evaluate(itemChoice, (today() - '3 \'months\''.toQuantity()).toString()) "rule_y2";
+            itemChoice where (answer.value.display = 'Between 5 and 6 months Ago') -> lmp.value = evaluate(itemChoice, (today() - '5 \'months\''.toQuantity()).toString()) "rule_y4";
+            itemChoice where (answer.value.display = 'Between 7 and 8 months Ago') -> lmp.value = evaluate(itemChoice, (today() - '7 \'months\''.toQuantity()).toString()) "rule_y5";
+        } "rule_lmp_via_choice_item";
+        questionnaireResponse.item as itemDate where(linkId='a9782f57-2f57-4fed-e2eb-a27b819042ac' and answer.value.exists()) then {
+            itemDate -> lmp.value = evaluate(itemDate, answer.value.toString()) "rule_lmp_via_date_x";
+        } "rule_lmp_item_date";
+        questionnaireResponse.item as itemWeeksSinceLmp where(linkId='14a139ba-2604-436b-b502-808053b67720' and answer.value.exists()) then {
+            itemWeeksSinceLmp -> lmp.value = evaluate(itemWeeksSinceLmp, (today() - ($this.answer.value.toString() + " 'weeks'").toQuantity()).toString()) "e_lmp_via_weeks_x";
+        } "e_lmp_via_weeks";
+    } "rule_x";
+}
+
+group ExtractPeriod_9m(source offset: DateType, target period: Period){
+    offset -> offset as start,
+              evaluate(offset, $this + '9 \'months\''.toQuantity()) as end then
+              ExtractPeriod(start, end, period) "r_period";
+}
+
+group ExtractPeriod(source start: DateType, source end: DateType, target period: Period) {
+    start -> period.start = create('dateTime') as dt,
+             dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_start";
+    end -> period.end = create('dateTime') as dt,
+           dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_end";
+}

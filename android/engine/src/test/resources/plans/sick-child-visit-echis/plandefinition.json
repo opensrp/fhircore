@@ -1,0 +1,359 @@
+{
+  "resourceType": "PlanDefinition",
+  "id": "7d23b73f-dcd4-49d7-ba4c-3f1905b277ee",
+  "meta": {
+    "versionId": "2",
+    "lastUpdated": "2023-03-23T08:56:42.370+00:00",
+    "source": "#f38aa325ddcbcbac"
+  },
+  "contained": [
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "sick_child_careplan_activity",
+      "title": "Sick Child Assessment CarePlan",
+      "description": "This is a task that will be generated for child < 5 years old.",
+      "status": "active",
+      "kind": "CarePlan",
+      "dynamicValue": [
+        {
+          "path": "title",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.title"
+          }
+        },
+        {
+          "path": "description",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.description"
+          }
+        },
+        {
+          "path": "instantiatesCanonical",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.id.replaceMatches('/_history/.*', '')"
+          }
+        },
+        {
+          "path": "status",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'active'"
+          }
+        },
+        {
+          "path": "intent",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'plan'"
+          }
+        },
+        {
+          "path": "created",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "now()"
+          }
+        },
+        {
+          "path": "subject",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.subject"
+          }
+        },
+        {
+          "path": "author",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.generalPractitioner.first()"
+          }
+        },
+        {
+          "path": "period.start",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "now()"
+          }
+        },
+        {
+          "path": "period.end",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "now() + 7 'days'"
+          }
+        },
+        {
+          "path": "activity.detail.kind",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'Task'"
+          }
+        },
+        {
+          "path": "activity.detail.status",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'in-progress'"
+          }
+        },
+        {
+          "path": "activity.detail.description",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'This action will assess careplan on Child Treatment Followup visit registration to init careplan'"
+          }
+        },
+        {
+          "path": "activity.detail.performer",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.generalPractitioner.first()"
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "sick_child_assessment_task",
+      "title": "Sick Child Assessment Task Activity",
+      "status": "active",
+      "description": "This action will assess careplan every time for sick child < 5 years",
+      "kind": "Task",
+      "timingTiming": {
+        "repeat": {
+          "countMax": 1,
+          "duration": 2,
+          "durationMax": 4,
+          "durationUnit": "h",
+          "frequency": 1,
+          "frequencyMax": 1,
+          "period": 1,
+          "periodMax": 1,
+          "periodUnit": "d"
+        }
+      }
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "sick_child_assessment_generation",
+      "title": "Sick Child Assessment Task",
+      "status": "active",
+      "description": "This action will generate from the child routine",
+      "kind": "Task"
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "treatment_followup_child_under_2_months",
+      "title": "Treatment Follow Up for child under 2 months",
+      "status": "active",
+      "description": "This action will generate followup task every time a followup happens on a task within 7 days",
+      "kind": "Task"
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "treatment_followup_child_over_2_months",
+      "title": "Treatment Follow Up for child over 2 months",
+      "status": "active",
+      "description": "This action will generate followup task for 3 days till closed",
+      "kind": "Task"
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-end-activity",
+      "title": "Careplan completion Activity",
+      "status": "active",
+      "description": "This action will assess careplan every time a followup happens on a task generated by plan to mark it complete",
+      "kind": "CarePlan",
+      "dynamicValue": [
+        {
+          "path": "status",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'completed'"
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "child_referral_closure_activity",
+      "title": "Child ReferralClosure Activty for child above 2 months",
+      "status": "active",
+      "description": "This action will generate followup task for 3 days till closed",
+      "kind": "Task"
+    }
+  ],
+  "name": "Sick Child Assessment",
+  "title": "Sick Child Assessment",
+  "status": "active",
+  "description": "This action will assess careplan every time a sick child assessment happens on a task generated by plan.",
+  "goal": [
+    {
+      "category": {
+        "coding": [
+          {
+            "system": "https://www.hl7.org/fhir/codesystem-goal-category.html",
+            "code": "nursing",
+            "display": "Nursing"
+          }
+        ]
+      },
+      "priority": {
+        "coding": [
+          {
+            "system": "https://www.hl7.org/fhir/codesystem-goal-priority.html",
+            "code": "high-priority",
+            "display": "High Priority"
+          }
+        ]
+      },
+      "start": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "32485007",
+            "display": "Admission to hospital"
+          }
+        ]
+      }
+    }
+  ],
+  "action": [
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/7479d3d2-d5c4-4ae7-b72c-37f2f9cbacc6').exists()"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#sick_child_careplan_activity"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                "code": "nurse",
+                "display": "Nurse"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#sick_child_assessment_task",
+      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/627ee8a2-217c-4b53-9047-fb02d2587089"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/7479d3d2-d5c4-4ae7-b72c-37f2f9cbacc6').descendants().where(linkId='585475b2-929d-4f77-d919-20d4c84feb6f' and answer.value.code != 'none').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/7479d3d2-d5c4-4ae7-b72c-37f2f9cbacc6').descendants().where(linkId='ea4f140b-7b40-4763-82a2-b79cc6b0402e' and answer.value < 2.0).exists() or %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/ba22966d-3177-4a5b-865f-e208d3d658f4').descendants().where(linkId='1c8f1e01-6a48-44e1-9b9b-82dc895723d9' and answer.value.code != 'fully-recovered').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/ba22966d-3177-4a5b-865f-e208d3d658f4').descendants().where(linkId='ea4f140b-7b40-4763-82a2-b79cc6b0402e' and answer.value < 2.0).exists()"
+          }
+        }
+      ],
+      "definitionCanonical": "#treatment_followup_child_under_2_months",
+      "transform": "http://hl7.org/fhir/StructureMap/ebc216e9-85e3-4e9f-af9f-0ea7da009e45"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/7479d3d2-d5c4-4ae7-b72c-37f2f9cbacc6').descendants().where(linkId='585475b2-929d-4f77-d919-20d4c84feb6f' and answer.value.code != 'none').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/7479d3d2-d5c4-4ae7-b72c-37f2f9cbacc6').descendants().where(linkId='ea4f140b-7b40-4763-82a2-b79cc6b0402e' and answer.value > 2.0).exists() or %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/ba22966d-3177-4a5b-865f-e208d3d658f4').descendants().where(linkId='1c8f1e01-6a48-44e1-9b9b-82dc895723d9' and answer.value.code != 'fully-recovered').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/ba22966d-3177-4a5b-865f-e208d3d658f4').descendants().where(linkId='ea4f140b-7b40-4763-82a2-b79cc6b0402e' and answer.value > 2.0).exists()"
+          }
+        }
+      ],
+      "definitionCanonical": "#treatment_followup_child_over_2_months",
+      "transform": "http://hl7.org/fhir/StructureMap/ebc216e9-85e3-4e9f-af9f-0ea7da009e45"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/d9b37683-c306-45f8-b394-c7b8ac9c7cba').descendants().where(linkId='171089e0-de77-494b-86d1-0ae3f9a769be' and answer.value.code = 'not-well,-has-sick-symptoms').exists()"
+          }
+        }
+      ],
+      "definitionCanonical": "#sick_child_assessment_generation",
+      "transform": "http://hl7.org/fhir/StructureMap/627ee8a2-217c-4b53-9047-fb02d2587089"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/7479d3d2-d5c4-4ae7-b72c-37f2f9cbacc6').descendants().where(linkId='c487ad82-5544-49c2-8ece-332497d27f18' and answer.value.code = 'yes').exists() or %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/eb26579a-2f37-4f75-9783-85987704fa61').descendants().where(linkId='634049e3-0217-4bc3-8b26-0e623a930ab0' and answer.value.code = 'yes').exists() or %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/d9b37683-c306-45f8-b394-c7b8ac9c7cba').descendants().where(linkId='5855576f-5d96-41e5-ca9e-6c45cf7ad97d' and answer.value.code = 'yes').exists()"
+          }
+        }
+      ],
+      "definitionCanonical": "#child_referral_closure_activity",
+      "transform": "http://hl7.org/fhir/StructureMap/0a091446-7326-478f-8dce-85e98ce72210"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.questionnaire = 'Questionnaire/eb26579a-2f37-4f75-9783-85987704fa61'"
+          }
+        }
+      ],
+      "definitionCanonical": "#careplan-end-activity"
+    }
+  ]
+}

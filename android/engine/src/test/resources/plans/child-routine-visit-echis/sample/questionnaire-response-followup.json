@@ -1,0 +1,625 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "6b721ae2-46f9-49bc-a6f2-d3e743b44e98",
+  "meta": {
+    "lastUpdated": "2023-07-26T21:06:43.385+05:00",
+    "tag": [
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655"
+      },
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655"
+      },
+      {
+        "system": "https://smartregister.org/care-team-tag-id",
+        "code": "146934",
+        "display": "Practitioner CareTeam"
+      },
+      {
+        "system": "https://smartregister.org/location-tag-id",
+        "code": "54842",
+        "display": "Practitioner Location"
+      },
+      {
+        "system": "https://smartregister.org/organisation-tag-id",
+        "code": "146872",
+        "display": "Practitioner Organization"
+      },
+      {
+        "system": "https://smartregister.org/practitioner-tag-id",
+        "code": "146871",
+        "display": "Practitioner"
+      }
+    ]
+  },
+  "contained": [
+    {
+      "resourceType": "Encounter",
+      "id": "4751a8e4-a012-465d-b858-8304f3507eb9",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.4-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "status": "finished",
+      "class": {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        "code": "HH"
+      },
+      "serviceType": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/service-type",
+            "code": "497"
+          }
+        ]
+      },
+      "subject": {
+        "reference": "Patient/8fc3baa8-af24-4e21-9ccb-e49e0eea362b"
+      },
+      "participant": [
+        {
+          "individual": {
+            "reference": "Practitioner/146871"
+          }
+        }
+      ],
+      "period": {
+        "start": "2023-07-26T21:06:41+05:00",
+        "end": "2023-07-26T21:06:41+05:00"
+      },
+      "serviceProvider": {
+        "reference": "Organization/146872"
+      }
+    },
+    {
+      "resourceType": "Observation",
+      "id": "3f0da36b-d37f-4adc-985c-60d1083d1237",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.4-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "424144002",
+            "display": "Current chronological age"
+          }
+        ],
+        "text": "Current chronological age"
+      },
+      "subject": {
+        "reference": "Patient/8fc3baa8-af24-4e21-9ccb-e49e0eea362b"
+      },
+      "encounter": {
+        "reference": "Encounter/4751a8e4-a012-465d-b858-8304f3507eb9"
+      },
+      "effectiveDateTime": "2023-07-26T21:06:41+05:00",
+      "valueInteger": 4
+    },
+    {
+      "resourceType": "Observation",
+      "id": "e4422324-4f34-4689-ba87-9dce93935d06",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.4-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "275142008",
+            "display": "Sick child (situation)"
+          }
+        ],
+        "text": "Sick child (situation)"
+      },
+      "subject": {
+        "reference": "Patient/8fc3baa8-af24-4e21-9ccb-e49e0eea362b"
+      },
+      "encounter": {
+        "reference": "Encounter/4751a8e4-a012-465d-b858-8304f3507eb9"
+      },
+      "effectiveDateTime": "2023-07-26T21:06:41+05:00",
+      "valueString": "child-is-well"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "9857167f-704c-4873-828b-c969782695e2",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.4-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "713404003",
+            "display": "Vaccination given (situation)"
+          }
+        ],
+        "text": "Vaccination given (situation)"
+      },
+      "subject": {
+        "reference": "Patient/8fc3baa8-af24-4e21-9ccb-e49e0eea362b"
+      },
+      "encounter": {
+        "reference": "Encounter/4751a8e4-a012-465d-b858-8304f3507eb9"
+      },
+      "effectiveDateTime": "2023-07-26T21:06:41+05:00",
+      "valueString": "yes"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "720bcd9d-a9b6-474f-9c3b-6973813a471a",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.4-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "408864009",
+            "display": "Vaccination status (observable entity)"
+          }
+        ],
+        "text": "Vaccination status (observable entity)"
+      },
+      "subject": {
+        "reference": "Patient/8fc3baa8-af24-4e21-9ccb-e49e0eea362b"
+      },
+      "encounter": {
+        "reference": "Encounter/4751a8e4-a012-465d-b858-8304f3507eb9"
+      },
+      "effectiveDateTime": "2023-07-26T21:06:41+05:00",
+      "valueString": "no"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "64f48fc5-c091-4ed4-a6e1-5e7ee4702c07",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.4-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "284473002",
+            "display": "Mid upper arm circumference (observable entity)"
+          }
+        ],
+        "text": "Mid upper arm circumference (observable entity)"
+      },
+      "subject": {
+        "reference": "Patient/8fc3baa8-af24-4e21-9ccb-e49e0eea362b"
+      },
+      "encounter": {
+        "reference": "Encounter/4751a8e4-a012-465d-b858-8304f3507eb9"
+      },
+      "effectiveDateTime": "2023-07-26T21:06:41+05:00",
+      "valueString": "green"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "1328e10e-ff26-4ac5-bff9-39622d4530dc",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.4-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "439980006",
+            "display": "Referral placed (situation)"
+          }
+        ],
+        "text": "Referral placed (situation)"
+      },
+      "subject": {
+        "reference": "Patient/8fc3baa8-af24-4e21-9ccb-e49e0eea362b"
+      },
+      "encounter": {
+        "reference": "Encounter/4751a8e4-a012-465d-b858-8304f3507eb9"
+      },
+      "effectiveDateTime": "2023-07-26T21:06:41+05:00",
+      "valueString": "no"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "309dd84a-a950-4fc3-98c2-215643e3aefa",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "0.2.4-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "65124004",
+            "display": "Swelling "
+          }
+        ],
+        "text": "Swelling "
+      },
+      "encounter": {
+        "reference": "Encounter/4751a8e4-a012-465d-b858-8304f3507eb9"
+      },
+      "effectiveDateTime": "2023-07-26T21:06:41+05:00",
+      "valueString": "no"
+    }
+  ],
+  "questionnaire": "Questionnaire/d9b37683-c306-45f8-b394-c7b8ac9c7cba",
+  "status": "completed",
+  "subject": {
+    "reference": "Patient/TEST_PATIENT"
+  },
+  "authored": "2023-07-26T21:06:41+05:00",
+  "item": [
+    {
+      "linkId": "cb18b6e3-3670-4108-8fd1-278646209e6a",
+      "text": "Child age (months)",
+      "answer": [
+        {
+          "valueDecimal": 4
+        }
+      ]
+    },
+    {
+      "linkId": "171089e0-de77-494b-86d1-0ae3f9a769be",
+      "text": "How's the child feeling?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "db6e581e-aa83-44da-cd85-45cf3a9f02dc",
+            "system": "urn:uuid:01779b14-3669-48d4-84fd-aaf872869599",
+            "code": "child-is-well",
+            "display": "Child is well"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "a527807a-e07a-4e8e-8b14-87d96b2f41d5",
+      "text": "Vaccine card received?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "fb7e5bbe-4c52-431d-93fb-5a400214bc09",
+            "system": "urn:uuid:748421df-9b36-4aa1-99c6-11f5e8a4f79e",
+            "code": "yes",
+            "display": "Yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "b2b9a9ce-7469-49fb-a04b-35dd352cc06f",
+      "text": "Child is up to date with immunizations?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "ad29e59c-0532-493a-f009-79ee538f6ee5",
+            "system": "urn:uuid:fc88bb7b-2e62-4634-b120-ca0f07fb6aec",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "8f59975b-5eff-4eb9-fb79-6c44ff09946d",
+      "text": "Record the Child's MUAC if tape is available",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "00ef6ce2-b283-4aad-edd9-76073bfbfd7c",
+            "system": "urn:uuid:b2e3bf6a-04e3-45df-8248-33963ac8c437",
+            "code": "green",
+            "display": "Green"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "948d7341-c6d4-48c5-9bfa-ac4686c2da99",
+      "text": "Does the child have any swelling in their body, especially in the hands, feet, ankles, or legs?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "6306f2bb-3583-4a2f-946d-979be91a2f79",
+            "system": "urn:uuid:d9632a55-1e98-45f7-fc1e-8f2110380399",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "5855576f-5d96-41e5-ca9e-6c45cf7ad97d",
+      "text": "Child referred to hospital?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "ddc17dfb-2d11-42de-8496-3762d6992d9a",
+            "system": "urn:uuid:b6af4143-f700-48c2-873f-f2420fd8c6d1",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    }
+  ]
+}

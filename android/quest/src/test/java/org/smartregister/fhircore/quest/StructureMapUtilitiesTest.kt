@@ -35,6 +35,7 @@ import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
 import org.hl7.fhir.utilities.npm.ToolsVersion
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -236,7 +237,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       structureMapUtilities.parse(patientRegistrationStructureMap, "PatientRegistration")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(structureMap)
-
+    println(mapString)
     Assert.assertNotNull(mapString)
   }
 
@@ -454,5 +455,180 @@ class StructureMapUtilitiesTest : RobolectricTest() {
         it.resource.resourceType != null && it.resource.resourceType == ResourceType.Task
       }
     Assert.assertTrue(taskList.size == 10)
+  }
+
+  @Test
+  fun `perform child referral form extraction`() {
+    val childReferralQuestionnaireResponseString: String =
+      "content/general/child/referral-closure/questionnaire-response.json".readFile()
+    val childReferralStructureMap =
+      "content/general/child/referral-closure/structure-map.map".readFile()
+    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val contextR4 =
+      SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+        .apply {
+          setExpansionProfile(Parameters())
+          isCanRunWithoutTerminology = true
+        }
+    val transformSupportServices = TransformSupportServices(contextR4)
+    val structureMapUtilities =
+      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val structureMap = structureMapUtilities.parse(childReferralStructureMap, "ChildReferral")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val targetResource = Bundle()
+    val baseElement =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        childReferralQuestionnaireResponseString,
+      )
+
+    structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
+
+    println(structureMap.encodeResourceToString())
+    println(targetResource.encodeResourceToString())
+
+    Assert.assertEquals(6, targetResource.entry.size)
+    Assert.assertEquals("Encounter", targetResource.entry[0].resource.resourceType.toString())
+    Assert.assertEquals("Condition", targetResource.entry[1].resource.resourceType.toString())
+  }
+
+  @Test
+  fun `perform child routine visit form extraction`() {
+    val childReferralQuestionnaireResponseString: String =
+      "content/general/child/routine-visit/questionnaire-response.json".readFile()
+    val childReferralStructureMap =
+      "content/general/child/routine-visit/structure-map.map".readFile()
+    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val contextR4 =
+      SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+        .apply {
+          setExpansionProfile(Parameters())
+          isCanRunWithoutTerminology = true
+        }
+    val transformSupportServices = TransformSupportServices(contextR4)
+    val structureMapUtilities =
+      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val structureMap = structureMapUtilities.parse(childReferralStructureMap, "ChildRoutineVisit")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val targetResource = Bundle()
+    val baseElement =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        childReferralQuestionnaireResponseString,
+      )
+
+    structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
+
+    println(structureMap.encodeResourceToString())
+    // println(targetResource.encodeResourceToString())
+
+    Assert.assertEquals(12, targetResource.entry.size)
+    Assert.assertEquals("Encounter", targetResource.entry[0].resource.resourceType.toString())
+    Assert.assertEquals("Observation", targetResource.entry[1].resource.resourceType.toString())
+  }
+
+  @Test
+  fun `perform child sick assessment form extraction`() {
+    val childReferralQuestionnaireResponseString: String =
+      "content/general/child/sick-assessment/questionnaire-response.json".readFile()
+    val childReferralStructureMap =
+      "content/general/child/sick-assessment/structure-map.map".readFile()
+    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val contextR4 =
+      SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+        .apply {
+          setExpansionProfile(Parameters())
+          isCanRunWithoutTerminology = true
+        }
+    val transformSupportServices = TransformSupportServices(contextR4)
+    val structureMapUtilities =
+      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val structureMap = structureMapUtilities.parse(childReferralStructureMap, "SickChildAssessment")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val targetResource = Bundle()
+    val baseElement =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        childReferralQuestionnaireResponseString,
+      )
+
+    structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
+
+    println(structureMap.encodeResourceToString())
+    //    println(targetResource.encodeResourceToString())
+
+    Assert.assertEquals(12, targetResource.entry.size)
+    Assert.assertEquals("Encounter", targetResource.entry[0].resource.resourceType.toString())
+    Assert.assertEquals("Observation", targetResource.entry[1].resource.resourceType.toString())
+  }
+
+  @Test
+  fun `perform child sick followup form extraction`() {
+    val childReferralQuestionnaireResponseString: String =
+      "content/general/child/sick-followup-form/questionnaire-response.json".readFile()
+    val childReferralStructureMap =
+      "content/general/child/sick-followup-form/structure-map.map".readFile()
+    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val contextR4 =
+      SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+        .apply {
+          setExpansionProfile(Parameters())
+          isCanRunWithoutTerminology = true
+        }
+    val transformSupportServices = TransformSupportServices(contextR4)
+    val structureMapUtilities =
+      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val structureMap = structureMapUtilities.parse(childReferralStructureMap, "SickChildAssessment")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val targetResource = Bundle()
+    val baseElement =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        childReferralQuestionnaireResponseString,
+      )
+
+    structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
+
+    println(structureMap.encodeResourceToString())
+    println(targetResource.encodeResourceToString())
+
+    Assert.assertEquals(3, targetResource.entry.size)
+    Assert.assertEquals("Encounter", targetResource.entry[0].resource.resourceType.toString())
+    Assert.assertEquals("Observation", targetResource.entry[1].resource.resourceType.toString())
+  }
+
+  @Test
+  fun `perform family planning extraction`() {
+    val registrationQuestionnaireResponseString: String =
+      "content/general/family/questionnaire-response-fp-assessment.json".readFile()
+    val registrationStructureMap = "content/general/family/fp_assessment.map".readFile()
+    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val contextR4 =
+      SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+        .apply {
+          setExpansionProfile(Parameters())
+          isCanRunWithoutTerminology = true
+        }
+    val transformSupportServices = TransformSupportServices(contextR4)
+    val structureMapUtilities =
+      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val structureMap =
+      structureMapUtilities.parse(registrationStructureMap, "FPRegistration")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val targetResource = Bundle()
+    val baseElement =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        registrationQuestionnaireResponseString,
+      )
+
+    structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
+
+    println(targetResource.encodeResourceToString())
+
+    Assert.assertEquals(6, targetResource.entry.size)
+    Assert.assertEquals("Condition", targetResource.entry[0].resource.resourceType.toString())
+    Assert.assertEquals("Encounter", targetResource.entry[1].resource.resourceType.toString())
+    Assert.assertEquals("Observation", targetResource.entry[2].resource.resourceType.toString())
   }
 }
