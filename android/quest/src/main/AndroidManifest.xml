@@ -16,6 +16,7 @@
         android:usesCleartextTraffic="false"
         android:windowSoftInputMode="adjustResize"
         tools:ignore="UnusedAttribute,LockedOrientationActivity"
+        android:enableOnBackInvokedCallback="true"
         tools:replace="android:theme">
         <profileable
             android:shell="true"

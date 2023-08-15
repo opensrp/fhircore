@@ -221,7 +221,7 @@ jobs:
           force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew -PlocalPropertiesFile=local.properties :quest:clean && ./gradlew -PlocalPropertiesFile=local.properties :quest:connectedOpensrpDebugAndroidTest --stacktrace && ./gradlew -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace
+          script: ./gradlew -PlocalPropertiesFile=local.properties :quest:clean && ./gradlew -PlocalPropertiesFile=local.properties :quest:assembleOpensrpDebugAndroidTest --stacktrace && /Users/runner/Library/Android/sdk/platform-tools/adb install quest/build/outputs/apk/androidTest/opensrp/debug/quest-opensrp-debug-androidTest.apk && ./gradlew -PlocalPropertiesFile=local.properties :quest:assembleOpensrpDebug --stacktrace && /Users/runner/Library/Android/sdk/platform-tools/adb install quest/build/outputs/apk/opensrp/debug/quest-opensrp-debug.apk && /Users/runner/Library/Android/sdk/platform-tools/adb shell am instrument -w -e notPackage org.smartregister.fhircore.quest.performance -e coverage "true" org.smartregister.opensrp.test/org.smartregister.fhircore.quest.QuestTestRunner && /Users/runner/Library/Android/sdk/platform-tools/adb shell run-as org.smartregister.opensrp cat "/data/data/org.smartregister.opensrp/files/coverage.ec" > quest/coverage.ec && ./gradlew -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace
 
       - name: Upload Quest module test coverage report to Codecov
         if: matrix.api-level == 30 # Only upload coverage on API level 30

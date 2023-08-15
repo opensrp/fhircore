@@ -26,13 +26,17 @@ sealed class MeasureReportEvent {
   data class OnSelectMeasure(
     val reportConfigurations: List<ReportConfiguration>? = emptyList(),
     val navController: NavController,
+    val practitionerId: String? = "",
   ) : MeasureReportEvent()
 
   data class OnDateRangeSelected(val newDateRange: androidx.core.util.Pair<Long, Long>) :
     MeasureReportEvent()
 
-  data class GenerateReport(val navController: NavController, val context: Context) :
-    MeasureReportEvent()
+  data class OnDateSelected(
+    val navController: NavController,
+    val context: Context,
+    val practitionerId: String? = null,
+  ) : MeasureReportEvent()
 
   data class OnReportTypeChanged(
     val measureReportType: MeasureReport.MeasureReportType,

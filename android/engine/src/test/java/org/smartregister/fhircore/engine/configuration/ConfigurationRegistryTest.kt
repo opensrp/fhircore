@@ -33,8 +33,8 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
-import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
+import okhttp3.RequestBody
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Bundle.BundleEntryComponent
@@ -64,6 +64,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
 
 @HiltAndroidTest
@@ -73,19 +74,17 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   @get:Rule(order = 1)
   val coroutineRule = CoroutineTestRule()
-
-  @Inject lateinit var configRegistry: ConfigurationRegistry
-  var fhirEngine: FhirEngine = mockk()
-  lateinit var context: Context
-  private lateinit var fhirResourceDataSource: FhirResourceDataSource
+  private val fhirEngine: FhirEngine = mockk()
+  private val context: Context = ApplicationProvider.getApplicationContext()
   private val fhirResourceService = mockk<FhirResourceService>()
+  private lateinit var fhirResourceDataSource: FhirResourceDataSource
+  private lateinit var configRegistry: ConfigurationRegistry
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
     fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
-    context = ApplicationProvider.getApplicationContext()
     val sharedPreferencesHelper =
       SharedPreferencesHelper(context, GsonBuilder().setLenient().create())
     configRegistry =
@@ -97,6 +96,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         AppConfigService(context),
         Faker.json,
       )
+    configRegistry.setNonProxy(false)
     Assert.assertNotNull(configRegistry)
   }
 
@@ -247,7 +247,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
     coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
       listOf(composition)
-    coEvery { fhirResourceDataSource.getResource(any()) } returns Bundle()
+    coEvery { fhirResourceDataSource.post(any(), any()) } returns Bundle()
 
     runTest {
       configRegistry.fhirEngine.create(composition)
@@ -273,8 +273,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
     coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
       listOf(composition)
-    coEvery { fhirResourceDataSource.getResource(any()) } returns
-      Bundle().apply { entry = listOf(Bundle.BundleEntryComponent().apply { resource = patient }) }
+    coEvery { fhirResourceDataSource.post(any(), any()) } returns
+      Bundle().apply { entry = listOf(BundleEntryComponent().apply { resource = patient }) }
     coEvery { fhirEngine.get(patient.resourceType, patient.logicalId) } returns patient
     coEvery { fhirEngine.update(any()) } returns Unit
 
@@ -306,9 +306,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
           )
       }
     val bundle =
-      Bundle().apply {
-        entry = listOf(Bundle.BundleEntryComponent().apply { resource = listResource })
-      }
+      Bundle().apply { entry = listOf(BundleEntryComponent().apply { resource = listResource }) }
 
     val composition =
       Composition().apply {
@@ -329,8 +327,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery {
       fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200")
     } returns bundle
-    coEvery { fhirResourceService.getResource("List?_id=$testListId&_count=200") } returns bundle
-
+    coEvery { fhirResourceDataSource.getResource(any()) } returns bundle
     runTest {
       configRegistry.fhirEngine.create(composition)
       configRegistry.setNonProxy(true)
@@ -609,7 +606,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     }
 
-    Assert.assertEquals(31, compositionSections.size)
+    Assert.assertEquals(21, compositionSections.size)
 
     val composition =
       Composition().apply {
@@ -620,20 +617,26 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
       listOf(composition)
-    coEvery { fhirResourceDataSource.getResource(any()) } returns Bundle()
+    coEvery { fhirResourceDataSource.post(any(), any()) } returns Bundle()
 
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
 
-    val requestPathArgumentSlot = mutableListOf<String>()
+    val urlArgumentSlot = mutableListOf<String>()
+    val requestPathArgumentSlot = mutableListOf<RequestBody>()
 
-    coVerify(exactly = 2) { fhirResourceDataSource.getResource(capture(requestPathArgumentSlot)) }
+    coVerify(exactly = 2) {
+      fhirResourceDataSource.post(capture(urlArgumentSlot), capture(requestPathArgumentSlot))
+    }
 
     Assert.assertEquals(2, requestPathArgumentSlot.size)
     Assert.assertEquals(
-      "StructureMap?_id=id-1,id-2,id-3,id-4,id-5,id-6,id-7,id-8,id-9,id-10,id-11,id-12,id-13,id-14,id-15,id-16,id-17,id-18,id-19,id-20,id-21,id-22,id-23,id-24,id-25,id-26,id-27,id-28,id-29,id-30&_count=200",
-      requestPathArgumentSlot.first(),
+      "{\"resourceType\":\"Bundle\",\"type\":\"batch\",\"entry\":[{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-1\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-2\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-3\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-4\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-5\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-6\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-7\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-8\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-9\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-10\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-11\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-12\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-13\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-14\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-15\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-16\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-17\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-18\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-19\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-20\"}}]}",
+      requestPathArgumentSlot.first().getPayload(),
     )
-    Assert.assertEquals("StructureMap?_id=id-31&_count=200", requestPathArgumentSlot.last())
+    Assert.assertEquals(
+      "{\"resourceType\":\"Bundle\",\"type\":\"batch\",\"entry\":[{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-21\"}}]}",
+      requestPathArgumentSlot.last().getPayload(),
+    )
   }
 
   @Test

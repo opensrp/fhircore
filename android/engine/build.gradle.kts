@@ -34,6 +34,15 @@ android {
   buildTypes {
     getByName("debug") { isTestCoverageEnabled = true }
 
+    create("debugNonProxy") {
+      initWith(getByName("debug"))
+      buildConfigField(
+        "boolean",
+        "IS_NON_PROXY_APK",
+        "true",
+      )
+    }
+
     getByName("release") {
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -51,6 +60,7 @@ android {
   buildFeatures {
     compose = true
     viewBinding = true
+    dataBinding = true
   }
   composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }
 

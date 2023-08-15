@@ -1,0 +1,37 @@
+# Form Authoring (Things to consider when writing forms)
+
+- Make sure that the `enableWhen` expressions are accompanied by the `enableBehaviour` attribute in order to avoid form crashes.
+- The `enableBehaviour` defines whether the expressions on the `enableWhen` are to use `and` or `or` logic.
+- The `enableBehaviour` options are `any` for `or` & `all` for `and`.
+
+```json
+{
+  "enableWhen": [
+    {
+      "question": "cf0093a9-1e38-422b-fc81-273caa0bb48a",
+      "operator": "=",
+      "answerCoding": {
+        "system": "urn:uuid:d3051c21-8668-412e-a2dd-105cf274b260",
+        "code": "no"
+      }
+    },
+    {
+      "question": "94357450-e603-49f7-899c-464ecd10ddd1",
+      "operator": "=",
+      "answerCoding": {
+        "system": "urn:uuid:4ae66618-142d-4e2c-dd66-5d63c14b83a9",
+        "code": "no"
+      }
+    },
+    {
+      "question": "14648d8c-c88f-40be-9f25-66d7ba621482",
+      "operator": "=",
+      "answerCoding": {
+        "system": "urn:uuid:08516020-d926-4463-863e-d6f45b0d317b",
+        "code": "no"
+      }
+    }
+  ],
+  "enableBehaviour":"all"
+}
+```

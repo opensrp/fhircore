@@ -204,10 +204,10 @@ class AlertDialogueTest : ActivityRobolectricTest() {
   fun testShowDatePromptShouldShowAlertWithCorrectData() {
     AlertDialogue.showDatePickerAlert(
       context = context,
+      confirmButtonListener = {},
+      confirmButtonText = "Date confirm",
       max = Date(),
       title = "Date title",
-      confirmButtonText = "Date confirm",
-      confirmButtonListener = {},
     )
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())

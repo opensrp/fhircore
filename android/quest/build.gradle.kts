@@ -57,7 +57,7 @@ android {
     minSdk = 26
     targetSdk = 33
     versionCode = 3
-    versionName = "0.2.4"
+    versionName = "0.2.5"
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
@@ -98,6 +98,8 @@ android {
       matchingFallbacks += listOf("debug")
       isDebuggable = true
     }
+
+    create("debugNonProxy") { initWith(getByName("debug")) }
 
     getByName("release") {
       isMinifyEnabled = false
@@ -149,6 +151,7 @@ android {
   buildFeatures {
     compose = true
     viewBinding = true
+    dataBinding = true
   }
 
   composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }
@@ -180,6 +183,13 @@ android {
       applicationIdSuffix = ".ecbis"
       versionNameSuffix = "-ecbis"
       manifestPlaceholders["appLabel"] = "MOH eCBIS"
+    }
+
+    create("ecbis_preview") {
+      dimension = "apps"
+      applicationIdSuffix = ".ecbis_preview"
+      versionNameSuffix = "-ecbis_preview"
+      manifestPlaceholders["appLabel"] = "MOH eCBIS Preview"
     }
 
     create("g6pd") {
@@ -379,12 +389,10 @@ dependencies {
   ktlint(project(":linting"))
 }
 
-/*
-
-This task compares the performance benchmark results to the expected benchmark results
-and throws an error if the result is past the expected result and margin. A message will
-also be printed if the performance significantly improves.
-
+/**
+ * This task compares the performance benchmark results to the expected benchmark results and throws
+ * an error if the result is past the expected result and margin. A message will also be printed if
+ * the performance significantly improves.
  */
 task("evaluatePerformanceBenchmarkResults") {
   val expectedPerformanceLimitsFile = project.file("expected-results.json")

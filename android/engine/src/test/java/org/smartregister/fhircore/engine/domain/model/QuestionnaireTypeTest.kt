@@ -30,9 +30,9 @@ class QuestionnaireTypeTest {
 
   @Test
   fun testEdit() {
-    Assert.assertFalse(QuestionnaireType.DEFAULT.isEditMode())
-    Assert.assertTrue(QuestionnaireType.EDIT.isEditMode())
-    Assert.assertFalse(QuestionnaireType.READ_ONLY.isEditMode())
+    Assert.assertFalse(QuestionnaireType.DEFAULT.isEditable())
+    Assert.assertTrue(QuestionnaireType.EDIT.isEditable())
+    Assert.assertFalse(QuestionnaireType.READ_ONLY.isEditable())
   }
 
   @Test
