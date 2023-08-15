@@ -58,7 +58,6 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColorSecondary">@color/white</item>
         <item name="questionnaireSubmitButtonStyle">@style/AppTheme.SubmitButtonStyle</item>
-        </item>
         <item name="questionnaireGroupTypeQuestionTextStyle">
             @style/TextAppearance.Material3.HeadlineMedium
         </item>
