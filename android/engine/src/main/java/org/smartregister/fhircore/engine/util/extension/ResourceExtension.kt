@@ -37,10 +37,12 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
@@ -60,6 +62,8 @@ import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import timber.log.Timber
 
+const val REFERENCE = "reference"
+const val PARTOF = "part-of"
 private val fhirR4JsonParser = FhirContext.forR4Cached().getCustomJsonParser()
 
 fun Base?.valueToString(): String {
@@ -191,7 +195,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
  * question when mapped to the corresponding [QuestionnaireResponse]
  */
 fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrEditing(
-  path: String,
+  path: String = "QuestionnaireResponse.item",
   readOnly: Boolean = false,
   readOnlyLinkIds: List<String>? = emptyList(),
 ) {
@@ -237,22 +241,47 @@ fun QuestionnaireResponse.getEncounterId(): String? {
 }
 
 fun Resource.generateMissingId() {
-  if (logicalId.isBlank()) id = UUID.randomUUID().toString()
+  if (logicalId.isEmpty() || logicalId.isBlank()) id = UUID.randomUUID().toString()
+}
+
+fun Resource.appendOrganizationInfo(authenticatedOrganizationIds: List<String>?) {
+  // Organization reference in shared pref as "Organization/some-gibberish-uuid"
+  authenticatedOrganizationIds?.let { ids ->
+    val organizationRef =
+      ids.firstOrNull()?.extractLogicalIdUuid()?.asReference(ResourceType.Organization)
+
+    when (this) {
+      is Patient -> managingOrganization = organizationRef
+      is Group -> managingEntity = organizationRef
+      is Encounter -> serviceProvider = organizationRef
+      is Location -> managingOrganization = organizationRef
+    }
+  }
+}
+
+fun Resource.appendPractitionerInfo(practitionerId: String?) {
+  practitionerId?.let {
+    // Convert practitioner uuid to reference e.g. "Practitioner/some-gibberish-uuid"
+    val practitionerRef = it.asReference(ResourceType.Practitioner)
+
+    when (this) {
+      is Patient -> generalPractitioner = arrayListOf(practitionerRef)
+      is Encounter ->
+        participant =
+          arrayListOf(
+            Encounter.EncounterParticipantComponent().apply { individual = practitionerRef },
+          )
+    }
+  }
 }
 
 fun Resource.updateLastUpdated() {
   meta.lastUpdated = Date()
 }
 
-fun Resource.isPatient(patientId: String) =
-  this.resourceType == ResourceType.Patient && this.logicalId == patientId
+fun Resource.asReference() = Reference().apply { this.reference = "$resourceType/$logicalId" }
 
-fun Resource.asReference(): Reference {
-  val referenceValue = "${fhirType()}/$logicalId"
-  return Reference().apply { this.reference = referenceValue }
-}
-
-fun Resource.referenceValue(): String = "${fhirType()}/$logicalId"
+fun Resource.referenceValue(): String = "$resourceType/$logicalId"
 
 fun Resource.referenceParamForCondition(): ReferenceClientParam =
   when (resourceType) {
@@ -399,6 +428,3 @@ suspend fun Task.updateDependentTaskDueDate(
     }
   }
 }
-
-const val REFERENCE = "reference"
-const val PARTOF = "part-of"

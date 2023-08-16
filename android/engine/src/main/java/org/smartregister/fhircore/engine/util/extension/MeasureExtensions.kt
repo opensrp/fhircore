@@ -24,6 +24,9 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.ResourceType
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration.Companion.DEFAULT_ROUNDING_PRECISION
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration.Companion.DEFAULT_ROUNDING_STRATEGY
 
 // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
 fun MeasureReport.StratifierGroupComponent.findPopulation(
@@ -32,10 +35,22 @@ fun MeasureReport.StratifierGroupComponent.findPopulation(
   return this.population.find { it.id == id.toCode() || it.code.codingFirstRep.code == id.toCode() }
 }
 
+fun MeasureReport.StratifierGroupComponent.findCount():
+  MeasureReport.StratifierGroupPopulationComponent? {
+  return this.findPopulation(MeasurePopulationType.NUMERATOR)
+    ?: this.findPopulation(MeasurePopulationType.INITIALPOPULATION)
+}
+
 fun MeasureReport.MeasureReportGroupComponent.findPopulation(
   id: MeasurePopulationType,
 ): MeasureReport.MeasureReportGroupPopulationComponent? {
   return this.population.find { it.id == id.toCode() || it.code.codingFirstRep.code == id.toCode() }
+}
+
+fun MeasureReport.MeasureReportGroupComponent.findCount():
+  MeasureReport.MeasureReportGroupPopulationComponent? {
+  return this.findPopulation(MeasurePopulationType.NUMERATOR)
+    ?: this.findPopulation(MeasurePopulationType.INITIALPOPULATION)
 }
 
 fun MeasureReport.MeasureReportGroupComponent.isMonthlyReport(): Boolean {
@@ -47,13 +62,26 @@ fun MeasureReport.MeasureReportGroupComponent.findRatio(): String {
 }
 
 fun MeasureReport.StratifierGroupComponent.findRatio(denominator: Int?): String {
-  return "${this.findPopulation(MeasurePopulationType.NUMERATOR)?.count}/$denominator"
+  return "${this.findCount()?.count}/$denominator"
 }
 
-fun MeasureReport.StratifierGroupComponent.findPercentage(denominator: Int): Int {
+fun MeasureReport.StratifierGroupComponent.findPercentage(
+  denominator: Int,
+  reportConfiguration: ReportConfiguration?,
+): String {
   return if (denominator == 0) {
-    0
-  } else findPopulation(MeasurePopulationType.NUMERATOR)?.count?.times(100)?.div(denominator) ?: 0
+    "0"
+  } else
+    findPopulation(MeasurePopulationType.NUMERATOR)
+      ?.count
+      ?.toBigDecimal()
+      ?.times(100.toBigDecimal())
+      ?.divide(
+        denominator.toBigDecimal(),
+        reportConfiguration?.roundingPrecision ?: DEFAULT_ROUNDING_PRECISION,
+        reportConfiguration?.roundingStrategy?.value ?: DEFAULT_ROUNDING_STRATEGY.value,
+      )
+      .toString()
 }
 
 val MeasureReport.StratifierGroupComponent.displayText

@@ -26,7 +26,10 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -53,18 +56,17 @@ fun List<ActionConfig>.handleClickEvent(
     val resourceId =
       interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
         ?: resourceData?.baseResourceId
-    when (onClickAction.workflow) {
+    when (actionConfig.workflow?.let { ApplicationWorkflow.valueOf(it) }) {
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
           val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
 
+          // Questionnaire is NOT launched via navigation component. It is started for result.
           if (navController.context is QuestionnaireHandler) {
-            (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
+            (navController.context as QuestionnaireHandler).launchQuestionnaire(
               context = navController.context,
               questionnaireConfig = questionnaireConfigInterpolated,
-              actionParams = interpolateActionParamsValue(actionConfig, resourceData).toList(),
-              baseResourceId = resourceData?.baseResourceId,
-              baseResourceType = resourceData?.baseResourceType?.name,
+              actionParams = interpolatedParams,
             )
           }
         }
@@ -76,7 +78,7 @@ fun List<ActionConfig>.handleClickEvent(
               NavigationArg.PROFILE_ID to id,
               NavigationArg.RESOURCE_ID to resourceId,
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
-              NavigationArg.PARAMS to interpolatedParams,
+              NavigationArg.PARAMS to interpolatedParams.toTypedArray(),
             )
           navController.navigate(MainNavigationScreen.Profile.route, args)
         }
@@ -87,7 +89,7 @@ fun List<ActionConfig>.handleClickEvent(
             Pair(NavigationArg.REGISTER_ID, actionConfig.id ?: navMenu?.id),
             Pair(NavigationArg.SCREEN_TITLE, actionConfig.display ?: navMenu?.display ?: ""),
             Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
-            Pair(NavigationArg.PARAMS, interpolateActionParamsValue(actionConfig, resourceData)),
+            Pair(NavigationArg.PARAMS, interpolatedParams.toTypedArray()),
           )
 
         // If value != null, we are navigating FROM a register; disallow same register navigation
@@ -134,8 +136,9 @@ fun List<ActionConfig>.handleClickEvent(
 
 fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =
   actionConfig.params
-    .map { it.interpolate(resourceData?.computedValuesMap ?: emptyMap()) }
-    .toTypedArray()
+    .encodeJson()
+    .interpolate(resourceData?.computedValuesMap ?: emptyMap())
+    .decodeJson<List<ActionParameter>>()
 
 /**
  * Apply navigation options. Restrict destination to only use a single instance in the back stack.

@@ -39,6 +39,7 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
 const val PERSONAL_DETAILS_TEST_TAG = "personalDetailsTestTag"
+const val INDIVIDUAL_RESULT_VIEW_CONTAINER_TEST_TAG = "individualResultViewContainer"
 const val RESULT_VIEW_CHECK_ICON = "resultViewCheckIcon"
 const val RESULT_VIEW_STALLED_ICON = "resultViewStalledIcon"
 const val RESULT_VIEW_INDICATOR_STATUS = "resultViewIndicatorStatus"
@@ -55,7 +56,8 @@ fun MeasureReportIndividualResultView(
       modifier
         .clip(RoundedCornerShape(15.dp))
         .background(color = colorResource(id = R.color.white))
-        .wrapContentWidth(),
+        .wrapContentWidth()
+        .testTag(INDIVIDUAL_RESULT_VIEW_CONTAINER_TEST_TAG),
     contentAlignment = Alignment.Center,
   ) {
     Column(

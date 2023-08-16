@@ -212,15 +212,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
       }
       is SyncJobStatus.Glitch -> {
         refreshRegisterData()
-        lifecycleScope.launch {
-          registerViewModel.dismissLoaderView.emit(true)
-          registerViewModel.emitSnackBarState(
-            SnackBarMessageConfig(
-              message = getString(R.string.sync_failed),
-              duration = SnackbarDuration.Long,
-            ),
-          )
-        }
       }
       is SyncJobStatus.Failed -> {
         refreshRegisterData()
@@ -240,7 +231,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
         val messageResourceId =
           if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
         lifecycleScope.launch {
-          registerViewModel.dismissLoaderView.emit(true)
           registerViewModel.emitSnackBarState(
             SnackBarMessageConfig(
               message = getString(messageResourceId),
