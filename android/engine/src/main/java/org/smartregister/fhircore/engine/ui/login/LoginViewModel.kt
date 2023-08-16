@@ -22,6 +22,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -216,7 +217,17 @@ constructor(
           .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
           .onFailure {
             _showProgressBar.postValue(false)
-            _loginErrorState.postValue(LoginErrorState.UNKNOWN_HOST)
+            var errorState = LoginErrorState.ERROR_FETCHING_USER
+
+            if (it is HttpException) {
+              when (it.code()) {
+                401 -> errorState = LoginErrorState.INVALID_CREDENTIALS
+              }
+            } else if (it is UnknownHostException) {
+              errorState = LoginErrorState.UNKNOWN_HOST
+            }
+
+            _loginErrorState.postValue(errorState)
             Timber.e(it)
           }
       }

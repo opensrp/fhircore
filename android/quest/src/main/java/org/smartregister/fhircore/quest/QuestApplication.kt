@@ -40,6 +40,8 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlR
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
+import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
@@ -139,21 +141,16 @@ class QuestApplication :
 
   override fun onStart(owner: LifecycleOwner) {
     appInActivityListener.stop()
-    if (mForegroundActivityContext != null) {
-      accountAuthenticator.loadActiveAccount(
-        onValidTokenMissing = {
-          if (it.component!!.className != mForegroundActivityContext!!::class.java.name) {
-            mForegroundActivityContext!!.startActivity(it)
-          }
-        }
-      )
-    }
     mForegroundActivityContext
       ?.takeIf {
         val name = it::class.java.name
         name !in activitiesAccessWithoutAuth
       }
-      ?.let { accountAuthenticator.confirmActiveAccount { intent -> it.startActivity(intent) } }
+      ?.let {
+        mForegroundActivityContext
+          ?.getActivity()
+          ?.launchActivityWithNoBackStackHistory<LoginActivity>()
+      }
   }
 
   private fun initANRWatcher() {

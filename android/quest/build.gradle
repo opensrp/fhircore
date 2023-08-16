@@ -173,15 +173,15 @@ android {
             dimension "apps"
             applicationIdSuffix ".mwcore"
             versionNameSuffix "-mwcore"
-            versionCode 20
-            versionName "0.1.10"
+            versionCode 22
+            versionName "0.1.12"
         }
         mwcoreDev {
             dimension "apps"
             applicationIdSuffix ".mwcoreDev"
             versionNameSuffix "-mwcoreDev"
-            versionCode 20
-            versionName "0.1.10"
+            versionCode 21
+            versionName "0.1.12"
         }
         mwcoreProd {
             dimension "apps"

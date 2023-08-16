@@ -148,6 +148,18 @@ constructor(
     }
   }
 
+  fun logoutLocal(): Boolean {
+    val account = tokenAuthenticator.findAccount()
+    if (account != null) {
+      accountManager.invalidateAuthToken(
+        account.type,
+        accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE)
+      )
+      return true
+    }
+    return false
+  }
+
   fun validateLoginCredentials(username: String, password: CharArray) =
     tokenAuthenticator.validateSavedLoginCredentials(username, password)
 
