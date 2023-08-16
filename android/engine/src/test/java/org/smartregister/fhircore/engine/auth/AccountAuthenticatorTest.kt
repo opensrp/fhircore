@@ -43,6 +43,7 @@ import java.net.UnknownHostException
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert
@@ -51,6 +52,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
+import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator.Companion.AUTH_TOKEN_TYPE
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -364,12 +366,13 @@ class AccountAuthenticatorTest : RobolectricTest() {
   }
 
   @Test
-  fun testThatLogoutLocalWithNoAccount() {
-    every { tokenAuthenticator.findAccount() } returns Account("testAccountName", "testAccountType")
+  fun testThatLogoutLocalWithAccount() {
+    val account = Account("testAccountName", "testAccountType")
+    every { tokenAuthenticator.findAccount() } returns account
     every { accountManager.invalidateAuthToken(any(), any()) }
     every { accountManager.peekAuthToken(any(), any()) } returns ""
     accountAuthenticator.logoutLocal()
-    verify { accountManager.invalidateAuthToken(any(), any()) }
+    verify { accountManager.invalidateAuthToken(account.type, AUTH_TOKEN_TYPE) }
   }
 
   @Test
@@ -378,7 +381,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { accountManager.invalidateAuthToken(any(), any()) }
     every { accountManager.peekAuthToken(any(), any()) } returns ""
     val value = accountAuthenticator.logoutLocal()
-    assertTrue(value)
+    assertFalse(value)
   }
 
   @Test
