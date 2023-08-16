@@ -80,9 +80,12 @@ fun List<ActionConfig>.handleClickEvent(
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
               NavigationArg.PARAMS to interpolatedParams.toTypedArray(),
             )
-          val navOptions = actionConfig.popNavigationBackStack?.let { popBackStack ->
-            navController.currentDestination?.id?.let { currentDestId ->
-              navOptions(resId = currentDestId, inclusive = popBackStack)
+          // Setting popNavigationBackStack false leads to incorrect navigation from screen 3 to 1.
+          // Nullifying navOptions in this scenario resolves the issue and maintains intended navigation.
+          val navOptions = when(actionConfig.popNavigationBackStack) {
+            false, null -> null
+            true -> navController.currentDestination?.id?.let { currentDestId ->
+              navOptions(resId = currentDestId, inclusive = true)
             }
           }
           navController.navigate(
