@@ -51,6 +51,9 @@ data class QuestionnaireConfig(
   val extraParams: List<ActionParameter>? = null,
   val onSubmitActions: List<ActionConfig>? = null,
   val barcodeLinkId: String = "patient-barcode",
+  val extractedResourceUniquePropertyExpressions: List<ExtractedResourceUniquePropertyExpression>? =
+    null,
+  val saveQuestionnaireResponse: Boolean? = false,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
@@ -94,4 +97,11 @@ data class GroupResourceConfig(
   val removeMember: Boolean = false,
   val removeGroup: Boolean = false,
   val deactivateMembers: Boolean = true,
+) : java.io.Serializable, Parcelable
+
+@Serializable
+@Parcelize
+data class ExtractedResourceUniquePropertyExpression(
+  val resourceType: ResourceType,
+  val fhirPathExpression: String,
 ) : java.io.Serializable, Parcelable
