@@ -71,7 +71,22 @@ fun List<ActionConfig>.handleClickEvent(
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
               NavigationArg.PARAMS to interpolatedParams,
             )
-          navController.navigate(MainNavigationScreen.Profile.route, args)
+          // Issue #2685: Nullifying navOptions safeguards against unintended popBackStack
+          // activation, even when it's set to false or null.
+          val navOptions =
+            when (actionConfig.popNavigationBackStack) {
+              false,
+              null, -> null
+              true ->
+                navController.currentDestination?.id?.let { currentDestId ->
+                  navOptions(resId = currentDestId, inclusive = true)
+                }
+            }
+          navController.navigate(
+            resId = MainNavigationScreen.Profile.route,
+            args = args,
+            navOptions = navOptions,
+          )
         }
       }
       ApplicationWorkflow.LAUNCH_REGISTER -> {
