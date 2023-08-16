@@ -43,6 +43,7 @@ import java.net.UnknownHostException
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert
 import org.junit.Before
@@ -360,6 +361,24 @@ class AccountAuthenticatorTest : RobolectricTest() {
     val onLogout = {}
     accountAuthenticator.logout(onLogout)
     verify { tokenAuthenticator.logout() }
+  }
+
+  @Test
+  fun testThatLogoutLocalWithNoAccount() {
+    every { tokenAuthenticator.findAccount() } returns Account("testAccountName", "testAccountType")
+    every { accountManager.invalidateAuthToken(any(), any()) }
+    every { accountManager.peekAuthToken(any(), any()) } returns ""
+    accountAuthenticator.logoutLocal()
+    verify { accountManager.invalidateAuthToken(any(), any()) }
+  }
+
+  @Test
+  fun testThatLogoutLocalNoAccount() {
+    every { tokenAuthenticator.findAccount() } returns null
+    every { accountManager.invalidateAuthToken(any(), any()) }
+    every { accountManager.peekAuthToken(any(), any()) } returns ""
+    val value = accountAuthenticator.logoutLocal()
+    assertTrue(value)
   }
 
   @Test
