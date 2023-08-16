@@ -26,11 +26,17 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.encodeJson
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
+
+const val PRACTITIONER_ID = "practitionerId"
 
 fun List<ActionConfig>.handleClickEvent(
   navController: NavController,
@@ -42,34 +48,37 @@ fun List<ActionConfig>.handleClickEvent(
   onClickAction?.let { theConfig ->
     val computedValuesMap = resourceData?.computedValuesMap ?: emptyMap()
     val actionConfig = theConfig.interpolate(computedValuesMap)
-    when (onClickAction.workflow) {
+    val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
+    val practitionerId =
+      interpolatedParams
+        .find { it.paramType == ActionParameterType.RESOURCE_ID && it.key == PRACTITIONER_ID }
+        ?.value
+    val resourceId =
+      interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
+        ?: resourceData?.baseResourceId
+    when (actionConfig.workflow?.let { ApplicationWorkflow.valueOf(it) }) {
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
           val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
 
+          // Questionnaire is NOT launched via navigation component. It is started for result.
           if (navController.context is QuestionnaireHandler) {
-            (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
+            (navController.context as QuestionnaireHandler).launchQuestionnaire(
               context = navController.context,
               questionnaireConfig = questionnaireConfigInterpolated,
-              actionParams = interpolateActionParamsValue(actionConfig, resourceData).toList(),
-              baseResourceId = resourceData?.baseResourceId,
-              baseResourceType = resourceData?.baseResourceType?.name,
+              actionParams = interpolatedParams,
             )
           }
         }
       }
       ApplicationWorkflow.LAUNCH_PROFILE -> {
-        val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
-        val resourceId =
-          interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
-            ?: resourceData?.baseResourceId
         actionConfig.id?.let { id ->
           val args =
             bundleOf(
               NavigationArg.PROFILE_ID to id,
               NavigationArg.RESOURCE_ID to resourceId,
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
-              NavigationArg.PARAMS to interpolatedParams,
+              NavigationArg.PARAMS to interpolatedParams.toTypedArray(),
             )
           // Issue #2685: Nullifying navOptions safeguards against unintended popBackStack
           // activation, even when it's set to false or null.
@@ -95,7 +104,7 @@ fun List<ActionConfig>.handleClickEvent(
             Pair(NavigationArg.REGISTER_ID, actionConfig.id ?: navMenu?.id),
             Pair(NavigationArg.SCREEN_TITLE, actionConfig.display ?: navMenu?.display ?: ""),
             Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
-            Pair(NavigationArg.PARAMS, interpolateActionParamsValue(actionConfig, resourceData)),
+            Pair(NavigationArg.PARAMS, interpolatedParams.toTypedArray()),
           )
 
         // If value != null, we are navigating FROM a register; disallow same register navigation
@@ -119,7 +128,12 @@ fun List<ActionConfig>.handleClickEvent(
         }
       }
       ApplicationWorkflow.LAUNCH_REPORT -> {
-        val args = bundleOf(Pair(NavigationArg.REPORT_ID, actionConfig.id))
+        val args =
+          bundleOf(
+            Pair(NavigationArg.REPORT_ID, actionConfig.id),
+            Pair(NavigationArg.RESOURCE_ID, practitionerId?.extractLogicalIdUuid() ?: ""),
+          )
+
         navController.navigate(MainNavigationScreen.Reports.route, args)
       }
       ApplicationWorkflow.LAUNCH_SETTINGS ->
@@ -137,8 +151,9 @@ fun List<ActionConfig>.handleClickEvent(
 
 fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =
   actionConfig.params
-    .map { it.interpolate(resourceData?.computedValuesMap ?: emptyMap()) }
-    .toTypedArray()
+    .encodeJson()
+    .interpolate(resourceData?.computedValuesMap ?: emptyMap())
+    .decodeJson<List<ActionParameter>>()
 
 /**
  * Apply navigation options. Restrict destination to only use a single instance in the back stack.

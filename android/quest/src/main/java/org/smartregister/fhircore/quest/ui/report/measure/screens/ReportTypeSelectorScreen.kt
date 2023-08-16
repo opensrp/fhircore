@@ -76,7 +76,6 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportEvent
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.ReportTypeSelectorUiState
@@ -97,10 +96,12 @@ const val YEAR_TEST_TAG = "YEAR_TEST_TAG"
 const val MONTH_TEST_TAG = "MONTH_TEST_TAG"
 
 @Composable
-fun ReportTypeSelectorScreen(
+fun ReportDateSelectorScreen(
   reportId: String,
+  practitionerId: String = "",
   screenTitle: String,
   navController: NavController,
+  mainNavController: NavController,
   measureReportViewModel: MeasureReportViewModel,
   modifier: Modifier = Modifier,
 ) {
@@ -119,14 +120,11 @@ fun ReportTypeSelectorScreen(
     onBackPressed = {
       // Reset UI state
       measureReportViewModel.resetState()
-      navController.popBackStack(
-        route = MeasureReportNavigationScreen.MeasureReportList.route,
-        inclusive = false,
-      )
+      mainNavController.popBackStack()
     },
-    onGenerateReport = { date ->
+    onSelectReportDate = { date ->
       measureReportViewModel.onEvent(
-        MeasureReportEvent.GenerateReport(navController, context),
+        MeasureReportEvent.OnDateSelected(navController, context, practitionerId = practitionerId),
         date,
       )
     },
@@ -151,7 +149,7 @@ fun ReportFilterSelector(
   reportPeriodRange: Map<String, List<ReportRangeSelectionData>>,
   modifier: Modifier = Modifier,
   onBackPressed: () -> Unit,
-  onGenerateReport: (date: Date?) -> Unit,
+  onSelectReportDate: (date: Date?) -> Unit,
   onDateRangeSelected: (Pair<Long, Long>) -> Unit,
   onReportTypeSelected: (MeasureReportType) -> Unit,
   onSubjectRemoved: (MeasureReportSubjectViewData) -> Unit,
@@ -214,7 +212,7 @@ fun ReportFilterSelector(
     ) {
       if (showFixedRangeSelection) {
         FixedMonthYearListing(
-          onMonthSelected = onGenerateReport,
+          onMonthSelected = onSelectReportDate,
           showProgressIndicator = uiState.showProgressIndicator,
           reportGenerationRange = reportPeriodRange,
           innerPadding = innerPadding,
@@ -228,7 +226,7 @@ fun ReportFilterSelector(
               uiState.endDate.isNotEmpty() &&
               (uiState.subjectViewData != null ||
                 reportTypeState.value == MeasureReportType.SUMMARY),
-          onGenerateReportClicked = { onGenerateReport.invoke(null) },
+          onGenerateReportClicked = { onSelectReportDate.invoke(null) },
           showProgressIndicator = uiState.showProgressIndicator,
           dateRange = dateRange!!,
           onDateRangeSelected = onDateRangeSelected,
@@ -548,7 +546,7 @@ fun FixedRangeListPreview() {
     dateRange = null,
     reportPeriodRange = ranges,
     onBackPressed = {},
-    onGenerateReport = {},
+    onSelectReportDate = {},
     onDateRangeSelected = {},
     onReportTypeSelected = {},
     onSubjectRemoved = {},
@@ -571,7 +569,7 @@ fun ReportFilterPreview() {
     dateRange = dateRange,
     reportPeriodRange = mapOf(),
     onBackPressed = {},
-    onGenerateReport = {},
+    onSelectReportDate = {},
     onDateRangeSelected = {},
     onReportTypeSelected = {},
     onSubjectRemoved = {},

@@ -21,7 +21,6 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Search
-import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -31,12 +30,13 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
-import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Before
 import org.junit.Rule
@@ -55,14 +55,14 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 class ConfigurationRegistryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var gson: Gson
   private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var fhirEngine: FhirEngine
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   private val secureSharedPreference = mockk<SecureSharedPreference>()
   private val configService = mockk<ConfigService>()
   private val application: Context = ApplicationProvider.getApplicationContext()
-  private val fhirResourceService = mockk<FhirResourceService>()
+  private val fhirResourceService =
+    mockk<FhirResourceService> { coEvery { post(any(), any()) } returns Bundle() }
   private val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
 
   @Before
@@ -73,14 +73,18 @@ class ConfigurationRegistryTest : RobolectricTest() {
     fhirEngine = mockk()
 
     configurationRegistry =
-      ConfigurationRegistry(
-        fhirEngine = fhirEngine,
-        fhirResourceDataSource = fhirResourceDataSource,
-        sharedPreferencesHelper = sharedPreferencesHelper,
-        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
-        configService = configService,
-        json = Faker.json,
+      spyk(
+        ConfigurationRegistry(
+          fhirEngine = fhirEngine,
+          fhirResourceDataSource = fhirResourceDataSource,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+          configService = configService,
+          json = Faker.json,
+        ),
       )
+    configurationRegistry.setNonProxy(false)
+    coEvery { configurationRegistry.addOrUpdate(any()) } just runs
     coEvery { fhirEngine.createRemote(any()) } just runs
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
   }
@@ -99,7 +103,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
 
     val bundle =
-      org.hl7.fhir.r4.model.Bundle().apply {
+      Bundle().apply {
         addEntry().apply {
           this.resource = StructureMap().apply { StructureMap@ this.id = "123456" }
         }
@@ -107,14 +111,14 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    coEvery { fhirEngine.get(ResourceType.Composition, any()) } returns composition
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
 
-    coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
+    coEvery { configurationRegistry.fhirResourceDataSource.post(any(), any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
 
     configurationRegistry.fetchNonWorkflowConfigResources()
-    coVerify { configurationRegistry.fhirResourceDataSource.getResource(any()) }
-    coVerify { configurationRegistry.create(any()) }
+    coVerify { configurationRegistry.addOrUpdate(any()) }
   }
 
   @Test
@@ -130,15 +134,13 @@ class ConfigurationRegistryTest : RobolectricTest() {
         }
       }
 
-    val bundle =
-      org.hl7.fhir.r4.model.Bundle().apply {
-        addEntry().apply {
-          this.resource = ListResource().apply { ListResource@ this.id = "123456" }
-        }
-      }
+    val listResource = ListResource().apply { ListResource@ this.id = "123456" }
+
+    val bundle = Bundle().apply { addEntry().apply { this.resource = listResource } }
 
     configurationRegistry.setNonProxy(true)
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
+    coEvery { fhirResourceService.getResource("List?_id=123456") } returns bundle
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
 
@@ -146,8 +148,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
 
     configurationRegistry.fetchNonWorkflowConfigResources()
-    coVerify { configurationRegistry.fhirResourceDataSource.getResource(any()) }
-    coVerify { configurationRegistry.create(any()) }
+    coVerify { configurationRegistry.addOrUpdate(any()) }
   }
 
   @Test
@@ -164,7 +165,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
 
     val bundle =
-      org.hl7.fhir.r4.model.Bundle().apply {
+      Bundle().apply {
         addEntry().apply {
           this.resource = ListResource().apply { ListResource@ this.id = "123456" }
         }
@@ -185,6 +186,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configurationRegistry.fetchNonWorkflowConfigResources()
 
     coVerify { fhirResourceService.getResourceWithGatewayModeHeader(any(), any()) }
-    coVerify { configurationRegistry.create(any()) }
+    coVerify { configurationRegistry.addOrUpdate(any()) }
   }
 }

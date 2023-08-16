@@ -31,8 +31,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.Calendar
-import java.util.Date
+import java.util.*
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,7 +46,6 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
-import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -67,8 +65,8 @@ import org.smartregister.fhircore.engine.util.extension.codingOf
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractType
+import org.smartregister.fhircore.engine.util.extension.findCount
 import org.smartregister.fhircore.engine.util.extension.findPercentage
-import org.smartregister.fhircore.engine.util.extension.findPopulation
 import org.smartregister.fhircore.engine.util.extension.findRatio
 import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.formatDate
@@ -77,12 +75,12 @@ import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGeneratedMeasureReports
+import org.smartregister.fhircore.engine.util.extension.rounding
 import org.smartregister.fhircore.engine.util.extension.valueCode
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportSubjectsPagingSource
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
-import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportIndividualResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPopulationResult
 import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
@@ -161,14 +159,8 @@ constructor(
           reportConfigurations.clear()
           reportConfigurations.addAll(it)
         }
-        event.navController.navigate(
-          MeasureReportNavigationScreen.ReportTypeSelector.route +
-            NavigationArg.bindArgumentsOf(
-              Pair(NavigationArg.SCREEN_TITLE, reportConfigurations.firstOrNull()?.module ?: ""),
-            ),
-        )
-      }
-      is MeasureReportEvent.GenerateReport -> {
+
+        // generate report
         if (selectedDate != null) {
           reportTypeState.value = MeasureReport.MeasureReportType.SUMMARY
           reportTypeSelectorUiState.value =
@@ -178,7 +170,18 @@ constructor(
             )
         }
         refreshData()
-        evaluateMeasure(event.navController)
+        event.practitionerId?.let { evaluateMeasure(event.navController, practitionerId = it) }
+      }
+      is MeasureReportEvent.OnDateSelected -> {
+        if (selectedDate != null) {
+          reportTypeState.value = MeasureReport.MeasureReportType.SUMMARY
+          reportTypeSelectorUiState.value =
+            reportTypeSelectorUiState.value.copy(
+              startDate = selectedDate.firstDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA),
+              endDate = selectedDate.lastDayOfMonth().formatDate(SDF_D_MMM_YYYY_WITH_COMA),
+            )
+        }
+        event.navController.navigate(MeasureReportNavigationScreen.MeasureReportModule.route)
       }
       is MeasureReportEvent.OnDateRangeSelected -> {
         //  Update dateRange and format start/end dates e.g 16 Nov, 2020 - 29 Oct, 2021
@@ -260,7 +263,7 @@ constructor(
   }
 
   // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
-  fun evaluateMeasure(navController: NavController) {
+  fun evaluateMeasure(navController: NavController, practitionerId: String? = null) {
     // Run evaluate measure only for existing report
     if (reportConfigurations.isNotEmpty()) {
       // Retrieve and parse dates to  (2020-11-16)
@@ -281,15 +284,34 @@ constructor(
             toggleProgressIndicatorVisibility(true)
             val result =
               reportConfigurations.flatMap { config ->
-                val subjects = measureReportRepository.fetchSubjects(config)
-                val existing =
+                val subjects = mutableListOf<String>()
+                subjects.addAll(measureReportRepository.fetchSubjects(config))
+
+                // If a practitioner Id is available, add it to the list of subjects
+                if (practitionerId?.isNotBlank() == true) {
+                  subjects.add("${Practitioner().resourceType.name}/$practitionerId")
+                }
+
+                val existingReports =
                   retrievePreviouslyGeneratedMeasureReports(
-                    fhirEngine,
-                    startDateFormatted,
-                    endDateFormatted,
-                    config.url,
-                    listOf(),
+                    fhirEngine = fhirEngine,
+                    startDateFormatted = startDateFormatted,
+                    endDateFormatted = endDateFormatted,
+                    measureUrl = config.url,
+                    subjects = listOf(),
                   )
+
+                val existingValidReports = mutableListOf<MeasureReport>()
+
+                existingReports
+                  ?.groupBy { it.subject.reference }
+                  ?.forEach { entry ->
+                    if (entry.value.size > 1 && entry.value.distinctBy { it.measure }.size <= 1) {
+                      return@forEach
+                    } else {
+                      existingValidReports.addAll(entry.value)
+                    }
+                  }
 
                 // if report is of current month or does not exist generate a new one and replace
                 // existing
@@ -297,21 +319,23 @@ constructor(
                   endDateFormatted
                     .parseDate(SDF_YYYY_MM_DD)!!
                     .formatDate(SDF_YYYY_MMM)
-                    .contentEquals(Date().formatDate(SDF_YYYY_MMM)) || existing.isEmpty()
+                    .contentEquals(Date().formatDate(SDF_YYYY_MMM)) ||
+                    existingValidReports.isEmpty()
                 ) {
                   withContext(dispatcherProvider.io()) {
                     fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
                   }
 
                   measureReportRepository.evaluatePopulationMeasure(
-                    config.url,
-                    startDateFormatted,
-                    endDateFormatted,
-                    subjects,
-                    existing,
+                    measureUrl = config.url,
+                    startDateFormatted = startDateFormatted,
+                    endDateFormatted = endDateFormatted,
+                    subjects = subjects,
+                    existing = existingValidReports,
+                    practitionerId = practitionerId,
                   )
                 } else {
-                  existing
+                  existingValidReports
                 }
               }
 
@@ -351,7 +375,7 @@ constructor(
       "All Measure Reports in module should have same type"
     }
 
-    val indicatorUrlToTitleMap = indicators.associateBy({ it.url }, { it.title })
+    val indicatorUrlToConfigMap = indicators.associateBy({ it.url }, { it })
 
     measureReports
       .takeIf {
@@ -375,22 +399,23 @@ constructor(
 
         val theIndicators =
           entry.value.flatMap { report ->
-            val formatted = formatSupplementalData(report.contained, report.type)
-            val title = nonNullGetOrDefault(indicatorUrlToTitleMap, report.measure, "")
+            val reportConfig = nonNullGetOrDefault(indicatorUrlToConfigMap, report.measure, null)
+            val formatted = formatSupplementalData(report.contained, report.type, reportConfig)
+            val title = reportConfig?.title ?: ""
             if (formatted.isEmpty()) {
               listOf(MeasureReportIndividualResult(title = title, count = "0"))
             } else if (formatted.size == 1) {
               listOf(
                 MeasureReportIndividualResult(
                   title = title,
-                  count = formatted.first().measureReportDenominator?.toString() ?: "0",
+                  count = formatted.first().measureReportDenominator,
                 ),
               )
             } else {
               formatted.map {
                 MeasureReportIndividualResult(
                   title = it.title,
-                  count = it.measureReportDenominator.toString(),
+                  count = it.measureReportDenominator,
                 )
               }
             }
@@ -401,7 +426,7 @@ constructor(
             title = subject,
             indicatorTitle = subject,
             measureReportDenominator =
-              if (theIndicators.size == 1) theIndicators.first().count.toInt() else null,
+              if (theIndicators.size == 1) theIndicators.first().count else "0",
             dataList = if (theIndicators.size > 1) theIndicators else emptyList(),
           ),
         )
@@ -414,11 +439,12 @@ constructor(
       ?.forEach { report ->
         Timber.d(report.encodeResourceToString())
 
-        data.addAll(formatSupplementalData(report.contained, report.type))
+        val reportConfig = nonNullGetOrDefault(indicatorUrlToConfigMap, report.measure, null)
+        data.addAll(formatSupplementalData(report.contained, report.type, reportConfig))
 
         report.group
-          .map { group ->
-            val denominator = group.findPopulation(MeasurePopulationType.NUMERATOR)?.count
+          .mapNotNull { group ->
+            val denominator = group.findCount()
             group to
               group.stratifier
                 .asSequence()
@@ -427,18 +453,23 @@ constructor(
                 .map { stratifier ->
                   MeasureReportIndividualResult(
                     title = stratifier.value.text,
-                    percentage = stratifier.findPercentage(denominator!!).toString(),
-                    count = stratifier.findRatio(denominator),
+                    percentage =
+                      stratifier.findPercentage(
+                        denominator!!.count,
+                        reportConfig,
+                      ),
+                    count = stratifier.findRatio(denominator.count),
                     description = stratifier.id?.replace("-", " ")?.uppercase() ?: "",
                   )
                 }
           }
           .mapNotNull {
-            it.first.findPopulation(MeasurePopulationType.NUMERATOR)?.let { count ->
+            it.first?.let { group ->
               MeasureReportPopulationResult(
                 title = it.first.id.replace("-", " "),
-                indicatorTitle = nonNullGetOrDefault(indicatorUrlToTitleMap, report.measure, ""),
-                measureReportDenominator = count.count,
+                indicatorTitle = reportConfig?.title ?: "",
+                measureReportDenominator = group.findCount()?.count.toString(),
+                dataList = it.second.toList(),
               )
             }
           }
@@ -461,6 +492,7 @@ constructor(
   private fun formatSupplementalData(
     list: List<Resource>,
     type: MeasureReport.MeasureReportType,
+    reportConfig: ReportConfiguration?,
   ): List<MeasureReportPopulationResult> {
     // handle extracted supplemental data for values
     return list
@@ -485,7 +517,13 @@ constructor(
         MeasureReportPopulationResult(
           title = it.first,
           indicatorTitle = it.first,
-          measureReportDenominator = it.second.toBigDecimal().toInt(),
+          measureReportDenominator =
+            it.second
+              .toBigDecimal()
+              .rounding(
+                reportConfig?.roundingStrategy ?: ReportConfiguration.DEFAULT_ROUNDING_STRATEGY,
+                reportConfig?.roundingPrecision ?: ReportConfiguration.DEFAULT_ROUNDING_PRECISION,
+              ),
         )
       }
   }

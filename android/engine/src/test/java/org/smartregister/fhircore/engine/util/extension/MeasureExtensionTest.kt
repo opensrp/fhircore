@@ -34,6 +34,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
+import org.smartregister.fhircore.engine.domain.model.RoundingStrategy
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -80,17 +82,95 @@ class MeasureExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun `findPercentage should return correct percentage for stratum with given denominator`() {
-    val result = measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(10)
+  fun `findPercentage should return zero for stratum when given denominator is zero`() {
+    val reportConfiguration =
+      ReportConfiguration(
+        roundingStrategy = RoundingStrategy.ROUND_UP,
+      )
+    val result =
+      measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
+        0,
+        reportConfiguration,
+      )
 
-    assertEquals(30, result)
+    assertEquals("0", result)
   }
 
   @Test
-  fun `findPercentage should return zero for stratum when given denominator is zero`() {
-    val result = measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(0)
+  fun `findPercentage should return correct percentage for stratum with given denominator and rounding strategy`() {
+    val resultTruncate =
+      measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
+        9,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.TRUNCATE,
+        ),
+      )
+    val resultRoundUp =
+      measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
+        9,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_UP,
+        ),
+      )
+    val resultRoundOffLower =
+      measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
+        9,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_OFF,
+        ),
+      )
+    val resultRoundOffUpper =
+      measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
+        8,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_OFF,
+        ),
+      )
 
-    assertEquals(0, result)
+    assertEquals("33", resultTruncate)
+    assertEquals("34", resultRoundUp)
+    assertEquals("33", resultRoundOffLower)
+    assertEquals("38", resultRoundOffUpper)
+  }
+
+  @Test
+  fun `findPercentage should return correct percentage for stratum with given denominator and rounding precision`() {
+    val resultPrecision2Truncate =
+      measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
+        9,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.TRUNCATE,
+          roundingPrecision = 2,
+        ),
+      )
+    val resultPrecision2RoundUp =
+      measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
+        9,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_UP,
+          roundingPrecision = 2,
+        ),
+      )
+    val resultPrecision2RoundOff =
+      measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
+        7,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_OFF,
+          roundingPrecision = 2,
+        ),
+      )
+    val resultPrecision0RoundUp =
+      measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
+        9,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_UP,
+        ),
+      )
+
+    assertEquals("33.33", resultPrecision2Truncate)
+    assertEquals("33.34", resultPrecision2RoundUp)
+    assertEquals("42.86", resultPrecision2RoundOff)
+    assertEquals("34", resultPrecision0RoundUp)
   }
 
   @Test
