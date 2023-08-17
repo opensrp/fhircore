@@ -304,7 +304,7 @@ constructor(
                     startDateFormatted = startDateFormatted,
                     endDateFormatted = endDateFormatted,
                     measureUrl = config.url,
-                    subjects = subjects,
+                    subjects = listOf(),
                   )
 
                 val existingValidReports = mutableListOf<MeasureReport>()
@@ -312,7 +312,7 @@ constructor(
                 existingReports
                   ?.groupBy { it.subject.reference }
                   ?.forEach { entry ->
-                    if (entry.value.size > 1 && entry.value.distinctBy { it.measure }.size <= 1 && entry.value.distinctBy { it.type }.size <= 1) {
+                    if (entry.value.size > 1) {
                       return@forEach
                     } else {
                       existingValidReports.addAll(entry.value)
@@ -323,7 +323,10 @@ constructor(
                 // existing
                 if (endDateFormatted.parseDate(SDF_YYYY_MM_DD)!!
                     .formatDate(SDF_YYYY_MMM)
-                    .contentEquals(Date().formatDate(SDF_YYYY_MMM)) || existingValidReports.isEmpty()
+                    .contentEquals(Date().formatDate(SDF_YYYY_MMM)) ||
+                  existingValidReports.isEmpty() ||
+                  existingValidReports.size != subjects.size ||
+                  existingValidReports.distinctBy { it.type }.size > 1
                 ) {
                   withContext(dispatcherProvider.io()) {
                     fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
