@@ -224,8 +224,9 @@ constructor(
         val subject =
           loadResource(ResourceType.valueOf(subjectIdType.resourceType), subjectIdType.idPart)
 
-        if (subject != null) {
+        if (subject != null && !questionnaireConfig.type.isReadOnly()) {
           val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
+
           generateCarePlan(
             subject = subject,
             bundle = newBundle,
@@ -237,7 +238,6 @@ constructor(
             bundle = newBundle,
             questionnaire = questionnaire,
           )
-
           fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
             questionnaireConfig = questionnaireConfig,
             subject = subject,
@@ -335,7 +335,7 @@ constructor(
           }
         }
 
-        defaultRepository.addOrUpdate(resource = this)
+        defaultRepository.addOrUpdate(true, resource = this)
 
         addMemberToConfiguredGroup(this, questionnaireConfig.groupResource)
 
@@ -350,14 +350,14 @@ constructor(
       }
     }
 
-    // Save questionnaire response only if subject is present
+    // Reference extracted resources in QR then save it if subject exists and config is true
+    currentQuestionnaireResponse.apply { addContained(listResource) }
+
     if (
       !currentQuestionnaireResponse.subject.reference.isNullOrEmpty() &&
-        questionnaireConfig.saveQuestionnaireResponse == true
+        questionnaireConfig.saveQuestionnaireResponse
     ) {
-      defaultRepository.addOrUpdate(
-        resource = currentQuestionnaireResponse.apply { addContained(listResource) },
-      )
+      defaultRepository.addOrUpdate(resource = currentQuestionnaireResponse)
     }
   }
 

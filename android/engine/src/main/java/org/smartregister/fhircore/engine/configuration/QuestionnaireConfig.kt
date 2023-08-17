@@ -53,7 +53,7 @@ data class QuestionnaireConfig(
   val barcodeLinkId: String = "patient-barcode",
   val extractedResourceUniquePropertyExpressions: List<ExtractedResourceUniquePropertyExpression>? =
     null,
-  val saveQuestionnaireResponse: Boolean? = false,
+  val saveQuestionnaireResponse: Boolean = true,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
