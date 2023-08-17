@@ -1,4 +1,4 @@
-map "http://hl7.org/fhir/StructureMap/385988" = 'IPC Activity'
+map "https://fhir.demo.smartregister.org/fhir/StructureMap/385988" = 'IPC Activity'
 
 uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
 uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
@@ -130,6 +130,18 @@ group extractTask(
                   subject where(definition.code.where(coding.code = '028')) then {
                     subject -> reasonReference.reference = 'Questionnaire/381031' "embed_28";
                 } "rule_name_028";
+                subject where(definition.code.where(coding.code = '029')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381031' "embed_28";
+                } "rule_name_029";
+                subject where(definition.code.where(coding.code = '030')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381031' "embed_28";
+                } "rule_name_030";
+                subject where(definition.code.where(coding.code = '031')) then {
+                    subject -> reasonReference.reference = 'Questionnaire/381031' "embed_28";
+                } "rule_name_031";
+                subject where(definition.code.where(coding.code = '032')) then {
+                     subject -> reasonReference.reference = 'Questionnaire/381031' "embed_28";
+                } "rule_name_032";
           } "rule_task_questions";
 
         // task groupIdentifier
@@ -138,19 +150,6 @@ group extractTask(
             subject -> groupIdentifier.use = "secondary" "rule_group_identifierule_use";
         } "rule_group_identifier";
 
-        subject -> evaluate(task, $this.groupIdentifier.value) as groupIdentifierValue then {
-            subject where(groupIdentifierValue = '108_mo') then {
-                subject -> evaluate(subject, "3285") as maxDays then extractTaskRestriction(subject, task, definition, version, maxDays) "rule_task_restriction";
-            } "rule_create_restriction_end_duration_9_years";
-
-            subject where(groupIdentifierValue = '114_mo') then {
-                subject -> evaluate(subject, "3467.5") as maxDays then extractTaskRestriction(subject, task, definition, version, maxDays) "rule_task_restriction";
-            } "rule_create_restriction_end_duration_9half_years";
-
-            subject where(groupIdentifierValue != '114_mo' and groupIdentifierValue != "108_mo") then {
-                subject -> evaluate(subject, "1825") as maxDays then extractTaskRestriction(subject, task, definition, version, maxDays) "rule_task_restriction";
-            } "rule_create_restriction_end_duration_5_years";
-        } "rule_create_restriction_end_duration";
 
         //add task.input for task dependencies
         subject -> task.input = create('Task_Input') as inputTask then {
@@ -203,23 +202,7 @@ group extractTaskReferenceInput(source subject: Patient, target task: Task, sour
     } "rule_task_part_of_reference";
 }
 
-group extractTaskRestriction(source subject: Patient, target task: Task, source definition: ActivityDefinition, source version: Integer, source restrictionEndDate: String) {
-    subject -> evaluate(task, $this.executionPeriod.start) as start then {
-        subject -> evaluate(subject, $this.birthDate) as patientBirthDate then {
-            subject -> create("Task_Restriction") as taskRestriction then {
-                subject->taskRestriction.period = create("Period") as taskRestrictionPeriod then {
-                    subject -> taskRestrictionPeriod.start = create('dateTime') as startDateTime,
-                        startDateTime.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "rule_period_start";
 
-                    subject -> taskRestrictionPeriod.end = create('dateTime') as endDateTime,
-                        endDateTime.value = evaluate(start, (($this + (((restrictionEndDate).toString() + ' \'days\'')).toQuantity()).value.substring(0,10)) + 'T00:00:00.00Z') "rule_period_end";
-
-                    subject -> task.restriction = taskRestriction "rule_restriction_period";
-                } "rule_task_restriction_period";
-            } "rule_task_restriction";
-        } "rule_birth_date";
-    } "rule_task_execution_period";
-}
 
 group extractPeriod(source subject: Patient, target task: Task) {
     subject -> evaluate(task, $this.executionPeriod.start) as start, evaluate(task, $this.executionPeriod.end) as end then {
