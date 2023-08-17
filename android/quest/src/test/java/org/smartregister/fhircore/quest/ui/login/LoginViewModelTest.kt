@@ -549,7 +549,7 @@ internal class LoginViewModelTest : RobolectricTest() {
                       listOf(PractitionerRole().apply { id = "my-practitioner-role-id" })
                     organizationAffiliations =
                       listOf(
-                        OrganizationAffiliation().apply { id = "my-organization-affiliation-id" }
+                        OrganizationAffiliation().apply { id = "my-organization-affiliation-id" },
                       )
                   }
               }
