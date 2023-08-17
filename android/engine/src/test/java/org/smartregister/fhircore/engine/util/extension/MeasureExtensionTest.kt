@@ -82,7 +82,12 @@ class MeasureExtensionTest : RobolectricTest() {
 
   @Test
   fun `findPercentage should return zero for stratum when given denominator is zero`() {
-    val result = measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(0, RoundingStrategy.ROUND_UP, 0)
+    val result =
+      measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
+        0,
+        RoundingStrategy.ROUND_UP,
+        0
+      )
 
     assertEquals("0", result)
   }

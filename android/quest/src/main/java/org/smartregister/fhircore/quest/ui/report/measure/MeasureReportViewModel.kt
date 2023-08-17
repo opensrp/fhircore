@@ -172,7 +172,9 @@ constructor(
             )
         }
         refreshData()
-        event.practitionerId.takeIf { it?.isNotBlank() == true }.let { evaluateMeasure(event.navController, practitionerId = it) }
+        event.practitionerId.takeIf { it?.isNotBlank() == true }.let {
+          evaluateMeasure(event.navController, practitionerId = it)
+        }
       }
       is MeasureReportEvent.OnDateSelected -> {
         if (selectedDate != null) {
@@ -293,7 +295,8 @@ constructor(
                 val subjects = mutableListOf<String>()
                 subjects.addAll(measureReportRepository.fetchSubjects(config))
 
-                // If a practitioner Id is available, add it to the list of subjects if the list is empty
+                // If a practitioner Id is available, add it to the list of subjects if the list is
+                // empty
                 if (practitionerId?.isNotBlank() == true && subjects.isEmpty()) {
                   subjects.add("${Practitioner().resourceType.name}/$practitionerId")
                 }
@@ -309,24 +312,22 @@ constructor(
 
                 val existingValidReports = mutableListOf<MeasureReport>()
 
-                existingReports
-                  ?.groupBy { it.subject.reference }
-                  ?.forEach { entry ->
-                    if (entry.value.size > 1) {
-                      return@forEach
-                    } else {
-                      existingValidReports.addAll(entry.value)
-                    }
+                existingReports?.groupBy { it.subject.reference }?.forEach { entry ->
+                  if (entry.value.size > 1) {
+                    return@forEach
+                  } else {
+                    existingValidReports.addAll(entry.value)
                   }
+                }
 
                 // if report is of current month or does not exist generate a new one and replace
                 // existing
                 if (endDateFormatted.parseDate(SDF_YYYY_MM_DD)!!
                     .formatDate(SDF_YYYY_MMM)
                     .contentEquals(Date().formatDate(SDF_YYYY_MMM)) ||
-                  existingValidReports.isEmpty() ||
-                  existingValidReports.size != subjects.size ||
-                  existingValidReports.distinctBy { it.type }.size > 1
+                    existingValidReports.isEmpty() ||
+                    existingValidReports.size != subjects.size ||
+                    existingValidReports.distinctBy { it.type }.size > 1
                 ) {
                   withContext(dispatcherProvider.io()) {
                     fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
@@ -419,10 +420,7 @@ constructor(
               )
             } else {
               formatted.map {
-                MeasureReportIndividualResult(
-                  title = it.title,
-                  count = it.measureReportDenominator
-                )
+                MeasureReportIndividualResult(title = it.title, count = it.measureReportDenominator)
               }
             }
           }
@@ -461,13 +459,14 @@ constructor(
                 .map { stratifier ->
                   MeasureReportIndividualResult(
                     title = stratifier.value.text,
-                    percentage = stratifier.findPercentage(
-                      denominator!!,
-                      reportConfig?.roundingStrategy
-                        ?: ReportConfiguration.DEFAULT_ROUNDING_STRATEGY,
-                      reportConfig?.roundingPrecision
-                        ?: ReportConfiguration.DEFAULT_ROUNDING_PRECISION
-                    ),
+                    percentage =
+                      stratifier.findPercentage(
+                        denominator!!,
+                        reportConfig?.roundingStrategy
+                          ?: ReportConfiguration.DEFAULT_ROUNDING_STRATEGY,
+                        reportConfig?.roundingPrecision
+                          ?: ReportConfiguration.DEFAULT_ROUNDING_PRECISION
+                      ),
                     count = stratifier.findRatio(denominator),
                     description = stratifier.id?.replace("-", " ")?.uppercase() ?: "",
                   )
@@ -527,12 +526,12 @@ constructor(
           title = it.first,
           indicatorTitle = it.first,
           measureReportDenominator =
-          it.second
-            .toBigDecimal()
-            .rounding(
-              reportConfig?.roundingStrategy ?: ReportConfiguration.DEFAULT_ROUNDING_STRATEGY,
-              reportConfig?.roundingPrecision ?: ReportConfiguration.DEFAULT_ROUNDING_PRECISION
-            )
+            it.second
+              .toBigDecimal()
+              .rounding(
+                reportConfig?.roundingStrategy ?: ReportConfiguration.DEFAULT_ROUNDING_STRATEGY,
+                reportConfig?.roundingPrecision ?: ReportConfiguration.DEFAULT_ROUNDING_PRECISION
+              )
         )
       }
   }
