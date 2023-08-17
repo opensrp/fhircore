@@ -80,8 +80,6 @@ fun List<ActionConfig>.handleClickEvent(
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
               NavigationArg.PARAMS to interpolatedParams.toTypedArray(),
             )
-          // Issue #2685: Nullifying navOptions safeguards against unintended popBackStack
-          // activation, even when it's set to false or null.
           val navOptions =
             when (actionConfig.popNavigationBackStack) {
               false,
