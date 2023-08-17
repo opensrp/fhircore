@@ -20,6 +20,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.AdverseEvent
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
@@ -77,6 +78,7 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "Task_Input" -> Task.ParameterComponent()
       "Task_Output" -> Task.TaskOutputComponent()
       "Task_Restriction" -> Task.TaskRestrictionComponent()
+      "AdverseEvent_SuspectEntity" -> AdverseEvent.AdverseEventSuspectEntityComponent()
       else -> ResourceFactory.createResourceOrType(name)
     }
   }
