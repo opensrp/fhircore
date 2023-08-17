@@ -306,17 +306,8 @@ When working with dates, please note that according to the FHIR spec, if the dur
 
 **Examples of rounding off to closest calendar division:**
 
-> Feb 1 2023 + (30 days) = March 3, 2023 - According to FHIR Path spec it will be 1st March
-> Feb 2 2023 + (30 days) = March 2, 2023 - According to FHIR Path spec it will be 2nd March
-
-> Feb 1 2024 + (30 days) = March 2, 2024 - According to FHIR Path spec it will be 1st March (leap year)
-> Feb 2 2024 + (30 days) = March 2, 2024 - According to FHIR Path spec it will be 2nd March
-
-> 31st Jan, 2023 + (30 days) = March 2, 2023 - According to FHIR Path it will be 28th Feb
-> 31st Jan, 2024 + (30 days) = March 1, 2024 - According to FHIR Path it will be 29th Feb
-
-> 31st Jan, 2023 + (60 days i.e. '2 month') = April 1, 2023 - According to FHIR Path it will be 31st March
-> 31st Jan, 2024 + (60 days i.e. '2 month') = March 31, 2024 - According to FHIR Path it will be 31st March
+> Normal calculation - Feb 1, 2023 + 30 days = March 3, 2023. 
+> FHIR Path spec - Feb 1, 2023 + 1 month  = March 1, 2023
 
 
 Check out the FHIR documentation link here for reference https://hl7.org/fhir/R4/datatypes.html#Distance
