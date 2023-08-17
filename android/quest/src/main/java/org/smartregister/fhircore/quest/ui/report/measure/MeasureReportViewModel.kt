@@ -172,7 +172,7 @@ constructor(
             )
         }
         refreshData()
-        event.practitionerId?.let { evaluateMeasure(event.navController, practitionerId = it) }
+        event.practitionerId.takeIf { it?.isNotBlank() == true }.let { evaluateMeasure(event.navController, practitionerId = it) }
       }
       is MeasureReportEvent.OnDateSelected -> {
         if (selectedDate != null) {
@@ -512,7 +512,7 @@ constructor(
             entry.key!! to
               if (type == MeasureReport.MeasureReportType.INDIVIDUAL) {
                 // for subject specific reports it is key value map with exact value
-                entry.value.joinToString { it.valueCode() ?: "" }
+                entry.value.firstOrNull { it.valueCode()?.isNotBlank() == true }?.valueCode() ?: ""
               } // for multiple subjects it is a number for each which should be counted by entries
               else {
                 entry.value.count().toString()
