@@ -77,6 +77,7 @@ import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGeneratedMeasureReports
+import org.smartregister.fhircore.engine.util.extension.rounding
 import org.smartregister.fhircore.engine.util.extension.valueCode
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
@@ -292,8 +293,8 @@ constructor(
                 val subjects = mutableListOf<String>()
                 subjects.addAll(measureReportRepository.fetchSubjects(config))
 
-                // If a practitioner Id is available, add it to the list of subjects
-                if (practitionerId?.isNotBlank() == true) {
+                // If a practitioner Id is available, add it to the list of subjects if the list is empty
+                if (practitionerId?.isNotBlank() == true && subjects.isEmpty()) {
                   subjects.add("${Practitioner().resourceType.name}/$practitionerId")
                 }
 
@@ -303,7 +304,7 @@ constructor(
                     startDateFormatted = startDateFormatted,
                     endDateFormatted = endDateFormatted,
                     measureUrl = config.url,
-                    subjects = listOf(),
+                    subjects = subjects,
                   )
 
                 val existingValidReports = mutableListOf<MeasureReport>()
@@ -311,7 +312,7 @@ constructor(
                 existingReports
                   ?.groupBy { it.subject.reference }
                   ?.forEach { entry ->
-                    if (entry.value.size > 1 && entry.value.distinctBy { it.measure }.size <= 1) {
+                    if (entry.value.size > 1 && entry.value.distinctBy { it.measure }.size <= 1 && entry.value.distinctBy { it.type }.size <= 1) {
                       return@forEach
                     } else {
                       existingValidReports.addAll(entry.value)
@@ -377,7 +378,7 @@ constructor(
       "All Measure Reports in module should have same type"
     }
 
-    val indicatorUrlToTitleMap = indicators.associateBy({ it.url }, { it.title })
+    val indicatorUrlToConfigMap = indicators.associateBy({ it.url }, { it })
 
     measureReports
       .takeIf {
@@ -401,22 +402,23 @@ constructor(
 
         val theIndicators =
           entry.value.flatMap { report ->
-            val formatted = formatSupplementalData(report.contained, report.type)
-            val title = nonNullGetOrDefault(indicatorUrlToTitleMap, report.measure, "")
+            val reportConfig = nonNullGetOrDefault(indicatorUrlToConfigMap, report.measure, null)
+            val formatted = formatSupplementalData(report.contained, report.type, reportConfig)
+            val title = reportConfig?.title ?: ""
             if (formatted.isEmpty()) {
               listOf(MeasureReportIndividualResult(title = title, count = "0"))
             } else if (formatted.size == 1) {
               listOf(
                 MeasureReportIndividualResult(
                   title = title,
-                  count = formatted.first().measureReportDenominator?.toString() ?: "0",
+                  count = formatted.first().measureReportDenominator
                 ),
               )
             } else {
               formatted.map {
                 MeasureReportIndividualResult(
                   title = it.title,
-                  count = it.measureReportDenominator.toString(),
+                  count = it.measureReportDenominator
                 )
               }
             }
@@ -427,7 +429,7 @@ constructor(
             title = subject,
             indicatorTitle = subject,
             measureReportDenominator =
-              if (theIndicators.size == 1) theIndicators.first().count.toInt() else null,
+              if (theIndicators.size == 1) theIndicators.first().count else "0",
             dataList = if (theIndicators.size > 1) theIndicators else emptyList(),
           ),
         )
@@ -440,7 +442,8 @@ constructor(
       ?.forEach { report ->
         Timber.d(report.encodeResourceToString())
 
-        data.addAll(formatSupplementalData(report.contained, report.type))
+        val reportConfig = nonNullGetOrDefault(indicatorUrlToConfigMap, report.measure, null)
+        data.addAll(formatSupplementalData(report.contained, report.type, reportConfig))
 
         report
           .group
@@ -455,7 +458,13 @@ constructor(
                 .map { stratifier ->
                   MeasureReportIndividualResult(
                     title = stratifier.value.text,
-                    percentage = stratifier.findPercentage(denominator!!).toString(),
+                    percentage = stratifier.findPercentage(
+                      denominator!!,
+                      reportConfig?.roundingStrategy
+                        ?: ReportConfiguration.DEFAULT_ROUNDING_STRATEGY,
+                      reportConfig?.roundingPrecision
+                        ?: ReportConfiguration.DEFAULT_ROUNDING_PRECISION
+                    ),
                     count = stratifier.findRatio(denominator),
                     description = stratifier.id?.replace("-", " ")?.uppercase() ?: "",
                   )
@@ -465,8 +474,8 @@ constructor(
             it.first.findPopulation(MeasurePopulationType.NUMERATOR)?.let { count ->
               MeasureReportPopulationResult(
                 title = it.first.id.replace("-", " "),
-                indicatorTitle = nonNullGetOrDefault(indicatorUrlToTitleMap, report.measure, ""),
-                measureReportDenominator = count.count,
+                indicatorTitle = reportConfig?.title ?: "",
+                measureReportDenominator = count.count.toString(),
               )
             }
           }
@@ -489,6 +498,7 @@ constructor(
   private fun formatSupplementalData(
     list: List<Resource>,
     type: MeasureReport.MeasureReportType,
+    reportConfig: ReportConfiguration?
   ): List<MeasureReportPopulationResult> {
     // handle extracted supplemental data for values
     return list
@@ -513,7 +523,13 @@ constructor(
         MeasureReportPopulationResult(
           title = it.first,
           indicatorTitle = it.first,
-          measureReportDenominator = it.second.toBigDecimal().toInt(),
+          measureReportDenominator =
+          it.second
+            .toBigDecimal()
+            .rounding(
+              reportConfig?.roundingStrategy ?: ReportConfiguration.DEFAULT_ROUNDING_STRATEGY,
+              reportConfig?.roundingPrecision ?: ReportConfiguration.DEFAULT_ROUNDING_PRECISION
+            )
         )
       }
   }
