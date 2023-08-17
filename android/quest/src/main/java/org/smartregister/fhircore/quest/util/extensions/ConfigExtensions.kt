@@ -44,7 +44,12 @@ fun List<ActionConfig>.handleClickEvent(
   navMenu: NavigationMenuConfig? = null,
 ) {
   val onClickAction =
-    this.find { it.trigger.isIn(ActionTrigger.ON_CLICK, ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION) }
+    this.find {
+      it.trigger.isIn(
+        ActionTrigger.ON_CLICK,
+        ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION,
+      )
+    }
   onClickAction?.let { theConfig ->
     val computedValuesMap = resourceData?.computedValuesMap ?: emptyMap()
     val actionConfig = theConfig.interpolate(computedValuesMap)
@@ -80,18 +85,20 @@ fun List<ActionConfig>.handleClickEvent(
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
               NavigationArg.PARAMS to interpolatedParams.toTypedArray(),
             )
-          // Setting popNavigationBackStack false leads to incorrect navigation from screen 3 to 1.
-          // Nullifying navOptions in this scenario resolves the issue and maintains intended navigation.
-          val navOptions = when(actionConfig.popNavigationBackStack) {
-            false, null -> null
-            true -> navController.currentDestination?.id?.let { currentDestId ->
-              navOptions(resId = currentDestId, inclusive = true)
+
+          val navOptions =
+            when (actionConfig.popNavigationBackStack) {
+              false,
+              null, -> null
+              true ->
+                navController.currentDestination?.id?.let { currentDestId ->
+                  navOptions(resId = currentDestId, inclusive = true)
+                }
             }
-          }
           navController.navigate(
             resId = MainNavigationScreen.Profile.route,
             args = args,
-            navOptions = navOptions
+            navOptions = navOptions,
           )
         }
       }
@@ -99,8 +106,14 @@ fun List<ActionConfig>.handleClickEvent(
         val args =
           bundleOf(
             Pair(NavigationArg.REGISTER_ID, actionConfig.id ?: navMenu?.id),
-            Pair(NavigationArg.SCREEN_TITLE, actionConfig.display ?: navMenu?.display ?: ""),
-            Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
+            Pair(
+              NavigationArg.SCREEN_TITLE,
+              actionConfig.display ?: navMenu?.display ?: "",
+            ),
+            Pair(
+              NavigationArg.TOOL_BAR_HOME_NAVIGATION,
+              actionConfig.toolBarHomeNavigation,
+            ),
             Pair(NavigationArg.PARAMS, interpolatedParams.toTypedArray()),
           )
 
@@ -119,7 +132,10 @@ fun List<ActionConfig>.handleClickEvent(
             args = args,
             navOptions =
               navController.currentDestination?.id?.let {
-                navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
+                navOptions(
+                  resId = it,
+                  inclusive = actionConfig.popNavigationBackStack == true,
+                )
               },
           )
         }
@@ -128,7 +144,10 @@ fun List<ActionConfig>.handleClickEvent(
         val args =
           bundleOf(
             Pair(NavigationArg.REPORT_ID, actionConfig.id),
-            Pair(NavigationArg.RESOURCE_ID, practitionerId?.extractLogicalIdUuid() ?: ""),
+            Pair(
+              NavigationArg.RESOURCE_ID,
+              practitionerId?.extractLogicalIdUuid() ?: "",
+            ),
           )
 
         navController.navigate(MainNavigationScreen.Reports.route, args)
