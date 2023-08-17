@@ -300,3 +300,14 @@ Use of other [Value Constraint](https://build.fhir.org/ig/HL7/sdc/behavior.html#
 ]
 }
 ```
+
+## Gotchas
+When working with dates, please note that according to the FHIR spec, if the duration value is specified as a whole number _(e.g. 1 month)_ such as when you write `today + '1 month'`, then when the duration is added or subtracted to a given date(time), the outcome is rounded to the nearest natural calendar division - e.g. Feb. 1 + 1 mo = March 1, not March 2 or 3 (since 1 month is defined in UCUM as 30 days).
+
+**Examples of rounding off to closest calendar division:**
+
+> Normal calculation - Feb 1, 2023 + 30 days = March 3, 2023. 
+> FHIR Path spec - Feb 1, 2023 + 1 month  = March 1, 2023
+
+
+Check out the FHIR documentation link here for reference https://hl7.org/fhir/R4/datatypes.html#Distance
