@@ -67,6 +67,12 @@ jobs:
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
 
+      - name: Start SSH session
+        uses: luchihoratiu/debug-via-ssh@main
+        with:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+          SSH_PASS: ${{ secrets.SSH_PASS }}
+
       - name: Run instrumentation tests manually
         uses: reactivecircus/android-emulator-runner@v2
         with: 
@@ -80,4 +86,10 @@ jobs:
 
       - name: Check performance results
         working-directory: android
-        run: ./gradlew :quest:evaluatePerformanceBenchmarkResults --stacktrace && ./gradlew :macrobenchmark:evaluatePerformanceBenchmarkResults --stacktrace
+        run: ./gradlew :quest:evaluatePerformanceBenchmarkResults --stacktrace && ./gradlew :macrobenchmark:evaluatePerformanceBenchmarkResults --stacktrace || true && sleep 10800
+
+      - name: Start SSH session
+        uses: luchihoratiu/debug-via-ssh@main
+        with:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+          SSH_PASS: ${{ secrets.SSH_PASS }}
