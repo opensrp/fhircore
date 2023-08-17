@@ -169,7 +169,7 @@ constructor(
 
     if (carePlanModified) saveCarePlan(output)
 
-    fhirTaskUtil.updateUpcomingTasksToDue()
+    fhirTaskUtil.updateUpcomingTasksToDue(subject = subject.asReference())
 
     return if (output.hasActivity()) output else null
   }

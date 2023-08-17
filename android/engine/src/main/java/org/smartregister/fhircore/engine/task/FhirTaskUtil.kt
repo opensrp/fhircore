@@ -27,6 +27,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
@@ -119,7 +120,7 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
    * [Task.executionPeriod] is before today and the status is [TaskStatus.REQUESTED] and the
    * pre-requisite [Task] s are completed.
    */
-  suspend fun updateUpcomingTasksToDue() {
+  suspend fun updateUpcomingTasksToDue(subject: Reference? = null) {
     Timber.i("Update upcoming Tasks to due...")
 
     val tasks =
@@ -137,6 +138,9 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
             value = of(DateTimeType(Date()))
           },
         )
+        if (!subject?.reference.isNullOrEmpty()) {
+          filter(Task.SUBJECT, { value = subject?.reference })
+        }
       }
 
     Timber.i(

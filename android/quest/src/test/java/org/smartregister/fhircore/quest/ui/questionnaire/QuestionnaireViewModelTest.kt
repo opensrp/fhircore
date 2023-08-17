@@ -37,17 +37,21 @@ import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Date
+import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.ListResource
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -59,6 +63,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.ExtractedResourceUniquePropertyExpression
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -80,6 +85,7 @@ import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isToday
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.extension.yesterday
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
@@ -98,6 +104,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Inject lateinit var configService: ConfigService
 
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
@@ -162,6 +170,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           libraryEvaluator = libraryEvaluator,
           fhirCarePlanGenerator = fhirCarePlanGenerator,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
+          fhirPathDataExtractor = fhirPathDataExtractor,
         ),
       )
 
@@ -467,7 +476,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         resourceType = patient.resourceType,
         barcodeLinkId = "patient-barcode",
         configRules =
-          listOf(RuleConfig(name = "rule1", actions = listOf("data.put('rule1', 'Sample Rule')"))),
+          listOf(
+            RuleConfig(
+              name = "rule1",
+              actions = listOf("data.put('rule1', 'Sample Rule')"),
+            ),
+          ),
         extraParams =
           listOf(
             ActionParameter(
@@ -883,5 +897,106 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireState,
       questionnaireViewModel.questionnaireProgressStateLiveData.value,
     )
+  }
+
+  @Test
+  fun testSaveExtractedResourcesForEditedQuestionnaire() = runTest {
+    val questionnaire = extractionQuestionnaire()
+    val questionnaireResponse =
+      extractionQuestionnaireResponse().apply { subject = patient.asReference() }
+
+    val questionnaireConfig =
+      questionnaireConfig.copy(
+        resourceIdentifier = patient.logicalId,
+        saveQuestionnaireResponse = false,
+        type = QuestionnaireType.EDIT,
+        extractedResourceUniquePropertyExpressions =
+          listOf(
+            ExtractedResourceUniquePropertyExpression(
+              ResourceType.Observation,
+              "Observation.code.where(coding.code='obs1').coding.code",
+            ),
+          ),
+      )
+    val previousObs =
+      Observation().apply {
+        id = "previousObs1"
+        code = (CodeableConcept(Coding("http://obsys", "obs1", "Obs 1")))
+      }
+    val newObservation =
+      Observation().apply {
+        id = UUID.randomUUID().toString()
+        code = (CodeableConcept(Coding("http://obsys", "obs1", "Obs 1")))
+      }
+
+    // The last extraction generated an Obs and referenced it in the QuestionnaireResponse.contained
+    val previousQuestionnaireResponse =
+      extractionQuestionnaireResponse().apply {
+        val extractionDate = Date()
+        subject = patient.asReference()
+        val listResource =
+          ListResource().apply {
+            id = UUID.randomUUID().toString()
+            status = ListResource.ListStatus.CURRENT
+            mode = ListResource.ListMode.WORKING
+            title = CONTAINED_LIST_TITLE
+            date = extractionDate
+          }
+        val listEntryComponent =
+          ListResource.ListEntryComponent().apply {
+            deleted = false
+            date = extractionDate
+            item = previousObs.asReference()
+          }
+        listResource.addEntry(listEntryComponent)
+        addContained(listResource)
+      }
+
+    coEvery {
+      questionnaireViewModel.searchLatestQuestionnaireResponse(
+        patient.logicalId,
+        ResourceType.Patient,
+        questionnaireConfig.id,
+      )
+    } returns previousQuestionnaireResponse
+
+    val extractedBundle =
+      Bundle().apply {
+        addEntry(Bundle.BundleEntryComponent().apply { resource = newObservation })
+        addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+      }
+
+    coEvery { fhirEngine.get(ResourceType.Patient, patient.logicalId) } returns patient
+    coEvery { fhirEngine.get(ResourceType.Observation, previousObs.logicalId) } returns previousObs
+    coEvery { fhirEngine.get(ResourceType.Observation, newObservation.logicalId) } returns
+      newObservation
+    coEvery { fhirEngine.update(resource = anyVararg()) } just runs
+
+    questionnaireViewModel.saveExtractedResources(
+      bundle = extractedBundle,
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig,
+      currentQuestionnaireResponse = questionnaireResponse,
+    )
+
+    // The Observation ID for the extracted Obs should be the same as previousObs'Id
+    Assert.assertTrue(questionnaireResponse.contained.firstOrNull() is ListResource)
+    val listResource = questionnaireResponse.contained.firstOrNull() as ListResource
+    val observationReference =
+      listResource.entry
+        .find { it.item.reference.equals(previousObs.asReference().reference, true) }
+        ?.item
+        ?.reference
+
+    Assert.assertNotNull(observationReference)
+    Assert.assertEquals(
+      previousObs.logicalId.asReference(ResourceType.Observation).reference,
+      observationReference,
+    )
+
+    // Save QuestionnaireResponse never called because the config is set to false
+    coVerify(exactly = 0) {
+      defaultRepository.addOrUpdate(addMandatoryTags = true, resource = questionnaireResponse)
+    }
   }
 }
