@@ -20,6 +20,9 @@ import android.content.Context
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.core.util.Pair
 import androidx.navigation.NavController
+import androidx.paging.Pager
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
@@ -43,7 +46,14 @@ import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.TestCoroutineExceptionHandler
+import kotlinx.coroutines.test.createTestCoroutineScope
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -59,6 +69,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
@@ -102,6 +115,11 @@ class MeasureReportViewModelTest : RobolectricTest() {
   private val reportId = "supplyChainMeasureReport"
   private val application: Context = ApplicationProvider.getApplicationContext()
   private lateinit var measureReportViewModel: MeasureReportViewModel
+  private val testDispatcher = TestCoroutineDispatcher()
+  private val testCoroutineScope =
+    createTestCoroutineScope(
+      TestCoroutineDispatcher() + TestCoroutineExceptionHandler() + testDispatcher,
+    )
 
   @Before
   fun setUp() {
@@ -284,7 +302,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @ExperimentalCoroutinesApi
   fun testFormatPopulationMeasureReport() = runTest {
     measureReport.type = MeasureReportType.SUMMARY
     val result = measureReportViewModel.formatPopulationMeasureReports(listOf(measureReport))
@@ -341,7 +359,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @ExperimentalCoroutinesApi
   fun testFormatMeasureReportsForSubject() = runTest {
     measureReport.type = MeasureReportType.SUMMARY
     measureReport.contained.clear()
@@ -378,7 +396,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @ExperimentalCoroutinesApi
   fun testFormatMeasureReportsStock() = runTest {
     measureReport.type = MeasureReportType.INDIVIDUAL
     measureReport.contained.clear()
@@ -440,8 +458,67 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  @ExperimentalCoroutinesApi
   fun reportMeasuresListShouldReturnReportList() = runTest {
     assertNotNull(measureReportViewModel.reportMeasuresList(reportId).first())
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun testRetrieveSubjects() = runTest {
+    val mockMeasureReportConfig =
+      MeasureReportConfiguration(
+        reportId,
+        configType = ConfigType.MeasureReport.name,
+        id = "1234",
+        registerId = "test_register",
+        reports =
+          listOf(
+            ReportConfiguration(
+              id = "first id",
+              title = "first report",
+              description = "This my first report",
+              url = "abc-@ona.io",
+              module = "First module name",
+            ),
+          ),
+      )
+    val mockSubjectData: MutableStateFlow<Flow<PagingData<MeasureReportSubjectViewData>>> =
+      MutableStateFlow(flow {})
+    val pagedData: Flow<PagingData<MeasureReportSubjectViewData>> = flow {}
+
+    every {
+      configurationRegistry.retrieveConfiguration<MeasureReportConfiguration>(any(), any())
+    } returns mockMeasureReportConfig
+    val mockPagingSource: PagingSource<Int, MeasureReportSubjectViewData> = mockk()
+    coEvery { mockPagingSource.load(any()) } returns
+      PagingSource.LoadResult.Page(data = emptyList(), prevKey = null, nextKey = null)
+
+    val mockPager: Pager<Int, MeasureReportSubjectViewData> = mockk()
+    every { (mockPager.flow) } returns (flow { emit(PagingData.empty()) })
+    every { measureReportViewModel.subjectData } returns mockSubjectData
+
+    measureReportViewModel.retrieveSubjects(reportId).collect {}
+    every { measureReportViewModel.retrieveSubjects(any()) } returns pagedData
+
+    val retrieveMeasureReport =
+      MeasureReportViewModel::class
+        .java
+        .getDeclaredMethod("retrieveMeasureReportConfiguration", String::class.java)
+    retrieveMeasureReport.isAccessible = true
+    every { retrieveMeasureReport.invoke(null, any()) } returns mockMeasureReportConfig
+
+    verify { retrieveMeasureReport.invoke("", reportId) }
+    verify {
+      configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
+        ConfigType.Register,
+        mockMeasureReportConfig.registerId,
+      )
+    }
+
+    verify { mockPager.flow }
+    verify { mockSubjectData.value = mockPager.flow }
+
+    testCoroutineScope.cleanupTestCoroutines()
   }
 }
