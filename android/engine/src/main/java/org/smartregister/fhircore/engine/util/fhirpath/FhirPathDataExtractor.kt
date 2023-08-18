@@ -19,8 +19,10 @@ package org.smartregister.fhircore.engine.util.fhirpath
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Base
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.utils.FHIRLexer
 import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import timber.log.Timber
 
 @Singleton
@@ -50,6 +52,12 @@ class FhirPathDataExtractor @Inject constructor(val fhirPathEngine: FHIRPathEngi
     } catch (exception: FHIRLexer.FHIRLexerException) {
       Timber.e(exception)
       emptyList()
+    }
+  }
+
+  fun filterRelatedResource(resource: Resource, resourceConfig: ResourceConfig): Boolean {
+    return resourceConfig.filterFhirPathExpressions.any { filterFhirPathExpression ->
+      extractValue(resource, filterFhirPathExpression.key) == filterFhirPathExpression.value
     }
   }
 }

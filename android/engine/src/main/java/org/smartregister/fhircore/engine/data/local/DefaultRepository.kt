@@ -75,6 +75,7 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
 open class DefaultRepository
@@ -86,6 +87,7 @@ constructor(
   open val configurationRegistry: ConfigurationRegistry,
   open val configService: ConfigService,
   open val configRulesExecutor: ConfigRulesExecutor,
+  val fhirPathDataExtractor: FhirPathDataExtractor,
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
@@ -735,7 +737,9 @@ constructor(
         Timber.i(
           "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}",
         )
-        closeResource(resource, resourceConfig)
+        if (fhirPathDataExtractor.filterRelatedResource(resource, resourceConfig)) {
+          closeResource(resource, resourceConfig)
+        }
       }
     }
   }
