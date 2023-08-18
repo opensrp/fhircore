@@ -43,7 +43,11 @@ import timber.log.Timber
 @Singleton
 class FhirTaskUtil
 @Inject
-constructor(@ApplicationContext val appContext: Context, val defaultRepository: DefaultRepository) {
+constructor(
+  @ApplicationContext val appContext: Context,
+  val defaultRepository: DefaultRepository,
+  val fhirResourceClosureUtil: FhirResourceClosureUtil,
+) {
 
   /**
    * Fetches and returns tasks whose Task.status is either "requested", "ready", "accepted",
@@ -90,6 +94,8 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
                   if (carePlan.isLastTask(task)) {
                     carePlan.status = CarePlan.CarePlanStatus.COMPLETED
                     defaultRepository.update(carePlan)
+                    // close related resources
+                    fhirResourceClosureUtil.closeRelatedResources(carePlan)
                   }
                 }
                 .onFailure {
