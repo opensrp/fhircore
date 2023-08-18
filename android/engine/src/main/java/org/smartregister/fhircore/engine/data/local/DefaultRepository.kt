@@ -66,7 +66,6 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
@@ -756,45 +755,17 @@ constructor(
       is CarePlan -> resource.status = CarePlan.CarePlanStatus.COMPLETED
       is Procedure -> resource.status = Procedure.ProcedureStatus.STOPPED
       is Condition -> {
-        // TODO Remove the hardcoded custom logic for closing PNC Condition i.e remove if block
-        // https://github.com/opensrp/fhircore/issues/2488
-        /**
-         * The logic for closing PNC Condition makes 2 assumptions
-         * 1. The eventResource id value is "pncConditionToClose"
-         * 2. Conditions to be closed must have an onset that is more than 28 days in the past
-         */
-        if (
-          resourceConfig.id == PNC_CONDITION_TO_CLOSE_RESOURCE_ID ||
-            resourceConfig.id == SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID
-        ) {
-          val closePncCondition = resource.onset.dateTimeValue().value.daysPassed() > 28
-          val closeSickChildCondition = resource.onset.dateTimeValue().value.daysPassed() > 7
-          if (closePncCondition || closeSickChildCondition) {
-            resource.clinicalStatus =
-              CodeableConcept().apply {
-                coding =
-                  listOf(
-                    Coding().apply {
-                      system = SNOMED_SYSTEM
-                      display = PATIENT_CONDITION_RESOLVED_DISPLAY
-                      code = PATIENT_CONDITION_RESOLVED_CODE
-                    },
-                  )
-              }
+        resource.clinicalStatus =
+          CodeableConcept().apply {
+            coding =
+              listOf(
+                Coding().apply {
+                  system = SNOMED_SYSTEM
+                  display = PATIENT_CONDITION_RESOLVED_DISPLAY
+                  code = PATIENT_CONDITION_RESOLVED_CODE
+                },
+              )
           }
-        } else {
-          resource.clinicalStatus =
-            CodeableConcept().apply {
-              coding =
-                listOf(
-                  Coding().apply {
-                    system = SNOMED_SYSTEM
-                    display = PATIENT_CONDITION_RESOLVED_DISPLAY
-                    code = PATIENT_CONDITION_RESOLVED_CODE
-                  },
-                )
-            }
-        }
       }
       is ServiceRequest -> resource.status = ServiceRequest.ServiceRequestStatus.REVOKED
     }
