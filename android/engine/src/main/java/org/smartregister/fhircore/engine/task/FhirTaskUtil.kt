@@ -27,6 +27,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
@@ -111,7 +112,7 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
       ?.lastOrNull()
       ?.extractId() == task.logicalId
 
-  suspend fun updateTaskStatuses() {
+  suspend fun updateTaskStatuses(subject: Resource? = null) {
     Timber.i("Update tasks statuses")
 
     val tasks =
@@ -129,9 +130,10 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
             value = of(DateTimeType(Date()))
           }
         )
+        subject?.let { filter(Task.SUBJECT, { value = subject.id }) }
       }
 
-    Timber.i("Found ${tasks.size} tasks to be updated")
+    Timber.i("Found ${tasks.size} tasks to be updated ${subject?.let { "for subject ${it.id}" }}")
 
     tasks.forEach { task ->
       val previousStatus = task.status

@@ -38,6 +38,7 @@ import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Task
@@ -207,6 +208,52 @@ class FhirTaskUtilTest : RobolectricTest() {
     assertEquals(TaskStatus.REQUESTED, task.status)
 
     runBlocking { fhirTaskUtil.updateTaskStatuses() }
+
+    coVerify { defaultRepository.update(task) }
+
+    assertEquals(TaskStatus.READY, task.status)
+  }
+  @Test
+  fun testUpdateTaskStatusesBySubject() {
+    val testSubjectId = "Patient/my-test-subject-id"
+
+    val task =
+      Task().apply {
+        id = "test-task-id"
+        partOf = listOf(Reference("Task/parent-test-task-id"))
+        executionPeriod =
+          Period().apply {
+            start = Date().plusDays(-5)
+            status = TaskStatus.REQUESTED
+          }
+      }
+
+    coEvery {
+      fhirEngine.search<Task> {
+        filter(
+          Task.STATUS,
+          { value = of(TaskStatus.REQUESTED.toCoding()) },
+          { value = of(TaskStatus.ACCEPTED.toCoding()) },
+          { value = of(TaskStatus.RECEIVED.toCoding()) },
+        )
+        filter(
+          Task.PERIOD,
+          {
+            prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+            value = of(DateTimeType(Date().plusDays(-1)))
+          }
+        )
+        filter(Task.SUBJECT, { value = testSubjectId })
+      }
+    } returns listOf(task)
+
+    coEvery { fhirEngine.get<Task>(any()).status.isIn(TaskStatus.COMPLETED) } returns true
+
+    coEvery { defaultRepository.update(any()) } just runs
+
+    assertEquals(TaskStatus.REQUESTED, task.status)
+
+    runBlocking { fhirTaskUtil.updateTaskStatuses(Patient().apply { id = testSubjectId }) }
 
     coVerify { defaultRepository.update(task) }
 
