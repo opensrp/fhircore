@@ -171,7 +171,9 @@ constructor(
             )
         }
         refreshData()
-        event.practitionerId.takeIf { it?.isNotBlank() == true }.let { evaluateMeasure(event.navController, practitionerId = it) }
+        event.practitionerId.takeIf { it?.isNotBlank() == true }.let {
+          evaluateMeasure(event.navController, practitionerId = it)
+        }
       }
       is MeasureReportEvent.OnDateSelected -> {
         if (selectedDate != null) {
@@ -308,21 +310,20 @@ constructor(
 
                 val existingValidReports = mutableListOf<MeasureReport>()
 
-                existingReports
-                  ?.groupBy { it.subject.reference }
-                  ?.forEach { entry ->
-                    if (entry.value.size > 1 && entry.value.distinctBy { it.measure }.size <= 1) {
-                      return@forEach
-                    } else {
-                      existingValidReports.addAll(entry.value)
-                    }
+                existingReports?.groupBy { it.subject.reference }?.forEach { entry ->
+                  if (entry.value.size > 1 && entry.value.distinctBy { it.measure }.size <= 1) {
+                    return@forEach
+                  } else {
+                    existingValidReports.addAll(entry.value)
                   }
+                }
 
                 // if report is of current month or does not exist generate a new one and replace
                 // existing
                 if (endDateFormatted.parseDate(SDF_YYYY_MM_DD)!!
                     .formatDate(SDF_YYYY_MMM)
-                    .contentEquals(Date().formatDate(SDF_YYYY_MMM)) || existingValidReports.isEmpty()
+                    .contentEquals(Date().formatDate(SDF_YYYY_MMM)) ||
+                    existingValidReports.isEmpty()
                 ) {
                   withContext(dispatcherProvider.io()) {
                     fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
