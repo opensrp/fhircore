@@ -82,6 +82,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
         libraryEvaluator = mockk(),
         fhirCarePlanGenerator = mockk(),
         resourceDataRulesExecutor = mockk(),
+        fhirPathDataExtractor = mockk(),
       ),
     )
 

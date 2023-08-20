@@ -234,6 +234,13 @@ android {
       manifestPlaceholders["appLabel"] = "Bunda App"
     }
 
+    create("cadre") {
+      dimension = "apps"
+      applicationIdSuffix = ".cadre"
+      versionNameSuffix = "-cadre"
+      manifestPlaceholders["appLabel"] = "Cadre App"
+    }
+
     create("wdf") {
       dimension = "apps"
       applicationIdSuffix = ".wdf"
