@@ -313,7 +313,10 @@ constructor(
                 val existingValidReports = mutableListOf<MeasureReport>()
 
                 existingReports?.groupBy { it.subject.reference }?.forEach { entry ->
-                  if (entry.value.size > 1) {
+                  if (entry.value.size > 1 &&
+                      entry.value.distinctBy { it.measure }.size > 1 &&
+                      entry.value.distinctBy { it.type }.size > 1
+                  ) {
                     return@forEach
                   } else {
                     existingValidReports.addAll(entry.value)

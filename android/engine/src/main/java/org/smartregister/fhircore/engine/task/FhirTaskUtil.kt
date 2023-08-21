@@ -111,25 +111,26 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
       ?.lastOrNull()
       ?.extractId() == task.logicalId
 
-  suspend fun updateTaskStatuses() {
+  suspend fun updateTaskStatuses(tasks: List<Task>? = null) {
     Timber.i("Update tasks statuses")
 
     val tasks =
-      defaultRepository.fhirEngine.search<Task> {
-        filter(
-          Task.STATUS,
-          { value = of(TaskStatus.REQUESTED.toCoding()) },
-          { value = of(TaskStatus.ACCEPTED.toCoding()) },
-          { value = of(TaskStatus.RECEIVED.toCoding()) }
-        )
-        filter(
-          Task.PERIOD,
-          {
-            prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
-            value = of(DateTimeType(Date()))
-          }
-        )
-      }
+      tasks
+        ?: defaultRepository.fhirEngine.search {
+          filter(
+            Task.STATUS,
+            { value = of(TaskStatus.REQUESTED.toCoding()) },
+            { value = of(TaskStatus.ACCEPTED.toCoding()) },
+            { value = of(TaskStatus.RECEIVED.toCoding()) }
+          )
+          filter(
+            Task.PERIOD,
+            {
+              prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+              value = of(DateTimeType(Date()))
+            }
+          )
+        }
 
     Timber.i("Found ${tasks.size} tasks to be updated")
 

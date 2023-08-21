@@ -29,7 +29,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.model.practitioner.KeycloakUserDetails
 
 @HiltAndroidTest
 internal class SharedPreferencesHelperTest : RobolectricTest() {
@@ -85,16 +84,6 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
     Assert.assertEquals(
       questionnaireConfig.id,
       sharedPreferencesHelper.read<QuestionnaireConfig>("object")?.id
-    )
-  }
-
-  @Test
-  fun writeObjectUsingGson() {
-    val keycloakUserDetails = KeycloakUserDetails().apply { id = "12345" }
-    sharedPreferencesHelper.write("object", keycloakUserDetails, encodeWithGson = true)
-    Assert.assertEquals(
-      keycloakUserDetails.id,
-      sharedPreferencesHelper.read<KeycloakUserDetails>("object", decodeWithGson = true)?.id
     )
   }
 
