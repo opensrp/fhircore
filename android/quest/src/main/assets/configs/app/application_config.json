@@ -38,5 +38,85 @@
       "List",
       "Flag"
     ]
-  }
+  },
+  "eventWorkflows": [
+    {
+      "eventType": "RESOURCE_CLOSURE",
+      "eventResources": [
+        {
+          "id": "sickChildCarePlanToBeClosed",
+          "resource": "CarePlan",
+          "configRules": [
+            {
+              "name": "patientId",
+              "condition": "true",
+              "actions": [
+                "data.put('patientId', fhirPath.extractValue(CarePlan, 'CarePlan.subject.reference'))"
+              ]
+            },
+            {
+              "name": "carePlanId",
+              "condition": "true",
+              "actions": [
+                "data.put('carePlanId', fhirPath.extractValue(CarePlan, 'CarePlan.id'))"
+              ]
+            }
+          ],
+          "dataQueries": [
+            {
+              "paramName": "_id",
+              "filterCriteria": [
+                {
+                  "dataType": "ID",
+                  "computedRule": "carePlanId"
+                }
+              ]
+            }
+          ],
+          "relatedResources": [
+            {
+              "resource": "Task",
+              "searchParameter": "based-on"
+            }
+          ]
+        },
+        {
+          "id": "sickChildConditionToBeClosed",
+          "resource": "Condition",
+          "configRules": [
+            {
+              "name": "patientId",
+              "condition": "true",
+              "actions": [
+                "data.put('patientId', fhirPath.extractValue(Condition, 'CarePlan.subject.reference'))"
+              ]
+            }
+          ],
+          "dataQueries": [
+            {
+              "paramName": "code",
+              "filterCriteria": [
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://snomed.info/sct",
+                    "code": "275142008"
+                  }
+                }
+              ]
+            },
+            {
+              "paramName": "subject",
+              "filterCriteria": [
+                {
+                  "dataType": "REFERENCE",
+                  "computedRule": "patientId"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

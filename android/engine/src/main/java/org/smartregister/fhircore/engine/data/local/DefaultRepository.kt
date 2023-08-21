@@ -86,7 +86,7 @@ constructor(
   open val configurationRegistry: ConfigurationRegistry,
   open val configService: ConfigService,
   open val configRulesExecutor: ConfigRulesExecutor,
-  val fhirPathDataExtractor: FhirPathDataExtractor,
+  open val fhirPathDataExtractor: FhirPathDataExtractor,
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {

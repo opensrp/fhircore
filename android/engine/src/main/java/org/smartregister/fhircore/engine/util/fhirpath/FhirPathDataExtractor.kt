@@ -56,8 +56,8 @@ class FhirPathDataExtractor @Inject constructor(val fhirPathEngine: FHIRPathEngi
   }
 
   fun filterRelatedResource(resource: Resource, resourceConfig: ResourceConfig): Boolean {
-    return resourceConfig.filterFhirPathExpressions.any { filterFhirPathExpression ->
+    return resourceConfig.filterFhirPathExpressions?.any { filterFhirPathExpression ->
       extractValue(resource, filterFhirPathExpression.key) == filterFhirPathExpression.value
-    }
+    } == true
   }
 }
