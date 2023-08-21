@@ -74,8 +74,8 @@ class FhirTaskUtilTest : RobolectricTest() {
         FhirTaskUtil(
           ApplicationProvider.getApplicationContext(),
           defaultRepository,
-          fhirResourceClosureUtil
-        )
+          fhirResourceClosureUtil,
+        ),
       )
   }
 

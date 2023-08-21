@@ -73,7 +73,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
     FhirTaskUtil(
       ApplicationProvider.getApplicationContext(),
       defaultRepository,
-      fhirResourceClosureUtil
+      fhirResourceClosureUtil,
     )
   private lateinit var fhirTaskExpireWorker: FhirTaskExpireWorker
   private lateinit var tasks: List<Task>
