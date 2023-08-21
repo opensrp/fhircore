@@ -27,6 +27,7 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -70,6 +71,7 @@ import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.parseDate
+import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGeneratedMeasureReports
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
@@ -92,7 +94,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
 
-  @Inject lateinit var measureReportRepository: MeasureReportRepository
+  private val measureReportRepository: MeasureReportRepository = mockk()
   private val fhirEngine: FhirEngine = mockk()
   private val fhirOperator: FhirOperator = mockk()
   private val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
@@ -281,6 +283,54 @@ class MeasureReportViewModelTest : RobolectricTest() {
     Assert.assertNotNull(sampleSubjectViewData.logicalId, subjectViewData?.logicalId)
     Assert.assertNotNull(sampleSubjectViewData.display, subjectViewData?.display)
     Assert.assertNotNull(sampleSubjectViewData.family, subjectViewData?.family)
+  }
+
+  @Test()
+  fun testEvaluateMeasureUtilizesPreviouslyGeneratedMeasureReportIfAvailable() {
+    val testMeasureReport =
+      MeasureReport().apply {
+        id = "someID"
+        measure = "http://nourl.com"
+        type = MeasureReportType.INDIVIDUAL
+        subject = Reference().apply { "Group/groupid" }
+      }
+
+    val reportConfiguration =
+      ReportConfiguration(
+        id = "measureId",
+        title = "Measure 1",
+        description = "Measure report for testing",
+        url = "http://nourl.com",
+        module = "Module1",
+      )
+
+    coEvery { measureReportRepository.fetchSubjects(reportConfiguration) } returns
+      listOf("Group/groupid")
+    coEvery { measureReportViewModel.formatPopulationMeasureReports(any(), any()) } returns
+      emptyList()
+    coEvery {
+      retrievePreviouslyGeneratedMeasureReports(
+        fhirEngine,
+        "2022-01-21",
+        "2022-01-27",
+        "http://nourl.com",
+        listOf()
+      )
+    } returns listOf(testMeasureReport)
+
+    measureReportViewModel.reportTypeSelectorUiState.value =
+      ReportTypeSelectorUiState(startDate = "21 Jan, 2022", endDate = "27 Jan, 2022")
+    measureReportViewModel.reportConfigurations.add(reportConfiguration)
+
+    measureReportViewModel.evaluateMeasure(navController, null)
+
+    coVerify {
+      measureReportViewModel.formatPopulationMeasureReports(listOf(testMeasureReport), any())
+    }
+
+    coVerify(exactly = 0) {
+      measureReportRepository.evaluatePopulationMeasure(any(), any(), any(), any(), any(), any())
+    }
   }
 
   @Test
