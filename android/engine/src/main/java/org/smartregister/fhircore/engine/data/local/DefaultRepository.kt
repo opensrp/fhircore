@@ -68,6 +68,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.extractResourceTypeName
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
@@ -700,12 +701,8 @@ constructor(
      */
     val computedValuesMap = mutableMapOf<String, Any>()
     initialComputedValuesMap.forEach { entry ->
-      if (entry.value.toString().split("/").size != 2) {
-        computedValuesMap[entry.key] =
-          "${subject.resourceType.name}/${entry.value.toString().extractLogicalIdUuid()}"
-      } else {
-        computedValuesMap[entry.key] = entry.value.toString()
-      }
+      computedValuesMap[entry.key] =
+        "${entry.value.toString().extractResourceTypeName()}/${entry.value.toString().extractLogicalIdUuid()}"
     }
 
     Timber.i("Computed values map = ${computedValuesMap.values}")
