@@ -926,7 +926,7 @@
                     },
                     {
                       "viewType": "COMPOUND_TEXT",
-                      "primaryText": "Age: @{patientAge}",
+                      "primaryText": "বয়সঃ @{patientAge}",
                       "primaryTextColor": "#939596"
                     }
                   ],
@@ -1240,7 +1240,7 @@
                     },
                     {
                       "viewType": "COMPOUND_TEXT",
-                      "primaryText": "Age: @{patientAge}",
+                      "primaryText": "বয়সঃ @{patientAge}",
                       "primaryTextColor": "#939596"
                     }
                   ],

@@ -1,0 +1,1089 @@
+{
+  "resourceType": "StructureMap",
+  "id": "5592",
+  "url": "http://hl7.org/fhir/StructureMap/5592",
+  "name": "mPower ANC Followup Schedule",
+  "structure": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Parameters",
+      "mode": "source"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/CarePlan",
+      "mode": "target"
+    }
+  ],
+  "group": [
+    {
+      "name": "mPowerANCFollowupAndVisit",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "Parameters",
+          "mode": "source"
+        },
+        {
+          "name": "tgt",
+          "type": "CarePlan",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_careplan",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "variable": "subject",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "src"
+                },
+                {
+                  "valueString": "$this.parameter.where(name = 'subject').resource"
+                }
+              ]
+            },
+            {
+              "variable": "definition",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "src"
+                },
+                {
+                  "valueString": "$this.parameter.where(name = 'definition').resource"
+                }
+              ]
+            },
+            {
+              "variable": "period",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "src"
+                },
+                {
+                  "valueString": "$this.parameter.where(name = 'period').value"
+                }
+              ]
+            }
+          ],
+          "dependent": [
+            {
+              "name": "ExtractTask",
+              "variable": [
+                "period",
+                "subject",
+                "definition",
+                "tgt"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractTask",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "period",
+          "type": "Period",
+          "mode": "source"
+        },
+        {
+          "name": "subject",
+          "type": "Patient",
+          "mode": "source"
+        },
+        {
+          "name": "definition",
+          "type": "ActivityDefinition",
+          "mode": "source"
+        },
+        {
+          "name": "careplan",
+          "type": "CarePlan",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_task",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "variable": "task",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Task"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_task_data",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "identifier",
+                  "variable": "iden",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Identifier"
+                    }
+                  ]
+                },
+                {
+                  "context": "iden",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "uuid"
+                },
+                {
+                  "context": "iden",
+                  "contextType": "variable",
+                  "element": "use",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "official"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "identifier",
+                  "variable": "iden",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Identifier"
+                    }
+                  ]
+                },
+                {
+                  "context": "iden",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "anc_follow_visit"
+                    }
+                  ]
+                },
+                {
+                  "context": "iden",
+                  "contextType": "variable",
+                  "element": "use",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "secondary"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "requested"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "intent",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "plan"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "executionPeriod",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "period"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "priority",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "routine"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "description",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "definition"
+                    },
+                    {
+                      "valueString": "$this.title"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "for",
+                  "variable": "ref",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
+                },
+                {
+                  "context": "ref",
+                  "contextType": "variable",
+                  "element": "reference",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "subject"
+                    },
+                    {
+                      "valueString": "$this.id.replaceMatches('/_history/.*', '')"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "authoredOn",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "subject"
+                    },
+                    {
+                      "valueString": "now()"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "requester",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "subject"
+                    },
+                    {
+                      "valueString": "$this.generalPractitioner.first()"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "owner",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "subject"
+                    },
+                    {
+                      "valueString": "$this.generalPractitioner.first()"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_based_on",
+              "source": [
+                {
+                  "context": "subject",
+                  "condition": "(careplan.id.exists())"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "basedOn",
+                  "variable": "ref",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
+                },
+                {
+                  "context": "ref",
+                  "contextType": "variable",
+                  "element": "reference",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "careplan"
+                    },
+                    {
+                      "valueString": "$this.id.replaceMatches('/_history/.*', '')"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_based_on",
+              "source": [
+                {
+                  "context": "subject",
+                  "condition": "(careplan.id.exists().not())"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "basedOn",
+                  "transform": "reference",
+                  "parameter": [
+                    {
+                      "valueId": "careplan"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_period_extr",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "ExtractPeriod",
+                  "variable": [
+                    "subject",
+                    "task"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_group_identifier",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "groupIdentifier",
+                  "variable": "groupIdentifier",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Identifier"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_group_identifier_value",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupIdentifier",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "anc_follow_visit"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_group_identifier_use",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupIdentifier",
+                      "contextType": "variable",
+                      "element": "use",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "secondary"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_reason_ref",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "reasonReference",
+                  "variable": "ref",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
+                },
+                {
+                  "context": "ref",
+                  "contextType": "variable",
+                  "element": "reference",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "Questionnaire/5591"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_task_input",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "input",
+                  "variable": "input",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Task_Input"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_input_value_ref",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "input",
+                      "contextType": "variable",
+                      "element": "value",
+                      "variable": "valueRef",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "valueRef",
+                      "contextType": "variable",
+                      "element": "reference",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "PlanDefinition/5593"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_task_input_cod",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "input",
+                      "contextType": "variable",
+                      "element": "type",
+                      "variable": "taskCode",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "extractTaskCode",
+                      "variable": [
+                        "subject",
+                        "taskCode"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_cp_acti",
+              "source": [
+                {
+                  "context": "subject",
+                  "condition": "(careplan.activity.where(detail.kind = 'Task').exists().not())"
+                }
+              ],
+              "target": [
+                {
+                  "context": "careplan",
+                  "contextType": "variable",
+                  "element": "activity",
+                  "variable": "activity",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CarePlan_Activity"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_act_det",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "activity",
+                      "contextType": "variable",
+                      "element": "detail",
+                      "variable": "det",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CarePlan_ActivityDetail"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_act_det_data",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "det",
+                          "contextType": "variable",
+                          "element": "kind",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Task"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_cp_task",
+              "source": [
+                {
+                  "context": "subject",
+                  "condition": "((task.executionPeriod.start >= today()) or (task.executionPeriod.end >= today()))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cp_task_ref",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "variable": "activity",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "careplan"
+                        },
+                        {
+                          "valueString": "activity.where(detail.kind = 'Task')"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "activity",
+                      "contextType": "variable",
+                      "element": "outcomeReference",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "task"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_add_task",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "careplan",
+                      "contextType": "variable",
+                      "element": "contained",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueId": "task"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractTaskCode",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "subject",
+          "type": "Task",
+          "mode": "source"
+        },
+        {
+          "name": "concept",
+          "type": "CodeableConcept",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_cp_cod_disp",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "context": "concept",
+              "contextType": "variable",
+              "element": "coding",
+              "variable": "coding",
+              "transform": "c",
+              "parameter": [
+                {
+                  "valueString": "http://smartregister.org/"
+                },
+                {
+                  "valueString": "plan_definition"
+                }
+              ]
+            },
+            {
+              "context": "coding",
+              "contextType": "variable",
+              "element": "display",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "Plan Definition Reference"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_cp_cc_txt",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "context": "concept",
+              "contextType": "variable",
+              "element": "text",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "Plan Definition Reference"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPeriod",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "subject",
+          "type": "Patient",
+          "mode": "source"
+        },
+        {
+          "name": "task",
+          "type": "Task",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_per",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "variable": "start",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "task"
+                },
+                {
+                  "valueString": "$this.executionPeriod.start"
+                }
+              ]
+            },
+            {
+              "variable": "end",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "task"
+                },
+                {
+                  "valueString": "$this.executionPeriod.end"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_period",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "period",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Period"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_task_period_extr",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "variable": "startDate",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "date"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "startDate",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "start"
+                        },
+                        {
+                          "valueString": "$this.value.substring(0, 10)"
+                        }
+                      ]
+                    },
+                    {
+                      "variable": "maxMonth",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "date"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "maxMonth",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "end"
+                        },
+                        {
+                          "valueString": "$this.value.substring(0, 10)"
+                        }
+                      ]
+                    },
+                    {
+                      "variable": "endDate",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "maxMonth"
+                        },
+                        {
+                          "valueString": "$this - '1 \\'days\\''.toQuantity()"
+                        }
+                      ]
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "ExtractPeriodTime",
+                      "variable": [
+                        "startDate",
+                        "endDate",
+                        "period"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_task_per",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "task",
+                      "contextType": "variable",
+                      "element": "executionPeriod",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueId": "period"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractPeriodTime",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "start",
+          "type": "DateType",
+          "mode": "source"
+        },
+        {
+          "name": "end",
+          "type": "DateType",
+          "mode": "source"
+        },
+        {
+          "name": "period",
+          "type": "Period",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_per_start",
+          "source": [
+            {
+              "context": "start"
+            }
+          ],
+          "target": [
+            {
+              "context": "period",
+              "contextType": "variable",
+              "element": "start",
+              "variable": "dt",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "dateTime"
+                }
+              ]
+            },
+            {
+              "context": "dt",
+              "contextType": "variable",
+              "element": "value",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "start"
+                },
+                {
+                  "valueString": "$this.value.substring(0, 10) + 'T00:00:00.00Z'"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_per_end",
+          "source": [
+            {
+              "context": "end"
+            }
+          ],
+          "target": [
+            {
+              "context": "period",
+              "contextType": "variable",
+              "element": "end",
+              "variable": "dt",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "dateTime"
+                }
+              ]
+            },
+            {
+              "context": "dt",
+              "contextType": "variable",
+              "element": "value",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "end"
+                },
+                {
+                  "valueString": "$this.value.substring(0, 10) + 'T00:00:00.00Z'"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

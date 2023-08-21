@@ -25,6 +25,16 @@
             "dataType": "DATE"
           }
         ]
+      },
+      {
+        "id": "totalEncounters",
+        "resource": "Encounter",
+        "searchParameter": "subject"
+      },
+      {
+        "id": "totalObservations",
+        "resource": "Observation",
+        "searchParameter": "subject"
       }
     ]
   },
@@ -151,8 +161,25 @@
     {
       "name": "totalTaskCount",
       "condition": "true",
+      "priority": 2,
       "actions": [
-        "data.put('totalTaskCount', size(Task)"
+        "data.put('totalTaskCount', size(Task))"
+      ]
+    },
+    {
+      "name": "totalEncounterCount",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('totalEncounterCount', size(totalEncounters))"
+      ]
+    },
+    {
+      "name": "totalObservationCount",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('totalObservationCount', size(totalObservations))"
       ]
     },
     {
@@ -234,6 +261,22 @@
       ]
     },
     {
+      "name": "patientHeight",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('patientHeight', fhirPath.extractValue(service.filterResources(totalObservations, \"Observation.code.coding.code = '1153637007' \").get(0), \"Observation.value\"))"
+      ]
+    },
+    {
+      "name": "noOfBracAncVisit",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('noOfBracAncVisit', size(service.filterResources(totalEncounters, \"Encounter.type[0].coding.code = 'anc-contact-in-brac' \")))"
+      ]
+    },
+    {
       "name": "patientMaritalStatus",
       "condition": "true",
       "actions": [
@@ -280,6 +323,13 @@
       "condition": "true",
       "actions": [
         "data.put('isPregnant', service.evaluateToBoolean(Condition, \"Condition.code.text = 'Pregnant' \", false))"
+      ]
+    },
+    {
+      "name": "lmpDate",
+      "condition": "true",
+      "actions": [
+        "data.put('lmpDate', fhirPath.extractValue(service.filterResources(Condition, \"Condition.code.text = 'Pregnant' \").get(0), \"Condition.onset\"))"
       ]
     },
     {
@@ -528,7 +578,7 @@
                       "name": "taskScheduleDate",
                       "condition": "true",
                       "actions": [
-                        "data.put('taskScheduleDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
+                        "data.put('taskScheduleDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"yyyy-MM-dd\"))"
                       ]
                     },
                     {
@@ -630,6 +680,27 @@
                               "dataType": "STRING",
                               "key": "taskReasonDisplay",
                               "value": "@{taskReasonDisplay}"
+                            },
+                            {
+                              "paramType": "PREPOPULATE",
+                              "linkId": "bb2b5f1d-3aee-4d19-883a-f5a65b349f5f",
+                              "dataType": "DATE",
+                              "key": "lmpDate",
+                              "value": "@{lmpDate}"
+                            },
+                            {
+                              "paramType": "PREPOPULATE",
+                              "linkId": "93ff6669-bbee-47fd-e54d-8c9e9cda1f94",
+                              "dataType": "INTEGER",
+                              "key": "noOfBracAncVisit",
+                              "value": "@{noOfBracAncVisit}"
+                            },
+                            {
+                              "paramType": "PREPOPULATE",
+                              "linkId": "5d8ac884-da47-4ec3-f077-1dd9812d0d43",
+                              "dataType": "INTEGER",
+                              "key": "patientHeight",
+                              "value": "@{patientHeight}"
                             }
                           ]
                         }
@@ -858,7 +929,7 @@
                       "condition": "true",
                       "priority": 2,
                       "actions": [
-                        "data.put('taskPeriodEndDate', service.formatDate(data.get('taskEndDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
+                        "data.put('taskPeriodEndDate', service.formatDate(data.get('taskEndDate'), (data.get('taskEndDate').toString().endsWith('Z') ? \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\" : \"yyyy-MM-dd'T'HH:mm:ssZ\"), \"dd MMM yyyy\"))"
                       ]
                     },
                     {
@@ -956,22 +1027,22 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "4242"
-            ],
-            "params": [
-              {
-                "key": "familyLogicalId",
-                "value": "@{familyLogicalId}",
-                "paramType": "UPDATE_DATE_ON_EDIT"
-              },
-              {
-                "paramType": "PREPOPULATE",
-                "linkId": "652a752f-280a-4560-aac8-fa3196449961",
-                "dataType": "INTEGER",
-                "key": "isFamilyHeadExists",
-                "value": "@{isFamilyHeadExists}"
-              }
             ]
-          }
+          },
+          "params": [
+            {
+              "key": "familyLogicalId",
+              "value": "@{familyLogicalId}",
+              "paramType": "UPDATE_DATE_ON_EDIT"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "652a752f-280a-4560-aac8-fa3196449961",
+              "dataType": "INTEGER",
+              "key": "isFamilyHeadExists",
+              "value": "@{isFamilyHeadExists}"
+            }
+          ]
         }
       ]
     },
@@ -985,20 +1056,20 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "343",
+            "id": "5589",
             "title": "Record to ANC",
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
-              "346"
-            ],
-            "params": [
-              {
-                "key": "familyLogicalId",
-                "value": "@{familyLogicalId}",
-                "paramType": "UPDATE_DATE_ON_EDIT"
-              }
+              "5593"
             ]
-          }
+          },
+          "params": [
+            {
+              "key": "familyLogicalId",
+              "value": "@{familyLogicalId}",
+              "paramType": "UPDATE_DATE_ON_EDIT"
+            }
+          ]
         }
       ]
     },

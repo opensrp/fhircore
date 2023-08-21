@@ -1,0 +1,85 @@
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/5588" = "mPower ANC Registration"
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+
+group ANCPregnancy(source src : QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.type = "collection" "r_bundle_type";
+    src -> evaluate(src, $this.subject) as refPatient then
+      ExtractPregnancyCondition(src, bundle, refPatient), ExtractObservations(src, bundle, refPatient) "r_bundle_entries";
+}
+
+group ExtractPregnancyCondition(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+    src -> bundle.entry as entry, entry.resource = create("Condition") as cnd then {
+    	src -> cnd.id = uuid() "r_cnd_id";
+
+    	src.item as item_lmp_date where(linkId = "245679f2-6172-456e-8ff3-425f5cea3243") then {
+    	    src -> cnd.onset = create('dateTime') as dt, dt.value = evaluate(item_lmp_date, $this.answer.value.toString()) "r_cnd_onset_date_val";
+    	} "r_cnd_onset_date";
+
+    	src -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_cnd_clinical_st";
+    	src -> cnd.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_cnd_verif_st";
+    	src -> cnd.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "problem-list-item", "Problem List Item") "r_cnd_category";
+    	src -> cnd.subject = refPatient "r_cnd_sub";
+    	src -> cnd.recordedDate = evaluate(src, now()) "r_cnd_recorded";
+
+    	src -> cnd.code = create("CodeableConcept") as ccPreg then {
+             src -> ccPreg.coding = c("http://snomed.info/sct", "77386006", "Pregnancy") as coding, coding.display = 'Pregnancy' "r_cnd_code_coding";
+             src -> ccPreg.text = "Pregnant" "r_cnd_code_text";
+        } "r_cnd_code";
+		src -> evaluate(src, $this.subject) as refPatient then ExtractEncounter(src, bundle, cnd) "r_bundle_entries";
+    } "r_cnd";
+}
+
+group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+     src.item as item_height where(linkId ='2515c2d2-59a2-4525-b995-d82606efef3e' and answer.value.exists()) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_obs_id";
+            src -> obs.status = 'final' "r_obs_status";
+            src -> obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category','vital-signs', 'Vital Signs') "r_obs_category_1";
+            src -> obs.code = create('CodeableConcept') as concept then {
+                 src -> concept.coding = c("http://snomed.info/sct", "1153637007") as coding then {
+                        src -> coding.display = 'Body Height' "r_cp_cod_disp";
+                 } "r_cp_cc_cod";
+            } "r_obs_code";
+            src -> obs.subject = refPatient "r_obs_sub";
+            src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+            src -> obs.value = evaluate(item_height, answer.value) "r_obs_value";
+        } "r_obs";
+    } "o_patient_height";
+}
+
+group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle, target cnd: Condition) {
+    src -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then {
+    	src -> encounter.id = uuid() "r_en_id";
+    	src -> encounter.status = 'finished' "r_en_st";
+    	src -> encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH", "home health") "r_en_cls";
+    	src -> encounter.type = create('CodeableConcept') as concept then {
+    		src -> concept.coding = c("http://snomed.info/sct", "77386006") as coding then {
+    			src -> coding.display = 'Consultation' "r_en_cod_disp";
+   			} "r_en_cc_cod";
+    		src -> concept.text = 'Consultation' "r_en_typ_text";
+    	} "r_en_typ";
+    	src -> encounter.diagnosis as diag then{
+        	src -> diag.condition = reference(cnd) as Condition "r_en_diag_cnd";
+    	} "r_en_diag";
+    	src -> encounter.priority = create('CodeableConcept') as concept then {
+    		src -> concept.coding = c("http://snomed.info/sct", "17621005") as coding then {
+    			src -> coding.display = 'Normal' "r_en_cod_disp";
+    		} "r_en_cc_cod";
+    	src -> concept.text = 'Normal' "r_en_prio_text";
+    	} "r_en_prio";
+    	src -> encounter.subject = evaluate(src, $this.subject) "r_en_sub";
+    	// src -> encounter.participant = automatically set by code in questionnaire view model
+    	src -> encounter.period = create('Period') as enPeriod then {
+    		src -> enPeriod.start = evaluate(src, now()) "r_en_per_start";
+    		src -> enPeriod.end = evaluate(src, now()) "r_en_per_end";
+    	} "r_en_per";
+    	src -> encounter.reasonCode = create('CodeableConcept') as concept then {
+			src -> concept.coding = c("http://mpower-social.com/", "pregnancy_registration") as coding then {
+                src -> coding.display = 'mPower Pregnancy Registration' "r_en_rc_cod_disp";
+            } "r_en_rc_cod";
+    		src -> concept.text = 'mPower Pregnancy Registration' "r_en_text";
+    	} "r_en_reason";
+    } "r_en";
+}

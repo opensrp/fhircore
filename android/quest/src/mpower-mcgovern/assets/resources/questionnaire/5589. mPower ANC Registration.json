@@ -1,0 +1,1003 @@
+{
+  "resourceType": "Questionnaire",
+  "language": "en-GB",
+  "id": "5589",
+  "title": "mPower ANC Registration",
+  "description": "mPower ANC Registration",
+  "version": "0.0.1",
+  "status": "active",
+  "publisher": "mPower-mcGovern",
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/ValueSet/usage-context-type",
+        "code": "focus",
+        "display": "Clinical Focus"
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+            "display": "mPower ANC Registration"
+          }
+        ]
+      }
+    }
+  ],
+  "contact": [
+    {
+      "name": "https://www.mpower-social.com/"
+    }
+  ],
+  "subjectType": [
+    "Patient"
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "http://fhir.mpower-social.com:7070/fhir/StructureMap/5588"
+    }
+  ],
+  "date": "2023-08-14T06:00:00+06:00",
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Enter the correct date"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-minvalue",
+          "valueString": "today() - 308 'days'"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-maxvalue",
+          "valueString": "today() - 42 'days'"
+        }
+      ],
+      "linkId": "245679f2-6172-456e-8ff3-425f5cea3243",
+      "text": "শেষ মাসিকের তারিখ *",
+      "type": "date",
+      "required": true,
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Enter the correct date"
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/sdf-minvalue",
+              "valueString": "today() - 280 'days'"
+            },
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value + 280 'days'"
+              }
+            }
+          ],
+          "linkId": "4f04affb-22a8-4da5-88d8-78bc6d0454e7",
+          "text": "সম্ভাব্য প্রসবের তারিখ *",
+          "type": "date",
+          "required": true,
+          "readOnly": true
+        }
+      ]
+    },
+    {
+      "linkId": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+      "type": "integer",
+      "text": "কতবার অন্তঃসত্ত্বা হয়েছেন (এই গর্ভ সহ) *",
+      "required": true,
+      "extension": [
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "সংখ্যাটি 0 এর চেয়ে সমান বা বড় এবং 10 এর চেয়ে সমান বা ছোট হতে হবে"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^([1-9]|10)$"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueInteger": 1
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueInteger": 10
+        }
+      ],
+      "item": [
+        {
+          "linkId": "3f8bbfec-04f5-47a0-8c68-26cbf6d848e1",
+          "type": "display",
+          "text": "<span style=\"color:#cf0800;\">বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন</span>",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+              "operator": ">",
+              "answerInteger": 4
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "868f3888-0c96-4a5d-85ed-045617c58036",
+      "type": "integer",
+      "text": "কতজন জীবিত সন্তান জন্ম হয়েছে? *",
+      "required": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "[0-9]*"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "সংখ্যাটি 0 এর সমান বা বড় হতে হবে"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueInteger": 0
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueInteger": 20
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+          "operator": ">",
+          "answerInteger": 1
+        }
+      ],
+      "item": [
+        {
+          "linkId": "b8039221-29a3-4f9f-e704-1527fd8df150",
+          "type": "display",
+          "text": "সর্বমোট গর্ভসংখ্যা (এই গর্ভ সহ) থেকে কম হতে হবে",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "%resource.descendants().where(linkId='868f3888-0c96-4a5d-85ed-045617c58036').answer.value > %resource.descendants().where(linkId='b1a4ad4d-bf7e-4e4b-86c2-57912acb569f').answer.value"
+              }
+            }
+          ],
+          "required": false
+        }
+      ]
+    },
+    {
+      "linkId": "2515c2d2-59a2-4525-b995-d82606efef3e",
+      "type": "integer",
+      "text": "মায়ের উচ্চতা (সে.মি.) *",
+      "required": true,
+      "extension": [
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "সংখ্যাটি 210 এর কম হতে হবে"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-maxvalue",
+          "valueString": "210"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueInteger": 0
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueInteger": 209
+        }
+      ],
+      "item": [
+        {
+          "linkId": "e6fc0cfe-d7dc-47c8-f162-cbecd96deb18",
+          "type": "display",
+          "text": "<span style=\"color:#cf0800;\">বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন</span>",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "2515c2d2-59a2-4525-b995-d82606efef3e",
+              "operator": "<",
+              "answerInteger": 145
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "9936aa43-49b1-438d-f4fb-f9f18856c65d",
+      "type": "choice",
+      "text": "গর্ভপাতের ইতিহাস আছে? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+            "code": "yes",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+            "code": "no",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+          "operator": ">",
+          "answerInteger": 1
+        }
+      ],
+      "item": [
+        {
+          "linkId": "f3359877-c759-4d2d-8072-b045b6f4fc4e",
+          "type": "display",
+          "text": "<span style=\"color:#cf0800;\">বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন</span>",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "9936aa43-49b1-438d-f4fb-f9f18856c65d",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+                "code": "yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "b751ea8d-5d68-428c-81d1-858763432691",
+      "type": "choice",
+      "text": "মৃত জন্মের ইতিহাস আছে? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+            "code": "yes",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+            "code": "no",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+          "operator": ">",
+          "answerInteger": 1
+        }
+      ],
+      "item": [
+        {
+          "linkId": "5f1e9abe-99bd-483b-96b6-85248bb21554",
+          "type": "display",
+          "text": "<span style=\"color:#cf0800;\">বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন</span>",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "b751ea8d-5d68-428c-81d1-858763432691",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+                "code": "yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "15c0400e-ca99-428a-88d3-e9aff2ec5cf6",
+      "type": "choice",
+      "text": "সিজারের ইতিহাস আছে? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+            "code": "yes",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+            "code": "no",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+          "operator": ">",
+          "answerInteger": 1
+        }
+      ],
+      "item": [
+        {
+          "linkId": "ab8d0fdd-c104-4be9-81b5-fc4d494f75a7",
+          "type": "display",
+          "text": "<span style=\"color:#cf0800;\">বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন</span>",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ],
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "15c0400e-ca99-428a-88d3-e9aff2ec5cf6",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+                "code": "yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "ad1d299a-033a-4af2-e059-9ae3f9a1266f",
+      "type": "choice",
+      "text": "খিচুনীর ইতিহাস আছে? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+            "code": "yes",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+            "code": "no",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+          "operator": ">",
+          "answerInteger": 1
+        }
+      ],
+      "item": [
+        {
+          "linkId": "e154ebb3-8079-4f47-ae05-abcf235568cf",
+          "type": "display",
+          "text": "<span style=\"color:#cf0800;\">বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন</span>",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ],
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "ad1d299a-033a-4af2-e059-9ae3f9a1266f",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+                "code": "yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "933cfd12-b945-4d8e-ea08-9be70c0098d7",
+      "type": "choice",
+      "text": "প্রসব পরবর্তি রক্তক্ষরণের ইতিহাস আছে? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+            "code": "yes",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+            "code": "no",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",
+          "operator": ">",
+          "answerInteger": 1
+        }
+      ],
+      "item": [
+        {
+          "linkId": "767d698b-1c17-4d7d-8821-4946442d278b",
+          "type": "display",
+          "text": "<span style=\"color:#cf0800;\">বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন</span>",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ],
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "933cfd12-b945-4d8e-ea08-9be70c0098d7",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+                "code": "yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "a80e7d62-32f3-485a-8843-2a66370cc7e0",
+      "type": "choice",
+      "text": "উচ্চ রক্তচাপ আছে কিনা? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+            "code": "yes",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+            "code": "no",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "24612e6d-7c93-4200-e063-9fadccb85738",
+          "type": "display",
+          "text": "<span style=\"color:#cf0800;\">বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন</span>",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ],
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "a80e7d62-32f3-485a-8843-2a66370cc7e0",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+                "code": "yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "037b1c2b-3d55-4892-c0be-f5e1d3aadca1",
+      "type": "choice",
+      "text": "ডায়াবেটিস আছে কিনা? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+            "code": "yes",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+            "code": "no",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "f1f9918e-d831-4f83-b248-c097eea5d402",
+          "type": "display",
+          "text": "<span style=\"color:#cf0800;\">বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন</span>",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ],
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "037b1c2b-3d55-4892-c0be-f5e1d3aadca1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+                "code": "yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "a6c39395-dc29-4196-80ff-07b5a10fde88",
+      "type": "choice",
+      "text": "হৃদরোগ আছে কিনা? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+            "code": "yes",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+            "code": "no",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "09a81c27-806a-42d4-8e8b-64025a810e67",
+          "type": "display",
+          "text": "<span style=\"color:#cf0800;\">বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন</span>",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ],
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "a6c39395-dc29-4196-80ff-07b5a10fde88",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+                "code": "yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "805d98a0-ab9c-4cb9-859d-a803276f811e",
+      "type": "choice",
+      "text": "হাপানি আছে কিনা? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+            "code": "yes",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+            "code": "no",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "e570c7b2-adf6-4bf4-d672-a9fa33adc7be",
+          "type": "display",
+          "text": "<span style=\"color:#cf0800;\">বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন</span>",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ],
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "805d98a0-ab9c-4cb9-859d-a803276f811e",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+                "code": "yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "8e1e0bd7-98aa-4983-dc80-e128a7b477f1",
+      "type": "choice",
+      "text": "কিডনী সমস্যা আছে কিনা? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+            "code": "yes",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+            "code": "no",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "b5dbb96d-8b32-41e6-f1db-0b8ab6306ccb",
+          "type": "display",
+          "text": "<span style=\"color:#cf0800;\">বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন</span>",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ],
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "8e1e0bd7-98aa-4983-dc80-e128a7b477f1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+                "code": "yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "cebdaae6-c2ab-492d-8fcd-a7654ab3f167",
+      "type": "choice",
+      "text": "যক্ষা আছে কিনা? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "9cfcae0c-bf24-4700-b0eb-388bb993bc12",
+            "code": "yes",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "3240dc9c-0e63-4a8b-818a-95d90a5e100a",
+            "code": "no",
+            "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "d1d2bab4-6d25-4681-8f40-6d604af9671c",
+          "type": "display",
+          "text": "<span style=\"color:#cf0800;\">বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন</span>",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ],
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "cebdaae6-c2ab-492d-8fcd-a7654ab3f167",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:37b8b82f-2403-4703-fb32-addbb962f06b",
+                "code": "yes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "0b01ea50-9e1a-4809-ea9b-7e31b72d81b6",
+      "type": "string",
+      "text": "অন্যান্য সমস্যা আছে কিনা?",
+      "required": false
+    }
+  ]
+}
