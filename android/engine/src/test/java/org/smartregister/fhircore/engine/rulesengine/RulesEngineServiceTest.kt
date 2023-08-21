@@ -344,7 +344,7 @@ class RulesEngineServiceTest : RobolectricTest() {
     taskList.add(task0)
 
     Assert.assertEquals(
-      ServiceStatus.UPCOMING.name,
+      ServiceStatus.IN_PROGRESS.name,
       rulesEngineService.generateListTaskServiceStatus(taskList),
     )
   }

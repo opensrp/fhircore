@@ -48,7 +48,9 @@ import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.isDue
 import org.smartregister.fhircore.engine.util.extension.isOverDue
+import org.smartregister.fhircore.engine.util.extension.isUpcoming
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
@@ -452,41 +454,18 @@ constructor(
     }
 
     fun generateListTaskServiceStatus(tasks: List<Task>): String {
-      var serviceStatus: String = ServiceStatus.DUE.name
+      val anyOverDueTask = tasks.find { task -> task.isOverDue() }
+      val anyDueTask = tasks.find { task -> task.isDue() }
+      val anyUpcomingTask = tasks.find { task -> task.isUpcoming() }
+      val anyInProgressTask = tasks.find { task -> task.status == Task.TaskStatus.INPROGRESS }
+      val anyExpiredTask = tasks.find { task -> task.status == Task.TaskStatus.CANCELLED }
+      val anyCompletedTask = tasks.find { task -> task.status == Task.TaskStatus.COMPLETED }
 
-      val overDueTasks = tasks.filter { task -> task.isOverDue() }
-      val dueTasks = tasks.filter { task -> task.status == Task.TaskStatus.READY }
-      val upComingTasks =
-        tasks.filter { task ->
-          (task.status == Task.TaskStatus.NULL ||
-            task.status == Task.TaskStatus.FAILED ||
-            task.status == Task.TaskStatus.RECEIVED ||
-            task.status == Task.TaskStatus.ENTEREDINERROR ||
-            task.status == Task.TaskStatus.ACCEPTED ||
-            task.status == Task.TaskStatus.REJECTED ||
-            task.status == Task.TaskStatus.DRAFT ||
-            task.status == Task.TaskStatus.ONHOLD ||
-            task.status == Task.TaskStatus.REQUESTED)
-        }
-      val inProgressTasks = tasks.filter { task -> task.status == Task.TaskStatus.INPROGRESS }
-      val expiredTasks = tasks.filter { task -> task.status == Task.TaskStatus.CANCELLED }
-      val completedTasks = tasks.filter { task -> task.status == Task.TaskStatus.COMPLETED }
-
-      if (overDueTasks.isNotEmpty()) {
-        serviceStatus = ServiceStatus.OVERDUE.name
-      } else if (dueTasks.isNotEmpty()) {
-        serviceStatus = ServiceStatus.DUE.name
-      } else if (upComingTasks.isNotEmpty()) {
-        serviceStatus = ServiceStatus.UPCOMING.name
-      } else if (inProgressTasks.isNotEmpty()) {
-        serviceStatus = ServiceStatus.IN_PROGRESS.name
-      } else if (expiredTasks.isNotEmpty()) {
-        serviceStatus = ServiceStatus.EXPIRED.name
-      } else if (completedTasks.isNotEmpty()) {
-        serviceStatus = ServiceStatus.COMPLETED.name
-      }
-
-      return serviceStatus
+      val finalTaskForStatus =
+        anyOverDueTask
+          ?: anyDueTask ?: anyUpcomingTask ?: anyInProgressTask ?: anyExpiredTask
+            ?: anyCompletedTask ?: Task()
+      return generateTaskServiceStatus(finalTaskForStatus)
     }
   }
 
