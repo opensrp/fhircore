@@ -2,8 +2,8 @@
   "resourceType": "PlanDefinition",
   "id": "385987",
   "meta": {
-    "versionId": "24",
-    "lastUpdated": "2023-08-17T20:02:14.891+00:00"
+    "versionId": "29",
+    "lastUpdated": "2023-08-21T09:23:48.487+00:00"
   },
   "contained": [
     {
@@ -126,7 +126,7 @@
           {
             "system": "http://snomed.info/sct",
             "code": "001",
-            "display": "IPC - InterPersonal Counselling"
+            "display": "IPC - Interpersonal Counselling"
           }
         ]
       },
@@ -135,10 +135,10 @@
           {
             "system": "http://snomed.info/sct",
             "code": "42284007001",
-            "display": "IPC - InterPersonal Counselling"
+            "display": "IPC - Interpersonal Counselling"
           }
         ],
-        "text": "IPC - InterPersonal Counselling"
+        "text": "IPC - Interpersonal Counselling"
       },
       "dosage": [
         {
@@ -147,7 +147,7 @@
             "repeat": {
               "count": 1,
               "duration": 10,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 1,
               "periodUnit": "mo"
             }
@@ -188,7 +188,7 @@
             "repeat": {
               "count": 1,
               "duration": 10,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 1,
               "periodUnit": "d"
             }
@@ -229,7 +229,7 @@
             "repeat": {
               "count": 1,
               "duration": 20,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 1,
               "periodUnit": "d"
             }
@@ -270,7 +270,7 @@
             "repeat": {
               "count": 1,
               "duration": 30,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 1,
               "periodUnit": "d"
             }
@@ -311,7 +311,7 @@
             "repeat": {
               "count": 1,
               "duration": 40,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 1,
               "periodUnit": "d"
             }
@@ -352,7 +352,7 @@
             "repeat": {
               "count": 1,
               "duration": 50,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 1,
               "periodUnit": "d"
             }
@@ -393,7 +393,7 @@
             "repeat": {
               "count": 1,
               "duration": 40,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 1,
               "periodUnit": "mo"
             }
@@ -434,7 +434,7 @@
             "repeat": {
               "count": 1,
               "duration": 50,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 1,
               "periodUnit": "mo"
             }
@@ -454,7 +454,7 @@
           {
             "system": "http://snomed.info/sct",
             "code": "009",
-            "display": "IPC - InterPersonal Counselling"
+            "display": "IPC - Interpersonal Counselling"
           }
         ]
       },
@@ -463,10 +463,10 @@
           {
             "system": "http://snomed.info/sct",
             "code": "42284007009",
-            "display": "IPC - InterPersonal Counselling"
+            "display": "IPC - Interpersonal Counselling"
           }
         ],
-        "text": "IPC - InterPersonal Counselling"
+        "text": "IPC - Interpersonal Counselling"
       },
       "dosage": [
         {
@@ -475,7 +475,7 @@
             "repeat": {
               "count": 1,
               "duration": 80,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 2,
               "periodUnit": "mo"
             }
@@ -516,7 +516,7 @@
             "repeat": {
               "count": 1,
               "duration": 80,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 2,
               "periodUnit": "d"
             }
@@ -557,7 +557,7 @@
             "repeat": {
               "count": 1,
               "duration": 90,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 2,
               "periodUnit": "d"
             }
@@ -598,7 +598,7 @@
             "repeat": {
               "count": 1,
               "duration": 100,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 2,
               "periodUnit": "d"
             }
@@ -639,7 +639,7 @@
             "repeat": {
               "count": 1,
               "duration": 110,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 2,
               "periodUnit": "d"
             }
@@ -680,7 +680,7 @@
             "repeat": {
               "count": 1,
               "duration": 120,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 2,
               "periodUnit": "d"
             }
@@ -721,7 +721,7 @@
             "repeat": {
               "count": 1,
               "duration": 110,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 2,
               "periodUnit": "mo"
             }
@@ -762,7 +762,7 @@
             "repeat": {
               "count": 1,
               "duration": 120,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 2,
               "periodUnit": "mo"
             }
@@ -782,7 +782,7 @@
           {
             "system": "http://snomed.info/sct",
             "code": "017",
-            "display": "IPC - InterPersonal Counselling"
+            "display": "IPC - Interpersonal Counselling"
           }
         ]
       },
@@ -791,10 +791,10 @@
           {
             "system": "http://snomed.info/sct",
             "code": "42284007017",
-            "display": "IPC - InterPersonal Counselling"
+            "display": "IPC - Interpersonal Counselling"
           }
         ],
-        "text": "IPC - InterPersonal Counselling"
+        "text": "IPC - Interpersonal Counselling"
       },
       "dosage": [
         {
@@ -803,7 +803,7 @@
             "repeat": {
               "count": 1,
               "duration": 150,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 3,
               "periodUnit": "mo"
             }
@@ -844,7 +844,7 @@
             "repeat": {
               "count": 1,
               "duration": 150,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 3,
               "periodUnit": "d"
             }
@@ -885,7 +885,7 @@
             "repeat": {
               "count": 1,
               "duration": 160,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 3,
               "periodUnit": "d"
             }
@@ -926,7 +926,7 @@
             "repeat": {
               "count": 1,
               "duration": 170,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 3,
               "periodUnit": "d"
             }
@@ -967,7 +967,7 @@
             "repeat": {
               "count": 1,
               "duration": 180,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 3,
               "periodUnit": "d"
             }
@@ -1008,7 +1008,7 @@
             "repeat": {
               "count": 1,
               "duration": 190,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 3,
               "periodUnit": "d"
             }
@@ -1049,7 +1049,7 @@
             "repeat": {
               "count": 1,
               "duration": 180,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 3,
               "periodUnit": "mo"
             }
@@ -1090,7 +1090,7 @@
             "repeat": {
               "count": 1,
               "duration": 190,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 3,
               "periodUnit": "mo"
             }
@@ -1110,7 +1110,7 @@
           {
             "system": "http://snomed.info/sct",
             "code": "025",
-            "display": "IPC - InterPersonal Counselling"
+            "display": "IPC - Interpersonal Counselling"
           }
         ]
       },
@@ -1119,10 +1119,10 @@
           {
             "system": "http://snomed.info/sct",
             "code": "42284007025",
-            "display": "IPC - InterPersonal Counselling"
+            "display": "IPC - Interpersonal Counselling"
           }
         ],
-        "text": "IPC - InterPersonal Counselling"
+        "text": "IPC - Interpersonal Counselling"
       },
       "dosage": [
         {
@@ -1131,7 +1131,7 @@
             "repeat": {
               "count": 1,
               "duration": 220,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 4,
               "periodUnit": "mo"
             }
@@ -1172,7 +1172,7 @@
             "repeat": {
               "count": 1,
               "duration": 220,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 4,
               "periodUnit": "d"
             }
@@ -1213,7 +1213,7 @@
             "repeat": {
               "count": 1,
               "duration": 230,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 4,
               "periodUnit": "d"
             }
@@ -1254,7 +1254,7 @@
             "repeat": {
               "count": 1,
               "duration": 240,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 4,
               "periodUnit": "d"
             }
@@ -1295,7 +1295,7 @@
             "repeat": {
               "count": 1,
               "duration": 250,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 4,
               "periodUnit": "d"
             }
@@ -1336,7 +1336,7 @@
             "repeat": {
               "count": 1,
               "duration": 260,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 4,
               "periodUnit": "d"
             }
@@ -1377,7 +1377,7 @@
             "repeat": {
               "count": 1,
               "duration": 250,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 4,
               "periodUnit": "mo"
             }
@@ -1418,7 +1418,7 @@
             "repeat": {
               "count": 1,
               "duration": 260,
-              "durationUnit": "d",
+              "durationUnit": "mo",
               "period": 4,
               "periodUnit": "mo"
             }
