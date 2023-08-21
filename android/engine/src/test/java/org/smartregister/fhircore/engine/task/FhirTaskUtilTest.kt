@@ -38,7 +38,6 @@ import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Task
@@ -214,8 +213,7 @@ class FhirTaskUtilTest : RobolectricTest() {
     assertEquals(TaskStatus.READY, task.status)
   }
   @Test
-  fun testUpdateTaskStatusesBySubject() {
-    val testSubjectId = "Patient/my-test-subject-id"
+  fun testUpdateTaskStatusesGivenTasks() {
 
     val task =
       Task().apply {
@@ -243,7 +241,6 @@ class FhirTaskUtilTest : RobolectricTest() {
             value = of(DateTimeType(Date().plusDays(-1)))
           }
         )
-        filter(Task.SUBJECT, { value = testSubjectId })
       }
     } returns listOf(task)
 
@@ -253,7 +250,7 @@ class FhirTaskUtilTest : RobolectricTest() {
 
     assertEquals(TaskStatus.REQUESTED, task.status)
 
-    runBlocking { fhirTaskUtil.updateTaskStatuses(Patient().apply { id = testSubjectId }) }
+    runBlocking { fhirTaskUtil.updateTaskStatuses(listOf(task)) }
 
     coVerify { defaultRepository.update(task) }
 
