@@ -27,7 +27,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
@@ -120,28 +119,26 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
    * [Task.executionPeriod] is before today and the status is [TaskStatus.REQUESTED] and the
    * pre-requisite [Task] s are completed.
    */
-  suspend fun updateUpcomingTasksToDue(subject: Reference? = null) {
-    Timber.i("Update upcoming Tasks to due...")
+  suspend fun updateUpcomingTasksToDue(tasks: List<Task>? = null) {
+    Timber.i("Update tasks statuses")
 
     val tasks =
-      defaultRepository.fhirEngine.search<Task> {
-        filter(
-          Task.STATUS,
-          { value = of(TaskStatus.REQUESTED.toCoding()) },
-          { value = of(TaskStatus.ACCEPTED.toCoding()) },
-          { value = of(TaskStatus.RECEIVED.toCoding()) },
-        )
-        filter(
-          Task.PERIOD,
-          {
-            prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
-            value = of(DateTimeType(Date()))
-          },
-        )
-        if (!subject?.reference.isNullOrEmpty()) {
-          filter(Task.SUBJECT, { value = subject?.reference })
+      tasks
+        ?: defaultRepository.fhirEngine.search {
+          filter(
+            Task.STATUS,
+            { value = of(TaskStatus.REQUESTED.toCoding()) },
+            { value = of(TaskStatus.ACCEPTED.toCoding()) },
+            { value = of(TaskStatus.RECEIVED.toCoding()) },
+          )
+          filter(
+            Task.PERIOD,
+            {
+              prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+              value = of(DateTimeType(Date()))
+            },
+          )
         }
-      }
 
     Timber.i(
       "Found ${tasks.size} upcoming Tasks (with statuses REQUESTED, ACCEPTED or RECEIVED) to be updated",

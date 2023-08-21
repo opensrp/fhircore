@@ -56,8 +56,8 @@ android {
     applicationId = "org.smartregister.opensrp"
     minSdk = 26
     targetSdk = 33
-    versionCode = 3
-    versionName = "0.2.5"
+    versionCode = 4
+    versionName = "1.0.0"
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
