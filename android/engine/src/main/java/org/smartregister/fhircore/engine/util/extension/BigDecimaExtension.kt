@@ -14,24 +14,11 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.report.measure
+package org.smartregister.fhircore.engine.util.extension
 
-import kotlinx.serialization.Serializable
+import java.math.BigDecimal
 import org.smartregister.fhircore.engine.domain.model.RoundingStrategy
 
-@Serializable
-data class ReportConfiguration(
-  val id: String = "",
-  val title: String = "",
-  val description: String = "",
-  val url: String = "",
-  val module: String = "",
-  val subjectXFhirQuery: String? = null,
-  val roundingStrategy: RoundingStrategy? = DEFAULT_ROUNDING_STRATEGY,
-  val roundingPrecision: Int? = DEFAULT_ROUNDING_PRECISION
-) {
-  companion object {
-    val DEFAULT_ROUNDING_STRATEGY = RoundingStrategy.ROUND_UP
-    val DEFAULT_ROUNDING_PRECISION = 0
-  }
+fun BigDecimal?.rounding(roundingStrategy: RoundingStrategy, roundingPrecision: Int): String {
+  return this?.setScale(roundingPrecision, roundingStrategy.value)?.toString() ?: "0"
 }
