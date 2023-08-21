@@ -80,13 +80,16 @@ fun List<ActionConfig>.handleClickEvent(
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
               NavigationArg.PARAMS to interpolatedParams.toTypedArray(),
             )
+          val navOptions = when(actionConfig.popNavigationBackStack) {
+            false, null -> null
+            true -> navController.currentDestination?.id?.let { currentDestId ->
+              navOptions(resId = currentDestId, inclusive = true)
+            }
+          }
           navController.navigate(
             resId = MainNavigationScreen.Profile.route,
             args = args,
-            navOptions =
-            navController.currentDestination?.id?.let {
-              navOptions(resId = it, inclusive = actionConfig.popNavigationBackStack == true)
-            },
+            navOptions = navOptions
           )
         }
       }
