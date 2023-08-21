@@ -113,6 +113,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         status = Task.TaskStatus.CANCELLED
       }
     coEvery { fhirCarePlanGenerator.getTask(any()) } returnsMany listOf(task1, task2)
+    coEvery { fhirResourceClosureUtil.closeRelatedResources(any()) } just runs
 
     Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
 
@@ -157,6 +158,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         status = Task.TaskStatus.CANCELLED
       }
     coEvery { fhirCarePlanGenerator.getTask(any()) } returnsMany listOf(task1, task2)
+    coEvery { fhirResourceClosureUtil.closeRelatedResources(any()) } just runs
 
     Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
 

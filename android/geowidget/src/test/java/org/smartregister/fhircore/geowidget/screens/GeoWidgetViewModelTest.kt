@@ -90,6 +90,7 @@ class GeoWidgetViewModelTest {
           configurationRegistry,
           configService,
           configRulesExecutor,
+          fhirPathDataExtractor = mockk(),
         ),
       )
     geoWidgetViewModel =

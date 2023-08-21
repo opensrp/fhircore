@@ -75,6 +75,7 @@ class CqlContentTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           configService = configService,
           configRulesExecutor = configRulesExecutor,
+          fhirPathDataExtractor = mockk(),
         ),
       )
     evaluator = LibraryEvaluator(defaultRepository).apply { initialize() }
