@@ -60,15 +60,23 @@ class FhirTaskUtilTest : RobolectricTest() {
   private lateinit var fhirTaskUtil: FhirTaskUtil
   private lateinit var fhirEngine: FhirEngine
   private lateinit var defaultRepository: DefaultRepository
+  private lateinit var fhirResourceClosureUtil: FhirResourceClosureUtil
 
   @Before
   fun setup() {
     hiltAndroidRule.inject()
     fhirEngine = spyk(FhirEngineProvider.getInstance(ApplicationProvider.getApplicationContext()))
     defaultRepository = mockk()
+    fhirResourceClosureUtil = mockk()
     every { defaultRepository.fhirEngine } returns fhirEngine
     fhirTaskUtil =
-      spyk(FhirTaskUtil(ApplicationProvider.getApplicationContext(), defaultRepository))
+      spyk(
+        FhirTaskUtil(
+          ApplicationProvider.getApplicationContext(),
+          defaultRepository,
+          fhirResourceClosureUtil
+        )
+      )
   }
 
   @Test

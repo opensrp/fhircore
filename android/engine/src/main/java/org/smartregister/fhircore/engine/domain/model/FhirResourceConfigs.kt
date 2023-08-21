@@ -90,7 +90,7 @@ data class ResourceConfig(
   val configRules: @RawValue List<RuleConfig>? = emptyList(),
   val planDefinitions: List<String>? = null,
   val attributesToUpdate: List<KeyValueConfig>? = emptyList(),
-  val filterFhirPathExpressions: List<KeyValueConfig>,
+  val filterFhirPathExpressions: List<KeyValueConfig>? = emptyList(),
 ) : Parcelable, java.io.Serializable
 
 @Serializable

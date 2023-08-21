@@ -132,6 +132,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   private var encounter = Encounter()
   private var opv0 = Task()
   private var opv1 = Task()
+  private val fhirResourceClosureUtil: FhirResourceClosureUtil = mockk()
 
   @Before
   fun setup() {
@@ -147,6 +148,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         FhirTaskUtil(
           appContext = ApplicationProvider.getApplicationContext(),
           defaultRepository = defaultRepository,
+          fhirResourceClosureUtil = fhirResourceClosureUtil,
         ),
       )
 

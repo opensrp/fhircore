@@ -66,10 +66,15 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   private val fhirEngine: FhirEngine = mockk(relaxed = true)
   private val defaultRepository: DefaultRepository = mockk(relaxed = true)
+  private val fhirResourceClosureUtil: FhirResourceClosureUtil = mockk()
 
   @BindValue
   var fhirTaskUtil: FhirTaskUtil =
-    FhirTaskUtil(ApplicationProvider.getApplicationContext(), defaultRepository)
+    FhirTaskUtil(
+      ApplicationProvider.getApplicationContext(),
+      defaultRepository,
+      fhirResourceClosureUtil
+    )
   private lateinit var fhirTaskExpireWorker: FhirTaskExpireWorker
   private lateinit var tasks: List<Task>
 

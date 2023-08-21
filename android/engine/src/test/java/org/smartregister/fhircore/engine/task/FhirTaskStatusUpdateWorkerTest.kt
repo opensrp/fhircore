@@ -61,6 +61,7 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
   private val defaultRepository: DefaultRepository = mockk()
   private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val fhirResourceClosureUtil: FhirResourceClosureUtil = mockk()
 
   @Before
   fun setUp() {
@@ -79,6 +80,7 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         FhirTaskUtil(
           appContext = ApplicationProvider.getApplicationContext(),
           defaultRepository = defaultRepository,
+          fhirResourceClosureUtil,
         ),
       )
   }

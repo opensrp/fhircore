@@ -62,6 +62,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
   private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var fhirCompleteCarePlanWorker: FhirCompleteCarePlanWorker
+  private val fhirResourceClosureUtil: FhirResourceClosureUtil = mockk()
 
   @Before
   fun setUp() {
@@ -247,6 +248,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+        fhirResourceClosureUtil = fhirResourceClosureUtil,
       )
     }
   }

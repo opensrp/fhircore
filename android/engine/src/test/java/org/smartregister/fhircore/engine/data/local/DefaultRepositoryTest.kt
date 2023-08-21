@@ -85,6 +85,7 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -105,6 +106,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var configRulesExecutor: ConfigRulesExecutor
   private lateinit var spiedConfigService: ConfigService
+  private lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   @Before
   fun setUp() {
@@ -113,6 +115,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     fhirEngine = mockk(relaxUnitFun = true)
     sharedPreferenceHelper = SharedPreferencesHelper(application, gson)
     spiedConfigService = spyk(configService)
+    fhirPathDataExtractor = mockk()
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
@@ -121,6 +124,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         configService = spiedConfigService,
         configRulesExecutor = configRulesExecutor,
+        fhirPathDataExtractor = fhirPathDataExtractor,
       )
   }
 
@@ -559,6 +563,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           configurationRegistry = mockk(),
           configService = mockk(),
           configRulesExecutor = mockk(),
+          fhirPathDataExtractor = mockk(),
         ),
       )
     coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
@@ -634,6 +639,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           configurationRegistry = mockk(),
           configService = mockk(),
           configRulesExecutor = mockk(),
+          fhirPathDataExtractor = fhirPathDataExtractor,
         ),
       )
 
