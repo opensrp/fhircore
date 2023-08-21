@@ -51,7 +51,7 @@
               "name": "patientId",
               "condition": "true",
               "actions": [
-                "data.put('patientId', fhirPath.extractValue(Condition, 'CarePlan.subject.reference'))"
+                "data.put('patientId', fhirPath.extractValue(CarePlan, 'CarePlan.subject.reference'))"
               ]
             }
           ],

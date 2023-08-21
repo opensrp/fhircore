@@ -700,8 +700,12 @@ constructor(
      */
     val computedValuesMap = mutableMapOf<String, Any>()
     initialComputedValuesMap.forEach { entry ->
-      computedValuesMap[entry.key] =
-        "${subject.resourceType.name}/${entry.value.toString().extractLogicalIdUuid()}"
+      if (entry.value.toString().split("/").size != 2) {
+        computedValuesMap[entry.key] =
+          "${subject.resourceType.name}/${entry.value.toString().extractLogicalIdUuid()}"
+      } else {
+        computedValuesMap[entry.key] = entry.value.toString()
+      }
     }
 
     Timber.i("Computed values map = ${computedValuesMap.values}")
