@@ -314,7 +314,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
         "2022-01-21",
         "2022-01-27",
         "http://nourl.com",
-        listOf()
+        listOf(),
       )
     } returns listOf(testMeasureReport)
 
