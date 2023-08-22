@@ -456,6 +456,28 @@ constructor(
               .encodeResourceToString()
               .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
         )
+
+    processResultBundleEntries(resultBundle)
+
+    return resultBundle
+  }
+
+  private suspend fun processCompositionManifestResources(
+    gatewayModeHeaderValue: String? = null,
+    searchPath: String,
+  ) {
+    val resultBundle =
+      if (gatewayModeHeaderValue.isNullOrEmpty()) {
+        fhirResourceDataSource.getResource(searchPath)
+      } else
+        fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, searchPath)
+
+    processResultBundleEntries(resultBundle)
+  }
+
+  private suspend fun processResultBundleEntries(
+    resultBundle: Bundle,
+  ) {
     resultBundle.entry?.forEach { bundleEntryComponent ->
       when (bundleEntryComponent.resource) {
         is Bundle -> {
@@ -480,45 +502,6 @@ constructor(
               "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.id}",
             )
           }
-        }
-      }
-    }
-
-    return resultBundle
-  }
-
-  private suspend fun processCompositionManifestResources(
-    gatewayModeHeaderValue: String? = null,
-    searchPath: String,
-  ) {
-    val resultBundle =
-      if (gatewayModeHeaderValue.isNullOrEmpty()) {
-        fhirResourceDataSource.getResource(searchPath)
-      } else
-        fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, searchPath)
-
-    resultBundle.entry.forEach { bundleEntryComponent ->
-      when (bundleEntryComponent.resource) {
-        is Bundle -> {
-          val bundle = bundleEntryComponent.resource as Bundle
-          bundle.entry.forEach { entryComponent ->
-            when (entryComponent.resource) {
-              is Bundle -> {
-                val thisBundle = entryComponent.resource as Bundle
-                addOrUpdate(thisBundle)
-                thisBundle.entry.forEach { innerEntryComponent ->
-                  saveListEntryResource(innerEntryComponent)
-                }
-              }
-              else -> saveListEntryResource(entryComponent)
-            }
-          }
-        }
-        else -> {
-          addOrUpdate(bundleEntryComponent.resource)
-          Timber.d(
-            "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.id}",
-          )
         }
       }
     }

@@ -2,8 +2,8 @@
   "resourceType": "PlanDefinition",
   "id": "385987",
   "meta": {
-    "versionId": "10",
-    "lastUpdated": "2023-08-03T17:38:40.439+00:00"
+    "versionId": "29",
+    "lastUpdated": "2023-08-21T09:23:48.487+00:00"
   },
   "contained": [
     {
@@ -74,14 +74,14 @@
           "path": "period.start",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this.birthDate"
+            "expression": "today()"
           }
         },
         {
           "path": "period.end",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this.birthDate + 4017 'days'"
+            "expression": "today() + 365 'day'"
           }
         },
         {
@@ -116,7 +116,7 @@
     },
     {
       "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-1-0-task-activity",
+      "id": "careplan-ipc-0-0-task-activity",
       "title": "IPC Activity",
       "status": "active",
       "description": "This is the IPC scheduled Task.",
@@ -126,7 +126,7 @@
           {
             "system": "http://snomed.info/sct",
             "code": "001",
-            "display": "Administration of IPC Task"
+            "display": "IPC - Interpersonal Counselling"
           }
         ]
       },
@@ -134,11 +134,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "001",
-            "display": "PHQ-9"
+            "code": "42284007001",
+            "display": "IPC - Interpersonal Counselling"
           }
         ],
-        "text": "PHQ-9 (IPC Session 1)"
+        "text": "IPC - Interpersonal Counselling"
       },
       "dosage": [
         {
@@ -146,10 +146,10 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
-              "periodUnit": "d"
+              "duration": 10,
+              "durationUnit": "mo",
+              "period": 1,
+              "periodUnit": "mo"
             }
           }
         }
@@ -157,7 +157,7 @@
     },
     {
       "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-2-0-task-activity",
+      "id": "careplan-ipc-0-1-task-activity",
       "title": "IPC Activity",
       "status": "active",
       "description": "This is the IPC scheduled Task.",
@@ -175,11 +175,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "422840071",
-            "display": "GAD-7"
+            "code": "42284007002",
+            "display": "PHQ-9"
           }
         ],
-        "text": "GAD-7 (IPC Session 1)"
+        "text": "PHQ-9"
       },
       "dosage": [
         {
@@ -187,9 +187,9 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
+              "duration": 10,
+              "durationUnit": "mo",
+              "period": 1,
               "periodUnit": "d"
             }
           }
@@ -198,7 +198,7 @@
     },
     {
       "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-3-0-task-activity",
+      "id": "careplan-ipc-0-2-task-activity",
       "title": "IPC Activity",
       "status": "active",
       "description": "This is the IPC scheduled Task.",
@@ -216,11 +216,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "422840072",
-            "display": "PC-PTSD"
+            "code": "42284007003",
+            "display": "GAD-7"
           }
         ],
-        "text": "PC-PTSD (IPC Session 1)"
+        "text": "GAD-7"
       },
       "dosage": [
         {
@@ -228,9 +228,9 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
+              "duration": 20,
+              "durationUnit": "mo",
+              "period": 1,
               "periodUnit": "d"
             }
           }
@@ -239,7 +239,7 @@
     },
     {
       "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-4-0-task-activity",
+      "id": "careplan-ipc-0-3-task-activity",
       "title": "IPC Activity",
       "status": "active",
       "description": "This is the IPC scheduled Task.",
@@ -257,11 +257,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "422840073",
-            "display": "Mood Rating Scale"
+            "code": "42284007004",
+            "display": "PC-PTSD"
           }
         ],
-        "text": "Mood Rating Scale (IPC Session 1)"
+        "text": "PC-PTSD"
       },
       "dosage": [
         {
@@ -269,9 +269,9 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
+              "duration": 30,
+              "durationUnit": "mo",
+              "period": 1,
               "periodUnit": "d"
             }
           }
@@ -280,7 +280,7 @@
     },
     {
       "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-5-0-task-activity",
+      "id": "careplan-ipc-0-4-task-activity",
       "title": "IPC Activity",
       "status": "active",
       "description": "This is the IPC scheduled Task.",
@@ -298,11 +298,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "422840074",
-            "display": "IPC"
+            "code": "42284007005",
+            "display": "Mood Rating Scale"
           }
         ],
-        "text": "Start IPC (IPC Session 1)"
+        "text": "Mood Rating Scale"
       },
       "dosage": [
         {
@@ -310,9 +310,9 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
+              "duration": 40,
+              "durationUnit": "mo",
+              "period": 1,
               "periodUnit": "d"
             }
           }
@@ -321,17 +321,17 @@
     },
     {
       "resourceType": "ActivityDefinition",
-      "id": "careplan-spi-0-task-activity",
-      "title": "SPI Activity",
+      "id": "careplan-ipc-0-5-task-activity",
+      "title": "IPC Activity",
       "status": "active",
-      "description": "This is the SPI scheduled Task.",
+      "description": "This is the IPC scheduled Task.",
       "kind": "Task",
       "code": {
         "coding": [
           {
             "system": "http://snomed.info/sct",
             "code": "006",
-            "display": "Administration of SPI Task"
+            "display": "Administration of IPC Task"
           }
         ]
       },
@@ -339,11 +339,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "422840075",
-            "display": "SPI"
+            "code": "42284007006",
+            "display": "IPC"
           }
         ],
-        "text": "SPI (IPC Session 1)"
+        "text": "Start IPC"
       },
       "dosage": [
         {
@@ -351,9 +351,9 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
+              "duration": 50,
+              "durationUnit": "mo",
+              "period": 1,
               "periodUnit": "d"
             }
           }
@@ -362,17 +362,17 @@
     },
     {
       "resourceType": "ActivityDefinition",
-      "id": "careplan-sbirt-0-task-activity",
-      "title": "SBRIT Activity",
+      "id": "careplan-ipc-0-6-task-activity",
+      "title": "IPC Activity",
       "status": "active",
-      "description": "This is the SBIRT.",
+      "description": "SPI - Safety Planning Intervention",
       "kind": "Task",
       "code": {
         "coding": [
           {
             "system": "http://snomed.info/sct",
             "code": "007",
-            "display": "Administration of SBIRT Task"
+            "display": "SPI - Safety Planning Intervention"
           }
         ]
       },
@@ -380,11 +380,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "422840076",
-            "display": "SBIRT"
+            "code": "42284007007",
+            "display": "SPI - Safety Planning Intervention"
           }
         ],
-        "text": "SBIRT (IPC Session 1)"
+        "text": "SPI - Safety Planning Intervention"
       },
       "dosage": [
         {
@@ -392,10 +392,10 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
-              "periodUnit": "d"
+              "duration": 40,
+              "durationUnit": "mo",
+              "period": 1,
+              "periodUnit": "mo"
             }
           }
         }
@@ -403,7 +403,7 @@
     },
     {
       "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-1-1-task-activity",
+      "id": "careplan-ipc-0-7-task-activity",
       "title": "IPC Activity",
       "status": "active",
       "description": "This is the IPC scheduled Task.",
@@ -413,7 +413,7 @@
           {
             "system": "http://snomed.info/sct",
             "code": "008",
-            "display": "Administration of IPC Task"
+            "display": "SBIRT - Screening Brief Intervention"
           }
         ]
       },
@@ -421,11 +421,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "4228400701",
-            "display": "PHQ-9"
+            "code": "4228400708",
+            "display": "SBIRT - Screening Brief Intervention"
           }
         ],
-        "text": "PHQ-9 (IPC Session 2)"
+        "text": "SBIRT - Screening Brief Intervention"
       },
       "dosage": [
         {
@@ -433,10 +433,10 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
-              "periodUnit": "d"
+              "duration": 50,
+              "durationUnit": "mo",
+              "period": 1,
+              "periodUnit": "mo"
             }
           }
         }
@@ -444,7 +444,7 @@
     },
     {
       "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-2-1-task-activity",
+      "id": "careplan-ipc-1-0-task-activity",
       "title": "IPC Activity",
       "status": "active",
       "description": "This is the IPC scheduled Task.",
@@ -454,7 +454,7 @@
           {
             "system": "http://snomed.info/sct",
             "code": "009",
-            "display": "Administration of IPC Task"
+            "display": "IPC - Interpersonal Counselling"
           }
         ]
       },
@@ -462,11 +462,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "4228400711",
-            "display": "GAD-7"
+            "code": "42284007009",
+            "display": "IPC - Interpersonal Counselling"
           }
         ],
-        "text": "GAD-7 (IPC Session 2)"
+        "text": "IPC - Interpersonal Counselling"
       },
       "dosage": [
         {
@@ -474,10 +474,10 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
-              "periodUnit": "d"
+              "duration": 80,
+              "durationUnit": "mo",
+              "period": 2,
+              "periodUnit": "mo"
             }
           }
         }
@@ -485,7 +485,7 @@
     },
     {
       "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-3-1-task-activity",
+      "id": "careplan-ipc-1-1-task-activity",
       "title": "IPC Activity",
       "status": "active",
       "description": "This is the IPC scheduled Task.",
@@ -503,11 +503,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "4228400721",
-            "display": "PC-PTSD"
+            "code": "422840070010",
+            "display": "PHQ-9"
           }
         ],
-        "text": "PC-PTSD (IPC Session 2)"
+        "text": "PHQ-9"
       },
       "dosage": [
         {
@@ -515,173 +515,9 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
-              "periodUnit": "d"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-4-1-task-activity",
-      "title": "IPC Activity",
-      "status": "active",
-      "description": "This is the IPC scheduled Task.",
-      "kind": "Task",
-      "code": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "011",
-            "display": "Administration of IPC Task"
-          }
-        ]
-      },
-      "productCodeableConcept": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "4228400731",
-            "display": "Mood Rating Scale"
-          }
-        ],
-        "text": "Mood Rating Scale (IPC Session 2)"
-      },
-      "dosage": [
-        {
-          "sequence": 1,
-          "timing": {
-            "repeat": {
-              "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
-              "periodUnit": "d"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-5-1-task-activity",
-      "title": "IPC Activity",
-      "status": "active",
-      "description": "This is the IPC scheduled Task.",
-      "kind": "Task",
-      "code": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "012",
-            "display": "Administration of IPC Task"
-          }
-        ]
-      },
-      "productCodeableConcept": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "4228400741",
-            "display": "IPC"
-          }
-        ],
-        "text": "Start IPC (IPC Session 2)"
-      },
-      "dosage": [
-        {
-          "sequence": 1,
-          "timing": {
-            "repeat": {
-              "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
-              "periodUnit": "d"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "resourceType": "ActivityDefinition",
-      "id": "careplan-spi-1-task-activity",
-      "title": "SPI Activity",
-      "status": "active",
-      "description": "This is the SPI scheduled Task.",
-      "kind": "Task",
-      "code": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "013",
-            "display": "Administration of SPI Task"
-          }
-        ]
-      },
-      "productCodeableConcept": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "422840075",
-            "display": "SPI"
-          }
-        ],
-        "text": "SPI (IPC Session 2)"
-      },
-      "dosage": [
-        {
-          "sequence": 1,
-          "timing": {
-            "repeat": {
-              "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
-              "periodUnit": "d"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "resourceType": "ActivityDefinition",
-      "id": "careplan-sbirt-1-task-activity",
-      "title": "SBRIT Activity",
-      "status": "active",
-      "description": "This is the SBIRT.",
-      "kind": "Task",
-      "code": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "014",
-            "display": "Administration of SBIRT Task"
-          }
-        ]
-      },
-      "productCodeableConcept": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "422840076",
-            "display": "SBIRT"
-          }
-        ],
-        "text": "SBIRT (IPC Session 2)"
-      },
-      "dosage": [
-        {
-          "sequence": 1,
-          "timing": {
-            "repeat": {
-              "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
+              "duration": 80,
+              "durationUnit": "mo",
+              "period": 2,
               "periodUnit": "d"
             }
           }
@@ -699,7 +535,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "015",
+            "code": "011",
             "display": "Administration of IPC Task"
           }
         ]
@@ -708,52 +544,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "4228400702",
-            "display": "PHQ-9"
-          }
-        ],
-        "text": "PHQ-9 (IPC Session 2)"
-      },
-      "dosage": [
-        {
-          "sequence": 1,
-          "timing": {
-            "repeat": {
-              "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
-              "periodUnit": "d"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-2-2-task-activity",
-      "title": "IPC Activity",
-      "status": "active",
-      "description": "This is the IPC scheduled Task.",
-      "kind": "Task",
-      "code": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "016",
-            "display": "Administration of IPC Task"
-          }
-        ]
-      },
-      "productCodeableConcept": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "4228400712",
+            "code": "42284007011",
             "display": "GAD-7"
           }
         ],
-        "text": "GAD-7 (IPC Session 3)"
+        "text": "GAD-7"
       },
       "dosage": [
         {
@@ -761,214 +556,9 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
-              "periodUnit": "d"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-3-2-task-activity",
-      "title": "IPC Activity",
-      "status": "active",
-      "description": "This is the IPC scheduled Task.",
-      "kind": "Task",
-      "code": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "017",
-            "display": "Administration of IPC Task"
-          }
-        ]
-      },
-      "productCodeableConcept": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "4228400722",
-            "display": "PC-PTSD"
-          }
-        ],
-        "text": "PC-PTSD (IPC Session 3)"
-      },
-      "dosage": [
-        {
-          "sequence": 1,
-          "timing": {
-            "repeat": {
-              "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
-              "periodUnit": "d"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-4-2-task-activity",
-      "title": "IPC Activity",
-      "status": "active",
-      "description": "This is the IPC scheduled Task.",
-      "kind": "Task",
-      "code": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "018",
-            "display": "Administration of IPC Task"
-          }
-        ]
-      },
-      "productCodeableConcept": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "4228400732",
-            "display": "Mood Rating Scale"
-          }
-        ],
-        "text": "Mood Rating Scale (IPC Session 3)"
-      },
-      "dosage": [
-        {
-          "sequence": 1,
-          "timing": {
-            "repeat": {
-              "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
-              "periodUnit": "d"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-5-2-task-activity",
-      "title": "IPC Activity",
-      "status": "active",
-      "description": "This is the IPC scheduled Task.",
-      "kind": "Task",
-      "code": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "019",
-            "display": "Administration of IPC Task"
-          }
-        ]
-      },
-      "productCodeableConcept": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "4228400742",
-            "display": "IPC"
-          }
-        ],
-        "text": "Start IPC (IPC Session 3)"
-      },
-      "dosage": [
-        {
-          "sequence": 1,
-          "timing": {
-            "repeat": {
-              "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
-              "periodUnit": "d"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "resourceType": "ActivityDefinition",
-      "id": "careplan-spi-2-task-activity",
-      "title": "SPI Activity",
-      "status": "active",
-      "description": "This is the SPI scheduled Task.",
-      "kind": "Task",
-      "code": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "020",
-            "display": "Administration of SPI Task"
-          }
-        ]
-      },
-      "productCodeableConcept": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "422840075",
-            "display": "SPI"
-          }
-        ],
-        "text": "SPI (IPC Session 3)"
-      },
-      "dosage": [
-        {
-          "sequence": 1,
-          "timing": {
-            "repeat": {
-              "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
-              "periodUnit": "d"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "resourceType": "ActivityDefinition",
-      "id": "careplan-sbirt-2-task-activity",
-      "title": "SBRIT Activity",
-      "status": "active",
-      "description": "This is the SBIRT.",
-      "kind": "Task",
-      "code": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "021",
-            "display": "Administration of SBIRT Task"
-          }
-        ]
-      },
-      "productCodeableConcept": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "422840076",
-            "display": "SBIRT"
-          }
-        ],
-        "text": "SBIRT (IPC Session 3)"
-      },
-      "dosage": [
-        {
-          "sequence": 1,
-          "timing": {
-            "repeat": {
-              "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
+              "duration": 90,
+              "durationUnit": "mo",
+              "period": 2,
               "periodUnit": "d"
             }
           }
@@ -986,7 +576,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "022",
+            "code": "012",
             "display": "Administration of IPC Task"
           }
         ]
@@ -995,11 +585,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "4228400703",
-            "display": "PHQ-9"
+            "code": "42284007012",
+            "display": "PC-PTSD"
           }
         ],
-        "text": "PHQ-9 (IPC Session 4)"
+        "text": "PC-PTSD"
       },
       "dosage": [
         {
@@ -1007,9 +597,296 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
+              "duration": 100,
+              "durationUnit": "mo",
+              "period": 2,
+              "periodUnit": "d"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-ipc-1-4-task-activity",
+      "title": "IPC Activity",
+      "status": "active",
+      "description": "This is the IPC scheduled Task.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "013",
+            "display": "Administration of IPC Task"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "42284007013",
+            "display": "Mood Rating Scale"
+          }
+        ],
+        "text": "Mood Rating Scale"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 110,
+              "durationUnit": "mo",
+              "period": 2,
+              "periodUnit": "d"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-ipc-1-5-task-activity",
+      "title": "IPC Activity",
+      "status": "active",
+      "description": "This is the IPC scheduled Task.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "014",
+            "display": "Administration of IPC Task"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "42284007014",
+            "display": "IPC"
+          }
+        ],
+        "text": "Start IPC"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 120,
+              "durationUnit": "mo",
+              "period": 2,
+              "periodUnit": "d"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-ipc-1-6-task-activity",
+      "title": "IPC Activity",
+      "status": "active",
+      "description": "This is the IPC scheduled Task.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "015",
+            "display": "SPI - Safety Planning Intervention"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "42284007015",
+            "display": "SPI - Safety Planning Intervention"
+          }
+        ],
+        "text": "SPI - Safety Planning Intervention"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 110,
+              "durationUnit": "mo",
+              "period": 2,
+              "periodUnit": "mo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-ipc-1-7-task-activity",
+      "title": "IPC Activity",
+      "status": "active",
+      "description": "This is the IPC scheduled Task.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "016",
+            "display": "SBIRT - Screening Brief Intervention"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "42284007016",
+            "display": "SBIRT - Screening Brief Intervention"
+          }
+        ],
+        "text": "SBIRT - Screening Brief Intervention"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 120,
+              "durationUnit": "mo",
+              "period": 2,
+              "periodUnit": "mo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-ipc-2-0-task-activity",
+      "title": "IPC Activity",
+      "status": "active",
+      "description": "This is the IPC scheduled Task.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "017",
+            "display": "IPC - Interpersonal Counselling"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "42284007017",
+            "display": "IPC - Interpersonal Counselling"
+          }
+        ],
+        "text": "IPC - Interpersonal Counselling"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 150,
+              "durationUnit": "mo",
+              "period": 3,
+              "periodUnit": "mo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-ipc-2-1-task-activity",
+      "title": "IPC Activity",
+      "status": "active",
+      "description": "This is the IPC scheduled Task.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "018",
+            "display": "Administration of IPC Task"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "42284007018",
+            "display": "PHQ-9"
+          }
+        ],
+        "text": "PHQ-9"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 150,
+              "durationUnit": "mo",
+              "period": 3,
+              "periodUnit": "d"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-ipc-2-2-task-activity",
+      "title": "IPC Activity",
+      "status": "active",
+      "description": "This is the IPC scheduled Task.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "019",
+            "display": "Administration of IPC Task"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "42284007019",
+            "display": "GAD-7"
+          }
+        ],
+        "text": "GAD-7"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 160,
+              "durationUnit": "mo",
+              "period": 3,
               "periodUnit": "d"
             }
           }
@@ -1027,7 +904,7 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "023",
+            "code": "020",
             "display": "Administration of IPC Task"
           }
         ]
@@ -1036,11 +913,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "4228400713",
-            "display": "GAD-7"
+            "code": "42284007020",
+            "display": "PC-PTSD"
           }
         ],
-        "text": "GAD-7 (IPC Session 4)"
+        "text": "PC-PTSD"
       },
       "dosage": [
         {
@@ -1048,9 +925,9 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
+              "duration": 170,
+              "durationUnit": "mo",
+              "period": 3,
               "periodUnit": "d"
             }
           }
@@ -1059,7 +936,130 @@
     },
     {
       "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-3-3-task-activity",
+      "id": "careplan-ipc-2-4-task-activity",
+      "title": "IPC Activity",
+      "status": "active",
+      "description": "This is the IPC scheduled Task.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "021",
+            "display": "Administration of IPC Task"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "42284007021",
+            "display": "Mood Rating Scale"
+          }
+        ],
+        "text": "Mood Rating Scale"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 180,
+              "durationUnit": "mo",
+              "period": 3,
+              "periodUnit": "d"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-ipc-2-5-task-activity",
+      "title": "IPC Activity",
+      "status": "active",
+      "description": "This is the IPC scheduled Task.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "022",
+            "display": "Administration of IPC Task"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "42284007022",
+            "display": "IPC"
+          }
+        ],
+        "text": "Start IPC"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 190,
+              "durationUnit": "mo",
+              "period": 3,
+              "periodUnit": "d"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-ipc-2-6-task-activity",
+      "title": "IPC Activity",
+      "status": "active",
+      "description": "This is the IPC scheduled Task.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "023",
+            "display": "SPI - Safety Planning Intervention"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "42284007023",
+            "display": "SPI - Safety Planning Intervention"
+          }
+        ],
+        "text": "SPI - Safety Planning Intervention"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 180,
+              "durationUnit": "mo",
+              "period": 3,
+              "periodUnit": "mo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-ipc-2-7-task-activity",
       "title": "IPC Activity",
       "status": "active",
       "description": "This is the IPC scheduled Task.",
@@ -1069,7 +1069,7 @@
           {
             "system": "http://snomed.info/sct",
             "code": "024",
-            "display": "Administration of IPC Task"
+            "display": "SBIRT - Screening Brief Intervention"
           }
         ]
       },
@@ -1077,11 +1077,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "4228400723",
-            "display": "PC-PTSD"
+            "code": "42284007024",
+            "display": "SBIRT - Screening Brief Intervention"
           }
         ],
-        "text": "PC-PTSD (IPC Session 4)"
+        "text": "SBIRT - Screening Brief Intervention"
       },
       "dosage": [
         {
@@ -1089,10 +1089,10 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
-              "periodUnit": "d"
+              "duration": 190,
+              "durationUnit": "mo",
+              "period": 3,
+              "periodUnit": "mo"
             }
           }
         }
@@ -1100,7 +1100,7 @@
     },
     {
       "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-4-3-task-activity",
+      "id": "careplan-ipc-3-0-task-activity",
       "title": "IPC Activity",
       "status": "active",
       "description": "This is the IPC scheduled Task.",
@@ -1110,7 +1110,7 @@
           {
             "system": "http://snomed.info/sct",
             "code": "025",
-            "display": "Administration of IPC Task"
+            "display": "IPC - Interpersonal Counselling"
           }
         ]
       },
@@ -1118,11 +1118,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "4228400733",
-            "display": "Mood Rating Scale"
+            "code": "42284007025",
+            "display": "IPC - Interpersonal Counselling"
           }
         ],
-        "text": "Mood Rating Scale (IPC Session 4)"
+        "text": "IPC - Interpersonal Counselling"
       },
       "dosage": [
         {
@@ -1130,10 +1130,10 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
-              "periodUnit": "d"
+              "duration": 220,
+              "durationUnit": "mo",
+              "period": 4,
+              "periodUnit": "mo"
             }
           }
         }
@@ -1141,7 +1141,7 @@
     },
     {
       "resourceType": "ActivityDefinition",
-      "id": "careplan-ipc-5-3-task-activity",
+      "id": "careplan-ipc-3-1-task-activity",
       "title": "IPC Activity",
       "status": "active",
       "description": "This is the IPC scheduled Task.",
@@ -1159,11 +1159,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "4228400743",
-            "display": "IPC"
+            "code": "42284007026",
+            "display": "PHQ-9"
           }
         ],
-        "text": "Start IPC (IPC Session 4)"
+        "text": "PHQ-9"
       },
       "dosage": [
         {
@@ -1171,9 +1171,9 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
+              "duration": 220,
+              "durationUnit": "mo",
+              "period": 4,
               "periodUnit": "d"
             }
           }
@@ -1182,17 +1182,17 @@
     },
     {
       "resourceType": "ActivityDefinition",
-      "id": "careplan-spi-3-task-activity",
-      "title": "SPI Activity",
+      "id": "careplan-ipc-3-2-task-activity",
+      "title": "IPC Activity",
       "status": "active",
-      "description": "This is the SPI scheduled Task.",
+      "description": "This is the IPC scheduled Task.",
       "kind": "Task",
       "code": {
         "coding": [
           {
             "system": "http://snomed.info/sct",
             "code": "027",
-            "display": "Administration of SPI Task"
+            "display": "Administration of IPC Task"
           }
         ]
       },
@@ -1200,11 +1200,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "422840075",
-            "display": "SPI"
+            "code": "42284007027",
+            "display": "GAD-7"
           }
         ],
-        "text": "SPI (IPC Session 4)"
+        "text": "GAD-7"
       },
       "dosage": [
         {
@@ -1212,9 +1212,9 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
+              "duration": 230,
+              "durationUnit": "mo",
+              "period": 4,
               "periodUnit": "d"
             }
           }
@@ -1223,17 +1223,17 @@
     },
     {
       "resourceType": "ActivityDefinition",
-      "id": "careplan-sbirt-3-task-activity",
-      "title": "SBRIT Activity",
+      "id": "careplan-ipc-3-3-task-activity",
+      "title": "IPC Activity",
       "status": "active",
-      "description": "This is the SBIRT.",
+      "description": "This is the IPC scheduled Task.",
       "kind": "Task",
       "code": {
         "coding": [
           {
             "system": "http://snomed.info/sct",
             "code": "028",
-            "display": "Administration of SBIRT Task"
+            "display": "Administration of IPC Task"
           }
         ]
       },
@@ -1241,11 +1241,11 @@
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "422840076",
-            "display": "SBIRT"
+            "code": "42284007028",
+            "display": "PC-PTSD"
           }
         ],
-        "text": "SBIRT (IPC Session 4)"
+        "text": "PC-PTSD"
       },
       "dosage": [
         {
@@ -1253,10 +1253,174 @@
           "timing": {
             "repeat": {
               "count": 1,
-              "duration": 365,
-              "durationUnit": "d",
-              "period": 0,
+              "duration": 240,
+              "durationUnit": "mo",
+              "period": 4,
               "periodUnit": "d"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-ipc-3-4-task-activity",
+      "title": "IPC Activity",
+      "status": "active",
+      "description": "This is the IPC scheduled Task.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "029",
+            "display": "Administration of IPC Task"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "42284007029",
+            "display": "Mood Rating Scale"
+          }
+        ],
+        "text": "Mood Rating Scale"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 250,
+              "durationUnit": "mo",
+              "period": 4,
+              "periodUnit": "d"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-ipc-3-5-task-activity",
+      "title": "IPC Activity",
+      "status": "active",
+      "description": "This is the IPC scheduled Task.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "030",
+            "display": "Administration of IPC Task"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "42284007030",
+            "display": "IPC"
+          }
+        ],
+        "text": "Start IPC"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 260,
+              "durationUnit": "mo",
+              "period": 4,
+              "periodUnit": "d"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-ipc-3-6-task-activity",
+      "title": "IPC Activity",
+      "status": "active",
+      "description": "This is the IPC scheduled Task.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "031",
+            "display": "SPI - Safety Planning Intervention"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "42284007031",
+            "display": "SPI - Safety Planning Intervention"
+          }
+        ],
+        "text": "SPI - Safety Planning Intervention"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 250,
+              "durationUnit": "mo",
+              "period": 4,
+              "periodUnit": "mo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-ipc-3-7-task-activity",
+      "title": "IPC Activity",
+      "status": "active",
+      "description": "This is the IPC scheduled Task.",
+      "kind": "Task",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "032",
+            "display": "SBIRT - Screening Brief Intervention"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "42284007032",
+            "display": "SBIRT - Screening Brief Intervention"
+          }
+        ],
+        "text": "SBIRT - Screening Brief Intervention"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 260,
+              "durationUnit": "mo",
+              "period": 4,
+              "periodUnit": "mo"
             }
           }
         }
@@ -1302,146 +1466,192 @@
           }
         ]
       },
+      "definitionCanonical": "#careplan-ipc-0-0-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-0-1-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-0-2-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-0-3-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-0-4-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-0-5-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-0-6-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-0-7-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
       "definitionCanonical": "#careplan-ipc-1-0-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-ipc-2-0-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-ipc-3-0-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-ipc-4-0-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-ipc-5-0-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-spi-0-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-sbirt-0-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
     },
     {
       "prefix": "1",
@@ -1464,145 +1674,7 @@
         ]
       },
       "definitionCanonical": "#careplan-ipc-1-1-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-ipc-2-1-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-ipc-3-1-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-ipc-4-1-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-ipc-5-1-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-spi-1-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-sbirt-1-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
     },
     {
       "prefix": "1",
@@ -1625,145 +1697,7 @@
         ]
       },
       "definitionCanonical": "#careplan-ipc-1-2-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-ipc-2-2-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-ipc-3-2-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-ipc-4-2-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-ipc-5-2-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-spi-2-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
-    },
-    {
-      "prefix": "1",
-      "priority": "routine",
-      "condition": [
-        {
-          "kind": "applicability",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
-          }
-        }
-      ],
-      "type": {
-        "coding": [
-          {
-            "code": "clinical-protocol",
-            "display": "Clinical Protocol"
-          }
-        ]
-      },
-      "definitionCanonical": "#careplan-sbirt-2-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
     },
     {
       "prefix": "1",
@@ -1786,7 +1720,168 @@
         ]
       },
       "definitionCanonical": "#careplan-ipc-1-3-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-1-4-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-1-5-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-1-6-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-1-7-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-2-0-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-2-1-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-2-2-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
     },
     {
       "prefix": "1",
@@ -1809,7 +1904,168 @@
         ]
       },
       "definitionCanonical": "#careplan-ipc-2-3-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-2-4-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-2-5-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-2-6-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-2-7-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-3-0-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-3-1-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.first().resource is Patient"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-ipc-3-2-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
     },
     {
       "prefix": "1",
@@ -1832,7 +2088,7 @@
         ]
       },
       "definitionCanonical": "#careplan-ipc-3-3-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
     },
     {
       "prefix": "1",
@@ -1854,8 +2110,8 @@
           }
         ]
       },
-      "definitionCanonical": "#careplan-ipc-4-3-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
+      "definitionCanonical": "#careplan-ipc-3-4-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
     },
     {
       "prefix": "1",
@@ -1877,8 +2133,8 @@
           }
         ]
       },
-      "definitionCanonical": "#careplan-ipc-5-3-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
+      "definitionCanonical": "#careplan-ipc-3-5-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
     },
     {
       "prefix": "1",
@@ -1900,8 +2156,8 @@
           }
         ]
       },
-      "definitionCanonical": "#careplan-spi-3-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
+      "definitionCanonical": "#careplan-ipc-3-6-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
     },
     {
       "prefix": "1",
@@ -1923,8 +2179,8 @@
           }
         ]
       },
-      "definitionCanonical": "#careplan-sbirt-3-task-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/385988"
+      "definitionCanonical": "#careplan-ipc-3-7-task-activity",
+      "transform": "https://fhir.demo.smartregister.org/fhir/StructureMap/385988"
     }
   ]
 }
