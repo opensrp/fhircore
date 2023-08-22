@@ -65,7 +65,7 @@
             @style/TextAppearance.Material3.BodyLarge
         </item>
         <item name="questionnaireHelpHeaderStyle">@style/AppTheme.HelpHeaderStyle</item>
-        <item name="questionnaireMediaImageStyle">@style/AppTheme.MediaImageStyle</item>
+<!--        <item name="questionnaireMediaImageStyle">@style/AppTheme.MediaImageStyle</item>-->
     </style>
 
     <style name="AppTheme.SubmitButtonStyle" parent="Questionnaire.SubmitButtonStyle">
