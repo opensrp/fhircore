@@ -47,4 +47,7 @@ enum class ApplicationWorkflow {
 
   /** A workflow for changing a managing entity */
   CHANGE_MANAGING_ENTITY,
+
+  /** Represents null/nothing */
+  NOTHING
 }
