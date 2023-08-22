@@ -454,17 +454,13 @@ constructor(
     }
 
     fun generateListTaskServiceStatus(tasks: List<Task>): String {
-      val anyOverDueTask = tasks.find { task -> task.isOverDue() }
-      val anyDueTask = tasks.find { task -> task.isDue() }
-      val anyUpcomingTask = tasks.find { task -> task.isUpcoming() }
-      val anyInProgressTask = tasks.find { task -> task.status == Task.TaskStatus.INPROGRESS }
-      val anyExpiredTask = tasks.find { task -> task.status == Task.TaskStatus.CANCELLED }
-      val anyCompletedTask = tasks.find { task -> task.status == Task.TaskStatus.COMPLETED }
-
       val finalTaskForStatus =
-        anyOverDueTask
-          ?: anyDueTask ?: anyUpcomingTask ?: anyInProgressTask ?: anyExpiredTask
-            ?: anyCompletedTask ?: Task()
+        tasks.find { task -> task.isOverDue() }
+          ?: tasks.find { task -> task.isDue() } ?: tasks.find { task -> task.isUpcoming() }
+            ?: tasks.find { task -> task.status == Task.TaskStatus.INPROGRESS }
+            ?: tasks.find { task -> task.status == Task.TaskStatus.CANCELLED }
+            ?: tasks.find { task -> task.status == Task.TaskStatus.COMPLETED } ?: Task()
+
       return generateTaskServiceStatus(finalTaskForStatus)
     }
   }
