@@ -745,7 +745,7 @@ constructor(
     when (resource) {
       is Task -> {
         if (resource.status != Task.TaskStatus.COMPLETED) {
-          resource.status = Task.TaskStatus.CANCELLED
+          resource.status = Task.TaskStatus.READY
           resource.lastModified = Date()
         }
       }
