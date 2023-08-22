@@ -327,24 +327,18 @@ class RulesEngineServiceTest : RobolectricTest() {
   }
 
   @Test
-  fun `generateListTaskServiceStatus() should return UPCOMING when list have Task#status is INPROGRESS`() {
+  fun `generateListTaskServiceStatus() should return UPCOMING when list have Task#status is REQUESTED`() {
     val taskList = ArrayList<Task>()
     val task0 = Task().apply { status = Task.TaskStatus.REQUESTED }
-    val task1 = Task().apply { status = Task.TaskStatus.INPROGRESS }
     val task2 = Task().apply { status = Task.TaskStatus.COMPLETED }
     val task3 = Task().apply { status = Task.TaskStatus.RECEIVED }
-    val task4 = Task().apply { status = Task.TaskStatus.CANCELLED }
 
     taskList.add(task0)
-    taskList.add(task1)
     taskList.add(task2)
     taskList.add(task3)
-    taskList.add(task4)
-
-    taskList.add(task0)
 
     Assert.assertEquals(
-      ServiceStatus.IN_PROGRESS.name,
+      ServiceStatus.UPCOMING.name,
       rulesEngineService.generateListTaskServiceStatus(taskList),
     )
   }

@@ -50,7 +50,6 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.isDue
 import org.smartregister.fhircore.engine.util.extension.isOverDue
-import org.smartregister.fhircore.engine.util.extension.isUpcoming
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
@@ -456,7 +455,12 @@ constructor(
     fun generateListTaskServiceStatus(tasks: List<Task>): String {
       val finalTaskForStatus =
         tasks.find { task -> task.isOverDue() }
-          ?: tasks.find { task -> task.isDue() } ?: tasks.find { task -> task.isUpcoming() }
+          ?: tasks.find { task ->
+            (task.status == Task.TaskStatus.REQUESTED ||
+              task.status == Task.TaskStatus.NULL ||
+              task.status == Task.TaskStatus.RECEIVED)
+          }
+            ?: tasks.find { task -> task.isDue() }
             ?: tasks.find { task -> task.status == Task.TaskStatus.INPROGRESS }
             ?: tasks.find { task -> task.status == Task.TaskStatus.CANCELLED }
             ?: tasks.find { task -> task.status == Task.TaskStatus.COMPLETED } ?: Task()
