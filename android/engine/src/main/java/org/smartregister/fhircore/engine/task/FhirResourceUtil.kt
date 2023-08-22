@@ -28,9 +28,14 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.event.EventType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.executionStartIsBeforeOrToday
 import org.smartregister.fhircore.engine.util.extension.expiredConcept
@@ -41,12 +46,12 @@ import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
 @Singleton
-class FhirTaskUtil
+class FhirResourceUtil
 @Inject
 constructor(
   @ApplicationContext val appContext: Context,
   val defaultRepository: DefaultRepository,
-  val fhirResourceClosureUtil: FhirResourceClosureUtil,
+  val configurationRegistry: ConfigurationRegistry,
 ) {
 
   /**
@@ -95,7 +100,7 @@ constructor(
                     carePlan.status = CarePlan.CarePlanStatus.COMPLETED
                     defaultRepository.update(carePlan)
                     // close related resources
-                    fhirResourceClosureUtil.closeRelatedResources(carePlan)
+                    closeRelatedResources(carePlan)
                   }
                 }
                 .onFailure {
@@ -180,4 +185,17 @@ constructor(
         defaultRepository.fhirEngine.get<Task>(it.extractId()).status.isIn(TaskStatus.COMPLETED)
       }
       ?: false
+
+  suspend fun closeRelatedResources(resource: Resource) {
+    val appRegistry =
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+
+    appRegistry.eventWorkflows
+      .filter { it.eventType == EventType.RESOURCE_CLOSURE }
+      .forEach { eventWorkFlow ->
+        eventWorkFlow.eventResources.forEach { eventResource ->
+          defaultRepository.updateResourcesRecursively(eventResource, resource)
+        }
+      }
+  }
 }

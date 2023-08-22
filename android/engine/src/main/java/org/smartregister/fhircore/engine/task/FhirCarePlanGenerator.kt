@@ -73,7 +73,7 @@ constructor(
   val fhirPathEngine: FHIRPathEngine,
   val transformSupportServices: TransformSupportServices,
   val defaultRepository: DefaultRepository,
-  val fhirTaskUtil: FhirTaskUtil,
+  val fhirTaskUtil: FhirResourceUtil,
 ) {
   private val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
