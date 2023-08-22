@@ -353,19 +353,6 @@ fun String.resourceClassType(): Class<out Resource> =
 fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")
 
 /**
- * A function that extracts only the Resource name part of a resource logicalId.
- *
- * Examples:
- * 1. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/2" returns
- *
- * ```
- *    "Group".
- * ```
- * 2. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4" returns "Group".
- */
-fun String.extractResourceTypeName() = this.substringBefore("/")
-
-/**
  * This suspend function updates the due date of the dependents of the current [Task], based on the
  * date of a related [Immunization] [Task]. The function loops through all the tasks that are
  * part-of the current task, loads the dependent tasks and their related immunization resources from

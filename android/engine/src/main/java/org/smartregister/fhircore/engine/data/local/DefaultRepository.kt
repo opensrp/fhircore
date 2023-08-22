@@ -68,7 +68,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
-import org.smartregister.fhircore.engine.util.extension.extractResourceTypeName
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
@@ -702,7 +701,7 @@ constructor(
     val computedValuesMap = mutableMapOf<String, Any>()
     initialComputedValuesMap.forEach { entry ->
       computedValuesMap[entry.key] =
-        "${entry.value.toString().extractResourceTypeName()}/${entry.value.toString().extractLogicalIdUuid()}"
+        "${entry.value.toString().substringBefore("/")}/${entry.value.toString().extractLogicalIdUuid()}"
     }
 
     Timber.i("Computed values map = ${computedValuesMap.values}")
@@ -737,7 +736,7 @@ constructor(
         Timber.i(
           "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}",
         )
-        if (fhirPathDataExtractor.filterRelatedResource(resource, resourceConfig)) {
+        if (filterRelatedResource(resource, resourceConfig)) {
           closeResource(resource, resourceConfig)
         }
       }
@@ -771,6 +770,13 @@ constructor(
       is ServiceRequest -> resource.status = ServiceRequest.ServiceRequestStatus.REVOKED
     }
     fhirEngine.update(resource)
+  }
+
+  fun filterRelatedResource(resource: Resource, resourceConfig: ResourceConfig): Boolean {
+    return resourceConfig.filterFhirPathExpressions?.any { filterFhirPathExpression ->
+      fhirPathDataExtractor.extractValue(resource, filterFhirPathExpression.key) ==
+        filterFhirPathExpression.value
+    } == true
   }
 
   /**
