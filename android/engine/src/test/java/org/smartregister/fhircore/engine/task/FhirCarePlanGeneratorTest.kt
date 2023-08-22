@@ -87,6 +87,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers
 import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.event.EventTriggerCondition
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
@@ -132,7 +133,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   private var encounter = Encounter()
   private var opv0 = Task()
   private var opv1 = Task()
-  private val fhirResourceClosureUtil: FhirResourceClosureUtil = mockk()
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   @Before
   fun setup() {
@@ -148,7 +150,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         FhirResourceUtil(
           appContext = ApplicationProvider.getApplicationContext(),
           defaultRepository = defaultRepository,
-          fhirResourceClosureUtil = fhirResourceClosureUtil,
+          configurationRegistry = configurationRegistry,
         ),
       )
 

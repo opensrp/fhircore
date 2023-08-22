@@ -48,7 +48,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
-  val fhirTaskUtil: FhirResourceUtil,
+  val fhirResourceUtil: FhirResourceUtil,
 ) : CoroutineWorker(context, workerParams) {
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
@@ -78,7 +78,7 @@ constructor(
         carePlan.status = CarePlan.CarePlanStatus.COMPLETED
         defaultRepository.update(carePlan)
         // close related resources
-        fhirTaskUtil.closeRelatedResources(carePlan)
+        fhirResourceUtil.closeRelatedResources(carePlan)
       }
 
       val updatedLastOffset =
