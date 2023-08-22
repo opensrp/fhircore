@@ -141,6 +141,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     every { defaultRepository.dispatcherProvider } returns coroutineTestRule.testDispatcherProvider
     every { defaultRepository.fhirEngine } returns fhirEngine
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns emptyList()
+    coEvery { defaultRepository.update(any()) } just runs
 
     fhirTaskUtil =
       spyk(
