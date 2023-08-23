@@ -369,7 +369,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
   fun testThatLogoutLocalWithAccount() {
     val account = Account("testAccountName", "testAccountType")
     every { tokenAuthenticator.findAccount() } returns account
-    every { accountManager.invalidateAuthToken(any(), any()) }
+    every { accountManager.invalidateAuthToken(any(), any()) } just runs
     every { accountManager.peekAuthToken(any(), any()) } returns ""
     accountAuthenticator.logoutLocal()
     verify { accountManager.invalidateAuthToken(account.type, AUTH_TOKEN_TYPE) }
@@ -378,7 +378,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
   @Test
   fun testThatLogoutLocalNoAccount() {
     every { tokenAuthenticator.findAccount() } returns null
-    every { accountManager.invalidateAuthToken(any(), any()) }
+    every { accountManager.invalidateAuthToken(any(), any()) } just runs
     every { accountManager.peekAuthToken(any(), any()) } returns ""
     val value = accountAuthenticator.logoutLocal()
     assertFalse(value)
