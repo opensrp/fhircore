@@ -22,14 +22,12 @@ import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
-import java.util.EnumSet.of
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Reference
@@ -427,8 +425,8 @@ constructor(
   companion object {
     const val HAPI_MDM_TAG = "HAPI-MDM"
     const val LINKED_CHILD_AGE_LIMIT = 20
-    const val SYSTEM = "http://smartregister.org/fhir/organization-tag"
-    const val DISPLAY = "Practitioner Organization"
+    const val ORGANISATION_SYSTEM = "http://smartregister.org/fhir/organization-tag"
+    const val ORGANISATION_DISPLAY = "Practitioner Organization"
   }
 }
 
@@ -450,5 +448,7 @@ fun SharedPreferencesHelper.organisationCode() =
 
 infix fun Patient.belongsTo(code: String) =
   meta.tag.any {
-    it.code == code && it.system == HivRegisterDao.SYSTEM && it.display == HivRegisterDao.DISPLAY
+    it.code == code &&
+      it.system == HivRegisterDao.ORGANISATION_SYSTEM &&
+      it.display == HivRegisterDao.ORGANISATION_DISPLAY
   }
