@@ -106,7 +106,8 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var configRulesExecutor: ConfigRulesExecutor
   private lateinit var spiedConfigService: ConfigService
-  private lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   @Before
   fun setUp() {
@@ -115,7 +116,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     fhirEngine = mockk(relaxUnitFun = true)
     sharedPreferenceHelper = SharedPreferencesHelper(application, gson)
     spiedConfigService = spyk(configService)
-    fhirPathDataExtractor = mockk()
+    fhirPathDataExtractor = fhirPathDataExtractor
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,

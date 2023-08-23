@@ -150,7 +150,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           configService = configService,
           configRulesExecutor = configRulesExecutor,
-          fhirPathDataExtractor = mockk(),
+          fhirPathDataExtractor = fhirPathDataExtractor,
         ),
       )
 

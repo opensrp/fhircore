@@ -99,7 +99,7 @@ class WorkManagerExtensionsTest : RobolectricTest() {
       return FhirTaskStatusUpdateWorker(
         appContext = appContext,
         workerParams = workerParameters,
-        fhirTaskUtil = fhirResourceUtil,
+        fhirResourceUtil = fhirResourceUtil,
         dispatcherProvider =
           this@WorkManagerExtensionsTest.coroutineTestRule.testDispatcherProvider,
       )

@@ -94,7 +94,7 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           configService = mockk(),
           configRulesExecutor = mockk(),
-          fhirPathDataExtractor = mockk(),
+          fhirPathDataExtractor = fhirPathDataExtractor,
         ),
       )
 

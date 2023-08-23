@@ -46,6 +46,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -55,7 +56,7 @@ import org.smartregister.fhircore.engine.util.extension.toCoding
 import org.smartregister.fhircore.engine.util.extension.today
 
 @HiltAndroidTest
-class FhirTaskUtilTest : RobolectricTest() {
+class FhirResourceUtilTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   private lateinit var fhirTaskUtil: FhirResourceUtil
@@ -68,7 +69,7 @@ class FhirTaskUtilTest : RobolectricTest() {
     hiltAndroidRule.inject()
     fhirEngine = spyk(FhirEngineProvider.getInstance(ApplicationProvider.getApplicationContext()))
     defaultRepository = mockk()
-    configurationRegistry = mockk()
+    configurationRegistry = Faker.buildTestConfigurationRegistry()
     every { defaultRepository.fhirEngine } returns fhirEngine
     fhirTaskUtil =
       spyk(

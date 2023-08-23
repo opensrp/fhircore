@@ -80,7 +80,8 @@ class LibraryEvaluatorTest : RobolectricTest() {
   private var evaluatorId = "ANCRecommendationA2"
   private var context = "Patient"
   private var contextLabel = "mom-with-anemia"
-  val fhirPathDataExtractor = mockk<FhirPathDataExtractor>()
+
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   @Before
   fun setUp() {

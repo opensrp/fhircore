@@ -83,7 +83,8 @@ class RegisterRepositoryTest : RobolectricTest() {
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val patient = Faker.buildPatient(PATIENT_ID)
   private lateinit var registerRepository: RegisterRepository
-  private val fhirPathDataExtractor = mockk<FhirPathDataExtractor>()
+
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   @Before
   fun setUp() {
