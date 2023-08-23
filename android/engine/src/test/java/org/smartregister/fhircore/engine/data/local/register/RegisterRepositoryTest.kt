@@ -53,6 +53,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 private const val PATIENT_REGISTER = "patientRegister"
 private const val PATIENT_ID = "12345"
@@ -83,6 +84,8 @@ class RegisterRepositoryTest : RobolectricTest() {
   private val patient = Faker.buildPatient(PATIENT_ID)
   private lateinit var registerRepository: RegisterRepository
 
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -95,6 +98,7 @@ class RegisterRepositoryTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           configService = mockk(),
           configRulesExecutor = mockk(),
+          fhirPathDataExtractor = fhirPathDataExtractor,
         ),
       )
 
