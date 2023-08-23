@@ -21,6 +21,7 @@ import com.google.android.fhir.search.Search
 import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -77,6 +78,7 @@ constructor(
       currentPage = currentPage,
       pageSize = registerConfiguration.pageSize,
       configRules = registerConfiguration.configRules,
+      excludeDeceasePatients = registerConfiguration.excludeDeceasedPatients,
     )
   }
 
@@ -87,6 +89,7 @@ constructor(
     currentPage: Int? = null,
     pageSize: Int? = null,
     configRules: List<RuleConfig>?,
+    excludeDeceasePatients: Boolean,
   ): List<RepositoryResourceData> {
     val baseResourceConfig = fhirResourceConfig.baseResource
     val relatedResourcesConfig = fhirResourceConfig.relatedResources
@@ -113,28 +116,42 @@ constructor(
         .onFailure { Timber.e(it, "Error retrieving resources. Empty list returned by default") }
         .getOrDefault(emptyList())
 
-    return baseFhirResources.map { baseFhirResource ->
-      val retrievedRelatedResources =
-        withContext(dispatcherProvider.io()) {
-          retrieveRelatedResources(
-            resources = listOf(baseFhirResource),
-            relatedResourcesConfigs = relatedResourcesConfig,
-            relatedResourceWrapper = RelatedResourceWrapper(),
-            configComputedRuleValues = configComputedRuleValues,
-          )
-        }
-      RepositoryResourceData(
-        resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
-        resource = baseFhirResource,
-        relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
-        relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
-        secondaryRepositoryResourceData =
+    return filterDeceasedPatients(baseFhirResources, excludeDeceasePatients)
+      .map { baseFhirResource ->
+        val retrievedRelatedResources =
           withContext(dispatcherProvider.io()) {
-            secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData(filterActiveResources)
-          },
-      )
-    }
+            retrieveRelatedResources(
+              resources = listOf(baseFhirResource),
+              relatedResourcesConfigs = relatedResourcesConfig,
+              relatedResourceWrapper = RelatedResourceWrapper(),
+              configComputedRuleValues = configComputedRuleValues,
+            )
+          }
+        RepositoryResourceData(
+          resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
+          resource = baseFhirResource,
+          relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
+          relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
+          secondaryRepositoryResourceData =
+            withContext(dispatcherProvider.io()) {
+              secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData(
+                filterActiveResources,
+              )
+            },
+        )
+      }
   }
+
+  private fun filterDeceasedPatients(
+    resources: List<Resource>,
+    excludeDeceasePatients: Boolean
+  ) = resources
+    .filterNot {
+      excludeDeceasePatients &&
+        it is Patient &&
+        (it.hasDeceasedBooleanType() && it.deceasedBooleanType.booleanValue() ||
+          it.hasDeceasedDateTimeType() && it.deceasedDateTimeType.value != null)
+    }
 
   /** This function fetches other resources that are not linked to the base/primary resource. */
   private suspend fun List<FhirResourceConfig>?.retrieveSecondaryRepositoryResourceData(
@@ -144,10 +161,11 @@ constructor(
     this?.forEach {
       secondaryRepositoryResourceDataLinkedList.addAll(
         searchResourcesRecursively(
-          fhirResourceConfig = it,
           filterActiveResources = filterActiveResources,
+          fhirResourceConfig = it,
           secondaryResourceConfigs = null,
           configRules = null,
+          excludeDeceasePatients = true,
         ),
       )
     }

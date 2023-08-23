@@ -44,4 +44,5 @@ data class RegisterConfiguration(
       ActiveResourceFilterConfig(resourceType = ResourceType.Group, active = true),
     ),
   val configRules: List<RuleConfig>? = null,
+  val excludeDeceasedPatients: Boolean = true,
 ) : Configuration()
