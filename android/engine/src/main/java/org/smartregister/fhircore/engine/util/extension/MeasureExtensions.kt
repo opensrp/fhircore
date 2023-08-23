@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Search
 import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.DateTimeType
@@ -140,6 +141,7 @@ suspend inline fun retrievePreviouslyGeneratedMeasureReports(
       value = of(DateTimeType(endDateFormatted))
       prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
     },
+    operation = Operation.AND,
   )
   search.filter(MeasureReport.MEASURE, { value = measureUrl })
   subjects.forEach { search.filter(MeasureReport.SUBJECT, { value = it }) }
