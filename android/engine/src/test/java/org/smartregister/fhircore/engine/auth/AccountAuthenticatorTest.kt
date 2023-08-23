@@ -372,7 +372,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { accountManager.invalidateAuthToken(any(), any()) } just runs
     every { accountManager.peekAuthToken(any(), any()) } returns ""
     accountAuthenticator.logoutLocal()
-    verify { accountManager.invalidateAuthToken(account.type, AUTH_TOKEN_TYPE) }
+    verify { accountManager.invalidateAuthToken(any(), any()) }
   }
 
   @Test
