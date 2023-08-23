@@ -22,12 +22,14 @@ import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
+import java.util.EnumSet.of
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Reference
@@ -46,6 +48,7 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.PatientDao
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.activelyBreastfeeding
 import org.smartregister.fhircore.engine.util.extension.canonical
 import org.smartregister.fhircore.engine.util.extension.canonicalName
@@ -78,13 +81,19 @@ constructor(
   val configurationRegistry: ConfigurationRegistry
 ) : RegisterDao, PatientDao {
 
+  private val code = defaultRepository.sharedPreferencesHelper.organisationCode()
+
   fun isValidPatient(patient: Patient): Boolean =
     patient.active &&
       !patient.hasDeceased() &&
       patient.hasName() &&
       patient.hasGender() &&
-      patient.meta.tag.none { it.code.equals(HAPI_MDM_TAG, true) }
+      patient.meta.tag.none { it.code.equals(HAPI_MDM_TAG, true) } &&
+      patient.belongsTo(code)
 
+  init {
+    Timber.e(code)
+  }
   fun hivPatientIdentifier(patient: Patient): String =
     // would either be an ART or HCC number
     patient.extractOfficialIdentifier() ?: ResourceValue.BLANK
@@ -418,6 +427,8 @@ constructor(
   companion object {
     const val HAPI_MDM_TAG = "HAPI-MDM"
     const val LINKED_CHILD_AGE_LIMIT = 20
+    const val SYSTEM = "http://smartregister.org/fhir/organization-tag"
+    const val DISPLAY = "Practitioner Organization"
   }
 }
 
@@ -433,3 +444,11 @@ suspend fun DefaultRepository.isPatientPregnant(patient: Patient) =
 
 suspend fun DefaultRepository.isPatientBreastfeeding(patient: Patient) =
   patientConditions(patient.logicalId).activelyBreastfeeding()
+
+fun SharedPreferencesHelper.organisationCode() =
+  read(ResourceType.Organization.name, null)?.filter { it.isDigit() } ?: ""
+
+infix fun Patient.belongsTo(code: String) =
+  meta.tag.any {
+    it.code == code && it.system == HivRegisterDao.SYSTEM && it.display == HivRegisterDao.DISPLAY
+  }
