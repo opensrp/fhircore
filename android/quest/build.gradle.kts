@@ -149,7 +149,7 @@ android {
     dataBinding = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.4.3" }
 
   testOptions {
     animationsDisabled = true
