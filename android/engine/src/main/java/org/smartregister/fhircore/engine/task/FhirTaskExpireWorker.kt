@@ -34,7 +34,7 @@ constructor(
   @Assisted val context: Context,
   @Assisted workerParams: WorkerParameters,
   val defaultRepository: DefaultRepository,
-  val fhirTaskUtil: FhirTaskUtil,
+  val fhirTaskUtil: FhirResourceUtil,
   val dispatcherProvider: DispatcherProvider,
 ) : CoroutineWorker(context, workerParams) {
 
