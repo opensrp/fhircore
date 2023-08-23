@@ -1,0 +1,105 @@
+map "http://fhir.mpower-social.com:7070/fhir/StructureMap/6482" = "mPower Eligible Couple Visit"
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+
+group ChildVisit(source questionnaireResponse : QuestionnaireResponse, target bundle: Bundle) {
+    questionnaireResponse -> bundle.type = "collection" "r_bundle_type";
+    questionnaireResponse -> evaluate(questionnaireResponse, $this.subject) as refPatient then extractEncounter(questionnaireResponse, bundle, refPatient) "r_bundle_entries";
+}
+
+group extractEncounter(source questionnaireResponse : QuestionnaireResponse, target bundle : Bundle, source refPatient : Reference) {
+    questionnaireResponse -> bundle.entry as entry, entry.resource = create('Task') as task then ExtractTask(questionnaireResponse, refPatient, task) "r_extract_task";
+
+    questionnaireResponse -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then {
+        questionnaireResponse -> encounter.id = uuid() "r_en_id";
+        questionnaireResponse -> encounter.status = 'finished' "r_en_st";
+        questionnaireResponse -> encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH", "home health") "r_en_cls";
+        questionnaireResponse -> encounter.type = create('CodeableConcept') as concept then {
+            questionnaireResponse -> concept.coding = c("https://www.mpower-social.com/", "elco_visit") as coding then {
+                questionnaireResponse -> coding.display = 'Eligible Couple Visit' "r_en_cod_disp";
+            } "r_en_cc_cod";
+            questionnaireResponse -> concept.text = 'Eligible Couple Visit' "r_en_typ_text";
+        } "r_en_typ";
+        questionnaireResponse -> encounter.priority = create('CodeableConcept') as concept then {
+            questionnaireResponse -> concept.coding = c("http://terminology.hl7.org/ValueSet/v3-ActPriority", "EL") as coding then {
+                questionnaireResponse -> coding.display = 'Elective' "r_en_cod_disp";
+            } "r_en_cc_cod";
+            questionnaireResponse -> concept.text = 'Elective' "r_en_prio_text";
+        } "r_en_prio";
+        questionnaireResponse.subject as subject -> encounter.subject = subject "r_en_sub";
+        questionnaireResponse -> encounter.period = create('Period') as enPeriod then {
+            questionnaireResponse -> enPeriod.start = evaluate(questionnaireResponse, now()) "r_en_per_start";
+            questionnaireResponse -> enPeriod.end = evaluate(questionnaireResponse, now()) "r_en_per_end";
+        } "r_en_per";
+
+    	questionnaireResponse -> encounter.reasonCode = create('CodeableConcept') as concept then {
+			questionnaireResponse -> concept.coding = c("https://www.mpower-social.com/", "elco_visit") as coding then {
+                questionnaireResponse -> coding.display = 'mPower Eligible Couple Visit' "r_en_rc_cod_disp";
+            } "r_en_rc_cod";
+    		questionnaireResponse -> concept.text = 'mPower Eligible Couple Visit' "r_en_text";
+    	} "r_en_reason";
+
+        questionnaireResponse.item as fpMethod where(linkId = 'b26672e2-fa86-4748-8055-13c7c6a08f1e' and answer.value.exists()) then {
+            questionnaireResponse then extractFPCondition(questionnaireResponse, bundle, encounter, refPatient) "r_bundle_entries";
+        } "rule_fp_method_check";
+    } "r_en";
+}
+
+group extractFPCondition(source questionnaireResponse : QuestionnaireResponse, target bundle : Bundle, target encounter: Encounter, source refPatient : Reference) {
+    questionnaireResponse -> bundle.entry as entry, entry.resource = create("Condition") as cnd then {
+    	questionnaireResponse -> cnd.id = uuid() "r_cnd_id";
+		questionnaireResponse -> cnd.onset = evaluate(questionnaireResponse, now()) "r_cnd_onset_date_val";
+    	questionnaireResponse -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_cnd_clinical_st";
+    	questionnaireResponse -> cnd.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_cnd_verif_st";
+    	questionnaireResponse -> cnd.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "problem-list-item", "Problem List Item") "r_cnd_category";
+    	questionnaireResponse -> cnd.subject = refPatient "r_cnd_sub";
+    	questionnaireResponse -> cnd.recordedDate = evaluate(questionnaireResponse, now()) "r_cnd_recorded";
+
+    	questionnaireResponse -> cnd.code = create("CodeableConcept") as ccPreg then {
+             questionnaireResponse -> ccPreg.coding = c("http://snomed.info/sct", "99998888", "Family Planning") "r_cnd_code_coding";
+             questionnaireResponse -> ccPreg.text = "Family Planning" "r_cnd_code_text";
+        } "r_cnd_code";
+
+        questionnaireResponse -> cnd.encounter = reference(encounter) "r_new_fp_encounter";
+    } "r_cnd";
+}
+
+group ExtractTask(
+    source questionnaireResponse : QuestionnaireResponse,
+    source subject : Reference,
+    target task: Task) {
+
+    questionnaireResponse -> create('Period') as period then {
+        questionnaireResponse -> evaluate(questionnaireResponse, now()) as startDate,
+                                 evaluate(questionnaireResponse, now()) as endDate
+                                 then extractPeriodTime(startDate, endDate, period) "r_task_period_extra";
+
+        questionnaireResponse -> task.executionPeriod = period "r_task_per";
+    } "r_per";
+
+    questionnaireResponse -> evaluate(questionnaireResponse, task.executionPeriod.start) as lastModified then {
+        questionnaireResponse -> task.lastModified = lastModified "r_task_last_modified";
+    } "r_last_modified";
+
+    questionnaireResponse -> task.id = uuid(),
+           task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
+           task.identifier = create('Identifier') as iden, iden.value = 'followup_routine_visit', iden.use = 'secondary',
+           task.status = 'completed',
+           task.intent = 'plan',
+           task.priority = 'routine',
+           task.description = 'Eligible Couple Visit',
+           task.for = subject,
+           task.authoredOn = evaluate(questionnaireResponse, now()),
+           task.requester = evaluate(questionnaireResponse, $this.generalPractitioner.first()),
+           task.owner = evaluate(questionnaireResponse, $this.generalPractitioner.first()),
+           task.reasonReference = create('Reference') as ref, ref.reference = 'Questionnaire/6483' "r_task_data";
+}
+
+group extractPeriodTime(source start: DateType, source end: DateType, target period: Period) {
+    start -> period.start = create('dateTime') as dt,
+             dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_start";
+
+    end -> period.end = create('dateTime') as dt,
+           dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_end";
+}

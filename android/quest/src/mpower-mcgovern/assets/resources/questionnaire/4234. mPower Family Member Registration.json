@@ -662,7 +662,7 @@
         {
           "valueCoding": {
             "id": "ed967456-b409-4934-89cc-d793433f8f6f",
-            "code": "Mother",
+            "code": "mother",
             "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
             "display": "মা/আম্মা"
           }
@@ -670,7 +670,7 @@
         {
           "valueCoding": {
             "id": "ca820513-8f28-4cea-8d5e-e495ff0d6c1a",
-            "code": "Father",
+            "code": "father",
             "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
             "display": "বাবা/আব্বা"
           }
@@ -678,7 +678,7 @@
         {
           "valueCoding": {
             "id": "53e3d9c8-13fd-4d0e-fd54-e1ed2da8cdca",
-            "code": "Grandpa",
+            "code": "grandpa",
             "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
             "display": "দাদা"
           }
@@ -686,7 +686,7 @@
         {
           "valueCoding": {
             "id": "7d2eedc9-bf5b-4bb4-830f-7794e41224da",
-            "code": "Grandma",
+            "code": "grandma",
             "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
             "display": "দাদি"
           }
@@ -694,7 +694,7 @@
         {
           "valueCoding": {
             "id": "6eddb1b4-3acc-48d7-86b6-de66d96fb24c",
-            "code": "Grandfather",
+            "code": "grandfather",
             "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
             "display": "নানা"
           }
@@ -702,7 +702,7 @@
         {
           "valueCoding": {
             "id": "337cdc4a-cf0b-460e-86fd-7bb1856fab52",
-            "code": "Grandmother",
+            "code": "grandmother",
             "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
             "display": "নানী"
           }
@@ -710,7 +710,7 @@
         {
           "valueCoding": {
             "id": "81444cac-e75b-49bc-a0e3-e51ac2e6eddd",
-            "code": "Guest",
+            "code": "guest",
             "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
             "display": "অতিথি"
           }
@@ -718,7 +718,7 @@
         {
           "valueCoding": {
             "id": "0f2d9066-6f8e-4e8d-8f14-fbd8aa1a1dba",
-            "code": "Others",
+            "code": "other",
             "system": "urn:uuid:55201a8d-1e2b-43fa-8d35-74fff2997ef6",
             "display": "অন্যান্য"
           }

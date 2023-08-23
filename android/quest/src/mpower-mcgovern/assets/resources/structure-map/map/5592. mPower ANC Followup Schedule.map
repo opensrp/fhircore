@@ -31,7 +31,7 @@ group ExtractTask(
                task.requester = evaluate(subject, $this.generalPractitioner.first()),
                task.owner = evaluate(subject, $this.generalPractitioner.first()) "r_task_data";
 
-        subject where(careplan.id.exists()) -> task.basedOn = create('Reference') as ref, ref.reference = evaluate(careplan, $this.id.replaceMatches('/_history/.*', '')) "r_task_based_on";
+        subject where(careplan.id.exists()) -> task.basedOn = create('Reference') as ref, ref.reference = evaluate(careplan, 'CarePlan/' + $this.id.replaceMatches('/_history/.*', '')) "r_task_based_on";
         subject where(careplan.id.exists().not()) -> task.basedOn = reference(careplan) "r_task_based_on";
 
         subject then ExtractPeriod(subject, task) "r_task_period_extr";

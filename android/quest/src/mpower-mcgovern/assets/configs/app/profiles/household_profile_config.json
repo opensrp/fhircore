@@ -296,6 +296,7 @@
     "tabIndicatorColor": "#FFFF00",
     "tabContents": [
       {
+        "id": "hhMembers",
         "viewType": "COLUMN",
         "backgroundColor": "#FFFFFF",
         "children": [
@@ -434,8 +435,9 @@
                 {
                   "name": "serviceMemberIcons",
                   "condition": "true",
+                  "priority": 2,
                   "actions": [
-                    "data.put('serviceMemberIcons', StringUtils:join([fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\") == 'true'? 'CHILD': '', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.text = 'Pregnant'\", 'PREGNANT_WOMAN')], ','))"
+                    "data.put('serviceMemberIcons', StringUtils:join([fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\") == 'true'? 'CHILD': '', data.get('isActivePnc') ? 'BABY_MOTHER' : data.get('isPregnant') ? 'PREGNANT_WOMAN' : ''], ','))"
                   ]
                 },
                 {
@@ -569,7 +571,7 @@
                   "condition": "true",
                   "priority": 2,
                   "actions": [
-                    "data.put('patientProfileIcon', data.get('isChild') ? 'ic_kids' : data.get('isPregnant') ? 'ic_pregnant' : data.get('isActivePnc') ? 'ic_baby_mother' : 'ic_profile')"
+                    "data.put('patientProfileIcon', data.get('isChild') ? 'ic_kids' : data.get('isActivePnc') ? 'ic_baby_mother' : data.get('isPregnant') ? 'ic_pregnant' : 'ic_profile')"
                   ]
                 }
               ],
@@ -638,6 +640,7 @@
         ]
       },
       {
+        "id": "hhDueHistory",
         "viewType": "COLUMN",
         "backgroundColor": "#FFFFFF",
         "children": [
@@ -717,6 +720,13 @@
                   ]
                 },
                 {
+                  "name": "activeDueTaskList",
+                  "condition": "true",
+                  "actions": [
+                    "data.put('activeDueTaskList', service.filterResources(Task, 'Task.status=\"ready\" or Task.status=\"requested\"'))"
+                  ]
+                },
+                {
                   "name": "serviceStatus",
                   "condition": "true",
                   "actions": [
@@ -727,21 +737,21 @@
                   "name": "taskDescription",
                   "condition": "true",
                   "actions": [
-                    "data.put('taskDescription', fhirPath.extractValue(service.filterResources(Task, 'Task.status=\"ready\" or Task.status=\"requested\"').get(0), 'Task.description'))"
+                    "data.put('taskDescription', fhirPath.extractValue(size(data.get('activeDueTaskList')) > 0 ? data.get('activeDueTaskList').get(0) : null, 'Task.description'))"
                   ]
                 },
                 {
                   "name": "taskId",
                   "condition": "true",
                   "actions": [
-                    "data.put('taskId', fhirPath.extractValue(service.filterResources(Task, 'Task.status=\"ready\" or Task.status=\"requested\"').get(0), 'Task.id'))"
+                    "data.put('taskId', fhirPath.extractValue(size(data.get('activeDueTaskList')) > 0 ? data.get('activeDueTaskList').get(0) : null, 'Task.id'))"
                   ]
                 },
                 {
                   "name": "taskExecutionStartDate",
                   "condition": "true",
                   "actions": [
-                    "data.put('taskExecutionStartDate', fhirPath.extractValue(service.filterResources(Task, 'Task.status=\"ready\" or Task.status=\"requested\"').get(0), 'Task.executionPeriod.start'))"
+                    "data.put('taskExecutionStartDate', fhirPath.extractValue(size(data.get('activeDueTaskList')) > 0 ? data.get('activeDueTaskList').get(0) : null, 'Task.executionPeriod.start'))"
                   ]
                 },
                 {
@@ -755,14 +765,14 @@
                   "name": "taskFor",
                   "condition": "true",
                   "actions": [
-                    "data.put('taskFor', fhirPath.extractValue(service.filterResources(Task, 'Task.status=\"ready\" or Task.status=\"requested\"').get(0), 'Task.for.reference'))"
+                    "data.put('taskFor', fhirPath.extractValue(size(data.get('activeDueTaskList')) > 0 ? data.get('activeDueTaskList').get(0) : null, 'Task.for.reference'))"
                   ]
                 },
                 {
                   "name": "taskQuestionnaireId",
                   "condition": "true",
                   "actions": [
-                    "data.put('taskQuestionnaireId', fhirPath.extractValue(service.filterResources(Task, 'Task.status=\"ready\" or Task.status=\"requested\"').get(0), 'Task.reasonReference.reference'))"
+                    "data.put('taskQuestionnaireId', fhirPath.extractValue(size(data.get('activeDueTaskList')) > 0 ? data.get('activeDueTaskList').get(0) : null, 'Task.reasonReference.reference'))"
                   ]
                 },
                 {
@@ -770,14 +780,15 @@
                   "condition": "true",
                   "priority": 2,
                   "actions": [
-                    "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(service.filterResources(Task, 'Task.status!=\"completed\"')) > 0)"
+                    "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(data.get('activeDueTaskList')) > 0)"
                   ]
                 },
                 {
                   "name": "serviceMemberIcons",
                   "condition": "true",
+                  "priority": 2,
                   "actions": [
-                    "data.put('serviceMemberIcons', StringUtils:join([fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\") == 'true'? 'CHILD': '', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.text = 'Pregnant'\", 'PREGNANT_WOMAN')], ','))"
+                    "data.put('serviceMemberIcons', StringUtils:join([fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\") == 'true'? 'CHILD': '', data.get('isActivePnc') ? 'BABY_MOTHER' : data.get('isPregnant') ? 'PREGNANT_WOMAN' : ''], ','))"
                   ]
                 },
                 {
@@ -1051,53 +1062,38 @@
                   ]
                 },
                 {
+                  "name": "activeCompletedTaskList",
+                  "condition": "true",
+                  "actions": [
+                    "data.put('activeCompletedTaskList', service.filterResources(Task, 'Task.status=\"completed\"'))"
+                  ]
+                },
+                {
                   "name": "taskDescription",
                   "condition": "true",
                   "actions": [
-                    "data.put('taskDescription', fhirPath.extractValue(service.filterResources(Task, 'Task.status=\"completed\"').get(0), 'Task.description'))"
+                    "data.put('taskDescription', fhirPath.extractValue(size(data.get('activeCompletedTaskList')) > 0 ? data.get('activeCompletedTaskList').get(0), 'Task.description'))"
                   ]
                 },
                 {
                   "name": "taskId",
                   "condition": "true",
                   "actions": [
-                    "data.put('taskId', fhirPath.extractValue(service.filterResources(Task, 'Task.status=\"completed\"').get(0), 'Task.id'))"
-                  ]
-                },
-                {
-                  "name": "taskEndDate",
-                  "condition": "true",
-                  "actions": [
-                    "data.put('taskEndDate', fhirPath.extractValue(service.filterResources(Task, 'Task.status=\"completed\"').get(0), 'Task.lastModified'))"
-                  ]
-                },
-                {
-                  "name": "taskPeriodEndDate",
-                  "condition": "true",
-                  "actions": [
-                    "data.put('taskPeriodEndDate', service.formatDate(data.get('taskEndDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
-                  ]
-                },
-                {
-                  "name": "taskDescriptionWithEndDate",
-                  "condition": "true",
-                  "priority": 2,
-                  "actions": [
-                    "data.put('taskDescriptionWithEndDate', data.get('taskDescription') + ' ' + 'completed on' + ' ' + data.get('taskPeriodEndDate'))"
+                    "data.put('taskId', fhirPath.extractValue(size(data.get('activeCompletedTaskList')) > 0 ? data.get('activeCompletedTaskList').get(0), 'Task.id'))"
                   ]
                 },
                 {
                   "name": "taskFor",
                   "condition": "true",
                   "actions": [
-                    "data.put('taskFor', fhirPath.extractValue(service.filterResources(Task, 'Task.status=\"completed\"').get(0), 'Task.for.reference'))"
+                    "data.put('taskFor', fhirPath.extractValue(size(data.get('activeCompletedTaskList')) > 0 ? data.get('activeCompletedTaskList').get(0), 'Task.for.reference'))"
                   ]
                 },
                 {
                   "name": "taskQuestionnaireId",
                   "condition": "true",
                   "actions": [
-                    "data.put('taskQuestionnaireId', fhirPath.extractValue(service.filterResources(Task, 'Task.status=\"completed\"').get(0), 'Task.reasonReference.reference'))"
+                    "data.put('taskQuestionnaireId', fhirPath.extractValue(size(data.get('activeCompletedTaskList')) > 0 ? data.get('activeCompletedTaskList').get(0), 'Task.reasonReference.reference'))"
                   ]
                 },
                 {
@@ -1105,14 +1101,15 @@
                   "condition": "true",
                   "priority": 2,
                   "actions": [
-                    "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(service.filterResources(Task, 'Task.status=\"completed\"')) > 0)"
+                    "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(data.get('activeCompletedTaskList')) > 0)"
                   ]
                 },
                 {
                   "name": "serviceMemberIcons",
                   "condition": "true",
+                  "priority": 2,
                   "actions": [
-                    "data.put('serviceMemberIcons', StringUtils:join([fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\") == 'true'? 'CHILD': '', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.text = 'Pregnant'\", 'PREGNANT_WOMAN')], ','))"
+                    "data.put('serviceMemberIcons', StringUtils:join([fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\") == 'true'? 'CHILD': '', data.get('isActivePnc') ? 'BABY_MOTHER' : data.get('isPregnant') ? 'PREGNANT_WOMAN' : ''], ','))"
                   ]
                 },
                 {
@@ -1247,7 +1244,7 @@
                   "serviceMemberIcons": "@{serviceMemberIcons}",
                   "serviceButton": {
                     "visible": "@{showMemberTasks}",
-                    "text": "@{taskDescriptionWithEndDate}",
+                    "text": "@{taskDescription}",
                     "status": "COMPLETED",
                     "smallSized": true,
                     "enabled": "@{patientActive}",
@@ -1261,16 +1258,7 @@
                           "saveButtonText": "Save",
                           "taskId": "@{taskId}",
                           "resourceIdentifier": "@{taskFor}"
-                        },
-                        "params": [
-                          {
-                            "paramType": "PREPOPULATE",
-                            "linkId": "ae2f17cb-deff-48a6-8ece-27e6bd475f30",
-                            "dataType": "DATE",
-                            "key": "taskPeriodEndDate",
-                            "value": "@{taskPeriodEndDate}"
-                          }
-                        ]
+                        }
                       }
                     ]
                   },

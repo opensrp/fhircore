@@ -26,4 +26,5 @@ import org.smartregister.fhircore.engine.R
 enum class ServiceMemberIcon(val icon: Int) {
   @JsonNames("child", "Child") CHILD(R.drawable.ic_kids),
   @JsonNames("pregnant_woman", "PregnantWoman") PREGNANT_WOMAN(R.drawable.ic_pregnant),
+  @JsonNames("baby_mother", "BabyMother") BABY_MOTHER(R.drawable.ic_baby_mother),
 }

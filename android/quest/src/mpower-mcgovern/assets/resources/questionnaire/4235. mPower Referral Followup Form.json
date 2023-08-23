@@ -315,6 +315,12 @@
       "required": true,
       "answerOption": [
         {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+              "valueBoolean": true
+            }
+          ],
           "valueCoding": {
             "id": "d28de9f5-d0fe-41ea-8e5b-8ed3cc7abc62",
             "code": "not_going",

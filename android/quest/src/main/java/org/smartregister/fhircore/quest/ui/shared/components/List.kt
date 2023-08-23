@@ -94,6 +94,7 @@ fun List(
               modifier
                 .conditional(viewProperties.fillMaxWidth, { fillMaxWidth() })
                 .conditional(viewProperties.fillMaxHeight, { fillMaxHeight() })
+                //.conditional(viewProperties.isFabPresent, { padding(bottom = 70.dp) })
                 .testTag(VERTICAL_ORIENTATION),
           ) {
             currentListResourceData.forEachIndexed { index, listResourceData ->

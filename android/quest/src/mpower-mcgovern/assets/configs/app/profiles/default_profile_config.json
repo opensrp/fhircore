@@ -183,6 +183,20 @@
       ]
     },
     {
+      "name": "totalConditionCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalObservationCount', size(Condition))"
+      ]
+    },
+    {
+      "name": "activeConditions",
+      "condition": "true",
+      "actions": [
+        "data.put('activeConditions', service.filterResources(Condition, \"Condition.clinicalStatus.coding.code = 'active'\"))"
+      ]
+    },
+    {
       "name": "patientFirstName",
       "condition": "true",
       "actions": [
@@ -277,6 +291,29 @@
       ]
     },
     {
+      "name": "bracPncVisits",
+      "condition": "true",
+      "actions": [
+        "data.put('bracPncVisits', service.filterResources(totalEncounters, \"Encounter.type[0].coding.code = 'pnc-contact-in-brac' \"))"
+      ]
+    },
+    {
+      "name": "noOfBracPncVisit",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('noOfBracPncVisit', size(data.get('bracPncVisits')))"
+      ]
+    },
+    {
+      "name": "isLastPncVisitPast24Hours",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('isLastPncVisitPast24Hours', data.get('noOfBracPncVisit') > 0 ? fhirPath.extractValue(service.filterResources(totalEncounters, \"Encounter.type[0].coding.code = 'pnc-contact-in-brac' \").get(0), \"Encounter.period.start < now() - 24 'hours'\") : true)"
+      ]
+    },
+    {
       "name": "patientMaritalStatus",
       "condition": "true",
       "actions": [
@@ -333,6 +370,13 @@
       ]
     },
     {
+      "name": "activeDeliveryDate",
+      "condition": "true",
+      "actions": [
+        "data.put('activeDeliveryDate', fhirPath.extractValue(service.filterResources(Condition, 'Condition.code.coding.code=\"234234234\"').get(0), \"Condition.onset\"))"
+      ]
+    },
+    {
       "name": "pregnancyOutcomeDateCompleted",
       "condition": "true",
       "actions": [
@@ -351,7 +395,7 @@
       "condition": "true",
       "priority": 2,
       "actions": [
-        "data.put('canRegisterPregnancy', data.get('canBearChild') && !data.get('isPregnant') && (!data.get('isActivePnc') || data.get('pregnancyOutcomeDateCompleted')))"
+        "data.put('canRegisterPregnancy', data.get('isMarried') and data.get('canBearChild') && !data.get('isPregnant') && (!data.get('isActivePnc') || data.get('pregnancyOutcomeDateCompleted')))"
       ]
     },
     {
@@ -367,7 +411,7 @@
       "condition": "true",
       "priority": 2,
       "actions": [
-        "data.put('patientProfileIcon', data.get('isChild') ? 'ic_kids' : data.get('isPregnant') ? 'ic_pregnant' : data.get('isActivePnc') ? 'ic_baby_mother' : 'ic_profile')"
+        "data.put('patientProfileIcon', data.get('isChild') ? 'ic_kids' : data.get('isActivePnc') ? 'ic_baby_mother' : data.get('isPregnant') ? 'ic_pregnant' : 'ic_profile')"
       ]
     },
     {
@@ -447,6 +491,29 @@
       "condition": "true",
       "actions": [
         "data.put('applicableForMemberReferral', fhirPath.extractValue(Patient, \"Patient.active and Patient.gender != 'female' and (Patient.birthDate < today() - 5 'years')\"))"
+      ]
+    },
+    {
+      "name": "ancConditionId",
+      "condition": "true",
+      "actions": [
+        "data.put('ancConditionId', (service.filterResources(data.get('activeConditions'), \"Condition.code.coding.code = '77386006'\")).get(0).idElement.idPart)"
+      ]
+    },
+    {
+      "name": "pncFollowupTaskName",
+      "condition": "true",
+      "priority": 4,
+      "actions": [
+        "data.put('pncFollowupTaskName', (data.get('noOfBracPncVisit') == 0 ? '1st' : data.get('noOfBracPncVisit') == 1 ? '2nd' : data.get('noOfBracPncVisit') == 2 ? '3rd' : '4th') + ' PNC Follow Up Visit')"
+      ]
+    },
+    {
+      "name": "applicableForPncFollowup",
+      "condition": "true",
+      "priority": 4,
+      "actions": [
+        "data.put('applicableForPncFollowup', data.get('isActivePnc') and data.get('noOfBracPncVisit') < 4 and data.get('isLastPncVisitPast24Hours'))"
       ]
     }
   ],
@@ -541,6 +608,77 @@
                 ]
               },
               {
+                "viewType": "BUTTON",
+                "smallSized": "true",
+                "text": "@{pncFollowupTaskName}",
+                "status": "DUE",
+                "visible": "@{applicableForPncFollowup}",
+                "enabled": "@{patientActive}",
+                "startIcon": {
+                  "reference": "ic_baby_mother"
+                },
+                "actions": [
+                  {
+                    "trigger": "ON_CLICK",
+                    "workflow": "LAUNCH_QUESTIONNAIRE",
+                    "questionnaire": {
+                      "id": "6058",
+                      "title": "@{pncFollowupTaskName}",
+                      "saveButtonText": "Save",
+                      "resourceType": "Patient",
+                      "resourceIdentifier": "@{patientId}"
+                    },
+                    "params": [
+                      {
+                        "paramType": "PREPOPULATE",
+                        "linkId": "54777657-5ff3-44d6-fe0d-317cce261588",
+                        "dataType": "STRING",
+                        "key": "pncFollowupTaskName",
+                        "value": "@{pncFollowupTaskName}"
+                      },
+                      {
+                        "paramType": "PREPOPULATE",
+                        "linkId": "bd4dba60-545c-4946-88c2-29c85f9bdf7e",
+                        "dataType": "DATETIME",
+                        "key": "activeDeliveryDate",
+                        "value": "@{activeDeliveryDate}"
+                      },
+                      {
+                        "paramType": "PREPOPULATE",
+                        "linkId": "6d331134-5e5d-47eb-c828-22d5927c67ba",
+                        "dataType": "INTEGER",
+                        "key": "noOfBracPncVisit",
+                        "value": "@{noOfBracPncVisit}"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "viewType": "BUTTON",
+                "smallSized": "true",
+                "text": "Eligible Couple Visit",
+                "status": "DUE",
+                "visible": "@{canRegisterPregnancy}",
+                "enabled": "@{patientActive}",
+                "startIcon": {
+                  "reference": "ic_family_planning"
+                },
+                "actions": [
+                  {
+                    "trigger": "ON_CLICK",
+                    "workflow": "LAUNCH_QUESTIONNAIRE",
+                    "questionnaire": {
+                      "id": "6483",
+                      "title": "Eligible Couple Visit",
+                      "saveButtonText": "Save",
+                      "resourceType": "Patient",
+                      "resourceIdentifier": "@{patientId}"
+                    }
+                  }
+                ]
+              },
+              {
                 "viewType": "LIST",
                 "id": "readyTasksList",
                 "resources": [
@@ -548,7 +686,7 @@
                     "id": "availableReadyTasks",
                     "relatedResourceId": "availableTasks",
                     "resourceType": "Task",
-                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed') and (Task.code.empty()))"
+                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'failed') and (Task.code.empty()))"
                   }
                 ],
                 "registerCard": {
@@ -714,6 +852,7 @@
         ]
       },
       {
+        "id": "otherServices",
         "viewType": "COLUMN",
         "padding": 16,
         "children": [
@@ -860,18 +999,12 @@
         ]
       },
       {
+        "id": "completedHistory",
         "viewType": "COLUMN",
         "padding": 16,
         "children": [
           {
             "viewType": "CARD",
-            "header": {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "VISITS",
-              "primaryTextColor": "#6F7274",
-              "fontSize": 18.0,
-              "padding": 16
-            },
             "content": [
               {
                 "viewType": "LIST",
@@ -1083,11 +1216,111 @@
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
-            "id": "345",
+            "id": "6056",
             "title": "Pregnancy outcome",
             "resourceIdentifier": "@{patientId}",
-            "planDefinitions": [
-              "350"
+            "groupResource": {
+              "groupIdentifier": "@{familyLogicalId}",
+              "memberResourceType": "Patient"
+            },
+            "refreshContent": true,
+            "eventWorkflows": [
+              {
+                "eventType": "RESOURCE_CLOSURE",
+                "triggerConditions": [
+                  {
+                    "eventResourceId": "ancCarePlanToBeClosed",
+                    "matchAll": false,
+                    "conditionalFhirPathExpressions": [
+                      "Patient.active and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='33455692-f8b4-4b90-809a-94352aad1e2f') and ((answer.value.exists()))).exists()"
+                    ]
+                  },
+                  {
+                    "eventResourceId": "ancConditionToBeClosed",
+                    "matchAll": false,
+                    "conditionalFhirPathExpressions": [
+                      "Patient.active and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='33455692-f8b4-4b90-809a-94352aad1e2f') and ((answer.value.exists()))).exists()"
+                    ]
+                  }
+                ],
+                "eventResources": [
+                  {
+                    "id": "ancCarePlanToBeClosed",
+                    "resource": "CarePlan",
+                    "configRules": [
+                      {
+                        "name": "patientId",
+                        "condition": "true",
+                        "actions": [
+                          "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))"
+                        ]
+                      }
+                    ],
+                    "dataQueries": [
+                      {
+                        "paramName": "instantiates-canonical",
+                        "filterCriteria": [
+                          {
+                            "dataType": "REFERENCE",
+                            "value": "PlanDefinition/5593"
+                          }
+                        ]
+                      },
+                      {
+                        "paramName": "subject",
+                        "filterCriteria": [
+                          {
+                            "dataType": "REFERENCE",
+                            "computedRule": "patientId"
+                          }
+                        ]
+                      }
+                    ],
+                    "relatedResources": [
+                      {
+                        "resource": "Task",
+                        "searchParameter": "based-on"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "ancConditionToBeClosed",
+                    "resource": "Condition",
+                    "configRules": [
+                      {
+                        "name": "patientId",
+                        "condition": "true",
+                        "actions": [
+                          "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))"
+                        ]
+                      }
+                    ],
+                    "dataQueries": [
+                      {
+                        "paramName": "code",
+                        "filterCriteria": [
+                          {
+                            "dataType": "CODEABLECONCEPT",
+                            "value": {
+                              "system": "http://snomed.info/sct",
+                              "code": "77386006"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "paramName": "subject",
+                        "filterCriteria": [
+                          {
+                            "dataType": "REFERENCE",
+                            "computedRule": "patientId"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
             ]
           },
           "params": [
@@ -1095,6 +1328,13 @@
               "paramType": "UPDATE_DATE_ON_EDIT",
               "key": "familyLogicalId",
               "value": "@{familyLogicalId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "650dd00d-c60b-4a3d-838a-128aad048277",
+              "dataType": "STRING",
+              "key": "ancConditionId",
+              "value": "@{ancConditionId}"
             }
           ]
         }

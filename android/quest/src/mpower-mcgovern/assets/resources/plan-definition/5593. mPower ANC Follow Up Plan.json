@@ -113,7 +113,7 @@
       {
         "resourceType": "ActivityDefinition",
         "id": "careplan-task-activity-1st",
-        "title": "1st ANC Follow Up",
+        "title": "1st ANC Follow Up Visit",
         "description": "This action will performed till 12th week for a pregnant woman",
         "status": "active",
         "kind": "Task",
@@ -130,7 +130,7 @@
       {
         "resourceType": "ActivityDefinition",
         "id": "careplan-task-activity-2nd",
-        "title": "2nd ANC Follow Up",
+        "title": "2nd ANC Follow Up Visit",
         "description": "This action will perform from 13th to 26th week for a pregnant woman",
         "status": "active",
         "kind": "Task",
@@ -147,7 +147,7 @@
       {
         "resourceType": "ActivityDefinition",
         "id": "careplan-task-activity-3rd",
-        "title": "3rd ANC Follow Up",
+        "title": "3rd ANC Follow Up Visit",
         "description": "This action will perform from 27th to 34th week for a pregnant woman",
         "status": "active",
         "kind": "Task",
@@ -164,7 +164,7 @@
       {
         "resourceType": "ActivityDefinition",
         "id": "careplan-task-activity-4th",
-        "title": "4th ANC Follow Up",
+        "title": "4th ANC Follow Up Visit",
         "description": "This action will perform from 35th to 38th week for a pregnant woman",
         "status": "active",
         "kind": "Task",
@@ -402,7 +402,7 @@
             "kind": "applicability",
             "expression": {
               "language": "text/fhirpath",
-              "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.questionnaire = 'Questionnaire/345'"
+              "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.questionnaire = 'Questionnaire/6056'"
             }
           }
         ],

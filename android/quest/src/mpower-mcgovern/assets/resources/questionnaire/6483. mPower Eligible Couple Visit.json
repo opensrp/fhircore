@@ -1,0 +1,985 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "6483",
+  "title": "Eligible Couple Visit",
+  "description": "Eligible Couple Visit",
+  "language": "en-GB",
+  "status": "active",
+  "publisher": "mPower-mcGovern",
+  "contact": [
+    {
+      "name": "http://www.mpower-social.com"
+    }
+  ],
+  "subjectType": [
+    "Patient"
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "http://fhir.mpower-social.com:7070/fhir/StructureMap/6482"
+    }
+  ],
+  "date": "2023-08-27T00:00:00+06:00",
+  "item": [
+    {
+      "linkId": "9433e74a-281e-4a0c-86e7-7bc3f70acd85",
+      "type": "choice",
+      "text": "পরিবার পরিকল্পনা পদ্ধতি ব্যবহার করছেন? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c42787cb-f172-4437-f8d4-cdf7dcfd34aa",
+            "code": "yes",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b53fe18a-dcab-4fa7-a432-025220a7e9ed",
+            "code": "no",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "b26672e2-fa86-4748-8055-13c7c6a08f1e",
+      "type": "choice",
+      "text": "পরিবার পরিকল্পনা পদ্ধতি *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c42787cb-f172-4437-f8d4-cdf7dcfd34aa",
+            "code": "contraceptive_pill",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "বড়ি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b53fe18a-dcab-4fa7-a432-025220a7e9ed",
+            "code": "condom",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "কনডম"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "1b51382e-ff04-4f75-8680-4d03828f62a2",
+            "code": "injection",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "ইঞ্জেকশান"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "0f33d90f-39fd-4ecd-804a-27477817b043",
+            "code": "iud",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "আই ইউ ডি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "dc08cc8f-e4ef-4c6e-fa01-7790d273b9c2",
+            "code": "norplant",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "নরপ্লান্ট"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "d3332000-b5f4-45e9-a84f-f9f1a25dd252",
+            "code": "ligation",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "মহিলা বন্ধ্যাকরণ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "6adaea8b-125f-4b58-81ae-8e9aa9d06e42",
+            "code": "vasectomy",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "পুরুষ বন্ধ্যাকরণ"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "9433e74a-281e-4a0c-86e7-7bc3f70acd85",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "code": "yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "d174322e-70b8-487c-8a3a-c2b83a60bd6f",
+      "type": "choice",
+      "text": "পরিবার পরিকল্পনা পদ্ধতি ব্যবহার না করার কারন *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c42787cb-f172-4437-f8d4-cdf7dcfd34aa",
+            "code": "husband_is_abroad",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "স্বামী বিদেশ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b53fe18a-dcab-4fa7-a432-025220a7e9ed",
+            "code": "closed_monthly",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "মাসিক বন্ধ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "1b51382e-ff04-4f75-8680-4d03828f62a2",
+            "code": "conplications",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "জটিলতা হয়েছিল"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "0f33d90f-39fd-4ecd-804a-27477817b043",
+            "code": "passed",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "উত্তীর্ন"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "dc08cc8f-e4ef-4c6e-fa01-7790d273b9c2",
+            "code": "other",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "অন্যান্য"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "9433e74a-281e-4a0c-86e7-7bc3f70acd85",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "code": "no"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "cdf482cd-5bb2-45a5-ae57-e10d2af4666e",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "78a6f23d-2887-456f-8f11-ac53d9fc2272",
+          "type": "choice",
+          "text": "পদ্ধতিটি কোথা থেকে গ্রহণ করা হয়েছিল *",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "id": "c42787cb-f172-4437-f8d4-cdf7dcfd34aa",
+                "code": "brac_health_worker",
+                "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+                "display": "ব্র্যাক স্বাস্থ্য সেবিকা"
+              }
+            },
+            {
+              "valueCoding": {
+                "id": "b53fe18a-dcab-4fa7-a432-025220a7e9ed",
+                "code": "official",
+                "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+                "display": "সরকারী"
+              }
+            },
+            {
+              "valueCoding": {
+                "id": "dc08cc8f-e4ef-4c6e-fa01-7790d273b9c2",
+                "code": "other",
+                "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+                "display": "অন্যান্য"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "drop-down"
+                  }
+                ]
+              }
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "b26672e2-fa86-4748-8055-13c7c6a08f1e",
+              "operator": "!=",
+              "answerCoding": {
+                "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+                "code": "ligation"
+              }
+            },
+            {
+              "question": "b26672e2-fa86-4748-8055-13c7c6a08f1e",
+              "operator": "!=",
+              "answerCoding": {
+                "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+                "code": "vasectomy"
+              }
+            }
+          ],
+          "enableBehavior": "all"
+        },
+        {
+          "linkId": "bf0faada-ac46-4e5b-8e28-90cc5eb9881e",
+          "type": "choice",
+          "text": "পদ্ধতিটি কোথা থেকে গ্রহণ করা হয়েছিল *",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "id": "b53fe18a-dcab-4fa7-a432-025220a7e9ed",
+                "code": "official",
+                "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+                "display": "সরকারী"
+              }
+            },
+            {
+              "valueCoding": {
+                "id": "dc08cc8f-e4ef-4c6e-fa01-7790d273b9c2",
+                "code": "other",
+                "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+                "display": "অন্যান্য"
+              }
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "b26672e2-fa86-4748-8055-13c7c6a08f1e",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+                "code": "ligation"
+              }
+            },
+            {
+              "question": "b26672e2-fa86-4748-8055-13c7c6a08f1e",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+                "code": "vasectomy"
+              }
+            }
+          ],
+          "enableBehavior": "any",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "required": false,
+      "enableWhen": [
+        {
+          "question": "9433e74a-281e-4a0c-86e7-7bc3f70acd85",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "code": "yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "9bee8772-7e36-4d51-dd40-f07b568bdff6",
+      "type": "choice",
+      "text": "পদ্ধতি ব্যবহারের সময় কোন জটিলতা হয়েছিল? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c42787cb-f172-4437-f8d4-cdf7dcfd34aa",
+            "code": "yes",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b53fe18a-dcab-4fa7-a432-025220a7e9ed",
+            "code": "no",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "9433e74a-281e-4a0c-86e7-7bc3f70acd85",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "code": "yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "f0ff2df8-13e7-467c-8613-313be590e67b",
+      "type": "choice",
+      "text": "কি ধরণের জটিলতা হয়েছিল? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "85ffdaf5-d127-4be8-e1a2-7602409c5ef2",
+            "code": "bleeding",
+            "system": "urn:uuid:f04fdc02-1bfe-42e6-ebd8-3d49111c5a70",
+            "display": "অতিরিক্ত রক্তক্ষরণ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "313a75cb-1131-4a90-f756-d82a2b622010",
+            "code": "closed_monthly",
+            "system": "urn:uuid:f04fdc02-1bfe-42e6-ebd8-3d49111c5a70",
+            "display": "মাসিক বন্ধ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "a47d1214-f685-4066-8f5b-325cf49467f2",
+            "code": "cramps",
+            "system": "urn:uuid:f04fdc02-1bfe-42e6-ebd8-3d49111c5a70",
+            "display": "তলপেটে ব্যথা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "aa57fb1a-6d54-40a0-8991-0869a048eaa2",
+            "code": "nausea",
+            "system": "urn:uuid:f04fdc02-1bfe-42e6-ebd8-3d49111c5a70",
+            "display": "মাথা ঘোরা/ বমি বমি ভাব"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "d932dc8e-a636-4118-8580-7a3701bc2cdf",
+            "code": "irregular_menses",
+            "system": "urn:uuid:f04fdc02-1bfe-42e6-ebd8-3d49111c5a70",
+            "display": "অনিয়মিত মাসিক"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "510ab2fa-3cb6-4d20-d000-b4c1bc41e09b",
+            "code": "tender_breasts",
+            "system": "urn:uuid:f04fdc02-1bfe-42e6-ebd8-3d49111c5a70",
+            "display": "স্তনে ব্যথা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "025f739d-30db-464f-8bbf-3c60d36b418a",
+            "code": "lactose_deficiency",
+            "system": "urn:uuid:f04fdc02-1bfe-42e6-ebd8-3d49111c5a70",
+            "display": "বুকের দুধ কমে যাওয়া"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "bd718e69-6a47-4fb8-8039-9cdc7bbf7fcc",
+            "code": "dyspnoea",
+            "system": "urn:uuid:f04fdc02-1bfe-42e6-ebd8-3d49111c5a70",
+            "display": "বুকে ব্যথা ও শ্বাসকষ্ট"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "39c1397c-adfb-459c-8bdb-21d0250d0ffc",
+            "code": "other",
+            "system": "urn:uuid:f04fdc02-1bfe-42e6-ebd8-3d49111c5a70",
+            "display": "অন্যান্য"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "repeats": true,
+      "enableWhen": [
+        {
+          "question": "9bee8772-7e36-4d51-dd40-f07b568bdff6",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "code": "yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "01fcfa50-d56c-4349-b77d-a40c8ec47d9f",
+      "type": "choice",
+      "text": "পরিবার পরিকল্পনা পদ্ধতি গ্রহণের কারণে জটিলতার জন্য রেফার করা হয়েছিলো? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c42787cb-f172-4437-f8d4-cdf7dcfd34aa",
+            "code": "yes",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b53fe18a-dcab-4fa7-a432-025220a7e9ed",
+            "code": "no",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "9433e74a-281e-4a0c-86e7-7bc3f70acd85",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "code": "yes"
+          }
+        },
+        {
+          "question": "9bee8772-7e36-4d51-dd40-f07b568bdff6",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "code": "yes"
+          }
+        }
+      ],
+      "enableBehavior": "all"
+    },
+    {
+      "linkId": "0b07b4fd-a11b-4490-8a1b-b0a135e71cc4",
+      "type": "choice",
+      "text": "কোথায় রেফার করা হয়েছিলো? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c42787cb-f172-4437-f8d4-cdf7dcfd34aa",
+            "code": "upazila_health_center",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "উপজেলা স্বাস্থ্য কেন্দ্র"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b53fe18a-dcab-4fa7-a432-025220a7e9ed",
+            "code": "FWCE",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "এফডব্লিউসি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "1b51382e-ff04-4f75-8680-4d03828f62a2",
+            "code": "MCWCE",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "এমসিডব্লিউসি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "0f33d90f-39fd-4ecd-804a-27477817b043",
+            "code": "NGO_Clinic",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "এনজিও ক্লিনিক"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "dc08cc8f-e4ef-4c6e-fa01-7790d273b9c2",
+            "code": "medical_college_hospital",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "মেডিকেল কলেজ হাসপাতাল"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "d3332000-b5f4-45e9-a84f-f9f1a25dd252",
+            "code": "zilla_hospital",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "জেলা হাসপাতাল"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "01fcfa50-d56c-4349-b77d-a40c8ec47d9f",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "code": "yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "0b08fbc0-4265-4493-ee4b-6473a8d42d3c",
+      "type": "choice",
+      "text": "রেফারকৃত স্থানে গিয়েছিলেন? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c42787cb-f172-4437-f8d4-cdf7dcfd34aa",
+            "code": "yes",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b53fe18a-dcab-4fa7-a432-025220a7e9ed",
+            "code": "no",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "01fcfa50-d56c-4349-b77d-a40c8ec47d9f",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "code": "yes"
+          }
+        }
+      ],
+      "enableBehavior": "all"
+    },
+    {
+      "linkId": "c1518673-bd6d-4ca0-8d2c-1b0512589789",
+      "type": "integer",
+      "text": "আপনার সন্তান কয়টি? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueInteger": 9
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueInteger": 0
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "10 এর কম হওয়া উচিত"
+        }
+      ],
+      "required": true
+    },
+    {
+      "linkId": "45e1cce0-a234-4c30-8214-059b16f8baa1",
+      "type": "group",
+      "text": "সবচেয়ে ছোট সন্তানের বয়স কত? *",
+      "item": [
+        {
+          "linkId": "57ccde9f-7606-44e3-cf22-b04071b6e53a",
+          "type": "integer",
+          "text": "বছর *",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueInteger": 49
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "বছর 49 এর সমান বা 49 এর কম হওয়া উচিত"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueInteger": 0
+            }
+          ],
+          "required": true
+        },
+        {
+          "linkId": "1f8bd1c1-6fa1-498e-94ca-2c8ef82bcc1b",
+          "type": "integer",
+          "text": "মাস *",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueInteger": 0
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "মাস 11 এর সমান বা 11 এর কম হওয়া উচিত"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueInteger": 11
+            }
+          ],
+          "required": true
+        }
+      ],
+      "required": false,
+      "enableWhen": [
+        {
+          "question": "c1518673-bd6d-4ca0-8d2c-1b0512589789",
+          "operator": ">=",
+          "answerInteger": 1
+        }
+      ]
+    },
+    {
+      "linkId": "e3e163d1-2b8b-48c7-93a3-105e789924ed",
+      "type": "decimal",
+      "text": "age",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "name": "patientBirthdate",
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='57ccde9f-7606-44e3-cf22-b04071b6e53a').answer.value + (%resource.descendants().where(linkId='1f8bd1c1-6fa1-498e-94ca-2c8ef82bcc1b').answer.value / 12)"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "readOnly": true
+    },
+    {
+      "linkId": "af61022e-18ec-4bcb-89cd-462a40843c59",
+      "type": "choice",
+      "text": "স্থায়ী পদ্ধতির (<b>আইইউডি, ইমপ্ল্যান্ট ভ্যাসেকটমি, টিউবেকটমি</b>) রেফার করা হয়েছিল কিনা? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c42787cb-f172-4437-f8d4-cdf7dcfd34aa",
+            "code": "yes",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b53fe18a-dcab-4fa7-a432-025220a7e9ed",
+            "code": "no",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "c1518673-bd6d-4ca0-8d2c-1b0512589789",
+          "operator": ">",
+          "answerInteger": 2
+        },
+        {
+          "question": "e3e163d1-2b8b-48c7-93a3-105e789924ed",
+          "operator": ">",
+          "answerDecimal": 5
+        }
+      ],
+      "enableBehavior": "all"
+    },
+    {
+      "linkId": "942fb92d-6996-428c-b173-b7aecf87229f",
+      "type": "integer",
+      "text": "কয় সপ্তাহ আগে মাসিক হয়েছিল? *",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueInteger": 0
+        }
+      ],
+      "required": true,
+      "enableWhen": [
+        {
+          "question": "d174322e-70b8-487c-8a3a-c2b83a60bd6f",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "code": "husband_is_abroad"
+          }
+        },
+        {
+          "question": "d174322e-70b8-487c-8a3a-c2b83a60bd6f",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "code": "conplications"
+          }
+        },
+        {
+          "question": "d174322e-70b8-487c-8a3a-c2b83a60bd6f",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "code": "other"
+          }
+        }
+      ],
+      "enableBehavior": "any"
+    },
+    {
+      "linkId": "2092efb9-1cd9-41d1-841e-52ebac2b03fb",
+      "type": "choice",
+      "text": "গর্ভবতী পরীক্ষা কি করেছেন? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c42787cb-f172-4437-f8d4-cdf7dcfd34aa",
+            "code": "yes",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b53fe18a-dcab-4fa7-a432-025220a7e9ed",
+            "code": "no",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "942fb92d-6996-428c-b173-b7aecf87229f",
+          "operator": ">=",
+          "answerInteger": 7
+        }
+      ],
+      "enableBehavior": "all"
+    },
+    {
+      "linkId": "090dcf54-cf12-4f04-b8de-f0d9ef68d6b2",
+      "type": "display",
+      "text": "<span style=\"color:#CF0800;\">আপনি গর্ভবতী কিনা তা জানা প্রয়োজন, এ ক্ষেত্রে আপনি ব্রাকের স্বাস্থ্য সেবিকার সহায়তা নিতে পারেন।</span>",
+      "required": false,
+      "enableWhen": [
+        {
+          "question": "2092efb9-1cd9-41d1-841e-52ebac2b03fb",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "code": "no"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "5c82c698-cc84-4c42-8f41-d000aa62fba6",
+      "type": "choice",
+      "text": "পরীক্ষার ফলাফল কি? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c42787cb-f172-4437-f8d4-cdf7dcfd34aa",
+            "code": "pregnant",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "গর্ভবতী"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b53fe18a-dcab-4fa7-a432-025220a7e9ed",
+            "code": "not-pregnant",
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "display": "গর্ভবতী নয়"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "2092efb9-1cd9-41d1-841e-52ebac2b03fb",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:d9f9d000-4f54-4ec0-a881-2b6b6ea8b5b1",
+            "code": "yes"
+          }
+        }
+      ],
+      "enableBehavior": "all"
+    }
+  ]
+}

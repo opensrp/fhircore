@@ -370,7 +370,7 @@
                       "valueId": "careplan"
                     },
                     {
-                      "valueString": "$this.id.replaceMatches('/_history/.*', '')"
+                      "valueString": "'CarePlan/' + $this.id.replaceMatches('/_history/.*', '')"
                     }
                   ]
                 }

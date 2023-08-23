@@ -131,7 +131,7 @@ fun ServiceCard(
       if (serviceCardProperties.showVerticalDivider) {
         ServiceMemberIcons(
           modifier = modifier.wrapContentWidth(Alignment.End).weight(0.3f),
-          serviceMemberIcons = serviceCardProperties.serviceMemberIcons,
+          serviceMemberIcons = serviceCardProperties.serviceMemberIcons?.replace("\\s+".toRegex(), "")?.replace("\\,+".toRegex(), ","),
         )
       }
     }
@@ -146,7 +146,7 @@ fun ServiceCard(
     } else {
       ServiceMemberIcons(
         serviceMemberIcons =
-          serviceCardProperties.serviceMemberIcons?.replace("\\s+".toRegex(), ""),
+          serviceCardProperties.serviceMemberIcons?.replace("\\s+".toRegex(), "")?.replace("\\,+".toRegex(), ","),
       )
     }
 
