@@ -31,7 +31,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,7 +48,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
@@ -77,9 +76,8 @@ fun PinInput(
   var nextCellIndex by remember { mutableStateOf(0) }
   var isValidPin by remember { mutableStateOf<Boolean?>(null) }
 
-  // Launch keyboard and request focus on the hidden input field, delay of 300ms as workaround
-  LaunchedEffect(Unit) {
-    delay(300)
+  // Launch keyboard and request focus
+  SideEffect {
     focusRequester.requestFocus()
     keyboard?.show()
   }

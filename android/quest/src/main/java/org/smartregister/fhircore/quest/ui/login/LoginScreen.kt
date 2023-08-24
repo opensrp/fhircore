@@ -145,9 +145,8 @@ fun LoginPage(
   var showForgotPasswordDialog by remember { mutableStateOf(false) }
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
-
   val coroutineScope = rememberCoroutineScope()
-  val bringIntoViewRequester = BringIntoViewRequester()
+  val bringIntoViewRequester = remember { BringIntoViewRequester() }
   val focusManager = LocalFocusManager.current
   val usernameFocusRequester = remember { FocusRequester() }
   val passwordFocusRequester = remember { FocusRequester() }

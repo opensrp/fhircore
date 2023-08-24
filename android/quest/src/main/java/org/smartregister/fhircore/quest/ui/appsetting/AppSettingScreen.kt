@@ -39,7 +39,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -55,7 +55,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -77,13 +76,10 @@ fun AppSettingScreen(
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
   val coroutineScope = rememberCoroutineScope()
-  val bringIntoViewRequester = BringIntoViewRequester()
+  val bringIntoViewRequester = remember { BringIntoViewRequester() }
   val focusRequester = remember { FocusRequester() }
 
-  LaunchedEffect(Unit) {
-    delay(300)
-    focusRequester.requestFocus()
-  }
+  SideEffect { focusRequester.requestFocus() }
 
   Column(modifier = modifier.fillMaxSize()) {
     Column(
@@ -115,10 +111,10 @@ fun AppSettingScreen(
             .testTag(APP_ID_TEXT_INPUT_TAG)
             .fillMaxWidth()
             .padding(vertical = 2.dp)
+            .focusRequester(focusRequester)
             .onFocusEvent { event ->
               if (event.isFocused) coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
-            }
-            .focusRequester(focusRequester),
+            },
       )
       if (error.isNotEmpty()) {
         Text(
