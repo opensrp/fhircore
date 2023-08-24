@@ -17,11 +17,11 @@ plugins {
 }
 
 android {
-  compileSdk = 33
+  compileSdk = 34
 
   defaultConfig {
     minSdk = 26
-    targetSdk = 33
+    targetSdk = 34
     testInstrumentationRunner = "org.smartregister.fhircore.engine.EngineTestRunner"
     consumerProguardFiles("consumer-rules.pro")
     buildConfigField(
