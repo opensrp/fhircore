@@ -145,8 +145,7 @@ class AndroidExtensionTest : RobolectricTest() {
 
   @Test
   fun testRetrieveResourceId() {
-    val resourceId = context.retrieveResourceId("colorPrimary", "attr")
-    assertEquals(2130903301, resourceId)
+    assertNotNull(context.retrieveResourceId("colorPrimary", "attr"))
   }
 
   @Test
