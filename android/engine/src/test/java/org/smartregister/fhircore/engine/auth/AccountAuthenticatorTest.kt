@@ -43,6 +43,8 @@ import java.net.UnknownHostException
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert
 import org.junit.Before
@@ -50,6 +52,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
+import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator.Companion.AUTH_TOKEN_TYPE
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -360,6 +363,25 @@ class AccountAuthenticatorTest : RobolectricTest() {
     val onLogout = {}
     accountAuthenticator.logout(onLogout)
     verify { tokenAuthenticator.logout() }
+  }
+
+  @Test
+  fun testThatLogoutLocalWithAccount() {
+    val account = Account("testAccountName", "testAccountType")
+    every { tokenAuthenticator.findAccount() } returns account
+    every { accountManager.invalidateAuthToken(any(), any()) } just runs
+    every { accountManager.peekAuthToken(any(), any()) } returns ""
+    accountAuthenticator.logoutLocal()
+    verify { accountManager.invalidateAuthToken(any(), any()) }
+  }
+
+  @Test
+  fun testThatLogoutLocalNoAccount() {
+    every { tokenAuthenticator.findAccount() } returns null
+    every { accountManager.invalidateAuthToken(any(), any()) } just runs
+    every { accountManager.peekAuthToken(any(), any()) } returns ""
+    val value = accountAuthenticator.logoutLocal()
+    assertFalse(value)
   }
 
   @Test

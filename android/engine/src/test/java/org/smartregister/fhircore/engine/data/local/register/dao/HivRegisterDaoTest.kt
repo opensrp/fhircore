@@ -198,6 +198,8 @@ internal class HivRegisterDaoTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Task, testTask1.logicalId) } returns testTask1
     coEvery { fhirEngine.get(ResourceType.Task, testTask2.logicalId) } returns testTask2
 
+    every { sharedPreferencesHelper.organisationCode() } returns "123"
+
     coEvery { fhirEngine.update(any()) } just runs
 
     coEvery { fhirEngine.search<Resource>(any<Search>()) } answers

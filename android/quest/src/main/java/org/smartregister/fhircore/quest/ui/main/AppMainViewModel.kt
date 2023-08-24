@@ -42,7 +42,6 @@ import org.smartregister.fhircore.engine.configuration.app.AppConfigClassificati
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -191,9 +190,7 @@ constructor(
   }
 
   fun onTimeOut(context: Context) {
-    accountAuthenticator.invalidateSession {
-      context.getActivity()?.launchActivityWithNoBackStackHistory<AppSettingActivity>()
-    }
+    accountAuthenticator.logoutLocal()
   }
 
   fun onTaskComplete(id: String?) {

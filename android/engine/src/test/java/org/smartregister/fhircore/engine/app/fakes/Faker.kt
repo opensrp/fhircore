@@ -36,6 +36,8 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao.Companion.ORGANISATION_DISPLAY
+import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao.Companion.ORGANISATION_SYSTEM
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest.Companion.readFile
@@ -150,6 +152,14 @@ object Faker {
           system = "https://d-tree.org"
           code = patientType
           display = "Exposed Infant"
+        }
+      )
+
+      this.meta.addTag(
+        Coding().apply {
+          system = ORGANISATION_SYSTEM
+          code = "123"
+          display = ORGANISATION_DISPLAY
         }
       )
 

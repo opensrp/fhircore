@@ -20,7 +20,7 @@ import android.app.Activity
 import android.os.Handler
 import android.os.Looper
 import androidx.ui.unit.inMilliseconds
-import androidx.ui.unit.minutes
+import androidx.ui.unit.seconds
 import timber.log.Timber
 
 class AppInActivityListener(val ignoreList: List<String>, onTimeLapse: () -> Unit) {
@@ -36,7 +36,7 @@ class AppInActivityListener(val ignoreList: List<String>, onTimeLapse: () -> Uni
 
   fun start() {
     Timber.i("App is in background")
-    handler.postDelayed(runnable, 10.minutes.inMilliseconds())
+    handler.postDelayed(runnable, 1.seconds.inMilliseconds())
   }
 
   fun stop() {

@@ -46,6 +46,7 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.PatientDao
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.activelyBreastfeeding
 import org.smartregister.fhircore.engine.util.extension.canonical
 import org.smartregister.fhircore.engine.util.extension.canonicalName
@@ -78,13 +79,19 @@ constructor(
   val configurationRegistry: ConfigurationRegistry
 ) : RegisterDao, PatientDao {
 
+  private val code = defaultRepository.sharedPreferencesHelper.organisationCode()
+
   fun isValidPatient(patient: Patient): Boolean =
     patient.active &&
       !patient.hasDeceased() &&
       patient.hasName() &&
       patient.hasGender() &&
-      patient.meta.tag.none { it.code.equals(HAPI_MDM_TAG, true) }
+      patient.meta.tag.none { it.code.equals(HAPI_MDM_TAG, true) } &&
+      patient.belongsTo(code)
 
+  init {
+    Timber.e(code)
+  }
   fun hivPatientIdentifier(patient: Patient): String =
     // would either be an ART or HCC number
     patient.extractOfficialIdentifier() ?: ResourceValue.BLANK
@@ -418,6 +425,8 @@ constructor(
   companion object {
     const val HAPI_MDM_TAG = "HAPI-MDM"
     const val LINKED_CHILD_AGE_LIMIT = 20
+    const val ORGANISATION_SYSTEM = "http://smartregister.org/fhir/organization-tag"
+    const val ORGANISATION_DISPLAY = "Practitioner Organization"
   }
 }
 
@@ -433,3 +442,13 @@ suspend fun DefaultRepository.isPatientPregnant(patient: Patient) =
 
 suspend fun DefaultRepository.isPatientBreastfeeding(patient: Patient) =
   patientConditions(patient.logicalId).activelyBreastfeeding()
+
+fun SharedPreferencesHelper.organisationCode() =
+  read(ResourceType.Organization.name, null)?.filter { it.isDigit() } ?: ""
+
+infix fun Patient.belongsTo(code: String) =
+  meta.tag.any {
+    it.code == code &&
+      it.system == HivRegisterDao.ORGANISATION_SYSTEM &&
+      it.display == HivRegisterDao.ORGANISATION_DISPLAY
+  }
