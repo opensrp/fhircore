@@ -1,4 +1,4 @@
-map "https://fhir.demo.smartregister.org/fhir/StructureMap/dc-diabetes-screening" = "Diabetes Compass Diabetes Screening"
+map "https://fhir.demo.smartregister.org/fhir/StructureMap/dc-diabetes-screening-sm" = "DC Diabetes Screening"
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
@@ -73,6 +73,7 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle: Bun
     ExtractDiastolicBP(src, bundle, encounter),
     ExtractWaist(src, bundle, encounter),
     ExtractRiskScore(src, bundle, encounter),
+    ExtractHypertensionRisk(src, bundle, encounter),
     ExtractReferralServiceRequest(src,bundle,encounter)
     "r_enc_obs";
 }
@@ -220,6 +221,25 @@ group ExtractWaist(source src : QuestionnaireResponse, target bundle: Bundle, ta
                 } "r_obs_waist_item";
         } "r_obs_waist";
     } "r_obs_waist_pg";
+}
+
+group ExtractHypertensionRisk(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src.item as page where(linkId = "page-2") then {
+        page.item as item where(linkId = "hypertension-risk" and answer.count() > 0) then {
+                src -> bundle.entry as entry,
+                entry.resource = create("Observation") as obs then {
+                    src -> obs.id = uuid(),
+                        obs.status = "final",
+                        obs.code = cc("http://snomed.info/sct","762463000", "Diastolic hypertension and systolic hypertension"),
+                        obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category', "vital-signs"),
+                        obs.encounter = reference(encounter),
+                        obs.effective = evaluate(src, now()) "r_date_of_measure";
+                    src->obs.subject = evaluate(src, $this.subject) "r_obs_subject";
+                    src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+                    src->obs.value = evaluate(item, $this.answer.value) "r_obs_value_c_hypertension";
+                } "r_obs_hypertension_item";
+        } "r_obs_hypertension";
+    } "r_obs_hypertension_pg";
 }
 
 group ExtractRiskScore(source src : QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {

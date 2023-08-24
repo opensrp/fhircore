@@ -33,7 +33,7 @@
           "linkId": "age-val",
           "answer": [
             {
-              "valueInteger": 40
+              "valueInteger": 60
             }
           ]
         },
@@ -45,7 +45,7 @@
           "linkId": "gender-val",
           "answer": [
             {
-              "valueString": "female"
+              "valueString": "Male"
             }
           ]
         },
@@ -75,7 +75,7 @@
           "text": "Systolic BP",
           "answer": [
             {
-              "valueInteger": 120
+              "valueInteger": 140
             }
           ]
         },
@@ -88,7 +88,7 @@
           "text": "Diastolic BP",
           "answer": [
             {
-              "valueInteger": 80
+              "valueInteger": 95
             }
           ]
         },
@@ -101,7 +101,7 @@
           "text": "Waist measurement",
           "answer": [
             {
-              "valueInteger": 32
+              "valueInteger": 45
             }
           ]
         },
@@ -110,11 +110,24 @@
           "text": "Results"
         },
         {
+          "linkId": "results-text",
+          "text": "High Risk \n> 50% \n10 year risk of developing Type II Diabetes\n\n\nWe recommend seeing a doctor for further screening\n"
+        },
+        {
           "linkId": "score-calculations",
           "text": "Risk Score",
           "answer": [
             {
-              "valueDecimal": 0.17276998582720206
+              "valueDecimal": 0.2950841961960221
+            }
+          ]
+        },
+        {
+          "linkId": "hypertension-risk",
+          "text": "Hypertension Risk",
+          "answer": [
+            {
+              "valueBoolean": true
             }
           ]
         },
