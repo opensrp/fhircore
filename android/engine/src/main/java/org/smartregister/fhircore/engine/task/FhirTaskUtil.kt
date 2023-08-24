@@ -20,6 +20,7 @@ import android.content.Context
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
@@ -28,6 +29,7 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
@@ -111,32 +113,56 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
       ?.outcomeReference
       ?.lastOrNull()
       ?.extractId() == task.logicalId
-
-  suspend fun updateTaskStatuses(subjectReference: Reference? = null, tasks: List<Task>? = null) {
-    Timber.i("Update tasks statuses")
+  /**
+   * This function updates upcoming [Task] s (with statuses [TaskStatus.REQUESTED],
+   * [TaskStatus.ACCEPTED] or [TaskStatus.RECEIVED]) to due (updates the status to
+   * [TaskStatus.READY]). If the [Task] is dependent on another [Task] and it's parent [TaskStatus]
+   * is NOT [TaskStatus.COMPLETED], the dependent [Task] status will not be updated to
+   * [TaskStatus.READY]. A [Task] should only be due when the start date of the Tasks
+   * [Task.executionPeriod] is before today and the status is [TaskStatus.REQUESTED] and the
+   * pre-requisite [Task] s are completed.
+   *
+   * @param subject optional subject resources to use as an additional filter to tasks processed
+   * @param taskResourcesToFilterBy optional set of Task resources whose resource ids will be used
+   * to filter tasks processed
+   */
+  suspend fun updateUpcomingTasksToDue(
+    subject: Reference? = null,
+    taskResourcesToFilterBy: List<Task>? = null,
+  ) {
+    Timber.i("Update upcoming Tasks to due...")
 
     val tasks =
-      tasks
-        ?: defaultRepository.fhirEngine.search {
-          filter(
-            Task.STATUS,
-            { value = of(TaskStatus.REQUESTED.toCoding()) },
-            { value = of(TaskStatus.ACCEPTED.toCoding()) },
-            { value = of(TaskStatus.RECEIVED.toCoding()) }
-          )
-          filter(
-            Task.PERIOD,
-            {
-              prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
-              value = of(DateTimeType(Date()))
-            }
-          )
-          if (!subjectReference?.reference.isNullOrEmpty()) {
-            filter(Task.SUBJECT, { value = subjectReference?.reference })
-          }
+      defaultRepository.fhirEngine.search<Task> {
+        filter(
+          Task.STATUS,
+          { value = of(TaskStatus.REQUESTED.toCoding()) },
+          { value = of(TaskStatus.ACCEPTED.toCoding()) },
+          { value = of(TaskStatus.RECEIVED.toCoding()) },
+        )
+        filter(
+          Task.PERIOD,
+          {
+            prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+            value = of(DateTimeType(Date()))
+          },
+        )
+        if (!subject?.reference.isNullOrEmpty()) {
+          filter(Task.SUBJECT, { value = subject?.reference })
         }
+        taskResourcesToFilterBy?.let {
+          val filters =
+            it.map {
+              val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.logicalId) }
+              apply
+            }
+          filter(Resource.RES_ID, *filters.toTypedArray())
+        }
+      }
 
-    Timber.i("Found ${tasks.size} tasks to be updated")
+    Timber.i(
+      "Found ${tasks.size} upcoming Tasks (with statuses REQUESTED, ACCEPTED or RECEIVED) to be updated",
+    )
 
     tasks.forEach { task ->
       val previousStatus = task.status
@@ -146,8 +172,10 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
 
       if (task.hasPartOf() && !task.preRequisiteConditionSatisfied()) task.status = previousStatus
 
-      defaultRepository.update(task)
-      Timber.d("Task with ID '${task.id}' status updated to ${task.status}")
+      if (task.status != previousStatus) {
+        defaultRepository.update(task)
+        Timber.d("Task with ID '${task.id}' status updated FROM $previousStatus TO ${task.status}")
+      }
     }
   }
 
