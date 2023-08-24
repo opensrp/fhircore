@@ -168,12 +168,14 @@ constructor(
       }
     }
 
-    val careplanTasks =
-      output.contained.filter { it.resourceType == ResourceType.Task }.map { it as Task }
+    val carePlanTasks = output.contained.filterIsInstance<Task>()
 
     if (carePlanModified) saveCarePlan(output)
 
-    fhirTaskUtil.updateTaskStatuses(subjectReference = subject.asReference())
+    fhirTaskUtil.updateUpcomingTasksToDue(
+      subject = subject.asReference(),
+      taskResourcesToFilterBy = carePlanTasks,
+    )
 
     return if (output.hasActivity()) output else null
   }
