@@ -38,7 +38,7 @@ constructor(
 
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
-      fhirTaskUtil.updateTaskStatuses()
+      fhirTaskUtil.updateUpcomingTasksToDue()
       Result.success()
     }
   }
