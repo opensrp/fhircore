@@ -59,7 +59,7 @@ import org.smartregister.fhircore.engine.util.extension.today
 class FhirResourceUtilTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-  private lateinit var fhirTaskUtil: FhirResourceUtil
+  private lateinit var fhirResourceUtil: FhirResourceUtil
   private lateinit var fhirEngine: FhirEngine
   private lateinit var defaultRepository: DefaultRepository
   private lateinit var configurationRegistry: ConfigurationRegistry
@@ -71,7 +71,7 @@ class FhirResourceUtilTest : RobolectricTest() {
     defaultRepository = mockk()
     configurationRegistry = Faker.buildTestConfigurationRegistry()
     every { defaultRepository.fhirEngine } returns fhirEngine
-    fhirTaskUtil =
+    fhirResourceUtil =
       spyk(
         FhirResourceUtil(
           ApplicationProvider.getApplicationContext(),
@@ -108,7 +108,7 @@ class FhirResourceUtilTest : RobolectricTest() {
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns taskList
     coEvery { defaultRepository.update(any()) } just runs
 
-    val tasks = runBlocking { fhirTaskUtil.expireOverdueTasks() }
+    val tasks = runBlocking { fhirResourceUtil.expireOverdueTasks() }
 
     assertEquals(2, tasks.size)
 
@@ -156,7 +156,7 @@ class FhirResourceUtilTest : RobolectricTest() {
 
     coEvery { defaultRepository.update(any()) } just runs
 
-    val tasks = runBlocking { fhirTaskUtil.expireOverdueTasks() }
+    val tasks = runBlocking { fhirResourceUtil.expireOverdueTasks() }
 
     assertEquals(4, tasks.size)
 
@@ -172,7 +172,7 @@ class FhirResourceUtilTest : RobolectricTest() {
   fun fetchOverdueTasksNoTasks() {
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns emptyList()
 
-    val tasks = runBlocking { fhirTaskUtil.expireOverdueTasks() }
+    val tasks = runBlocking { fhirResourceUtil.expireOverdueTasks() }
 
     assertEquals(0, tasks.size)
 
@@ -216,7 +216,7 @@ class FhirResourceUtilTest : RobolectricTest() {
 
     assertEquals(TaskStatus.REQUESTED, task.status)
 
-    runBlocking { fhirTaskUtil.updateUpcomingTasksToDue() }
+    runBlocking { fhirResourceUtil.updateUpcomingTasksToDue() }
 
     coVerify { defaultRepository.update(task) }
 
@@ -260,7 +260,9 @@ class FhirResourceUtilTest : RobolectricTest() {
 
     assertEquals(TaskStatus.REQUESTED, task.status)
 
-    runBlocking { fhirTaskUtil.updateUpcomingTasksToDue(taskResourcesToFilterBy = listOf(task)) }
+    runBlocking {
+      fhirResourceUtil.updateUpcomingTasksToDue(taskResourcesToFilterBy = listOf(task))
+    }
 
     coVerify { defaultRepository.update(task) }
 

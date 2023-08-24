@@ -73,7 +73,7 @@ constructor(
   val fhirPathEngine: FHIRPathEngine,
   val transformSupportServices: TransformSupportServices,
   val defaultRepository: DefaultRepository,
-  val fhirTaskUtil: FhirResourceUtil,
+  val fhirResourceUtil: FhirResourceUtil,
 ) {
   private val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
@@ -171,7 +171,7 @@ constructor(
 
     if (carePlanModified) saveCarePlan(output)
 
-    fhirTaskUtil.updateUpcomingTasksToDue(
+    fhirResourceUtil.updateUpcomingTasksToDue(
       subject = subject.asReference(),
       taskResourcesToFilterBy = carePlanTasks,
     )
