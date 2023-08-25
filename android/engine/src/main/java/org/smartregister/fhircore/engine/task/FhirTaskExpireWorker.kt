@@ -34,13 +34,13 @@ constructor(
   @Assisted val context: Context,
   @Assisted workerParams: WorkerParameters,
   val defaultRepository: DefaultRepository,
-  val fhirTaskUtil: FhirResourceUtil,
+  val fhirResourceUtil: FhirResourceUtil,
   val dispatcherProvider: DispatcherProvider,
 ) : CoroutineWorker(context, workerParams) {
 
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
-      fhirTaskUtil.expireOverdueTasks()
+      fhirResourceUtil.expireOverdueTasks()
       Result.success()
     }
   }
