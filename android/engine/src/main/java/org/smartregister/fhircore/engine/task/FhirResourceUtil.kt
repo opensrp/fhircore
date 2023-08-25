@@ -20,6 +20,7 @@ import android.content.Context
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
@@ -130,8 +131,15 @@ constructor(
    * [TaskStatus.READY]. A [Task] should only be due when the start date of the Tasks
    * [Task.executionPeriod] is before today and the status is [TaskStatus.REQUESTED] and the
    * pre-requisite [Task] s are completed.
+   *
+   * @param subject optional subject resources to use as an additional filter to tasks processed
+   * @param taskResourcesToFilterBy optional set of Task resources whose resource ids will be used
+   *   to filter tasks processed
    */
-  suspend fun updateUpcomingTasksToDue(subject: Reference? = null) {
+  suspend fun updateUpcomingTasksToDue(
+    subject: Reference? = null,
+    taskResourcesToFilterBy: List<Task>? = null,
+  ) {
     Timber.i("Update upcoming Tasks to due...")
 
     val tasks =
@@ -151,6 +159,14 @@ constructor(
         )
         if (!subject?.reference.isNullOrEmpty()) {
           filter(Task.SUBJECT, { value = subject?.reference })
+        }
+        taskResourcesToFilterBy?.let {
+          val filters =
+            it.map {
+              val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.logicalId) }
+              apply
+            }
+          filter(Resource.RES_ID, *filters.toTypedArray())
         }
       }
 
