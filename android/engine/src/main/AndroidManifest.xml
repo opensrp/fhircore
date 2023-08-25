@@ -25,5 +25,6 @@
                 android:value="androidx.startup"
                 tools:node="remove" />
         </provider>
+        <activity android:name=".util.test.HiltActivityForTest" />
     </application>
 </manifest>

@@ -38,7 +38,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
-import org.smartregister.fhircore.quest.HiltActivityForTest
+import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.integration.Faker
 import org.smartregister.fhircore.quest.ui.profile.DROPDOWN_MENU_TEST_TAG
 import org.smartregister.fhircore.quest.ui.profile.FAB_BUTTON_TEST_TAG
