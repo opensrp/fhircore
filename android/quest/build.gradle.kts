@@ -171,11 +171,11 @@ android {
       manifestPlaceholders["appLabel"] = "MOH eCBIS"
     }
 
-    create("ecbis_preview") {
+    create("ecbis_training") {
       dimension = "apps"
-      applicationIdSuffix = ".ecbis_preview"
-      versionNameSuffix = "-ecbis_preview"
-      manifestPlaceholders["appLabel"] = "MOH eCBIS Preview"
+      applicationIdSuffix = ".ecbis_training"
+      versionNameSuffix = "-ecbis_training"
+      manifestPlaceholders["appLabel"] = "MOH eCBIS Training"
     }
 
     create("g6pd") {
