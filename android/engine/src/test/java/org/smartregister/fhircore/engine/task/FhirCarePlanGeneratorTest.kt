@@ -691,19 +691,19 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @ExperimentalCoroutinesApi
   fun testGenerateCarePlanForDiabetesClient() = runTest {
     val planDefinition =
-      "plans/diabetes_compass/patient_follow_up.fhir.json"
+      "plans/diabetes_compass/diabetes_screening_intervention.fhir.json"
         .readFile()
         .decodeResourceFromString<PlanDefinition>()
 
     val questionnaireResponse =
-      "plans/diabetes_compass/phone_call_follow_up_trigger_visit_response.fhir.json"
+      "plans/diabetes_compass/patient_registration_questionnaire_response.json"
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
 
     val patient =
       "plans/child-routine-visit/sample/patient.json".readFile().decodeResourceFromString<Patient>()
 
-    val structureMapScript = "plans/diabetes_compass/home-visit-follow-up.map".readFile()
+    val structureMapScript = "plans/diabetes_compass/patient_screening_task.map".readFile()
     val structureMap =
       structureMapUtilities.parse(structureMapScript, "DiabetesIntervention").also {
         // TODO: IMP - The parser does not recognize the time unit i.e. months and prints as ''
@@ -715,7 +715,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val booleanSlot = slot<Boolean>()
     coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
       emptyList()
-    coEvery { fhirEngine.get<StructureMap>("dc-home-visit-follow-up-sm") } returns structureMap
+    coEvery { fhirEngine.get<StructureMap>("routine-screening-sm") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
     fhirCarePlanGenerator.generateOrUpdateCarePlan(

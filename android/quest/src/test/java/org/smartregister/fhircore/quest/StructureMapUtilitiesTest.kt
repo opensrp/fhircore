@@ -228,7 +228,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     /*val patientRegistrationStructureMap =
     "patient-registration-questionnaire/structure-map.txt".readFile()*/
     val sMap =
-      "content/general/diabetes_compass/screening/diabetes_screening.map".readFile()
+      "content/general/diabetes_compass/screening/patient_screening_task_generation.map".readFile()
     // val sMap =
     // "content/general/diabetes_compass/patient_follow_up/three-year-routine-screening-follow-up.map".readFile()
     val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
@@ -393,7 +393,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val screeningQuestionnaireResponseString: String =
       "content/general/diabetes_compass/screening/screening_questionnaire_response.fhir.json".readFile()
     val screeningStructureMap =
-      "content/general/diabetes_compass/screening/diabetes_screening.map".readFile()
+      "content/general/diabetes_compass/screening/diabetes_screening_extraction.map".readFile()
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
