@@ -33,6 +33,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
@@ -43,6 +44,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.reflect.jvm.isAccessible
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
@@ -51,10 +53,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.TestCoroutineExceptionHandler
-import kotlinx.coroutines.test.createTestCoroutineScope
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -69,9 +68,12 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.ArgumentMatcher
+import org.mockito.ArgumentMatchers
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
@@ -118,10 +120,6 @@ class MeasureReportViewModelTest : RobolectricTest() {
   private val application: Context = ApplicationProvider.getApplicationContext()
   private lateinit var measureReportViewModel: MeasureReportViewModel
   private val testDispatcher = TestCoroutineDispatcher()
-  private val testCoroutineScope =
-      createTestCoroutineScope(
-          TestCoroutineDispatcher() + TestCoroutineExceptionHandler() + testDispatcher,
-      )
 
   @Before
   fun setUp() {
@@ -471,69 +469,39 @@ class MeasureReportViewModelTest : RobolectricTest() {
     assertNotNull(measureReportViewModel.reportMeasuresList(reportId).first())
   }
 
-  @Test
-  fun testRetrieveSubjects() {
-    val mockMeasureReportConfig =
-        MeasureReportConfiguration(
-            reportId,
-            configType = ConfigType.MeasureReport.name,
-            id = "1234",
-            registerId = "test_register",
-            reports =
-                listOf(
-                    ReportConfiguration(
-                        id = "first id",
-                        title = "first report",
-                        description = "This my first report",
-                        url = "abc-@ona.io",
-                        module = "First module name",
-                    ),
-                ),
-        )
-    val mockSubjectData =
-        mockk<MutableStateFlow<Flow<PagingData<MeasureReportSubjectViewData>>>>(relaxed = true)
-    val pagedData: Flow<PagingData<MeasureReportSubjectViewData>> = mockk(relaxed = true)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testRetrieveSubjects() = runTest {
+        val reportId = "reportId"
+        val mockRegisterConfig: RegisterConfiguration = mockk()
+        val measureReportConfig: MeasureReportConfiguration = mockk()
+        val mockPagingData: PagingData<MeasureReportSubjectViewData> = mockk()
+        val mockSubjectData = mockk<MutableStateFlow<Flow<PagingData<MeasureReportSubjectViewData>>>>(relaxed = true)
+        val mockPager = mockk<Pager<Int, MeasureReportSubjectViewData>>(relaxed = true)
+      val pagedData: Flow<PagingData<MeasureReportSubjectViewData>> = mockk(relaxed = true)
+        val mockConfigurationRegistry: ConfigurationRegistry = mockk()
+        val retrieveMeasures =
+            measureReportViewModel.javaClass.getDeclaredMethod(
+                "retrieveMeasureReportConfiguration", String::class.java)
+        retrieveMeasures.isAccessible = true
+        val parameters = arrayOfNulls<Any>(1)
+        parameters[0] = reportId
+        every {
+            retrieveMeasures.invoke(measureReportViewModel, *parameters) as MeasureReportConfiguration
+        } returns measureReportConfig
+        every { measureReportConfig.registerId } returns "registerId"
+        every { (mockPager.flow) } returns mockk()
+        every { measureReportViewModel.subjectData } returns mockSubjectData
+        coEvery {
+            mockConfigurationRegistry.retrieveConfiguration<Configuration>(
+                ConfigType.Register, measureReportConfig.registerId)
+        } returns mockRegisterConfig
 
-    val mockPagingSource = mockk<PagingSource<Int, MeasureReportSubjectViewData>>(relaxed = true)
-    coEvery { mockPagingSource.load(any()) } returns
-        PagingSource.LoadResult.Page(data = emptyList(), prevKey = null, nextKey = null)
+        every {    measureReportViewModel.retrieveSubjects(reportId)} returns pagedData
+        val result: Flow<PagingData<MeasureReportSubjectViewData>> =
+            measureReportViewModel.retrieveSubjects(reportId)
 
-    val mockPager = mockk<Pager<Int, MeasureReportSubjectViewData>>(relaxed = true)
-    every { (mockPager.flow) } returns mockk()
-    every { measureReportViewModel.subjectData } returns mockSubjectData
+        result.collect { collectedPagingData -> assertEquals(mockPagingData, collectedPagingData) }
 
-    val reportModel =
-        MeasureReportViewModel(
-            fhirEngine,
-            fhirOperator,
-            sharedPreferencesHelper,
-            dispatcherProvider = mockk(),
-            configurationRegistry,
-            registerRepository,
-            measureReportSubjectViewDataMapper,
-            defaultRepository,
-            resourceDataRulesExecutor,
-            measureReportRepository)
-
-    every { measureReportViewModel.retrieveSubjects(any()) } returns pagedData
-
-    val retrieveMeasureReportConfiguration =
-        MeasureReportViewModel::class
-            .java
-            .getDeclaredMethod("retrieveMeasureReportConfiguration", String::class.java)
-    retrieveMeasureReportConfiguration.isAccessible = true
-//    every { retrieveMeasureReportConfiguration.invoke(reportModel, any()) } returns mockMeasureReportConfig
-
-      every { configurationRegistry.configCacheMap } returns mockk<MutableMap<String,Configuration>>().apply {
-
-      }
-//    verify { retrieveMeasureReportConfiguration.invoke(any(), any()) }
-    verify {
-      configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
-          ConfigType.Register,
-          mockMeasureReportConfig.registerId,
-      )
     }
-    verify { mockSubjectData.value = mockPager.flow }
-  }
 }
