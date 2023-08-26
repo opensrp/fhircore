@@ -45,6 +45,7 @@ import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
@@ -74,6 +75,7 @@ import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
@@ -89,6 +91,7 @@ constructor(
   val transformSupportServices: TransformSupportServices,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val libraryEvaluator: LibraryEvaluator,
+  val fhirPathDataExtractor: FhirPathDataExtractor,
 ) : ViewModel() {
 
   private val authenticatedOrganizationIds by lazy {
@@ -221,8 +224,9 @@ constructor(
         val subject =
           loadResource(ResourceType.valueOf(subjectIdType.resourceType), subjectIdType.idPart)
 
-        if (subject != null) {
+        if (subject != null && !questionnaireConfig.type.isReadOnly()) {
           val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
+
           generateCarePlan(
             subject = subject,
             bundle = newBundle,
@@ -234,7 +238,6 @@ constructor(
             bundle = newBundle,
             questionnaire = questionnaire,
           )
-
           fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
             questionnaireConfig = questionnaireConfig,
             subject = subject,
@@ -270,25 +273,73 @@ constructor(
         date = extractionDate
       }
 
+    val subjectType = questionnaireSubjectType(questionnaire, questionnaireConfig)
+
+    val previouslyExtractedResources =
+      retrievePreviouslyExtractedResources(
+        questionnaireConfig = questionnaireConfig,
+        subjectType = subjectType,
+        questionnaire = questionnaire,
+      )
+
+    val extractedResourceUniquePropertyExpressionsMap =
+      questionnaireConfig.extractedResourceUniquePropertyExpressions?.associateBy {
+        it.resourceType
+      }
+        ?: emptyMap()
+
     bundle.entry?.forEach { bundleEntryComponent ->
       bundleEntryComponent.resource?.run {
         applyResourceMetadata()
-        val subjectType = questionnaireSubjectType(questionnaire, questionnaireConfig)
         if (
           currentQuestionnaireResponse.subject.reference.isNullOrEmpty() &&
             subjectType != null &&
-            this.resourceType == subjectType &&
+            resourceType == subjectType &&
             logicalId.isNotEmpty()
         ) {
           currentQuestionnaireResponse.subject = this.logicalId.asReference(subjectType)
         }
+        if (questionnaireConfig.type.isEditable()) {
+          if (resourceType == subjectType) {
+            this.id = currentQuestionnaireResponse.subject.extractId()
+          } else if (
+            extractedResourceUniquePropertyExpressionsMap.containsKey(resourceType) &&
+              previouslyExtractedResources.containsKey(resourceType)
+          ) {
+            val fhirPathExpression =
+              extractedResourceUniquePropertyExpressionsMap
+                .getValue(resourceType)
+                .fhirPathExpression
 
-        // TODO Fix StructureMaps to use the QuestionnaireResponse subject directly
-        if (this.resourceType == subjectType) {
-          this.id = currentQuestionnaireResponse.subject.extractId()
+            val currentResourceIdentifier =
+              fhirPathDataExtractor.extractValue(
+                base = this,
+                expression = fhirPathExpression,
+              )
+
+            // Search for resource with property value matching extracted value
+            val resource =
+              previouslyExtractedResources.getValue(resourceType).find {
+                val extractedValue =
+                  fhirPathDataExtractor.extractValue(
+                    base = it,
+                    expression = fhirPathExpression,
+                  )
+                extractedValue.isNotEmpty() &&
+                  extractedValue.equals(currentResourceIdentifier, true)
+              }
+
+            // Found match use the id on current resource; override identifiers for RelatedPerson
+            if (resource != null) {
+              this.id = resource.logicalId
+              if (this is RelatedPerson && resource is RelatedPerson) {
+                this.identifier = resource.identifier
+              }
+            }
+          }
         }
 
-        defaultRepository.addOrUpdate(resource = this)
+        defaultRepository.addOrUpdate(true, resource = this)
 
         addMemberToConfiguredGroup(this, questionnaireConfig.groupResource)
 
@@ -303,12 +354,47 @@ constructor(
       }
     }
 
-    // Save questionnaire response only if subject is present
-    if (!currentQuestionnaireResponse.subject.reference.isNullOrEmpty()) {
-      defaultRepository.addOrUpdate(
-        resource = currentQuestionnaireResponse.apply { addContained(listResource) },
-      )
+    // Reference extracted resources in QR then save it if subject exists and config is true
+    currentQuestionnaireResponse.apply { addContained(listResource) }
+
+    if (
+      !currentQuestionnaireResponse.subject.reference.isNullOrEmpty() &&
+        questionnaireConfig.saveQuestionnaireResponse
+    ) {
+      defaultRepository.addOrUpdate(resource = currentQuestionnaireResponse)
     }
+  }
+
+  private suspend fun retrievePreviouslyExtractedResources(
+    questionnaireConfig: QuestionnaireConfig,
+    subjectType: ResourceType?,
+    questionnaire: Questionnaire,
+  ): MutableMap<ResourceType, MutableList<Resource>> {
+    val referencedResources = mutableMapOf<ResourceType, MutableList<Resource>>()
+    if (
+      questionnaireConfig.type.isEditable() &&
+        !questionnaireConfig.resourceIdentifier.isNullOrEmpty() &&
+        subjectType != null
+    ) {
+      searchLatestQuestionnaireResponse(
+          resourceId = questionnaireConfig.resourceIdentifier!!,
+          resourceType = questionnaireConfig.resourceType ?: subjectType,
+          questionnaireId = questionnaire.logicalId,
+        )
+        ?.contained
+        ?.asSequence()
+        ?.filterIsInstance<ListResource>()
+        ?.filter { it.title.equals(CONTAINED_LIST_TITLE, true) }
+        ?.flatMap { it.entry }
+        ?.forEach {
+          val idType = IdType(it.item.reference)
+          val resource = loadResource(ResourceType.fromCode(idType.resourceType), idType.idPart)
+          if (resource != null) {
+            referencedResources.getOrPut(resource.resourceType) { mutableListOf() }.add(resource)
+          }
+        }
+    }
+    return referencedResources
   }
 
   private fun Bundle.copyBundle(currentQuestionnaireResponse: QuestionnaireResponse): Bundle =

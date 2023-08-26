@@ -30,7 +30,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
-import org.smartregister.fhircore.quest.HiltActivityForTest
+import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.ui.register.NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.NO_REGISTER_VIEW_BUTTON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG
