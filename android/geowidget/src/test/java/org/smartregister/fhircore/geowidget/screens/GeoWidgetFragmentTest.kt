@@ -73,8 +73,6 @@ class GeoWidgetFragmentTest {
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
   lateinit var kujakuMapViewLifecycle: String
 
-  @Mock private lateinit var mockFeature: Feature
-
   @Before
   fun setup() {
     hiltRule.inject()
