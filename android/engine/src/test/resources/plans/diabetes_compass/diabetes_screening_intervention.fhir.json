@@ -3,8 +3,8 @@
   "language": "en-GB",
   "id": "dc-diabetes-screening-intervention",
   "name": "DiabetesScreeningIntervention",
-  "title": "Schedule of follow-ups for patients screened for diabetes",
-  "description": "Schedule of follow-ups for patients screened for diabetes",
+  "title": "Schedule of sceening & follow-ups for registered patients",
+  "description": "Schedule of sceening & follow-ups for registered patients",
   "version": "0.0.1",
   "status": "active",
   "publisher": "ONA",
@@ -16,7 +16,7 @@
       "resourceType": "ActivityDefinition",
       "id": "dc-init-care-plan-activity",
       "title": "Diabetes Screening Handler Activity",
-      "description": "This will initialize CarePlan on Diabetes Screening",
+      "description": "This will initialize  Diabetes Screening CarePlan",
       "status": "active",
       "kind": "CarePlan",
       "dynamicValue": [
@@ -84,13 +84,6 @@
           }
         },
         {
-          "path": "period.end",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "now() + 36 'months'"
-          }
-        },
-        {
           "path": "activity.detail.kind",
           "expression": {
             "language": "text/fhirpath",
@@ -108,7 +101,7 @@
           "path": "activity.detail.description",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "'This will initialize CarePlan on Diabetes Screening'"
+            "expression": "'This will initialize Diabetes Screening CarePlan'"
           }
         },
         {
@@ -119,6 +112,23 @@
           }
         }
       ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "routine-screening-task",
+      "title": "Screening Test",
+      "status": "active",
+      "description": "Generate a screening task when the patient has not been screened for diabetes",
+      "kind": "Task",
+      "timingTiming": {
+        "repeat": {
+          "frequency": 1,
+          "duration": 30,
+          "durationUnit": "d",
+          "period": 14,
+          "periodUnit": "d"
+        }
+      }
     },
     {
       "resourceType": "ActivityDefinition",
@@ -242,13 +252,52 @@
     {
       "prefix": "1",
       "priority": "routine",
+      "description": "Generate a screening task when the patient has not been screened for diabetes",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/dc-patient-registration').exists()"
+          }
+        }
+      ],
+      "participant": [
+        {
+          "type": "practitioner",
+          "role": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/action-participant-type",
+                "code": "practitioner",
+                "display": "Practitioner"
+              }
+            ]
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/action-type",
+            "code": "create",
+            "display": "Create"
+          }
+        ]
+      },
+      "definitionCanonical": "#routine-screening-task",
+      "transform": "http://hl7.org/fhir/StructureMap/routine-screening-sm"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
       "description": "Generate a three-year follow-up when the patient has low risk of diabetes from initial screening",
       "condition": [
         {
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/dc-diabetes-screening').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='score-calculations') and answer.value < 16.0).exists()"
+            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/dc-diabetes-screening').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='score-calculations') and answer.value < 0.163323142).exists()"
           }
         }
       ],

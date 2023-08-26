@@ -1,0 +1,84 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "questionnaire": "Questionnaire/dc-patient-registration",
+  "item": [
+    {
+      "linkId": "phn",
+      "text": "Personal Health Number"
+    },
+    {
+      "linkId": "national-identity-type",
+      "text": "National Identity Type",
+      "answer": [
+        {
+          "valueCoding": {
+            "system": "urn:uuid:d766a758-4c64-40ce-83b7-59a2edeb4758",
+            "code": "national-id-number",
+            "display": "National ID Number"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "national-identity-number",
+      "text": "National Identity Number",
+      "answer": [
+        {
+          "valueString": "1234567890"
+        }
+      ]
+    },
+    {
+      "linkId": "reporting-name",
+      "text": "Reporting Name",
+      "answer": [
+        {
+          "valueString": "Miyagi"
+        }
+      ]
+    },
+    {
+      "linkId": "legal-registered-name",
+      "text": "Legal Name / Registered Name",
+      "answer": [
+        {
+          "valueString": "Makori"
+        }
+      ]
+    },
+    {
+      "linkId": "date-of-birth",
+      "text": "Date of birth (DOB)",
+      "answer": [
+        {
+          "valueDate": "1999-04-18"
+        }
+      ]
+    },
+    {
+      "linkId": "date-of-birth-unknown-choice"
+    },
+    {
+      "linkId": "gender",
+      "text": "Gender",
+      "answer": [
+        {
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/administrative-gender",
+            "code": "male",
+            "display": "Male"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "contact-details",
+      "text": "Contact details",
+      "answer": [
+        {
+          "valueString": "+256396789"
+        }
+      ]
+    }
+  ]
+}
