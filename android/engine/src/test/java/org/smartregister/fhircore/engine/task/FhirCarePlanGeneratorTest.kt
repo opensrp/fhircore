@@ -123,7 +123,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Inject lateinit var transformSupportServices: TransformSupportServices
 
   @Inject lateinit var fhirPathEngine: FHIRPathEngine
-  private lateinit var fhirTaskUtil: FhirResourceUtil
+  private lateinit var fhirResourceUtil: FhirResourceUtil
   private lateinit var fhirEngine: FhirEngine
   private lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
   private lateinit var structureMapUtilities: StructureMapUtilities
@@ -145,7 +145,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     every { defaultRepository.fhirEngine } returns fhirEngine
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns emptyList()
 
-    fhirTaskUtil =
+    fhirResourceUtil =
       spyk(
         FhirResourceUtil(
           appContext = ApplicationProvider.getApplicationContext(),
@@ -160,7 +160,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         transformSupportServices = transformSupportServices,
         fhirPathEngine = fhirPathEngine,
         defaultRepository = defaultRepository,
-        fhirTaskUtil = fhirTaskUtil,
+        fhirResourceUtil = fhirResourceUtil,
       )
 
     immunizationResource =

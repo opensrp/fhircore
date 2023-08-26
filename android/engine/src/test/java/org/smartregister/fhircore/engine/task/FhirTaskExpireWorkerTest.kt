@@ -71,7 +71,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @BindValue
-  var fhirTaskUtil: FhirResourceUtil =
+  var fhirResourceUtil: FhirResourceUtil =
     FhirResourceUtil(
       ApplicationProvider.getApplicationContext(),
       defaultRepository,
@@ -213,7 +213,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
         context = appContext,
         workerParams = workerParameters,
         defaultRepository = defaultRepository,
-        fhirTaskUtil = fhirTaskUtil,
+        fhirResourceUtil = fhirResourceUtil,
         dispatcherProvider = coroutineTestRule.testDispatcherProvider,
       )
     }
