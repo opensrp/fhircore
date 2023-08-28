@@ -86,6 +86,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers
 import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.event.EventTriggerCondition
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
@@ -129,6 +130,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   private var opv0 = Task()
   private var opv1 = Task()
 
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
   @Before
   fun setup() {
     hiltRule.inject()
@@ -142,8 +145,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       spyk(
         FhirResourceUtil(
           appContext = ApplicationProvider.getApplicationContext(),
-          defaultRepository = defaultRepository
-        )
+          defaultRepository = defaultRepository,
+          configurationRegistry = configurationRegistry,
+        ),
       )
 
     fhirCarePlanGenerator =

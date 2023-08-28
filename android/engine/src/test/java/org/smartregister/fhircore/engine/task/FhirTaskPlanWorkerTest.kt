@@ -75,7 +75,8 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
       spyk(
         FhirResourceUtil(
           appContext = ApplicationProvider.getApplicationContext(),
-          defaultRepository = defaultRepository
+          defaultRepository = defaultRepository,
+          configurationRegistry = configurationRegistry
         )
       )
   }

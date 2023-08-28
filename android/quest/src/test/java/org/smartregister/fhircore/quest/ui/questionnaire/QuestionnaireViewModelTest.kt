@@ -110,12 +110,12 @@ import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.model.practitioner.FhirPractitionerDetails
-import org.smartregister.model.practitioner.KeycloakUserDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 
 @HiltAndroidTest
@@ -125,6 +125,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
   @Inject lateinit var configService: ConfigService
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private val fhirEngine: FhirEngine = mockk()
   private val context: Application = ApplicationProvider.getApplicationContext()
@@ -156,8 +157,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           configService = configService,
-          configRulesExecutor = configRulesExecutor
-        )
+          configRulesExecutor = configRulesExecutor,
+          fhirPathDataExtractor = fhirPathDataExtractor,
+        ),
       )
 
     val configurationRegistry = mockk<ConfigurationRegistry>()
@@ -1196,7 +1198,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   private fun practitionerDetails(): PractitionerDetails {
     return PractitionerDetails().apply {
-      userDetail = KeycloakUserDetails().apply { id = "12345" }
+      //userDetail = KeycloakUserDetails().apply { id = "12345" }
       fhirPractitionerDetails =
         FhirPractitionerDetails().apply {
           id = "12345"
