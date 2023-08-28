@@ -76,6 +76,7 @@ import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
 open class DefaultRepository
@@ -86,7 +87,8 @@ constructor(
   open val sharedPreferencesHelper: SharedPreferencesHelper,
   open val configurationRegistry: ConfigurationRegistry,
   open val configService: ConfigService,
-  open val configRulesExecutor: ConfigRulesExecutor
+  open val configRulesExecutor: ConfigRulesExecutor,
+  open val fhirPathDataExtractor: FhirPathDataExtractor,
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
@@ -662,7 +664,7 @@ constructor(
     val computedValuesMap = mutableMapOf<String, Any>()
     initialComputedValuesMap.forEach { entry ->
       computedValuesMap[entry.key] =
-        "${subject.resourceType.name}/${entry.value.toString().extractLogicalIdUuid()}"
+        "${entry.value.toString().substringBefore("/")}/${entry.value.toString().extractLogicalIdUuid()}"
     }
 
     Timber.i("Computed values map = ${computedValuesMap.values}")
@@ -697,7 +699,9 @@ constructor(
         Timber.i(
           "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}"
         )
-        closeResource(resource, resourceConfig)
+        if (filterRelatedResource(resource, resourceConfig)) {
+          closeResource(resource, resourceConfig)
+        }
       }
     }
   }
@@ -713,48 +717,28 @@ constructor(
       is CarePlan -> resource.status = CarePlan.CarePlanStatus.COMPLETED
       is Procedure -> resource.status = Procedure.ProcedureStatus.STOPPED
       is Condition -> {
-        // TODO Remove the hardcoded custom logic for closing PNC Condition i.e remove if block
-        // https://github.com/opensrp/fhircore/issues/2488
-        /**
-         * The logic for closing PNC Condition makes 2 assumptions
-         * 1. The eventResource id value is "pncConditionToClose" or "sickChildConditionToClose"
-         * 2. Conditions to be closed must have an onset that is more than 28 days in the past
-         */
-        if (resourceConfig.id == PNC_CONDITION_TO_CLOSE_RESOURCE_ID ||
-            resourceConfig.id == SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID
-        ) {
-          val closePncCondition = resource.onset.dateTimeValue().value.daysPassed() > 28
-          val closeSickChildCondition = resource.onset.dateTimeValue().value.daysPassed() > 7
-          if (closePncCondition || closeSickChildCondition) {
-            resource.clinicalStatus =
-              CodeableConcept().apply {
-                coding =
-                  listOf(
-                    Coding().apply {
-                      system = SNOMED_SYSTEM
-                      display = PATIENT_CONDITION_RESOLVED_DISPLAY
-                      code = PATIENT_CONDITION_RESOLVED_CODE
-                    }
-                  )
-              }
+        resource.clinicalStatus =
+          CodeableConcept().apply {
+            coding =
+              listOf(
+                Coding().apply {
+                  system = SNOMED_SYSTEM
+                  display = PATIENT_CONDITION_RESOLVED_DISPLAY
+                  code = PATIENT_CONDITION_RESOLVED_CODE
+                },
+              )
           }
-        } else {
-          resource.clinicalStatus =
-            CodeableConcept().apply {
-              coding =
-                listOf(
-                  Coding().apply {
-                    system = SNOMED_SYSTEM
-                    display = PATIENT_CONDITION_RESOLVED_DISPLAY
-                    code = PATIENT_CONDITION_RESOLVED_CODE
-                  }
-                )
-            }
-        }
       }
       is ServiceRequest -> resource.status = ServiceRequest.ServiceRequestStatus.REVOKED
     }
     fhirEngine.update(resource)
+  }
+
+  fun filterRelatedResource(resource: Resource, resourceConfig: ResourceConfig): Boolean {
+    return resourceConfig.filterFhirPathExpressions?.any { filterFhirPathExpression ->
+      fhirPathDataExtractor.extractValue(resource, filterFhirPathExpression.key) ==
+        filterFhirPathExpression.value
+    } == true
   }
 
   /**

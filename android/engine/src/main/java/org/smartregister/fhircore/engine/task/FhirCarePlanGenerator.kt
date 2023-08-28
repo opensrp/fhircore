@@ -355,17 +355,6 @@ constructor(
       }
   }
 
-  fun closeResource(resource: Resource) {
-    when (resource) {
-      is Task -> {
-        resource.status = TaskStatus.CANCELLED
-        resource.lastModified = Date()
-      }
-      is CarePlan -> {
-        resource.status = CarePlan.CarePlanStatus.COMPLETED
-      }
-    }
-  }
   fun evaluateToBoolean(
     subject: Resource,
     bundle: Bundle,
