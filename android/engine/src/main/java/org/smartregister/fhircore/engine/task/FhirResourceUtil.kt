@@ -47,7 +47,7 @@ import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
 
 @Singleton
-class FhirTaskUtil
+class FhirResourceUtil
 @Inject
 constructor(@ApplicationContext val appContext: Context, val defaultRepository: DefaultRepository,
             val configurationRegistry: ConfigurationRegistry,) {
