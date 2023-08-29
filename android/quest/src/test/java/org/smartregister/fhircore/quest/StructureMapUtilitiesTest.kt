@@ -557,7 +557,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     println(structureMap.encodeResourceToString())
     //    println(targetResource.encodeResourceToString())
 
-    Assert.assertEquals(12, targetResource.entry.size)
+    Assert.assertEquals(15, targetResource.entry.size)
     Assert.assertEquals("Encounter", targetResource.entry[0].resource.resourceType.toString())
     Assert.assertEquals("Observation", targetResource.entry[1].resource.resourceType.toString())
   }
