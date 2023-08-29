@@ -79,6 +79,7 @@ constructor(
 
       fhirEngine
         .search<Measure> {}
+        .map { it.resource }
         .forEach {
           monthList?.forEachIndexed { index, date ->
             val startDateFormatted = date.firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)

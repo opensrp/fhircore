@@ -23,7 +23,6 @@ import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.SearchQuery
 import com.google.android.fhir.sync.SyncDataParams
 import java.util.Date
 import java.util.TreeSet
@@ -92,7 +91,7 @@ constructor(
     classType: Class<out Resource>,
   ): List<Resource> {
     return withContext(dispatcherProvider.io()) {
-      val searchQuery =
+      /* val searchQuery =
         SearchQuery(
           """
             SELECT a.serializedResource
@@ -113,7 +112,8 @@ constructor(
           listOf(lastRecordUpdatedAt, batchSize, offset),
         )
 
-      fhirEngine.search(searchQuery)
+      fhirEngine.search(searchQuery)*/
+      emptyList()
     }
   }
 

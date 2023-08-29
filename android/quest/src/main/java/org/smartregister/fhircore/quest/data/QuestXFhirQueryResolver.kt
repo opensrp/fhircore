@@ -26,6 +26,6 @@ import org.hl7.fhir.r4.model.Resource
 @Singleton
 class QuestXFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) : XFhirQueryResolver {
   override suspend fun resolve(xFhirQuery: String): List<Resource> {
-    return fhirEngine.search(xFhirQuery)
+    return fhirEngine.search(xFhirQuery).map { it.resource }
   }
 }

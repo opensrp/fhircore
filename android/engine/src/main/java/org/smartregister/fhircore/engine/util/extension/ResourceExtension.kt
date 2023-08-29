@@ -367,9 +367,9 @@ suspend fun Task.updateDependentTaskDueDate(
 ): Task {
   return apply {
     val dependentTasks =
-      fhirEngine.search<Task> {
-        filter(referenceParameter = ReferenceClientParam(PARTOF), { value = id })
-      }
+      fhirEngine
+        .search<Task> { filter(referenceParameter = ReferenceClientParam(PARTOF), { value = id }) }
+        .map { it.resource }
     dependentTasks.forEach { dependantTask ->
       dependantTask.partOf.forEach { _ ->
         if (

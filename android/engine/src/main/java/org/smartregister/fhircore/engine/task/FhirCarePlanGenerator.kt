@@ -100,6 +100,7 @@ constructor(
           filter(CarePlan.INSTANTIATES_CANONICAL, { value = planDefinition.referenceValue() })
           filter(CarePlan.SUBJECT, { value = subject.referenceValue() })
         }
+        .map { it.resource }
         .firstOrNull()
         ?: CarePlan().apply {
           // TODO delete this section once all PlanDefinitions are using new

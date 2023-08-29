@@ -83,6 +83,7 @@ constructor(
             },
           )
         }
+        .map { it.resource }
         .filter { it.isPastExpiry() }
         .also { Timber.i("Going to expire ${it.size} tasks") }
         .onEach { task ->
@@ -143,32 +144,34 @@ constructor(
     Timber.i("Update upcoming Tasks to due...")
 
     val tasks =
-      defaultRepository.fhirEngine.search<Task> {
-        filter(
-          Task.STATUS,
-          { value = of(TaskStatus.REQUESTED.toCoding()) },
-          { value = of(TaskStatus.ACCEPTED.toCoding()) },
-          { value = of(TaskStatus.RECEIVED.toCoding()) },
-        )
-        filter(
-          Task.PERIOD,
-          {
-            prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
-            value = of(DateTimeType(Date()))
-          },
-        )
-        if (!subject?.reference.isNullOrEmpty()) {
-          filter(Task.SUBJECT, { value = subject?.reference })
+      defaultRepository.fhirEngine
+        .search<Task> {
+          filter(
+            Task.STATUS,
+            { value = of(TaskStatus.REQUESTED.toCoding()) },
+            { value = of(TaskStatus.ACCEPTED.toCoding()) },
+            { value = of(TaskStatus.RECEIVED.toCoding()) },
+          )
+          filter(
+            Task.PERIOD,
+            {
+              prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+              value = of(DateTimeType(Date()))
+            },
+          )
+          if (!subject?.reference.isNullOrEmpty()) {
+            filter(Task.SUBJECT, { value = subject?.reference })
+          }
+          taskResourcesToFilterBy?.let {
+            val filters =
+              it.map {
+                val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.logicalId) }
+                apply
+              }
+            filter(Resource.RES_ID, *filters.toTypedArray())
+          }
         }
-        taskResourcesToFilterBy?.let {
-          val filters =
-            it.map {
-              val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.logicalId) }
-              apply
-            }
-          filter(Resource.RES_ID, *filters.toTypedArray())
-        }
-      }
+        .map { it.resource }
 
     Timber.i(
       "Found ${tasks.size} upcoming Tasks (with statuses REQUESTED, ACCEPTED or RECEIVED) to be updated",

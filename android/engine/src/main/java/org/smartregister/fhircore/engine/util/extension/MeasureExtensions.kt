@@ -20,6 +20,7 @@ import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.search
 import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.MeasureReport
@@ -146,5 +147,5 @@ suspend inline fun retrievePreviouslyGeneratedMeasureReports(
   search.filter(MeasureReport.MEASURE, { value = measureUrl })
   subjects.forEach { search.filter(MeasureReport.SUBJECT, { value = it }) }
 
-  return fhirEngine.search(search)
+  return fhirEngine.search<MeasureReport>(search).map { it.resource }
 }

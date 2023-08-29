@@ -177,7 +177,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           subjectId = samplePatientId,
           subjectType = ResourceType.Patient,
           subjectParam = CarePlan.SUBJECT,
-          filters = emptyList(),
+          dataQueries = emptyList(),
         )
       Assert.assertEquals(1, actualCarePlans.size)
     }
@@ -197,7 +197,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           token = Patient.RES_ID,
           subjectId = samplePatientId,
           subjectType = ResourceType.Patient,
-          filters = emptyList(),
+          dataQueries = emptyList(),
           configComputedRuleValues = emptyMap(),
         )
       Assert.assertEquals(1, actualPatients.size)
