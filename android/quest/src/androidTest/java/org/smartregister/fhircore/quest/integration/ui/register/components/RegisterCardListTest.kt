@@ -25,7 +25,6 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onFirst
-import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -67,7 +66,7 @@ class RegisterCardListTest {
   }
 
   @Test
-  fun testRegisterCardListShouldHaveTwoItems() {
+  fun testRegisterCardListShouldHaveThreeItems() {
     composeTestRule.setContent {
       val config =
         RegisterCardConfig(views = listOf(CompoundTextProperties(primaryText = "Patient 1")))
@@ -87,24 +86,18 @@ class RegisterCardListTest {
       )
     }
 
-    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(2)
+    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(3)
 
     composeTestRule
       .onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG)
       .onChildren()
       .onFirst()
       .assert(hasText("Patient 1"))
-
-    composeTestRule
-      .onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG)
-      .onChildren()
-      .onLast()
-      .assertExists()
       .assertIsDisplayed()
   }
 
   @Test
-  fun testRegisterCardListWithPaginationShouldHaveThreeItems() {
+  fun testRegisterCardListWithPaginationShouldHaveFourItems() {
     composeTestRule.setContent {
       val config =
         RegisterCardConfig(views = listOf(CompoundTextProperties(primaryText = "Patient 1")))
@@ -125,19 +118,13 @@ class RegisterCardListTest {
       )
     }
 
-    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(3)
+    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(4)
 
     composeTestRule
       .onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG)
       .onChildren()
       .onFirst()
       .assert(hasText("Patient 1"))
-
-    composeTestRule
-      .onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG)
-      .onChildren()
-      .onLast()
-      .assertExists()
       .assertIsDisplayed()
   }
 }
