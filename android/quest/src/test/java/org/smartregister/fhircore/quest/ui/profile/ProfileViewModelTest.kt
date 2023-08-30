@@ -80,6 +80,7 @@ class ProfileViewModelTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           configService = mockk(),
           configRulesExecutor = mockk(),
+          fhirPathDataExtractor = mockk(),
         ),
       )
     coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns

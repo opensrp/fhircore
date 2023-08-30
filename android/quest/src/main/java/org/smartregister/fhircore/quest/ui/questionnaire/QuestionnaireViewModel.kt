@@ -299,38 +299,42 @@ constructor(
         ) {
           currentQuestionnaireResponse.subject = this.logicalId.asReference(subjectType)
         }
+        if (questionnaireConfig.type.isEditable()) {
+          if (resourceType == subjectType) {
+            this.id = currentQuestionnaireResponse.subject.extractId()
+          } else if (
+            extractedResourceUniquePropertyExpressionsMap.containsKey(resourceType) &&
+              previouslyExtractedResources.containsKey(resourceType)
+          ) {
+            val fhirPathExpression =
+              extractedResourceUniquePropertyExpressionsMap
+                .getValue(resourceType)
+                .fhirPathExpression
 
-        if (resourceType == subjectType) {
-          this.id = currentQuestionnaireResponse.subject.extractId()
-        } else if (
-          extractedResourceUniquePropertyExpressionsMap.containsKey(resourceType) &&
-            previouslyExtractedResources.containsKey(resourceType)
-        ) {
-          val fhirPathExpression =
-            extractedResourceUniquePropertyExpressionsMap.getValue(resourceType).fhirPathExpression
+            val currentResourceIdentifier =
+              fhirPathDataExtractor.extractValue(
+                base = this,
+                expression = fhirPathExpression,
+              )
 
-          val currentResourceIdentifier =
-            fhirPathDataExtractor.extractValue(
-              base = this,
-              expression = fhirPathExpression,
-            )
+            // Search for resource with property value matching extracted value
+            val resource =
+              previouslyExtractedResources.getValue(resourceType).find {
+                val extractedValue =
+                  fhirPathDataExtractor.extractValue(
+                    base = it,
+                    expression = fhirPathExpression,
+                  )
+                extractedValue.isNotEmpty() &&
+                  extractedValue.equals(currentResourceIdentifier, true)
+              }
 
-          // Search for resource with property value matching extracted value
-          val resource =
-            previouslyExtractedResources.getValue(resourceType).find {
-              val extractedValue =
-                fhirPathDataExtractor.extractValue(
-                  base = it,
-                  expression = fhirPathExpression,
-                )
-              extractedValue.isNotEmpty() && extractedValue.equals(currentResourceIdentifier, true)
-            }
-
-          // Found match use the id on current resource; override identifiers for RelatedPerson
-          if (resource != null) {
-            this.id = resource.logicalId
-            if (this is RelatedPerson && resource is RelatedPerson) {
-              this.identifier = resource.identifier
+            // Found match use the id on current resource; override identifiers for RelatedPerson
+            if (resource != null) {
+              this.id = resource.logicalId
+              if (this is RelatedPerson && resource is RelatedPerson) {
+                this.identifier = resource.identifier
+              }
             }
           }
         }

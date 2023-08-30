@@ -5,6 +5,7 @@
 
     <application
         android:name=".QuestApplication"
+        android:enableOnBackInvokedCallback="true"
         android:hardwareAccelerated="true"
         android:icon="@drawable/ic_launcher"
         android:installLocation="internalOnly"
@@ -16,7 +17,6 @@
         android:usesCleartextTraffic="false"
         android:windowSoftInputMode="adjustResize"
         tools:ignore="UnusedAttribute,LockedOrientationActivity"
-        android:enableOnBackInvokedCallback="true"
         tools:replace="android:theme">
         <profileable
             android:shell="true"
@@ -29,7 +29,8 @@
         <activity
             android:name=".ui.appsetting.AppSettingActivity"
             android:clearTaskOnLaunch="true"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -39,21 +40,26 @@
         <activity
             android:name=".ui.login.LoginActivity"
             android:exported="false"
-            android:launchMode="singleTop" />
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
+
         <activity
             android:name=".ui.pin.PinLoginActivity"
             android:exported="false"
-            android:launchMode="singleTop" />
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
+
         <activity
             android:name=".ui.main.AppMainActivity"
+            android:clearTaskOnLaunch="true"
             android:launchMode="singleTop"
-            android:clearTaskOnLaunch="true" />
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".ui.questionnaire.QuestionnaireActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
-        <activity android:name=".HiltActivityForTest" />
 
         <service
             android:name=".ui.login.AuthAndroidService"

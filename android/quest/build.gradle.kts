@@ -261,6 +261,13 @@ android {
       versionNameSuffix = "-engage"
       manifestPlaceholders["appLabel"] = "Engage"
     }
+
+    create("eir") {
+      dimension = "apps"
+      applicationIdSuffix = ".who_eir"
+      versionNameSuffix = "-who_eir"
+      manifestPlaceholders["appLabel"] = "WHO EIR"
+    }
   }
 
   applicationVariants.all {
