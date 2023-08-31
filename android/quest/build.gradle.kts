@@ -268,6 +268,12 @@ android {
       versionNameSuffix = "-who_eir"
       manifestPlaceholders["appLabel"] = "WHO EIR"
     }
+    create("psi-eswatini") {
+      dimension = "apps"
+      applicationIdSuffix = ".psi_eswatini"
+      versionNameSuffix = "-psi_eswatini"
+      manifestPlaceholders["appLabel"] = "PSI WFA"
+    }
   }
 
   applicationVariants.all {
