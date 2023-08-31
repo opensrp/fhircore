@@ -18,6 +18,9 @@
         android:windowSoftInputMode="adjustResize"
         tools:ignore="UnusedAttribute,LockedOrientationActivity"
         tools:replace="android:theme">
+        <profileable
+            android:shell="true"
+            tools:targetApi="29" />
 
         <meta-data
             android:name="io.sentry.auto-init"
@@ -34,7 +37,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".ui.login.LoginActivity"
             android:exported="false"
@@ -76,7 +78,6 @@
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
-
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
