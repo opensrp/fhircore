@@ -33,6 +33,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -71,15 +72,18 @@ fun PinInput(
   onPinEntered: (CharArray, (Boolean) -> Unit) -> Unit,
 ) {
   val keyboard = LocalSoftwareKeyboardController.current
-  val focusRequester = remember { FocusRequester() }
+  val (focusRequester) = FocusRequester.createRefs()
   var enteredPin by remember { mutableStateOf(charArrayOf()) }
-  var nextCellIndex by remember { mutableStateOf(0) }
+  var nextCellIndex by remember { mutableIntStateOf(0) }
   var isValidPin by remember { mutableStateOf<Boolean?>(null) }
+  val isFocused by remember { mutableStateOf(false) }
 
   // Launch keyboard and request focus
   SideEffect {
-    focusRequester.requestFocus()
-    keyboard?.show()
+    if (!isFocused) {
+      focusRequester.requestFocus()
+      keyboard?.show()
+    }
   }
 
   // Hidden input field
@@ -166,7 +170,10 @@ fun PinCell(
       modifier
         .testTag(PIN_CELL_TEST_TAG)
         .padding(4.dp)
-        .size(width = if (inputMode) 48.dp else 18.dp, height = if (inputMode) 56.dp else 18.dp)
+        .size(
+          width = if (inputMode) 48.dp else 18.dp,
+          height = if (inputMode) 56.dp else 18.dp,
+        )
         .clip(if (inputMode) RoundedCornerShape(size = 6.dp) else CircleShape)
         .background(backgroundColor)
         .border(
