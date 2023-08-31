@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 
 package org.smartregister.fhircore.quest.ui.appsetting
 
@@ -39,22 +39,26 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -77,9 +81,13 @@ fun AppSettingScreen(
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
   val coroutineScope = rememberCoroutineScope()
   val bringIntoViewRequester = remember { BringIntoViewRequester() }
-  val focusRequester = remember { FocusRequester() }
+  val focusManager = LocalFocusManager.current
+  val (appIdFocusRequester) = FocusRequester.createRefs()
 
-  SideEffect { focusRequester.requestFocus() }
+  LaunchedEffect(Unit) {
+    delay(300)
+    focusManager.moveFocus(FocusDirection.Next)
+  }
 
   Column(modifier = modifier.fillMaxSize()) {
     Column(
@@ -111,9 +119,11 @@ fun AppSettingScreen(
             .testTag(APP_ID_TEXT_INPUT_TAG)
             .fillMaxWidth()
             .padding(vertical = 2.dp)
-            .focusRequester(focusRequester)
+            .focusRequester(appIdFocusRequester)
             .onFocusEvent { event ->
-              if (event.isFocused) coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
+              if (event.isFocused) {
+                coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
+              }
             },
       )
       if (error.isNotEmpty()) {
