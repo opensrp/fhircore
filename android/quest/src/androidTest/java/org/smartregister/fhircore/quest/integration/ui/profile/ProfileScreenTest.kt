@@ -18,7 +18,6 @@ package org.smartregister.fhircore.quest.integration.ui.profile
 
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -47,7 +46,6 @@ import org.smartregister.fhircore.quest.ui.profile.PROFILE_TOP_BAR_ICON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.profile.PROFILE_TOP_BAR_TEST_TAG
 import org.smartregister.fhircore.quest.ui.profile.ProfileScreen
 import org.smartregister.fhircore.quest.ui.profile.ProfileUiState
-import org.smartregister.fhircore.quest.waitUntilExists
 
 @HiltAndroidTest
 class ProfileScreenTest {
@@ -88,7 +86,7 @@ class ProfileScreenTest {
   @Test
   fun testFloatingActionButtonIsDisplayed() {
     // We wait for the text be drawn before we do the assertion
-    composeTestRule.waitUntilExists(hasTestTag(FAB_BUTTON_TEST_TAG))
+    composeTestRule.waitUntil(5_000) { true }
     composeTestRule
       .onAllNodesWithTag(FAB_BUTTON_TEST_TAG, useUnmergedTree = true)
       .assertCountEquals(3)
@@ -110,7 +108,7 @@ class ProfileScreenTest {
   @Test
   fun testThatOverflowMenuIsDisplayed() {
     // We wait for the menu icon to be drawn before clicking it
-    composeTestRule.waitUntilExists(hasTestTag(DROPDOWN_MENU_TEST_TAG))
+    composeTestRule.waitUntil(5000) { true }
     composeTestRule.onNodeWithTag(DROPDOWN_MENU_TEST_TAG).performClick()
     composeTestRule
       .onNodeWithText("Family details", useUnmergedTree = true)
