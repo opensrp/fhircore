@@ -93,6 +93,11 @@ android {
 
   buildTypes {
     getByName("debug") { isTestCoverageEnabled = true }
+    create("benchmark") {
+      signingConfig = signingConfigs.getByName("debug")
+      matchingFallbacks += listOf("debug")
+      isDebuggable = true
+    }
 
     create("debugNonProxy") { initWith(getByName("debug")) }
 
@@ -391,6 +396,7 @@ dependencies {
   androidTestImplementation(libs.hilt.android.testing)
   androidTestImplementation(libs.mockk.android)
   androidTestImplementation(libs.benchmark.junit)
+  androidTestImplementation("androidx.work:work-testing:2.7.1")
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }
