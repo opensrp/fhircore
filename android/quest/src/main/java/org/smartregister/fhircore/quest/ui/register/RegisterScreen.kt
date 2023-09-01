@@ -72,6 +72,7 @@ fun RegisterScreen(
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
+  params: Map<String, String>,
 ) {
   val lazyListState: LazyListState = rememberLazyListState()
 
