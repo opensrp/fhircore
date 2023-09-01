@@ -20,6 +20,7 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
 import com.google.android.fhir.search.Search
@@ -83,29 +84,34 @@ class FhirResourceUtilTest : RobolectricTest() {
 
   @Test
   fun fetchOverdueTasks() {
-    val taskList = mutableListOf<Task>()
+    val taskList = mutableListOf<SearchResult<Task>>()
 
     for (i in 1..4) {
       taskList.add(
         spyk(
-          Task().apply {
-            id = UUID.randomUUID().toString()
-            status = TaskStatus.INPROGRESS
-            executionPeriod =
-              Period().apply {
-                start = Date().plusDays(-10)
-                end = Date().plusDays(-1)
-              }
-            restriction =
-              Task.TaskRestrictionComponent().apply {
-                period = Period().apply { end = today().plusDays(i % 2) }
-              }
-          },
+          SearchResult(
+            resource =
+              Task().apply {
+                id = UUID.randomUUID().toString()
+                status = TaskStatus.INPROGRESS
+                executionPeriod =
+                  Period().apply {
+                    start = Date().plusDays(-10)
+                    end = Date().plusDays(-1)
+                  }
+                restriction =
+                  Task.TaskRestrictionComponent().apply {
+                    period = Period().apply { end = today().plusDays(i % 2) }
+                  }
+              },
+            null,
+            null,
+          ),
         ),
       )
     }
 
-    coEvery { fhirEngine.search<Task>(any<Search>()) } returns taskList
+    coEvery { fhirEngine.search<Task>(any()) } returns taskList
     coEvery { defaultRepository.update(any()) } just runs
 
     val tasks = runBlocking { fhirResourceUtil.expireOverdueTasks() }
@@ -120,23 +126,30 @@ class FhirResourceUtilTest : RobolectricTest() {
 
   @Test
   fun fetchOverdueTasksAndCompleteCarePlan() {
-    val taskList = mutableListOf<Task>()
+    val taskList = mutableListOf<SearchResult<Task>>()
 
     for (i in 1..4) {
       taskList.add(
         spyk(
-          Task().apply {
-            id = UUID.randomUUID().toString()
-            status = TaskStatus.INPROGRESS
-            executionPeriod =
-              Period().apply {
-                start = Date().plusDays(-10)
-                end = Date().plusDays(-1)
-              }
-            restriction =
-              Task.TaskRestrictionComponent().apply { period = Period().apply { end = today() } }
-            basedOn.add(Reference().apply { reference = "CarePlan/123" })
-          },
+          SearchResult(
+            resource =
+              Task().apply {
+                id = UUID.randomUUID().toString()
+                status = TaskStatus.INPROGRESS
+                executionPeriod =
+                  Period().apply {
+                    start = Date().plusDays(-10)
+                    end = Date().plusDays(-1)
+                  }
+                restriction =
+                  Task.TaskRestrictionComponent().apply {
+                    period = Period().apply { end = today() }
+                  }
+                basedOn.add(Reference().apply { reference = "CarePlan/123" })
+              },
+            null,
+            null,
+          ),
         ),
       )
     }
@@ -147,11 +160,11 @@ class FhirResourceUtilTest : RobolectricTest() {
         status = CarePlan.CarePlanStatus.ACTIVE
         activityFirstRep.detail.kind = CarePlan.CarePlanActivityKind.TASK
         activityFirstRep.outcomeReference.add(
-          Reference().apply { reference = "Task/${taskList.first().logicalId}" },
+          Reference().apply { reference = "Task/${taskList.first().resource.logicalId}" },
         )
       }
 
-    coEvery { fhirEngine.search<Task>(any<Search>()) } returns taskList
+    coEvery { fhirEngine.search<Task>(any()) } returns taskList
     coEvery { fhirEngine.get<CarePlan>(any()) } returns carePlan
 
     coEvery { defaultRepository.update(any()) } just runs
@@ -208,7 +221,7 @@ class FhirResourceUtilTest : RobolectricTest() {
           },
         )
       }
-    } returns listOf(task)
+    } returns listOf(SearchResult(resource = task, null, null))
 
     coEvery { fhirEngine.get<Task>(any()).status.isIn(TaskStatus.COMPLETED) } returns true
 
@@ -252,7 +265,7 @@ class FhirResourceUtilTest : RobolectricTest() {
           },
         )
       }
-    } returns listOf(task)
+    } returns listOf(SearchResult(resource = task, null, null))
 
     coEvery { fhirEngine.get<Task>(any()).status.isIn(TaskStatus.COMPLETED) } returns true
 

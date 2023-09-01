@@ -56,7 +56,7 @@ class MeasureReportPagingSource(
         repositoryResourceData =
           RepositoryResourceData(
             resourceRulesEngineFactId = it.resource.resourceType.name,
-            resource = it.resource
+            resource = it.resource,
           ),
         ruleConfigs = registerConfiguration.registerCard.rules,
         params = emptyMap(),

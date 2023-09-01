@@ -23,6 +23,7 @@ import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
@@ -819,10 +820,17 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       structureMapReferral
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns
       listOf(
-        CarePlan().apply {
-          instantiatesCanonical = listOf(CanonicalType(plandefinition.asReference().reference))
-          addActivity().apply { this.addOutcomeReference().apply { this.reference = "Task/1111" } }
-        },
+        SearchResult(
+          resource =
+            CarePlan().apply {
+              instantiatesCanonical = listOf(CanonicalType(plandefinition.asReference().reference))
+              addActivity().apply {
+                this.addOutcomeReference().apply { this.reference = "Task/1111" }
+              }
+            },
+          null,
+          null,
+        ),
       )
     coEvery { fhirEngine.get<Task>(any()) } returns
       Task().apply {
@@ -1673,7 +1681,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         )
         filter(CarePlan.SUBJECT, { value = patient.referenceValue() })
       }
-    } returns listOf(carePlan)
+    } returns listOf(SearchResult(resource = carePlan, null, null))
     coEvery { fhirEngine.update(any()) } just runs
 
     runBlocking {
@@ -1898,7 +1906,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         )
       }
     } returns
-      listOf(opv1.apply { partOf = listOf(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f")) })
+      listOf(
+        SearchResult(
+          resource =
+            opv1.apply { partOf = listOf(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f")) },
+          null,
+          null,
+        ),
+      )
     coEvery {
       fhirEngine.search<Immunization> {
         filter(
@@ -1906,7 +1921,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           { value = immunizationResource.id.extractLogicalIdUuid() },
         )
       }
-    } returns listOf(immunizationResource)
+    } returns listOf(SearchResult(resource = immunizationResource, null, null))
     coEvery {
       fhirEngine.search<Encounter> {
         filter(
@@ -1914,7 +1929,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           { value = encounter.id.extractLogicalIdUuid() },
         )
       }
-    } returns listOf(encounter)
+    } returns listOf(SearchResult(resource = encounter, null, null))
 
     val updatedTask = runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }
     assertEquals(opv0, updatedTask)
@@ -1931,11 +1946,16 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       }
     } returns
       listOf(
-        opv1.apply {
-          partOf = listOf(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f"))
-          status = TaskStatus.REQUESTED
-          input = listOf(Task.ParameterComponent(CodeableConcept(), StringType("28")))
-        },
+        SearchResult(
+          resource =
+            opv1.apply {
+              partOf = listOf(Reference("Task/650203d2-f327-4eb4-a9fd-741e0ce29c3f"))
+              status = TaskStatus.REQUESTED
+              input = listOf(Task.ParameterComponent(CodeableConcept(), StringType("28")))
+            },
+          null,
+          null,
+        ),
       )
     coEvery { fhirEngine.get<Immunization>(immunizationResource.id.extractLogicalIdUuid()) } returns
       immunizationResource
@@ -1947,7 +1967,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           { value = encounter.id.extractLogicalIdUuid() },
         )
       }
-    } returns listOf(encounter)
+    } returns listOf(SearchResult(resource = encounter, null, null))
     coEvery { defaultRepository.addOrUpdate(addMandatoryTags = true, opv1) } just runs
     runBlocking { defaultRepository.addOrUpdate(true, opv1) }
     runBlocking { opv0.updateDependentTaskDueDate(defaultRepository, fhirEngine) }

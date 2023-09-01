@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -276,8 +277,8 @@ class MeasureExtensionTest : RobolectricTest() {
 
   @Test
   fun testRetrievePreviouslyGeneratedMeasureReportsProducesCorrectSearchObject() {
-    coEvery { fhirEngine.search<MeasureReport>(any<Search>()) } returns
-      listOf<MeasureReport>(measureReport)
+    coEvery { fhirEngine.search<MeasureReport>(any()) } returns
+      listOf(SearchResult(resource = measureReport, null, null))
 
     val search = Search(ResourceType.MeasureReport)
     search.filter(
