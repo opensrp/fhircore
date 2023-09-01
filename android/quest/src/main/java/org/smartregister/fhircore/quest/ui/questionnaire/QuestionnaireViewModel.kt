@@ -809,7 +809,7 @@ constructor(
   }
 
   fun computeQuestionnaireConfigRules(ruleConfigs: List<RuleConfig>): Map<String, Any> =
-    resourceDataRulesExecutor.computeResourceDataRules(ruleConfigs, null, params ?: emptyMap())
+    resourceDataRulesExecutor.computeResourceDataRules(ruleConfigs, null, emptyMap())
 
   companion object {
     private const val QUESTIONNAIRE_RESPONSE_ITEM = "QuestionnaireResponse.item"
