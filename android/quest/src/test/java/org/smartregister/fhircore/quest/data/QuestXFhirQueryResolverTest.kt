@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.data
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.search.Search
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -38,17 +39,23 @@ class QuestXFhirQueryResolverTest {
   fun resolve() = runTest {
     val patient = Patient()
     val task = Task()
-    val resources = listOf<Resource>(patient, task)
-    coEvery { fhirEngine.search<Resource>(ofType<Search>()) } answers
+    val resources =
+      listOf<SearchResult<Resource>>(
+        SearchResult(resource = patient, null, null),
+        SearchResult(resource = task, null, null),
+      )
+    coEvery { fhirEngine.search<Resource>(ofType()) } answers
       {
         val type = firstArg<Search>().type
-        resources.filter { it.resourceType == type }
+        resources.filter { it.resource.resourceType == type }
       }
     val xFhirResolver = QuestXFhirQueryResolver(fhirEngine)
     val result = xFhirResolver.resolve("Patient?active=true")
     Assert.assertTrue(result.isNotEmpty())
     Assert.assertTrue(
-      result.containsAll(resources.filter { it.resourceType == ResourceType.Patient }),
+      result.containsAll<Any>(
+        resources.filter { it.resource.resourceType == ResourceType.Patient },
+      ),
     )
   }
 }

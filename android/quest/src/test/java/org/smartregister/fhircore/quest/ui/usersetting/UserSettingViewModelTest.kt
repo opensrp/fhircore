@@ -103,7 +103,6 @@ class UserSettingViewModelTest : RobolectricTest() {
           fhirEngine = mockk(),
           dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
           syncListenerManager = mockk(relaxed = true),
-          sync = sync,
           context = context,
         ),
       )

@@ -824,13 +824,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
 
     coEvery {
-      fhirEngine.search<QuestionnaireResponse> {
-        filter(QuestionnaireResponse.SUBJECT, { value = patient.logicalId })
-        filter(
-          QuestionnaireResponse.QUESTIONNAIRE,
-          { value = ResourceType.Questionnaire.name + "/" + questionnaireConfig.id },
-        )
-      }
+      fhirEngine
+        .search<QuestionnaireResponse> {
+          filter(QuestionnaireResponse.SUBJECT, { value = patient.logicalId })
+          filter(
+            QuestionnaireResponse.QUESTIONNAIRE,
+            { value = ResourceType.Questionnaire.name + "/" + questionnaireConfig.id },
+          )
+        }
+        .map { it.resource }
     } returns questionnaireResponses
 
     val latestQuestionnaireResponse =
