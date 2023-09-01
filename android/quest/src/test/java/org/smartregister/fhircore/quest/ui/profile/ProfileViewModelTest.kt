@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.android.fhir.logicalId
@@ -23,8 +24,12 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
+import io.mockk.verifyAll
 import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -36,15 +41,20 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
+import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.BLACK_COLOR_HEX_CODE
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
+import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 @HiltAndroidTest
 class ProfileViewModelTest : RobolectricTest() {
@@ -59,6 +69,7 @@ class ProfileViewModelTest : RobolectricTest() {
   private lateinit var resourceData: ResourceData
   private lateinit var expectedBaseResource: Patient
   private lateinit var registerRepository: RegisterRepository
+  val mockProfileViewModel = mockk<ProfileViewModel>()
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -142,5 +153,66 @@ class ProfileViewModelTest : RobolectricTest() {
       ),
     )
     coVerify { registerRepository.changeManagingEntity(any(), any(), any()) }
+  }
+
+  @Test
+  fun testOverflowMenuClickChangeManagingEntity() {
+    val mockEvent = mockk<ProfileEvent.OverflowMenuClick>()
+    val mockActionConfig = mockk<ActionConfig>()
+    val listActionConfig = mockk<List<ActionConfig>>()
+    val mockWorkflow = ApplicationWorkflow.CHANGE_MANAGING_ENTITY
+    val mockManagingEntity = mockk<ManagingEntityConfig>()
+
+    every { mockEvent.overflowMenuItemConfig?.actions } returns listActionConfig
+    every { mockActionConfig.managingEntity } returns mockManagingEntity
+    every { mockActionConfig.interpolate(any()) } returns mockActionConfig
+    every { mockActionConfig.workflow } returns mockWorkflow.name
+    every { mockActionConfig.managingEntity } returns mockManagingEntity
+
+    val changeManagingEntity =
+      profileViewModel.javaClass.getDeclaredMethod(
+        "changeManagingEntity",
+        ProfileEvent.OverflowMenuClick::class.java,
+        ManagingEntityConfig::class.java,
+      )
+    changeManagingEntity.isAccessible = true
+    val parameters = arrayOfNulls<Any>(2)
+    val resourceData =
+      ResourceData("baseResourceId", ResourceType.MeasureReport, emptyMap(), emptyMap())
+    val overflowMenuItemConfig =
+      OverflowMenuItemConfig(
+        1,
+        "myFlowMenu",
+        false,
+        null,
+        BLACK_COLOR_HEX_CODE,
+        null,
+        "true",
+        false,
+        "true",
+        emptyList(),
+      )
+    val navController = mockk<NavController>()
+    val event = ProfileEvent.OverflowMenuClick(navController, resourceData, overflowMenuItemConfig)
+    parameters[0] = event
+    parameters[1] =
+      ManagingEntityConfig(
+        eligibilityCriteriaFhirPathExpression = "Patient.active",
+        resourceType = ResourceType.Patient,
+        nameFhirPathExpression = "Patient.name.given",
+      )
+    every { mockActionConfig.interpolate(any()) } returns mockActionConfig
+    mockActionConfig.interpolate(emptyMap())
+    changeManagingEntity.invoke(profileViewModel, *parameters)
+    every { listActionConfig.handleClickEvent(navController, resourceData) } just runs
+    profileViewModel.onEvent(event)
+    every { mockProfileViewModel.onEvent(any()) } just runs
+    listActionConfig.iterator()
+    every { listActionConfig.iterator().next() } returns mockActionConfig
+
+    verifyAll {
+      mockActionConfig.interpolate(any())
+      profileViewModel.onEvent(event)
+    }
   }
 }

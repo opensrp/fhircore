@@ -1,0 +1,78 @@
+{
+  "resourceType": "Patient",
+  "id": "75e4b317-81c0-4604-b889-c928fd2a2f79",
+  "meta": {
+    "lastUpdated": "2023-08-24T14:30:39.352+03:00",
+    "tag": [
+      {
+        "system": "https://smartregister.org/care-team-tag-id",
+        "code": "456cbdda-d3e5-4ce4-b1f7-7ec079cf4914",
+        "display": "Practitioner CareTeam"
+      },
+      {
+        "system": "https://smartregister.org/location-tag-id",
+        "code": "Not defined",
+        "display": "Practitioner Location"
+      },
+      {
+        "system": "https://smartregister.org/organisation-tag-id",
+        "code": "98348d1d-00f4-4118-b4c0-128ab6c91280",
+        "display": "Practitioner Organization"
+      },
+      {
+        "system": "https://smartregister.org/practitioner-tag-id",
+        "code": "64fccd56-d964-455e-a905-8452ff98f0a8",
+        "display": "Practitioner"
+      },
+      {
+        "system": "https://smartregister.org/app-version",
+        "code": "Not defined",
+        "display": "Application Version"
+      }
+    ]
+  },
+  "identifier": [
+    {
+      "use": "official",
+      "value": "435406",
+      "period": {
+        "start": "2023-08-24T14:30:39+03:00"
+      }
+    },
+    {
+      "use": "secondary",
+      "value": "4e38baf7-3b60-47e0-afcf-8cfbf24a877a",
+      "period": {
+        "start": "2023-08-24T14:30:39+03:00"
+      }
+    }
+  ],
+  "active": true,
+  "name": [
+    {
+      "use": "official",
+      "text": "KidMid",
+      "family": "KidLast",
+      "given": [
+        "Kid"
+      ]
+    }
+  ],
+  "gender": "female",
+  "birthDate": "2023-05-24",
+  "address": [
+    {
+      "use": "home",
+      "type": "physical",
+      "district": "Kejani"
+    }
+  ],
+  "generalPractitioner": [
+    {
+      "reference": "Practitioner/64fccd56-d964-455e-a905-8452ff98f0a8"
+    }
+  ],
+  "managingOrganization": {
+    "reference": "Organization/98348d1d-00f4-4118-b4c0-128ab6c91280"
+  }
+}

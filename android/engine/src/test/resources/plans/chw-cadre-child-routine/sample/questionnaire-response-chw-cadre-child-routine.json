@@ -1,0 +1,353 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "e3a90c32-7203-4ada-9236-fef0244fb3bd",
+  "meta": {
+    "lastUpdated": "2023-08-24T14:30:39.823+03:00",
+    "tag": [
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+        "display": "Child Registration"
+      },
+      {
+        "system": "https://smartregister.org/care-team-tag-id",
+        "code": "456cbdda-d3e5-4ce4-b1f7-7ec079cf4914",
+        "display": "Practitioner CareTeam"
+      },
+      {
+        "system": "https://smartregister.org/location-tag-id",
+        "code": "Not defined",
+        "display": "Practitioner Location"
+      },
+      {
+        "system": "https://smartregister.org/organisation-tag-id",
+        "code": "98348d1d-00f4-4118-b4c0-128ab6c91280",
+        "display": "Practitioner Organization"
+      },
+      {
+        "system": "https://smartregister.org/practitioner-tag-id",
+        "code": "64fccd56-d964-455e-a905-8452ff98f0a8",
+        "display": "Practitioner"
+      },
+      {
+        "system": "https://smartregister.org/app-version",
+        "code": "Not defined",
+        "display": "Application Version"
+      }
+    ]
+  },
+  "contained": [
+    {
+      "resourceType": "List",
+      "id": "f4a97099-e44c-49b4-a209-86df0bc4dc36",
+      "status": "current",
+      "mode": "working",
+      "title": "GeneratedResourcesList",
+      "date": "2023-08-24T14:30:39+03:00",
+      "entry": [
+        {
+          "deleted": false,
+          "date": "2023-08-24T14:30:39+03:00",
+          "item": {
+            "reference": "Patient/75e4b317-81c0-4604-b889-c928fd2a2f79"
+          }
+        },
+        {
+          "deleted": false,
+          "date": "2023-08-24T14:30:39+03:00",
+          "item": {
+            "reference": "Patient/ba1253c6-c8ca-4b8a-97e9-52324c1a61a2"
+          }
+        },
+        {
+          "deleted": false,
+          "date": "2023-08-24T14:30:39+03:00",
+          "item": {
+            "reference": "RelatedPerson/7c6a7e31-4d89-49a3-a131-49675c37673d"
+          }
+        },
+        {
+          "deleted": false,
+          "date": "2023-08-24T14:30:39+03:00",
+          "item": {
+            "reference": "Patient/238b87ad-c8f9-4a3e-8b17-cd3e7e669a81"
+          }
+        },
+        {
+          "deleted": false,
+          "date": "2023-08-24T14:30:39+03:00",
+          "item": {
+            "reference": "RelatedPerson/1c13f653-e8d1-4644-a351-438810c9255b"
+          }
+        },
+        {
+          "deleted": false,
+          "date": "2023-08-24T14:30:39+03:00",
+          "item": {
+            "reference": "Encounter/34917032-5cd3-474a-a1da-faa25953699f"
+          }
+        },
+        {
+          "deleted": false,
+          "date": "2023-08-24T14:30:39+03:00",
+          "item": {
+            "reference": "Observation/ad5e588b-d7f8-4e27-93b5-41dc8a2951dd"
+          }
+        },
+        {
+          "deleted": false,
+          "date": "2023-08-24T14:30:39+03:00",
+          "item": {
+            "reference": "Observation/ad5e588b-d7f8-4e27-93b5-41dc8a2951dd"
+          }
+        }
+      ]
+    }
+  ],
+  "questionnaire": "Questionnaire/e5155788-8831-4916-a3f5-486915ce34b211-01",
+  "status": "completed",
+  "subject": {
+    "reference": "Patient/75e4b317-81c0-4604-b889-c928fd2a2f79"
+  },
+  "authored": "2023-08-24T14:30:39+03:00",
+  "item": [
+    {
+      "linkId": "ed77104e-c279-4030-ab20-8cd99ca99ca9",
+      "text": "OpenSRP ID",
+      "answer": [
+        {
+          "valueInteger": 435406
+        }
+      ]
+    },
+    {
+      "linkId": "f7ee2d12-829e-4ca3-fe30-ddb5e809ac91",
+      "text": "Child's First Name",
+      "answer": [
+        {
+          "valueString": "Kid"
+        }
+      ]
+    },
+    {
+      "linkId": "7b41d922-376c-49bf-f6a8-faaa681e9ef6",
+      "text": "Child's Middle Name",
+      "answer": [
+        {
+          "valueString": "KidMid"
+        }
+      ]
+    },
+    {
+      "linkId": "76bad83a-f061-4b22-8b4f-a95cbd5be4da",
+      "text": "Child's Last Name",
+      "answer": [
+        {
+          "valueString": "KidLast"
+        }
+      ]
+    },
+    {
+      "linkId": "aa1ddb98-87a4-48a6-9d8c-4c80de1ec277",
+      "text": "Child's Date of Birth",
+      "answer": [
+        {
+          "valueDate": "2023-08-24"
+        }
+      ]
+    },
+    {
+      "linkId": "e79d201a-4e30-40ca-c1ef-060a3d449303"
+    },
+    {
+      "linkId": "50330b11-c520-4f45-a8f4-44771097788d",
+      "text": "Child's Gender",
+      "answer": [
+        {
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/administrative-gender",
+            "code": "female",
+            "display": "Female"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "57e01310-0470-4832-8900-fe635111f475",
+      "text": "Birth weight (kg)",
+      "answer": [
+        {
+          "valueDecimal": 2.7
+        }
+      ]
+    },
+    {
+      "linkId": "3d453a4e-8548-468f-81b7-e5451abe1106",
+      "text": "Does the child have a mother/guardian?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "1e9579f9-b3e2-46a4-e7bd-365d32b45eaa",
+            "system": "urn:uuid:6bf5b563-47c1-4146-8a9a-492b2d29b8a4",
+            "code": "yes",
+            "display": "Yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "dbf5b992-03fc-457d-93eb-d603cccc9ce5",
+      "text": "Mother/guardian first name",
+      "answer": [
+        {
+          "valueString": "MOm"
+        }
+      ]
+    },
+    {
+      "linkId": "46a91ed5-1ef8-4afc-8a8c-54d52258343e",
+      "text": "Mother/guardian last name",
+      "answer": [
+        {
+          "valueString": "MomLast"
+        }
+      ]
+    },
+    {
+      "linkId": "f331b415-9188-4add-cf3f-36019a593690",
+      "text": "Mother/guardian DOB",
+      "answer": [
+        {
+          "valueDate": "1993-08-18"
+        }
+      ]
+    },
+    {
+      "linkId": "e5e2aa85-c416-48c6-9caa-b8009c523175",
+      "text": "Does the mother/guardian have an ID?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "9d90eabe-9f85-4a06-87a2-0343f397d452",
+            "system": "urn:uuid:c0c05eac-b4b1-4248-b488-f017fd0dfa22",
+            "code": "yes",
+            "display": "Yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "6dd1b786-dc61-43e7-9cda-711f71024469",
+      "text": "Mother/Guardian's ID Number",
+      "answer": [
+        {
+          "valueString": "1111111111111111"
+        }
+      ]
+    },
+    {
+      "linkId": "6c87245c-5d6e-4972-8d83-ea80a8e62ffb",
+      "text": "Confirm Mother/Guardian's ID Number",
+      "answer": [
+        {
+          "valueString": "1111111111111111"
+        }
+      ]
+    },
+    {
+      "linkId": "bcbce519-7314-466e-d42c-5107a4b4a687",
+      "text": "Does the mother/guardian own a phone?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "ba420974-2a52-415e-81b6-37c02ba8433d",
+            "system": "urn:uuid:660783e0-0fcc-4e09-967c-322c1dd9405f",
+            "code": "yes",
+            "display": "Yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "f4833bf7-c293-4f38-866d-a89066ef32d1",
+      "text": "Mother/guardian's phone number",
+      "answer": [
+        {
+          "valueString": "111111111111"
+        }
+      ]
+    },
+    {
+      "linkId": "ae512786-8123-4711-8e72-e6f43a9d5742",
+      "text": "Confirm mother/guardian's phone number",
+      "answer": [
+        {
+          "valueString": "1111111111"
+        }
+      ]
+    },
+    {
+      "linkId": "cd2f6e33-e79d-467d-b200-b008fffe18f5",
+      "text": "Mother/Guardian's income per month",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "4e2bfb1a-9bbd-4720-9d53-cfb99df05049",
+            "system": "urn:uuid:a1ac4d6d-2245-457e-8d6f-fbca2cc81ca5",
+            "code": "<-rp.500.000",
+            "display": "< Rp.500.000"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "1b87fbf5-1330-4e65-8364-10cbf7c0a3e3",
+      "text": "Current Home Address",
+      "answer": [
+        {
+          "valueString": "Kejani"
+        }
+      ]
+    },
+    {
+      "linkId": "d02e3a9e-ede2-4cd5-9c98-cc5824c06ac4",
+      "text": "Is the child's father present?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "8d0ec61d-6c79-43cd-ee75-b7982becf32d",
+            "system": "urn:uuid:a0c601e3-b8e0-49ed-82b0-1579c1c53dfd",
+            "code": "yes",
+            "display": "Yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "945f09f7-0641-4675-8329-b02d99c5425f",
+      "text": "Father's First Name",
+      "answer": [
+        {
+          "valueString": "DadFirst"
+        }
+      ]
+    },
+    {
+      "linkId": "945f09f7-0641-4675-8329-b02d99c5425g",
+      "text": "Father's Last Name",
+      "answer": [
+        {
+          "valueString": "DadLast"
+        }
+      ]
+    },
+    {
+      "linkId": "f331b415-9188-4add-cf3f-36019a593691",
+      "text": "Father's DOB",
+      "answer": [
+        {
+          "valueDate": "1990-08-23"
+        }
+      ]
+    }
+  ]
+}
