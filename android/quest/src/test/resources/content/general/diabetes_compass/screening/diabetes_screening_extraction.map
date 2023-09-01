@@ -280,22 +280,28 @@ group ExtractRiskScore(source src : QuestionnaireResponse, target bundle: Bundle
 }
 
 group ExtractReferralServiceRequest(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
-    src.item as page where(linkId = "page-2") then {
-        page.item as item where(linkId="hlc-referred" and answer.count() > 0) then {
-            src -> bundle.entry as entry, entry.resource = create("ServiceRequest") as sRequest then {
-                src -> sRequest.id = uuid() "r_sRequest_id";
-                src ->sRequest.status = 'active' "r_sRequest_status";
-                src -> sRequest.intent = "order" "r_sRequest_onset_date_val";
-                src -> sRequest.priority= "urgent" "r_sRequest_onset_date_val";
-                src -> sRequest.encounter = reference(encounter) "r_sRequest_enc";
-                src -> sRequest.category = cc("http://snomed.info/sct", "44383000", "Patient referral for consultation") "r_sRequest_category";
-                src -> sRequest.subject = evaluate(src, $this.subject) "r_obs_subject";
-                src -> sRequest.code = create("CodeableConcept") as ccProc then {
-                    src -> ccProc.coding = c("http://snomed.info/sct", "44383000", "Patient referral for consultation") as coding,
-                    coding.display = 'Patient referral for consultation' "r_sRequest_code_coding";
-                    src -> ccProc.text = "Patient referral for consultation" "r_sRequest_code_text";
-                } "r_sRequest_code";
-            } "r_sRequest";
+    src.item as page where(linkId = "page-3") then {
+        page.item as item where(linkId="refer-client-choice" and answer.value.code = 'refer-client') then {
+            page.item as item where(linkId="health-facility-choice" and answer.count() > 0) then {
+                src -> bundle.entry as entry, entry.resource = create("ServiceRequest") as sRequest then {
+                    src -> sRequest.id = uuid() "r_sRequest_id";
+                    src ->sRequest.status = 'active' "r_sRequest_status";
+                    src -> sRequest.intent = "order" "r_sRequest_onset_date_val";
+                    src -> sRequest.priority= "urgent" "r_sRequest_onset_date_val";
+                    src -> sRequest.encounter = reference(encounter) "r_sRequest_enc";
+                    src -> sRequest.category = cc("http://snomed.info/sct", "44383000", "Patient referral for consultation") "r_sRequest_category";
+                    src -> sRequest.subject = evaluate(src, $this.subject) "r_obs_subject";
+                    src -> sRequest.code = create("CodeableConcept") as ccProc then {
+                        src -> ccProc.coding = c("http://snomed.info/sct", "44383000", "Patient referral for consultation") as coding,
+                        coding.display = 'Patient referral for consultation' "r_sRequest_code_coding";
+                        src -> ccProc.text = "Patient referral for consultation" "r_sRequest_code_text";
+                    } "r_sRequest_code";
+                    src -> sRequest.locationReference = create("Reference") as ref then {
+                        src -> ref.reference = evaluate(item, $this.answer.value.reference) "r_sRequest_location_ref";
+                        src -> ref.display = evaluate(item, $this.answer.value.display) "r_sRequest_location_disp";
+                    } "r_sRequest_location";
+                } "r_sRequest";
+            } "r_sRequest_referral_facility";
         } "r_filter";
     } "r_rsk_pg";
 }

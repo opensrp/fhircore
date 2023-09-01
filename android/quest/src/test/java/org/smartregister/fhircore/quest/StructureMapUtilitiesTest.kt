@@ -228,7 +228,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     /*val patientRegistrationStructureMap =
     "patient-registration-questionnaire/structure-map.txt".readFile()*/
     val sMap =
-      "content/general/diabetes_compass/screening/patient_screening_task_generation.map".readFile()
+      "content/general/diabetes_compass/screening/diabetes_screening_extraction.map".readFile()
     // val sMap =
     // "content/general/diabetes_compass/patient_follow_up/three-year-routine-screening-follow-up.map".readFile()
     val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)

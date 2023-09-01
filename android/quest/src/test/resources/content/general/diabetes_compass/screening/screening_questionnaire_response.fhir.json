@@ -33,7 +33,7 @@
           "linkId": "age-val",
           "answer": [
             {
-              "valueInteger": 60
+              "valueInteger": 58
             }
           ]
         },
@@ -75,7 +75,7 @@
           "text": "Systolic BP",
           "answer": [
             {
-              "valueInteger": 140
+              "valueInteger": 120
             }
           ]
         },
@@ -88,7 +88,7 @@
           "text": "Diastolic BP",
           "answer": [
             {
-              "valueInteger": 95
+              "valueInteger": 90
             }
           ]
         },
@@ -101,24 +101,16 @@
           "text": "Waist measurement",
           "answer": [
             {
-              "valueInteger": 45
+              "valueInteger": 39
             }
           ]
-        },
-        {
-          "linkId": "results-title",
-          "text": "Results"
-        },
-        {
-          "linkId": "results-text",
-          "text": "High Risk \n> 50% \n10 year risk of developing Type II Diabetes\n\n\nWe recommend seeing a doctor for further screening\n"
         },
         {
           "linkId": "score-calculations",
           "text": "Risk Score",
           "answer": [
             {
-              "valueDecimal": 0.2950841961960221
+              "valueDecimal": 0.28948075471402913
             }
           ]
         },
@@ -127,16 +119,53 @@
           "text": "Hypertension Risk",
           "answer": [
             {
-              "valueBoolean": true
+              "valueBoolean": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "page-3",
+      "item": [
+        {
+          "linkId": "results-title",
+          "text": "Results"
+        },
+        {
+          "linkId": "diabetes-only-risk-results-text",
+          "text": "At risk of diabetes\n"
+        },
+        {
+          "linkId": "diabetes-risk-detection-text",
+          "text": "Diabetes & Risk result\nDiabetes - Detected\nHypertension - Not detected\n"
+        },
+        {
+          "linkId": "risk-recommendation-title",
+          "text": "We recommend a full assessment\nPlease go to a Healthy LifeStyle Center for a free risk assessment. Your community is connected to this Healthy Lifestyle Center:\n"
+        },
+        {
+          "linkId": "refer-client-choice",
+          "answer": [
+            {
+              "valueCoding": {
+                "id": "232d1a6e-5a95-49fc-8379-49de60f12bd5",
+                "system": "urn:uuid:169158b9-31a7-4086-a84e-4e4dc236c37b",
+                "code": "refer-client",
+                "display": "Refer Client"
+              }
             }
           ]
         },
         {
-          "linkId": "hlc-referred",
-          "text": "HLC to refer to",
+          "linkId": "health-facility-choice",
+          "text": "Health facility",
           "answer": [
             {
-              "valueString": "Mama ngina"
+              "valueReference": {
+                "reference": "Location/PKT0010322",
+                "display": "Baduraliya health facility"
+              }
             }
           ]
         }
