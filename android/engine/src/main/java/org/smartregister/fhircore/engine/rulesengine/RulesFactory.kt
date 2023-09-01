@@ -74,11 +74,15 @@ constructor(
    * [RepositoryResourceData.relatedResourcesCountMap]. All related resources of same type are
    * flattened in a map for ease of usage in the rule engine.
    */
-  fun fireRules(rules: Rules, repositoryResourceData: RepositoryResourceData?): Map<String, Any> {
+  fun fireRules(
+    rules: Rules,
+    repositoryResourceData: RepositoryResourceData?,
+    params: Map<String, String>,
+  ): Map<String, Any> {
     facts =
       Facts().apply {
         put(FHIR_PATH, fhirPathDataExtractor)
-        put(DATA, mutableMapOf<String, Any>())
+        put(DATA, mutableMapOf<String, Any>().apply { putAll(params) })
         put(SERVICE, rulesEngineService)
       }
     if (repositoryResourceData != null) {

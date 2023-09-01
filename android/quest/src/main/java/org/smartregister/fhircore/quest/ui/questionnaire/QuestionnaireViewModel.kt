@@ -121,7 +121,7 @@ constructor(
     // Compute questionnaire config rules and add extra questionnaire params to action parameters
     val questionnaireComputedValues =
       questionnaireConfig.configRules?.let {
-        resourceDataRulesExecutor.computeResourceDataRules(it, null)
+        resourceDataRulesExecutor.computeResourceDataRules(it, null, emptyMap())
       }
         ?: emptyMap()
 
