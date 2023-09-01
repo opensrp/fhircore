@@ -127,4 +127,29 @@ class RegisterCardListTest {
       .assert(hasText("Patient 1"))
       .assertIsDisplayed()
   }
+
+  @Test
+  fun testRegisterCardListShouldRenderLoadingIndicatorIfPagingItemsIsEmpty() {
+    composeTestRule.setContent {
+      val pagingItems = flowOf(PagingData.empty<ResourceData>()).collectAsLazyPagingItems()
+
+      RegisterCardList(
+        registerCardConfig = mockk(),
+        pagingItems = pagingItems,
+        navController = mockk(),
+        lazyListState = rememberLazyListState(),
+        onEvent = {},
+        registerUiState = RegisterUiState(),
+        currentPage = mutableStateOf(1),
+      )
+    }
+
+    composeTestRule
+      .onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG)
+      .onChildren()
+      .onFirst()
+      .onChildren()
+      .onFirst()
+      .assertIsDisplayed()
+  }
 }
