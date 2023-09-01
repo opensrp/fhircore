@@ -67,7 +67,6 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
-import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import retrofit2.HttpException
 import timber.log.Timber
 
@@ -163,15 +162,14 @@ class RegisterFragment : Fragment(), OnSyncListener {
           ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
               RegisterScreen(
-                navController = findNavController(),
                 openDrawer = openDrawer,
+                onEvent = registerViewModel::onEvent,
+                registerUiState = registerViewModel.registerUiState.value,
                 searchText = registerViewModel.searchText,
                 currentPage = registerViewModel.currentPage,
-                onEvent = registerViewModel::onEvent,
                 pagingItems = pagingItems,
-                registerUiState = registerViewModel.registerUiState.value,
+                navController = findNavController(),
                 toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
-                params = registerFragmentArgs.params.toParamDataMap(),
               )
             }
           }
