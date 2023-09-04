@@ -167,48 +167,36 @@ class ProfileViewModelTest : RobolectricTest() {
     every { mockActionConfig.managingEntity } returns mockManagingEntity
     every { mockActionConfig.interpolate(any()) } returns mockActionConfig
     every { mockActionConfig.workflow } returns mockWorkflow.name
-    every { mockActionConfig.managingEntity } returns mockManagingEntity
 
-    val changeManagingEntity =
-      profileViewModel.javaClass.getDeclaredMethod(
-        "changeManagingEntity",
-        ProfileEvent.OverflowMenuClick::class.java,
-        ManagingEntityConfig::class.java,
-      )
-    changeManagingEntity.isAccessible = true
-    val parameters = arrayOfNulls<Any>(2)
     val resourceData =
       ResourceData("baseResourceId", ResourceType.MeasureReport, emptyMap(), emptyMap())
     val overflowMenuItemConfig =
       OverflowMenuItemConfig(
-        1,
-        "myFlowMenu",
-        false,
-        null,
-        BLACK_COLOR_HEX_CODE,
-        null,
-        "true",
-        false,
-        "true",
-        emptyList(),
+        id = 1,
+        title = "myFlowMenu",
+        confirmAction = false,
+        icon = null,
+        titleColor = BLACK_COLOR_HEX_CODE,
+        backgroundColor = null,
+        visible = "true",
+        showSeparator = false,
+        enabled = "true",
+        actions = emptyList(),
       )
     val navController = mockk<NavController>()
     val event = ProfileEvent.OverflowMenuClick(navController, resourceData, overflowMenuItemConfig)
-    parameters[0] = event
-    parameters[1] =
+    val managingEntity =
       ManagingEntityConfig(
         eligibilityCriteriaFhirPathExpression = "Patient.active",
         resourceType = ResourceType.Patient,
         nameFhirPathExpression = "Patient.name.given",
       )
+    every { mockProfileViewModel.changeManagingEntity(event, managingEntity) } just runs
     every { mockActionConfig.interpolate(any()) } returns mockActionConfig
     mockActionConfig.interpolate(emptyMap())
-    changeManagingEntity.invoke(profileViewModel, *parameters)
     every { listActionConfig.handleClickEvent(navController, resourceData) } just runs
     profileViewModel.onEvent(event)
     every { mockProfileViewModel.onEvent(any()) } just runs
-    listActionConfig.iterator()
-    every { listActionConfig.iterator().next() } returns mockActionConfig
 
     verifyAll {
       mockActionConfig.interpolate(any())
