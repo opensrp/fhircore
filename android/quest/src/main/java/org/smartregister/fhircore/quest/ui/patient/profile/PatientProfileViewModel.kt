@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.patient.profile
 
 import android.app.Activity
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.os.bundleOf
@@ -108,27 +109,6 @@ constructor(
 
   private val isClientVisit: MutableState<Boolean> = mutableStateOf(true)
 
-  fun completedTask(value: String) {
-    patientProfileData?.let { data ->
-      if (data is ProfileData.HivProfileData) {
-        val patientData =
-          data.copy(
-            tasks =
-              data.tasks.map { task ->
-                if (task.reasonReference.extractId() == value) {
-                  task.status = Task.TaskStatus.COMPLETED
-                  task
-                } else task
-              }
-          )
-        _patientProfileViewDataFlow.value =
-          profileViewDataMapper.transformInputToOutputModel(patientData) as
-            ProfileViewData.PatientProfileViewData
-        patientProfileData = patientData
-      }
-    }
-  }
-
   init {
     syncBroadcaster.registerSyncListener(
       object : OnSyncListener {
@@ -189,7 +169,7 @@ constructor(
         hivPatientProfileData.copy(
           tasks =
             hivPatientProfileData.tasks.filter {
-              it.isGuardianVisit(applicationConfiguration.patientTypeFilterTagViaMetaCodingSystem)
+              it.isGuardianVisit(applicationConfiguration.taskFilterTagViaMetaCodingSystem)
             }
         )
       _patientProfileViewDataFlow.value =

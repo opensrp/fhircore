@@ -31,7 +31,8 @@ data class ApplicationConfiguration(
   var applicationName: String = "",
   var appLogoIconResourceFile: String = "ic_default_logo",
   var patientTypeFilterTagViaMetaCodingSystem: String = "",
-  var count: String = ConfigurationRegistry.DEFAULT_COUNT
+  var count: String = ConfigurationRegistry.DEFAULT_COUNT,
+  var taskFilterTagViaMetaCodingSystem: String = ""
 ) : Configuration
 
 /**
@@ -57,7 +58,8 @@ fun applicationConfigurationOf(
   applicationName: String = "",
   appLogoIconResourceFile: String = "",
   patientTypeFilterTagViaMetaCodingSystem: String = "",
-  count: String = ConfigurationRegistry.DEFAULT_COUNT
+  count: String = ConfigurationRegistry.DEFAULT_COUNT,
+  taskFilterTagViaMetaCodingSystem: String = ""
 ): ApplicationConfiguration =
   ApplicationConfiguration(
     appId = appId,
@@ -69,5 +71,6 @@ fun applicationConfigurationOf(
     applicationName = applicationName,
     appLogoIconResourceFile = appLogoIconResourceFile,
     patientTypeFilterTagViaMetaCodingSystem = patientTypeFilterTagViaMetaCodingSystem,
-    count = count
+    count = count,
+    taskFilterTagViaMetaCodingSystem = taskFilterTagViaMetaCodingSystem
   )
