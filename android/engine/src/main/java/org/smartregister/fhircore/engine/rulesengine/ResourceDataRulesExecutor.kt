@@ -49,7 +49,8 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
     val computedValuesMap =
       computeResourceDataRules(
         ruleConfigs = ruleConfigs,
-        repositoryResourceData = repositoryResourceData
+        repositoryResourceData = repositoryResourceData,
+        params = params ?: emptyMap()
       )
     return ResourceData(
       baseResourceId = repositoryResourceData.resource.logicalId.extractLogicalIdUuid(),
@@ -96,11 +97,13 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
    */
   fun computeResourceDataRules(
     ruleConfigs: List<RuleConfig>,
-    repositoryResourceData: RepositoryResourceData?
+    repositoryResourceData: RepositoryResourceData?,
+    params: Map<String, String>
   ): Map<String, Any> {
     return rulesFactory.fireRules(
       rules = rulesFactory.generateRules(ruleConfigs),
-      repositoryResourceData = repositoryResourceData
+      repositoryResourceData = repositoryResourceData,
+      params = params
     )
   }
 
@@ -144,7 +147,8 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
               resourceRulesEngineFactId = null,
               resource = resource,
               relatedResourcesMap = listItemRelatedResources
-            )
+            ),
+          params = emptyMap()
         )
 
       resourceDataSnapshotStateList.add(

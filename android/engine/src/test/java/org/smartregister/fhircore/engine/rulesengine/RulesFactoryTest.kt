@@ -126,7 +126,8 @@ class RulesFactoryTest : RobolectricTest() {
             resource = baseResource,
             secondaryRepositoryResourceData = null,
             relatedResourcesMap = relatedResourcesMap
-          )
+          ),
+        params = emptyMap()
       )
 
       val factsSlot = slot<Facts>()
@@ -206,7 +207,8 @@ class RulesFactoryTest : RobolectricTest() {
                     mapOf("stockCount" to listOf(RelatedResourceCount(count = 10)))
                 )
               )
-          )
+          ),
+        params = emptyMap()
       )
 
       val factsSlot = slot<Facts>()
