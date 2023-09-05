@@ -50,12 +50,12 @@ sonar {
 }
 
 android {
-  compileSdk = 33
+  compileSdk = 34
 
   defaultConfig {
     applicationId = "org.smartregister.opensrp"
     minSdk = 26
-    targetSdk = 33
+    targetSdk = 34
     versionCode = 3
     versionName = "0.2.5"
     multiDexEnabled = true
@@ -154,7 +154,7 @@ android {
     dataBinding = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.4.3" }
 
   testOptions {
     animationsDisabled = true
