@@ -86,6 +86,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers
 import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.event.EventTriggerCondition
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
@@ -118,7 +119,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   @Inject lateinit var transformSupportServices: TransformSupportServices
   @Inject lateinit var fhirPathEngine: FHIRPathEngine
-  private lateinit var fhirTaskUtil: FhirTaskUtil
+  private lateinit var fhirTaskUtil: FhirResourceUtil
   private lateinit var fhirEngine: FhirEngine
   private lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
   private lateinit var structureMapUtilities: StructureMapUtilities
@@ -128,6 +129,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   private var encounter = Encounter()
   private var opv0 = Task()
   private var opv1 = Task()
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   @Before
   fun setup() {
@@ -140,10 +143,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     fhirTaskUtil =
       spyk(
-        FhirTaskUtil(
+        FhirResourceUtil(
           appContext = ApplicationProvider.getApplicationContext(),
-          defaultRepository = defaultRepository
-        )
+          defaultRepository = defaultRepository,
+          configurationRegistry = configurationRegistry,
+        ),
       )
 
     fhirCarePlanGenerator =

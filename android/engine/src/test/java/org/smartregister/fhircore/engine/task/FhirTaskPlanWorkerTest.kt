@@ -54,7 +54,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
-  private lateinit var fhirTaskUtil: FhirTaskUtil
+  private lateinit var fhirTaskUtil: FhirResourceUtil
   private lateinit var context: Context
   private val fhirEngine: FhirEngine = mockk()
   private val defaultRepository: DefaultRepository = mockk()
@@ -73,9 +73,10 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
 
     fhirTaskUtil =
       spyk(
-        FhirTaskUtil(
+        FhirResourceUtil(
           appContext = ApplicationProvider.getApplicationContext(),
-          defaultRepository = defaultRepository
+          defaultRepository = defaultRepository,
+          configurationRegistry = configurationRegistry
         )
       )
   }

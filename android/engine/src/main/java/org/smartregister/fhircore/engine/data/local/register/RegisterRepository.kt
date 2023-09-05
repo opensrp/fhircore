@@ -39,6 +39,7 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
 class RegisterRepository
@@ -49,7 +50,8 @@ constructor(
   override val sharedPreferencesHelper: SharedPreferencesHelper,
   override val configurationRegistry: ConfigurationRegistry,
   override val configService: ConfigService,
-  override val configRulesExecutor: ConfigRulesExecutor
+  override val configRulesExecutor: ConfigRulesExecutor,
+  override val fhirPathDataExtractor: FhirPathDataExtractor,
 ) :
   Repository,
   DefaultRepository(
@@ -58,7 +60,8 @@ constructor(
     sharedPreferencesHelper = sharedPreferencesHelper,
     configurationRegistry = configurationRegistry,
     configService = configService,
-    configRulesExecutor = configRulesExecutor
+    configRulesExecutor = configRulesExecutor,
+    fhirPathDataExtractor = fhirPathDataExtractor,
   ) {
 
   override suspend fun loadRegisterData(
