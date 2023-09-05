@@ -58,6 +58,13 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColorSecondary">@color/white</item>
         <item name="questionnaireSubmitButtonStyle">@style/AppTheme.SubmitButtonStyle</item>
+        <item name="questionnaireGroupTypeQuestionTextStyle">
+            @style/TextAppearance.Material3.HeadlineMedium
+        </item>
+        <item name="questionnaireQuestionTextStyle">
+            @style/TextAppearance.Material3.BodyLarge
+        </item>
+        <item name="questionnaireHelpHeaderStyle">@style/AppTheme.HelpHeaderStyle</item>
     </style>
 
     <style name="AppTheme.SubmitButtonStyle" parent="Questionnaire.SubmitButtonStyle">
@@ -73,4 +80,9 @@
         <item name="android:textSize">18sp</item>
         <item name="android:layout_gravity">bottom|start</item>
     </style>
+
+    <style name="AppTheme.HelpHeaderStyle" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:visibility">invisible</item>
+    </style>
+
 </resources>

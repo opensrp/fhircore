@@ -140,7 +140,9 @@ fun ProfileScreen(
       )
     },
   ) { innerPadding ->
-    Box(modifier = modifier.background(Color.White).fillMaxSize().padding(innerPadding)) {
+    Box(
+      modifier = modifier.background(Color.White).fillMaxSize().padding(innerPadding),
+    ) {
       if (profileUiState.showDataLoadProgressIndicator) {
         CircularProgressIndicator(
           modifier = modifier.align(Alignment.Center).size(24.dp),
@@ -172,7 +174,9 @@ fun CustomProfileTopAppBar(
 ) {
   val topBarConfig = remember { profileUiState.profileConfiguration?.topAppBar ?: TopBarConfig() }
 
-  Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
+  Column(
+    modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
+  ) {
     SimpleTopAppBar(
       modifier = modifier,
       navController = navController,
@@ -307,7 +311,12 @@ private fun ProfileTopAppBarMenuAction(
           it.interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
         if (!overflowMenuItemConfig.visible.toBoolean()) return@forEach
         val enabled = overflowMenuItemConfig.enabled.toBoolean()
-        if (overflowMenuItemConfig.showSeparator) Divider(color = DividerColor, thickness = 1.dp)
+        if (overflowMenuItemConfig.showSeparator) {
+          Divider(
+            color = DividerColor,
+            thickness = 1.dp,
+          )
+        }
         val contentColor =
           if (enabled) overflowMenuItemConfig.titleColor.parseColor() else DefaultColor
 

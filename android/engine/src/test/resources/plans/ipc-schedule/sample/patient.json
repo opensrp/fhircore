@@ -1,0 +1,70 @@
+{
+  "resourceType": "Patient",
+  "id": "3e3d698a-4edb-48f9-9330-2f1adc0635d1",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2022-10-09T22:47:34.778+00:00",
+    "source": "#a7d65ca03093bcda",
+    "tag": [
+      {
+        "system": "https://smartregister.org/",
+        "code": "5",
+        "display": "Practitioner Location"
+      }
+    ]
+  },
+  "text": {
+    "status": "generated",
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"hapiHeaderText\">Red <b>TOTO </b></div><table class=\"hapiPropertyTable\"><tbody><tr><td>Identifier</td><td>10003</td></tr><tr><td>Address</td><td/></tr><tr><td>Date of birth</td><td><span>01 October 2021</span></td></tr></tbody></table></div>"
+  },
+  "identifier": [
+    {
+      "use": "official",
+      "value": "10003",
+      "period": {
+        "start": "2022-10-09T22:43:58+00:00"
+      }
+    },
+    {
+      "use": "usual",
+      "value": "30001",
+      "period": {
+        "start": "2022-10-09T22:43:58+00:00"
+      }
+    },
+    {
+      "use": "secondary",
+      "value": "730d73f7-2fe3-4da0-9572-ca9686c1d50a",
+      "period": {
+        "start": "2022-10-09T22:43:58+00:00"
+      }
+    }
+  ],
+  "active": true,
+  "name": [
+    {
+      "use": "official",
+      "text": "Bull",
+      "family": "Toto",
+      "given": [
+        "Red"
+      ]
+    }
+  ],
+  "gender": "female",
+  "birthDate": "2021-10-01",
+  "address": [
+    {
+      "use": "home",
+      "type": "physical"
+    }
+  ],
+  "generalPractitioner": [
+    {
+      "reference": "Practitioner/3812"
+    }
+  ],
+  "managingOrganization": {
+    "reference": "Organization/2"
+  }
+}
