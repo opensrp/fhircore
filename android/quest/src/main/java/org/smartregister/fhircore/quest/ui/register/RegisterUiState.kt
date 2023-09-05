@@ -30,4 +30,5 @@ data class RegisterUiState(
   val progressPercentage: Flow<Int> = flowOf(0),
   val isSyncUpload: Flow<Boolean> = flowOf(false),
   val dismissLoaderView: Flow<Boolean> = flowOf(false),
+  val params: Map<String, String> = emptyMap()
 )

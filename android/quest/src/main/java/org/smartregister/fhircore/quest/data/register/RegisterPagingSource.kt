@@ -33,7 +33,8 @@ import timber.log.Timber
 class RegisterPagingSource(
   private val registerRepository: RegisterRepository,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
-  private val ruleConfigs: List<RuleConfig>
+  private val ruleConfigs: List<RuleConfig>,
+  private val actionParameters: Map<String, String>?,
 ) : PagingSource<Int, ResourceData>() {
 
   private lateinit var _registerPagingSourceState: RegisterPagingSourceState
@@ -76,7 +77,7 @@ class RegisterPagingSource(
           resourceDataRulesExecutor.processResourceData(
             repositoryResourceData = repositoryResourceData,
             ruleConfigs = ruleConfigs,
-            params = emptyMap()
+            params = actionParameters
           )
         }
       LoadResult.Page(data = data, prevKey = prevKey, nextKey = nextKey)
