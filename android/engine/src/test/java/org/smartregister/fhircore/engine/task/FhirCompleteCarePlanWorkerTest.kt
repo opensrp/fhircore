@@ -62,6 +62,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
   private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var fhirCompleteCarePlanWorker: FhirCompleteCarePlanWorker
+  private val fhirResourceUtil: FhirResourceUtil = mockk()
 
   @Before
   fun setUp() {
@@ -112,6 +113,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         status = Task.TaskStatus.CANCELLED
       }
     coEvery { fhirCarePlanGenerator.getTask(any()) } returnsMany listOf(task1, task2)
+    coEvery { fhirResourceUtil.closeRelatedResources(any()) } just runs
 
     Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
 
@@ -156,6 +158,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         status = Task.TaskStatus.CANCELLED
       }
     coEvery { fhirCarePlanGenerator.getTask(any()) } returnsMany listOf(task1, task2)
+    coEvery { fhirResourceUtil.closeRelatedResources(any()) } just runs
 
     Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
 
@@ -247,6 +250,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+        fhirResourceUtil = fhirResourceUtil,
       )
     }
   }

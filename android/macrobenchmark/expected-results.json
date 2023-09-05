@@ -1,0 +1,30 @@
+{
+  "HouseholdRegisterMacrobenchmark#benchmarkPage1": {
+    "max": 9074.0062,
+    "margin": 1000
+  },
+  "HouseholdRegisterMacrobenchmark#benchmarkPage2": {
+    "max": 2418.9906,
+    "margin": 1000
+  },
+
+  "HouseholdRegisterMacrobenchmark#benchmarkPage3": {
+    "max": 2848.4828,
+    "margin": 1000
+  },
+
+  "HouseholdRegisterMacrobenchmark#benchmarkPage4": {
+    "max": 13739.6684,
+    "margin": 1000
+  },
+
+  "HouseholdRegisterMacrobenchmark#benchmarkPage5": {
+    "max": 3415.5543,
+    "margin": 1000
+  },
+
+  "HouseholdProfileBenchmark#benchmarkOpenningProfile": {
+    "max": 4267,
+    "margin": 1000
+  }
+}

@@ -16,17 +16,22 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -267,6 +272,42 @@ class MeasureExtensionTest : RobolectricTest() {
     val result = group.findStratumForMonth("2021-Dec")
 
     assertEquals("2021-Dec", result!!.value.text)
+  }
+
+  @Test
+  fun testRetrievePreviouslyGeneratedMeasureReportsProducesCorrectSearchObject() {
+    coEvery { fhirEngine.search<MeasureReport>(any<Search>()) } returns
+      listOf<MeasureReport>(measureReport)
+
+    val search = Search(ResourceType.MeasureReport)
+    search.filter(
+      MeasureReport.PERIOD,
+      {
+        value = of(DateTimeType("2023-08-01"))
+        prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+      },
+      {
+        value = of(DateTimeType("2023-08-30"))
+        prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+      },
+      operation = Operation.AND,
+    )
+    search.filter(MeasureReport.MEASURE, { value = "https://testmeasureurl.com" })
+
+    runBlocking {
+      val result =
+        retrievePreviouslyGeneratedMeasureReports(
+          fhirEngine = fhirEngine,
+          "2023-08-01",
+          "2023-08-30",
+          "https://testmeasureurl.com",
+          emptyList(),
+        )
+      assertEquals(1, result.size)
+      assertEquals(measureReport, result[0])
+    }
+
+    coVerify { fhirEngine.search<MeasureReport>(search) }
   }
 
   private val measureReport =

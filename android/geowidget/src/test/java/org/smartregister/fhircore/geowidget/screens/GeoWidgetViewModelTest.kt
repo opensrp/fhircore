@@ -47,6 +47,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.geowidget.rule.CoroutineTestRule
 
 @RunWith(RobolectricTestRunner::class)
@@ -76,6 +77,8 @@ class GeoWidgetViewModelTest {
 
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
 
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -90,6 +93,7 @@ class GeoWidgetViewModelTest {
           configurationRegistry,
           configService,
           configRulesExecutor,
+          fhirPathDataExtractor = fhirPathDataExtractor,
         ),
       )
     geoWidgetViewModel =

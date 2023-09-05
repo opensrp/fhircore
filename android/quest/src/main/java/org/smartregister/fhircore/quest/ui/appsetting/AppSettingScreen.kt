@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 
 package org.smartregister.fhircore.quest.ui.appsetting
 
@@ -43,12 +43,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -77,12 +80,13 @@ fun AppSettingScreen(
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
   val coroutineScope = rememberCoroutineScope()
-  val bringIntoViewRequester = BringIntoViewRequester()
-  val focusRequester = remember { FocusRequester() }
+  val bringIntoViewRequester = remember { BringIntoViewRequester() }
+  val focusManager = LocalFocusManager.current
+  val (appIdFocusRequester) = FocusRequester.createRefs()
 
   LaunchedEffect(Unit) {
     delay(300)
-    focusRequester.requestFocus()
+    focusManager.moveFocus(FocusDirection.Next)
   }
 
   Column(modifier = modifier.fillMaxSize()) {
@@ -115,10 +119,12 @@ fun AppSettingScreen(
             .testTag(APP_ID_TEXT_INPUT_TAG)
             .fillMaxWidth()
             .padding(vertical = 2.dp)
+            .focusRequester(appIdFocusRequester)
             .onFocusEvent { event ->
-              if (event.isFocused) coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
-            }
-            .focusRequester(focusRequester),
+              if (event.isFocused) {
+                coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
+              }
+            },
       )
       if (error.isNotEmpty()) {
         Text(

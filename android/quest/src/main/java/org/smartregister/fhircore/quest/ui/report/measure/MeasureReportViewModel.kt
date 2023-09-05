@@ -288,7 +288,7 @@ constructor(
                 subjects.addAll(measureReportRepository.fetchSubjects(config))
 
                 // If a practitioner Id is available, add it to the list of subjects
-                if (practitionerId?.isNotBlank() == true) {
+                if (practitionerId?.isNotBlank() == true && subjects.isEmpty()) {
                   subjects.add("${Practitioner().resourceType.name}/$practitionerId")
                 }
 
@@ -306,7 +306,11 @@ constructor(
                 existingReports
                   ?.groupBy { it.subject.reference }
                   ?.forEach { entry ->
-                    if (entry.value.size > 1 && entry.value.distinctBy { it.measure }.size <= 1) {
+                    if (
+                      entry.value.size > 1 &&
+                        entry.value.distinctBy { it.measure }.size > 1 &&
+                        entry.value.distinctBy { it.type }.size > 1
+                    ) {
                       return@forEach
                     } else {
                       existingValidReports.addAll(entry.value)
@@ -320,7 +324,8 @@ constructor(
                     .parseDate(SDF_YYYY_MM_DD)!!
                     .formatDate(SDF_YYYY_MMM)
                     .contentEquals(Date().formatDate(SDF_YYYY_MMM)) ||
-                    existingValidReports.isEmpty()
+                    existingValidReports.isEmpty() ||
+                    existingValidReports.size != subjects.size
                 ) {
                   withContext(dispatcherProvider.io()) {
                     fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)

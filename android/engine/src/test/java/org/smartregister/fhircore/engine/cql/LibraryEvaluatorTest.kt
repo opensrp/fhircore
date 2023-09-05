@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
 @HiltAndroidTest
@@ -80,6 +81,8 @@ class LibraryEvaluatorTest : RobolectricTest() {
   private var context = "Patient"
   private var contextLabel = "mom-with-anemia"
 
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -92,6 +95,7 @@ class LibraryEvaluatorTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         configService = configService,
         configRulesExecutor = configRulesExecutor,
+        fhirPathDataExtractor = fhirPathDataExtractor,
       )
     try {
       libraryData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/library.json")

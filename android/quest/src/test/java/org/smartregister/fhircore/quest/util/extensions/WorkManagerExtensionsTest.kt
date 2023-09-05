@@ -50,8 +50,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.task.FhirResourceUtil
 import org.smartregister.fhircore.engine.task.FhirTaskStatusUpdateWorker
-import org.smartregister.fhircore.engine.task.FhirTaskUtil
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -62,7 +62,7 @@ class WorkManagerExtensionsTest : RobolectricTest() {
 
   @Inject lateinit var defaultRepository: DefaultRepository
   private lateinit var fhirTaskStatusUpdateWorker: FhirTaskStatusUpdateWorker
-  private val fhirTaskUtil: FhirTaskUtil = mockk(relaxed = true)
+  private val fhirResourceUtil: FhirResourceUtil = mockk(relaxed = true)
 
   @Before
   fun setup() {
@@ -99,7 +99,7 @@ class WorkManagerExtensionsTest : RobolectricTest() {
       return FhirTaskStatusUpdateWorker(
         appContext = appContext,
         workerParams = workerParameters,
-        fhirTaskUtil = fhirTaskUtil,
+        fhirResourceUtil = fhirResourceUtil,
         dispatcherProvider =
           this@WorkManagerExtensionsTest.coroutineTestRule.testDispatcherProvider,
       )

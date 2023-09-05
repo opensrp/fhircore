@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest
+package org.smartregister.fhircore.engine.util.test
 
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.fhir.sync.SyncJobStatus
