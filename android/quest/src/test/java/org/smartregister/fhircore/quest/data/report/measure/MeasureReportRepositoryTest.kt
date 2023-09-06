@@ -102,6 +102,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           configService = mockk(),
           configRulesExecutor = mockk(),
+          fhirPathDataExtractor = mockk(),
         ),
       )
 
@@ -115,6 +116,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
         mockk(),
         registerRepository,
         FhirOperator(FhirContext.forR4(), fhirEngine),
+        mockk(),
       )
   }
 

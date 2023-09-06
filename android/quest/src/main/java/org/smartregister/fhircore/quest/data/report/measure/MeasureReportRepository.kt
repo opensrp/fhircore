@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import timber.log.Timber
 
@@ -48,6 +49,7 @@ constructor(
   override val configRulesExecutor: ConfigRulesExecutor,
   val registerRepository: RegisterRepository,
   private val fhirOperator: FhirOperator,
+  override val fhirPathDataExtractor: FhirPathDataExtractor,
 ) :
   DefaultRepository(
     fhirEngine = fhirEngine,
@@ -56,6 +58,7 @@ constructor(
     configurationRegistry = configurationRegistry,
     configService = configService,
     configRulesExecutor = configRulesExecutor,
+    fhirPathDataExtractor = fhirPathDataExtractor,
   ) {
 
   /**
@@ -146,7 +149,7 @@ constructor(
       end = endDateFormatted,
       reportType = reportType,
       subject = subject,
-      practitioner = practitionerId,
+      practitioner = practitionerId.takeIf { it?.isNotBlank() == true },
     )
   }
 

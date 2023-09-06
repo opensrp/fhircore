@@ -73,9 +73,9 @@ constructor(
   val fhirPathEngine: FHIRPathEngine,
   val transformSupportServices: TransformSupportServices,
   val defaultRepository: DefaultRepository,
-  val fhirTaskUtil: FhirTaskUtil,
+  val fhirResourceUtil: FhirResourceUtil,
 ) {
-  val structureMapUtilities by lazy {
+  private val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
   }
 
@@ -84,7 +84,8 @@ constructor(
     subject: Resource,
     data: Bundle = Bundle(),
   ): CarePlan? {
-    return generateOrUpdateCarePlan(fhirEngine.get(planDefinitionId), subject, data)
+    val planDefinition = defaultRepository.loadResource<PlanDefinition>(planDefinitionId)
+    return planDefinition?.let { generateOrUpdateCarePlan(it, subject, data) }
   }
 
   suspend fun generateOrUpdateCarePlan(
@@ -166,9 +167,14 @@ constructor(
       }
     }
 
+    val carePlanTasks = output.contained.filterIsInstance<Task>()
+
     if (carePlanModified) saveCarePlan(output)
 
-    fhirTaskUtil.updateUpcomingTasksToDue()
+    fhirResourceUtil.updateUpcomingTasksToDue(
+      subject = subject.asReference(),
+      taskResourcesToFilterBy = carePlanTasks,
+    )
 
     return if (output.hasActivity()) output else null
   }
@@ -348,18 +354,6 @@ constructor(
           }
         }
       }
-  }
-
-  fun closeResource(resource: Resource) {
-    when (resource) {
-      is Task -> {
-        resource.status = TaskStatus.CANCELLED
-        resource.lastModified = Date()
-      }
-      is CarePlan -> {
-        resource.status = CarePlan.CarePlanStatus.COMPLETED
-      }
-    }
   }
 
   fun evaluateToBoolean(

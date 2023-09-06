@@ -64,65 +64,67 @@ fun CompoundText(
   resourceData: ResourceData,
   navController: NavController,
 ) {
-  FlowRow(
-    modifier =
-      modifier
-        .conditional(compoundTextProperties.fillMaxWidth, { fillMaxWidth() })
-        .conditional(compoundTextProperties.fillMaxHeight, { fillMaxHeight() })
-        .padding(
-          horizontal = compoundTextProperties.padding.dp,
-          vertical = compoundTextProperties.padding.div(2).dp,
-        )
-        .background(compoundTextProperties.backgroundColor.parseColor()),
-  ) {
-    if (!compoundTextProperties.primaryText.isNullOrEmpty()) {
-      CompoundTextPart(
-        modifier = modifier,
-        viewAlignment = compoundTextProperties.alignment,
-        text = compoundTextProperties.primaryText!!,
-        textCase = compoundTextProperties.textCase,
-        maxLines = compoundTextProperties.maxLines,
-        textColor = compoundTextProperties.primaryTextColor,
-        backgroundColor = compoundTextProperties.primaryTextBackgroundColor,
-        borderRadius = compoundTextProperties.borderRadius,
-        fontSize = compoundTextProperties.fontSize,
-        textFontWeight = compoundTextProperties.primaryTextFontWeight,
-        clickable = compoundTextProperties.clickable,
-        actions = compoundTextProperties.primaryTextActions,
-        resourceData = resourceData,
-        navController = navController,
-        overflow = compoundTextProperties.overflow,
-      )
-    }
-    // Separate the primary and secondary text
-    if (!compoundTextProperties.separator.isNullOrEmpty()) {
-      Box(contentAlignment = Alignment.Center, modifier = modifier.padding(horizontal = 6.dp)) {
-        Text(
-          text = compoundTextProperties.separator!!,
-          fontSize = compoundTextProperties.fontSize.sp,
-          color = DefaultColor,
-          textAlign = TextAlign.Center,
+  if (compoundTextProperties.visible.toBoolean()) {
+    FlowRow(
+      modifier =
+        modifier
+          .conditional(compoundTextProperties.fillMaxWidth, { fillMaxWidth() })
+          .conditional(compoundTextProperties.fillMaxHeight, { fillMaxHeight() })
+          .padding(
+            horizontal = compoundTextProperties.padding.dp,
+            vertical = compoundTextProperties.padding.div(2).dp,
+          )
+          .background(compoundTextProperties.backgroundColor.parseColor()),
+    ) {
+      if (!compoundTextProperties.primaryText.isNullOrEmpty()) {
+        CompoundTextPart(
+          modifier = modifier,
+          viewAlignment = compoundTextProperties.alignment,
+          text = compoundTextProperties.primaryText!!,
+          textCase = compoundTextProperties.textCase,
+          maxLines = compoundTextProperties.maxLines,
+          textColor = compoundTextProperties.primaryTextColor,
+          backgroundColor = compoundTextProperties.primaryTextBackgroundColor,
+          borderRadius = compoundTextProperties.borderRadius,
+          fontSize = compoundTextProperties.fontSize,
+          textFontWeight = compoundTextProperties.primaryTextFontWeight,
+          clickable = compoundTextProperties.clickable,
+          actions = compoundTextProperties.primaryTextActions,
+          resourceData = resourceData,
+          navController = navController,
+          overflow = compoundTextProperties.overflow,
         )
       }
-    }
-    if (!compoundTextProperties.secondaryText.isNullOrEmpty()) {
-      CompoundTextPart(
-        modifier = modifier,
-        viewAlignment = compoundTextProperties.alignment,
-        text = compoundTextProperties.secondaryText!!,
-        textCase = compoundTextProperties.textCase,
-        maxLines = compoundTextProperties.maxLines,
-        textColor = compoundTextProperties.secondaryTextColor,
-        backgroundColor = compoundTextProperties.secondaryTextBackgroundColor,
-        borderRadius = compoundTextProperties.borderRadius,
-        fontSize = compoundTextProperties.fontSize,
-        textFontWeight = compoundTextProperties.secondaryTextFontWeight,
-        clickable = compoundTextProperties.clickable,
-        actions = compoundTextProperties.secondaryTextActions,
-        navController = navController,
-        resourceData = resourceData,
-        overflow = compoundTextProperties.overflow,
-      )
+      // Separate the primary and secondary text
+      if (!compoundTextProperties.separator.isNullOrEmpty()) {
+        Box(contentAlignment = Alignment.Center, modifier = modifier.padding(horizontal = 6.dp)) {
+          Text(
+            text = compoundTextProperties.separator!!,
+            fontSize = compoundTextProperties.fontSize.sp,
+            color = DefaultColor,
+            textAlign = TextAlign.Center,
+          )
+        }
+      }
+      if (!compoundTextProperties.secondaryText.isNullOrEmpty()) {
+        CompoundTextPart(
+          modifier = modifier,
+          viewAlignment = compoundTextProperties.alignment,
+          text = compoundTextProperties.secondaryText!!,
+          textCase = compoundTextProperties.textCase,
+          maxLines = compoundTextProperties.maxLines,
+          textColor = compoundTextProperties.secondaryTextColor,
+          backgroundColor = compoundTextProperties.secondaryTextBackgroundColor,
+          borderRadius = compoundTextProperties.borderRadius,
+          fontSize = compoundTextProperties.fontSize,
+          textFontWeight = compoundTextProperties.secondaryTextFontWeight,
+          clickable = compoundTextProperties.clickable,
+          actions = compoundTextProperties.secondaryTextActions,
+          navController = navController,
+          resourceData = resourceData,
+          overflow = compoundTextProperties.overflow,
+        )
+      }
     }
   }
 }

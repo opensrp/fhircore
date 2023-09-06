@@ -76,13 +76,13 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "profileId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_PROFILE,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
         resourceConfig = resourceConfig,
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
-    verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), null) }
     Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
     Assert.assertEquals(4, slotBundle.captured.size())
     Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
@@ -91,6 +91,66 @@ class ConfigExtensionsTest : RobolectricTest() {
       resourceConfig,
       slotBundle.captured.getParcelable(NavigationArg.RESOURCE_CONFIG),
     )
+  }
+
+  @Test
+  fun testLaunchProfileActionOnClickWhenPopBackStackIsTrue() {
+    val clickAction =
+      ActionConfig(
+        id = "profileId",
+        trigger = ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
+        popNavigationBackStack = true,
+      )
+    every { navController.currentDestination } returns
+      NavDestination(navigatorName = "navigating").apply { id = 2384 }
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
+    Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
+    Assert.assertTrue(slotNavOptions.captured.isPopUpToInclusive())
+    Assert.assertEquals(4, slotBundle.captured.size())
+    Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
+  }
+
+  @Test
+  fun testLaunchProfileActionOnClickWhenPopBackStackIsFalse() {
+    val clickAction =
+      ActionConfig(
+        id = "profileId",
+        trigger = ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
+        popNavigationBackStack = false,
+      )
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), null) }
+    Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
+    Assert.assertEquals(4, slotBundle.captured.size())
+    Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
+  }
+
+  @Test
+  fun testLaunchProfileActionOnClickWhenPopBackStackIsNull() {
+    val clickAction =
+      ActionConfig(
+        id = "profileId",
+        trigger = ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
+        popNavigationBackStack = null,
+      )
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), null) }
+    Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
+    Assert.assertEquals(4, slotBundle.captured.size())
+    Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
   }
 
   @Test
@@ -108,14 +168,14 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "profileId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_PROFILE,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
         resourceConfig = resourceConfig,
         params = params,
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
-    verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), null) }
     Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
     Assert.assertEquals(4, slotBundle.captured.size())
     Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
@@ -135,7 +195,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "registerId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_REGISTER,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
         display = "menu",
         toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
       )
@@ -168,7 +228,10 @@ class ConfigExtensionsTest : RobolectricTest() {
   @Test
   fun testLaunchSettingsActionOnClick() {
     val clickAction =
-      ActionConfig(trigger = ActionTrigger.ON_CLICK, workflow = ApplicationWorkflow.LAUNCH_SETTINGS)
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_SETTINGS.name,
+      )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     verify { navController.navigate(capture(slotInt)) }
@@ -181,7 +244,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "reportId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_REPORT,
+        workflow = ApplicationWorkflow.LAUNCH_REPORT.name,
         params =
           listOf(
             ActionParameter(
@@ -207,7 +270,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "geoWidgetId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_MAP,
+        workflow = ApplicationWorkflow.LAUNCH_MAP.name,
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
@@ -225,7 +288,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = null,
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_REGISTER,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
         display = null,
         toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
       )
@@ -251,7 +314,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     val clickAction =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC,
+        workflow = ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC.name,
       )
     listOf(clickAction).handleClickEvent(navController, resourceData)
     verify { context.startActivity(any()) }
@@ -269,7 +332,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     val clickAction =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE.name,
         questionnaire = QuestionnaireConfig(id = "qid", title = "Form"),
       )
     listOf(clickAction).handleClickEvent(navController, resourceData)
@@ -287,7 +350,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     val actionConfig =
       ActionConfig(
         ActionTrigger.ON_CLICK,
-        ApplicationWorkflow.LAUNCH_PROFILE,
+        ApplicationWorkflow.LAUNCH_PROFILE.name,
         params =
           listOf(
             ActionParameter(
@@ -335,7 +398,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     val actionConfig =
       ActionConfig(
         ActionTrigger.ON_CLICK,
-        ApplicationWorkflow.LAUNCH_PROFILE,
+        ApplicationWorkflow.LAUNCH_PROFILE.name,
         params =
           listOf(
             ActionParameter(
