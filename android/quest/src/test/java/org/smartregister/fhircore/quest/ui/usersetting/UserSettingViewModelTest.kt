@@ -92,7 +92,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
-    accountAuthenticator = mockk()
+    accountAuthenticator = mockk(relaxUnitFun = true)
     secureSharedPreference = mockk()
     sharedPreferencesHelper = mockk()
     fhirEngine = mockk(relaxUnitFun = true)

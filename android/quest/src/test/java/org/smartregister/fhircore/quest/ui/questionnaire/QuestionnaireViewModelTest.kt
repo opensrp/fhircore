@@ -22,7 +22,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -39,6 +38,7 @@ import io.mockk.verify
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Address
@@ -106,12 +106,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
+  @Inject lateinit var fhirEngine: FhirEngine
+
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
   private lateinit var defaultRepository: DefaultRepository
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
-  private val fhirEngine: FhirEngine = mockk()
   private val context: Application = ApplicationProvider.getApplicationContext()
   private val libraryEvaluator: LibraryEvaluator = mockk(relaxed = true, relaxUnitFun = true)
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
@@ -792,58 +794,48 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSearchLatestQuestionnaireResponseShouldReturnLatestQuestionnaireResponse() = runTest {
-    coEvery {
-      fhirEngine.search<QuestionnaireResponse> {
-        filter(QuestionnaireResponse.SUBJECT, { value = patient.logicalId })
-        filter(
-          QuestionnaireResponse.QUESTIONNAIRE,
-          { value = ResourceType.Questionnaire.name + "/" + questionnaireConfig.id },
+  fun testSearchLatestQuestionnaireResponseShouldReturnLatestQuestionnaireResponse() =
+    runTest(timeout = 90.seconds) {
+      Assert.assertNull(
+        questionnaireViewModel.searchLatestQuestionnaireResponse(
+          resourceId = patient.logicalId,
+          resourceType = ResourceType.Patient,
+          questionnaireId = questionnaireConfig.id,
+        ),
+      )
+
+      val questionnaireResponses =
+        listOf(
+          QuestionnaireResponse().apply {
+            id = "qr1"
+            meta.lastUpdated = Date()
+            subject = patient.asReference()
+            questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
+          },
+          QuestionnaireResponse().apply {
+            id = "qr2"
+            meta.lastUpdated = yesterday()
+            subject = patient.asReference()
+            questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
+          },
         )
-      }
-    } returns emptyList()
 
-    Assert.assertNull(
-      questionnaireViewModel.searchLatestQuestionnaireResponse(
-        resourceId = patient.logicalId,
-        resourceType = ResourceType.Patient,
-        questionnaireId = questionnaireConfig.id,
-      ),
-    )
-
-    val questionnaireResponses =
-      listOf(
-        QuestionnaireResponse().apply {
-          id = "qr1"
-          meta.lastUpdated = Date()
-        },
-        QuestionnaireResponse().apply {
-          id = "qr2"
-          meta.lastUpdated = yesterday()
-        },
+      // Add QuestionnaireResponse to database
+      fhirEngine.create(
+        patient,
+        samplePatientRegisterQuestionnaire,
+        *questionnaireResponses.toTypedArray(),
       )
 
-    coEvery {
-      fhirEngine
-        .search<QuestionnaireResponse> {
-          filter(QuestionnaireResponse.SUBJECT, { value = patient.logicalId })
-          filter(
-            QuestionnaireResponse.QUESTIONNAIRE,
-            { value = ResourceType.Questionnaire.name + "/" + questionnaireConfig.id },
-          )
-        }
-        .map { it.resource }
-    } returns questionnaireResponses
-
-    val latestQuestionnaireResponse =
-      questionnaireViewModel.searchLatestQuestionnaireResponse(
-        resourceId = patient.logicalId,
-        resourceType = ResourceType.Patient,
-        questionnaireId = questionnaireConfig.id,
-      )
-    Assert.assertNotNull(latestQuestionnaireResponse)
-    Assert.assertEquals("qr1", latestQuestionnaireResponse?.id)
-  }
+      val latestQuestionnaireResponse =
+        questionnaireViewModel.searchLatestQuestionnaireResponse(
+          resourceId = patient.logicalId,
+          resourceType = ResourceType.Patient,
+          questionnaireId = questionnaireConfig.id,
+        )
+      Assert.assertNotNull(latestQuestionnaireResponse)
+      Assert.assertEquals("qr1", latestQuestionnaireResponse?.id)
+    }
 
   @Test
   fun testRetrievePopulationResourcesReturnsListOfResourcesOrEmptyList() = runTest {

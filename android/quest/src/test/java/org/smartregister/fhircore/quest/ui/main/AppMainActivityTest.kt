@@ -27,7 +27,6 @@ import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
@@ -63,17 +62,18 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
-  @BindValue val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk()
+  @BindValue
+  val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk(relaxed = true, relaxUnitFun = true)
 
-  @BindValue val eventBus: EventBus = mockk()
-
-  lateinit var appMainActivity: AppMainActivity
+  private lateinit var appMainActivity: AppMainActivity
+  private var eventBus: EventBus = mockk(relaxUnitFun = true, relaxed = true)
 
   @Before
   fun setUp() {
     hiltRule.inject()
     appMainActivity =
       spyk(Robolectric.buildActivity(AppMainActivity::class.java).create().resume().get())
+    every { appMainActivity.eventBus } returns eventBus
   }
 
   @Test
@@ -112,7 +112,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     // Timestamp updated to the SyncJobStatus timestamp
     Assert.assertEquals(
       viewModel.appMainUiState.value.lastSyncTime,
-      viewModel.formatLastSyncTimestamp(syncJobStatusTimestamp)!!,
+      viewModel.formatLastSyncTimestamp(syncJobStatusTimestamp),
     )
   }
 
@@ -153,8 +153,6 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnSubmitQuestionnaireShouldUpdateLiveData() = runTest {
-    every { eventBus.events } returns mockk(relaxed = true, relaxUnitFun = true)
-    coEvery { eventBus.triggerEvent(any()) } just runs
     appMainActivity.onSubmitQuestionnaire(
       ActivityResult(
         -1,
@@ -177,11 +175,11 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     coVerify { eventBus.triggerEvent(capture(onSubmitQuestionnaireSlot)) }
     Assert.assertNotNull(onSubmitQuestionnaireSlot)
     val questionnaireSubmission = onSubmitQuestionnaireSlot.captured.questionnaireSubmission
-    Assert.assertEquals("Task/12345", questionnaireSubmission?.questionnaireConfig?.taskId)
-    Assert.assertEquals("questionnaireId", questionnaireSubmission?.questionnaireConfig?.id)
+    Assert.assertEquals("Task/12345", questionnaireSubmission.questionnaireConfig.taskId)
+    Assert.assertEquals("questionnaireId", questionnaireSubmission.questionnaireConfig.id)
     Assert.assertEquals(
       QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS,
-      questionnaireSubmission?.questionnaireResponse?.status,
+      questionnaireSubmission.questionnaireResponse.status,
     )
   }
 
@@ -191,8 +189,6 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     val refreshLiveDataMock = mockk<MutableLiveData<Boolean?>>()
     every { refreshLiveDataMock.postValue(true) } just runs
     every { appMainActivity.appMainViewModel } returns appMainViewModel
-    every { eventBus.events } returns mockk()
-    coEvery { eventBus.triggerEvent(any()) } returns mockk()
 
     appMainActivity.onSubmitQuestionnaire(
       ActivityResult(
@@ -211,13 +207,14 @@ class AppMainActivityTest : ActivityRobolectricTest() {
         },
       ),
     )
-
-    coVerify { eventBus.triggerEvent(any()) }
+    val onSubmitQuestionnaireSlot = slot<AppEvent.OnSubmitQuestionnaire>()
+    coVerify { eventBus.triggerEvent(capture(onSubmitQuestionnaireSlot)) }
+    Assert.assertNotNull(onSubmitQuestionnaireSlot)
   }
 
   @Test
   fun testStartForResult() {
-    val event = appMainActivity.startForResult
-    Assert.assertNotNull(event)
+    val resultLauncher = appMainActivity.startForResult
+    Assert.assertNotNull(resultLauncher)
   }
 }
