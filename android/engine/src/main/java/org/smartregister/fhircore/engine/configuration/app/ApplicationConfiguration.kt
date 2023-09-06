@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.configuration.app
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEFAULT_TASK_FILTER_TAG_META_CODING_SYSTEM
 
 @Serializable
 data class ApplicationConfiguration(
@@ -32,7 +33,7 @@ data class ApplicationConfiguration(
   var appLogoIconResourceFile: String = "ic_default_logo",
   var patientTypeFilterTagViaMetaCodingSystem: String = "",
   var count: String = ConfigurationRegistry.DEFAULT_COUNT,
-  var taskFilterTagViaMetaCodingSystem: String = ""
+  var taskFilterTagViaMetaCodingSystem: String = DEFAULT_TASK_FILTER_TAG_META_CODING_SYSTEM
 ) : Configuration
 
 /**
