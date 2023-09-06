@@ -301,6 +301,7 @@ constructor(
     const val ID = "_id"
     const val COUNT = "count"
     const val DEFAULT_COUNT = "100"
+    const val DEFAULT_TASK_FILTER_TAG_META_CODING_SYSTEM = "https://d-tree.org/fhir/task-filter-tag"
     const val TYPE_REFERENCE_DELIMITER = "/"
   }
 }

@@ -51,7 +51,6 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.isGuardianVisit
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
@@ -107,27 +106,6 @@ constructor(
     get() = configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
 
   private val isClientVisit: MutableState<Boolean> = mutableStateOf(true)
-
-  fun completedTask(value: String) {
-    patientProfileData?.let { data ->
-      if (data is ProfileData.HivProfileData) {
-        val patientData =
-          data.copy(
-            tasks =
-              data.tasks.map { task ->
-                if (task.reasonReference.extractId() == value) {
-                  task.status = Task.TaskStatus.COMPLETED
-                  task
-                } else task
-              }
-          )
-        _patientProfileViewDataFlow.value =
-          profileViewDataMapper.transformInputToOutputModel(patientData) as
-            ProfileViewData.PatientProfileViewData
-        patientProfileData = patientData
-      }
-    }
-  }
 
   init {
     syncBroadcaster.registerSyncListener(
@@ -189,7 +167,7 @@ constructor(
         hivPatientProfileData.copy(
           tasks =
             hivPatientProfileData.tasks.filter {
-              it.isGuardianVisit(applicationConfiguration.patientTypeFilterTagViaMetaCodingSystem)
+              it.isGuardianVisit(applicationConfiguration.taskFilterTagViaMetaCodingSystem)
             }
         )
       _patientProfileViewDataFlow.value =

@@ -33,7 +33,8 @@ class ApplicationConfigurationTest {
         applicationName = "Test App",
         appLogoIconResourceFile = "ic_launcher",
         patientTypeFilterTagViaMetaCodingSystem = "test-filter-tag",
-        count = "100"
+        count = "100",
+        taskFilterTagViaMetaCodingSystem = "task-filter-tag"
       )
     Assert.assertEquals("ancApp", applicationConfiguration.appId)
     Assert.assertEquals("classification", applicationConfiguration.classification)
@@ -46,6 +47,10 @@ class ApplicationConfigurationTest {
       applicationConfiguration.patientTypeFilterTagViaMetaCodingSystem
     )
     Assert.assertEquals("100", applicationConfiguration.count)
+    Assert.assertEquals(
+      "task-filter-tag",
+      applicationConfiguration.taskFilterTagViaMetaCodingSystem
+    )
   }
 
   @Test
@@ -60,7 +65,8 @@ class ApplicationConfigurationTest {
         applicationName = "Test App",
         appLogoIconResourceFile = "ic_launcher",
         patientTypeFilterTagViaMetaCodingSystem = "test-filter-tag",
-        count = "100"
+        count = "100",
+        taskFilterTagViaMetaCodingSystem = "task-filter-tag"
       )
     Assert.assertEquals("ancApp", applicationConfiguration.appId)
     Assert.assertEquals("classification", applicationConfiguration.classification)
@@ -73,5 +79,9 @@ class ApplicationConfigurationTest {
       applicationConfiguration.patientTypeFilterTagViaMetaCodingSystem
     )
     Assert.assertEquals("100", applicationConfiguration.count)
+    Assert.assertEquals(
+      "task-filter-tag",
+      applicationConfiguration.taskFilterTagViaMetaCodingSystem
+    )
   }
 }
