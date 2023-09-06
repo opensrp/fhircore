@@ -124,8 +124,7 @@ fun MeasureReport.MeasureReportGroupComponent.findStratumForMonth(reportingMonth
  *   endDate: Date, operation: Operation = Operation.AND)
  * @return list of already generatedMeasureReports
  */
-suspend inline fun retrievePreviouslyGeneratedMeasureReports(
-  fhirEngine: FhirEngine,
+suspend inline fun FhirEngine.retrievePreviouslyGeneratedMeasureReports(
   startDateFormatted: String,
   endDateFormatted: String,
   measureUrl: String,
@@ -147,5 +146,5 @@ suspend inline fun retrievePreviouslyGeneratedMeasureReports(
   search.filter(MeasureReport.MEASURE, { value = measureUrl })
   subjects.forEach { search.filter(MeasureReport.SUBJECT, { value = it }) }
 
-  return fhirEngine.search<MeasureReport>(search).map { it.resource }
+  return this.search<MeasureReport>(search).map { it.resource }
 }

@@ -16,23 +16,20 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.SearchResult
-import com.google.android.fhir.search.Operation
-import com.google.android.fhir.search.Search
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.mockk
+import io.mockk.slot
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.MeasureReport
-import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -47,7 +44,43 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 @HiltAndroidTest
 class MeasureExtensionTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-  private var fhirEngine = mockk<FhirEngine>()
+
+  @Inject lateinit var fhirEngine: FhirEngine
+
+  private val measureReport =
+    MeasureReport().apply {
+      addGroup().apply {
+        this.addPopulation().apply {
+          this.code.addCoding(
+            MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) },
+          )
+          this.count = 1
+        }
+
+        this.addPopulation().apply {
+          this.code.addCoding(
+            MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) },
+          )
+          this.count = 2
+        }
+
+        this.addStratifier().addStratum().apply {
+          this.addPopulation().apply {
+            this.code.addCoding(
+              MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) },
+            )
+            this.count = 3
+          }
+
+          this.addPopulation().apply {
+            this.code.addCoding(
+              MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) },
+            )
+            this.count = 4
+          }
+        }
+      }
+    }
 
   @Before
   fun setUp() {
@@ -76,14 +109,12 @@ class MeasureExtensionTest : RobolectricTest() {
   @Test
   fun `findRatio should return correct ratio display for group`() {
     val result = measureReport.groupFirstRep.findRatio()
-
     assertEquals("1/2", result)
   }
 
   @Test
   fun `findRatio should return correct ratio display for stratum with given denominator`() {
     val result = measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findRatio(12)
-
     assertEquals("3/12", result)
   }
 
@@ -277,88 +308,46 @@ class MeasureExtensionTest : RobolectricTest() {
 
   @Test
   fun testRetrievePreviouslyGeneratedMeasureReportsProducesCorrectSearchObject() {
-    coEvery { fhirEngine.search<MeasureReport>(any()) } returns
-      listOf(SearchResult(resource = measureReport, null, null))
+    runTest {
+      val newMeasureReport =
+        measureReport.copy().apply {
+          id = "new-measure-report"
+          period.apply {
+            this.start = DateType("2023-08-01").value
+            this.end = DateType("2023-08-30").value
+          }
+          measure = "https://testmeasureurl.com"
+        }
 
-    val search = Search(ResourceType.MeasureReport)
-    search.filter(
-      MeasureReport.PERIOD,
-      {
-        value = of(DateTimeType("2023-08-01"))
-        prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-      },
-      {
-        value = of(DateTimeType("2023-08-30"))
-        prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
-      },
-      operation = Operation.AND,
-    )
-    search.filter(MeasureReport.MEASURE, { value = "https://testmeasureurl.com" })
+      // Create measure to be searched instead of mocking
+      fhirEngine.create(newMeasureReport)
 
-    runBlocking {
       val result =
-        retrievePreviouslyGeneratedMeasureReports(
-          fhirEngine = fhirEngine,
-          "2023-08-01",
-          "2023-08-30",
-          "https://testmeasureurl.com",
-          emptyList(),
+        fhirEngine.retrievePreviouslyGeneratedMeasureReports(
+          startDateFormatted = "2023-08-01",
+          endDateFormatted = "2023-08-30",
+          measureUrl = "https://testmeasureurl.com",
+          subjects = emptyList(),
         )
       assertEquals(1, result.size)
-      assertEquals(measureReport, result[0])
-    }
+      assertEquals(newMeasureReport.logicalId, result[0].logicalId)
 
-    coVerify { fhirEngine.search<MeasureReport>(search) }
+      coVerify { fhirEngine.search<MeasureReport>(capture(slot())) }
+    }
   }
-
-  private val measureReport =
-    MeasureReport().apply {
-      addGroup().apply {
-        this.addPopulation().apply {
-          this.code.addCoding(
-            MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) },
-          )
-          this.count = 1
-        }
-
-        this.addPopulation().apply {
-          this.code.addCoding(
-            MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) },
-          )
-          this.count = 2
-        }
-
-        this.addStratifier().addStratum().apply {
-          this.addPopulation().apply {
-            this.code.addCoding(
-              MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) },
-            )
-            this.count = 3
-          }
-
-          this.addPopulation().apply {
-            this.code.addCoding(
-              MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) },
-            )
-            this.count = 4
-          }
-        }
-      }
-    }
 
   @Test
   fun testAlreadyGeneratedMeasureReports() {
-    coEvery { fhirEngine.search<MeasureReport>(any<Search>()) } returns emptyList()
+    coEvery { fhirEngine.search<MeasureReport>(any()) } returns emptyList()
     runBlocking {
       val result =
-        retrievePreviouslyGeneratedMeasureReports(
-          fhirEngine = fhirEngine,
-          "2022-02-02",
-          "2022-04-04",
-          "http://nourl.com",
-          emptyList(),
+        fhirEngine.retrievePreviouslyGeneratedMeasureReports(
+          startDateFormatted = "2022-02-02",
+          endDateFormatted = "2022-04-04",
+          measureUrl = "http://nourl.com",
+          subjects = emptyList(),
         )
-      assertTrue(result.isNullOrEmpty())
+      assertTrue(result.isEmpty())
     }
   }
 }

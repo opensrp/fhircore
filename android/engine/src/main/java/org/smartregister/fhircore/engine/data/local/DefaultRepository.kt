@@ -106,24 +106,6 @@ constructor(
     }
 
   suspend inline fun <reified T : Resource> searchResourceFor(
-    subjectId: String,
-    subjectType: ResourceType = ResourceType.Patient,
-    subjectParam: ReferenceClientParam,
-    dataQueries: List<DataQuery>? = null,
-    configComputedRuleValues: Map<String, Any> = emptyMap(),
-  ): List<T> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine
-        .search<T> {
-          filterByResourceTypeId(subjectParam, subjectType, subjectId)
-          dataQueries?.forEach {
-            filterBy(dataQuery = it, configComputedRuleValues = configComputedRuleValues)
-          }
-        }
-        .map { it.resource }
-    }
-
-  suspend inline fun <reified T : Resource> searchResourceFor(
     token: TokenClientParam,
     subjectType: ResourceType,
     subjectId: String,
@@ -144,7 +126,7 @@ constructor(
         .map { it.resource }
     }
 
-  suspend fun search(dataRequirement: DataRequirement) =
+  suspend fun searchCondition(dataRequirement: DataRequirement) =
     when (dataRequirement.type) {
       Enumerations.ResourceType.CONDITION.toCode() ->
         fhirEngine
@@ -262,22 +244,20 @@ constructor(
     }
   }
 
-  suspend fun loadManagingEntity(group: Group, configComputedRuleValues: Map<String, Any>) =
+  suspend fun loadManagingEntity(group: Group) =
     group.managingEntity?.let { reference ->
-      searchResourceFor<RelatedPerson>(
-          token = RelatedPerson.RES_ID,
-          subjectType = ResourceType.RelatedPerson,
-          subjectId = reference.extractId(),
-          configComputedRuleValues = configComputedRuleValues,
-        )
+      fhirEngine
+        .search<RelatedPerson> {
+          filter(RelatedPerson.RES_ID, { value = of(reference.extractId()) })
+        }
+        .map { it.resource }
         .firstOrNull()
         ?.let { relatedPerson ->
-          searchResourceFor<Patient>(
-              token = Patient.RES_ID,
-              subjectType = ResourceType.Patient,
-              subjectId = relatedPerson.patient.extractId(),
-              configComputedRuleValues = configComputedRuleValues,
-            )
+          fhirEngine
+            .search<Patient> {
+              filter(Patient.RES_ID, { value = of(relatedPerson.patient.extractId()) })
+            }
+            .map { it.resource }
             .firstOrNull()
         }
     }

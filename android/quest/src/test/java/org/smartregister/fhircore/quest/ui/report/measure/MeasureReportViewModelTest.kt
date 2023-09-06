@@ -321,12 +321,11 @@ class MeasureReportViewModelTest : RobolectricTest() {
     coEvery { measureReportViewModel.formatPopulationMeasureReports(any(), any()) } returns
       emptyList()
     coEvery {
-      retrievePreviouslyGeneratedMeasureReports(
-        fhirEngine,
-        "2022-01-21",
-        "2022-01-27",
-        "http://nourl.com",
-        listOf(),
+      fhirEngine.retrievePreviouslyGeneratedMeasureReports(
+        startDateFormatted = "2022-01-21",
+        endDateFormatted = "2022-01-27",
+        measureUrl = "http://nourl.com",
+        subjects = listOf(),
       )
     } returns listOf(testMeasureReport)
 

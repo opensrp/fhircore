@@ -219,7 +219,7 @@ constructor(
         this.lastModified = Date()
         if (reason != null) this.statusReason = CodeableConcept().apply { text = reason }
       }
-      ?.updateDependentTaskDueDate(defaultRepository, fhirEngine)
+      ?.updateDependentTaskDueDate(defaultRepository)
       ?.run { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = this) }
   }
 

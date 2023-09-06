@@ -265,7 +265,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testResetAppDataShouldClearEverything() = runTest {
     userSettingViewModel.resetAppData(context)
-
+    every { accountAuthenticator.invalidateSession(any()) } just runs
     verify { workManager.cancelAllWork() }
     coVerify { fhirEngine.clearDatabase() }
     verify { accountAuthenticator.invalidateSession(any()) }
