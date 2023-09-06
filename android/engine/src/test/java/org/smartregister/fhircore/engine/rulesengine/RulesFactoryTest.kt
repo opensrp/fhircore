@@ -129,6 +129,7 @@ class RulesFactoryTest : RobolectricTest() {
             secondaryRepositoryResourceData = null,
             relatedResourcesMap = relatedResourcesMap,
           ),
+        params = emptyMap(),
       )
 
       val factsSlot = slot<Facts>()
@@ -209,6 +210,7 @@ class RulesFactoryTest : RobolectricTest() {
                 ),
               ),
           ),
+        params = emptyMap(),
       )
 
       val factsSlot = slot<Facts>()
