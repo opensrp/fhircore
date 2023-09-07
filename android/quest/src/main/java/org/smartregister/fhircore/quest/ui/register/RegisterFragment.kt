@@ -227,7 +227,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
           registerViewModel.emitSnackBarState(
             SnackBarMessageConfig(
               message =
-                getString(if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed),
+                getString(
+                  if (hasAuthError) {
+                    R.string.sync_unauthorised
+                  } else R.string.sync_completed_with_errors,
+                ),
               duration = SnackbarDuration.Long,
               actionLabel = getString(R.string.ok).uppercase(),
             ),
