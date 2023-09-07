@@ -223,15 +223,14 @@ class RegisterFragment : Fragment(), OnSyncListener {
             false
           }
 
-        if (hasAuthError) {
-          lifecycleScope.launch {
-            registerViewModel.emitSnackBarState(
-              SnackBarMessageConfig(
-                message = getString(R.string.sync_unauthorised),
-                duration = SnackbarDuration.Long,
-              ),
-            )
-          }
+        lifecycleScope.launch {
+          registerViewModel.emitSnackBarState(
+            SnackBarMessageConfig(
+              message =
+                getString(if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed),
+              duration = SnackbarDuration.Long,
+            ),
+          )
         }
       }
       else -> {
