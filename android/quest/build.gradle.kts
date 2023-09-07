@@ -248,6 +248,13 @@ android {
       manifestPlaceholders["appLabel"] = "Diabetes Compass"
     }
 
+    create("wdftz") {
+      dimension = "apps"
+      applicationIdSuffix = ".wdftz"
+      versionNameSuffix = "-wdftz"
+      manifestPlaceholders["appLabel"] = "Gothomis-C"
+    }
+
     create("zeir") {
       dimension = "apps"
       applicationIdSuffix = ".zeir"
