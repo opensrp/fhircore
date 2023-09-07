@@ -228,7 +228,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
             SnackBarMessageConfig(
               message =
                 getString(if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed),
-              duration = SnackbarDuration.Long
+              duration = SnackbarDuration.Long,
+              actionLabel = getString(R.string.ok).uppercase()
             )
           )
         }
