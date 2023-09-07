@@ -32,6 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.testTag
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -170,6 +171,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 pagingItems = pagingItems,
                 navController = findNavController(),
                 toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
+                modifier = Modifier.testTag(REGISTER_SCREEN_TEST_TAG),
               )
             }
           }
@@ -335,5 +337,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
       }
 
     return getSyncProgress(currentProgress, currentTotalRecords)
+  }
+
+  companion object {
+    const val REGISTER_SCREEN_TEST_TAG = "fragmentRegisterScreenTestTag"
   }
 }
