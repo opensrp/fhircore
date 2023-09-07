@@ -210,33 +210,28 @@ class RegisterFragment : Fragment(), OnSyncListener {
           )
         }
       }
-      is SyncJobStatus.Glitch -> {
-        refreshRegisterData()
-      }
       is SyncJobStatus.Failed -> {
         refreshRegisterData()
         // Show error message in snackBar message
-        // syncJobStatus.exceptions may be null when worker fails; hence the null safety handling
         val hasAuthError =
           try {
             Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
-
-            (syncJobStatus.exceptions[0].takeIf { it.exception is HttpException }?.exception as
-                HttpException)
-              .code() == 401
-          } catch (e: NullPointerException) {
+            syncJobStatus.exceptions.any {
+              it.exception is HttpException && (it.exception as HttpException).code() == 401
+            }
+          } catch (nullPointerException: NullPointerException) {
             false
           }
 
-        val messageResourceId =
-          if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
-        lifecycleScope.launch {
-          registerViewModel.emitSnackBarState(
-            SnackBarMessageConfig(
-              message = getString(messageResourceId),
-              duration = SnackbarDuration.Long
+        if (hasAuthError) {
+          lifecycleScope.launch {
+            registerViewModel.emitSnackBarState(
+              SnackBarMessageConfig(
+                message = getString(R.string.sync_unauthorised),
+                duration = SnackbarDuration.Long
+              )
             )
-          )
+          }
         }
       }
       else -> {
