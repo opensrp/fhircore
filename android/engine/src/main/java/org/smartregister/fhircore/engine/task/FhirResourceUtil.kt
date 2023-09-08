@@ -163,7 +163,9 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
               val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.logicalId) }
               apply
             }
-          filter(Resource.RES_ID, *filters.toTypedArray())
+          if (filters.isNotEmpty()) {
+            filter(Resource.RES_ID, *filters.toTypedArray())
+          }
         }
       }
 
