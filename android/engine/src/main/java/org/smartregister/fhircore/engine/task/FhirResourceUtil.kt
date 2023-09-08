@@ -49,8 +49,11 @@ import timber.log.Timber
 @Singleton
 class FhirResourceUtil
 @Inject
-constructor(@ApplicationContext val appContext: Context, val defaultRepository: DefaultRepository,
-            val configurationRegistry: ConfigurationRegistry,) {
+constructor(
+  @ApplicationContext val appContext: Context,
+  val defaultRepository: DefaultRepository,
+  val configurationRegistry: ConfigurationRegistry,
+) {
 
   /**
    * Fetches and returns tasks whose Task.status is either "requested", "ready", "accepted",
@@ -203,12 +206,11 @@ constructor(@ApplicationContext val appContext: Context, val defaultRepository: 
     val appRegistry =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
 
-    appRegistry.eventWorkflows
-      .filter { it.eventType == EventType.RESOURCE_CLOSURE }
-      .forEach { eventWorkFlow ->
-        eventWorkFlow.eventResources.forEach { eventResource ->
-          defaultRepository.updateResourcesRecursively(eventResource, resource)
-        }
+    appRegistry.eventWorkflows.filter { it.eventType == EventType.RESOURCE_CLOSURE }.forEach {
+      eventWorkFlow ->
+      eventWorkFlow.eventResources.forEach { eventResource ->
+        defaultRepository.updateResourcesRecursively(eventResource, resource)
       }
+    }
   }
 }

@@ -182,19 +182,12 @@ constructor(
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
-        when (event.state) {
-          is SyncJobStatus.Finished -> {
-
-            sharedPreferencesHelper.write(
-              SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-              formatLastSyncTimestamp(event.state.timestamp)
-            )
-
-            viewModelScope.launch { retrieveAppMainUiState() }
-          }
-          else ->
-            appMainUiState.value =
-              appMainUiState.value.copy(lastSyncTime = event.lastSyncTime ?: "")
+        if (event.state is SyncJobStatus.Finished) {
+          sharedPreferencesHelper.write(
+            SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+            formatLastSyncTimestamp(event.state.timestamp)
+          )
+          viewModelScope.launch { retrieveAppMainUiState() }
         }
       }
       is AppMainEvent.TriggerWorkflow ->
