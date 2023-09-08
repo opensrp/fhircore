@@ -33,8 +33,12 @@ import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Sync
@@ -58,14 +62,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
+import org.smartregister.fhircore.engine.ui.userprofile.settings.InfoCard
 
 @Composable
 fun UserProfileScreen(
   modifier: Modifier = Modifier,
+  navController: NavController? = null,
   userProfileViewModel: UserProfileViewModel = hiltViewModel()
 ) {
 
@@ -73,93 +80,117 @@ fun UserProfileScreen(
   var expanded by remember { mutableStateOf(false) }
   val context = LocalContext.current
 
-  Column(modifier = modifier.padding(vertical = 20.dp)) {
-    if (!username.isNullOrEmpty()) {
-      Column(modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
-        Box(
-          modifier = modifier.clip(CircleShape).background(color = LighterBlue).size(80.dp),
-          contentAlignment = Alignment.Center
-        ) {
+  Scaffold(topBar = {
+    TopAppBar(
+      title = {
+
+      },
+      navigationIcon = {
+        IconButton(onClick = {
+          navController?.popBackStack()
+        }) {
+          Icon(Icons.Default.ArrowBack, "")
+        }
+      }
+    )
+  }) {paddingValues ->
+    Column(modifier = modifier
+      .padding(paddingValues)
+      .padding(vertical = 20.dp)) {
+      if (!username.isNullOrEmpty()) {
+        Column(modifier = modifier
+          .fillMaxWidth()
+          .padding(horizontal = 20.dp)) {
+          Box(
+            modifier = modifier
+              .clip(CircleShape)
+              .background(color = LighterBlue)
+              .size(80.dp),
+            contentAlignment = Alignment.Center
+          ) {
+            Text(
+              text = username!!.first().uppercase(),
+              textAlign = TextAlign.Center,
+              fontWeight = FontWeight.Bold,
+              fontSize = 28.sp,
+              color = BlueTextColor
+            )
+          }
           Text(
-            text = username!!.first().uppercase(),
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.Bold,
-            fontSize = 28.sp,
-            color = BlueTextColor
+            text = username!!.capitalize(Locale.current),
+            fontSize = 22.sp,
+            modifier = modifier.padding(vertical = 22.dp),
+            fontWeight = FontWeight.Bold
           )
         }
-        Text(
-          text = username!!.capitalize(Locale.current),
-          fontSize = 22.sp,
-          modifier = modifier.padding(vertical = 22.dp),
-          fontWeight = FontWeight.Bold
-        )
       }
-    }
-    Divider(color = DividerColor)
-    UserProfileRow(
-      icon = Icons.Rounded.Sync,
-      text = stringResource(id = R.string.sync),
-      clickListener = userProfileViewModel::runSync,
-      modifier = modifier
-    )
+      InfoCard(viewModel = userProfileViewModel)
+      Divider(color = DividerColor)
+      UserProfileRow(
+        icon = Icons.Rounded.Sync,
+        text = stringResource(id = R.string.sync),
+        clickListener = userProfileViewModel::runSync,
+        modifier = modifier
+      )
 
-    // Language option
-    if (userProfileViewModel.allowSwitchingLanguages()) {
-      Row(
-        modifier =
+      // Language option
+      if (userProfileViewModel.allowSwitchingLanguages()) {
+        Row(
+          modifier =
           modifier
             .fillMaxWidth()
             .clickable { expanded = true }
             .padding(vertical = 16.dp, horizontal = 20.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-      ) {
-        Row(modifier = Modifier.align(Alignment.CenterVertically)) {
-          Icon(
-            painterResource(R.drawable.ic_outline_language_black),
-            stringResource(R.string.language),
-            tint = BlueTextColor,
-            modifier = Modifier.size(26.dp)
-          )
-          Spacer(modifier = modifier.width(20.dp))
-          Text(text = stringResource(id = R.string.language), fontSize = 18.sp)
-        }
-        Box(contentAlignment = Alignment.CenterEnd) {
-          Text(
-            text = userProfileViewModel.loadSelectedLanguage(),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = modifier.wrapContentWidth(Alignment.End)
-          )
-          DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = modifier.wrapContentWidth(Alignment.End)
-          ) {
-            for (language in userProfileViewModel.languages) {
-              DropdownMenuItem(onClick = { userProfileViewModel.setLanguage(language) }) {
-                Text(text = language.displayName, fontSize = 18.sp)
+          horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+          Row(modifier = Modifier.align(Alignment.CenterVertically)) {
+            Icon(
+              painterResource(R.drawable.ic_outline_language_black),
+              stringResource(R.string.language),
+              tint = BlueTextColor,
+              modifier = Modifier.size(26.dp)
+            )
+            Spacer(modifier = modifier.width(20.dp))
+            Text(text = stringResource(id = R.string.language), fontSize = 18.sp)
+          }
+          Box(contentAlignment = Alignment.CenterEnd) {
+            Text(
+              text = userProfileViewModel.loadSelectedLanguage(),
+              fontSize = 18.sp,
+              fontWeight = FontWeight.Bold,
+              modifier = modifier.wrapContentWidth(Alignment.End)
+            )
+            DropdownMenu(
+              expanded = expanded,
+              onDismissRequest = { expanded = false },
+              modifier = modifier.wrapContentWidth(Alignment.End)
+            ) {
+              for (language in userProfileViewModel.languages) {
+                DropdownMenuItem(onClick = { userProfileViewModel.setLanguage(language) }) {
+                  Text(text = language.displayName, fontSize = 18.sp)
+                }
               }
             }
           }
+          Icon(
+            imageVector = Icons.Rounded.ChevronRight,
+            "",
+            tint = Color.LightGray,
+            modifier = modifier.wrapContentWidth(Alignment.End)
+          )
         }
-        Icon(
-          imageVector = Icons.Rounded.ChevronRight,
-          "",
-          tint = Color.LightGray,
-          modifier = modifier.wrapContentWidth(Alignment.End)
-        )
+        Divider(color = DividerColor)
       }
-      Divider(color = DividerColor)
-    }
 
-    UserProfileRow(
-      icon = Icons.Rounded.Logout,
-      text = stringResource(id = R.string.logout),
-      clickListener = { userProfileViewModel.logoutUser(context) },
-      modifier = modifier
-    )
+      UserProfileRow(
+        icon = Icons.Rounded.Logout,
+        text = stringResource(id = R.string.logout),
+        clickListener = { userProfileViewModel.logoutUser(context) },
+        modifier = modifier
+      )
+    }
   }
+
 }
 
 @Composable
@@ -171,10 +202,10 @@ fun UserProfileRow(
 ) {
   Row(
     modifier =
-      modifier
-        .fillMaxWidth()
-        .clickable { clickListener() }
-        .padding(vertical = 16.dp, horizontal = 20.dp),
+    modifier
+      .fillMaxWidth()
+      .clickable { clickListener() }
+      .padding(vertical = 16.dp, horizontal = 20.dp),
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
     Row {

@@ -20,6 +20,8 @@ import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import org.hl7.fhir.r4.model.Practitioner
+import org.hl7.fhir.r4.model.ResourceType
 import java.util.Locale
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -27,53 +29,95 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
+import org.smartregister.model.location.LocationHierarchy
+import org.smartregister.model.practitioner.PractitionerDetails
 
 @HiltViewModel
 class UserProfileViewModel
 @Inject
 constructor(
-  val syncBroadcaster: SyncBroadcaster,
-  val accountAuthenticator: AccountAuthenticator,
-  val secureSharedPreference: SecureSharedPreference,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
-  val configurationRegistry: ConfigurationRegistry
+    val syncBroadcaster: SyncBroadcaster,
+    val accountAuthenticator: AccountAuthenticator,
+    val secureSharedPreference: SecureSharedPreference,
+    val sharedPreferencesHelper: SharedPreferencesHelper,
+    val configurationRegistry: ConfigurationRegistry
 ) : ViewModel() {
 
-  val languages by lazy { configurationRegistry.fetchLanguages() }
+    val languages by lazy { configurationRegistry.fetchLanguages() }
 
-  val onLogout = MutableLiveData<Boolean?>(null)
+    val onLogout = MutableLiveData<Boolean?>(null)
 
-  val language = MutableLiveData<Language?>(null)
+    val language = MutableLiveData<Language?>(null)
 
-  fun runSync() {
-    syncBroadcaster.runSync()
-  }
+    val data = MutableLiveData<ProfileData>()
 
-  fun logoutUser(context: Context) {
-    onLogout.postValue(true)
-    accountAuthenticator.logout {
-      context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
+    init {
+        fetchData()
     }
-  }
 
-  fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
+    private fun fetchData() {
+        val details = sharedPreferencesHelper.read<PractitionerDetails>(
+            key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+            decodeWithGson = true
+        )
+        val organizationIds = sharedPreferencesHelper.read<List<String>>(
+            key = ResourceType.Organization.name,
+            decodeWithGson = true
+        )
+        val locationIds = sharedPreferencesHelper.read<List<String>>(
+            key = ResourceType.Location.name,
+            decodeWithGson = true
+        )
+        val careTeamIds = sharedPreferencesHelper.read<List<String>>(
+            key = ResourceType.CareTeam.name,
+            decodeWithGson = true
+        )
 
-  fun allowSwitchingLanguages() = languages.size > 1
+        val isValid = organizationIds != null || locationIds != null || careTeamIds != null
 
-  fun loadSelectedLanguage(): String =
-    Locale.forLanguageTag(
-        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.UK.toLanguageTag())!!
-      )
-      .displayName
+        data.value = ProfileData(
+            userName = retrieveUsername() ?: "",
+            organisation = organizationIds?.firstOrNull(),
+            locationName = locationIds?.firstOrNull(),
+            isUserValid = isValid,
+            practitionerDetails = details
+        )
 
-  fun setLanguage(language: Language) {
-    sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, language.tag)
-    this.language.postValue(language)
-  }
+    }
+
+    fun runSync() {
+        syncBroadcaster.runSync()
+    }
+
+    fun logoutUser(context: Context) {
+        onLogout.postValue(true)
+        accountAuthenticator.logout {
+            context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
+        }
+    }
+
+    fun retrieveUsername(): String? = sharedPreferencesHelper.read<Practitioner>(
+        key = LOGGED_IN_PRACTITIONER,
+        decodeWithGson = true
+    )?.nameFirstRep?.nameAsSingleString
+
+    fun allowSwitchingLanguages() = languages.size > 1
+
+    fun loadSelectedLanguage(): String =
+        Locale.forLanguageTag(
+            sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.UK.toLanguageTag())!!
+        )
+            .displayName
+
+    fun setLanguage(language: Language) {
+        sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, language.tag)
+        this.language.postValue(language)
+    }
 }
