@@ -172,13 +172,12 @@ constructor(
 
     if (carePlanModified) saveCarePlan(output)
 
-    if (carePlanTasks.isNotEmpty() ) {
+    if (carePlanTasks.isNotEmpty()) {
       fhirTaskUtil.updateUpcomingTasksToDue(
         subject = subject.asReference(),
         taskResourcesToFilterBy = carePlanTasks,
       )
     }
-
 
     return if (output.hasActivity()) output else null
   }
