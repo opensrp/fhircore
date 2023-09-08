@@ -456,6 +456,10 @@ constructor(
             Task.TaskStatus.CANCELLED -> ServiceStatus.EXPIRED.name
             Task.TaskStatus.INPROGRESS -> ServiceStatus.IN_PROGRESS.name
             Task.TaskStatus.COMPLETED -> ServiceStatus.COMPLETED.name
+            else -> {
+              Timber.e("Task.status is null", Exception())
+              ServiceStatus.UPCOMING.name
+            }
           }
       }
       return serviceStatus
