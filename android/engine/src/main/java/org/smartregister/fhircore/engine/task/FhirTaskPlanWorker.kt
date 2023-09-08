@@ -30,10 +30,10 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 class FhirTaskPlanWorker
 @AssistedInject
 constructor(
-    @Assisted val appContext: Context,
-    @Assisted workerParams: WorkerParameters,
-    val fhirTaskUtil: FhirResourceUtil,
-    val dispatcherProvider: DispatcherProvider
+  @Assisted val appContext: Context,
+  @Assisted workerParams: WorkerParameters,
+  val fhirTaskUtil: FhirResourceUtil,
+  val dispatcherProvider: DispatcherProvider
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {

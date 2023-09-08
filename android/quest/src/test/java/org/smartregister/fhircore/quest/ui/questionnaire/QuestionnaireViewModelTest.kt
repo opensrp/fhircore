@@ -1198,7 +1198,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   private fun practitionerDetails(): PractitionerDetails {
     return PractitionerDetails().apply {
-      //userDetail = KeycloakUserDetails().apply { id = "12345" }
+      // userDetail = KeycloakUserDetails().apply { id = "12345" }
       fhirPractitionerDetails =
         FhirPractitionerDetails().apply {
           id = "12345"
