@@ -462,6 +462,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
     every { accountManager.peekAuthToken(account, TokenAuthenticator.AUTH_TOKEN_TYPE) } returns
       token
     every { tokenAuthenticator.isTokenActive(any()) } returns false
+    every { accountManager.invalidateAuthToken(any(), any()) } just runs
 
     Assert.assertFalse(tokenAuthenticator.sessionActive())
   }
