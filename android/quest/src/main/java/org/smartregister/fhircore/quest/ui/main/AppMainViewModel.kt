@@ -28,6 +28,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
@@ -181,11 +182,13 @@ constructor(
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
-        sharedPreferencesHelper.write(
-          SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-          formatLastSyncTimestamp(event.state.timestamp)
-        )
-        viewModelScope.launch { retrieveAppMainUiState() }
+        if (event.state is SyncJobStatus.Finished) {
+          sharedPreferencesHelper.write(
+            SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+            formatLastSyncTimestamp(event.state.timestamp)
+          )
+          viewModelScope.launch { retrieveAppMainUiState() }
+        }
       }
       is AppMainEvent.TriggerWorkflow ->
         event.navMenu.actions?.handleClickEvent(
