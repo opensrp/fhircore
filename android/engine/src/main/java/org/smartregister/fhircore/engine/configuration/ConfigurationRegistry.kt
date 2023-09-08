@@ -82,7 +82,7 @@ constructor(
   val configCacheMap = mutableMapOf<String, Configuration>()
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
-  private var isNonProxy_ = BuildConfig.IS_NON_PROXY_APK
+  private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -555,11 +555,11 @@ constructor(
     }
   }
 
-  @VisibleForTesting fun isNonProxy(): Boolean = isNonProxy_
+  @VisibleForTesting fun isNonProxy(): Boolean = _isNonProxy
 
   @VisibleForTesting
   fun setNonProxy(nonProxy: Boolean) {
-    isNonProxy_ = nonProxy
+    _isNonProxy = nonProxy
   }
 
   private fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {

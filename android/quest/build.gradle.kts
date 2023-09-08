@@ -53,7 +53,7 @@ android {
     applicationId = "org.smartregister.opensrp"
     minSdk = 26
     targetSdk = 33
-    versionCode = 4
+    versionCode = 5
     versionName = "1.0.0"
     multiDexEnabled = true
 

@@ -378,6 +378,11 @@ constructor(
     fun computeTotalCount(relatedResourceCounts: List<RelatedResourceCount>?): Long =
       relatedResourceCounts?.sumOf { it.count } ?: 0
 
+    /** This function combines two lists of resources into one list */
+    fun combineLists(listOne: List<Any>?, listTwo: List<Any>?): List<Any> {
+      return (listOne ?: emptyList()) + (listTwo ?: emptyList())
+    }
+
     fun retrieveCount(
       parentResourceId: String,
       relatedResourceCounts: List<RelatedResourceCount>?
@@ -459,15 +464,15 @@ constructor(
     fun generateListTaskServiceStatus(tasks: List<Task>): String {
       val finalTaskForStatus =
         tasks.find { task -> task.isOverDue() }
-          ?: tasks.find { task ->
+          ?: tasks.find { task -> task.isDue() }
+            ?: tasks.find { task ->
             (task.status == Task.TaskStatus.REQUESTED ||
               task.status == Task.TaskStatus.NULL ||
               task.status == Task.TaskStatus.RECEIVED)
           }
-            ?: tasks.find { task -> task.isDue() }
             ?: tasks.find { task -> task.status == Task.TaskStatus.INPROGRESS }
-            ?: tasks.find { task -> task.status == Task.TaskStatus.CANCELLED }
-            ?: tasks.find { task -> task.status == Task.TaskStatus.COMPLETED } ?: Task()
+            ?: tasks.find { task -> task.status == Task.TaskStatus.COMPLETED }
+            ?: tasks.find { task -> task.status == Task.TaskStatus.CANCELLED } ?: Task()
 
       return generateTaskServiceStatus(finalTaskForStatus)
     }
