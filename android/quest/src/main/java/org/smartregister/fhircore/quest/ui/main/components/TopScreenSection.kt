@@ -71,16 +71,14 @@ fun TopScreenSection(
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (String) -> Unit,
   onTitleIconClick: () -> Unit,
-  onFilterIconClick: (() -> Unit)?
+  onFilterIconClick: (() -> Unit)?,
 ) {
-  Column(modifier = modifier
-    .fillMaxWidth()
-    .background(MaterialTheme.colors.primary)) {
+  Column(
+    modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
+  ) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
-      modifier = modifier
-        .padding(vertical = 8.dp)
-        .testTag(TITLE_ROW_TEST_TAG),
+      modifier = modifier.padding(vertical = 8.dp).testTag(TITLE_ROW_TEST_TAG),
     ) {
       IconButton(onClick = onTitleIconClick) {
         Icon(
@@ -97,9 +95,7 @@ fun TopScreenSection(
         text = title,
         fontSize = 20.sp,
         color = Color.White,
-        modifier = modifier
-          .weight(1f)
-          .testTag(TOP_ROW_TEXT_TEST_TAG)
+        modifier = modifier.weight(1f).testTag(TOP_ROW_TEXT_TEST_TAG),
       )
       onFilterIconClick?.let {
         IconButton(onClick = onFilterIconClick) {
@@ -126,12 +122,12 @@ fun TopScreenSection(
         )
       },
       modifier =
-      modifier
-        .padding(start = 16.dp, bottom = 8.dp, end = 16.dp)
-        .fillMaxWidth()
-        .clip(RoundedCornerShape(size = 10.dp))
-        .background(Color.White)
-        .testTag(OUTLINED_BOX_TEST_TAG),
+        modifier
+          .padding(start = 16.dp, bottom = 8.dp, end = 16.dp)
+          .fillMaxWidth()
+          .clip(RoundedCornerShape(size = 10.dp))
+          .background(Color.White)
+          .testTag(OUTLINED_BOX_TEST_TAG),
       leadingIcon = {
         Icon(
           imageVector = Icons.Filled.Search,
@@ -167,5 +163,6 @@ fun TopScreenSectionPreview() {
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     onTitleIconClick = {},
-    onFilterIconClick = {})
+    onFilterIconClick = {},
+  )
 }

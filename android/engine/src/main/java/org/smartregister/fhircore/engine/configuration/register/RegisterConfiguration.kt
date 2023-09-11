@@ -45,5 +45,5 @@ data class RegisterConfiguration(
       ActiveResourceFilterConfig(resourceType = ResourceType.Group, active = true),
     ),
   val configRules: List<RuleConfig>? = null,
-  val filterActions : List<ActionConfig> = emptyList()
+  val filterActions: List<ActionConfig> = emptyList(),
 ) : Configuration()

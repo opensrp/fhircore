@@ -88,13 +88,16 @@ fun RegisterScreen(
           onSearchTextChanged = { searchText ->
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           },
-          onTitleIconClick =  {
+          onTitleIconClick = {
             when (toolBarHomeNavigation) {
               ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
               ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
             }
           },
-          onFilterIconClick = filterActions?.takeIf { it.isNotEmpty() }?.let { actions -> { actions.handleClickEvent(navController) } }
+          onFilterIconClick =
+            filterActions
+              ?.takeIf { it.isNotEmpty() }
+              ?.let { actions -> { actions.handleClickEvent(navController) } },
         )
         // Only show counter during search
         if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
