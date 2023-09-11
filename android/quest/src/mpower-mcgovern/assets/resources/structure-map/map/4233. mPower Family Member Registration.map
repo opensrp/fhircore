@@ -8,7 +8,7 @@ group mPowerFamilyMemberRegistration(source src : QuestionnaireResponse, target 
     src -> bundle.id = uuid() "rule_bundle_id";
     src -> bundle.type = 'collection' "rule_bundle_type";
     src -> bundle.entry as entry, entry.resource = create('Patient') as patient then
-        ExtractPatient(src, patient, bundle), ExtractObservations(src, bundle) "rule_bundle_entries";
+        ExtractPatient(src, patient, bundle) "rule_bundle_entries";
 }
 
 group ExtractPatient(source src : QuestionnaireResponse, target patient : Patient, target bundle : Bundle){
@@ -192,10 +192,12 @@ group ExtractEncounter(source src : Patient, target bundle: Bundle) {
             } "r_en_rc_cod";
             src -> concept.text = 'mPower Family Member Registration' "r_en_text";
         } "r_en_reason";
+
+        src then ExtractObservations(src, bundle, encounter) "r_extract_observations";
     } "r_en";
 }
 
-group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bundle) {
+group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bundle, source encounter : Encounter) {
      src.item as item_blood_group where(linkId ='9b62b65c-e8f9-4b4d-9cb2-cc715b73baaa' and answer.value.exists()) then {
         src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
             src -> obs.id = uuid() "r_obs_id";
@@ -206,7 +208,8 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bu
                         src -> coding.display = 'ABO blood grouping' "r_cp_cod_disp";
                  } "r_cp_cc_cod";
             } "r_obs_code";
-            src -> obs.subject = evaluate(src, $this.subject) "r_obs_ref";
+            src -> obs.subject = evaluate(encounter, $this.subject) "r_obs_ref";
+            src -> obs.encounter = reference(encounter) "rule_observation_encounter";
             src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
             src -> obs.value = evaluate(item_blood_group, answer.value.code) "r_obs_value";
         } "r_obs";
@@ -222,7 +225,8 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bu
                         src -> coding.display = 'Birth weight' "r_cp_cod_disp";
                  } "r_cp_cc_cod";
             } "r_obs_code";
-            src -> obs.subject = evaluate(src, $this.subject) "r_obs_ref";
+            src -> obs.subject = evaluate(encounter, $this.subject) "r_obs_ref";
+            src -> obs.encounter = reference(encounter) "rule_observation_encounter";
             src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
             src -> obs.value = evaluate(item_weight, answer.value) "r_obs_value";
         } "r_obs";
@@ -238,7 +242,8 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bu
                         src -> coding.display = 'Visual impairment' "r_cp_cod_disp";
                  } "r_cp_cc_cod";
             } "r_obs_code";
-            src -> obs.subject = evaluate(src, $this.subject) "r_obs_ref";
+            src -> obs.subject = evaluate(encounter, $this.subject) "r_obs_ref";
+            src -> obs.encounter = reference(encounter) "rule_observation_encounter";
             src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
             src -> obs.value = evaluate(item_visual_impaired, answer.value.code) "r_obs_value";
         } "r_obs";
@@ -254,7 +259,8 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bu
                         src -> coding.display = 'Physical disability' "r_cp_cod_disp";
                  } "r_cp_cc_cod";
             } "r_obs_code";
-            src -> obs.subject = evaluate(src, $this.subject) "r_obs_ref";
+            src -> obs.subject = evaluate(encounter, $this.subject) "r_obs_ref";
+            src -> obs.encounter = reference(encounter) "rule_observation_encounter";
             src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
             src -> obs.value = evaluate(item_physical_dis, answer.value.code) "r_obs_value";
         } "r_obs";
@@ -270,9 +276,27 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bu
                         src -> coding.display = 'Memory impairment' "r_cp_cod_disp";
                  } "r_cp_cc_cod";
             } "r_obs_code";
-            src -> obs.subject = evaluate(src, $this.subject) "r_obs_ref";
+            src -> obs.subject = evaluate(encounter, $this.subject) "r_obs_ref";
+            src -> obs.encounter = reference(encounter) "rule_observation_encounter";
             src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
             src -> obs.value = evaluate(item_memory_dis, answer.value.code) "r_obs_value";
         } "r_obs";
     } "o_memory_dis";
+
+     src.item as item_feeding_time where(linkId ='b12ed9b2-090a-4597-c360-824f0b7604e2' and answer.value.exists()) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_obs_id";
+            src -> obs.status = 'final' "r_obs_status";
+            src -> obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category','activity', 'Activity') "r_obs_category_1";
+            src -> obs.code = create('CodeableConcept') as concept then {
+                 src -> concept.coding = c("http://snomed.info/sct", "169745008") as coding then {
+                        src -> coding.display = 'Breastfeeding started' "r_cp_cod_disp";
+                 } "r_cp_cc_cod";
+            } "r_obs_code";
+            src -> obs.subject = evaluate(encounter, $this.subject) "r_obs_ref";
+            src -> obs.encounter = reference(encounter) "rule_observation_encounter";
+            src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+            src -> obs.value = evaluate(item_feeding_time, answer.value.code) "r_obs_value";
+        } "r_obs";
+    } "o_feeding_time";
 }

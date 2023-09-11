@@ -75,22 +75,14 @@
         ]
       },
       {
-        "resource": "CarePlan",
-        "searchParameter": "subject",
-        "dataQueries": [
-          {
-            "paramName": "_tag",
-            "filterCriteria": [
-              {
-                "dataType": "CODING",
-                "value": {
-                  "system": "https://www.snomed.org",
-                  "code": "35359004"
-                }
-              }
-            ]
-          }
-        ]
+        "id": "groupEncounter",
+        "resource": "Encounter",
+        "searchParameter": "subject"
+      },
+      {
+        "id": "groupObservation",
+        "resource": "Observation",
+        "searchParameter": "subject"
       }
     ]
   },
@@ -155,6 +147,20 @@
   ],
   "rules": [
     {
+      "name": "encounterCount",
+      "condition": "true",
+      "actions": [
+        "data.put('encounterCount', size(groupEncounter))"
+      ]
+    },
+    {
+      "name": "observationCount",
+      "condition": "true",
+      "actions": [
+        "data.put('observationCount', size(groupObservation))"
+      ]
+    },
+    {
       "name": "familyName",
       "condition": "true",
       "actions": [
@@ -173,6 +179,13 @@
       "condition": "true",
       "actions": [
         "data.put('familyLogicalId', fhirPath.extractValue(Group, 'Group.id'))"
+      ]
+    },
+    {
+      "name": "familyLogicalIdOnly",
+      "condition": "true",
+      "actions": [
+        "data.put('familyLogicalIdOnly', fhirPath.extractValue(Group, 'Group.id').split(\"/\").get(1))"
       ]
     },
     {
@@ -215,6 +228,13 @@
       "condition": "true",
       "actions": [
         "data.put('familyMemberId', (data.get('familyId').toString() + ((data.get('familyMemberCount') + 1) > 9 ? (data.get('familyMemberCount') + 1).toString() : ('0' + (data.get('familyMemberCount') + 1).toString()))))"
+      ]
+    },
+    {
+      "name": "isFamilyVisitAvailable",
+      "condition": "true",
+      "actions": [
+        "data.put('isFamilyVisitAvailable', fhirPath.extractValue(service.filterResources(groupEncounter, \"Encounter.reasonCode[0].coding[0].code = 'family_registration'\").get(0), \"Encounter.period.start < today() - 365 'days'\"))"
       ]
     }
   ],
@@ -644,6 +664,54 @@
         "viewType": "COLUMN",
         "backgroundColor": "#FFFFFF",
         "children": [
+          {
+            "viewType": "CARD",
+            "padding": 0,
+            "visible": "@{isFamilyVisitAvailable}",
+            "headerBackgroundColor": "#FFFFFF",
+            "content": [
+              {
+                "viewType": "BUTTON",
+                "smallSized": "true",
+                "text": "Household Visit",
+                "status": "DUE",
+                "enabled": "true",
+                "startIcon": {
+                  "reference": "ic_household"
+                },
+                "actions": [
+                  {
+                    "trigger": "ON_CLICK",
+                    "workflow": "LAUNCH_QUESTIONNAIRE",
+                    "resourceType": "Group",
+                    "questionnaire": {
+                      "id": "6485",
+                      "title": "Household Visit",
+                      "saveButtonText": "Save",
+                      "setPractitionerDetails": true,
+                      "setOrganizationDetails": true,
+                      "resourceIdentifier": "@{familyLogicalId}",
+                      "resourceType": "Group"
+                    },
+                    "params": [
+                      {
+                        "key": "familyLogicalId",
+                        "value": "@{familyLogicalId}",
+                        "paramType": "UPDATE_DATE_ON_EDIT"
+                      },
+                      {
+                        "paramType": "PREPOPULATE",
+                        "linkId": "210afefc-3e4f-4489-86af-587ada65e06c",
+                        "dataType": "STRING",
+                        "key": "familyLogicalIdOnly",
+                        "value": "@{familyLogicalIdOnly}"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
           {
             "id": "householdDueList",
             "viewType": "LIST",

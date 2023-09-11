@@ -1,0 +1,785 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "6485",
+  "name": "mPower Household Visit",
+  "title": "mPower Household Visit",
+  "description": "mPower Household Visit",
+  "status": "active",
+  "publisher": "mPower-mcGovern",
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/ValueSet/usage-context-type",
+        "code": "focus",
+        "display": "Clinical Focus"
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+            "display": "mPower Household Visit"
+          }
+        ]
+      }
+    }
+  ],
+  "contact": [
+    {
+      "name": "https://www.mpower-social.com/"
+    }
+  ],
+  "subjectType": [
+    "Group"
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "http://fhir.mpower-social.com:7070/fhir/StructureMap/6484"
+    }
+  ],
+  "purpose": "mPower Household Visit",
+  "date": "2023-08-30T06:00:00+06:00",
+  "item": [
+    {
+      "linkId": "603e8034-26d0-420a-86f7-577ab9c9bf9c",
+      "type": "choice",
+      "text": "খানার ধরণ",
+      "required": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "fbdc7186-03a1-4b38-d0c1-45ec72e40b32",
+            "code": "brac-vo",
+            "system": "urn:uuid:db3d31af-1166-4965-9eaa-b90fa275d9a4",
+            "display": "BRAC VO"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "a9ac2c8e-d3b5-4570-8539-bcc968c222fb",
+            "code": "nvo",
+            "system": "urn:uuid:db3d31af-1166-4965-9eaa-b90fa275d9a4",
+            "display": "NVO"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "30c16801-3742-4631-888e-0732bd748d77",
+      "type": "string",
+      "text": "খানার সিরিয়াল নাম্বার *",
+      "required": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "H[0-9\\\\/]*"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "H দিয়ে শুরু করতে হবে এরপর যে কোন নাম্বার অথবা / দিন অথবা শুধু H লিখুন"
+        }
+      ],
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-display-category",
+                    "code": "instructions",
+                    "display": "Instructions"
+                  }
+                ],
+                "text": "Instructions"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "inline",
+                    "display": "In-line"
+                  }
+                ],
+                "text": "In-line"
+              }
+            }
+          ],
+          "linkId": "hh-serial_no_hint",
+          "text": "H দিয়ে শুরু করতে হবে এরপর যে কোন নাম্বার অথবা / দিন অথবা শুধু H লিখুন",
+          "type": "display"
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Group.name"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "^[a-zA-Z][A-Za-z\\\\.\\\\- ]*"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "একটি বৈধ নাম লিখুন"
+        }
+      ],
+      "linkId": "aaafd263-5e5b-4b78-bbc6-e01be0eb72ec",
+      "text": "খানা প্রধানের নাম *",
+      "type": "string",
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+          "valueInteger": 11
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "11 ডিজিটের মোবাইল নম্বর লিখুন"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "0|(01[1-9][0-9]{8})|\\s*"
+        }
+      ],
+      "linkId": "3193ad83-4864-419f-851f-4f5d82948bb8",
+      "type": "string",
+      "text": "খানা প্রধানের মোবাইল নম্বর *",
+      "required": true,
+      "maxLength": 11
+    },
+    {
+      "linkId": "023ca3f7-5591-46c6-8002-2fb31415c069",
+      "type": "choice",
+      "text": "খানা প্রধানের পেশা *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "7252d241-82fb-4055-806a-84db5a56b44c",
+            "code": "farmer",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "কৃষি কাজ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ad6d3b36-300a-411a-830e-6f69c6f0b591",
+            "code": "textile",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "গার্মেন্টস কর্মী"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "820deedc-3685-4335-faa6-3581cef84d03",
+            "code": "service",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "চাকুরি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "de77cff3-bded-4ee6-f00f-187b845e3752",
+            "code": "technician",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "প্রযুক্তিগত কর্মী (যেমন: ড্রাইভার/ ইলেকট্রিশিয়ান/ওয়েল্ডিং/মেকানিকস/রং মিস্ত্রি/রাজমিস্ত্রি)"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "9951abf6-76c3-468d-865e-1215f21e7154",
+            "code": "labour",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "দিন মজুর"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b3d900e5-b943-466c-8cb1-eb819debed00",
+            "code": "shopkeeper",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "বিক্রেতা/দোকানদার/সবজি বা মাছ বিক্রেতা/খুচরা বিক্রেতা/মোবাইল কার্ড বিক্রেতা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "0fa0c0ec-53e0-401c-e487-f2b3bf12d9a3",
+            "code": "businessman",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "ব্যবসায়ী"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "0fe66321-2597-4e2e-aee4-1ec6ced6b564",
+            "code": "expatriate",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "বৈদেশিক কাজ/ কর্মী"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "172a654f-5943-40c8-d6ae-0481b842dbf7",
+            "code": "selfemployed",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "স্ব-নিযুক্ত"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "f6b02df2-ddda-4591-978d-7cc5aa97c12a",
+            "code": "unemployed",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "বেকার"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b275592e-db1e-4e8f-9807-b7afc7f08e67",
+            "code": "other",
+            "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+            "display": "অন্যান্য"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "9ea9fc08-0545-42e9-80e0-dab3da021c35",
+          "type": "string",
+          "text": "অন্যান্য পেশা লিখুন *",
+          "required": true,
+          "enableWhen": [
+            {
+              "question": "023ca3f7-5591-46c6-8002-2fb31415c069",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:00ade52b-99e4-461b-905e-8a848ec9d827",
+                "code": "other"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueInteger": 1
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueInteger": 50
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/regex",
+          "valueString": "(5[0]|[1-4][0-9]|[1-9])|\\s*"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "সদস্য সংখ্যা অবশ্যই ১-৫০ এর মধ্যে হবে"
+        }
+      ],
+      "linkId": "29b9289c-be48-49c0-81e4-e93cde1c33c2",
+      "type": "integer",
+      "text": "খানার মোট সদস্য সংখ্যা *",
+      "required": true
+    },
+    {
+      "linkId": "90331830-e4f0-4cb7-8a15-3e330ebfcfc0",
+      "type": "choice",
+      "text": "খানায় স্যানিটারি ল্যাট্রিন আছে কিনা? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "0da9f2b5-84ae-47b7-8ff1-ac1961415584",
+            "code": "yes",
+            "system": "urn:uuid:cb824b86-bef4-43f2-8393-b95a99d2aac7",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "633703c9-a909-42bd-e7ac-904ff6f444cf",
+            "code": "no",
+            "system": "urn:uuid:cb824b86-bef4-43f2-8393-b95a99d2aac7",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "5d0d2f3c-ca4b-4752-831b-0d604c6b0d98",
+      "type": "choice",
+      "text": "খানার আর্থিক অবস্থা *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "ec4914c2-ec87-4cf1-8b42-ccf06507af23",
+            "code": "less_than_6K",
+            "system": "urn:uuid:8751f985-72c3-47c7-8e27-d06706111628",
+            "display": "মাসিক আয় ৬০০০ টাকার কম"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "fb4a25d1-02be-4ebb-c372-7752a9f47e20",
+            "code": "less_than_7K",
+            "system": "urn:uuid:8751f985-72c3-47c7-8e27-d06706111628",
+            "display": "মাসিক আয় ৭০০০ টাকার কম"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "f1a462d2-9357-4e9c-8787-cea208936f71",
+            "code": "7K_to_12K",
+            "system": "urn:uuid:8751f985-72c3-47c7-8e27-d06706111628",
+            "display": "মাসিক আয় ৭০০১ - ১২০০০ টাকার মধ্যে"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ac3d9c70-6139-4db2-b6f7-09a0d1b94873",
+            "code": "more_than_12K",
+            "system": "urn:uuid:8751f985-72c3-47c7-8e27-d06706111628",
+            "display": "মাসিক আয় ১২০০০ টাকার ঊর্ধ্বে"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "e15f53d6-552f-47ca-997c-e475221fabb0",
+      "type": "choice",
+      "text": "সম্পদের তালিকা",
+      "repeats": true,
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "fc234670-74e6-4e65-8e70-54594e11ff5f",
+            "code": "Television",
+            "system": "urn:uuid:747ea5fb-2796-46b5-808c-0d1f90bc6a5d",
+            "display": "টেলিভিশন"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "9933379e-8865-4da7-8f32-b9563964ca96",
+            "code": "Refridgarator",
+            "system": "urn:uuid:747ea5fb-2796-46b5-808c-0d1f90bc6a5d",
+            "display": "রেফ্রিজারেটর"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "939bbf90-ee3d-4700-b98d-d848bf7326de",
+            "code": "Closet",
+            "system": "urn:uuid:747ea5fb-2796-46b5-808c-0d1f90bc6a5d",
+            "display": "আলমারি/ওয়ারড্রব"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "21d4ba7e-7788-4b63-8d86-25b50d5d875e",
+            "code": "Electric_Fan",
+            "system": "urn:uuid:747ea5fb-2796-46b5-808c-0d1f90bc6a5d",
+            "display": "বৈদ্যুতিক ফ্যান"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+              "valueBoolean": true
+            }
+          ],
+          "valueCoding": {
+            "id": "826e1137-2b5d-450d-be0f-5ecd00c05b53",
+            "code": "chk_none",
+            "system": "urn:uuid:747ea5fb-2796-46b5-808c-0d1f90bc6a5d",
+            "display": "কোনোটিই নেই"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "check-box"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "bc1d24fc-3254-4fac-f210-0b4f0c159dc9",
+      "type": "choice",
+      "text": "মেঝে কি দিয়ে তৈরি *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "b024a102-8080-42f6-93db-ec98bba91dc4",
+            "code": "cement",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "সিমেন্ট"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ec985f90-ebcf-428c-dc41-6932e23b8739",
+            "code": "sand",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "বালি/কাদা"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "139b0932-bd8f-446e-de4b-5851596041c3",
+            "code": "other",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "অন্যান্য"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "7e1b63bb-c609-498f-d3f7-5b47c792acb1",
+      "type": "choice",
+      "text": "দেয়াল কি দিয়ে তৈরি *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "b024a102-8080-42f6-93db-ec98bba91dc4",
+            "code": "brick",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "ইট"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ec985f90-ebcf-428c-dc41-6932e23b8739",
+            "code": "tin",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "টিন"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "6c1b5a98-3598-4791-8a7c-65396ce7206a",
+            "code": "soil",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "মাটি"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "139b0932-bd8f-446e-de4b-5851596041c3",
+            "code": "other",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "অন্যান্য"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "b513eafb-777d-4908-83b5-0d4836e061c6",
+      "type": "choice",
+      "text": "ছাদ কি দিয়ে তৈরি *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "b024a102-8080-42f6-93db-ec98bba91dc4",
+            "code": "brick",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "ইট"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "ec985f90-ebcf-428c-dc41-6932e23b8739",
+            "code": "tin",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "টিন"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "6c1b5a98-3598-4791-8a7c-65396ce7206a",
+            "code": "bamboo",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "বাঁশ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "139b0932-bd8f-446e-de4b-5851596041c3",
+            "code": "other",
+            "system": "urn:uuid:0a9161b6-6875-451c-fece-694ffcb06831",
+            "display": "অন্যান্য"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "drop-down"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "859563b7-7509-4756-89c1-1e1286d12955",
+      "type": "integer",
+      "text": "বসত জমির পরিমাণ কত শতাংশ",
+      "required": false
+    },
+    {
+      "linkId": "462d5637-ce8f-4a45-9c63-185d3816bb94",
+      "type": "integer",
+      "text": "চাষের যোগ্য জমির পরিমাণ কত শতাংশ",
+      "required": false
+    },
+    {
+      "linkId": "018e238d-cdaa-484e-890c-e2745878ba72",
+      "type": "choice",
+      "text": "খানায় কেউ কি করোনা আক্রান্ত/উপসর্গ আছে? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "0da9f2b5-84ae-47b7-8ff1-ac1961415584",
+            "code": "yes",
+            "system": "urn:uuid:cb824b86-bef4-43f2-8393-b95a99d2aac7",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "633703c9-a909-42bd-e7ac-904ff6f444cf",
+            "code": "no",
+            "system": "urn:uuid:cb824b86-bef4-43f2-8393-b95a99d2aac7",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "9e95c28a-c75c-4f26-f988-639bb05e36d5",
+      "type": "reference",
+      "text": "করোনা আক্রান্ত/উপসর্গ আছে এমন সদস্য নির্বাচন করুন *",
+      "repeats": true,
+      "required": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+          "valueExpression": {
+            "language": "application/x-fhir-query",
+            "expression": "Patient?{{Group.member.entity.reference.contains(id)}}&active=true"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+          "extension": [
+            {
+              "url": "path",
+              "valueString": "Patient.name.text"
+            },
+            {
+              "url": "forDisplay",
+              "valueBoolean": true
+            }
+          ]
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "018e238d-cdaa-484e-890c-e2745878ba72",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:cb824b86-bef4-43f2-8393-b95a99d2aac7",
+            "code": "yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "12f3622f-b085-4abc-edfa-b65785fcd2eb",
+      "type": "choice",
+      "text": "এইখানা ভেঙে নতুন কোন খানা হয়েছে কিনা? *",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "0da9f2b5-84ae-47b7-8ff1-ac1961415584",
+            "code": "yes",
+            "system": "urn:uuid:cb824b86-bef4-43f2-8393-b95a99d2aac7",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "633703c9-a909-42bd-e7ac-904ff6f444cf",
+            "code": "no",
+            "system": "urn:uuid:cb824b86-bef4-43f2-8393-b95a99d2aac7",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "210afefc-3e4f-4489-86af-587ada65e06c",
+      "type": "string",
+      "text": "Group Id",
+      "readOnly": true,
+      "required": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ]
+    }
+  ]
+}

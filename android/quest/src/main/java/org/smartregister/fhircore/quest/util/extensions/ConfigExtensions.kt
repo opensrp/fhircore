@@ -121,6 +121,14 @@ fun List<ActionConfig>.handleClickEvent(
 
         navController.navigate(MainNavigationScreen.Reports.route, args)
       }
+      ApplicationWorkflow.LAUNCH_OTHER_REPORT -> {
+        val args =
+          bundleOf(
+            Pair(NavigationArg.REPORT_ID, actionConfig.id),
+          )
+
+        navController.navigate(MainNavigationScreen.OtherReports.route, args)
+      }
       ApplicationWorkflow.LAUNCH_SETTINGS ->
         navController.navigate(MainNavigationScreen.Settings.route)
       ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)

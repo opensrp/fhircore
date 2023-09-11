@@ -237,13 +237,13 @@ fun GenerateView(
           resourceData = resourceData,
           navController = navController,
         )
-    ViewType.TABS ->
-      TabView(
-        modifier = modifier,
-        viewProperties = properties as TabViewProperties,
-        resourceData = resourceData,
-        navController = navController
-      )
+      ViewType.TABS ->
+        TabView(
+          modifier = modifier,
+          viewProperties = properties as TabViewProperties,
+          resourceData = resourceData,
+          navController = navController
+        )
       ViewType.PERSONAL_DATA ->
         PersonalDataView(
           modifier = modifier,

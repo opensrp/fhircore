@@ -104,6 +104,16 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
     )
   }
 
+  fun computeResourceDataRules(
+    ruleConfigs: List<RuleConfig>,
+    resourcesMap: Map<String, List<Resource>> = emptyMap(),
+  ): Map<String, Any> {
+    return rulesFactory.fireRules(
+      rules = rulesFactory.generateRules(ruleConfigs),
+      resourcesMap = resourcesMap,
+    )
+  }
+
   private fun List<Resource>.mapToResourceData(
     listResource: ListResource,
     relatedResourcesMap: Map<String, List<Resource>>,

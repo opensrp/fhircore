@@ -250,6 +250,22 @@
   },
   "staticMenu": [
     {
+      "id": "dashboardReports",
+      "visible": true,
+      "display": "Dashboard Reports",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_reports"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_OTHER_REPORT",
+          "id": "dashboardReport"
+        }
+      ]
+    },
+    {
       "id": "settings",
       "visible": true,
       "display": "Settings",

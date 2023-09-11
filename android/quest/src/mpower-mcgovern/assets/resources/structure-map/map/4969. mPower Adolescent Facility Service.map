@@ -39,7 +39,55 @@ group extractEncounter(source questionnaireResponse : QuestionnaireResponse, tar
             } "r_en_cc_cod";
             questionnaireResponse -> concept.text = 'Adolescent Facility Service' "r_en_text";
         } "r_en_reason";
+
+    	questionnaireResponse.item as fpMethod where(linkId = '691f579a-5cb8-49d5-8e12-bb95ce22553e' and answer.value.code != 'none') then {
+    	    questionnaireResponse -> evaluate(fpMethod, $this.answer.value.code) as fpMethodCode then {
+                questionnaireResponse then extractFPCondition(questionnaireResponse, bundle, encounter, refPatient, fpMethodCode) "r_bundle_entries";
+            } "rule_fp_method_extra";
+        } "rule_fp_method_check_yes";
+
+    	questionnaireResponse.item where(linkId = '691f579a-5cb8-49d5-8e12-bb95ce22553e' and answer.value.code = 'none') then {
+    	    questionnaireResponse then extractNotFPCondition(questionnaireResponse, bundle, encounter, refPatient) "r_bundle_entries";
+        } "rule_fp_method_check_no";
     } "r_en";
+}
+
+group extractFPCondition(source questionnaireResponse : QuestionnaireResponse, target bundle : Bundle, target encounter: Encounter, source refPatient : Reference, source fpMethodCode : String) {
+    questionnaireResponse -> bundle.entry as entry, entry.resource = create("Condition") as cnd then {
+    	questionnaireResponse -> cnd.id = uuid() "r_cnd_id";
+		questionnaireResponse -> cnd.onset = evaluate(questionnaireResponse, now()) "r_cnd_onset_date_val";
+    	questionnaireResponse -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_cnd_clinical_st";
+    	questionnaireResponse -> cnd.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_cnd_verif_st";
+    	questionnaireResponse -> cnd.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "problem-list-item", "Problem List Item") "r_cnd_category";
+    	questionnaireResponse -> cnd.subject = refPatient "r_cnd_sub";
+    	questionnaireResponse -> cnd.recordedDate = evaluate(questionnaireResponse, now()) "r_cnd_recorded";
+
+    	questionnaireResponse -> cnd.code = create("CodeableConcept") as ccPreg then {
+             questionnaireResponse -> ccPreg.coding = c("http://snomed.info/sct", "99998888", "Family Planning") "r_cnd_code_coding";
+             questionnaireResponse -> ccPreg.text = fpMethodCode "r_cnd_code_text";
+        } "r_cnd_code";
+
+        questionnaireResponse -> cnd.encounter = reference(encounter) "r_new_fp_encounter";
+    } "r_cnd";
+}
+
+group extractNotFPCondition(source questionnaireResponse : QuestionnaireResponse, target bundle : Bundle, target encounter: Encounter, source refPatient : Reference) {
+    questionnaireResponse -> bundle.entry as entry, entry.resource = create("Condition") as cnd then {
+    	questionnaireResponse -> cnd.id = uuid() "r_cnd_id";
+		questionnaireResponse -> cnd.onset = evaluate(questionnaireResponse, now()) "r_cnd_onset_date_val";
+    	questionnaireResponse -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") "r_cnd_clinical_st";
+    	questionnaireResponse -> cnd.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") "r_cnd_verif_st";
+    	questionnaireResponse -> cnd.category = cc("http://terminology.hl7.org/CodeSystem/condition-category", "problem-list-item", "Problem List Item") "r_cnd_category";
+    	questionnaireResponse -> cnd.subject = refPatient "r_cnd_sub";
+    	questionnaireResponse -> cnd.recordedDate = evaluate(questionnaireResponse, now()) "r_cnd_recorded";
+
+    	questionnaireResponse -> cnd.code = create("CodeableConcept") as ccPreg then {
+             questionnaireResponse -> ccPreg.coding = c("http://snomed.info/sct", "99990000", "No Family Planning") "r_cnd_code_coding";
+             questionnaireResponse -> ccPreg.text = "No Family Planning" "r_cnd_code_text";
+        } "r_cnd_code";
+
+        questionnaireResponse -> cnd.encounter = reference(encounter) "r_new_fp_encounter";
+    } "r_cnd";
 }
 
 group ExtractTask(

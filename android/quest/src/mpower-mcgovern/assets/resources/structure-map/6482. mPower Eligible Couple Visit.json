@@ -611,13 +611,81 @@
               ]
             },
             {
-              "name": "rule_fp_method_check",
+              "name": "rule_fp_method_check_yes",
               "source": [
                 {
                   "context": "questionnaireResponse",
                   "element": "item",
-                  "variable": "fpMethod",
-                  "condition": "((linkId = 'b26672e2-fa86-4748-8055-13c7c6a08f1e') and answer.value.exists())"
+                  "condition": "((linkId = '9433e74a-281e-4a0c-86e7-7bc3f70acd85') and (answer.value.code = 'yes'))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_fp_method_check",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse",
+                      "element": "item",
+                      "variable": "fpMethod",
+                      "condition": "((linkId = 'b26672e2-fa86-4748-8055-13c7c6a08f1e') and answer.value.exists())"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_fp_method_extra",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "fpMethodCode",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "fpMethod"
+                            },
+                            {
+                              "valueString": "$this.answer.value.code"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_bundle_entries",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractFPCondition",
+                              "variable": [
+                                "questionnaireResponse",
+                                "bundle",
+                                "encounter",
+                                "refPatient",
+                                "fpMethodCode"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_fp_method_check_no",
+              "source": [
+                {
+                  "context": "questionnaireResponse",
+                  "element": "item",
+                  "condition": "((linkId = '9433e74a-281e-4a0c-86e7-7bc3f70acd85') and (answer.value.code = 'no'))"
                 }
               ],
               "rule": [
@@ -630,7 +698,7 @@
                   ],
                   "dependent": [
                     {
-                      "name": "extractFPCondition",
+                      "name": "extractNotFPCondition",
                       "variable": [
                         "questionnaireResponse",
                         "bundle",
@@ -668,6 +736,11 @@
         {
           "name": "refPatient",
           "type": "Reference",
+          "mode": "source"
+        },
+        {
+          "name": "fpMethodCode",
+          "type": "String",
           "mode": "source"
         }
       ],
@@ -924,7 +997,318 @@
                       "transform": "copy",
                       "parameter": [
                         {
-                          "valueString": "Family Planning"
+                          "valueId": "fpMethodCode"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_new_fp_encounter",
+              "source": [
+                {
+                  "context": "questionnaireResponse"
+                }
+              ],
+              "target": [
+                {
+                  "context": "cnd",
+                  "contextType": "variable",
+                  "element": "encounter",
+                  "transform": "reference",
+                  "parameter": [
+                    {
+                      "valueId": "encounter"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractNotFPCondition",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "questionnaireResponse",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "target"
+        },
+        {
+          "name": "refPatient",
+          "type": "Reference",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_cnd",
+          "source": [
+            {
+              "context": "questionnaireResponse"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "cnd",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Condition"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_cnd_id",
+              "source": [
+                {
+                  "context": "questionnaireResponse"
+                }
+              ],
+              "target": [
+                {
+                  "context": "cnd",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                }
+              ]
+            },
+            {
+              "name": "r_cnd_onset_date_val",
+              "source": [
+                {
+                  "context": "questionnaireResponse"
+                }
+              ],
+              "target": [
+                {
+                  "context": "cnd",
+                  "contextType": "variable",
+                  "element": "onset",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "questionnaireResponse"
+                    },
+                    {
+                      "valueString": "now()"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_cnd_clinical_st",
+              "source": [
+                {
+                  "context": "questionnaireResponse"
+                }
+              ],
+              "target": [
+                {
+                  "context": "cnd",
+                  "contextType": "variable",
+                  "element": "clinicalStatus",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://terminology.hl7.org/CodeSystem/condition-clinical"
+                    },
+                    {
+                      "valueString": "active"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_cnd_verif_st",
+              "source": [
+                {
+                  "context": "questionnaireResponse"
+                }
+              ],
+              "target": [
+                {
+                  "context": "cnd",
+                  "contextType": "variable",
+                  "element": "verificationStatus",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://terminology.hl7.org/CodeSystem/condition-ver-status"
+                    },
+                    {
+                      "valueString": "confirmed"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_cnd_category",
+              "source": [
+                {
+                  "context": "questionnaireResponse"
+                }
+              ],
+              "target": [
+                {
+                  "context": "cnd",
+                  "contextType": "variable",
+                  "element": "category",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://terminology.hl7.org/CodeSystem/condition-category"
+                    },
+                    {
+                      "valueString": "problem-list-item"
+                    },
+                    {
+                      "valueString": "Problem List Item"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_cnd_sub",
+              "source": [
+                {
+                  "context": "questionnaireResponse"
+                }
+              ],
+              "target": [
+                {
+                  "context": "cnd",
+                  "contextType": "variable",
+                  "element": "subject",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "refPatient"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_cnd_recorded",
+              "source": [
+                {
+                  "context": "questionnaireResponse"
+                }
+              ],
+              "target": [
+                {
+                  "context": "cnd",
+                  "contextType": "variable",
+                  "element": "recordedDate",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "questionnaireResponse"
+                    },
+                    {
+                      "valueString": "now()"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_cnd_code",
+              "source": [
+                {
+                  "context": "questionnaireResponse"
+                }
+              ],
+              "target": [
+                {
+                  "context": "cnd",
+                  "contextType": "variable",
+                  "element": "code",
+                  "variable": "ccPreg",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cnd_code_coding",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "ccPreg",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "transform": "c",
+                      "parameter": [
+                        {
+                          "valueString": "http://snomed.info/sct"
+                        },
+                        {
+                          "valueString": "99990000"
+                        },
+                        {
+                          "valueString": "No Family Planning"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_cnd_code_text",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "ccPreg",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "No Family Planning"
                         }
                       ]
                     }

@@ -30,6 +30,9 @@ sealed class MainNavigationScreen(
   object Reports :
     MainNavigationScreen(R.string.reports, R.drawable.ic_reports, R.id.measureReportFragment, true)
 
+  object OtherReports :
+    MainNavigationScreen(R.string.reports, R.drawable.ic_reports, R.id.otherReportFragment, true)
+
   object Settings :
     MainNavigationScreen(R.string.settings, R.drawable.ic_settings, R.id.userSettingFragment, true)
 

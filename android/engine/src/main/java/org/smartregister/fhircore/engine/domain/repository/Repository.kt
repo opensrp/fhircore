@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 
 /** This class provides common functionalities used in the register */
@@ -56,4 +58,11 @@ interface Repository {
     fhirResourceConfig: FhirResourceConfig? = null,
     paramsList: Array<ActionParameter>?,
   ): RepositoryResourceData?
+
+  suspend fun loadReportData(
+    reportId: String,
+    startDateFormatted: String?,
+    endDateFormatted: String?,
+    resourceConfigs: List<ResourceConfig>? = null,
+    ): Map<String, List<Resource>>
 }

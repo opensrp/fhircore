@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,7 +26,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,11 +51,17 @@ fun TabView(
   modifier: Modifier = Modifier,
   viewProperties: TabViewProperties,
   resourceData: ResourceData,
-  navController: NavController
+  navController: NavController,
+  selectedTabIndex: Int? = null,
+  tabChangedEvent: ((Int) -> Unit)? = null
 ) {
-  val pagerState = rememberPagerState(
-    initialPage = viewProperties.selectedTabIndex,
-  )
+  val pagerState = rememberPagerState(initialPage = selectedTabIndex ?: viewProperties.selectedTabIndex)
+
+  LaunchedEffect(pagerState) {
+    snapshotFlow { pagerState.currentPage }.collect { page ->
+      tabChangedEvent?.let { it(page) }
+    }
+  }
 
   Column(
     modifier = modifier
@@ -83,32 +92,64 @@ fun Tabs(
 ) {
   val scope = rememberCoroutineScope()
 
-  TabRow(
-    selectedTabIndex = pagerState.currentPage,
-    indicator = { tabPositions ->
-      TabRowDefaults.Indicator(
-        Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
-        height = 5.dp,
-        color = viewProperties.tabIndicatorColor.parseColor(),
-      )
-    }
-  ) {
-    viewProperties.tabs.forEachIndexed { index, _ ->
-      Tab(
-        selected = pagerState.currentPage == index,
-        onClick = {
-          scope.launch {
-            pagerState.animateScrollToPage(index)
+  if(viewProperties.tabs.size > 3) {
+    ScrollableTabRow(
+      selectedTabIndex = pagerState.currentPage,
+      edgePadding = 10.dp,
+      indicator = { tabPositions ->
+        TabRowDefaults.Indicator(
+          Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
+          height = 5.dp,
+          color = viewProperties.tabIndicatorColor.parseColor(),
+        )
+      }
+    ) {
+      viewProperties.tabs.forEachIndexed { index, _ ->
+        Tab(
+          selected = pagerState.currentPage == index,
+          onClick = {
+            scope.launch {
+              pagerState.animateScrollToPage(index)
+            }
+          },
+          text = {
+            Text(
+              viewProperties.tabs[index],
+              color = if (pagerState.currentPage == index) Color.White else Color.LightGray,
+              fontWeight = if (pagerState.currentPage == index) FontWeight.Bold else FontWeight.Normal
+            )
           }
-        },
-        text = {
-          Text(
-            viewProperties.tabs[index],
-            color = if (pagerState.currentPage == index) Color.White else Color.LightGray,
-            fontWeight = if (pagerState.currentPage == index) FontWeight.Bold else FontWeight.Normal
-          )
-        }
-      )
+        )
+      }
+    }
+  } else {
+    TabRow(
+      selectedTabIndex = pagerState.currentPage,
+      indicator = { tabPositions ->
+        TabRowDefaults.Indicator(
+          Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
+          height = 5.dp,
+          color = viewProperties.tabIndicatorColor.parseColor(),
+        )
+      }
+    ) {
+      viewProperties.tabs.forEachIndexed { index, _ ->
+        Tab(
+          selected = pagerState.currentPage == index,
+          onClick = {
+            scope.launch {
+              pagerState.animateScrollToPage(index)
+            }
+          },
+          text = {
+            Text(
+              viewProperties.tabs[index],
+              color = if (pagerState.currentPage == index) Color.White else Color.LightGray,
+              fontWeight = if (pagerState.currentPage == index) FontWeight.Bold else FontWeight.Normal
+            )
+          }
+        )
+      }
     }
   }
 }
@@ -128,7 +169,10 @@ fun TabContents(
     userScrollEnabled = false
   ) { pageIndex ->
     if(viewProperties.contentScrollable) {
-      LazyColumn(state = rememberLazyListState()) {
+      LazyColumn(
+        state = rememberLazyListState(),
+        contentPadding = PaddingValues(bottom = 20.dp)
+      ) {
         item(key = resourceData.baseResourceId) {
           ViewRenderer(
             viewProperties = listOf(viewProperties.tabContents[pageIndex]),

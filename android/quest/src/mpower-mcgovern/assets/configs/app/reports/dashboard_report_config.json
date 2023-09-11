@@ -1,0 +1,2825 @@
+{
+  "appId": "app",
+  "configType": "report",
+  "id": "dashboardReport",
+  "showDateFilter": false,
+  "resources": [
+    {
+      "resource": "Group",
+      "dataQueries": [
+        {
+          "paramName": "_lastUpdated",
+          "filterCriteria": [
+            {
+              "dataType": "DATE",
+              "prefix": "GREATERTHAN_OR_EQUALS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": "Patient",
+      "dataQueries": [
+        {
+          "paramName": "_lastUpdated",
+          "filterCriteria": [
+            {
+              "dataType": "DATE",
+              "prefix": "GREATERTHAN_OR_EQUALS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": "Condition",
+      "dataQueries": [
+        {
+          "paramName": "recordedDate",
+          "filterCriteria": [
+            {
+              "dataType": "DATE",
+              "prefix": "GREATERTHAN_OR_EQUALS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": "Encounter",
+      "dataQueries": [
+        {
+          "paramName": "period",
+          "filterCriteria": [
+            {
+              "dataType": "DATE",
+              "prefix": "GREATERTHAN_OR_EQUALS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": "QuestionnaireResponse",
+      "dataQueries": [
+        {
+          "paramName": "authored",
+          "filterCriteria": [
+            {
+              "dataType": "DATE",
+              "prefix": "GREATERTHAN_OR_EQUALS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": "Task",
+      "dataQueries": [
+        {
+          "paramName": "lastModified",
+          "filterCriteria": [
+            {
+              "dataType": "DATE",
+              "prefix": "GREATERTHAN_OR_EQUALS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": "Observation",
+      "dataQueries": [
+        {
+          "paramName": "effective",
+          "filterCriteria": [
+            {
+              "dataType": "DATE",
+              "prefix": "GREATERTHAN_OR_EQUALS"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "name": "totalGroupCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalGroupCount', size(Group))"
+      ]
+    },
+    {
+      "name": "totalPatientCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalPatientCount', size(Patient))"
+      ]
+    },
+    {
+      "name": "totalConditionCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalConditionCount', size(Condition))"
+      ]
+    },
+    {
+      "name": "totalEncounterCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalEncounterCount', size(Encounter))"
+      ]
+    },
+    {
+      "name": "totalQuestionnaireResponseCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalQuestionnaireResponseCount', size(QuestionnaireResponse))"
+      ]
+    },
+    {
+      "name": "totalTaskCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalTaskCount', size(Task))"
+      ]
+    },
+    {
+      "name": "totalObservationCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalObservationCount', size(Observation))"
+      ]
+    },
+    {
+      "name": "totalFamilyCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalFamilyCount', size(service.filterResources(Group, \"Group.code.coding[0].code = '35359004'\")))"
+      ]
+    },
+    {
+      "name": "totalEncCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalEncCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('6487')\")))"
+      ]
+    },
+    {
+      "name": "totalHHVisitCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalHHVisitCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('6485')\")))"
+      ]
+    },
+    {
+      "name": "totalElcoCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalElcoCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('6483')\")))"
+      ]
+    },
+    {
+      "name": "totalPregnantCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalPregnantCount', size(service.filterResources(Condition, \"Condition.code.text = 'Pregnant' \")))"
+      ]
+    },
+    {
+      "name": "totalDeliveryCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalDeliveryCount', size(service.filterResources(Condition, \"Condition.code.text = 'PNC' \")))"
+      ]
+    },
+    {
+      "name": "total0To6ChildCount",
+      "condition": "true",
+      "actions": [
+        "data.put('total0To6ChildCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4218') or QuestionnaireResponse.questionnaire.contains('4220')\")))"
+      ]
+    },
+    {
+      "name": "total7To24ChildCount",
+      "condition": "true",
+      "actions": [
+        "data.put('total7To24ChildCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4222') or QuestionnaireResponse.questionnaire.contains('4224') or QuestionnaireResponse.questionnaire.contains('4226')\")))"
+      ]
+    },
+    {
+      "name": "total18To36ChildCount",
+      "condition": "true",
+      "actions": [
+        "data.put('total18To36ChildCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4226') or QuestionnaireResponse.questionnaire.contains('4228')\")))"
+      ]
+    },
+    {
+      "name": "totalAncCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalAncCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('5591')\")))"
+      ]
+    },
+    {
+      "name": "totalPncCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalPncCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('6058')\")))"
+      ]
+    },
+    {
+      "name": "totalEyeServiceCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalEyeServiceCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4966')\")))"
+      ]
+    },
+    {
+      "name": "totalNcdServiceCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalNcdServiceCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4968')\")))"
+      ]
+    },
+    {
+      "name": "totalAdoServiceCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalAdoServiceCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4970')\")))"
+      ]
+    },
+    {
+      "name": "totalWomenServiceCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalWomenServiceCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4972')\")))"
+      ]
+    },
+    {
+      "name": "totalChildServiceCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalChildServiceCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('4974')\")))"
+      ]
+    },
+    {
+      "name": "boyUnder5Count",
+      "condition": "true",
+      "actions": [
+        "data.put('boyUnder5Count', size(service.filterResources(Patient, \"Patient.gender = 'male' and (Patient.birthDate > today() - 5 'years')\")))"
+      ]
+    },
+    {
+      "name": "girlUnder5Count",
+      "condition": "true",
+      "actions": [
+        "data.put('girlUnder5Count', size(service.filterResources(Patient, \"Patient.gender = 'female' and (Patient.birthDate > today() - 5 'years')\")))"
+      ]
+    },
+    {
+      "name": "boy5To9Count",
+      "condition": "true",
+      "actions": [
+        "data.put('boy5To9Count', size(service.filterResources(Patient, \"Patient.gender = 'male' and Patient.birthDate <= today() - 5 'years' and Patient.birthDate >= today() - 9 'years'\")))"
+      ]
+    },
+    {
+      "name": "girl5To9Count",
+      "condition": "true",
+      "actions": [
+        "data.put('girl5To9Count', size(service.filterResources(Patient, \"Patient.gender = 'female' and Patient.birthDate <= today() - 5 'years' and Patient.birthDate >= today() - 9 'years'\")))"
+      ]
+    },
+    {
+      "name": "boy10To19Count",
+      "condition": "true",
+      "actions": [
+        "data.put('boy10To19Count', size(service.filterResources(Patient, \"Patient.gender = 'male' and Patient.birthDate <= today() - 10 'years' and Patient.birthDate >= today() - 19 'years'\")))"
+      ]
+    },
+    {
+      "name": "girl10To19Count",
+      "condition": "true",
+      "actions": [
+        "data.put('girl10To19Count', size(service.filterResources(Patient, \"Patient.gender = 'female' and Patient.birthDate <= today() - 10 'years' and Patient.birthDate >= today() - 19 'years'\")))"
+      ]
+    },
+    {
+      "name": "man20To50Count",
+      "condition": "true",
+      "actions": [
+        "data.put('man20To50Count', size(service.filterResources(Patient, \"Patient.gender = 'male' and Patient.birthDate <= today() - 20 'years' and Patient.birthDate >= today() - 50 'years'\")))"
+      ]
+    },
+    {
+      "name": "woman20To50Count",
+      "condition": "true",
+      "actions": [
+        "data.put('woman20To50Count', size(service.filterResources(Patient, \"Patient.gender = 'female' and Patient.birthDate <= today() - 20 'years' and Patient.birthDate >= today() - 50 'years'\")))"
+      ]
+    },
+    {
+      "name": "manAbove50Count",
+      "condition": "true",
+      "actions": [
+        "data.put('manAbove50Count', size(service.filterResources(Patient, \"Patient.gender = 'male' and Patient.birthDate <= today() - 50 'years'\")))"
+      ]
+    },
+    {
+      "name": "womanAbove50Count",
+      "condition": "true",
+      "actions": [
+        "data.put('womanAbove50Count', size(service.filterResources(Patient, \"Patient.gender = 'female' and Patient.birthDate <= today() - 50 'years'\")))"
+      ]
+    },
+    {
+      "name": "womanAbove50Count",
+      "condition": "true",
+      "actions": [
+        "data.put('womanAbove50Count', size(service.filterResources(Patient, \"Patient.gender = 'female' and Patient.birthDate <= today() - 50 'years'\")))"
+      ]
+    },
+    {
+      "name": "fpMethodUsingCount",
+      "condition": "true",
+      "actions": [
+        "data.put('fpMethodUsingCount', size(service.filterResources(Condition, \"Condition.code.coding.code = '99998888' \")))"
+      ]
+    },
+    {
+      "name": "fpMethodNotUsingCount",
+      "condition": "true",
+      "actions": [
+        "data.put('fpMethodNotUsingCount', size(service.filterResources(Condition, \"Condition.code.coding.code = '99990000' \")))"
+      ]
+    },
+    {
+      "name": "fpMethodPillCount",
+      "condition": "true",
+      "actions": [
+        "data.put('fpMethodPillCount', size(service.filterResources(Condition, \"Condition.code.coding.code = '99998888' and Condition.code.text = 'contraceptive_pill'\")))"
+      ]
+    },
+    {
+      "name": "fpMethodCondomCount",
+      "condition": "true",
+      "actions": [
+        "data.put('fpMethodCondomCount', size(service.filterResources(Condition, \"Condition.code.coding.code = '99998888' and Condition.code.text = 'condom'\")))"
+      ]
+    },
+    {
+      "name": "fpMethodInjectionCount",
+      "condition": "true",
+      "actions": [
+        "data.put('fpMethodInjectionCount', size(service.filterResources(Condition, \"Condition.code.coding.code = '99998888' and Condition.code.text = 'injection'\")))"
+      ]
+    },
+    {
+      "name": "fpMethodIudCount",
+      "condition": "true",
+      "actions": [
+        "data.put('fpMethodIudCount', size(service.filterResources(Condition, \"Condition.code.coding.code = '99998888' and Condition.code.text = 'iud'\")))"
+      ]
+    },
+    {
+      "name": "fpMethodNorplantCount",
+      "condition": "true",
+      "actions": [
+        "data.put('fpMethodNorplantCount', size(service.filterResources(Condition, \"Condition.code.coding.code = '99998888' and Condition.code.text = 'norplant'\")))"
+      ]
+    },
+    {
+      "name": "fpMethodLigationCount",
+      "condition": "true",
+      "actions": [
+        "data.put('fpMethodLigationCount', size(service.filterResources(Condition, \"Condition.code.coding.code = '99998888' and Condition.code.text = 'ligation'\")))"
+      ]
+    },
+    {
+      "name": "fpMethodVasectomyCount",
+      "condition": "true",
+      "actions": [
+        "data.put('fpMethodVasectomyCount', size(service.filterResources(Condition, \"Condition.code.coding.code = '99998888' and Condition.code.text = 'vasectomy'\")))"
+      ]
+    },
+    {
+      "name": "ancRegIn1stTrimester",
+      "condition": "true",
+      "actions": [
+        "data.put('ancRegIn1stTrimester', size(service.filterResources(Condition, \"Condition.code.text = 'Pregnant' and (Condition.onset > Condition.recordedDate - 107 'days')\")))"
+      ]
+    },
+    {
+      "name": "ancRegIn2ndTrimester",
+      "condition": "true",
+      "actions": [
+        "data.put('ancRegIn2ndTrimester', size(service.filterResources(Condition, \"Condition.code.text = 'Pregnant' and (Condition.onset <= Condition.recordedDate - 107 'days') and (Condition.onsetDateTime >= Condition.recordedDate - 170 'days')\")))"
+      ]
+    },
+    {
+      "name": "ancRegIn3rdTrimester",
+      "condition": "true",
+      "actions": [
+        "data.put('ancRegIn3rdTrimester', size(service.filterResources(Condition, \"Condition.code.text = 'Pregnant' and (Condition.onset < Condition.recordedDate - 170 'days')\")))"
+      ]
+    },
+    {
+      "name": "ancFollowupTask",
+      "condition": "true",
+      "actions": [
+        "data.put('ancFollowupTask', service.filterResources(Task, \"Task.reasonReference.reference.contains('5591')\"))"
+      ]
+    },
+    {
+      "name": "ancFollowIn1stTrimester",
+      "condition": "true",
+      "actions": [
+        "data.put('ancFollowIn1stTrimester', size(service.filterResources(data.get('ancFollowupTask'), \"Task.description.contains('1st')\")))"
+      ]
+    },
+    {
+      "name": "ancFollowIn2ndTrimester",
+      "condition": "true",
+      "actions": [
+        "data.put('ancFollowIn2ndTrimester', size(service.filterResources(data.get('ancFollowupTask'), \"Task.description.contains('2nd')\")))"
+      ]
+    },
+    {
+      "name": "ancFollowIn3rdTrimester",
+      "condition": "true",
+      "actions": [
+        "data.put('ancFollowIn3rdTrimester', size(service.filterResources(data.get('ancFollowupTask'), \"Task.description.contains('3rd')\")))"
+      ]
+    },
+    {
+      "name": "ancFollowIn4thTrimester",
+      "condition": "true",
+      "actions": [
+        "data.put('ancFollowIn4thTrimester', size(service.filterResources(data.get('ancFollowupTask'), \"Task.description.contains('4th')\")))"
+      ]
+    },
+    {
+      "name": "totalPregnancyOutcomeCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalPregnancyOutcomeCount', size(service.filterResources(QuestionnaireResponse, \"QuestionnaireResponse.questionnaire.contains('6056')\")))"
+      ]
+    },
+    {
+      "name": "totalChildFollowupCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalChildFollowupCount', size(service.filterResources(Task, \"Task.input[0].valueReference.reference.contains('4240')\")))"
+      ]
+    },
+    {
+      "name": "pncCountBefore48hrs",
+      "condition": "true",
+      "actions": [
+        "data.put('pncCountBefore48hrs', size(service.filterResources(Encounter, \"Encounter.reasonCode[0].coding[0].code = 'pnc_followup_visit_before_48hrs'\")))"
+      ]
+    },
+    {
+      "name": "pncCountAfter48hrs",
+      "condition": "true",
+      "actions": [
+        "data.put('pncCountAfter48hrs', size(service.filterResources(Encounter, \"Encounter.reasonCode[0].coding[0].code = 'pnc_followup_visit_after_48hrs'\")))"
+      ]
+    },
+    {
+      "name": "deliveryMethodNormalCount",
+      "condition": "true",
+      "actions": [
+        "data.put('deliveryMethodNormalCount', size(service.filterResources(Observation, \"Observation.code.coding[0].code = '700000006'\")))"
+      ]
+    },
+    {
+      "name": "deliveryMethodCesareanCount",
+      "condition": "true",
+      "actions": [
+        "data.put('deliveryMethodCesareanCount', size(service.filterResources(Observation, \"Observation.code.coding[0].code = '11466000'\")))"
+      ]
+    },
+    {
+      "name": "newbornDeathCount",
+      "condition": "true",
+      "actions": [
+        "data.put('newbornDeathCount', size(service.filterResources(Observation, \"Observation.code.coding[0].code = '276506001'\")))"
+      ]
+    },
+    {
+      "name": "1stHourBreastFeedCount",
+      "condition": "true",
+      "actions": [
+        "data.put('1stHourBreastFeedCount', size(service.filterResources(Observation, \"Observation.code.coding[0].code = '169745008' and Observation.value = '1_hour'\")))"
+      ]
+    },
+    {
+      "name": "onlyBreastFeed6mCount",
+      "condition": "true",
+      "actions": [
+        "data.put('onlyBreastFeed6mCount', size(service.filterResources(Observation, \"Observation.code.coding[0].code = '228060008'\")))"
+      ]
+    },
+    {
+      "name": "extraFoodStarted7mCount",
+      "condition": "true",
+      "actions": [
+        "data.put('extraFoodStarted7mCount', size(service.filterResources(Observation, \"Observation.code.coding[0].code = '228060008' and Observation.value = '7_month'\")))"
+      ]
+    }
+  ],
+  "tabBar": {
+    "viewType": "TABS",
+    "contentScrollable": "true",
+    "contentPadding": 0,
+    "tabs": [
+      "পরিদর্শন",
+      "সেবা",
+      "জনসংখ্যার সারসংক্ষেপ",
+      "কার্যক্রম সারসংক্ষেপ"
+    ],
+    "tabIndicatorColor": "#FFFF00",
+    "tabContents": [
+      {
+        "viewType": "COLUMN",
+        "backgroundColor": "#FFFFFF",
+        "fillMaxWidth": true,
+        "fillMaxHeight": true,
+        "children": [
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "primaryColor",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "খানা পরিদর্শন",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalHHVisitCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "primaryColor",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "সক্ষম দম্পতি পরিদর্শন",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalElcoCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "primaryColor",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "পদ্ধতি ব্যবহারকারী",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{fpMethodUsingCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "primaryColor",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "পদ্ধতি ব্যবহারকারী (কিশোরী)",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalQuestionnaireResponseCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "primaryColor",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "গর্ভবতী চিহ্নিত",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalPregnantCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "primaryColor",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "প্রাতিষ্ঠানিক প্রসব সংখ্যা",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalDeliveryCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "primaryColor",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "০-৬ মাস বয়সী শিশু পরিদর্শন",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{total0To6ChildCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "primaryColor",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "৭-২৪ মাস বয়সী শিশু প্রদর্শন",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{total7To24ChildCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "primaryColor",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "১৮-৩৬ মাস বয়সী শিশু পরিদর্শন",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{total18To36ChildCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "primaryColor",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "০-৫৯ মাস বয়সী শিশুর টিকা",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalQuestionnaireResponseCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "viewType": "COLUMN",
+        "backgroundColor": "#FFFFFF",
+        "fillMaxWidth": true,
+        "fillMaxHeight": true,
+        "children": [
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFA500",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "গর্ভবতী সেবা",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalAncCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFA500",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "পি.এন.সি.",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalPncCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFA500",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "অসংক্রামক রোগের সেবা",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalNcdServiceCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFA500",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "শিশু কাউন্সেলিং",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalChildServiceCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFA500",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "নারী কাউন্সেলিং",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalWomenServiceCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFA500",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "কিশোরী কাউন্সেলিং",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalAdoServiceCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFA500",
+            "header": {
+              "viewType": "COMPOUND_TEXT",
+              "primaryText": "চক্ষু পরীক্ষা",
+              "primaryTextColor": "#6F7274",
+              "primaryTextFontWeight": "BOLD",
+              "fontSize": 18.0,
+              "padding": 16
+            },
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalEyeServiceCount}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#ff0000",
+                    "primaryText": "0"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "viewType": "COLUMN",
+        "backgroundColor": "#FFFFFF",
+        "fillMaxWidth": true,
+        "fillMaxHeight": true,
+        "children": [
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_household"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "খানা সংখ্যা"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_profile"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "সদস্য সংখ্যা"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalPatientCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_household"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "খানা পরিদর্শন"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalHHVisitCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_kids"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "ছেলে শিশু (5 বছরের কম)"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{boyUnder5Count}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_kids"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "মেয়ে শিশু (5 বছরের কম)"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{girlUnder5Count}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_kids"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "5-9 বছরের ছেলে শিশু"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{boy5To9Count}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_kids"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "5-9 বছরের মেয়ে শিশু"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{girl5To9Count}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_profile"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "10-19 বছরের ছেলে"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{boy10To19Count}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_adolescent"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "10-19 বছরের মেয়ে"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{girl10To19Count}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_profile"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "20-50 বছরের পুরুষ"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{man20To50Count}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_women"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "20-50 বছরের মহিলা"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{woman20To50Count}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_profile"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "50 উর্ধ পুরুষ"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{manAbove50Count}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_women"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "50 উর্ধ মহিলা"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{womanAbove50Count}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_profile"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "কিশোর"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{boy10To19Count}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_adolescent"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "কিশোরী"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{girl10To19Count}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_profile"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "পরিবার পরিকল্পনা পদ্ধতি ব্যবহারকারী"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{fpMethodUsingCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_profile"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "পদ্ধতি ব্যবহারের বাইরে"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{fpMethodNotUsingCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_profile"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "পিল ব্যবহারকারী"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{fpMethodPillCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_profile"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "কনডম ব্যবহারকারী"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{fpMethodCondomCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_profile"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "আই.ইউ.ডি. ব্যবহারকারী"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{fpMethodIudCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_profile"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "ইনজেকশন ব্যবহারকারী"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{fpMethodInjectionCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_profile"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "ইমপ্ল্যান্ট ব্যবহারকারী"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{fpMethodNorplantCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_profile"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "ভ্যাসেকটমি ব্যবহারকারী"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{fpMethodVasectomyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_profile"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "টিউব্যাকটোমি ব্যবহারকারী"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{fpMethodLigationCount}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "viewType": "COLUMN",
+        "backgroundColor": "#FFFFFF",
+        "fillMaxWidth": true,
+        "fillMaxHeight": true,
+        "children": [
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_household"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "খানা রেজিস্ট্রেশন"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_profile"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "সদস্য রেজিস্ট্রেশন"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalPatientCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_household"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "খানা পরিদর্শন"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalHHVisitCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_family_planning"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "সক্ষম দম্পতি পরিদর্শন"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalElcoCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_pregnant"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "গর্ভবতী রেজিস্ট্রেশন"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalPregnantCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_pregnant"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "প্রথম ট্রাইমেস্টার-এ সনাক্ত"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{ancRegIn1stTrimester}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_pregnant"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "দ্বিতীয় ট্রাইমেস্টার-এ সনাক্ত"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{ancRegIn2ndTrimester}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_pregnant"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "তৃতীয় ট্রাইমেস্টার-এ সনাক্ত"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{ancRegIn3rdTrimester}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_pregnant"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "গর্ভবতী পরিচর্যা - ১ম ত্রিমাসিক"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{ancFollowIn1stTrimester}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_pregnant"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "গর্ভবতী পরিচর্যা - ২য় ত্রিমাসিক"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{ancFollowIn2ndTrimester}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_pregnant"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "গর্ভবতী পরিচর্যা - ৩য় ত্রিমাসিক"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{ancFollowIn3rdTrimester}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_pregnant"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "গর্ভবতী পরিচর্যা (এএনসি)"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{ancFollowIn4thTrimester}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_baby_mother"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "প্রসব"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalPregnancyOutcomeCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_kids"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "শিশু ফলোআপ"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalChildFollowupCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_non_communicable_disease"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "অসংক্রামক রোগের সেবা"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalNcdServiceCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_women"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "নারী কাউন্সেলিং"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalWomenServiceCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_adolescent"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "কিশোরী কাউন্সেলিং"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalAdoServiceCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_kids"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "শিশু কাউন্সেলিং"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalChildServiceCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_baby_mother"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "পি.এন.সি.(প্রথম ৪৮ ঘন্টার মধ্য)"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{pncCountBefore48hrs}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_baby_mother"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "পি.এন.সি. (প্রথম ৪৮ ঘন্টা পর)"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{pncCountAfter48hrs}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_baby_mother"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "প্রসবের ফলাফল(সিজার)"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{deliveryMethodCesareanCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_baby_mother"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "প্রসবের ফলাফল(স্বাভাবিক)"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{deliveryMethodNormalCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_kids"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "জন্মের এক ঘণ্টার মধ্যে বুকের দুধ খাওয়া শিশুর সংখ্যা"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{1stHourBreastFeedCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_kids"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "ছয় মাস পর্যন্ত শুধুমাত্র বুকের দুধ খাওয়া শিশুর সংখ্যা"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{onlyBreastFeed6mCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_kids"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "সাত মাসে বাড়তি খাবার খাওয়া শিশুর সংখ্যা"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{extraFoodStarted7mCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_kids"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "নবজাতক মৃত্যু"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{newbornDeathCount}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

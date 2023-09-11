@@ -62,7 +62,7 @@ android {
     viewBinding = true
     dataBinding = true
   }
-  composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.4.2" }
 
   packagingOptions {
     resources.excludes.addAll(

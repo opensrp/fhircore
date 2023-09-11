@@ -106,13 +106,6 @@
                 "patient",
                 "bundle"
               ]
-            },
-            {
-              "name": "ExtractObservations",
-              "variable": [
-                "src",
-                "bundle"
-              ]
             }
           ]
         }
@@ -2419,6 +2412,24 @@
                   ]
                 }
               ]
+            },
+            {
+              "name": "r_extract_observations",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "ExtractObservations",
+                  "variable": [
+                    "src",
+                    "bundle",
+                    "encounter"
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -2437,6 +2448,11 @@
           "name": "bundle",
           "type": "Bundle",
           "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "source"
         }
       ],
       "rule": [
@@ -2630,10 +2646,31 @@
                       "transform": "evaluate",
                       "parameter": [
                         {
-                          "valueId": "src"
+                          "valueId": "encounter"
                         },
                         {
                           "valueString": "$this.subject"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_observation_encounter",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
                         }
                       ]
                     }
@@ -2881,10 +2918,31 @@
                       "transform": "evaluate",
                       "parameter": [
                         {
-                          "valueId": "src"
+                          "valueId": "encounter"
                         },
                         {
                           "valueString": "$this.subject"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_observation_encounter",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
                         }
                       ]
                     }
@@ -3132,10 +3190,31 @@
                       "transform": "evaluate",
                       "parameter": [
                         {
-                          "valueId": "src"
+                          "valueId": "encounter"
                         },
                         {
                           "valueString": "$this.subject"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_observation_encounter",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
                         }
                       ]
                     }
@@ -3383,10 +3462,31 @@
                       "transform": "evaluate",
                       "parameter": [
                         {
-                          "valueId": "src"
+                          "valueId": "encounter"
                         },
                         {
                           "valueString": "$this.subject"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_observation_encounter",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
                         }
                       ]
                     }
@@ -3634,10 +3734,31 @@
                       "transform": "evaluate",
                       "parameter": [
                         {
-                          "valueId": "src"
+                          "valueId": "encounter"
                         },
                         {
                           "valueString": "$this.subject"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_observation_encounter",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
                         }
                       ]
                     }
@@ -3683,6 +3804,278 @@
                       "parameter": [
                         {
                           "valueId": "item_memory_dis"
+                        },
+                        {
+                          "valueString": "answer.value.code"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "o_feeding_time",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item_feeding_time",
+              "condition": "((linkId = 'b12ed9b2-090a-4597-c360-824f0b7604e2') and answer.value.exists())"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_id",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_status",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "status",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "final"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_category_1",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        {
+                          "valueString": "activity"
+                        },
+                        {
+                          "valueString": "Activity"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_code",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "concept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_cp_cc_cod",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "concept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://snomed.info/sct"
+                            },
+                            {
+                              "valueString": "169745008"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cp_cod_disp",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Breastfeeding started"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_ref",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        },
+                        {
+                          "valueString": "$this.subject"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_observation_encounter",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "encounter",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "encounter"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_effective_current_date_time",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item_feeding_time"
                         },
                         {
                           "valueString": "answer.value.code"

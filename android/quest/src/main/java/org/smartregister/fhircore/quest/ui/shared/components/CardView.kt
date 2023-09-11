@@ -86,6 +86,7 @@ fun CardView(
     // Card section
     Card(
       elevation = viewProperties.elevation.dp,
+      backgroundColor = viewProperties.cardColor.parseColor(),
       modifier =
         modifier
           .padding(horizontal = viewProperties.padding.dp)

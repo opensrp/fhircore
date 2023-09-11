@@ -1,0 +1,2424 @@
+{
+  "resourceType": "StructureMap",
+  "id": "6484",
+  "url": "http://fhir.mpower-social.com:7070/fhir/StructureMap/6484",
+  "name": "mPower Household Visit",
+  "structure": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
+      "mode": "source"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Bundle",
+      "mode": "target"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Group",
+      "mode": "target"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Encounter",
+      "mode": "target"
+    }
+  ],
+  "group": [
+    {
+      "name": "mPowerHouseholdVisit",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_bundle_id",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "id",
+              "transform": "uuid"
+            }
+          ]
+        },
+        {
+          "name": "rule_bundle_type",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "type",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "collection"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "rule_bundle_entries",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "group",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Group"
+                }
+              ]
+            }
+          ],
+          "dependent": [
+            {
+              "name": "UpdateGroup",
+              "variable": [
+                "src",
+                "group",
+                "bundle"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdateGroup",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "group",
+          "type": "Group",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_extract_group_id_and_update",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item",
+              "condition": "((linkId = '210afefc-3e4f-4489-86af-587ada65e06c') and answer.value.exists())"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_item_group_id",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "group",
+                  "contextType": "variable",
+                  "element": "id",
+                  "variable": "group_id",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "id"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_item_group_id_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "group_id",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item"
+                        },
+                        {
+                          "valueString": "$this.answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_group_name",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "group",
+                  "contextType": "variable",
+                  "element": "name",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "$this.item.where(linkId = 'aaafd263-5e5b-4b78-bbc6-e01be0eb72ec').answer.value"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_group_char",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "group",
+                  "contextType": "variable",
+                  "element": "characteristic",
+                  "variable": "includeFamily",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Group_Characteristic"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_exclude_group_false",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "includeFamily",
+                      "contextType": "variable",
+                      "element": "exclude",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueBoolean": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_group_char",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "group",
+                  "contextType": "variable",
+                  "element": "characteristic",
+                  "variable": "familyCharacteristic",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Group_Characteristic"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_group_char_code",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "familyCharacteristic",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "familyCharacteristicCode",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_grp_vcode",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "familyCharacteristicCode",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "https://www.mpower-social.com/"
+                            },
+                            {
+                              "valueString": "active"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cp_cod_disp_v",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Active"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_group_char_hh_serial",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "familyHome",
+                  "condition": "(linkId = '30c16801-3742-4631-888e-0732bd748d77')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "group",
+                  "contextType": "variable",
+                  "element": "characteristic",
+                  "variable": "groupCharacteristic",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Group_Characteristic"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cp_cc_coding_v",
+                  "source": [
+                    {
+                      "context": "familyHome"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "hhSerial",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_grp_hh_serial",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "hhSerial",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://www.mpower-social.com/codes"
+                            },
+                            {
+                              "valueString": "hh_serial"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cp_cod_disp_v",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "HH Serial"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_vcc_hh_serial",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "hhSerial",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "familyHome"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_cp_cc_exclude_v",
+                  "source": [
+                    {
+                      "context": "familyHome"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "exclude",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueBoolean": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_group_char_hh_phone",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "familyPhone",
+                  "condition": "(linkId = '3193ad83-4864-419f-851f-4f5d82948bb8')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "group",
+                  "contextType": "variable",
+                  "element": "characteristic",
+                  "variable": "groupCharacteristic",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Group_Characteristic"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cp_cc_coding_hh_phone",
+                  "source": [
+                    {
+                      "context": "familyPhone"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "hhPhone",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_grp_hh_phone_code",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "hhPhone",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://www.mpower-social.com/codes"
+                            },
+                            {
+                              "valueString": "hh_phone"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cp_cod_disp_hh_phone",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Household Mobile"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_vcc_hh_phone",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "hhPhone",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "familyPhone"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_cp_cc_exclude_hh_phone",
+                  "source": [
+                    {
+                      "context": "familyPhone"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "exclude",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueBoolean": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_group_char_hh_type",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "familyType",
+                  "condition": "(linkId = '603e8034-26d0-420a-86f7-577ab9c9bf9c')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "group",
+                  "contextType": "variable",
+                  "element": "characteristic",
+                  "variable": "groupCharacteristic",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Group_Characteristic"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cp_cc_coding_hh_type",
+                  "source": [
+                    {
+                      "context": "familyType"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "hhTypeCode",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_grp_hh_type_code",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "hhTypeCode",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://www.mpower-social.com/codes"
+                            },
+                            {
+                              "valueString": "hh_type"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cp_cod_disp_hh_type",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Household Type"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_vcc_hh_type",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "hhTypeCode",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "familyType"
+                            },
+                            {
+                              "valueString": "$this.answer.value.code"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_cp_cc_exclude_hh_type",
+                  "source": [
+                    {
+                      "context": "familyType"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "exclude",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueBoolean": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_group_char_hh_member_count",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "familyMember",
+                  "condition": "(linkId = '29b9289c-be48-49c0-81e4-e93cde1c33c2')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "group",
+                  "contextType": "variable",
+                  "element": "characteristic",
+                  "variable": "groupCharacteristic",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Group_Characteristic"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cp_cc_coding_hh_member_count",
+                  "source": [
+                    {
+                      "context": "familyMember"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "memberCount",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_grp_hh_member_count",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "memberCount",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://www.mpower-social.com/codes"
+                            },
+                            {
+                              "valueString": "hh_member_count"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cp_cod_disp_hh_member_count",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Household Memeber Count"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_vcc_hh_member_count",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "memberCount",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "familyMember"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_cp_cc_exclude_hh_member_count",
+                  "source": [
+                    {
+                      "context": "familyMember"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "exclude",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueBoolean": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_group_char_hh_head_occ",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "headOccupation",
+                  "condition": "(linkId = '023ca3f7-5591-46c6-8002-2fb31415c069')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "group",
+                  "contextType": "variable",
+                  "element": "characteristic",
+                  "variable": "groupCharacteristic",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Group_Characteristic"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cp_cc_coding_hh_head_occ",
+                  "source": [
+                    {
+                      "context": "headOccupation"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "occupation",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_grp_hh_head_occ",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "occupation",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://snomed.info/sct"
+                            },
+                            {
+                              "valueString": "184104002"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cp_cod_disp_hh_head_occ",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Household Head Occupation"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_vcc_hh_head_occ",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "occupation",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "headOccupation"
+                            },
+                            {
+                              "valueString": "$this.answer.value.code"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_cp_cc_exclude_hh_head_occ",
+                  "source": [
+                    {
+                      "context": "headOccupation"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "exclude",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueBoolean": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_group_char_hh_income",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "hhIncome",
+                  "condition": "(linkId = '5d0d2f3c-ca4b-4752-831b-0d604c6b0d98')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "group",
+                  "contextType": "variable",
+                  "element": "characteristic",
+                  "variable": "groupCharacteristic",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Group_Characteristic"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cp_cc_coding_hh_income",
+                  "source": [
+                    {
+                      "context": "hhIncome"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "income",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_grp_hh_income",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "income",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://snomed.info/sct"
+                            },
+                            {
+                              "valueString": "224167002"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cp_cod_disp_hh_income",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Household Income Details"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_vcc_hh_income",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "income",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "hhIncome"
+                            },
+                            {
+                              "valueString": "$this.answer.value.code"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_cp_cc_exclude_hh_income",
+                  "source": [
+                    {
+                      "context": "hhIncome"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "exclude",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueBoolean": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_group_char_hh_latrine",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "hhLatrine",
+                  "condition": "(linkId = '90331830-e4f0-4cb7-8a15-3e330ebfcfc0')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "group",
+                  "contextType": "variable",
+                  "element": "characteristic",
+                  "variable": "groupCharacteristic",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Group_Characteristic"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cp_cc_coding_hh_latrine",
+                  "source": [
+                    {
+                      "context": "hhLatrine"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "latrine",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_grp_hh_latrine",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "latrine",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://www.mpower-social.com/codes"
+                            },
+                            {
+                              "valueString": "hh_has_latrine"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cp_cod_disp_hh_latrine",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Household Has Latrine"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_vcc_hh_latrine",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "latrine",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "hhLatrine"
+                            },
+                            {
+                              "valueString": "$this.answer.value.code"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_cp_cc_exclude_hh_latrine",
+                  "source": [
+                    {
+                      "context": "hhLatrine"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "exclude",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueBoolean": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_group_char_hh_floor",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "hhFloorMaterial",
+                  "condition": "(linkId = 'bc1d24fc-3254-4fac-f210-0b4f0c159dc9')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "group",
+                  "contextType": "variable",
+                  "element": "characteristic",
+                  "variable": "groupCharacteristic",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Group_Characteristic"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cp_cc_coding_hh_floor",
+                  "source": [
+                    {
+                      "context": "hhFloorMaterial"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "floor",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_grp_hh_floor",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "floor",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://www.mpower-social.com/codes"
+                            },
+                            {
+                              "valueString": "hh_floor_material"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cp_cod_disp_hh_floor",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Household Floor Material"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_vcc_hh_floor",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "floor",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "hhFloorMaterial"
+                            },
+                            {
+                              "valueString": "$this.answer.value.code"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_cp_cc_exclude_hh_floor",
+                  "source": [
+                    {
+                      "context": "hhFloorMaterial"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "exclude",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueBoolean": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_group_char_hh_wall",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "hhWallMaterial",
+                  "condition": "(linkId = '7e1b63bb-c609-498f-d3f7-5b47c792acb1')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "group",
+                  "contextType": "variable",
+                  "element": "characteristic",
+                  "variable": "groupCharacteristic",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Group_Characteristic"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cp_cc_coding_hh_wall",
+                  "source": [
+                    {
+                      "context": "hhWallMaterial"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "wall",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_grp_hh_wall",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "wall",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://www.mpower-social.com/codes"
+                            },
+                            {
+                              "valueString": "hh_wall_material"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cp_cod_disp_hh_wall",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Household Wall Material"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_vcc_hh_wall",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "wall",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "hhWallMaterial"
+                            },
+                            {
+                              "valueString": "$this.answer.value.code"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_cp_cc_exclude_hh_wall",
+                  "source": [
+                    {
+                      "context": "hhWallMaterial"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "exclude",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueBoolean": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_group_char_hh_roof",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "hhRoofMaterial",
+                  "condition": "(linkId = 'b513eafb-777d-4908-83b5-0d4836e061c6')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "group",
+                  "contextType": "variable",
+                  "element": "characteristic",
+                  "variable": "groupCharacteristic",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Group_Characteristic"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cp_cc_coding_hh_roof",
+                  "source": [
+                    {
+                      "context": "hhRoofMaterial"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "roof",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_grp_hh_roof",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "roof",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://www.mpower-social.com/codes"
+                            },
+                            {
+                              "valueString": "hh_roof_material"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cp_cod_disp_hh_roof",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Household Roof Material"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_vcc_hh_roof",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "roof",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "hhRoofMaterial"
+                            },
+                            {
+                              "valueString": "$this.answer.value.code"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_cp_cc_exclude_hh_roof",
+                  "source": [
+                    {
+                      "context": "hhRoofMaterial"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "exclude",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueBoolean": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_group_char_hh_homestead_land",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "hhHomesteadLand",
+                  "condition": "(linkId = '859563b7-7509-4756-89c1-1e1286d12955')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "group",
+                  "contextType": "variable",
+                  "element": "characteristic",
+                  "variable": "groupCharacteristic",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Group_Characteristic"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cp_cc_coding_hh_homestead_land",
+                  "source": [
+                    {
+                      "context": "hhHomesteadLand"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "homesteadLand",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_grp_hh_homestead_land",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "homesteadLand",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://www.mpower-social.com/codes"
+                            },
+                            {
+                              "valueString": "hh_homestead_land"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cp_cod_disp_hh_homestead_land",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Household Homestead Land"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_vcc_hh_homestead_land",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "homesteadLand",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "hhHomesteadLand"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_cp_cc_exclude_hh_homestead_land",
+                  "source": [
+                    {
+                      "context": "hhHomesteadLand"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "exclude",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueBoolean": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_group_char_hh_cultivable_land",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "hhCultivableLand",
+                  "condition": "(linkId = '462d5637-ce8f-4a45-9c63-185d3816bb94')"
+                }
+              ],
+              "target": [
+                {
+                  "context": "group",
+                  "contextType": "variable",
+                  "element": "characteristic",
+                  "variable": "groupCharacteristic",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Group_Characteristic"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cp_cc_coding_hh_cultivable_land",
+                  "source": [
+                    {
+                      "context": "hhCultivableLand"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "cultivableLand",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_grp_hh_cultivable_land",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cultivableLand",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://www.mpower-social.com/codes"
+                            },
+                            {
+                              "valueString": "hh_cultivable_land"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cp_cod_disp_hh_cultivable_land",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Household Cultivable Land"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_vcc_hh_cultivable_land",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cultivableLand",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "hhCultivableLand"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_cp_cc_exclude_hh_cultivable_land",
+                  "source": [
+                    {
+                      "context": "hhCultivableLand"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupCharacteristic",
+                      "contextType": "variable",
+                      "element": "exclude",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueBoolean": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_group_extract_obs",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "condition": "((linkId = '018e238d-cdaa-484e-890c-e2745878ba72') and (answer.value.code = 'yes'))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_encounter_reference",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "ExtractObservation",
+                      "variable": [
+                        "src",
+                        "group",
+                        "bundle"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractObservation",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "group",
+          "type": "Group",
+          "mode": "target"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "check_and_extract_obs",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "corona_members",
+              "condition": "((linkId = '9e95c28a-c75c-4f26-f988-639bb05e36d5') and answer.value.exists())"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_id",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_status",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "status",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "final"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_category_1",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        {
+                          "valueString": "vital-signs"
+                        },
+                        {
+                          "valueString": "Vital Signs"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_code",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "concept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_cp_cc_cod",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "concept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://snomed.info/sct"
+                            },
+                            {
+                              "valueString": "840539006"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cp_cod_disp",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "COVID-19"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_ref",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "variable": "ref",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_group_ref",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "'Group/' + group.id"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_effective_current_date_time",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "corona_members"
+                        },
+                        {
+                          "valueString": "answer.value.count()"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

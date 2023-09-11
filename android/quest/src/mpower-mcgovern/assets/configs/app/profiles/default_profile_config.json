@@ -473,6 +473,13 @@
       ]
     },
     {
+      "name": "applicableForEncPackage",
+      "condition": "true",
+      "actions": [
+        "data.put('applicableForEncPackage', fhirPath.extractValue(Patient, \"Patient.active and Patient.birthDate >= today() - 41 'days'\"))"
+      ]
+    },
+    {
       "name": "applicableForNCDPackage",
       "condition": "true",
       "actions": [
@@ -491,6 +498,13 @@
       "condition": "true",
       "actions": [
         "data.put('applicableForMemberReferral', fhirPath.extractValue(Patient, \"Patient.active and Patient.gender != 'female' and (Patient.birthDate < today() - 5 'years')\"))"
+      ]
+    },
+    {
+      "name": "fpConditionId",
+      "condition": "true",
+      "actions": [
+        "data.put('fpConditionId', (service.filterResources(data.get('activeConditions'), \"Condition.code.coding.code = '99998888'\")).get(0).idElement.idPart)"
       ]
     },
     {
@@ -991,6 +1005,30 @@
                         }
                       }
                     ]
+                  },
+                  {
+                    "viewType": "BUTTON",
+                    "smallSized": "true",
+                    "text": "ENC Child Service",
+                    "status": "DUE",
+                    "visible": "@{applicableForEncPackage}",
+                    "enabled": "@{patientActive}",
+                    "startIcon": {
+                      "reference": "ic_kids"
+                    },
+                    "actions": [
+                      {
+                        "trigger": "ON_CLICK",
+                        "workflow": "LAUNCH_QUESTIONNAIRE",
+                        "questionnaire": {
+                          "id": "6487",
+                          "title": "ENC Child Service",
+                          "saveButtonText": "Save",
+                          "resourceType": "Patient",
+                          "resourceIdentifier": "@{patientId}"
+                        }
+                      }
+                    ]
                   }
                 ]
               }
@@ -1194,6 +1232,50 @@
             "resourceIdentifier": "@{patientId}",
             "planDefinitions": [
               "5593"
+            ],
+            "refreshContent": true,
+            "eventWorkflows": [
+              {
+                "eventType": "RESOURCE_CLOSURE",
+                "eventResources": [
+                  {
+                    "id": "fpConditionToBeClosed",
+                    "resource": "Condition",
+                    "configRules": [
+                      {
+                        "name": "patientId",
+                        "condition": "true",
+                        "actions": [
+                          "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))"
+                        ]
+                      }
+                    ],
+                    "dataQueries": [
+                      {
+                        "paramName": "code",
+                        "filterCriteria": [
+                          {
+                            "dataType": "CODEABLECONCEPT",
+                            "value": {
+                              "system": "http://snomed.info/sct",
+                              "code": "99998888"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "paramName": "subject",
+                        "filterCriteria": [
+                          {
+                            "dataType": "REFERENCE",
+                            "computedRule": "patientId"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
             ]
           },
           "params": [
@@ -1201,6 +1283,13 @@
               "key": "familyLogicalId",
               "value": "@{familyLogicalId}",
               "paramType": "UPDATE_DATE_ON_EDIT"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "650dd00d-c60b-4a3d-838a-128aad048277",
+              "dataType": "STRING",
+              "key": "fpConditionId",
+              "value": "@{fpConditionId}"
             }
           ]
         }

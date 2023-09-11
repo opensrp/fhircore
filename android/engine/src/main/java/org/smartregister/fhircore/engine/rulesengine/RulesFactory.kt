@@ -122,6 +122,25 @@ constructor(
     return facts.get(DATA) as Map<String, Any>
   }
 
+  fun fireRules(rules: Rules, resourcesMap: Map<String, List<Resource>>): Map<String, Any> {
+    facts =
+      Facts().apply {
+        put(FHIR_PATH, fhirPathDataExtractor)
+        put(DATA, mutableMapOf<String, Any>())
+        put(SERVICE, rulesEngineService)
+      }
+
+    facts.apply {
+      resourcesMap.addToFacts(this)
+    }
+
+    if (BuildConfig.DEBUG) {
+      val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
+      Timber.d("Rule executed in $timeToFireRules millisecond(s)")
+    } else rulesEngine.fire(rules, facts)
+    return facts.get(DATA) as Map<String, Any>
+  }
+
   /** Provide access to utility functions accessible to the users defining rules in JSON format. */
   inner class RulesEngineService {
 

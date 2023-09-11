@@ -38,7 +38,28 @@ group extractEncounter(source questionnaireResponse : QuestionnaireResponse, tar
             } "r_en_cc_cod";
             questionnaireResponse -> concept.text = '0 to 3 Months Child Visit' "r_en_text";
         } "r_en_reason";
+
+        questionnaireResponse then ExtractObservations(questionnaireResponse, bundle, encounter) "r_extract_observation";
     } "r_en";
+}
+
+group ExtractObservation(source src : QuestionnaireResponse, target bundle : Bundle, source encounter : Encounter) {
+    src.item as item_feeding_time where(linkId ='ccc48570-f952-45fb-8fbc-a9847bb03128' and answer.value.exists()) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_obs_id";
+            src -> obs.status = 'final' "r_obs_status";
+            src -> obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category','activity', 'Activity') "r_obs_category_1";
+            src -> obs.code = create('CodeableConcept') as concept then {
+                 src -> concept.coding = c("http://snomed.info/sct", "169745008") as coding then {
+                        src -> coding.display = 'Breastfeeding started' "r_cp_cod_disp";
+                 } "r_cp_cc_cod";
+            } "r_obs_code";
+            src -> obs.subject = evaluate(encounter, $this.subject) "r_obs_ref";
+            src -> obs.encounter = reference(encounter) "rule_observation_encounter";
+            src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+            src -> obs.value = evaluate(item_feeding_time, answer.value.code) "r_obs_value";
+        } "r_obs";
+    } "o_feeding_time";
 }
 
 group ExtractDueTask(

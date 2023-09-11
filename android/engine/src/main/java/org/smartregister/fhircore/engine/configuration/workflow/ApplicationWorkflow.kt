@@ -33,6 +33,9 @@ enum class ApplicationWorkflow {
   /** A workflow for navigating to in-app reports */
   LAUNCH_REPORT,
 
+  /** A workflow for navigating to in-app other reports */
+  LAUNCH_OTHER_REPORT,
+
   /** A workflow for navigating to user's settings screen */
   LAUNCH_SETTINGS,
 

@@ -28,6 +28,16 @@ group extractPregnancyOutcomeObservation(source src : QuestionnaireResponse, tar
     src.item as item where(linkId ='33455692-f8b4-4b90-809a-94352aad1e2f' and answer.value.code = 'miscarriage') then {
         src then ExtractPregnancyOutcomeObservationWhenMiscarriage(src, bundle, refPatient, encounter) "rule_pregnancy_outcome_observation";
     } "rule_pregnancy_outcome_observation";
+
+    src.item as item where(linkId ='8c68916c-7ed6-407a-e0f9-5c52e6b27442' and answer.value.code = 'normal') then {
+        src then ExtractPregnancyOutcomeObservationWhenNormalDelivery(src, bundle, refPatient, encounter) "rule_pregnancy_outcome_normal_observation";
+    } "rule_pregnancy_outcome_method_observation";
+    src.item as item where(linkId ='844c6c64-7eea-499f-8f00-91aeee58ac6f' and answer.value.code = 'normal') then {
+        src then ExtractPregnancyOutcomeObservationWhenNormalDelivery(src, bundle, refPatient, encounter) "rule_pregnancy_outcome_normal_observation";
+    } "rule_pregnancy_outcome_method_observation";
+    src.item as item where(linkId ='844c6c64-7eea-499f-8f00-91aeee58ac6f' and answer.value.code = 'c-section') then {
+        src then ExtractPregnancyOutcomeObservationWhenCesareanDelivery(src, bundle, refPatient, encounter) "rule_pregnancy_outcome_cesarean_observation";
+    } "rule_pregnancy_outcome_method_observation";
 }
 group extractPregnancyOutcomeObservationLiveBirth(source src : QuestionnaireResponse, target bundle: Bundle, source refPatient: Patient, source encounter : Encounter){
     src -> bundle.entry as entry, entry.resource = create('Observation') as observation then {
@@ -134,6 +144,42 @@ group ExtractPregnancyOutcomeObservationWhenMiscarriage(source src : Questionnai
         src -> observation.category = cc('http://snomed.info/sct', '17369002', 'Pregnancy Outcome Type')"r_obs_category";
         src -> observation.effective = evaluate(src, now()) "r_effective_miscarriage_date";
     } "r_observation_for_miscarriage";
+}
+
+group ExtractPregnancyOutcomeObservationWhenNormalDelivery(source src : QuestionnaireResponse, target bundle: Bundle, source refPatient: Patient, source encounter : Encounter){
+    src -> bundle.entry as entry, entry.resource = create('Observation') as observation then {
+        src -> observation.id = uuid() "rule_observation_id";
+        src -> observation.code = create('CodeableConcept') as code then {
+            src -> code.coding = create('Coding') as coding then {
+                src -> coding.system = 'http://snomed.info/sct' "rule_observation_coding_system";
+                src -> coding.code = '700000006' "r_obs_c_coding_code";
+                src -> coding.display = 'Vaginal delivery of fetus' "r_obs_c_coding_disp";
+            } "r_obs_c_coding";
+        } "r_obs_code";
+        src -> observation.subject = refPatient "rule_observation_subject";
+        src -> observation.encounter = reference(encounter) "rule_observation_encounter";
+        src -> observation.status = 'final' "rule_observation_status";
+        src -> observation.category = cc('http://snomed.info/sct', '236973005', 'Delivery procedure')"r_obs_category";
+        src -> observation.effective = evaluate(src, now()) "r_effective_delivery_procedure_date";
+    } "r_observation_for_normal_delivery";
+}
+
+group ExtractPregnancyOutcomeObservationWhenCesareanDelivery(source src : QuestionnaireResponse, target bundle: Bundle, source refPatient: Patient, source encounter : Encounter){
+    src -> bundle.entry as entry, entry.resource = create('Observation') as observation then {
+        src -> observation.id = uuid() "rule_observation_id";
+        src -> observation.code = create('CodeableConcept') as code then {
+            src -> code.coding = create('Coding') as coding then {
+                src -> coding.system = 'http://snomed.info/sct' "rule_observation_coding_system";
+                src -> coding.code = '11466000' "r_obs_c_coding_code";
+                src -> coding.display = 'Cesarean section' "r_obs_c_coding_disp";
+            } "r_obs_c_coding";
+        } "r_obs_code";
+        src -> observation.subject = refPatient "rule_observation_subject";
+        src -> observation.encounter = reference(encounter) "rule_observation_encounter";
+        src -> observation.status = 'final' "rule_observation_status";
+        src -> observation.category = cc('http://snomed.info/sct', '236973005', 'Delivery procedure')"r_obs_category";
+        src -> observation.effective = evaluate(src, now()) "r_effective_delivery_procedure_date";
+    } "r_observation_for_cesarean_delivery";
 }
 
 /* Create the PNC Condition for the patients  */

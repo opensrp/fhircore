@@ -1,8 +1,8 @@
 {
   "resourceType": "StructureMap",
-  "id": "6057",
-  "url": "https://fhir.labs.smartregister.org/fhir/StructureMap/6057",
-  "name": "mPower PNC Followup Visit",
+  "id": "6486",
+  "url": "http://fhir.mpower-social.com:7070/fhir/StructureMap/6486",
+  "name": "mPower ENC Service",
   "structure": [
     {
       "url": "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse",
@@ -15,11 +15,11 @@
   ],
   "group": [
     {
-      "name": "PNCFollowupVisit",
+      "name": "ENCChildVisit",
       "typeMode": "none",
       "input": [
         {
-          "name": "src",
+          "name": "questionnaireResponse",
           "type": "QuestionnaireResponse",
           "mode": "source"
         },
@@ -34,7 +34,7 @@
           "name": "r_bundle_type",
           "source": [
             {
-              "context": "src"
+              "context": "questionnaireResponse"
             }
           ],
           "target": [
@@ -55,7 +55,7 @@
           "name": "r_bundle_entries",
           "source": [
             {
-              "context": "src"
+              "context": "questionnaireResponse"
             }
           ],
           "target": [
@@ -64,7 +64,7 @@
               "transform": "evaluate",
               "parameter": [
                 {
-                  "valueId": "src"
+                  "valueId": "questionnaireResponse"
                 },
                 {
                   "valueString": "$this.subject"
@@ -74,9 +74,9 @@
           ],
           "dependent": [
             {
-              "name": "ExtractEncounter",
+              "name": "extractEncounter",
               "variable": [
-                "src",
+                "questionnaireResponse",
                 "bundle",
                 "refPatient"
               ]
@@ -86,11 +86,11 @@
       ]
     },
     {
-      "name": "ExtractEncounter",
+      "name": "extractEncounter",
       "typeMode": "none",
       "input": [
         {
-          "name": "src",
+          "name": "questionnaireResponse",
           "type": "QuestionnaireResponse",
           "mode": "source"
         },
@@ -107,10 +107,10 @@
       ],
       "rule": [
         {
-          "name": "r_extract_completed_task",
+          "name": "r_extract_task",
           "source": [
             {
-              "context": "src"
+              "context": "questionnaireResponse"
             }
           ],
           "target": [
@@ -124,7 +124,7 @@
               "context": "entry",
               "contextType": "variable",
               "element": "resource",
-              "variable": "completedTask",
+              "variable": "task",
               "transform": "create",
               "parameter": [
                 {
@@ -135,10 +135,11 @@
           ],
           "dependent": [
             {
-              "name": "ExtractCompletedTask",
+              "name": "ExtractTask",
               "variable": [
-                "src",
-                "completedTask"
+                "questionnaireResponse",
+                "refPatient",
+                "task"
               ]
             }
           ]
@@ -147,10 +148,9 @@
           "name": "referred_check_and_extract_due_task",
           "source": [
             {
-              "context": "src",
+              "context": "questionnaireResponse",
               "element": "item",
-              "variable": "has_referred",
-              "condition": "((linkId = '0418baa2-f7d4-4b8d-cba0-5718460ffb7a') and (answer.value.code = 'yes'))"
+              "condition": "((linkId = '25e10119-52f1-46ed-8691-e3ffe4b00e50') and (answer.value.code = 'yes'))"
             }
           ],
           "rule": [
@@ -158,7 +158,7 @@
               "name": "r_extract_due_task",
               "source": [
                 {
-                  "context": "src"
+                  "context": "questionnaireResponse"
                 }
               ],
               "target": [
@@ -185,7 +185,8 @@
                 {
                   "name": "ExtractDueTask",
                   "variable": [
-                    "src",
+                    "questionnaireResponse",
+                    "refPatient",
                     "dueTask"
                   ]
                 }
@@ -197,7 +198,7 @@
           "name": "r_en",
           "source": [
             {
-              "context": "src"
+              "context": "questionnaireResponse"
             }
           ],
           "target": [
@@ -225,7 +226,7 @@
               "name": "r_en_id",
               "source": [
                 {
-                  "context": "src"
+                  "context": "questionnaireResponse"
                 }
               ],
               "target": [
@@ -241,7 +242,7 @@
               "name": "r_en_st",
               "source": [
                 {
-                  "context": "src"
+                  "context": "questionnaireResponse"
                 }
               ],
               "target": [
@@ -262,7 +263,7 @@
               "name": "r_en_cls",
               "source": [
                 {
-                  "context": "src"
+                  "context": "questionnaireResponse"
                 }
               ],
               "target": [
@@ -289,7 +290,7 @@
               "name": "r_en_typ",
               "source": [
                 {
-                  "context": "src"
+                  "context": "questionnaireResponse"
                 }
               ],
               "target": [
@@ -311,7 +312,7 @@
                   "name": "r_en_cc_cod",
                   "source": [
                     {
-                      "context": "src"
+                      "context": "questionnaireResponse"
                     }
                   ],
                   "target": [
@@ -323,10 +324,10 @@
                       "transform": "c",
                       "parameter": [
                         {
-                          "valueString": "http://example.org/CodeSystem/encounter-type"
+                          "valueString": "https://www.mpower-social.com/"
                         },
                         {
-                          "valueString": "pnc-contact-in-brac"
+                          "valueString": "adolescent_facility_service"
                         }
                       ]
                     }
@@ -336,7 +337,7 @@
                       "name": "r_en_cod_disp",
                       "source": [
                         {
-                          "context": "src"
+                          "context": "questionnaireResponse"
                         }
                       ],
                       "target": [
@@ -347,7 +348,7 @@
                           "transform": "copy",
                           "parameter": [
                             {
-                              "valueString": "Postnatal care contact in brac"
+                              "valueString": "ENC Child Service"
                             }
                           ]
                         }
@@ -359,7 +360,7 @@
                   "name": "r_en_typ_text",
                   "source": [
                     {
-                      "context": "src"
+                      "context": "questionnaireResponse"
                     }
                   ],
                   "target": [
@@ -370,7 +371,7 @@
                       "transform": "copy",
                       "parameter": [
                         {
-                          "valueString": "Postnatal care contact in brac"
+                          "valueString": "ENC Child Service"
                         }
                       ]
                     }
@@ -382,7 +383,7 @@
               "name": "r_en_prio",
               "source": [
                 {
-                  "context": "src"
+                  "context": "questionnaireResponse"
                 }
               ],
               "target": [
@@ -404,7 +405,7 @@
                   "name": "r_en_cc_cod",
                   "source": [
                     {
-                      "context": "src"
+                      "context": "questionnaireResponse"
                     }
                   ],
                   "target": [
@@ -429,7 +430,7 @@
                       "name": "r_en_cod_disp",
                       "source": [
                         {
-                          "context": "src"
+                          "context": "questionnaireResponse"
                         }
                       ],
                       "target": [
@@ -440,7 +441,7 @@
                           "transform": "copy",
                           "parameter": [
                             {
-                              "valueString": "elective"
+                              "valueString": "Elective"
                             }
                           ]
                         }
@@ -452,7 +453,7 @@
                   "name": "r_en_prio_text",
                   "source": [
                     {
-                      "context": "src"
+                      "context": "questionnaireResponse"
                     }
                   ],
                   "target": [
@@ -463,7 +464,7 @@
                       "transform": "copy",
                       "parameter": [
                         {
-                          "valueString": "elective"
+                          "valueString": "Elective"
                         }
                       ]
                     }
@@ -475,7 +476,9 @@
               "name": "r_en_sub",
               "source": [
                 {
-                  "context": "src"
+                  "context": "questionnaireResponse",
+                  "element": "subject",
+                  "variable": "subject"
                 }
               ],
               "target": [
@@ -483,13 +486,10 @@
                   "context": "encounter",
                   "contextType": "variable",
                   "element": "subject",
-                  "transform": "evaluate",
+                  "transform": "copy",
                   "parameter": [
                     {
-                      "valueId": "src"
-                    },
-                    {
-                      "valueString": "$this.subject"
+                      "valueId": "subject"
                     }
                   ]
                 }
@@ -499,7 +499,7 @@
               "name": "r_en_per",
               "source": [
                 {
-                  "context": "src"
+                  "context": "questionnaireResponse"
                 }
               ],
               "target": [
@@ -521,7 +521,7 @@
                   "name": "r_en_per_start",
                   "source": [
                     {
-                      "context": "src"
+                      "context": "questionnaireResponse"
                     }
                   ],
                   "target": [
@@ -532,7 +532,7 @@
                       "transform": "evaluate",
                       "parameter": [
                         {
-                          "valueId": "src"
+                          "valueId": "questionnaireResponse"
                         },
                         {
                           "valueString": "now()"
@@ -545,7 +545,7 @@
                   "name": "r_en_per_end",
                   "source": [
                     {
-                      "context": "src"
+                      "context": "questionnaireResponse"
                     }
                   ],
                   "target": [
@@ -556,7 +556,7 @@
                       "transform": "evaluate",
                       "parameter": [
                         {
-                          "valueId": "src"
+                          "valueId": "questionnaireResponse"
                         },
                         {
                           "valueString": "now()"
@@ -568,380 +568,7 @@
               ]
             },
             {
-              "name": "r_en_reason_before_48",
-              "source": [
-                {
-                  "context": "src",
-                  "element": "item",
-                  "condition": "((linkId = 'e37db999-ea58-44de-c4b7-6e49d36a337c').exists())"
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_en_reason",
-                  "source": [
-                    {
-                      "context": "src"
-                    }
-                  ],
-                  "target": [
-                    {
-                      "context": "encounter",
-                      "contextType": "variable",
-                      "element": "reasonCode",
-                      "variable": "concept",
-                      "transform": "create",
-                      "parameter": [
-                        {
-                          "valueString": "CodeableConcept"
-                        }
-                      ]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_en_rc_cod",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "concept",
-                          "contextType": "variable",
-                          "element": "coding",
-                          "variable": "coding",
-                          "transform": "c",
-                          "parameter": [
-                            {
-                              "valueString": "http://mpower-social.com/"
-                            },
-                            {
-                              "valueString": "pnc_followup_visit_before_48hrs"
-                            }
-                          ]
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_en_rc_cod_disp",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "coding",
-                              "contextType": "variable",
-                              "element": "display",
-                              "transform": "copy",
-                              "parameter": [
-                                {
-                                  "valueString": "mPower PNC Followup Visit"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_en_text",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "concept",
-                          "contextType": "variable",
-                          "element": "text",
-                          "transform": "copy",
-                          "parameter": [
-                            {
-                              "valueString": "mPower PNC Followup Visit"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_en_reason_after_48",
-              "source": [
-                {
-                  "context": "src",
-                  "element": "item",
-                  "condition": "((linkId = 'e37db999-ea58-44de-c4b7-6e49d36a337c').exists().not())"
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_en_reason",
-                  "source": [
-                    {
-                      "context": "src"
-                    }
-                  ],
-                  "target": [
-                    {
-                      "context": "encounter",
-                      "contextType": "variable",
-                      "element": "reasonCode",
-                      "variable": "concept",
-                      "transform": "create",
-                      "parameter": [
-                        {
-                          "valueString": "CodeableConcept"
-                        }
-                      ]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_en_rc_cod",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "concept",
-                          "contextType": "variable",
-                          "element": "coding",
-                          "variable": "coding",
-                          "transform": "c",
-                          "parameter": [
-                            {
-                              "valueString": "http://mpower-social.com/"
-                            },
-                            {
-                              "valueString": "pnc_followup_visit_after_48hrs"
-                            }
-                          ]
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_en_rc_cod_disp",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "coding",
-                              "contextType": "variable",
-                              "element": "display",
-                              "transform": "copy",
-                              "parameter": [
-                                {
-                                  "valueString": "mPower PNC Followup Visit"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_en_text",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "concept",
-                          "contextType": "variable",
-                          "element": "text",
-                          "transform": "copy",
-                          "parameter": [
-                            {
-                              "valueString": "mPower PNC Followup Visit"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "rule_fp_method_check_yes",
-              "source": [
-                {
-                  "context": "src",
-                  "element": "item",
-                  "condition": "((linkId = '35d80d98-3850-4dba-85d1-0beb44837473') and (answer.value.code = 'yes'))"
-                }
-              ],
-              "rule": [
-                {
-                  "name": "rule_fp_method_check",
-                  "source": [
-                    {
-                      "context": "src",
-                      "element": "item",
-                      "variable": "fpMethod",
-                      "condition": "((linkId = '15406c59-beb9-447c-8c59-c9086b0d187f') and answer.value.exists())"
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "rule_fp_method_extra",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "variable": "fpMethodCode",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "fpMethod"
-                            },
-                            {
-                              "valueString": "$this.answer.value.code"
-                            }
-                          ]
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_bundle_entries",
-                          "source": [
-                            {
-                              "context": "src"
-                            }
-                          ],
-                          "dependent": [
-                            {
-                              "name": "extractFPCondition",
-                              "variable": [
-                                "src",
-                                "bundle",
-                                "encounter",
-                                "refPatient",
-                                "fpMethodCode"
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "rule_fp_method_check_no",
-              "source": [
-                {
-                  "context": "src",
-                  "element": "item",
-                  "condition": "((linkId = '35d80d98-3850-4dba-85d1-0beb44837473') and (answer.value.code = 'no'))"
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_bundle_entries",
-                  "source": [
-                    {
-                      "context": "src"
-                    }
-                  ],
-                  "dependent": [
-                    {
-                      "name": "extractNotFPCondition",
-                      "variable": [
-                        "src",
-                        "bundle",
-                        "encounter",
-                        "refPatient"
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "extractFPCondition",
-      "typeMode": "none",
-      "input": [
-        {
-          "name": "questionnaireResponse",
-          "type": "QuestionnaireResponse",
-          "mode": "source"
-        },
-        {
-          "name": "bundle",
-          "type": "Bundle",
-          "mode": "target"
-        },
-        {
-          "name": "encounter",
-          "type": "Encounter",
-          "mode": "target"
-        },
-        {
-          "name": "refPatient",
-          "type": "Reference",
-          "mode": "source"
-        },
-        {
-          "name": "fpMethodCode",
-          "type": "String",
-          "mode": "source"
-        }
-      ],
-      "rule": [
-        {
-          "name": "r_cnd",
-          "source": [
-            {
-              "context": "questionnaireResponse"
-            }
-          ],
-          "target": [
-            {
-              "context": "bundle",
-              "contextType": "variable",
-              "element": "entry",
-              "variable": "entry"
-            },
-            {
-              "context": "entry",
-              "contextType": "variable",
-              "element": "resource",
-              "variable": "cnd",
-              "transform": "create",
-              "parameter": [
-                {
-                  "valueString": "Condition"
-                }
-              ]
-            }
-          ],
-          "rule": [
-            {
-              "name": "r_cnd_id",
+              "name": "r_en_reason",
               "source": [
                 {
                   "context": "questionnaireResponse"
@@ -949,170 +576,10 @@
               ],
               "target": [
                 {
-                  "context": "cnd",
+                  "context": "encounter",
                   "contextType": "variable",
-                  "element": "id",
-                  "transform": "uuid"
-                }
-              ]
-            },
-            {
-              "name": "r_cnd_onset_date_val",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "onset",
-                  "transform": "evaluate",
-                  "parameter": [
-                    {
-                      "valueId": "questionnaireResponse"
-                    },
-                    {
-                      "valueString": "now()"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_cnd_clinical_st",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "clinicalStatus",
-                  "transform": "cc",
-                  "parameter": [
-                    {
-                      "valueString": "http://terminology.hl7.org/CodeSystem/condition-clinical"
-                    },
-                    {
-                      "valueString": "active"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_cnd_verif_st",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "verificationStatus",
-                  "transform": "cc",
-                  "parameter": [
-                    {
-                      "valueString": "http://terminology.hl7.org/CodeSystem/condition-ver-status"
-                    },
-                    {
-                      "valueString": "confirmed"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_cnd_category",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "category",
-                  "transform": "cc",
-                  "parameter": [
-                    {
-                      "valueString": "http://terminology.hl7.org/CodeSystem/condition-category"
-                    },
-                    {
-                      "valueString": "problem-list-item"
-                    },
-                    {
-                      "valueString": "Problem List Item"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_cnd_sub",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "subject",
-                  "transform": "copy",
-                  "parameter": [
-                    {
-                      "valueId": "refPatient"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_cnd_recorded",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "recordedDate",
-                  "transform": "evaluate",
-                  "parameter": [
-                    {
-                      "valueId": "questionnaireResponse"
-                    },
-                    {
-                      "valueString": "now()"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_cnd_code",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "code",
-                  "variable": "ccPreg",
+                  "element": "reasonCode",
+                  "variable": "concept",
                   "transform": "create",
                   "parameter": [
                     {
@@ -1123,7 +590,7 @@
               ],
               "rule": [
                 {
-                  "name": "r_cnd_code_coding",
+                  "name": "r_en_cc_cod",
                   "source": [
                     {
                       "context": "questionnaireResponse"
@@ -1131,26 +598,47 @@
                   ],
                   "target": [
                     {
-                      "context": "ccPreg",
+                      "context": "concept",
                       "contextType": "variable",
                       "element": "coding",
+                      "variable": "coding",
                       "transform": "c",
                       "parameter": [
                         {
-                          "valueString": "http://snomed.info/sct"
+                          "valueString": "https://www.mpower-social.com/"
                         },
                         {
-                          "valueString": "99998888"
-                        },
+                          "valueString": "enc_child_service"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_en_cod_disp",
+                      "source": [
                         {
-                          "valueString": "Family Planning"
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "ENC Child Service"
+                            }
+                          ]
                         }
                       ]
                     }
                   ]
                 },
                 {
-                  "name": "r_cnd_code_text",
+                  "name": "r_en_text",
                   "source": [
                     {
                       "context": "questionnaireResponse"
@@ -1158,36 +646,15 @@
                   ],
                   "target": [
                     {
-                      "context": "ccPreg",
+                      "context": "concept",
                       "contextType": "variable",
                       "element": "text",
                       "transform": "copy",
                       "parameter": [
                         {
-                          "valueId": "fpMethodCode"
+                          "valueString": "ENC Child Service"
                         }
                       ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_new_fp_encounter",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "encounter",
-                  "transform": "reference",
-                  "parameter": [
-                    {
-                      "valueId": "encounter"
                     }
                   ]
                 }
@@ -1198,7 +665,7 @@
       ]
     },
     {
-      "name": "extractNotFPCondition",
+      "name": "ExtractTask",
       "typeMode": "none",
       "input": [
         {
@@ -1207,314 +674,8 @@
           "mode": "source"
         },
         {
-          "name": "bundle",
-          "type": "Bundle",
-          "mode": "target"
-        },
-        {
-          "name": "encounter",
-          "type": "Encounter",
-          "mode": "target"
-        },
-        {
-          "name": "refPatient",
+          "name": "subject",
           "type": "Reference",
-          "mode": "source"
-        }
-      ],
-      "rule": [
-        {
-          "name": "r_cnd",
-          "source": [
-            {
-              "context": "questionnaireResponse"
-            }
-          ],
-          "target": [
-            {
-              "context": "bundle",
-              "contextType": "variable",
-              "element": "entry",
-              "variable": "entry"
-            },
-            {
-              "context": "entry",
-              "contextType": "variable",
-              "element": "resource",
-              "variable": "cnd",
-              "transform": "create",
-              "parameter": [
-                {
-                  "valueString": "Condition"
-                }
-              ]
-            }
-          ],
-          "rule": [
-            {
-              "name": "r_cnd_id",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "id",
-                  "transform": "uuid"
-                }
-              ]
-            },
-            {
-              "name": "r_cnd_onset_date_val",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "onset",
-                  "transform": "evaluate",
-                  "parameter": [
-                    {
-                      "valueId": "questionnaireResponse"
-                    },
-                    {
-                      "valueString": "now()"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_cnd_clinical_st",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "clinicalStatus",
-                  "transform": "cc",
-                  "parameter": [
-                    {
-                      "valueString": "http://terminology.hl7.org/CodeSystem/condition-clinical"
-                    },
-                    {
-                      "valueString": "active"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_cnd_verif_st",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "verificationStatus",
-                  "transform": "cc",
-                  "parameter": [
-                    {
-                      "valueString": "http://terminology.hl7.org/CodeSystem/condition-ver-status"
-                    },
-                    {
-                      "valueString": "confirmed"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_cnd_category",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "category",
-                  "transform": "cc",
-                  "parameter": [
-                    {
-                      "valueString": "http://terminology.hl7.org/CodeSystem/condition-category"
-                    },
-                    {
-                      "valueString": "problem-list-item"
-                    },
-                    {
-                      "valueString": "Problem List Item"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_cnd_sub",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "subject",
-                  "transform": "copy",
-                  "parameter": [
-                    {
-                      "valueId": "refPatient"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_cnd_recorded",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "recordedDate",
-                  "transform": "evaluate",
-                  "parameter": [
-                    {
-                      "valueId": "questionnaireResponse"
-                    },
-                    {
-                      "valueString": "now()"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_cnd_code",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "code",
-                  "variable": "ccPreg",
-                  "transform": "create",
-                  "parameter": [
-                    {
-                      "valueString": "CodeableConcept"
-                    }
-                  ]
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_cnd_code_coding",
-                  "source": [
-                    {
-                      "context": "questionnaireResponse"
-                    }
-                  ],
-                  "target": [
-                    {
-                      "context": "ccPreg",
-                      "contextType": "variable",
-                      "element": "coding",
-                      "transform": "c",
-                      "parameter": [
-                        {
-                          "valueString": "http://snomed.info/sct"
-                        },
-                        {
-                          "valueString": "99990000"
-                        },
-                        {
-                          "valueString": "No Family Planning"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "name": "r_cnd_code_text",
-                  "source": [
-                    {
-                      "context": "questionnaireResponse"
-                    }
-                  ],
-                  "target": [
-                    {
-                      "context": "ccPreg",
-                      "contextType": "variable",
-                      "element": "text",
-                      "transform": "copy",
-                      "parameter": [
-                        {
-                          "valueString": "No Family Planning"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_new_fp_encounter",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "cnd",
-                  "contextType": "variable",
-                  "element": "encounter",
-                  "transform": "reference",
-                  "parameter": [
-                    {
-                      "valueId": "encounter"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "ExtractCompletedTask",
-      "typeMode": "none",
-      "input": [
-        {
-          "name": "questionnaireResponse",
-          "type": "QuestionnaireResponse",
           "mode": "source"
         },
         {
@@ -1772,7 +933,7 @@
               "transform": "copy",
               "parameter": [
                 {
-                  "valueString": "PNC Followup Visit"
+                  "valueString": "ENC Child Service"
                 }
               ]
             },
@@ -1780,13 +941,10 @@
               "context": "task",
               "contextType": "variable",
               "element": "for",
-              "transform": "evaluate",
+              "transform": "copy",
               "parameter": [
                 {
-                  "valueId": "questionnaireResponse"
-                },
-                {
-                  "valueString": "$this.subject"
+                  "valueId": "subject"
                 }
               ]
             },
@@ -1851,44 +1009,7 @@
               "transform": "copy",
               "parameter": [
                 {
-                  "valueString": "Questionnaire/6058"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "check_task_name",
-          "source": [
-            {
-              "context": "questionnaireResponse",
-              "element": "item",
-              "variable": "task_name",
-              "condition": "((linkId = '54777657-5ff3-44d6-fe0d-317cce261588') and answer.value.exists())"
-            }
-          ],
-          "rule": [
-            {
-              "name": "r_task_desc",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "description",
-                  "transform": "evaluate",
-                  "parameter": [
-                    {
-                      "valueId": "task_name"
-                    },
-                    {
-                      "valueString": "$this.answer.value"
-                    }
-                  ]
+                  "valueString": "Questionnaire/8000"
                 }
               ]
             }
@@ -1903,6 +1024,11 @@
         {
           "name": "questionnaireResponse",
           "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "subject",
+          "type": "Reference",
           "mode": "source"
         },
         {
@@ -2123,13 +1249,10 @@
               "context": "task",
               "contextType": "variable",
               "element": "for",
-              "transform": "evaluate",
+              "transform": "copy",
               "parameter": [
                 {
-                  "valueId": "questionnaireResponse"
-                },
-                {
-                  "valueString": "$this.subject"
+                  "valueId": "subject"
                 }
               ]
             },
@@ -2207,7 +1330,7 @@
               "context": "questionnaireResponse",
               "element": "item",
               "variable": "refer_reason",
-              "condition": "((linkId = '3d005338-3602-408d-fbca-d429cfda7ea8') and answer.value.exists())"
+              "condition": "((linkId = 'a2dc7311-6263-47d3-9fa2-ee45016894e2') and answer.value.exists())"
             }
           ],
           "rule": [

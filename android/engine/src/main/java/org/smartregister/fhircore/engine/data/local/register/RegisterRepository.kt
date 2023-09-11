@@ -16,23 +16,33 @@
 
 package org.smartregister.fhircore.engine.data.local.register
 
+import ca.uhn.fhir.rest.gclient.DateClientParam
+import ca.uhn.fhir.rest.gclient.StringClientParam
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Search
 import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFilterConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.configuration.report.other.OtherReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
@@ -224,6 +234,62 @@ constructor(
         },
     )
   }
+
+  override suspend fun loadReportData(
+    reportId: String,
+    startDateFormatted: String?,
+    endDateFormatted: String?,
+    resourceConfigs: List<ResourceConfig>?
+  ): Map<String, List<Resource>> {
+    val reportConfiguration = retrieveOtherReportConfiguration(reportId)
+    val reportResources = resourceConfigs ?: reportConfiguration.resources
+    val resourceMap: MutableMap<String, List<Resource>> = mutableMapOf()
+
+    reportResources.forEach { resourceConfig ->
+      val search = Search(resourceConfig.resource)
+
+      if(resourceConfig.resource == ResourceType.Task) {
+        search.filter(
+          Task.STATUS,
+          {
+            value = of("completed")
+          }
+        )
+      }
+
+      if(!startDateFormatted.isNullOrEmpty() &&
+        !endDateFormatted.isNullOrEmpty() &&
+        resourceConfig.dataQueries?.isNotEmpty() == true) {
+        search.filter(
+          DateClientParam(resourceConfig.dataQueries.first().paramName),
+          {
+            value = of(DateTimeType(startDateFormatted))
+            prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+          },
+          {
+            value = of(DateTimeType(endDateFormatted))
+            prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+          },
+          operation = Operation.AND
+        )
+      }
+
+      val resources =
+        withContext(dispatcherProvider.io()) {
+          fhirEngine.search<Resource>(search)
+        }
+
+      resourceMap[resourceConfig.resource.name] = resources
+    }
+
+    return resourceMap
+  }
+
+  fun retrieveOtherReportConfiguration(reportId: String): OtherReportConfiguration =
+    configurationRegistry.retrieveConfiguration(
+      configType = ConfigType.OtherReport,
+      configId = reportId,
+    )
 
   fun retrieveProfileConfiguration(profileId: String, paramsMap: Map<String, String>) =
     configurationRegistry.retrieveConfiguration<ProfileConfiguration>(

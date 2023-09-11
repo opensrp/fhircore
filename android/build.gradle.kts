@@ -11,9 +11,9 @@ buildscript {
   }
 
   dependencies {
-    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10")
-    classpath("org.jetbrains.kotlin:kotlin-serialization:1.7.10")
-    classpath("com.google.dagger:hilt-android-gradle-plugin:2.42")
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.10")
+    classpath("org.jetbrains.kotlin:kotlin-serialization:1.8.10")
+    classpath("com.google.dagger:hilt-android-gradle-plugin:2.44")
     classpath("androidx.navigation:navigation-safe-args-gradle-plugin:2.5.3")
     classpath("com.diffplug.spotless:spotless-plugin-gradle:6.19.0")
     classpath("gradle.plugin.org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.12.0")

@@ -1,59 +1,24 @@
-map "http://fhir.mpower-social.com:7070/fhir/StructureMap/2869" = 'mPower Family Registration'
+map "http://fhir.mpower-social.com:7070/fhir/StructureMap/6484" = 'mPower Household Visit'
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
 uses "http://hl7.org/fhir/StructureDefinition/Group" as target
 uses "http://hl7.org/fhir/StructureDefinition/Encounter" as target
 
-group mPowerFamilyRegistration(source src : QuestionnaireResponse, target bundle: Bundle) {
+group mPowerHouseholdVisit(source src : QuestionnaireResponse, target bundle: Bundle) {
     src -> bundle.id = uuid() "rule_bundle_id";
     src -> bundle.type = 'collection' "rule_bundle_type";
     src -> bundle.entry as entry, entry.resource = create('Group') as group then
-        ExtractGroup(src, group, bundle) "rule_bundle_entries";
+        UpdateGroup(src, group, bundle) "rule_bundle_entries";
 }
 
-group ExtractGroup(source src : QuestionnaireResponse, target group : Group, target bundle: Bundle) {
-       src -> group.id = uuid() "rule_group_id_generation";
-       src -> group.name = evaluate(src, $this.item.where(linkId = '64712707-d6eb-4166-8d6e-06fa2b9fcf3e').answer.value) "rule_group_name";
+group UpdateGroup(source src : QuestionnaireResponse, target group : Group, target bundle: Bundle) {
+    src.item as item where(linkId = "210afefc-3e4f-4489-86af-587ada65e06c" and answer.value.exists()) then {
+       src -> group.id = create("id") as group_id then {
+           src->group_id.value = evaluate(item, $this.answer.value) "r_item_group_id_value";
+       } "r_item_group_id";
 
-       src -> group.identifier = create('Identifier') as groupIdentifierHouseholdId then {
-         src -> groupIdentifierHouseholdId.value = evaluate(src, $this.item.where(linkId = 'ce49bde4-6ef9-423e-c747-efab250cd770').answer.value)
-         "rule_group_identifier_hh_id_value";
-         src -> groupIdentifierHouseholdId.use = "official" "rule_group_identifier_hh_id_use";
-         src -> groupIdentifierHouseholdId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_group_identifier_period";
-       } "rule_group_identifier_hh_id";
-
-       src -> group.identifier = create('Identifier') as groupIdentifierSSId then {
-         src -> groupIdentifierSSId.value = evaluate(src, $this.item.where(linkId = '0eb238ad-e009-434b-c56f-88e7dc860daa').answer.value.code)
-         "rule_group_identifier_ss_id_value";
-         src -> groupIdentifierSSId.type = create('CodeableConcept') as concept then {
-                src -> concept.coding = c("http://www.mpower-social.com/", "ss_id") as coding then {
-                src -> coding.display = 'SS ID' "rule_patient_identifier_ss_id_type_cod_display";
-                } "rule_patient_identifier_ss_id_type_cod";
-            } "rule_patient_identifier_ss_id_type";
-         src -> groupIdentifierSSId.use = "usual" "rule_group_identifier_ss_id_use";
-         src -> groupIdentifierSSId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_group_identifier_period";
-       } "rule_group_identifier_ss_id";
-
-       src -> group.identifier = create('Identifier') as groupIdentifierVillageId then {
-         src -> groupIdentifierVillageId.value = evaluate(src, $this.item.where(linkId = 'b3c85de6-90a4-4e55-b13f-32e94abd29b2').answer.value)
-         "rule_group_identifier_village_id_value";
-         src -> groupIdentifierVillageId.type = create('CodeableConcept') as concept then {
-                src -> concept.coding = c("http://www.mpower-social.com/", "village_id") as coding then {
-                src -> coding.display = 'Village Id' "rule_patient_identifier_village_id_cod_display";
-                } "rule_patient_identifier_village_id_type_cod";
-            } "rule_patient_identifier_village_id_type";
-         src -> groupIdentifierVillageId.use = "temp" "rule_group_identifier_village_id_use";
-         src -> groupIdentifierVillageId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_group_identifier_period";
-       } "rule_group_identifier_village_id";
-
-       src -> group.identifier = create('Identifier') as groupIdentifier then {
-          src -> groupIdentifier.value = uuid() "rule_group_identifier_value";
-          src -> groupIdentifier.use = "secondary" "rule_group_identifier_use";
-          src -> groupIdentifier.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_group_identifier_period";
-       } "rule_group_identifier";
-
-       src -> group.active = true "r_grp_status_data";
+       src -> group.name = evaluate(src, $this.item.where(linkId = 'aaafd263-5e5b-4b78-bbc6-e01be0eb72ec').answer.value) "rule_group_name";
 
        src -> group.characteristic = create('Group_Characteristic') as includeFamily then {
            src -> includeFamily.exclude = false "rule_exclude_group_false";
@@ -66,10 +31,6 @@ group ExtractGroup(source src : QuestionnaireResponse, target group : Group, tar
                } "r_grp_vcode";
            } "rule_group_char_code";
        } "rule_group_char";
-
-       src -> group.type = 'person' "r_grp_type_data";
-       src -> group.actual = true "r_grp_actual_data";
-       src -> group.code = create('CodeableConcept') as concept then ExtractFamilyCode(src, concept) "r_grp_code_data";
 
        src.item as familyHome where(linkId='30c16801-3742-4631-888e-0732bd748d77') -> group.characteristic = create ('Group_Characteristic') as groupCharacteristic then {
             familyHome -> groupCharacteristic.code = create('CodeableConcept') as hhSerial then{
@@ -86,7 +47,7 @@ group ExtractGroup(source src : QuestionnaireResponse, target group : Group, tar
                 src -> hhPhone.coding = c("http://www.mpower-social.com/codes", "hh_phone") as coding then {
                 src -> coding.display = 'Household Mobile' "r_cp_cod_disp_hh_phone";
                 } "r_grp_hh_phone_code";
-                src -> hhPhone.text = evaluate(src, $this.item.where(linkId = '3193ad83-4864-419f-851f-4f5d82948bb8').answer.value) "r_vcc_hh_phone";
+                src -> hhPhone.text = evaluate(familyPhone, $this.answer.value) "r_vcc_hh_phone";
             } "r_cp_cc_coding_hh_phone";
             familyPhone -> groupCharacteristic.exclude = false "r_cp_cc_exclude_hh_phone";
        } "r_group_char_hh_phone";
@@ -96,27 +57,17 @@ group ExtractGroup(source src : QuestionnaireResponse, target group : Group, tar
                 src -> hhTypeCode.coding = c("http://www.mpower-social.com/codes", "hh_type") as coding then {
                 src -> coding.display = 'Household Type' "r_cp_cod_disp_hh_type";
                 } "r_grp_hh_type_code";
-                src -> hhTypeCode.text = evaluate(src, $this.item.where(linkId = '603e8034-26d0-420a-86f7-577ab9c9bf9c').answer.value.code) "r_vcc_hh_type";
+                src -> hhTypeCode.text = evaluate(familyType, $this.answer.value.code) "r_vcc_hh_type";
             } "r_cp_cc_coding_hh_type";
             familyType -> groupCharacteristic.exclude = false "r_cp_cc_exclude_hh_type";
        } "r_group_char_hh_type";
-
-       src.item as familyCluster where(linkId='b742852c-8774-47d1-81f2-9bbe0f2fd511') -> group.characteristic = create ('Group_Characteristic') as groupCharacteristic then {
-            familyCluster -> groupCharacteristic.code = create('CodeableConcept') as clusterCode then{
-                src -> clusterCode.coding = c("http://www.mpower-social.com/codes", "hh_cluster") as coding then {
-                src -> coding.display = 'Household Cluster' "r_cp_cod_disp_hh_cluster";
-                } "r_grp_hh_cluster_code";
-                src -> clusterCode.text = evaluate(src, $this.item.where(linkId = 'b742852c-8774-47d1-81f2-9bbe0f2fd511').answer.value.code) "r_vcc_hh_cluster";
-            } "r_cp_cc_coding_hh_cluster";
-            familyCluster -> groupCharacteristic.exclude = false "r_cp_cc_exclude_hh_cluster";
-       } "r_group_char_hh_cluster";
 
        src.item as familyMember where(linkId='29b9289c-be48-49c0-81e4-e93cde1c33c2') -> group.characteristic = create ('Group_Characteristic') as groupCharacteristic then {
             familyMember -> groupCharacteristic.code = create('CodeableConcept') as memberCount then{
                 src -> memberCount.coding = c("http://www.mpower-social.com/codes", "hh_member_count") as coding then {
                 src -> coding.display = 'Household Memeber Count' "r_cp_cod_disp_hh_member_count";
                 } "r_grp_hh_member_count";
-                src -> memberCount.text = evaluate(src, $this.item.where(linkId = '29b9289c-be48-49c0-81e4-e93cde1c33c2').answer.value) "r_vcc_hh_member_count";
+                src -> memberCount.text = evaluate(familyMember, $this.answer.value) "r_vcc_hh_member_count";
             } "r_cp_cc_coding_hh_member_count";
             familyMember -> groupCharacteristic.exclude = false "r_cp_cc_exclude_hh_member_count";
        } "r_group_char_hh_member_count";
@@ -126,7 +77,7 @@ group ExtractGroup(source src : QuestionnaireResponse, target group : Group, tar
                 src -> occupation.coding = c("http://snomed.info/sct", "184104002") as coding then {
                 src -> coding.display = 'Household Head Occupation' "r_cp_cod_disp_hh_head_occ";
                 } "r_grp_hh_head_occ";
-                src -> occupation.text = evaluate(src, $this.item.where(linkId = '023ca3f7-5591-46c6-8002-2fb31415c069').answer.value.code) "r_vcc_hh_head_occ";
+                src -> occupation.text = evaluate(headOccupation, $this.answer.value.code) "r_vcc_hh_head_occ";
             } "r_cp_cc_coding_hh_head_occ";
             headOccupation -> groupCharacteristic.exclude = false "r_cp_cc_exclude_hh_head_occ";
        } "r_group_char_hh_head_occ";
@@ -136,7 +87,7 @@ group ExtractGroup(source src : QuestionnaireResponse, target group : Group, tar
                 src -> income.coding = c("http://snomed.info/sct", "224167002") as coding then {
                 src -> coding.display = 'Household Income Details' "r_cp_cod_disp_hh_income";
                 } "r_grp_hh_income";
-                src -> income.text = evaluate(src, $this.item.where(linkId = '5d0d2f3c-ca4b-4752-831b-0d604c6b0d98').answer.value.code) "r_vcc_hh_income";
+                src -> income.text = evaluate(hhIncome, $this.answer.value.code) "r_vcc_hh_income";
             } "r_cp_cc_coding_hh_income";
             hhIncome -> groupCharacteristic.exclude = false "r_cp_cc_exclude_hh_income";
        } "r_group_char_hh_income";
@@ -146,7 +97,7 @@ group ExtractGroup(source src : QuestionnaireResponse, target group : Group, tar
                 src -> latrine.coding = c("http://www.mpower-social.com/codes", "hh_has_latrine") as coding then {
                 src -> coding.display = 'Household Has Latrine' "r_cp_cod_disp_hh_latrine";
                 } "r_grp_hh_latrine";
-                src -> latrine.text = evaluate(src, $this.item.where(linkId = '90331830-e4f0-4cb7-8a15-3e330ebfcfc0').answer.value.code) "r_vcc_hh_latrine";
+                src -> latrine.text = evaluate(hhLatrine, $this.answer.value.code) "r_vcc_hh_latrine";
             } "r_cp_cc_coding_hh_latrine";
             hhLatrine -> groupCharacteristic.exclude = false "r_cp_cc_exclude_hh_latrine";
        } "r_group_char_hh_latrine";
@@ -156,7 +107,7 @@ group ExtractGroup(source src : QuestionnaireResponse, target group : Group, tar
                 src -> floor.coding = c("http://www.mpower-social.com/codes", "hh_floor_material") as coding then {
                 src -> coding.display = 'Household Floor Material' "r_cp_cod_disp_hh_floor";
                 } "r_grp_hh_floor";
-                src -> floor.text = evaluate(src, $this.item.where(linkId = 'bc1d24fc-3254-4fac-f210-0b4f0c159dc9').answer.value.code) "r_vcc_hh_floor";
+                src -> floor.text = evaluate(hhFloorMaterial, $this.answer.value.code) "r_vcc_hh_floor";
             } "r_cp_cc_coding_hh_floor";
             hhFloorMaterial -> groupCharacteristic.exclude = false "r_cp_cc_exclude_hh_floor";
        } "r_group_char_hh_floor";
@@ -166,7 +117,7 @@ group ExtractGroup(source src : QuestionnaireResponse, target group : Group, tar
                 src -> wall.coding = c("http://www.mpower-social.com/codes", "hh_wall_material") as coding then {
                 src -> coding.display = 'Household Wall Material' "r_cp_cod_disp_hh_wall";
                 } "r_grp_hh_wall";
-                src -> wall.text = evaluate(src, $this.item.where(linkId = '7e1b63bb-c609-498f-d3f7-5b47c792acb1').answer.value.code) "r_vcc_hh_wall";
+                src -> wall.text = evaluate(hhWallMaterial, $this.answer.value.code) "r_vcc_hh_wall";
             } "r_cp_cc_coding_hh_wall";
             hhWallMaterial -> groupCharacteristic.exclude = false "r_cp_cc_exclude_hh_wall";
        } "r_group_char_hh_wall";
@@ -176,7 +127,7 @@ group ExtractGroup(source src : QuestionnaireResponse, target group : Group, tar
                 src -> roof.coding = c("http://www.mpower-social.com/codes", "hh_roof_material") as coding then {
                 src -> coding.display = 'Household Roof Material' "r_cp_cod_disp_hh_roof";
                 } "r_grp_hh_roof";
-                src -> roof.text = evaluate(src, $this.item.where(linkId = 'b513eafb-777d-4908-83b5-0d4836e061c6').answer.value.code) "r_vcc_hh_roof";
+                src -> roof.text = evaluate(hhRoofMaterial, $this.answer.value.code) "r_vcc_hh_roof";
             } "r_cp_cc_coding_hh_roof";
             hhRoofMaterial -> groupCharacteristic.exclude = false "r_cp_cc_exclude_hh_roof";
        } "r_group_char_hh_roof";
@@ -186,7 +137,7 @@ group ExtractGroup(source src : QuestionnaireResponse, target group : Group, tar
                 src -> homesteadLand.coding = c("http://www.mpower-social.com/codes", "hh_homestead_land") as coding then {
                 src -> coding.display = 'Household Homestead Land' "r_cp_cod_disp_hh_homestead_land";
                 } "r_grp_hh_homestead_land";
-                src -> homesteadLand.text = evaluate(src, $this.item.where(linkId = '859563b7-7509-4756-89c1-1e1286d12955').answer.value) "r_vcc_hh_homestead_land";
+                src -> homesteadLand.text = evaluate(hhHomesteadLand, $this.answer.value) "r_vcc_hh_homestead_land";
             } "r_cp_cc_coding_hh_homestead_land";
             hhHomesteadLand -> groupCharacteristic.exclude = false "r_cp_cc_exclude_hh_homestead_land";
        } "r_group_char_hh_homestead_land";
@@ -196,52 +147,33 @@ group ExtractGroup(source src : QuestionnaireResponse, target group : Group, tar
                 src -> cultivableLand.coding = c("http://www.mpower-social.com/codes", "hh_cultivable_land") as coding then {
                 src -> coding.display = 'Household Cultivable Land' "r_cp_cod_disp_hh_cultivable_land";
                 } "r_grp_hh_cultivable_land";
-                src -> cultivableLand.text = evaluate(src, $this.item.where(linkId = '462d5637-ce8f-4a45-9c63-185d3816bb94').answer.value) "r_vcc_hh_cultivable_land";
+                src -> cultivableLand.text = evaluate(hhCultivableLand, $this.answer.value) "r_vcc_hh_cultivable_land";
             } "r_cp_cc_coding_hh_cultivable_land";
             hhCultivableLand -> groupCharacteristic.exclude = false "r_cp_cc_exclude_hh_cultivable_land";
        } "r_group_char_hh_cultivable_land";
 
-       src then ExtractEncounter(src, group, bundle) "rule_encounter_reference";
+       src.item where(linkId ='018e238d-cdaa-484e-890c-e2745878ba72' and answer.value.code = 'yes') then {
+           src then ExtractObservation(src, group, bundle) "rule_encounter_reference";
+       } "r_group_extract_obs";
+    } "r_extract_group_id_and_update";
 }
 
-group ExtractEncounter(source src : QuestionnaireResponse, target group : Group, target bundle: Bundle) {
-    src -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then {
-        src -> encounter.id = uuid() "r_en_id";
-        src -> encounter.status = 'finished' "r_en_st";
-        src -> encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH", "home health") "r_en_cls";
-        src -> encounter.type = create('CodeableConcept') as concept then {
-            src -> concept.coding = c("http://snomed.info/sct", "184048005") as coding then {
-                src -> coding.display = 'Consultation' "r_en_cod_disp";
-            } "r_en_cc_cod";
-            src -> concept.text = 'Consultation' "r_en_typ_text";
-        } "r_en_typ";
-        src -> encounter.priority = create('CodeableConcept') as concept then {
-            src -> concept.coding = c("http://terminology.hl7.org/ValueSet/v3-ActPriority", "EL") as coding then {
-                src -> coding.display = 'elective' "r_en_cod_disp";
-            } "r_en_cc_cod";
-            src -> concept.text = 'elective' "r_en_prio_text";
-        } "r_en_prio";
-        src -> encounter.subject = create('Reference') as ref then {
-            src -> ref.reference = evaluate(src, 'Group/' + group.id) "rule_group_ref";
-        } "rule_encounter_subject";
-        // src -> encounter.participant = automatically set by code in questionnaire view model
-        src -> encounter.period = create('Period') as enPeriod then {
-            src -> enPeriod.start = evaluate(src, now()) "r_en_per_start";
-            src -> enPeriod.end = evaluate(src, now()) "r_en_per_end";
-        } "r_en_per";
-        src -> encounter.reasonCode = create('CodeableConcept') as concept then {
-            src -> concept.coding = c("http://www.mpower-social.com/", "family_registration") as coding then {
-                src -> coding.display = 'mPower Family Registration' "r_en_rc_cod_disp";
-            } "r_en_rc_cod";
-            src -> concept.text = 'mPower Family Registration' "r_en_text";
-        } "r_en_reason";
-        // serviceProvider = automatically added in code
-    } "r_en";
-}
-
-group ExtractFamilyCode(source src : Group, target concept: CodeableConcept) {
-    src -> concept.coding = c("https://www.snomed.org", "35359004") as coding then {
-        src -> coding.display = 'Family' "r_cp_cod_disp";
-
-    } "r_cp_cc_cod";
+group ExtractObservation(source src : QuestionnaireResponse, target group : Group, target bundle: Bundle) {
+    src.item as corona_members where(linkId ='9e95c28a-c75c-4f26-f988-639bb05e36d5' and answer.value.exists()) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_obs_id";
+            src -> obs.status = 'final' "r_obs_status";
+            src -> obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category','vital-signs', 'Vital Signs') "r_obs_category_1";
+            src -> obs.code = create('CodeableConcept') as concept then {
+                src -> concept.coding = c("http://snomed.info/sct", "840539006") as coding then {
+                    src -> coding.display = 'COVID-19' "r_cp_cod_disp";
+                } "r_cp_cc_cod";
+            } "r_obs_code";
+            src -> obs.subject = create('Reference') as ref then {
+                src -> ref.reference = evaluate(src, 'Group/' + group.id) "rule_group_ref";
+            } "r_obs_ref";
+            src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+            src -> obs.value = evaluate(corona_members, answer.value.count()) "r_obs_value";
+        } "r_obs";
+    } "check_and_extract_obs";
 }

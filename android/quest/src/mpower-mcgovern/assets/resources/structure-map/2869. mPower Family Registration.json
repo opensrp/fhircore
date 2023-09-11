@@ -459,7 +459,7 @@
           ]
         },
         {
-          "name": "rule_group_identifier_hh_serial",
+          "name": "rule_group_identifier_village_id",
           "source": [
             {
               "context": "src"
@@ -470,7 +470,7 @@
               "context": "group",
               "contextType": "variable",
               "element": "identifier",
-              "variable": "groupIdentifierHhSerial",
+              "variable": "groupIdentifierVillageId",
               "transform": "create",
               "parameter": [
                 {
@@ -481,7 +481,7 @@
           ],
           "rule": [
             {
-              "name": "rule_group_identifier_hh_serial_value",
+              "name": "rule_group_identifier_village_id_value",
               "source": [
                 {
                   "context": "src"
@@ -489,7 +489,7 @@
               ],
               "target": [
                 {
-                  "context": "groupIdentifierHhSerial",
+                  "context": "groupIdentifierVillageId",
                   "contextType": "variable",
                   "element": "value",
                   "transform": "evaluate",
@@ -498,14 +498,14 @@
                       "valueId": "src"
                     },
                     {
-                      "valueString": "$this.item.where(linkId = '30c16801-3742-4631-888e-0732bd748d77').answer.value"
+                      "valueString": "$this.item.where(linkId = 'b3c85de6-90a4-4e55-b13f-32e94abd29b2').answer.value"
                     }
                   ]
                 }
               ]
             },
             {
-              "name": "rule_patient_identifier_hh_serial_type",
+              "name": "rule_patient_identifier_village_id_type",
               "source": [
                 {
                   "context": "src"
@@ -513,7 +513,7 @@
               ],
               "target": [
                 {
-                  "context": "groupIdentifierHhSerial",
+                  "context": "groupIdentifierVillageId",
                   "contextType": "variable",
                   "element": "type",
                   "variable": "concept",
@@ -527,7 +527,7 @@
               ],
               "rule": [
                 {
-                  "name": "rule_patient_identifier_hh_serial_type_cod",
+                  "name": "rule_patient_identifier_village_id_type_cod",
                   "source": [
                     {
                       "context": "src"
@@ -545,14 +545,14 @@
                           "valueString": "http://www.mpower-social.com/"
                         },
                         {
-                          "valueString": "hh_serial"
+                          "valueString": "village_id"
                         }
                       ]
                     }
                   ],
                   "rule": [
                     {
-                      "name": "rule_patient_identifier_hh_serial_cod_display",
+                      "name": "rule_patient_identifier_village_id_cod_display",
                       "source": [
                         {
                           "context": "src"
@@ -566,7 +566,7 @@
                           "transform": "copy",
                           "parameter": [
                             {
-                              "valueString": "HH Serial"
+                              "valueString": "Village Id"
                             }
                           ]
                         }
@@ -577,7 +577,7 @@
               ]
             },
             {
-              "name": "rule_group_identifier_hh_serial_use",
+              "name": "rule_group_identifier_village_id_use",
               "source": [
                 {
                   "context": "src"
@@ -585,7 +585,7 @@
               ],
               "target": [
                 {
-                  "context": "groupIdentifierHhSerial",
+                  "context": "groupIdentifierVillageId",
                   "contextType": "variable",
                   "element": "use",
                   "transform": "copy",
@@ -606,7 +606,7 @@
               ],
               "target": [
                 {
-                  "context": "groupIdentifierHhSerial",
+                  "context": "groupIdentifierVillageId",
                   "contextType": "variable",
                   "element": "period",
                   "variable": "period",
@@ -968,13 +968,13 @@
           ]
         },
         {
-          "name": "r_group_char_v",
+          "name": "r_group_char_hh_serial",
           "source": [
             {
               "context": "src",
               "element": "item",
               "variable": "familyHome",
-              "condition": "(linkId = 'b3c85de6-90a4-4e55-b13f-32e94abd29b2')"
+              "condition": "(linkId = '30c16801-3742-4631-888e-0732bd748d77')"
             }
           ],
           "target": [
@@ -1004,7 +1004,7 @@
                   "context": "groupCharacteristic",
                   "contextType": "variable",
                   "element": "code",
-                  "variable": "villageCode",
+                  "variable": "hhSerial",
                   "transform": "create",
                   "parameter": [
                     {
@@ -1015,7 +1015,7 @@
               ],
               "rule": [
                 {
-                  "name": "r_grp_vcode",
+                  "name": "r_grp_hh_serial",
                   "source": [
                     {
                       "context": "src"
@@ -1023,7 +1023,7 @@
                   ],
                   "target": [
                     {
-                      "context": "villageCode",
+                      "context": "hhSerial",
                       "contextType": "variable",
                       "element": "coding",
                       "variable": "coding",
@@ -1033,7 +1033,7 @@
                           "valueString": "http://www.mpower-social.com/codes"
                         },
                         {
-                          "valueString": "hh_village"
+                          "valueString": "hh_serial"
                         }
                       ]
                     }
@@ -1054,7 +1054,7 @@
                           "transform": "copy",
                           "parameter": [
                             {
-                              "valueString": "Household Village"
+                              "valueString": "HH Serial"
                             }
                           ]
                         }
@@ -1063,7 +1063,7 @@
                   ]
                 },
                 {
-                  "name": "r_vcc_hh_village",
+                  "name": "r_vcc_hh_serial",
                   "source": [
                     {
                       "context": "src"
@@ -1071,16 +1071,16 @@
                   ],
                   "target": [
                     {
-                      "context": "villageCode",
+                      "context": "hhSerial",
                       "contextType": "variable",
                       "element": "text",
                       "transform": "evaluate",
                       "parameter": [
                         {
-                          "valueId": "src"
+                          "valueId": "familyHome"
                         },
                         {
-                          "valueString": "$this.item.where(linkId = 'b3c85de6-90a4-4e55-b13f-32e94abd29b2').answer.value"
+                          "valueString": "$this.answer.value"
                         }
                       ]
                     }
