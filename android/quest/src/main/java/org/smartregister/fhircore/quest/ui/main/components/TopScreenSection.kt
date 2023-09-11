@@ -31,6 +31,7 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
@@ -50,9 +51,11 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
 const val DRAWER_MENU = "Drawer Menu"
 const val SEARCH = "Search"
 const val CLEAR = "Clear"
+const val FILTER = "Filter"
 const val TITLE_ROW_TEST_TAG = "titleRowTestTag"
 const val TOP_ROW_ICON_TEST_TAG = "topRowIconTestTag"
 const val TOP_ROW_TEXT_TEST_TAG = "topRowTextTestTag"
+const val TOP_ROW_FILTER_ICON_TEST_TAG = "topRowFilterIconTestTag"
 const val OUTLINED_BOX_TEST_TAG = "outlinedBoxTestTag"
 const val TRAILING_ICON_TEST_TAG = "trailingIconTestTag"
 const val TRAILING_ICON_BUTTON_TEST_TAG = "trailingIconButtonTestTag"
@@ -68,11 +71,16 @@ fun TopScreenSection(
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (String) -> Unit,
   onTitleIconClick: () -> Unit,
+  onFilterIconClick: (() -> Unit)?
 ) {
-  Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
+  Column(modifier = modifier
+    .fillMaxWidth()
+    .background(MaterialTheme.colors.primary)) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
-      modifier = modifier.padding(vertical = 8.dp).testTag(TITLE_ROW_TEST_TAG),
+      modifier = modifier
+        .padding(vertical = 8.dp)
+        .testTag(TITLE_ROW_TEST_TAG),
     ) {
       IconButton(onClick = onTitleIconClick) {
         Icon(
@@ -89,8 +97,20 @@ fun TopScreenSection(
         text = title,
         fontSize = 20.sp,
         color = Color.White,
-        modifier = modifier.testTag(TOP_ROW_TEXT_TEST_TAG),
+        modifier = modifier
+          .weight(1f)
+          .testTag(TOP_ROW_TEXT_TEST_TAG)
       )
+      onFilterIconClick?.let {
+        IconButton(onClick = onFilterIconClick) {
+          Icon(
+            Icons.Filled.FilterAlt,
+            contentDescription = FILTER,
+            tint = Color.White,
+            modifier = modifier.testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
+          )
+        }
+      }
     }
     OutlinedTextField(
       colors = TextFieldDefaults.outlinedTextFieldColors(textColor = Color.DarkGray),
@@ -106,12 +126,12 @@ fun TopScreenSection(
         )
       },
       modifier =
-        modifier
-          .padding(start = 16.dp, bottom = 8.dp, end = 16.dp)
-          .fillMaxWidth()
-          .clip(RoundedCornerShape(size = 10.dp))
-          .background(Color.White)
-          .testTag(OUTLINED_BOX_TEST_TAG),
+      modifier
+        .padding(start = 16.dp, bottom = 8.dp, end = 16.dp)
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(size = 10.dp))
+        .background(Color.White)
+        .testTag(OUTLINED_BOX_TEST_TAG),
       leadingIcon = {
         Icon(
           imageVector = Icons.Filled.Search,
@@ -146,5 +166,6 @@ fun TopScreenSectionPreview() {
     searchText = "Eddy",
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
-  ) {}
+    onTitleIconClick = {},
+    onFilterIconClick = {})
 }
