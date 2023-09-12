@@ -570,8 +570,10 @@ constructor(
 
   suspend fun executeCql(subject: Resource, bundle: Bundle, questionnaire: Questionnaire) {
     questionnaire.cqfLibraryIds().forEach { libraryId ->
-      if (libraryId == "223758") { //Resource id for Library that calculates Z-score in ZEIR application
-        //Adding 4 basic resources which contain the Data needed for Z-score calculation
+      if (
+        libraryId == "223758"
+      ) { // Resource id for Library that calculates Z-score in ZEIR application
+        // Adding 4 basic resources which contain the Data needed for Z-score calculation
         val basicResourceIds = listOf("223754", "223755", "223756", "223757")
         basicResourceIds.forEach { resourceId ->
           val basicResource = defaultRepository.loadResource(resourceId) as Basic?
