@@ -34,8 +34,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
@@ -234,11 +236,14 @@ constructor(
             questionnaireConfig = questionnaireConfig,
           )
 
-          executeCql(
-            subject = subject,
-            bundle = newBundle,
-            questionnaire = questionnaire,
-          )
+          withContext(Dispatchers.IO) {
+            executeCql(
+              subject = subject,
+              bundle = newBundle,
+              questionnaire = questionnaire,
+            )
+          }
+
           fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
             questionnaireConfig = questionnaireConfig,
             subject = subject,
