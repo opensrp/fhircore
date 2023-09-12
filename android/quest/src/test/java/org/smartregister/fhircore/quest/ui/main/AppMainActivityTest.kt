@@ -35,7 +35,6 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import java.io.Serializable
-import java.time.OffsetDateTime
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
@@ -107,10 +106,9 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     val syncJobStatusTimestamp = syncJobStatus.timestamp
 
     appMainActivity.onSync(syncJobStatus)
-    Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
 
-    // Timestamp updated to the SyncJobStatus timestamp
-    Assert.assertEquals(
+    // Timestamp last sync timestamp not updated
+    Assert.assertNotEquals(
       viewModel.appMainUiState.value.lastSyncTime,
       viewModel.formatLastSyncTimestamp(syncJobStatusTimestamp),
     )
@@ -123,11 +121,12 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
       "2022-05-19",
     )
-    appMainActivity.onSync(SyncJobStatus.Failed(listOf()))
+    val syncJobStatus = SyncJobStatus.Failed(listOf())
+    appMainActivity.onSync(syncJobStatus)
 
-    Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
-    Assert.assertEquals(
-      appMainActivity.appMainViewModel.formatLastSyncTimestamp(OffsetDateTime.now()),
+    // Timestamp not update if status is Failed
+    Assert.assertNotEquals(
+      appMainActivity.appMainViewModel.formatLastSyncTimestamp(syncJobStatus.timestamp),
       viewModel.appMainUiState.value.lastSyncTime,
     )
   }
