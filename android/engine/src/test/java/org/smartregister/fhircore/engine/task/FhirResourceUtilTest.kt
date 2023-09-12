@@ -253,4 +253,30 @@ class FhirResourceUtilTest : RobolectricTest() {
 
     assertEquals(TaskStatus.READY, taskSlot.captured.status)
   }
+
+  @Test
+  fun testUpdateUpcomingTasksToDueHandlesWhenTaskResourcesToFilterByIsEmpty() {
+    val task =
+      Task().apply {
+        id = "test-task-id"
+        partOf = listOf(Reference("Task/parent-test-task-id"))
+        executionPeriod =
+          Period().apply {
+            start = Date().plusDays(-5)
+            status = TaskStatus.REQUESTED
+          }
+      }
+
+    coEvery { fhirEngine.get<Task>(any()).status.isIn(TaskStatus.COMPLETED) } returns true
+
+    coEvery { defaultRepository.update(any()) } just runs
+
+    assertEquals(TaskStatus.REQUESTED, task.status)
+
+    runBlocking { fhirResourceUtil.updateUpcomingTasksToDue(null, emptyList()) }
+
+    coVerify(inverse = true) { defaultRepository.update(task) }
+
+    assertEquals(TaskStatus.REQUESTED, task.status)
+  }
 }

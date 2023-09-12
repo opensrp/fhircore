@@ -106,7 +106,9 @@ constructor(
                   }
                 }
                 .onFailure {
-                  Timber.e("$basedOn CarePlan was not found. In consistent data ${it.message}")
+                  Timber.e(
+                    "$basedOn CarePlan was not found. In consistent data ${it.message}",
+                  )
                 }
             }
 
@@ -168,7 +170,9 @@ constructor(
                 val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.logicalId) }
                 apply
               }
-            filter(Resource.RES_ID, *filters.toTypedArray())
+            if (filters.isNotEmpty()) {
+              filter(Resource.RES_ID, *filters.toTypedArray())
+            }
           }
         }
         .map { it.resource }
@@ -207,7 +211,9 @@ constructor(
 
   suspend fun closeRelatedResources(resource: Resource) {
     val appRegistry =
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+        ConfigType.Application,
+      )
 
     appRegistry.eventWorkflows
       .filter { it.eventType == EventType.RESOURCE_CLOSURE }

@@ -165,19 +165,34 @@ class AppMainViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnEventUpdateSyncStates() {
-    val stateInProgress = mockk<SyncJobStatus.InProgress>()
-    appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(stateInProgress, "Some timestamp"))
-    Assert.assertEquals("Some timestamp", appMainViewModel.appMainUiState.value.lastSyncTime)
+    // Simulate sync state Failed
+    val syncJobStatusFailed = mockk<SyncJobStatus.Failed>()
+    val syncFailedTimeStamp = OffsetDateTime.now()
+    every { syncJobStatusFailed.timestamp } returns syncFailedTimeStamp
+    appMainViewModel.onEvent(
+      AppMainEvent.UpdateSyncState(
+        syncJobStatusFailed,
+        appMainViewModel.formatLastSyncTimestamp(syncJobStatusFailed.timestamp),
+      ),
+    )
+    Assert.assertEquals(
+      sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null),
+      appMainViewModel.appMainUiState.value.lastSyncTime,
+    )
 
     // Simulate sync state Finished
-    val timestamp = OffsetDateTime.now()
+    val syncFinishedTimestamp = OffsetDateTime.now()
+    val syncFinishedSyncJobStatus = mockk<SyncJobStatus.Finished>()
+    every { syncFinishedSyncJobStatus.timestamp } returns syncFinishedTimestamp
 
-    val stateFinished = mockk<SyncJobStatus.Finished>()
-    every { stateFinished.timestamp } returns timestamp
-
-    appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(stateFinished, "Some timestamp"))
+    appMainViewModel.onEvent(
+      AppMainEvent.UpdateSyncState(
+        syncFinishedSyncJobStatus,
+        appMainViewModel.formatLastSyncTimestamp(syncFinishedTimestamp),
+      ),
+    )
     Assert.assertEquals(
-      appMainViewModel.formatLastSyncTimestamp(timestamp),
+      appMainViewModel.formatLastSyncTimestamp(syncFinishedTimestamp),
       sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null),
     )
     coVerify { appMainViewModel.retrieveAppMainUiState() }
