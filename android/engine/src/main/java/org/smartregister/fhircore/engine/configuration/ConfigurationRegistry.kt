@@ -382,6 +382,7 @@ constructor(
                 ResourceType.PlanDefinition.name,
                 ResourceType.Library.name,
                 ResourceType.Measure.name,
+                ResourceType.Basic.name,
               )
           }
           .forEach { resourceGroup ->

@@ -37,6 +37,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.context.IWorkerContext
+import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
@@ -568,9 +569,17 @@ constructor(
       .all { it is Valid || it is NotValidated }
 
   suspend fun executeCql(subject: Resource, bundle: Bundle, questionnaire: Questionnaire) {
-    questionnaire.cqfLibraryIds().forEach {
+    questionnaire.cqfLibraryIds().forEach { libraryId ->
+      if (libraryId == "223758") { //Resource id for Library that calculates Z-score in ZEIR application
+        //Adding 4 basic resources which contain the Data needed for Z-score calculation
+        val basicResourceIds = listOf("223754", "223755", "223756", "223757")
+        basicResourceIds.forEach { resourceId ->
+          val basicResource = defaultRepository.loadResource(resourceId) as Basic?
+          bundle.addEntry(Bundle.BundleEntryComponent().setResource(basicResource))
+        }
+      }
       if (subject.resourceType == ResourceType.Patient) {
-        libraryEvaluator.runCqlLibrary(it, subject as Patient, bundle)
+        libraryEvaluator.runCqlLibrary(libraryId, subject as Patient, bundle)
       }
     }
   }
