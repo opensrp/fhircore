@@ -14,16 +14,22 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.userprofile
+package org.smartregister.fhircore.engine.ui.settings
 
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.Locale
 import javax.inject.Inject
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.CareTeam
+import org.hl7.fhir.r4.model.Location
+import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.Practitioner
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
@@ -31,17 +37,15 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.engine.ui.settings.ProfileData
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 
 @HiltViewModel
-class UserProfileViewModel
+class SettingsViewModel
 @Inject
 constructor(
   val syncBroadcaster: SyncBroadcaster,
@@ -54,13 +58,69 @@ constructor(
   val fhirResourceService: FhirResourceService,
 ) : ViewModel() {
 
-  val languages by lazy { configurationRegistry.fetchLanguages() }
-
   val onLogout = MutableLiveData<Boolean?>(null)
 
   val language = MutableLiveData<Language?>(null)
 
   val data = MutableLiveData<ProfileData>()
+
+  init {
+    viewModelScope.launch { fetchData() }
+  }
+
+  private suspend fun fetchData() {
+    var practitionerName: String? = null
+    sharedPreferencesHelper.read(
+        key = SharedPreferenceKey.PRACTITIONER_ID.name,
+        defaultValue = null
+      )
+      ?.let {
+        val practitioner = fhirEngine.get(ResourceType.Practitioner, it) as Practitioner
+        practitionerName = practitioner.nameFirstRep.nameAsSingleString
+      }
+
+    val organizationIds =
+      sharedPreferencesHelper.read<List<String>>(
+          key = ResourceType.Organization.name,
+          decodeWithGson = true
+        )
+        ?.map {
+          val resource = (fhirEngine.get(ResourceType.Organization, it) as Organization)
+          FieldData(resource.logicalId, resource.name)
+        }
+
+    val locationIds =
+      sharedPreferencesHelper.read<List<String>>(
+          key = ResourceType.Location.name,
+          decodeWithGson = true
+        )
+        ?.map {
+          val resource = (fhirEngine.get(ResourceType.Location, it) as Location)
+          FieldData(resource.logicalId, resource.name)
+        }
+
+    val careTeamIds =
+      sharedPreferencesHelper.read<List<String>>(
+          key = ResourceType.CareTeam.name,
+          decodeWithGson = true
+        )
+        ?.map {
+          val resource = (fhirEngine.get(ResourceType.CareTeam, it) as CareTeam)
+          FieldData(resource.logicalId, resource.name)
+        }
+
+    val isValid = organizationIds != null || locationIds != null || careTeamIds != null
+
+    data.value =
+      ProfileData(
+        userName = practitionerName ?: "",
+        organisations = organizationIds ?: listOf(),
+        locations = locationIds ?: listOf(),
+        careTeams = careTeamIds ?: listOf(),
+        isUserValid = isValid,
+        practitionerDetails = null
+      )
+  }
 
   fun runSync() {
     syncBroadcaster.runSync()
@@ -77,17 +137,4 @@ constructor(
     sharedPreferencesHelper.read<Practitioner>(key = LOGGED_IN_PRACTITIONER, decodeWithGson = true)
       ?.nameFirstRep
       ?.nameAsSingleString
-
-  fun allowSwitchingLanguages() = languages.size > 1
-
-  fun loadSelectedLanguage(): String =
-    Locale.forLanguageTag(
-        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.UK.toLanguageTag())!!
-      )
-      .displayName
-
-  fun setLanguage(language: Language) {
-    sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, language.tag)
-    this.language.postValue(language)
-  }
 }

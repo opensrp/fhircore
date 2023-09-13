@@ -27,7 +27,7 @@ import org.dtree.fhircore.dataclerk.ui.home.HomeScreen
 import org.dtree.fhircore.dataclerk.ui.home.HomeViewModel
 import org.dtree.fhircore.dataclerk.ui.patient.PatientScreen
 import org.dtree.fhircore.dataclerk.ui.search.SearchScreen
-import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
+import org.smartregister.fhircore.engine.ui.settings.SettingsScreen
 
 @Composable
 fun AppScreen(
@@ -52,6 +52,6 @@ fun AppScreen(
     ) { PatientScreen(navController, appMainViewModel = appMainViewModel) }
 
     composable("search") { SearchScreen(navHostController = navController) }
-    composable("info") { UserProfileScreen(navController = navController) }
+    composable("info") { SettingsScreen(navController = navController) }
   }
 }

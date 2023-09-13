@@ -32,20 +32,26 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Sync
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,49 +69,46 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.settings.DevMenu
+import org.smartregister.fhircore.engine.ui.settings.DevViewModel
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
-import org.smartregister.fhircore.engine.ui.userprofile.settings.InfoCard
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun UserProfileScreen(
   modifier: Modifier = Modifier,
   navController: NavController? = null,
-  userProfileViewModel: UserProfileViewModel = hiltViewModel()
+  userProfileViewModel: UserProfileViewModel = hiltViewModel(),
+  devViewModel: DevViewModel = hiltViewModel()
 ) {
 
   val username by remember { mutableStateOf(userProfileViewModel.retrieveUsername()) }
   var expanded by remember { mutableStateOf(false) }
   val context = LocalContext.current
+  val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+  val scope = rememberCoroutineScope()
 
-  Scaffold(topBar = {
-    TopAppBar(
-      title = {
-
-      },
-      navigationIcon = {
-        IconButton(onClick = {
-          navController?.popBackStack()
-        }) {
-          Icon(Icons.Default.ArrowBack, "")
+  Scaffold(
+    topBar = {
+      TopAppBar(
+        title = {},
+        navigationIcon = {
+          IconButton(onClick = { navController?.popBackStack() }) {
+            Icon(Icons.Default.ArrowBack, "")
+          }
         }
-      }
-    )
-  }) {paddingValues ->
-    Column(modifier = modifier
-      .padding(paddingValues)
-      .padding(vertical = 20.dp)) {
+      )
+    }
+  ) { paddingValues ->
+    Column(modifier = modifier.padding(paddingValues).padding(vertical = 20.dp)) {
       if (!username.isNullOrEmpty()) {
-        Column(modifier = modifier
-          .fillMaxWidth()
-          .padding(horizontal = 20.dp)) {
+        Column(modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
           Box(
-            modifier = modifier
-              .clip(CircleShape)
-              .background(color = LighterBlue)
-              .size(80.dp),
+            modifier = modifier.clip(CircleShape).background(color = LighterBlue).size(80.dp),
             contentAlignment = Alignment.Center
           ) {
             Text(
@@ -124,7 +127,6 @@ fun UserProfileScreen(
           )
         }
       }
-      InfoCard(viewModel = userProfileViewModel)
       Divider(color = DividerColor)
       UserProfileRow(
         icon = Icons.Rounded.Sync,
@@ -132,15 +134,26 @@ fun UserProfileScreen(
         clickListener = userProfileViewModel::runSync,
         modifier = modifier
       )
+      ModalBottomSheetLayout(
+        sheetState = sheetState,
+        sheetContent = { DevMenu(viewModel = devViewModel) }
+      ) {
+        UserProfileRow(
+          icon = Icons.Rounded.BugReport,
+          text = "Dev Menu",
+          clickListener = { scope.launch { sheetState.show() } },
+          modifier = modifier
+        )
+      }
 
       // Language option
       if (userProfileViewModel.allowSwitchingLanguages()) {
         Row(
           modifier =
-          modifier
-            .fillMaxWidth()
-            .clickable { expanded = true }
-            .padding(vertical = 16.dp, horizontal = 20.dp),
+            modifier
+              .fillMaxWidth()
+              .clickable { expanded = true }
+              .padding(vertical = 16.dp, horizontal = 20.dp),
           horizontalArrangement = Arrangement.SpaceBetween
         ) {
           Row(modifier = Modifier.align(Alignment.CenterVertically)) {
@@ -190,7 +203,6 @@ fun UserProfileScreen(
       )
     }
   }
-
 }
 
 @Composable
@@ -202,10 +214,10 @@ fun UserProfileRow(
 ) {
   Row(
     modifier =
-    modifier
-      .fillMaxWidth()
-      .clickable { clickListener() }
-      .padding(vertical = 16.dp, horizontal = 20.dp),
+      modifier
+        .fillMaxWidth()
+        .clickable { clickListener() }
+        .padding(vertical = 16.dp, horizontal = 20.dp),
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
     Row {
