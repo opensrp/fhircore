@@ -16,17 +16,41 @@
 
 package org.smartregister.fhircore.engine.ui.settings
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
 @Composable
 fun DevMenu(viewModel: DevViewModel) {
-  Column(modifier = Modifier.padding(16.dp)) {
-    Button(onClick = { viewModel.fetchDetails() }) { Text(text = "Test Fetch") }
-  }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    Column(
+        verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth()
+    ) {
+        Button(modifier = Modifier.fillMaxWidth(), onClick = {
+            scope.launch {
+                viewModel.createResourceReport(context)
+            }
+        }) {
+            Text(
+                text = "Report Resources"
+            )
+        }
+        Button(modifier = Modifier.fillMaxWidth(), onClick = { viewModel.fetchDetails() }) {
+            Text(
+                text = "Test Fetch"
+            )
+        }
+    }
 }
