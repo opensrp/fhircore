@@ -29,5 +29,4 @@ data class ProfileData(
   val practitionerDetails: PractitionerDetails?
 )
 
-@ExcludeFromJacocoGeneratedReport
-data class FieldData(val id: String, val value: String)
+@ExcludeFromJacocoGeneratedReport data class FieldData(val id: String, val value: String)

@@ -177,15 +177,19 @@ constructor(
             }
           )
         } else {
-          if (accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)) {
-            _showProgressBar.postValue(false)
-            updateNavigateHome(true)
-          } else {
-            _showProgressBar.postValue(false)
-            _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
-          }
+          verifyCredentials(trimmedUsername, passwordAsCharArray)
         }
       }
+    }
+  }
+
+  private fun verifyCredentials(username: String, password: CharArray) {
+    if (accountAuthenticator.validateLoginCredentials(username, password)) {
+      _showProgressBar.postValue(false)
+      updateNavigateHome(true)
+    } else {
+      _showProgressBar.postValue(false)
+      _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
     }
   }
 
@@ -203,8 +207,13 @@ constructor(
     val practitionerDetails =
       sharedPreferences.read(key = SharedPreferenceKey.PRACTITIONER_ID.name, defaultValue = null)
     if (tokenAuthenticator.sessionActive() && practitionerDetails != null) {
-      _showProgressBar.postValue(false)
-      updateNavigateHome(true)
+      val existingCredentials = secureSharedPreference.retrieveCredentials()
+      if (existingCredentials != null && !username.equals(existingCredentials.username, true)) {
+        _showProgressBar.postValue(false)
+        _loginErrorState.postValue(LoginErrorState.MULTI_USER_LOGIN_ATTEMPT)
+        return
+      }
+      verifyCredentials(username, password)
     } else {
       // Prevent user from logging in with different credentials
       val existingCredentials = secureSharedPreference.retrieveCredentials()
