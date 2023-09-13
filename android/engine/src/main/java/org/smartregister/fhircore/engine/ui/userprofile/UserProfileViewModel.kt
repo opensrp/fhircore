@@ -19,20 +19,14 @@ package org.smartregister.fhircore.engine.ui.userprofile
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.Practitioner
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.engine.ui.settings.ProfileData
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -48,10 +42,7 @@ constructor(
   val accountAuthenticator: AccountAuthenticator,
   val secureSharedPreference: SecureSharedPreference,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val configurationRegistry: ConfigurationRegistry,
-  val fhirEngine: FhirEngine,
-  val keycloakService: KeycloakService,
-  val fhirResourceService: FhirResourceService,
+  val configurationRegistry: ConfigurationRegistry
 ) : ViewModel() {
 
   val languages by lazy { configurationRegistry.fetchLanguages() }
@@ -59,8 +50,6 @@ constructor(
   val onLogout = MutableLiveData<Boolean?>(null)
 
   val language = MutableLiveData<Language?>(null)
-
-  val data = MutableLiveData<ProfileData>()
 
   fun runSync() {
     syncBroadcaster.runSync()
@@ -73,10 +62,7 @@ constructor(
     }
   }
 
-  fun retrieveUsername(): String? =
-    sharedPreferencesHelper.read<Practitioner>(key = LOGGED_IN_PRACTITIONER, decodeWithGson = true)
-      ?.nameFirstRep
-      ?.nameAsSingleString
+  fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
   fun allowSwitchingLanguages() = languages.size > 1
 
