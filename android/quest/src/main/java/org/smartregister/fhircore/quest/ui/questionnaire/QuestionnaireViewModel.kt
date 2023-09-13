@@ -236,7 +236,7 @@ constructor(
             questionnaireConfig = questionnaireConfig,
           )
 
-          withContext(Dispatchers.IO) {
+          withContext(dispatcherProvider.io()) {
             executeCql(
               subject = subject,
               bundle = newBundle,
