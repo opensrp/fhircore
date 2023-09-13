@@ -26,6 +26,9 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import com.google.android.fhir.testing.jsonParser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.File
+import java.io.FileWriter
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.StructureMap
@@ -39,81 +42,92 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
 import org.smartregister.model.practitioner.PractitionerDetails
-import java.io.File
-import java.io.FileWriter
-import javax.inject.Inject
 
 @HiltViewModel
 class DevViewModel
 @Inject
 constructor(
-    val syncBroadcaster: SyncBroadcaster,
-    val accountAuthenticator: AccountAuthenticator,
-    val secureSharedPreference: SecureSharedPreference,
-    val sharedPreferencesHelper: SharedPreferencesHelper,
-    val configurationRegistry: ConfigurationRegistry,
-    val keycloakService: KeycloakService,
-    val fhirResourceService: FhirResourceService,
-    val fhirEngine: FhirEngine,
+  val syncBroadcaster: SyncBroadcaster,
+  val accountAuthenticator: AccountAuthenticator,
+  val secureSharedPreference: SecureSharedPreference,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val configurationRegistry: ConfigurationRegistry,
+  val keycloakService: KeycloakService,
+  val fhirResourceService: FhirResourceService,
+  val fhirEngine: FhirEngine,
 ) : ViewModel() {
 
-    suspend fun createResourceReport(context: Context) {
-        try {
-            generateReport(context)
-            val file = File(context.filesDir, "log_data.txt")
-            val fileUri =
-                FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+  suspend fun createResourceReport(context: Context) {
+    try {
+      generateReport(context)
+      val file = File(context.filesDir, "log_data.txt")
+      val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
 
-            val shareIntent = Intent(Intent.ACTION_SEND)
-            shareIntent.type = "text/plain"
-            shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
-            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+      val shareIntent = Intent(Intent.ACTION_SEND)
+      shareIntent.type = "text/plain"
+      shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
+      shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
-            val chooser = Intent.createChooser(shareIntent, "Share Log Data")
+      val chooser = Intent.createChooser(shareIntent, "Share Log Data")
 
-            if (shareIntent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(chooser)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
+      if (shareIntent.resolveActivity(context.packageManager) != null) {
+        context.startActivity(chooser)
+      }
+    } catch (e: Exception) {
+      e.printStackTrace()
+    }
+  }
+
+  private suspend fun generateReport(context: Context) {
+    val data = getResourcesToReport()
+    var log = ""
+
+    data.entries.forEach { group ->
+      log =
+        "${log}Id,${group.key},Date" +
+          "\n" +
+          group.value.joinToString(separator = "\n") { "${it.id},${it.version},${it.date}" } +
+          "" +
+          "\n-----------------------------------------------------\n"
+    }
+
+    val fileName = "log_data.txt"
+    val file = File(context.filesDir, fileName)
+    val fileWriter = FileWriter(file)
+    fileWriter.write(log)
+    fileWriter.close()
+  }
+
+  suspend fun getResourcesToReport(): Map<String, List<ResourceField>> {
+    val questionnaire =
+      fhirEngine.search<Questionnaire> {}.map {
+        ResourceField(it.logicalId, it.meta.versionId, it.meta.lastUpdated.asDdMmmYyyy())
+      }
+    val structureMaps =
+      fhirEngine.search<StructureMap> {}.map {
+        ResourceField(it.logicalId, it.meta.versionId, it.meta.lastUpdated.asDdMmmYyyy())
+      }
+
+    return mapOf(Pair("Questionnaire", questionnaire), Pair("StructureMap", structureMaps))
+  }
+
+  fun fetchDetails() {
+    try {
+      viewModelScope.launch {
+        val userInfo = keycloakService.fetchUserInfo().body()
+        if (userInfo != null && !userInfo.keycloakUuid.isNullOrEmpty()) {
+          val bundle =
+            fhirResourceService.getResource(url = userInfo.keycloakUuid!!.practitionerEndpointUrl())
+          val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
+
+          val data = jsonParser.encodeResourceToString(practitionerDetails)
+          println(data)
         }
+      }
+    } catch (e: Exception) {
+      println(e)
     }
-
-    private suspend fun generateReport(context: Context) {
-
-        val questionnaire = fhirEngine.search<Questionnaire> { }
-        val structureMaps = fhirEngine.search<StructureMap> { }
-
-        val logs = "Id,Questionnaire,Date\n" +
-                questionnaire.joinToString(separator = "\n") { "${it.logicalId},${it.meta.versionId},${it.meta.lastUpdated.asDdMmmYyyy()}" } +
-                "\n-----------------------------------------------------" +
-                "" +
-                "Id,StructureMap,Data\n" +
-                structureMaps.joinToString(separator = "\n") { "${it.logicalId},${it.meta.versionId},${it.meta.lastUpdated.asDdMmmYyyy()}" }
-
-        val fileName = "log_data.txt"
-        val file = File(context.filesDir, fileName)
-        val fileWriter = FileWriter(file)
-        fileWriter.write(logs)
-        fileWriter.close()
-
-    }
-
-    fun fetchDetails() {
-        try {
-            viewModelScope.launch {
-                val userInfo = keycloakService.fetchUserInfo().body()
-                if (userInfo != null && !userInfo.keycloakUuid.isNullOrEmpty()) {
-                    val bundle =
-                        fhirResourceService.getResource(url = userInfo.keycloakUuid!!.practitionerEndpointUrl())
-                    val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
-
-                    val data = jsonParser.encodeResourceToString(practitionerDetails)
-                    println(data)
-                }
-            }
-        } catch (e: Exception) {
-            println(e)
-        }
-    }
+  }
 }
+
+data class ResourceField(val id: String, val version: String, val date: String)

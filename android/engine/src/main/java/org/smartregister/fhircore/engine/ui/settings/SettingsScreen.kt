@@ -42,9 +42,7 @@ import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,6 +55,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.settings.views.DevMenu
+import org.smartregister.fhircore.engine.ui.settings.views.ViewResourceReport
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 
@@ -69,47 +69,61 @@ fun SettingsScreen(
   devViewModel: DevViewModel = hiltViewModel()
 ) {
   val context = LocalContext.current
-  val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+  val devMenuSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+  val viewResSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
   val scope = rememberCoroutineScope()
+
   ModalBottomSheetLayout(
-    sheetState = sheetState,
-    sheetContent = { DevMenu(viewModel = devViewModel) }
+    sheetState = viewResSheetState,
+    sheetContent = { ViewResourceReport(devViewModel) }
   ) {
-    Scaffold(
-      topBar = {
-        TopAppBar(
-          title = {},
-          navigationIcon = {
-            IconButton(onClick = { navController?.popBackStack() }) {
-              Icon(Icons.Default.ArrowBack, "")
-            }
+    ModalBottomSheetLayout(
+      sheetState = devMenuSheetState,
+      sheetContent = {
+        DevMenu(viewModel = devViewModel) {
+          scope.launch {
+            devMenuSheetState.hide()
+            viewResSheetState.show()
           }
-        )
+        }
       }
-    ) { paddingValues ->
-      Column(modifier = modifier.padding(paddingValues).padding(vertical = 20.dp)) {
-        InfoCard(viewModel = settingsViewModel)
-        Divider(color = DividerColor)
-        UserProfileRow(
-          icon = Icons.Rounded.Sync,
-          text = stringResource(id = R.string.sync),
-          clickListener = settingsViewModel::runSync,
-          modifier = modifier
-        )
+    ) {
+      Scaffold(
+        topBar = {
+          TopAppBar(
+            title = {},
+            navigationIcon = {
+              IconButton(onClick = { navController?.popBackStack() }) {
+                Icon(Icons.Default.ArrowBack, "")
+              }
+            }
+          )
+        }
+      ) { paddingValues ->
+        Column(modifier = modifier.padding(paddingValues).padding(vertical = 20.dp)) {
+          InfoCard(viewModel = settingsViewModel)
+          Divider(color = DividerColor)
+          UserProfileRow(
+            icon = Icons.Rounded.Sync,
+            text = stringResource(id = R.string.sync),
+            clickListener = settingsViewModel::runSync,
+            modifier = modifier
+          )
 
-        UserProfileRow(
-          icon = Icons.Rounded.BugReport,
-          text = "Dev Menu",
-          clickListener = { scope.launch { sheetState.show() } },
-          modifier = modifier
-        )
+          UserProfileRow(
+            icon = Icons.Rounded.BugReport,
+            text = "Dev Menu",
+            clickListener = { scope.launch { devMenuSheetState.show() } },
+            modifier = modifier
+          )
 
-        UserProfileRow(
-          icon = Icons.Rounded.Logout,
-          text = stringResource(id = R.string.logout),
-          clickListener = { settingsViewModel.logoutUser(context) },
-          modifier = modifier
-        )
+          UserProfileRow(
+            icon = Icons.Rounded.Logout,
+            text = stringResource(id = R.string.logout),
+            clickListener = { settingsViewModel.logoutUser(context) },
+            modifier = modifier
+          )
+        }
       }
     }
   }

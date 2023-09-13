@@ -35,14 +35,12 @@ import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Sync
@@ -69,9 +67,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.ui.settings.DevMenu
 import org.smartregister.fhircore.engine.ui.settings.DevViewModel
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
@@ -134,17 +130,6 @@ fun UserProfileScreen(
         clickListener = userProfileViewModel::runSync,
         modifier = modifier
       )
-      ModalBottomSheetLayout(
-        sheetState = sheetState,
-        sheetContent = { DevMenu(viewModel = devViewModel) }
-      ) {
-        UserProfileRow(
-          icon = Icons.Rounded.BugReport,
-          text = "Dev Menu",
-          clickListener = { scope.launch { sheetState.show() } },
-          modifier = modifier
-        )
-      }
 
       // Language option
       if (userProfileViewModel.allowSwitchingLanguages()) {

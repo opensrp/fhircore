@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.settings
+package org.smartregister.fhircore.engine.ui.settings.views
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,29 +28,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.ui.settings.DevViewModel
 
 @Composable
-fun DevMenu(viewModel: DevViewModel) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    Column(
-        verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth()
-    ) {
-        Button(modifier = Modifier.fillMaxWidth(), onClick = {
-            scope.launch {
-                viewModel.createResourceReport(context)
-            }
-        }) {
-            Text(
-                text = "Report Resources"
-            )
-        }
-        Button(modifier = Modifier.fillMaxWidth(), onClick = { viewModel.fetchDetails() }) {
-            Text(
-                text = "Test Fetch"
-            )
-        }
+fun DevMenu(viewModel: DevViewModel, viewRes: () -> Unit) {
+  val context = LocalContext.current
+  val scope = rememberCoroutineScope()
+  Column(
+    verticalArrangement = Arrangement.spacedBy(6.dp),
+    modifier = Modifier.padding(16.dp).fillMaxWidth()
+  ) {
+    Button(
+      modifier = Modifier.fillMaxWidth(),
+      onClick = { scope.launch { viewModel.createResourceReport(context) } }
+    ) { Text(text = "Export Report Resources") }
+    Button(modifier = Modifier.fillMaxWidth(), onClick = viewRes) {
+      Text(text = "View Report Resources")
     }
+    Button(modifier = Modifier.fillMaxWidth(), onClick = { viewModel.fetchDetails() }) {
+      Text(text = "Test Fetch")
+    }
+  }
 }
