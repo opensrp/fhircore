@@ -51,8 +51,10 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
@@ -65,6 +67,7 @@ class SyncBroadcasterTest : RobolectricTest() {
 
   private lateinit var syncBroadcaster: SyncBroadcaster
   private lateinit var workManager: WorkManager
+  private lateinit var tokenAuthenticator: TokenAuthenticator
   private val sharedSyncStatus: MutableSharedFlow<SyncJobStatus> = MutableSharedFlow()
   private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   private lateinit var tracer: PerformanceReporter
@@ -75,6 +78,9 @@ class SyncBroadcasterTest : RobolectricTest() {
     mockkStatic(WorkManager::class)
     workManager = mockk()
     tracer = mockk()
+    tokenAuthenticator = mockk()
+
+    every { tokenAuthenticator.sessionActive() } returns true
 
     val mutableLiveData = MutableLiveData(listOf<WorkInfo>())
     every { WorkManager.getInstance(appContext) } returns workManager
@@ -103,6 +109,7 @@ class SyncBroadcasterTest : RobolectricTest() {
         sharedSyncStatus = sharedSyncStatus,
         dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
         tracer = tracer,
+        tokenAuthenticator = tokenAuthenticator,
         sharedPreferencesHelper = sharedPreferencesHelper,
         appContext = mockk(relaxed = true)
       )
@@ -201,6 +208,7 @@ class SyncBroadcasterTest : RobolectricTest() {
         dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
         appContext = context,
         tracer = FakePerformanceReporter(),
+        tokenAuthenticator = tokenAuthenticator,
         sharedPreferencesHelper = sharedPreferencesHelper
       )
     val collectedSyncStatusList = mutableListOf<SyncJobStatus>()
@@ -209,7 +217,49 @@ class SyncBroadcasterTest : RobolectricTest() {
         sharedSyncStatus.toList(collectedSyncStatusList)
       }
     syncBroadcaster.runSync { false }
-    Assert.assertTrue(collectedSyncStatusList.first() is SyncJobStatus.Failed)
+    val syncStatus = collectedSyncStatusList.first()
+    Assert.assertTrue(syncStatus is SyncJobStatus.Failed)
+    syncStatus as SyncJobStatus.Failed
+    Assert.assertEquals(
+      context.getString(R.string.unable_to_sync),
+      syncStatus.exceptions.first().exception.message
+    )
+    job.cancel()
+  }
+
+  @Test
+  fun shouldEmitSyncFailedWhenNetworkAndTokenSessionIsNotActive() = runTest {
+    val configurationRegistry = Faker.buildTestConfigurationRegistry()
+    val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
+    val configService = AppConfigService(context = context)
+    val sharedSyncStatus: MutableSharedFlow<SyncJobStatus> = MutableSharedFlow()
+    val tokenAuthenticatorAlt = mockk<TokenAuthenticator>()
+    every { tokenAuthenticatorAlt.sessionActive() } returns false
+    syncBroadcaster =
+      SyncBroadcaster(
+        configurationRegistry,
+        configService,
+        fhirEngine = mockk(),
+        sharedSyncStatus,
+        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
+        appContext = context,
+        tracer = FakePerformanceReporter(),
+        tokenAuthenticator = tokenAuthenticatorAlt,
+        sharedPreferencesHelper = sharedPreferencesHelper
+      )
+    val collectedSyncStatusList = mutableListOf<SyncJobStatus>()
+    val job =
+      launch(UnconfinedTestDispatcher(testScheduler)) {
+        sharedSyncStatus.toList(collectedSyncStatusList)
+      }
+    syncBroadcaster.runSync { true }
+    val syncStatus = collectedSyncStatusList.first()
+    Assert.assertTrue(syncStatus is SyncJobStatus.Failed)
+    syncStatus as SyncJobStatus.Failed
+    Assert.assertEquals(
+      context.getString(R.string.sync_authentication_error),
+      syncStatus.exceptions.first().exception.message
+    )
     job.cancel()
   }
 }

@@ -43,6 +43,7 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -63,6 +64,7 @@ class UserProfileViewModelTest : RobolectricTest() {
   lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
+  var tokenAuthenticator: TokenAuthenticator = mockk()
 
   private lateinit var configService: ConfigService
 
@@ -81,6 +83,8 @@ class UserProfileViewModelTest : RobolectricTest() {
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
 
+    every { tokenAuthenticator.sessionActive() } returns true
+
     syncBroadcaster =
       SyncBroadcaster(
         configurationRegistry,
@@ -90,6 +94,7 @@ class UserProfileViewModelTest : RobolectricTest() {
         dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
         appContext = context,
         tracer = mockk(),
+        tokenAuthenticator = tokenAuthenticator,
         sharedPreferencesHelper = sharedPreferencesHelper
       )
     userProfileViewModel =

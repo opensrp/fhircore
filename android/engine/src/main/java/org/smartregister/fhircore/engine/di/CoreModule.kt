@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.dao.HivRegisterDao
+import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.domain.repository.PatientDao
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
@@ -51,6 +52,7 @@ class CoreModule {
     configService: ConfigService,
     fhirEngine: FhirEngine,
     tracer: PerformanceReporter,
+    tokenAuthenticator: TokenAuthenticator,
     sharedPreferencesHelper: SharedPreferencesHelper
   ) =
     SyncBroadcaster(
@@ -59,6 +61,7 @@ class CoreModule {
       fhirEngine = fhirEngine,
       appContext = context,
       tracer = tracer,
+      tokenAuthenticator = tokenAuthenticator,
       sharedPreferencesHelper = sharedPreferencesHelper
     )
 

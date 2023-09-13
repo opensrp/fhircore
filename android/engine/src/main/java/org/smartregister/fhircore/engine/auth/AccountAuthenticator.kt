@@ -28,14 +28,12 @@ import android.os.Handler
 import android.os.Looper
 import androidx.core.os.bundleOf
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.net.UnknownHostException
 import java.util.Locale
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator.Companion.AUTH_TOKEN_TYPE
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import retrofit2.HttpException
 import timber.log.Timber
 
 class AccountAuthenticator
@@ -88,10 +86,7 @@ constructor(
             tokenAuthenticator.refreshToken(refreshToken)
           } catch (ex: Exception) {
             Timber.e(ex)
-            when (ex) {
-              is HttpException, is UnknownHostException -> ""
-              else -> throw ex
-            }
+            "" // Set to EMPTY, so as to redirect to log in screen, and try again
           }
       }
     }
