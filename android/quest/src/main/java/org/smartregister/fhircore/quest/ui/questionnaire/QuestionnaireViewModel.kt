@@ -575,6 +575,7 @@ constructor(
 
   suspend fun executeCql(subject: Resource, bundle: Bundle, questionnaire: Questionnaire) {
     questionnaire.cqfLibraryIds().forEach { libraryId ->
+      // TODO Refactor/Remove as per the issue: https://github.com/opensrp/fhircore/issues/2747
       if (
         libraryId == "223758"
       ) { // Resource id for Library that calculates Z-score in ZEIR application
