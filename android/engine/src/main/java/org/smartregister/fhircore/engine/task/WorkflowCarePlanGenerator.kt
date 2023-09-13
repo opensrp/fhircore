@@ -101,7 +101,7 @@ constructor(
    * Knowledge resources are loaded from [FhirEngine] and installed so that they may be used when
    * running $apply on a [PlanDefinition]
    */
-  private suspend fun loadCarePlanResourcesFromDb() {
+  private suspend fun loadPlanDefinitionResourcesFromDb() {
     // Load Library resources
     val availableCqlLibraries = fhirEngine.search<Library> {}
     val availablePlanDefinitions = fhirEngine.search<PlanDefinition> {}
@@ -132,35 +132,15 @@ constructor(
     val planDefinitionId = IdType(planDefinition.id).idPart
 
     if (cqlLibraryIdList.isEmpty()) {
-      loadCarePlanResourcesFromDb()
+      loadPlanDefinitionResourcesFromDb()
     }
 
     val carePlanProposal =
       fhirOperator.generateCarePlan(planDefinitionId = planDefinitionId, patientId = patientId)
         as CarePlan
 
-    // Fetch existing CarePlan of record for the Patient or create a new one if it does not exist
-    // val carePlanOfRecord = getCarePlanOfRecordForPatient(patient)
-
     // Accept the proposed (transient) CarePlan by default and add tasks to the CarePlan of record
     acceptCarePlan(carePlanProposal, output)
-  }
-
-  /** Fetch the [CarePlan] of record for a given [Patient], if it exists, otherwise create it */
-  private suspend fun getCarePlanOfRecordForPatient(patient: Patient): CarePlan {
-    val patientId = IdType(patient.id).idPart
-    val existingCarePlans = fhirEngine.search("CarePlan?subject=$patientId")
-
-    val carePlanOfRecord = CarePlan()
-    return if (existingCarePlans.isEmpty()) {
-      carePlanOfRecord.status = CarePlan.CarePlanStatus.ACTIVE
-      carePlanOfRecord.subject = Reference(patient)
-      carePlanOfRecord.description = "CarePlan of Record"
-      fhirEngine.create(carePlanOfRecord)
-      carePlanOfRecord
-    } else {
-      existingCarePlans.first() as CarePlan
-    }
   }
 
   /** Update the [CarePlan] to include a reference to the FHIR-define protocol or guideline */
@@ -209,21 +189,13 @@ constructor(
    * @param requestResourceConfigs Application-specific configurations to be applied on the created
    *   request resources
    */
-  private suspend fun createProposedRequestResources(
-    resourceList: List<Resource>,
-    // requestResourceConfigs: List<RequestResourceConfig>
-    ): List<Resource> {
+  private suspend fun createProposedRequestResources(resourceList: List<Resource>): List<Resource> {
     val createdRequestResources = ArrayList<Resource>()
     for (resource in resourceList) {
       when (resource.fhirType()) {
         "Task" -> {
-          val task = resource as Task
-          /*taskManager.updateRequestResource(
-            resource as Task,
-            requestResourceConfigs.firstOrNull { it.resourceType == "Task" }!!
-          )*/
-          fhirEngine.create(task)
-          createdRequestResources.add(task)
+          fhirEngine.create(resource)
+          createdRequestResources.add(resource)
         }
         "ServiceRequest" -> TODO("Not supported yet")
         "MedicationRequest" -> TODO("Not supported yet")
