@@ -46,14 +46,15 @@ import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.MeasureReport.MeasureReportType
@@ -80,6 +81,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGeneratedMeasureReports
@@ -105,8 +107,8 @@ class MeasureReportViewModelTest : RobolectricTest() {
 
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
 
+  @Inject lateinit var fhirEngine: FhirEngine
   private val measureReportRepository: MeasureReportRepository = mockk()
-  private val fhirEngine: FhirEngine = mockk()
   private val fhirOperator: FhirOperator = mockk()
   private val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
   private val measureReportPagingSource = mockk<MeasureReportPagingSource>()
@@ -115,7 +117,6 @@ class MeasureReportViewModelTest : RobolectricTest() {
   private val reportId = "supplyChainMeasureReport"
   private val application: Context = ApplicationProvider.getApplicationContext()
   private lateinit var measureReportViewModel: MeasureReportViewModel
-  private val testDispatcher = TestCoroutineDispatcher()
 
   @Before
   fun setUp() {
@@ -298,52 +299,58 @@ class MeasureReportViewModelTest : RobolectricTest() {
   }
 
   @Test()
-  fun testEvaluateMeasureUtilizesPreviouslyGeneratedMeasureReportIfAvailable() {
-    val testMeasureReport =
-      MeasureReport().apply {
-        id = "someID"
-        measure = "http://nourl.com"
-        type = MeasureReportType.INDIVIDUAL
-        subject = Reference().apply { "Group/groupid" }
+  fun testEvaluateMeasureUtilizesPreviouslyGeneratedMeasureReportIfAvailable() =
+    runTest(timeout = 90.seconds) {
+      val subject = Group().apply { id = "groupId" }
+      val testMeasureReport =
+        MeasureReport().apply {
+          id = "measureId"
+          measure = "http://nourl.com"
+          type = MeasureReportType.INDIVIDUAL
+          this.subject = subject.asReference()
+          period.apply {
+            this.start = DateType("2022-01-21").value
+            this.end = DateType("2022-01-27").value
+          }
+        }
+
+      fhirEngine.create(subject, testMeasureReport)
+
+      val reportConfiguration =
+        ReportConfiguration(
+          id = "measureId",
+          title = "Measure 1",
+          description = "Measure report for testing",
+          url = "http://nourl.com",
+          module = "Module1",
+        )
+
+      coEvery { measureReportViewModel.formatPopulationMeasureReports(any(), any()) } returns
+        emptyList()
+
+      coEvery {
+        fhirEngine.retrievePreviouslyGeneratedMeasureReports(
+          startDateFormatted = "2022-01-21",
+          endDateFormatted = "2022-01-27",
+          measureUrl = "http://nourl.com",
+          subjects = listOf(),
+        )
+      } returns listOf(testMeasureReport)
+
+      measureReportViewModel.reportTypeSelectorUiState.value =
+        ReportTypeSelectorUiState(startDate = "21 Jan, 2022", endDate = "27 Jan, 2022")
+      measureReportViewModel.reportConfigurations.add(reportConfiguration)
+
+      measureReportViewModel.evaluateMeasure(navController, null)
+
+      coVerify {
+        measureReportViewModel.formatPopulationMeasureReports(listOf(testMeasureReport), any())
       }
 
-    val reportConfiguration =
-      ReportConfiguration(
-        id = "measureId",
-        title = "Measure 1",
-        description = "Measure report for testing",
-        url = "http://nourl.com",
-        module = "Module1",
-      )
-
-    coEvery { measureReportRepository.fetchSubjects(reportConfiguration) } returns
-      listOf("Group/groupid")
-    coEvery { measureReportViewModel.formatPopulationMeasureReports(any(), any()) } returns
-      emptyList()
-    coEvery {
-      retrievePreviouslyGeneratedMeasureReports(
-        fhirEngine,
-        "2022-01-21",
-        "2022-01-27",
-        "http://nourl.com",
-        listOf(),
-      )
-    } returns listOf(testMeasureReport)
-
-    measureReportViewModel.reportTypeSelectorUiState.value =
-      ReportTypeSelectorUiState(startDate = "21 Jan, 2022", endDate = "27 Jan, 2022")
-    measureReportViewModel.reportConfigurations.add(reportConfiguration)
-
-    measureReportViewModel.evaluateMeasure(navController, null)
-
-    coVerify {
-      measureReportViewModel.formatPopulationMeasureReports(listOf(testMeasureReport), any())
+      coVerify(exactly = 0) {
+        measureReportRepository.evaluatePopulationMeasure(any(), any(), any(), any(), any(), any())
+      }
     }
-
-    coVerify(exactly = 0) {
-      measureReportRepository.evaluatePopulationMeasure(any(), any(), any(), any(), any(), any())
-    }
-  }
 
   @Test
   @ExperimentalCoroutinesApi

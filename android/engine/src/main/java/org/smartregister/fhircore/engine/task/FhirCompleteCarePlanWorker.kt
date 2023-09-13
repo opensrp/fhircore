@@ -93,18 +93,20 @@ constructor(
   }
 
   suspend fun getCarePlans(batchSize: Int, lastOffset: Int) =
-    defaultRepository.fhirEngine.search<CarePlan> {
-      filter(
-        CarePlan.STATUS,
-        { value = of(CarePlan.CarePlanStatus.DRAFT.toCode()) },
-        { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) },
-        { value = of(CarePlan.CarePlanStatus.ONHOLD.toCode()) },
-        { value = of(CarePlan.CarePlanStatus.ENTEREDINERROR.toCode()) },
-        { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) },
-      )
-      count = batchSize
-      from = if (lastOffset > 0) lastOffset + 1 else 0
-    }
+    defaultRepository.fhirEngine
+      .search<CarePlan> {
+        filter(
+          CarePlan.STATUS,
+          { value = of(CarePlan.CarePlanStatus.DRAFT.toCode()) },
+          { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) },
+          { value = of(CarePlan.CarePlanStatus.ONHOLD.toCode()) },
+          { value = of(CarePlan.CarePlanStatus.ENTEREDINERROR.toCode()) },
+          { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) },
+        )
+        count = batchSize
+        from = if (lastOffset > 0) lastOffset + 1 else 0
+      }
+      .map { it.resource }
 
   companion object {
     const val WORK_ID = "FhirCompleteCarePlanWorker"

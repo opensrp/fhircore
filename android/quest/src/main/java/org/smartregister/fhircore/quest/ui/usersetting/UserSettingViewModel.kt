@@ -162,7 +162,7 @@ constructor(
         val unsyncedResources =
           fhirEngine
             .getUnsyncedLocalChanges()
-            .groupingBy { it.localChange.resourceType.spaceByUppercase() }
+            .groupingBy { it.resourceType.spaceByUppercase() }
             .eachCount()
             .map { it.key to it.value }
 
