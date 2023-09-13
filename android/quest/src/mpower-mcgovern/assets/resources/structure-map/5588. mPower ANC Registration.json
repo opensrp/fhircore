@@ -1,7 +1,7 @@
 {
   "resourceType": "StructureMap",
   "id": "5588",
-  "url": "https://fhir.labs.smartregister.org/fhir/StructureMap/5499",
+  "url": "https://fhir.labs.smartregister.org/fhir/StructureMap/5588",
   "name": "mPower ANC Registration",
   "structure": [
     {
@@ -707,6 +707,326 @@
                         },
                         {
                           "valueString": "answer.value"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "o_patient_edd",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "item_edd",
+              "condition": "((linkId = '4f04affb-22a8-4da5-88d8-78bc6d0454e7') and answer.value.exists())"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "obs",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Observation"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_id",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "id",
+                      "transform": "uuid"
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_status",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "status",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "final"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_category_1",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "category",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                        },
+                        {
+                          "valueString": "social-history"
+                        },
+                        {
+                          "valueString": "Social History"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_code",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "code",
+                      "variable": "code",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_c_coding",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "code",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Coding"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_obs_coding_system",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "system",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "http://www.snomed.org/"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_c_coding_code",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "code",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "129019007"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_obs_c_coding_display",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "EDD date"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_c_text",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "code",
+                          "contextType": "variable",
+                          "element": "text",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Expected Delivery Date"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_sub",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueId": "refPatient"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_effective",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "effective",
+                      "variable": "dt",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "dateTime"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "dt",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item_edd"
+                        },
+                        {
+                          "valueString": "$this.answer.value.toString() + 'T00:00:00'"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "item_edd"
+                        },
+                        {
+                          "valueString": "$this.answer.value.toString() + 'T00:00:00'"
                         }
                       ]
                     }

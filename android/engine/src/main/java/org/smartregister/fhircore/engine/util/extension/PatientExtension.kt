@@ -35,13 +35,6 @@ fun Patient.extractGender(context: Context): String? =
     null
   }
 
-fun Patient.extractMaritalStatus(context: Context): String? =
-  if (hasMaritalStatus()) {
-    this.maritalStatus.coding[0].code
-  } else {
-    null
-  }
-
 fun Patient.extractAge(context: Context): String {
   if (!hasBirthDate()) return ""
   return calculateAge(birthDate, context)

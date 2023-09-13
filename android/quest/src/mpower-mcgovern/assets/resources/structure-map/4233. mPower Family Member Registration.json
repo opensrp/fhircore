@@ -1569,6 +1569,7 @@
             {
               "name": "ExtractEncounter",
               "variable": [
+                "src",
                 "patient",
                 "bundle"
               ]
@@ -1910,6 +1911,11 @@
       "name": "ExtractEncounter",
       "typeMode": "none",
       "input": [
+        {
+          "name": "questionnaireResponse",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
         {
           "name": "src",
           "type": "Patient",
@@ -2424,7 +2430,7 @@
                 {
                   "name": "ExtractObservations",
                   "variable": [
-                    "src",
+                    "questionnaireResponse",
                     "bundle",
                     "encounter"
                   ]

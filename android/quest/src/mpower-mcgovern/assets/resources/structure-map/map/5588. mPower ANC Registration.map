@@ -47,6 +47,30 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bu
             src -> obs.value = evaluate(item_height, answer.value) "r_obs_value";
         } "r_obs";
     } "o_patient_height";
+
+     src.item as item_edd where(linkId ='4f04affb-22a8-4da5-88d8-78bc6d0454e7' and answer.value.exists()) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_obs_id";
+            src -> obs.status = 'final' "r_obs_status";
+            src -> obs.category = cc('http://terminology.hl7.org/CodeSystem/observation-category','social-history', 'Social History') "r_obs_category_1";
+            src -> obs.code = create('CodeableConcept') as code then {
+                src -> code.coding = create('Coding') as coding then {
+                    src -> coding.system = 'http://www.snomed.org/' "r_obs_coding_system";
+                    src -> coding.code = '129019007' "r_obs_c_coding_code";
+                    src -> coding.display = 'EDD date' "r_obs_c_coding_display";
+                } "r_obs_c_coding";
+                src -> code.text = 'Expected Delivery Date' "r_obs_c_text";
+            } "r_obs_code";
+            src -> obs.subject = refPatient "r_obs_sub";
+            src -> obs.effective = create('dateTime') as dt,
+                      dt.value = evaluate(item_edd, $this.answer.value.toString() + 'T00:00:00') "r_obs_effective";
+            src -> obs.value = evaluate(item_edd, $this.answer.value.toString() + 'T00:00:00') "r_obs_value";
+            src -> obs.meta = create("Meta") as meta then {
+                src -> meta.lastUpdated = create('instant') as dt,
+                    dt.value = evaluate(item_edd, $this.answer.value.toString() + 'T00:00:00.00Z') "r_obs_meta_last_updated";
+            } "r_obs_meta";
+        } "r_obs";
+    } "o_patient_edd";
 }
 
 group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle, target cnd: Condition) {

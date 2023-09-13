@@ -248,15 +248,6 @@ constructor(
     reportResources.forEach { resourceConfig ->
       val search = Search(resourceConfig.resource)
 
-      if(resourceConfig.resource == ResourceType.Task) {
-        search.filter(
-          Task.STATUS,
-          {
-            value = of("completed")
-          }
-        )
-      }
-
       if(!startDateFormatted.isNullOrEmpty() &&
         !endDateFormatted.isNullOrEmpty() &&
         resourceConfig.dataQueries?.isNotEmpty() == true) {

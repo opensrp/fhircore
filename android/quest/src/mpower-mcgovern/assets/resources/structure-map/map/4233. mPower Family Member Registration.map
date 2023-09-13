@@ -137,7 +137,7 @@ group ExtractPatient(source src : QuestionnaireResponse, target patient : Patien
             } "rule_patient_relationship_extra";
         } "rule_patient_relationship";
 
-       src then ExtractEncounter(patient, bundle) "rule_encounter_reference";
+       src then ExtractEncounter(src, patient, bundle) "rule_encounter_reference";
  }
 
 group ExtractRelatedPerson(source src : Patient, target relatedPerson : RelatedPerson) {
@@ -162,7 +162,7 @@ group ExtractRelatedPerson(source src : Patient, target relatedPerson : RelatedP
      } "rule_related_person_patient";
 }
 
-group ExtractEncounter(source src : Patient, target bundle: Bundle) {
+group ExtractEncounter(source questionnaireResponse : QuestionnaireResponse, source src : Patient, target bundle: Bundle) {
     src -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then {
         src -> encounter.id = uuid() "r_en_id";
         src -> encounter.status = 'finished' "r_en_st";
@@ -193,7 +193,7 @@ group ExtractEncounter(source src : Patient, target bundle: Bundle) {
             src -> concept.text = 'mPower Family Member Registration' "r_en_text";
         } "r_en_reason";
 
-        src then ExtractObservations(src, bundle, encounter) "r_extract_observations";
+        src then ExtractObservations(questionnaireResponse, bundle, encounter) "r_extract_observations";
     } "r_en";
 }
 

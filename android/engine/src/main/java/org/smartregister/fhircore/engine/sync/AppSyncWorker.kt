@@ -25,6 +25,7 @@ import com.google.android.fhir.sync.ConflictResolver
 import com.google.android.fhir.sync.DownloadWorkManager
 import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.UploadConfiguration
+import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -42,7 +43,7 @@ constructor(
   override fun getConflictResolver(): ConflictResolver = AcceptLocalConflictResolver
 
   override fun getDownloadWorkManager(): DownloadWorkManager =
-    OpenSrpDownloadManager(
+    ResourceParamsBasedDownloadWorkManager(
       syncParams = syncListenerManager.loadSyncParams(),
       context = appTimeStampContext,
     )

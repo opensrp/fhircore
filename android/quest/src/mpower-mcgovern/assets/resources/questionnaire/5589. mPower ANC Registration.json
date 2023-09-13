@@ -58,33 +58,31 @@
       "linkId": "245679f2-6172-456e-8ff3-425f5cea3243",
       "text": "শেষ মাসিকের তারিখ *",
       "type": "date",
-      "required": true,
-      "item": [
+      "required": true
+    },
+    {
+      "extension": [
         {
-          "extension": [
-            {
-              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-              "valueString": "Enter the correct date"
-            },
-            {
-              "url": "http://ehelse.no/fhir/StructureDefinition/sdf-minvalue",
-              "valueString": "today() - 280 'days'"
-            },
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "%resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value + 280 'days'"
-              }
-            }
-          ],
-          "linkId": "4f04affb-22a8-4da5-88d8-78bc6d0454e7",
-          "text": "সম্ভাব্য প্রসবের তারিখ *",
-          "type": "date",
-          "required": true,
-          "readOnly": true
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Enter the correct date"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-minvalue",
+          "valueString": "today() - 280 'days'"
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value + 280 'days'"
+          }
         }
-      ]
+      ],
+      "linkId": "4f04affb-22a8-4da5-88d8-78bc6d0454e7",
+      "text": "সম্ভাব্য প্রসবের তারিখ *",
+      "type": "date",
+      "required": true,
+      "readOnly": true
     },
     {
       "linkId": "b1a4ad4d-bf7e-4e4b-86c2-57912acb569f",

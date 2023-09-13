@@ -2,7 +2,7 @@
   "appId": "app",
   "configType": "report",
   "id": "dashboardReport",
-  "showDateFilter": false,
+  "showDateFilter": true,
   "resources": [
     {
       "resource": "Group",
@@ -343,6 +343,13 @@
       ]
     },
     {
+      "name": "girlElcoCount",
+      "condition": "true",
+      "actions": [
+        "data.put('girlElcoCount', size(service.filterResources(Patient, \"Patient.gender = 'female' and Patient.maritalStatus.coding[0].code = 'M' and Patient.birthDate <= today() - 10 'years' and Patient.birthDate >= today() - 19 'years'\")))"
+      ]
+    },
+    {
       "name": "fpMethodUsingCount",
       "condition": "true",
       "actions": [
@@ -427,10 +434,17 @@
       ]
     },
     {
+      "name": "completedTasks",
+      "condition": "true",
+      "actions": [
+        "data.put('completedTasks', service.filterResources(Task, \"Task.status = 'completed'\"))"
+      ]
+    },
+    {
       "name": "ancFollowupTask",
       "condition": "true",
       "actions": [
-        "data.put('ancFollowupTask', service.filterResources(Task, \"Task.reasonReference.reference.contains('5591')\"))"
+        "data.put('ancFollowupTask', service.filterResources(data.get('completedTasks'), \"Task.reasonReference.reference.contains('5591')\"))"
       ]
     },
     {
@@ -472,7 +486,7 @@
       "name": "totalChildFollowupCount",
       "condition": "true",
       "actions": [
-        "data.put('totalChildFollowupCount', size(service.filterResources(Task, \"Task.input[0].valueReference.reference.contains('4240')\")))"
+        "data.put('totalChildFollowupCount', size(service.filterResources(data.get('completedTasks'), \"Task.input[0].valueReference.reference.contains('4240')\")))"
       ]
     },
     {
@@ -530,6 +544,20 @@
       "actions": [
         "data.put('extraFoodStarted7mCount', size(service.filterResources(Observation, \"Observation.code.coding[0].code = '228060008' and Observation.value = '7_month'\")))"
       ]
+    },
+    {
+      "name": "totalPregnancyReferralCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalPregnancyReferralCount', size(service.filterResources(Task, \"Task.input[0].value.coding.code = 'pregnancy_problems'\")))"
+      ]
+    },
+    {
+      "name": "totalEddCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalEddCount', size(service.filterResources(Observation, \"Observation.code.coding[0].code = '129019007'\")))"
+      ]
     }
   ],
   "tabBar": {
@@ -539,6 +567,7 @@
     "tabs": [
       "পরিদর্শন",
       "সেবা",
+      "স্টক",
       "জনসংখ্যার সারসংক্ষেপ",
       "কার্যক্রম সারসংক্ষেপ"
     ],
@@ -1113,6 +1142,524 @@
           {
             "viewType": "CARD",
             "padding": 16,
+            "cardColor": "#FFC0CB",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#000000",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_pregnant"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "weight": 1,
+                    "primaryText": "গর্ভবতী পরিচর্যা ভিজিট (এএনসি)"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFC0CB",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#000000",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_baby_mother"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "weight": 1,
+                    "primaryText": "পি.এন.সি. (প্রথম ৪৮ ঘন্টার মধ্য)"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFC0CB",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#000000",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_non_communicable_disease"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "weight": 1,
+                    "primaryText": "অসংক্রামক রোগের সেবা"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFC0CB",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#000000",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_glasses"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "weight": 1,
+                    "primaryText": "মোট চশমা"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFC0CB",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#000000",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_sun_glasses"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "weight": 1,
+                    "primaryText": "সানগ্লাস"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFC0CB",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#000000",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_glasses"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "weight": 1,
+                    "primaryText": "SV- 1.00"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFC0CB",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#000000",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_glasses"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "weight": 1,
+                    "primaryText": "SV- 1.50"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFC0CB",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#000000",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_glasses"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "weight": 1,
+                    "primaryText": "SV- 2.00"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFC0CB",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#000000",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_glasses"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "weight": 1,
+                    "primaryText": "SV- 2.50"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFC0CB",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#000000",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_glasses"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "weight": 1,
+                    "primaryText": "SV- 3.00"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFC0CB",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#000000",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_glasses"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "weight": 1,
+                    "primaryText": "BF- 1.00"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFC0CB",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#000000",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_glasses"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "weight": 1,
+                    "primaryText": "BF- 1.50"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFC0CB",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#000000",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_glasses"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "weight": 1,
+                    "primaryText": "BF- 2.00"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFC0CB",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#000000",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_glasses"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "weight": 1,
+                    "primaryText": "BF- 2.50"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#FFC0CB",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#000000",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_glasses"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "weight": 1,
+                    "primaryText": "BF- 3.00"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#000000",
+                    "primaryText": "@{totalFamilyCount}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "viewType": "COLUMN",
+        "backgroundColor": "#FFFFFF",
+        "fillMaxWidth": true,
+        "fillMaxHeight": true,
+        "children": [
+          {
+            "viewType": "CARD",
+            "padding": 16,
             "cardColor": "#008000",
             "content": [
               {
@@ -1615,6 +2162,74 @@
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#FFFFFF",
                     "primaryText": "@{girl10To19Count}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_family_planning"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "কিশোরী সক্ষম দম্পতি"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{girlElcoCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_pregnant"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "প্রসবের সম্ভাব্য তারিখ এই সময়ে"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalEddCount}"
                   }
                 ]
               }
@@ -2813,6 +3428,40 @@
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#FFFFFF",
                     "primaryText": "@{newbornDeathCount}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "viewType": "CARD",
+            "padding": 16,
+            "cardColor": "#008000",
+            "content": [
+              {
+                "viewType": "ROW",
+                "fillMaxWidth": true,
+                "arrangement": "SPACE_BETWEEN",
+                "children": [
+                  {
+                    "viewType": "IMAGE",
+                    "tint": "#FFFFFF",
+                    "size": 30,
+                    "imageConfig": {
+                      "type": "local",
+                      "reference": "ic_pregnant"
+                    }
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "weight": 1,
+                    "primaryText": "গর্ভ সংক্রান্ত সমস্যার জন্য রেফার"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryTextColor": "#FFFFFF",
+                    "primaryText": "@{totalPregnancyReferralCount}"
                   }
                 ]
               }
