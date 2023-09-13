@@ -557,15 +557,31 @@ constructor(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     context: Context,
-  ) =
-    QuestionnaireResponseValidator.validateQuestionnaireResponse(
-        questionnaire = questionnaire,
-        questionnaireResponse = questionnaireResponse,
+  ): Boolean {
+    val validQuestionnaireResponseItems =
+      ArrayList<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
+    val validQuestionnaireItems = ArrayList<Questionnaire.QuestionnaireItemComponent>()
+    val questionnaireItemsMap = questionnaire.item.groupBy { it.linkId }
+
+    // Only validate items that are present on both Questionnaire and the QuestionnaireResponse
+    questionnaireResponse.item.forEach {
+      if (questionnaireItemsMap.containsKey(it.linkId)) {
+        val questionnaireItem = questionnaireItemsMap.getValue(it.linkId).first()
+        validQuestionnaireResponseItems.add(it)
+        validQuestionnaireItems.add(questionnaireItem)
+      }
+    }
+
+    return QuestionnaireResponseValidator.validateQuestionnaireResponse(
+        questionnaire = Questionnaire().apply { item = validQuestionnaireItems },
+        questionnaireResponse =
+          QuestionnaireResponse().apply { item = validQuestionnaireResponseItems },
         context = context,
       )
       .values
       .flatten()
       .all { it is Valid || it is NotValidated }
+  }
 
   suspend fun executeCql(subject: Resource, bundle: Bundle, questionnaire: Questionnaire) {
     questionnaire.cqfLibraryIds().forEach {
