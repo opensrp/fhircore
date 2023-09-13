@@ -39,6 +39,7 @@ import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.Resource
@@ -74,6 +75,7 @@ constructor(
   val transformSupportServices: TransformSupportServices,
   val defaultRepository: DefaultRepository,
   val fhirResourceUtil: FhirResourceUtil,
+  val workflowCarePlanGenerator: WorkflowCarePlanGenerator,
 ) {
   private val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
@@ -83,15 +85,19 @@ constructor(
     planDefinitionId: String,
     subject: Resource,
     data: Bundle = Bundle(),
+    generateCarePlanWithWorkflowApi: Boolean = false,
   ): CarePlan? {
     val planDefinition = defaultRepository.loadResource<PlanDefinition>(planDefinitionId)
-    return planDefinition?.let { generateOrUpdateCarePlan(it, subject, data) }
+    return planDefinition?.let {
+      generateOrUpdateCarePlan(it, subject, data, generateCarePlanWithWorkflowApi)
+    }
   }
 
   suspend fun generateOrUpdateCarePlan(
     planDefinition: PlanDefinition,
     subject: Resource,
     data: Bundle = Bundle(),
+    generateCarePlanWithWorkflowApi: Boolean = false,
   ): CarePlan? {
     // Only one CarePlan per plan, update or init a new one if not exists
     val output =
@@ -111,71 +117,80 @@ constructor(
 
     var carePlanModified = false
 
-    planDefinition.action.forEach { action ->
-      val input = Bundle().apply { entry.addAll(data.entry) }
+    if (generateCarePlanWithWorkflowApi) {
+      workflowCarePlanGenerator.applyPlanDefinitionOnPatient(
+        planDefinition = planDefinition,
+        patient = subject as Patient,
+        output = output,
+      )
+    } else {
+      planDefinition.action.forEach { action ->
+        val input = Bundle().apply { entry.addAll(data.entry) }
 
-      if (action.passesConditions(input, planDefinition, subject)) {
-        val definition = action.activityDefinition(planDefinition)
+        if (action.passesConditions(input, planDefinition, subject)) {
+          val definition = action.activityDefinition(planDefinition)
 
-        if (action.hasTransform()) {
-          val taskPeriods = action.taskPeriods(definition, output)
+          if (action.hasTransform()) {
+            val taskPeriods = action.taskPeriods(definition, output)
 
-          taskPeriods.forEachIndexed { index, period ->
-            val source =
-              Parameters().apply {
-                addResourceParameter(CarePlan.SP_SUBJECT, subject)
-                addResourceParameter(PlanDefinition.SP_DEFINITION, definition)
-                // TODO find some other way (activity definition based) to pass additional data
-                addResourceParameter(PlanDefinition.SP_DEPENDS_ON, data)
-              }
-            source.setParameter(Task.SP_PERIOD, period)
-            source.setParameter(ActivityDefinition.SP_VERSION, IntegerType(index))
-
-            val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
-            structureMapUtilities.transform(
-              transformSupportServices.simpleWorkerContext,
-              source,
-              structureMap,
-              output,
-            )
-          }
-        }
-
-        if (definition.hasDynamicValue()) {
-          definition.dynamicValue.forEach { dynamicValue ->
-            if (definition.kind == ActivityDefinition.ActivityDefinitionKind.CAREPLAN) {
-              dynamicValue.expression.expression
-                .let { fhirPathEngine.evaluate(null, input, planDefinition, subject, it) }
-                ?.takeIf { it.isNotEmpty() }
-                ?.let { evaluatedValue ->
-                  // TODO handle cases where we explicitly need to set previous value as null, when
-                  // passing null to Terser, it gives error NPE
-                  Timber.d("${dynamicValue.path}, evaluatedValue: $evaluatedValue")
-                  TerserUtil.setFieldByFhirPath(
-                    FhirContext.forR4Cached(),
-                    dynamicValue.path.removePrefix("${definition.kind.display}."),
-                    output,
-                    evaluatedValue.first(),
-                  )
+            taskPeriods.forEachIndexed { index, period ->
+              val source =
+                Parameters().apply {
+                  addResourceParameter(CarePlan.SP_SUBJECT, subject)
+                  addResourceParameter(PlanDefinition.SP_DEFINITION, definition)
+                  // TODO find some other way (activity definition based) to pass additional data
+                  addResourceParameter(PlanDefinition.SP_DEPENDS_ON, data)
                 }
-            } else {
-              throw UnsupportedOperationException("${definition.kind} not supported")
+              source.setParameter(Task.SP_PERIOD, period)
+              source.setParameter(ActivityDefinition.SP_VERSION, IntegerType(index))
+
+              val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
+              structureMapUtilities.transform(
+                transformSupportServices.simpleWorkerContext,
+                source,
+                structureMap,
+                output,
+              )
             }
           }
+
+          if (definition.hasDynamicValue()) {
+            definition.dynamicValue.forEach { dynamicValue ->
+              if (definition.kind == ActivityDefinition.ActivityDefinitionKind.CAREPLAN) {
+                dynamicValue.expression.expression
+                  .let { fhirPathEngine.evaluate(null, input, planDefinition, subject, it) }
+                  ?.takeIf { it.isNotEmpty() }
+                  ?.let { evaluatedValue ->
+                    // TODO handle cases where we explicitly need to set previous value as null,
+                    // when
+                    // passing null to Terser, it gives error NPE
+                    Timber.d("${dynamicValue.path}, evaluatedValue: $evaluatedValue")
+                    TerserUtil.setFieldByFhirPath(
+                      FhirContext.forR4Cached(),
+                      dynamicValue.path.removePrefix("${definition.kind.display}."),
+                      output,
+                      evaluatedValue.first(),
+                    )
+                  }
+              } else {
+                throw UnsupportedOperationException("${definition.kind} not supported")
+              }
+            }
+          }
+          carePlanModified = true
         }
-        carePlanModified = true
       }
-    }
 
-    val carePlanTasks = output.contained.filterIsInstance<Task>()
+      val carePlanTasks = output.contained.filterIsInstance<Task>()
 
-    if (carePlanModified) saveCarePlan(output)
+      if (carePlanModified) saveCarePlan(output)
 
-    if (carePlanTasks.isNotEmpty()) {
-      fhirResourceUtil.updateUpcomingTasksToDue(
-        subject = subject.asReference(),
-        taskResourcesToFilterBy = carePlanTasks,
-      )
+      if (carePlanTasks.isNotEmpty()) {
+        fhirResourceUtil.updateUpcomingTasksToDue(
+          subject = subject.asReference(),
+          taskResourcesToFilterBy = carePlanTasks,
+        )
+      }
     }
 
     return if (output.hasActivity()) output else null
