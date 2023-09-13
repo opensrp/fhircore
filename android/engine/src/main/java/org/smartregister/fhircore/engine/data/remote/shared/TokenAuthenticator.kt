@@ -66,38 +66,42 @@ constructor(
   private var isLoginPageRendered = false
 
   override fun getAccessToken(): String {
-    val account = findAccount()
-    return if (account != null) {
-      val accessToken = accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) ?: ""
-      if (!isTokenActive(accessToken)) {
-        accountManager.run {
-          invalidateAuthToken(account.type, accessToken)
-          try {
-            getAuthToken(
-              account,
-              AUTH_TOKEN_TYPE,
-              bundleOf(),
-              true,
-              handleAccountManagerFutureCallback(account),
-              Handler(Looper.getMainLooper()) { message: Message ->
-                Timber.e(message.toString())
-                true
-              }
-            )
-          } catch (operationCanceledException: OperationCanceledException) {
-            Timber.e(operationCanceledException)
-          } catch (ioException: IOException) {
-            Timber.e(ioException)
-          } catch (authenticatorException: AuthenticatorException) {
-            Timber.e(authenticatorException)
+    val account = findAccount() ?: return ""
+    val accessToken = accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) ?: ""
+    if (isTokenActive(accessToken)) {
+      isLoginPageRendered = false
+      return accessToken
+    }
+
+    accountManager.invalidateAuthToken(account.type, accessToken)
+    val authResultBundle =
+      try {
+        val authResultFuture =
+          accountManager.getAuthToken(
+            account,
+            AUTH_TOKEN_TYPE,
+            bundleOf(),
+            true,
+            accountManager.handleAccountManagerFutureCallback(account),
+            Handler(Looper.getMainLooper()) { message: Message ->
+              Timber.e(message.toString())
+              true
+            }
+          )
+        authResultFuture.result
+      } catch (exception: Exception) {
+        when (exception) {
+          is OperationCanceledException, is AuthenticatorException, is IOException -> {
             // TODO: Should we cancel the sync job to avoid retries when offline?
+            Timber.e(exception)
+            bundleOf(AccountManager.KEY_AUTHTOKEN to accessToken)
           }
+          else -> bundleOf()
         }
-      } else {
-        isLoginPageRendered = false
       }
-      accessToken
-    } else ""
+    return if (authResultBundle.containsKey(AccountManager.KEY_AUTHTOKEN))
+      authResultBundle.getString(AccountManager.KEY_AUTHTOKEN)!!
+    else ""
   }
 
   private fun AccountManager.handleAccountManagerFutureCallback(account: Account?) =
@@ -248,8 +252,7 @@ constructor(
     }
   }
 
-  fun sessionActive(): Boolean =
-    findAccount()?.let { isTokenActive(accountManager.peekAuthToken(it, AUTH_TOKEN_TYPE)) } ?: false
+  fun sessionActive(): Boolean = isTokenActive(getAccessToken())
 
   fun invalidateSession(onSessionInvalidated: () -> Unit) {
     findAccount()?.let { account ->

@@ -42,6 +42,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -64,6 +65,7 @@ constructor(
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider(),
   val tracer: PerformanceReporter,
   val sharedPreferencesHelper: SharedPreferencesHelper,
+  val tokenAuthenticator: TokenAuthenticator,
   @ApplicationContext val appContext: Context
 ) {
   /**
@@ -112,17 +114,26 @@ constructor(
   fun runSync(networkState: (Context) -> Boolean = { NetworkState(it).invoke() }) {
     Timber.i("Running one-time sync...")
     CoroutineScope(dispatcherProvider.io()).launch {
-      networkState(appContext).apply {
-        if (this) {
-          Sync.oneTimeSync<AppSyncWorker>(appContext)
-          getWorkerInfo<AppSyncWorker>().collect { sharedSyncStatus.emit(it) }
-        } else {
-          val message = appContext.getString(R.string.unable_to_sync)
-          val resourceSyncException =
-            listOf(ResourceSyncException(ResourceType.Flag, java.lang.Exception(message)))
-          sharedSyncStatus.emit(SyncJobStatus.Failed(resourceSyncException))
-        }
+      val isConnected = networkState(appContext)
+      if (!isConnected) {
+        val message = appContext.getString(R.string.unable_to_sync)
+        val resourceSyncException =
+          listOf(ResourceSyncException(ResourceType.Flag, java.lang.Exception(message)))
+        sharedSyncStatus.emit(SyncJobStatus.Failed(resourceSyncException))
+        return@launch
       }
+      val isAuthenticated = tokenAuthenticator.sessionActive()
+      if (!isAuthenticated) {
+        val authFailResourceSyncException =
+          ResourceSyncException(
+            ResourceType.Flag,
+            Exception(appContext.getString(R.string.sync_authentication_error))
+          )
+        sharedSyncStatus.emit(SyncJobStatus.Failed(listOf(authFailResourceSyncException)))
+        return@launch
+      }
+      Sync.oneTimeSync<AppSyncWorker>(appContext)
+      getWorkerInfo<AppSyncWorker>().collect { sharedSyncStatus.emit(it) }
     }
   }
 

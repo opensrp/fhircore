@@ -323,7 +323,6 @@ class AccountAuthenticatorTest : RobolectricTest() {
     Assert.assertFalse(authTokenBundle.containsKey(KEY_AUTHTOKEN))
   }
 
-  @Test(expected = RuntimeException::class)
   fun testGetBundleWithoutAuthInfoWhenCaughtUnknownHost() {
     every { tokenAuthenticator.isTokenActive(any()) } returns false
     val account = spyk(Account("newAccName", "newAccType"))
@@ -333,7 +332,11 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { accountManager.getPassword(account) } returns refreshToken
     every { tokenAuthenticator.refreshToken(refreshToken) } throws RuntimeException()
 
-    accountAuthenticator.getAuthToken(null, account, authTokenType, bundleOf())
+    val authTokenBundle =
+      accountAuthenticator.getAuthToken(null, account, authTokenType, bundleOf())
+    Assert.assertNotNull(authTokenBundle)
+    Assert.assertFalse(authTokenBundle.containsKey(KEY_AUTHTOKEN))
+    Assert.assertTrue(authTokenBundle.containsKey(KEY_INTENT)) // contains intent to re-login
   }
 
   @Test
