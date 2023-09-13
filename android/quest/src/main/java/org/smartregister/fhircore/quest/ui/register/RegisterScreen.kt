@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
@@ -88,17 +89,17 @@ fun RegisterScreen(
           onSearchTextChanged = { searchText ->
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           },
-          onTitleIconClick = {
-            when (toolBarHomeNavigation) {
-              ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
-              ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
-            }
-          },
-          onFilterIconClick =
-            filterActions
-              ?.takeIf { it.isNotEmpty() }
-              ?.let { actions -> { actions.handleClickEvent(navController) } },
-        )
+          isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
+        ) { event ->
+          when (event) {
+            ToolbarClickEvent.Navigate ->
+              when (toolBarHomeNavigation) {
+                ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
+                ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
+              }
+            ToolbarClickEvent.FilterData -> filterActions?.handleClickEvent(navController)
+          }
+        }
         // Only show counter during search
         if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
       }

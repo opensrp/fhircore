@@ -47,6 +47,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 
 const val DRAWER_MENU = "Drawer Menu"
 const val SEARCH = "Search"
@@ -70,8 +71,8 @@ fun TopScreenSection(
   searchPlaceholder: String? = null,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (String) -> Unit,
-  onTitleIconClick: () -> Unit,
-  onFilterIconClick: (() -> Unit)?,
+  isFilterIconEnabled: Boolean = false,
+  onClick: (ToolbarClickEvent) -> Unit,
 ) {
   Column(
     modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
@@ -80,7 +81,7 @@ fun TopScreenSection(
       verticalAlignment = Alignment.CenterVertically,
       modifier = modifier.padding(vertical = 8.dp).testTag(TITLE_ROW_TEST_TAG),
     ) {
-      IconButton(onClick = onTitleIconClick) {
+      IconButton(onClick = { onClick.invoke(ToolbarClickEvent.Navigate) }) {
         Icon(
           when (toolBarHomeNavigation) {
             ToolBarHomeNavigation.OPEN_DRAWER -> Icons.Filled.Menu
@@ -97,8 +98,8 @@ fun TopScreenSection(
         color = Color.White,
         modifier = modifier.weight(1f).testTag(TOP_ROW_TEXT_TEST_TAG),
       )
-      onFilterIconClick?.let {
-        IconButton(onClick = onFilterIconClick) {
+      if (isFilterIconEnabled) {
+        IconButton(onClick = { onClick.invoke(ToolbarClickEvent.FilterData) }) {
           Icon(
             Icons.Filled.FilterAlt,
             contentDescription = FILTER,
@@ -162,7 +163,7 @@ fun TopScreenSectionPreview() {
     searchText = "Eddy",
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
-    onTitleIconClick = {},
-    onFilterIconClick = {},
+    isFilterIconEnabled = true,
+    onClick = {},
   )
 }
