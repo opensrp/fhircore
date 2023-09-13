@@ -16,8 +16,10 @@
 
 package org.smartregister.fhircore.engine.ui.settings
 
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.model.practitioner.PractitionerDetails
 
+@ExcludeFromJacocoGeneratedReport
 data class ProfileData(
   val userName: String,
   val locations: List<FieldData> = listOf(),
@@ -27,4 +29,5 @@ data class ProfileData(
   val practitionerDetails: PractitionerDetails?
 )
 
+@ExcludeFromJacocoGeneratedReport
 data class FieldData(val id: String, val value: String)

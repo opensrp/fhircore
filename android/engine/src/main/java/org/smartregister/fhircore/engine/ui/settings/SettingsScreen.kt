@@ -59,9 +59,11 @@ import org.smartregister.fhircore.engine.ui.settings.views.DevMenu
 import org.smartregister.fhircore.engine.ui.settings.views.ViewResourceReport
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun SettingsScreen(
   modifier: Modifier = Modifier,
   navController: NavController? = null,
@@ -130,6 +132,7 @@ fun SettingsScreen(
 }
 
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun UserProfileRow(
   icon: ImageVector,
   text: String,

@@ -39,10 +39,12 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
 import org.smartregister.model.practitioner.PractitionerDetails
 
+@ExcludeFromJacocoGeneratedReport
 @HiltViewModel
 class DevViewModel
 @Inject
@@ -130,4 +132,5 @@ constructor(
   }
 }
 
+@ExcludeFromJacocoGeneratedReport
 data class ResourceField(val id: String, val version: String, val date: String)

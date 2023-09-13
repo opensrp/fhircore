@@ -29,7 +29,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.ui.settings.DevViewModel
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
+@ExcludeFromJacocoGeneratedReport
 @Composable
 fun DevMenu(viewModel: DevViewModel, viewRes: () -> Unit) {
   val context = LocalContext.current

@@ -47,7 +47,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
+@ExcludeFromJacocoGeneratedReport
 @Composable
 fun InfoCard(viewModel: SettingsViewModel) {
   val data by viewModel.data.observeAsState()
@@ -90,6 +92,7 @@ fun InfoCard(viewModel: SettingsViewModel) {
   }
 }
 
+@ExcludeFromJacocoGeneratedReport
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun FieldCard(fieldData: FieldData) {
@@ -106,6 +109,7 @@ fun FieldCard(fieldData: FieldData) {
   }
 }
 
+@ExcludeFromJacocoGeneratedReport
 fun generateData(data: ProfileData): Map<String, List<FieldData>> {
   val defaultValue = FieldData("", "Not Defined")
   val map = mutableMapOf<String, List<FieldData>>()
