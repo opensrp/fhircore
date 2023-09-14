@@ -23,6 +23,7 @@ import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.sync.SyncDataParams
@@ -91,7 +92,7 @@ constructor(
     batchSize: Int,
     offset: Int,
     classType: Class<out Resource>,
-  ): List<Resource> {
+  ): List<SearchResult<Resource>> {
     return withContext(dispatcherProvider.io()) {
       val search =
         Search(type = classType.newInstance().resourceType).apply {

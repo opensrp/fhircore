@@ -20,6 +20,7 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -101,7 +102,10 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
         offset = 0,
         Patient::class.java,
       )
-    } returns listOf(expectedPatient)
+    } returns
+      listOf(
+        SearchResult(resource = expectedPatient, revIncluded = emptyMap(), included = emptyMap())
+      )
     val patientDataType = DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)
 
     val actualJsonData =
