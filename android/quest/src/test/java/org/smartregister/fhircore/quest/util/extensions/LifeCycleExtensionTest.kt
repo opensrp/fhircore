@@ -47,7 +47,7 @@ class LifeCycleExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun testHookSnackBarWithNonEmptyScaffoldState() = runTest {
+  fun testHookSnackBarShowsSnackBar() = runTest {
     val messageConfig = mockk<SnackBarMessageConfig>()
     every { messageConfig.message } returns "This is a message"
 
