@@ -39,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -57,6 +58,8 @@ import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.components.ActionableButton
+
+const val ICON_FIELD_TAG = "iconTestTag"
 
 @Composable
 fun MemberProfileBottomSheetView(
@@ -90,13 +93,15 @@ fun MemberProfileBottomSheetView(
         contentDescription = null,
         tint = DefaultColor.copy(0.8f),
         modifier =
-          modifier.clickable {
-            coroutineScope.launch {
-              if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
-                bottomSheetScaffoldState.bottomSheetState.collapse()
+          modifier
+            .clickable {
+              coroutineScope.launch {
+                if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
+                  bottomSheetScaffoldState.bottomSheetState.collapse()
+                }
               }
             }
-          },
+            .testTag(ICON_FIELD_TAG),
       )
     }
     Spacer(modifier = modifier.height(8.dp))
