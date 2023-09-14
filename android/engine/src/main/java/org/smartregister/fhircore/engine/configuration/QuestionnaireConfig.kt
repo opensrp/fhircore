@@ -35,14 +35,11 @@ data class QuestionnaireConfig(
   val id: String,
   val title: String? = null,
   val saveButtonText: String? = null,
-  val setPractitionerDetails: Boolean = true,
-  val setOrganizationDetails: Boolean = true,
-  val setAppVersion: Boolean = true,
   val planDefinitions: List<String>? = null,
   var type: QuestionnaireType = QuestionnaireType.DEFAULT,
   val resourceIdentifier: String? = null,
-  val removeResource: Boolean? = null,
   val resourceType: ResourceType? = null,
+  val removeResource: Boolean? = null,
   val confirmationDialog: ConfirmationDialog? = null,
   val groupResource: GroupResourceConfig? = null,
   val taskId: String? = null,
@@ -53,6 +50,10 @@ data class QuestionnaireConfig(
   val configRules: List<RuleConfig>? = null,
   val extraParams: List<ActionParameter>? = null,
   val onSubmitActions: List<ActionConfig>? = null,
+  val barcodeLinkId: String = "patient-barcode",
+  val extractedResourceUniquePropertyExpressions: List<ExtractedResourceUniquePropertyExpression>? =
+    null,
+  val saveQuestionnaireResponse: Boolean = true,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
@@ -75,6 +76,8 @@ data class QuestionnaireConfig(
         ),
       planDefinitions = planDefinitions?.map { it.interpolate(computedValuesMap) },
       readOnlyLinkIds = readOnlyLinkIds?.map { it.interpolate(computedValuesMap) },
+      onSubmitActions = onSubmitActions?.map { it.interpolate(computedValuesMap) },
+      barcodeLinkId = barcodeLinkId.interpolate(computedValuesMap),
     )
 }
 
@@ -94,4 +97,11 @@ data class GroupResourceConfig(
   val removeMember: Boolean = false,
   val removeGroup: Boolean = false,
   val deactivateMembers: Boolean = true,
+) : java.io.Serializable, Parcelable
+
+@Serializable
+@Parcelize
+data class ExtractedResourceUniquePropertyExpression(
+  val resourceType: ResourceType,
+  val fhirPathExpression: String,
 ) : java.io.Serializable, Parcelable

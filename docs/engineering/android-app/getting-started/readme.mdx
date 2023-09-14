@@ -16,12 +16,22 @@ Begin by cloning this repository. Ensure you have JAVA 11 installed, and setup A
 Update `local.properties` file by providing the required Keycloak credentials to enable syncing of data to and from the HAPI FHIR server:
 
 ```
+#oauth credentials
 OAUTH_BASE_URL=https://keycloak-stage.smartregister.org/auth/realms/FHIR_Android/
-OAUTH_CIENT_ID="provide client id"
+OAUTH_CLIENT_ID="provide client id"
 OAUTH_CLIENT_SECRET="provide client secret"
 OAUTH_SCOPE=openid
+
+#fhir store base url
 FHIR_BASE_URL=https://fhir.labs.smartregister.org/fhir/
+
+#sentry dsn
+SENTRY_DSN=<https://your/sentry/project/dsn>
+
 ```
+
+#### Gateway vs Non Gateway backend
+The codebase supports building a release that uses the [FHIR Gateway backend](https://github.com/opensrp/fhir-gateway) and one that doesn't. The **proxy** mode is the _default_ but if your backend is not using the [FHIR Gateway](https://github.com/opensrp/fhir-gateway/releases) you need to specify this by switching to the correct build type variant. To switch between the two one needs to change to a variant with the `debugNonProxy` build type. e.g for the flavor `opensrp` select the variant `opensrpDebugNonProxy`
 
 ### App release
 
@@ -101,6 +111,7 @@ Refer to the following links for more details:
 
 - [Android App Architecture Guide](https://developer.android.com/jetpack/guide) - Learn more about Android App Architecture
 - [Jetpack Compose](https://developer.android.com/jetpack/compose) - Learn more about Jetpack Compose
+- [Sentry DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/)
 
 ### Running the documentation locally
 

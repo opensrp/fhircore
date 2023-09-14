@@ -26,7 +26,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.SyncJobStatus
@@ -34,6 +33,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -43,8 +43,9 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.addDateTimeIndex
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.extension.parcelable
+import org.smartregister.fhircore.engine.util.extension.serializable
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
@@ -144,10 +145,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     super.onResume()
     navHostFragment.navController.addOnDestinationChangedListener(sentryNavListener)
     syncListenerManager.registerSyncListener(this, lifecycle)
-
-    appMainViewModel.viewModelScope.launch(dispatcherProvider.io()) {
-      fhirEngine.addDateTimeIndex()
-    }
   }
 
   override fun onPause() {
@@ -158,22 +155,28 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   override suspend fun onSubmitQuestionnaire(activityResult: ActivityResult) {
     if (activityResult.resultCode == RESULT_OK) {
       val questionnaireResponse: QuestionnaireResponse? =
-        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
+        activityResult.data?.serializable(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
           as QuestionnaireResponse?
+      val extractedResourceIds =
+        activityResult.data?.serializable(
+          QuestionnaireActivity.QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS,
+        ) as List<IdType>?
+          ?: emptyList()
       val questionnaireConfig =
-        activityResult.data?.getSerializableExtra(QuestionnaireActivity.QUESTIONNAIRE_CONFIG)
+        activityResult.data?.parcelable(QuestionnaireActivity.QUESTIONNAIRE_CONFIG)
           as QuestionnaireConfig?
 
-      if (questionnaireConfig != null) {
+      if (questionnaireConfig != null && questionnaireResponse != null) {
         eventBus.triggerEvent(
           AppEvent.OnSubmitQuestionnaire(
             QuestionnaireSubmission(
-              questionnaireConfig,
-              questionnaireResponse ?: QuestionnaireResponse(),
+              questionnaireConfig = questionnaireConfig,
+              questionnaireResponse = questionnaireResponse,
+              extractedResourceIds = extractedResourceIds,
             ),
           ),
         )
-      }
+      } else Timber.e("QuestionnaireConfig & QuestionnaireResponse are both null")
     }
   }
 
@@ -185,8 +188,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
-              syncJobStatus,
-              formatLastSyncTimestamp(syncJobStatus.timestamp),
+              state = syncJobStatus,
+              lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
             ),
           )
         }

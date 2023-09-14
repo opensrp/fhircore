@@ -17,49 +17,56 @@
 package org.smartregister.fhircore.quest.ui.report.measure
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportListScreen
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportResultScreen
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportSubjectsScreen
-import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportTypeSelectorScreen
+import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportDateSelectorScreen
 
 @Composable
 fun MeasureReportMainScreen(
   reportId: String,
+  practitionerId: String,
   mainNavController: NavController,
   measureReportViewModel: MeasureReportViewModel,
 ) {
   // Use a different navController internally for navigating Report Composable screens
   val navController = rememberNavController()
+  val uiState = measureReportViewModel.reportTypeSelectorUiState.value
 
   NavHost(
     navController = navController,
-    startDestination = MeasureReportNavigationScreen.MeasureReportList.route,
+    startDestination = MeasureReportNavigationScreen.ReportDateSelector.route,
   ) {
     // Display list of supported measures for reporting
-    composable(MeasureReportNavigationScreen.MeasureReportList.route) {
+    composable(MeasureReportNavigationScreen.MeasureReportModule.route) {
       MeasureReportListScreen(
-        mainNavController = mainNavController,
+        navController = navController,
         dataList = measureReportViewModel.reportMeasuresList(reportId),
         onReportMeasureClicked = { measureReportRowData ->
           measureReportViewModel.onEvent(
-            MeasureReportEvent.OnSelectMeasure(measureReportRowData, navController),
+            MeasureReportEvent.OnSelectMeasure(
+              reportConfigurations = measureReportRowData,
+              navController = navController,
+              practitionerId = practitionerId,
+            ),
           )
         },
+        showProgressIndicator = uiState.showProgressIndicator,
       )
     }
-    // Choose report type; for either individual or population
+    // Page for selecting report date
     composable(
-      route =
-        MeasureReportNavigationScreen.ReportTypeSelector.route +
-          NavigationArg.routePathsOf(NavigationArg.SCREEN_TITLE),
+      route = MeasureReportNavigationScreen.ReportDateSelector.route,
       arguments =
         listOf(
           navArgument(NavigationArg.SCREEN_TITLE) {
@@ -67,12 +74,13 @@ fun MeasureReportMainScreen(
             defaultValue = ""
           },
         ),
-    ) { stackEntry ->
-      val screenTitle: String = stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE) ?: ""
-      ReportTypeSelectorScreen(
+    ) {
+      ReportDateSelectorScreen(
         reportId = reportId,
-        screenTitle = screenTitle,
+        practitionerId = practitionerId,
+        screenTitle = stringResource(R.string.select_month),
         navController = navController,
+        mainNavController = mainNavController,
         measureReportViewModel = measureReportViewModel,
       )
     }

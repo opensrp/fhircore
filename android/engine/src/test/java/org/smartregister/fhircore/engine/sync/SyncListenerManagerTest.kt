@@ -16,8 +16,10 @@
 
 package org.smartregister.fhircore.engine.sync
 
+import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import javax.inject.Inject
 import org.junit.After
 import org.junit.Assert
@@ -25,12 +27,13 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.smartregister.fhircore.engine.HiltActivityForTest
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 
 @HiltAndroidTest
 class SyncListenerManagerTest : RobolectricTest() {
@@ -53,6 +56,7 @@ class SyncListenerManagerTest : RobolectricTest() {
   fun setUp() {
     hiltAndroidRule.inject()
     hiltActivityForTest = activityController.get()
+    ApplicationProvider.getApplicationContext<HiltTestApplication>().setTheme(R.style.AppTheme)
     syncListenerManager =
       SyncListenerManager(
         configService = configService,

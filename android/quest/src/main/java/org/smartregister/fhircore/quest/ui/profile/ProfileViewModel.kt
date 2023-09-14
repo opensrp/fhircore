@@ -168,7 +168,13 @@ constructor(
         val actions = event.overflowMenuItemConfig?.actions
         viewModelScope.launch {
           actions?.run {
-            find { it.workflow == ApplicationWorkflow.CHANGE_MANAGING_ENTITY }
+            find { actionConfig ->
+                actionConfig
+                  .interpolate(event.resourceData?.computedValuesMap ?: emptyMap())
+                  .workflow
+                  ?.let { workflow -> ApplicationWorkflow.valueOf(workflow) } ==
+                  ApplicationWorkflow.CHANGE_MANAGING_ENTITY
+              }
               ?.let {
                 changeManagingEntity(
                   event = event,
@@ -210,7 +216,7 @@ constructor(
    * [Group] resource members. This function only works when [Group] resource is the used as the
    * main resource.
    */
-  private fun changeManagingEntity(
+  fun changeManagingEntity(
     event: ProfileEvent.OverflowMenuClick,
     managingEntity: ManagingEntityConfig?,
   ) {

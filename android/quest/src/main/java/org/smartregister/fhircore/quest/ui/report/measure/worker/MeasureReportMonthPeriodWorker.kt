@@ -75,8 +75,7 @@ constructor(
 
           val subjects = measureReportRepository.fetchSubjects(config)
           val existing =
-            retrievePreviouslyGeneratedMeasureReports(
-              fhirEngine = fhirEngine,
+            fhirEngine.retrievePreviouslyGeneratedMeasureReports(
               startDateFormatted = startDateFormatted,
               endDateFormatted = endDateFormatted,
               measureUrl = config.url,
@@ -89,11 +88,12 @@ constructor(
             }
 
             measureReportRepository.evaluatePopulationMeasure(
-              config.url,
-              startDateFormatted,
-              endDateFormatted,
-              subjects,
-              existing,
+              measureUrl = config.url,
+              startDateFormatted = startDateFormatted,
+              endDateFormatted = endDateFormatted,
+              subjects = subjects,
+              existing = existing,
+              practitionerId = null,
             )
           }
         }

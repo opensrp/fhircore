@@ -21,7 +21,6 @@ import ca.uhn.fhir.context.api.BundleInclusionRule
 import ca.uhn.fhir.model.valueset.BundleTypeEnum
 import ca.uhn.fhir.rest.api.BundleLinks
 import ca.uhn.fhir.rest.api.IVersionSpecificBundleFactory
-import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.common.collect.Lists
 import javax.inject.Inject
@@ -65,7 +64,7 @@ import timber.log.Timber
  * https://github.com/DBCG/CqlEvaluatorSampleApp See also https://www.hl7.org/fhir/
  */
 @Singleton
-class LibraryEvaluator @Inject constructor() {
+class LibraryEvaluator @Inject constructor(val defaultRepository: DefaultRepository) {
   private val fhirContext = FhirContext.forR4Cached()
   private val parser = fhirContext.newJsonParser()
   private var adapterFactory = AdapterFactory()
@@ -224,37 +223,40 @@ class LibraryEvaluator @Inject constructor() {
     libraryId: String,
     patient: Patient?,
     data: Bundle,
-    repository: DefaultRepository,
     outputLog: Boolean = false,
   ): List<String> {
     initialize()
 
-    val library = repository.fhirEngine.get<LibraryResource>(libraryId)
+    val library = defaultRepository.loadResource<LibraryResource>(libraryId)
 
     val helpers =
-      library.relatedArtifact
-        .filter { it.hasResource() && it.resource.startsWith("Library/") }
-        .mapNotNull {
-          repository.fhirEngine.get<LibraryResource>(it.resource.replace("Library/", ""))
+      library
+        ?.relatedArtifact
+        ?.filter { it.hasResource() && it.resource.startsWith("Library/") }
+        ?.mapNotNull {
+          defaultRepository.loadResource<LibraryResource>(it.resource.substringAfter("/"))
         }
 
-    loadConfigs(
-      library,
-      helpers,
-      Bundle(),
-      // TODO check and handle when data bundle has multiple Patient resources
-      createBundle(
-        listOfNotNull(
-          patient,
-          *data.entry.map { it.resource }.toTypedArray(),
-          *repository.search(library.dataRequirementFirstRep).toTypedArray(),
-        ),
-      ),
-    )
+    if (library != null && helpers != null) {
+      loadConfigs(
+        library = library,
+        helpers = helpers,
+        valueSet = Bundle(),
+        // TODO check and handle when data bundle has multiple Patient resources
+        data =
+          createBundle(
+            listOfNotNull(
+              patient,
+              *data.entry.map { it.resource }.toTypedArray(),
+              *defaultRepository.searchCondition(library.dataRequirementFirstRep).toTypedArray(),
+            ),
+          ),
+      )
+    }
 
     val result =
       libEvaluator!!.evaluate(
-        VersionedIdentifier().withId(library.name).withVersion(library.version),
+        VersionedIdentifier().withId(library?.name).withVersion(library?.version),
         patient?.let { Pair.of("Patient", it.logicalId) },
         null,
         null,
@@ -267,7 +269,7 @@ class LibraryEvaluator @Inject constructor() {
 
         if (p.name.equals(OUTPUT_PARAMETER_KEY) && it.isResource) {
           data.addEntry().apply { this.resource = p.resource }
-          repository.create(true, it as Resource)
+          defaultRepository.create(true, it as Resource)
         }
 
         when {

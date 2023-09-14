@@ -17,11 +17,11 @@ plugins {
 }
 
 android {
-  compileSdk = 33
+  compileSdk = 34
 
   defaultConfig {
     minSdk = 26
-    targetSdk = 33
+    targetSdk = 34
     testInstrumentationRunner = "org.smartregister.fhircore.engine.EngineTestRunner"
     consumerProguardFiles("consumer-rules.pro")
     buildConfigField(
@@ -33,6 +33,15 @@ android {
 
   buildTypes {
     getByName("debug") { isTestCoverageEnabled = true }
+
+    create("debugNonProxy") {
+      initWith(getByName("debug"))
+      buildConfigField(
+        "boolean",
+        "IS_NON_PROXY_APK",
+        "true",
+      )
+    }
 
     getByName("release") {
       isMinifyEnabled = false
@@ -51,8 +60,9 @@ android {
   buildFeatures {
     compose = true
     viewBinding = true
+    dataBinding = true
   }
-  composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.4.3" }
 
   packagingOptions {
     resources.excludes.addAll(
@@ -258,6 +268,7 @@ dependencies {
   androidTestImplementation(libs.runner)
   androidTestImplementation(libs.ui.test.junit4)
   androidTestImplementation(libs.hilt.android.testing)
+  androidTestImplementation(libs.benchmark.junit)
 
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }

@@ -20,6 +20,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.context.SimpleWorkerContext
@@ -122,35 +123,36 @@ class RegisterContentTest : RobolectricTest() {
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun testG6pdPatientRegistrationExtraction() = runTest {
-    val structureMap = "patient-registration-questionnaire/structure-map.txt".readFile()
-    val response = "patient-registration-questionnaire/questionnaire-response.json".readFile()
-    val questionnaire = "patient-registration-questionnaire/questionnaire.json".readFile()
+  fun testG6pdPatientRegistrationExtraction() =
+    runTest(timeout = 90.seconds) {
+      val structureMap = "patient-registration-questionnaire/structure-map.txt".readFile()
+      val response = "patient-registration-questionnaire/questionnaire-response.json".readFile()
+      val questionnaire = "patient-registration-questionnaire/questionnaire.json".readFile()
 
-    val targetResource =
-      ResourceMapper.extract(
-          questionnaire.decodeResourceFromString(),
-          response.decodeResourceFromString(),
-          buildStructureMapExtractionContext(structureMap, "PatientRegistration"),
-        )
-        .also { println(it.encodeResourceToString()) }
+      val targetResource =
+        ResourceMapper.extract(
+            questionnaire.decodeResourceFromString(),
+            response.decodeResourceFromString(),
+            buildStructureMapExtractionContext(structureMap, "PatientRegistration"),
+          )
+          .also { println(it.encodeResourceToString()) }
 
-    Assert.assertEquals(2, targetResource.entry.size)
+      Assert.assertEquals(2, targetResource.entry.size)
 
-    val patient = targetResource.entry[0].resource as Patient
-    val samplePatient =
-      "patient-registration-questionnaire/sample/patient.json".parseSampleResourceFromFile()
-        as Patient
+      val patient = targetResource.entry[0].resource as Patient
+      val samplePatient =
+        "patient-registration-questionnaire/sample/patient.json".parseSampleResourceFromFile()
+          as Patient
 
-    assertResourceContent(patient, samplePatient)
+      assertResourceContent(patient, samplePatient)
 
-    val condition = targetResource.entry[1].resource as Condition
-    val sampleCondition =
-      "patient-registration-questionnaire/sample/condition.json".parseSampleResourceFromFile()
-        as Condition
-    // replace subject as registration forms generate uuid on the fly
-    sampleCondition.subject = condition.subject
+      val condition = targetResource.entry[1].resource as Condition
+      val sampleCondition =
+        "patient-registration-questionnaire/sample/condition.json".parseSampleResourceFromFile()
+          as Condition
+      // replace subject as registration forms generate uuid on the fly
+      sampleCondition.subject = condition.subject
 
-    assertResourceContent(condition, sampleCondition)
-  }
+      assertResourceContent(condition, sampleCondition)
+    }
 }

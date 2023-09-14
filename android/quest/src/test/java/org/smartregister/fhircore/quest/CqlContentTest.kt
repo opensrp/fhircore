@@ -27,6 +27,7 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.cqframework.cql.cql2elm.CqlTranslator
 import org.cqframework.cql.cql2elm.CqlTranslatorOptions
@@ -47,7 +48,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -57,14 +58,31 @@ class CqlContentTest : RobolectricTest() {
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
   private val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
   private val parser = fhirContext.newJsonParser()!!
-  private val evaluator = LibraryEvaluator().apply { initialize() }
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private val configService: ConfigService = mockk()
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
+  private lateinit var evaluator: LibraryEvaluator
+  private lateinit var defaultRepository: DefaultRepository
+  private val fhirEngine = mockk<FhirEngine>()
+
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   @Before
   fun setUp() {
     hiltRule.inject()
+    defaultRepository =
+      spyk(
+        DefaultRepository(
+          fhirEngine = fhirEngine,
+          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          sharedPreferencesHelper = mockk(),
+          configurationRegistry = configurationRegistry,
+          configService = configService,
+          configRulesExecutor = configRulesExecutor,
+          fhirPathDataExtractor = fhirPathDataExtractor,
+        ),
+      )
+    evaluator = LibraryEvaluator(defaultRepository).apply { initialize() }
   }
 
   @Test
@@ -100,34 +118,21 @@ class CqlContentTest : RobolectricTest() {
           .forEach { addEntry().apply { resource = it } }
       }
 
-    val fhirEngine = mockk<FhirEngine>()
-    val defaultRepository =
-      spyk(
-        DefaultRepository(
-          fhirEngine,
-          DefaultDispatcherProvider(),
-          mockk(),
-          configurationRegistry,
-          configService,
-          configRulesExecutor,
-        ),
-      )
-
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
     coEvery { defaultRepository.create(any(), any()) } returns emptyList()
-    coEvery { defaultRepository.search(any()) } returns listOf()
+    coEvery { defaultRepository.searchCondition(any()) } returns listOf()
 
     val result = runBlocking {
       evaluator.runCqlLibrary(
-        cqlLibrary.logicalId,
-        patient,
-        dataBundle.apply {
-          this.entry.removeIf { it.resource.resourceType == ResourceType.Patient }
-        },
-        defaultRepository,
-        true,
+        libraryId = cqlLibrary.logicalId,
+        patient = patient,
+        data =
+          dataBundle.apply {
+            this.entry.removeIf { it.resource.resourceType == ResourceType.Patient }
+          },
+        outputLog = true,
       )
     }
 
@@ -167,34 +172,21 @@ class CqlContentTest : RobolectricTest() {
           .forEach { addEntry().apply { resource = it } }
       }
 
-    val fhirEngine = mockk<FhirEngine>()
-    val defaultRepository =
-      spyk(
-        DefaultRepository(
-          fhirEngine,
-          DefaultDispatcherProvider(),
-          mockk(),
-          configurationRegistry,
-          configService,
-          configRulesExecutor,
-        ),
-      )
-
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
     coEvery { defaultRepository.create(any(), any()) } returns emptyList()
-    coEvery { defaultRepository.search(any()) } returns listOf()
+    coEvery { defaultRepository.searchCondition(any()) } returns listOf()
 
     val result = runBlocking {
       evaluator.runCqlLibrary(
-        cqlLibrary.logicalId,
-        patient,
-        dataBundle.apply {
-          this.entry.removeIf { it.resource.resourceType == ResourceType.Patient }
-        },
-        defaultRepository,
-        true,
+        libraryId = cqlLibrary.logicalId,
+        patient = patient,
+        data =
+          dataBundle.apply {
+            this.entry.removeIf { it.resource.resourceType == ResourceType.Patient }
+          },
+        outputLog = true,
       )
     }
 
@@ -239,19 +231,6 @@ class CqlContentTest : RobolectricTest() {
         }
       }
 
-    val fhirEngine = mockk<FhirEngine>()
-    val defaultRepository =
-      spyk(
-        DefaultRepository(
-          fhirEngine,
-          DefaultDispatcherProvider(),
-          mockk(),
-          configurationRegistry,
-          configService,
-          configRulesExecutor,
-        ),
-      )
-
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
@@ -259,7 +238,7 @@ class CqlContentTest : RobolectricTest() {
     coEvery { configService.provideResourceTags(any()) } returns listOf()
 
     val result = runBlocking {
-      evaluator.runCqlLibrary(cqlLibrary.logicalId, null, dataBundle, defaultRepository)
+      evaluator.runCqlLibrary(libraryId = cqlLibrary.logicalId, patient = null, data = dataBundle)
     }
 
     println(result)

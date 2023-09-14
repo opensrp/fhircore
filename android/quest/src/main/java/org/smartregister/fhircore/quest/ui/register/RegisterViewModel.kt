@@ -103,15 +103,21 @@ constructor(
     return Pager(
       config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
       pagingSourceFactory = {
-        RegisterPagingSource(registerRepository, resourceDataRulesExecutor, ruleConfigs).apply {
-          setPatientPagingSourceState(
-            RegisterPagingSourceState(
-              registerId = registerId,
-              loadAll = loadAll,
-              currentPage = if (loadAll) 0 else currentPage.value,
-            ),
+        RegisterPagingSource(
+            registerRepository = registerRepository,
+            resourceDataRulesExecutor = resourceDataRulesExecutor,
+            ruleConfigs = ruleConfigs,
+            actionParameters = registerUiState.value.params,
           )
-        }
+          .apply {
+            setPatientPagingSourceState(
+              RegisterPagingSourceState(
+                registerId = registerId,
+                loadAll = loadAll,
+                currentPage = if (loadAll) 0 else currentPage.value,
+              ),
+            )
+          }
       },
     )
   }
@@ -195,7 +201,7 @@ constructor(
             isFirstTimeSync =
               sharedPreferencesHelper
                 .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
-                .isNullOrEmpty(),
+                .isNullOrEmpty() && _totalRecordsCount.value == 0L,
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,
             totalRecordsCount = _totalRecordsCount.value,
@@ -208,6 +214,7 @@ constructor(
                 .toInt(),
             progressPercentage = _percentageProgress,
             isSyncUpload = _isUploadSync,
+            params = paramsMap,
           )
       }
     }

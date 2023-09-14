@@ -19,12 +19,13 @@ package org.smartregister.fhircore.quest.ui.login
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
-import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
@@ -35,7 +36,15 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import okhttp3.internal.http.RealResponseBody
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CareTeam
+import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Organization
+import org.hl7.fhir.r4.model.OrganizationAffiliation
+import org.hl7.fhir.r4.model.Practitioner
+import org.hl7.fhir.r4.model.PractitionerRole
+import org.hl7.fhir.r4.model.StringType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -54,10 +63,11 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
-import org.smartregister.fhircore.quest.HiltActivityForTest
+import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
@@ -75,8 +85,6 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
   @Inject lateinit var configService: ConfigService
-
-  @Inject lateinit var gson: Gson
   private lateinit var loginViewModel: LoginViewModel
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
   private val accountAuthenticator: AccountAuthenticator = mockk()
@@ -236,7 +244,16 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     // Mock result for retrieving a FHIR resource using user's keycloak uuid
     val bundle = Bundle()
-    val bundleEntry = Bundle.BundleEntryComponent().apply { resource = practitionerDetails() }
+    val bundleEntry =
+      Bundle.BundleEntryComponent().apply {
+        resource =
+          practitionerDetails().apply {
+            fhirPractitionerDetails =
+              FhirPractitionerDetails().apply {
+                practitionerId = StringType("my-test-practitioner-id")
+              }
+          }
+      }
     coEvery { fhirResourceService.getResource(any()) } returns bundle.addEntry(bundleEntry)
 
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
@@ -246,7 +263,7 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     // Login was successful savePractitionerDetails was called
     val bundleSlot = slot<Bundle>()
-    verify { loginViewModel.savePractitionerDetails(capture(bundleSlot), any()) }
+    verify { loginViewModel.savePractitionerDetails(capture(bundleSlot), any(), any()) }
 
     Assert.assertNotNull(bundleSlot.captured)
     Assert.assertTrue(bundleSlot.captured.entry.isNotEmpty())
@@ -376,7 +393,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     coEvery { keycloakService.fetchUserInfo() }.throws(SocketTimeoutException())
 
     val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
-    val fetchPractitionerCallback: (Result<Bundle>) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>, UserInfo?) -> Unit = mockk(relaxed = true)
     val userInfoSlot = slot<Result<UserInfo>>()
 
     runBlocking {
@@ -384,7 +401,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     }
 
     verify { fetchUserInfoCallback(capture(userInfoSlot)) }
-    verify(exactly = 0) { fetchPractitionerCallback(any()) }
+    verify(exactly = 0) { fetchPractitionerCallback(any(), any()) }
 
     Assert.assertTrue(userInfoSlot.captured.exceptionOrNull() is SocketTimeoutException)
   }
@@ -397,7 +414,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     coEvery { keycloakService.fetchUserInfo() }.throws(UnknownHostException())
 
     val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
-    val fetchPractitionerCallback: (Result<Bundle>) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>, UserInfo?) -> Unit = mockk(relaxed = true)
     val userInfoSlot = slot<Result<UserInfo>>()
 
     runBlocking {
@@ -405,7 +422,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     }
 
     verify { fetchUserInfoCallback(capture(userInfoSlot)) }
-    verify(exactly = 0) { fetchPractitionerCallback(any()) }
+    verify(exactly = 0) { fetchPractitionerCallback(any(), any()) }
 
     Assert.assertTrue(userInfoSlot.captured.exceptionOrNull() is UnknownHostException)
   }
@@ -420,7 +437,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     coEvery { fhirResourceService.getResource(any()) }.throws(UnknownHostException())
 
     val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
-    val fetchPractitionerCallback: (Result<Bundle>) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>, UserInfo?) -> Unit = mockk(relaxed = true)
     val bundleSlot = slot<Result<Bundle>>()
     val userInfoSlot = slot<Result<UserInfo>>()
 
@@ -429,7 +446,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     }
 
     verify { fetchUserInfoCallback(capture(userInfoSlot)) }
-    verify { fetchPractitionerCallback(capture(bundleSlot)) }
+    verify { fetchPractitionerCallback(capture(bundleSlot), any()) }
 
     Assert.assertTrue(userInfoSlot.captured.isSuccess)
     Assert.assertEquals("awesome_uuid", userInfoSlot.captured.getOrThrow().keycloakUuid)
@@ -446,7 +463,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     coEvery { fhirResourceService.getResource(any()) }.throws(SocketTimeoutException())
 
     val fetchUserInfoCallback: (Result<UserInfo>) -> Unit = mockk(relaxed = true)
-    val fetchPractitionerCallback: (Result<Bundle>) -> Unit = mockk(relaxed = true)
+    val fetchPractitionerCallback: (Result<Bundle>, UserInfo?) -> Unit = mockk(relaxed = true)
     val bundleSlot = slot<Result<Bundle>>()
     val userInfoSlot = slot<Result<UserInfo>>()
 
@@ -455,7 +472,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     }
 
     verify { fetchUserInfoCallback(capture(userInfoSlot)) }
-    verify { fetchPractitionerCallback(capture(bundleSlot)) }
+    verify { fetchPractitionerCallback(capture(bundleSlot), any()) }
 
     Assert.assertTrue(userInfoSlot.captured.isSuccess)
     Assert.assertEquals("awesome_uuid", userInfoSlot.captured.getOrThrow().keycloakUuid)
@@ -478,10 +495,67 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSavePractitionerDetails() {
-    coEvery { defaultRepository.create(true, any()) } returns listOf()
+  fun testSavePractitionerDetailsChaRole() {
+    coEvery { defaultRepository.createRemote(true, any()) } just runs
     loginViewModel.savePractitionerDetails(
-      Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = practitionerDetails() }),
+      Bundle()
+        .addEntry(
+          Bundle.BundleEntryComponent().apply {
+            resource =
+              practitionerDetails().apply {
+                fhirPractitionerDetails =
+                  FhirPractitionerDetails().apply {
+                    practitionerId = StringType("my-test-practitioner-id")
+                  }
+              }
+          },
+        ),
+      UserInfo(),
+    ) {}
+    Assert.assertNotNull(
+      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+    )
+  }
+
+  @Test
+  fun testSavePractitionerDetailsSupervisorRole() {
+    coEvery { defaultRepository.createRemote(false, any()) } just runs
+    loginViewModel.savePractitionerDetails(
+      Bundle()
+        .addEntry(
+          Bundle.BundleEntryComponent().apply {
+            resource =
+              practitionerDetails().apply {
+                fhirPractitionerDetails =
+                  FhirPractitionerDetails().apply {
+                    practitioners =
+                      listOf(
+                        Practitioner().apply {
+                          identifier.add(
+                            Identifier().apply {
+                              use = Identifier.IdentifierUse.SECONDARY
+                              value = "my-test-practitioner-id"
+                            },
+                          )
+                        },
+                      )
+                    careTeams = listOf(CareTeam().apply { id = "my-care-team-id" })
+                    organizations = listOf(Organization().apply { id = "my-organization-id" })
+                    locations = listOf(Location().apply { id = "my-organization-id" })
+                    locationHierarchyList =
+                      listOf(LocationHierarchy().apply { id = "my-location-hierarchy-id" })
+                    groups = listOf(Group().apply { id = "my-group-id" })
+                    practitionerRoles =
+                      listOf(PractitionerRole().apply { id = "my-practitioner-role-id" })
+                    organizationAffiliations =
+                      listOf(
+                        OrganizationAffiliation().apply { id = "my-organization-affiliation-id" },
+                      )
+                  }
+              }
+          },
+        ),
+      UserInfo().apply { keycloakUuid = "my-test-practitioner-id" },
     ) {}
     Assert.assertNotNull(
       sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),

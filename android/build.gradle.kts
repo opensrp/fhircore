@@ -11,19 +11,23 @@ buildscript {
   }
 
   dependencies {
-    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10")
-    classpath("org.jetbrains.kotlin:kotlin-serialization:1.7.10")
-    classpath("com.google.dagger:hilt-android-gradle-plugin:2.42")
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.10")
+    classpath("org.jetbrains.kotlin:kotlin-serialization:1.8.10")
+    classpath("com.google.dagger:hilt-android-gradle-plugin:2.45")
     classpath("androidx.navigation:navigation-safe-args-gradle-plugin:2.5.3")
     classpath("com.diffplug.spotless:spotless-plugin-gradle:6.19.0")
     classpath("gradle.plugin.org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.12.0")
     classpath("de.mannodermaus.gradle.plugins:android-junit5:1.8.2.1")
     classpath("com.android.tools.build:gradle:7.1.3")
     classpath("org.jetbrains.dokka:dokka-base:1.8.20")
+    classpath("org.owasp:dependency-check-gradle:8.2.1")
   }
 }
 
-plugins { id("org.jetbrains.dokka") version "1.8.20" }
+plugins {
+  id("org.jetbrains.dokka") version "1.8.20"
+  id("org.owasp.dependencycheck") version "8.2.1"
+}
 
 tasks.dokkaHtmlMultiModule {
   moduleName.set("OpenSRP")
@@ -41,6 +45,10 @@ allprojects {
     mavenCentral()
     maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
     maven(url = "https://jcenter.bintray.com/")
+    apply(plugin = "org.owasp.dependencycheck")
+    tasks.dependencyCheckAggregate{
+      dependencyCheck.formats.add("XML")
+    }
   }
 }
 
