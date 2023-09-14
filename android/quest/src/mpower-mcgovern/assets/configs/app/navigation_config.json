@@ -250,6 +250,27 @@
   },
   "staticMenu": [
     {
+      "id": "inventoryRegister",
+      "display": "Stock Inventory",
+      "icon": "",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_inventory"
+      },
+      "showCount": true,
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "inventoryRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "inventoryRegister"
+        }
+      ]
+    },
+    {
       "id": "dashboardReports",
       "visible": true,
       "display": "Dashboard Reports",
