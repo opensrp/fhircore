@@ -113,11 +113,11 @@ constructor(
         .onFailure { Timber.e(it, "Error retrieving resources. Empty list returned by default") }
         .getOrDefault(emptyList())
 
-    return baseFhirResources.map { baseFhirResource ->
+    return baseFhirResources.map { searchResult ->
       val retrievedRelatedResources =
         withContext(dispatcherProvider.io()) {
           retrieveRelatedResources(
-            resources = listOf(baseFhirResource),
+            resources = listOf(searchResult.resource),
             relatedResourcesConfigs = relatedResourcesConfig,
             relatedResourceWrapper = RelatedResourceWrapper(),
             configComputedRuleValues = configComputedRuleValues,
@@ -125,12 +125,14 @@ constructor(
         }
       RepositoryResourceData(
         resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
-        resource = baseFhirResource,
+        resource = searchResult.resource,
         relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
         relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
         secondaryRepositoryResourceData =
           withContext(dispatcherProvider.io()) {
-            secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData(filterActiveResources)
+            secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData(
+              filterActiveResources,
+            )
           },
       )
     }

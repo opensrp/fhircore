@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
@@ -41,12 +42,12 @@ class FhirEngineExtensionTest : RobolectricTest() {
 
   @Test
   fun searchCompositionByIdentifier() = runBlocking {
-    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns
-      listOf(Composition().apply { id = "123" })
+    coEvery { fhirEngine.search<Composition>(any()) } returns
+      listOf(SearchResult(resource = Composition().apply { id = "123" }, null, null))
 
     val result = fhirEngine.searchCompositionByIdentifier("appId")
 
-    coVerify { fhirEngine.search<Composition>(any<Search>()) }
+    coVerify { fhirEngine.search<Composition>(any()) }
 
     Assert.assertEquals("123", result!!.logicalId)
   }
@@ -56,11 +57,11 @@ class FhirEngineExtensionTest : RobolectricTest() {
     val fhirContext = FhirContext(FhirVersionEnum.R4)
     val fhirOperator = FhirOperator(fhirContext, fhirEngine)
 
-    coEvery { fhirEngine.search<Library>(any<Search>()) } returns listOf()
+    coEvery { fhirEngine.search<Library>(any()) } returns listOf()
 
     runBlocking { fhirEngine.loadLibraryAtPath(fhirOperator, "") }
 
-    coVerify { fhirEngine.search<Library>(any<Search>()) }
+    coVerify { fhirEngine.search<Library>(any()) }
   }
 
   @Test
@@ -80,15 +81,15 @@ class FhirEngineExtensionTest : RobolectricTest() {
           )
       }
 
-    coEvery { fhirEngine.search<Library>(any<Search>()) } returns
-      listOf(library) andThenAnswer
+    coEvery { fhirEngine.search<Library>(any()) } returns
+      listOf(SearchResult(resource = library, null, null)) andThenAnswer
       {
         emptyList()
       }
 
     runBlocking { fhirEngine.loadLibraryAtPath(fhirOperator, "path") }
 
-    coVerify { fhirEngine.search<Library>(any<Search>()) }
+    coVerify { fhirEngine.search<Library>(any()) }
   }
 
   @Test
@@ -118,10 +119,11 @@ class FhirEngineExtensionTest : RobolectricTest() {
           listOf(RelatedArtifact().apply { type = RelatedArtifact.RelatedArtifactType.DEPENDSON })
       }
 
-    coEvery { fhirEngine.search<Measure>(any<Search>()) } returns listOf(measure)
+    coEvery { fhirEngine.search<Measure>(any()) } returns
+      listOf(SearchResult(resource = measure, null, null))
 
     runBlocking { fhirEngine.loadCqlLibraryBundle(fhirOperator, measurePath) }
 
-    coVerify { fhirEngine.search<Measure>(any<Search>()) }
+    coVerify { fhirEngine.search<Measure>(any()) }
   }
 }

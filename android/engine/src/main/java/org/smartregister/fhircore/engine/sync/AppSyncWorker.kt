@@ -24,7 +24,8 @@ import com.google.android.fhir.sync.AcceptLocalConflictResolver
 import com.google.android.fhir.sync.ConflictResolver
 import com.google.android.fhir.sync.DownloadWorkManager
 import com.google.android.fhir.sync.FhirSyncWorker
-import com.google.android.fhir.sync.UploadConfiguration
+import com.google.android.fhir.sync.UploadWorkManager
+import com.google.android.fhir.sync.upload.SquashedChangesUploadWorkManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -47,9 +48,9 @@ constructor(
       context = appTimeStampContext,
     )
 
-  /** Disable ETag for upload */
-  override fun getUploadConfiguration(): UploadConfiguration =
-    UploadConfiguration(useETagForUpload = false)
+  override fun getUploadWorkManager(): UploadWorkManager {
+    return SquashedChangesUploadWorkManager()
+  }
 
   override fun getFhirEngine(): FhirEngine = openSrpFhirEngine
 }
