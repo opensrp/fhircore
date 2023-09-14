@@ -122,7 +122,7 @@ class CqlContentTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
     coEvery { defaultRepository.create(any(), any()) } returns emptyList()
-    coEvery { defaultRepository.search(any()) } returns listOf()
+    coEvery { defaultRepository.searchCondition(any()) } returns listOf()
 
     val result = runBlocking {
       evaluator.runCqlLibrary(
@@ -176,7 +176,7 @@ class CqlContentTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
     coEvery { defaultRepository.create(any(), any()) } returns emptyList()
-    coEvery { defaultRepository.search(any()) } returns listOf()
+    coEvery { defaultRepository.searchCondition(any()) } returns listOf()
 
     val result = runBlocking {
       evaluator.runCqlLibrary(
