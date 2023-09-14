@@ -179,8 +179,7 @@ constructor(
                 ?.takeIf { it.isNotEmpty() }
                 ?.let { evaluatedValue ->
                   // TODO handle cases where we explicitly need to set previous value as null,
-                  // when
-                  // passing null to Terser, it gives error NPE
+                  // when passing null to Terser, it gives error NPE
                   Timber.d("${dynamicValue.path}, evaluatedValue: $evaluatedValue")
                   TerserUtil.setFieldByFhirPath(
                     FhirContext.forR4Cached(),
