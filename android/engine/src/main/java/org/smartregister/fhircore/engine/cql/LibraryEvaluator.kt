@@ -21,7 +21,6 @@ import ca.uhn.fhir.context.api.BundleInclusionRule
 import ca.uhn.fhir.model.valueset.BundleTypeEnum
 import ca.uhn.fhir.rest.api.BundleLinks
 import ca.uhn.fhir.rest.api.IVersionSpecificBundleFactory
-import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.common.collect.Lists
 import javax.inject.Inject
@@ -249,7 +248,7 @@ class LibraryEvaluator @Inject constructor(val defaultRepository: DefaultReposit
             listOfNotNull(
               patient,
               *data.entry.map { it.resource }.toTypedArray(),
-              *defaultRepository.search(library.dataRequirementFirstRep).toTypedArray(),
+              *defaultRepository.searchCondition(library.dataRequirementFirstRep).toTypedArray(),
             ),
           ),
       )

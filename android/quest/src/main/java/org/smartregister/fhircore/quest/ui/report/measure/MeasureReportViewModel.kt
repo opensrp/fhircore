@@ -46,7 +46,6 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
-import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -66,8 +65,8 @@ import org.smartregister.fhircore.engine.util.extension.codingOf
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractType
+import org.smartregister.fhircore.engine.util.extension.findCount
 import org.smartregister.fhircore.engine.util.extension.findPercentage
-import org.smartregister.fhircore.engine.util.extension.findPopulation
 import org.smartregister.fhircore.engine.util.extension.findRatio
 import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.formatDate
@@ -289,18 +288,33 @@ constructor(
                 subjects.addAll(measureReportRepository.fetchSubjects(config))
 
                 // If a practitioner Id is available, add it to the list of subjects
-                if (practitionerId?.isNotBlank() == true) {
+                if (practitionerId?.isNotBlank() == true && subjects.isEmpty()) {
                   subjects.add("${Practitioner().resourceType.name}/$practitionerId")
                 }
 
-                val existing =
-                  retrievePreviouslyGeneratedMeasureReports(
-                    fhirEngine = fhirEngine,
+                val existingReports =
+                  fhirEngine.retrievePreviouslyGeneratedMeasureReports(
                     startDateFormatted = startDateFormatted,
                     endDateFormatted = endDateFormatted,
                     measureUrl = config.url,
                     subjects = listOf(),
                   )
+
+                val existingValidReports = mutableListOf<MeasureReport>()
+
+                existingReports
+                  .groupBy { it.subject.reference }
+                  .forEach { entry ->
+                    if (
+                      entry.value.size > 1 &&
+                        entry.value.distinctBy { it.measure }.size > 1 &&
+                        entry.value.distinctBy { it.type }.size > 1
+                    ) {
+                      return@forEach
+                    } else {
+                      existingValidReports.addAll(entry.value)
+                    }
+                  }
 
                 // if report is of current month or does not exist generate a new one and replace
                 // existing
@@ -308,7 +322,9 @@ constructor(
                   endDateFormatted
                     .parseDate(SDF_YYYY_MM_DD)!!
                     .formatDate(SDF_YYYY_MMM)
-                    .contentEquals(Date().formatDate(SDF_YYYY_MMM)) || existing.isEmpty()
+                    .contentEquals(Date().formatDate(SDF_YYYY_MMM)) ||
+                    existingValidReports.isEmpty() ||
+                    existingValidReports.size != subjects.size
                 ) {
                   withContext(dispatcherProvider.io()) {
                     fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)
@@ -319,11 +335,11 @@ constructor(
                     startDateFormatted = startDateFormatted,
                     endDateFormatted = endDateFormatted,
                     subjects = subjects,
-                    existing = existing,
+                    existing = existingValidReports,
                     practitionerId = practitionerId,
                   )
                 } else {
-                  existing
+                  existingValidReports
                 }
               }
 
@@ -431,8 +447,8 @@ constructor(
         data.addAll(formatSupplementalData(report.contained, report.type, reportConfig))
 
         report.group
-          .map { group ->
-            val denominator = group.findPopulation(MeasurePopulationType.NUMERATOR)?.count
+          .mapNotNull { group ->
+            val denominator = group.findCount()
             group to
               group.stratifier
                 .asSequence()
@@ -443,23 +459,21 @@ constructor(
                     title = stratifier.value.text,
                     percentage =
                       stratifier.findPercentage(
-                        denominator!!,
-                        reportConfig?.roundingStrategy
-                          ?: ReportConfiguration.DEFAULT_ROUNDING_STRATEGY,
-                        reportConfig?.roundingPrecision
-                          ?: ReportConfiguration.DEFAULT_ROUNDING_PRECISION,
+                        denominator!!.count,
+                        reportConfig,
                       ),
-                    count = stratifier.findRatio(denominator),
+                    count = stratifier.findRatio(denominator.count),
                     description = stratifier.id?.replace("-", " ")?.uppercase() ?: "",
                   )
                 }
           }
           .mapNotNull {
-            it.first.findPopulation(MeasurePopulationType.NUMERATOR)?.let { count ->
+            it.first?.let { group ->
               MeasureReportPopulationResult(
                 title = it.first.id.replace("-", " "),
                 indicatorTitle = reportConfig?.title ?: "",
-                measureReportDenominator = count.count.toString(),
+                measureReportDenominator = group.findCount()?.count.toString(),
+                dataList = it.second.toList(),
               )
             }
           }

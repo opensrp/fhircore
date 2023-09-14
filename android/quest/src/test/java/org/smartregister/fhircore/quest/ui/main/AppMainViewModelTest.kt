@@ -71,7 +71,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.showToast
-import org.smartregister.fhircore.quest.HiltActivityForTest
+import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -165,19 +165,19 @@ class AppMainViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnEventUpdateSyncStates() {
-    val stateInProgress = mockk<SyncJobStatus.InProgress>()
-    appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(stateInProgress, "Some timestamp"))
-    Assert.assertEquals("Some timestamp", appMainViewModel.appMainUiState.value.lastSyncTime)
-
     // Simulate sync state Finished
-    val timestamp = OffsetDateTime.now()
+    val syncFinishedTimestamp = OffsetDateTime.now()
+    val syncFinishedSyncJobStatus = mockk<SyncJobStatus.Finished>()
+    every { syncFinishedSyncJobStatus.timestamp } returns syncFinishedTimestamp
 
-    val stateFinished = mockk<SyncJobStatus.Finished>()
-    every { stateFinished.timestamp } returns timestamp
-
-    appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(stateFinished, "Some timestamp"))
+    appMainViewModel.onEvent(
+      AppMainEvent.UpdateSyncState(
+        syncFinishedSyncJobStatus,
+        appMainViewModel.formatLastSyncTimestamp(syncFinishedTimestamp),
+      ),
+    )
     Assert.assertEquals(
-      appMainViewModel.formatLastSyncTimestamp(timestamp),
+      appMainViewModel.formatLastSyncTimestamp(syncFinishedTimestamp),
       sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null),
     )
     coVerify { appMainViewModel.retrieveAppMainUiState() }
@@ -216,7 +216,7 @@ class AppMainViewModelTest : RobolectricTest() {
         listOf(
           ActionConfig(
             trigger = ActionTrigger.ON_CLICK,
-            workflow = ApplicationWorkflow.LAUNCH_SETTINGS,
+            workflow = ApplicationWorkflow.LAUNCH_SETTINGS.name,
           ),
         ),
       )

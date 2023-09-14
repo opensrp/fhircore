@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
+
 package org.smartregister.fhircore.quest.ui.appsetting
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -54,14 +58,19 @@ class AppSettingActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     val appSettingActivity = this@AppSettingActivity
     appSettingActivity.applyWindowInsetListener()
-    setContent { AppTheme { LoaderDialog(dialogMessage = stringResource(R.string.initializing)) } }
+    setContent {
+      AppTheme {
+        val error by appSettingViewModel.error.observeAsState("")
+        LoaderDialog(dialogMessage = stringResource(R.string.initializing))
+        if (error.isNotEmpty()) {
+          showToast(error)
+          finish()
+        }
+      }
+    }
     lifecycleScope.launch(dispatcherProvider.io()) { libraryEvaluator.initialize() }
     val existingAppId =
       sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
-
-    appSettingViewModel.error.observe(appSettingActivity) { error ->
-      if (!error.isNullOrEmpty()) showToast(error)
-    }
 
     // If app exists load the configs otherwise fetch from the server
     if (!existingAppId.isNullOrEmpty()) {

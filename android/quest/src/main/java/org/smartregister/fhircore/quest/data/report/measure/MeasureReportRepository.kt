@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import timber.log.Timber
 
@@ -48,6 +49,7 @@ constructor(
   override val configRulesExecutor: ConfigRulesExecutor,
   val registerRepository: RegisterRepository,
   private val fhirOperator: FhirOperator,
+  override val fhirPathDataExtractor: FhirPathDataExtractor,
 ) :
   DefaultRepository(
     fhirEngine = fhirEngine,
@@ -56,6 +58,7 @@ constructor(
     configurationRegistry = configurationRegistry,
     configService = configService,
     configRulesExecutor = configRulesExecutor,
+    fhirPathDataExtractor = fhirPathDataExtractor,
   ) {
 
   /**
@@ -146,7 +149,7 @@ constructor(
       end = endDateFormatted,
       reportType = reportType,
       subject = subject,
-      practitioner = practitionerId,
+      practitioner = practitionerId.takeIf { it?.isNotBlank() == true },
     )
   }
 
@@ -160,14 +163,15 @@ constructor(
   suspend fun fetchSubjects(config: ReportConfiguration): List<String> {
     if (config.subjectXFhirQuery?.isNotEmpty() == true) {
       try {
-        return fhirEngine.search(config.subjectXFhirQuery!!).map {
+        return fhirEngine.search(config.subjectXFhirQuery!!).map { searchResult ->
           // prevent missing subject where MeasureEvaluator looks for Group members and skips the
           // Group itself
-          if (it is Group && !it.hasMember()) {
-            it.addMember(Group.GroupMemberComponent(it.asReference()))
-            update(it)
+          val resource = searchResult.resource
+          if (resource is Group && !resource.hasMember()) {
+            resource.addMember(Group.GroupMemberComponent(resource.asReference()))
+            update(resource)
           }
-          "${it.resourceType.name}/${it.logicalId}"
+          "${resource.resourceType.name}/${resource.logicalId}"
         }
       } catch (e: FHIRException) {
         Timber.e(e, "When fetching subjects for measure report")

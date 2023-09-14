@@ -17,12 +17,15 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Search
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
-import io.mockk.mockk
+import io.mockk.coVerify
+import io.mockk.slot
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateType
@@ -34,13 +37,50 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.domain.model.RoundingStrategy
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class MeasureExtensionTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-  private var fhirEngine = mockk<FhirEngine>()
+
+  @Inject lateinit var fhirEngine: FhirEngine
+
+  private val measureReport =
+    MeasureReport().apply {
+      addGroup().apply {
+        this.addPopulation().apply {
+          this.code.addCoding(
+            MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) },
+          )
+          this.count = 1
+        }
+
+        this.addPopulation().apply {
+          this.code.addCoding(
+            MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) },
+          )
+          this.count = 2
+        }
+
+        this.addStratifier().addStratum().apply {
+          this.addPopulation().apply {
+            this.code.addCoding(
+              MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) },
+            )
+            this.count = 3
+          }
+
+          this.addPopulation().apply {
+            this.code.addCoding(
+              MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) },
+            )
+            this.count = 4
+          }
+        }
+      }
+    }
 
   @Before
   fun setUp() {
@@ -69,24 +109,25 @@ class MeasureExtensionTest : RobolectricTest() {
   @Test
   fun `findRatio should return correct ratio display for group`() {
     val result = measureReport.groupFirstRep.findRatio()
-
     assertEquals("1/2", result)
   }
 
   @Test
   fun `findRatio should return correct ratio display for stratum with given denominator`() {
     val result = measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findRatio(12)
-
     assertEquals("3/12", result)
   }
 
   @Test
   fun `findPercentage should return zero for stratum when given denominator is zero`() {
+    val reportConfiguration =
+      ReportConfiguration(
+        roundingStrategy = RoundingStrategy.ROUND_UP,
+      )
     val result =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         0,
-        RoundingStrategy.ROUND_UP,
-        0,
+        reportConfiguration,
       )
 
     assertEquals("0", result)
@@ -97,26 +138,30 @@ class MeasureExtensionTest : RobolectricTest() {
     val resultTruncate =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         9,
-        RoundingStrategy.TRUNCATE,
-        0,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.TRUNCATE,
+        ),
       )
     val resultRoundUp =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         9,
-        RoundingStrategy.ROUND_UP,
-        0,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_UP,
+        ),
       )
     val resultRoundOffLower =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         9,
-        RoundingStrategy.ROUND_OFF,
-        0,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_OFF,
+        ),
       )
     val resultRoundOffUpper =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         8,
-        RoundingStrategy.ROUND_OFF,
-        0,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_OFF,
+        ),
       )
 
     assertEquals("33", resultTruncate)
@@ -130,26 +175,33 @@ class MeasureExtensionTest : RobolectricTest() {
     val resultPrecision2Truncate =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         9,
-        RoundingStrategy.TRUNCATE,
-        2,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.TRUNCATE,
+          roundingPrecision = 2,
+        ),
       )
     val resultPrecision2RoundUp =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         9,
-        RoundingStrategy.ROUND_UP,
-        2,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_UP,
+          roundingPrecision = 2,
+        ),
       )
     val resultPrecision2RoundOff =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         7,
-        RoundingStrategy.ROUND_OFF,
-        2,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_OFF,
+          roundingPrecision = 2,
+        ),
       )
     val resultPrecision0RoundUp =
       measureReport.groupFirstRep.stratifierFirstRep.stratumFirstRep.findPercentage(
         9,
-        RoundingStrategy.ROUND_UP,
-        0,
+        ReportConfiguration(
+          roundingStrategy = RoundingStrategy.ROUND_UP,
+        ),
       )
 
     assertEquals("33.33", resultPrecision2Truncate)
@@ -254,54 +306,48 @@ class MeasureExtensionTest : RobolectricTest() {
     assertEquals("2021-Dec", result!!.value.text)
   }
 
-  private val measureReport =
-    MeasureReport().apply {
-      addGroup().apply {
-        this.addPopulation().apply {
-          this.code.addCoding(
-            MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) },
-          )
-          this.count = 1
-        }
-
-        this.addPopulation().apply {
-          this.code.addCoding(
-            MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) },
-          )
-          this.count = 2
-        }
-
-        this.addStratifier().addStratum().apply {
-          this.addPopulation().apply {
-            this.code.addCoding(
-              MeasurePopulationType.NUMERATOR.let { Coding(it.system, it.toCode(), it.display) },
-            )
-            this.count = 3
+  @Test
+  fun testRetrievePreviouslyGeneratedMeasureReportsProducesCorrectSearchObject() {
+    runTest {
+      val newMeasureReport =
+        measureReport.copy().apply {
+          id = "new-measure-report"
+          period.apply {
+            this.start = DateType("2023-08-01").value
+            this.end = DateType("2023-08-30").value
           }
-
-          this.addPopulation().apply {
-            this.code.addCoding(
-              MeasurePopulationType.DENOMINATOR.let { Coding(it.system, it.toCode(), it.display) },
-            )
-            this.count = 4
-          }
+          measure = "https://testmeasureurl.com"
         }
-      }
+
+      // Create measure to be searched instead of mocking
+      fhirEngine.create(newMeasureReport)
+
+      val result =
+        fhirEngine.retrievePreviouslyGeneratedMeasureReports(
+          startDateFormatted = "2023-08-01",
+          endDateFormatted = "2023-08-30",
+          measureUrl = "https://testmeasureurl.com",
+          subjects = emptyList(),
+        )
+      assertEquals(1, result.size)
+      assertEquals(newMeasureReport.logicalId, result[0].logicalId)
+
+      coVerify { fhirEngine.search<MeasureReport>(capture(slot())) }
     }
+  }
 
   @Test
   fun testAlreadyGeneratedMeasureReports() {
-    coEvery { fhirEngine.search<MeasureReport>(any<Search>()) } returns emptyList()
+    coEvery { fhirEngine.search<MeasureReport>(any()) } returns emptyList()
     runBlocking {
       val result =
-        retrievePreviouslyGeneratedMeasureReports(
-          fhirEngine = fhirEngine,
-          "2022-02-02",
-          "2022-04-04",
-          "http://nourl.com",
-          emptyList(),
+        fhirEngine.retrievePreviouslyGeneratedMeasureReports(
+          startDateFormatted = "2022-02-02",
+          endDateFormatted = "2022-04-04",
+          measureUrl = "http://nourl.com",
+          subjects = emptyList(),
         )
-      assertTrue(result.isNullOrEmpty())
+      assertTrue(result.isEmpty())
     }
   }
 }

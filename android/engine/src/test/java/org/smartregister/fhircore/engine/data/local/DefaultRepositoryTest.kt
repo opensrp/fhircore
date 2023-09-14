@@ -19,10 +19,10 @@ package org.smartregister.fhircore.engine.data.local
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -41,11 +41,12 @@ import io.mockk.verify
 import java.time.ZoneId
 import java.util.Date
 import javax.inject.Inject
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
@@ -85,32 +86,33 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class DefaultRepositoryTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
-  private val application = ApplicationProvider.getApplicationContext<Application>()
-
   @Inject lateinit var gson: Gson
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
-  @Inject lateinit var configService: ConfigService
-  private lateinit var dispatcherProvider: DefaultDispatcherProvider
-  private lateinit var fhirEngine: FhirEngine
-  private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
-  private lateinit var defaultRepository: DefaultRepository
 
   @Inject lateinit var configRulesExecutor: ConfigRulesExecutor
+
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
+  @Inject lateinit var configService: ConfigService
+
+  @Inject lateinit var fhirEngine: FhirEngine
+  private val application = ApplicationProvider.getApplicationContext<Application>()
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private lateinit var dispatcherProvider: DefaultDispatcherProvider
+  private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
+  private lateinit var defaultRepository: DefaultRepository
   private lateinit var spiedConfigService: ConfigService
 
   @Before
   fun setUp() {
     hiltRule.inject()
     dispatcherProvider = DefaultDispatcherProvider()
-    fhirEngine = mockk(relaxUnitFun = true)
     sharedPreferenceHelper = SharedPreferencesHelper(application, gson)
     spiedConfigService = spyk(configService)
     defaultRepository =
@@ -121,6 +123,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         configService = spiedConfigService,
         configRulesExecutor = configRulesExecutor,
+        fhirPathDataExtractor = fhirPathDataExtractor,
       )
   }
 
@@ -161,30 +164,10 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun searchResourceForGivenReferenceShouldSearchCarePlanThatIsRelatedToAPatientUsingId() {
-    val samplePatientId = "12345"
-
-    coEvery { fhirEngine.search<CarePlan> {} } returns listOf(mockk())
-
-    runBlocking {
-      val actualCarePlans =
-        defaultRepository.searchResourceFor<CarePlan>(
-          subjectId = samplePatientId,
-          subjectType = ResourceType.Patient,
-          subjectParam = CarePlan.SUBJECT,
-          filters = emptyList(),
-        )
-      Assert.assertEquals(1, actualCarePlans.size)
-    }
-
-    coVerify { fhirEngine.search<CarePlan> {} }
-  }
-
-  @Test
   fun searchResourceForGivenTokenShouldReturn1PatientUsingId() {
     val samplePatientId = "12345"
-
-    coEvery { fhirEngine.search<Patient> {} } returns listOf(mockk())
+    coEvery { fhirEngine.search<Patient>(any()) } returns
+      listOf(SearchResult(resource = Faker.buildPatient(id = samplePatientId), null, null))
 
     runBlocking {
       val actualPatients =
@@ -192,24 +175,34 @@ class DefaultRepositoryTest : RobolectricTest() {
           token = Patient.RES_ID,
           subjectId = samplePatientId,
           subjectType = ResourceType.Patient,
-          filters = emptyList(),
+          dataQueries = emptyList(),
           configComputedRuleValues = emptyMap(),
         )
       Assert.assertEquals(1, actualPatients.size)
     }
 
-    coVerify { fhirEngine.search<Patient> {} }
+    coVerify { fhirEngine.search<Patient>(any()) }
   }
 
   @Test
-  fun searchShouldReturn1ConditionGivenConditionTypeDataRequirement() {
-    coEvery { fhirEngine.search<Condition> {} } returns listOf(mockk())
+  fun searchShouldReturn1ConditionGivenConditionTypeDataRequirement() = runTest {
+    val coding = Coding("https://system.co", "codi", "Condition code")
+    val condition = Condition().apply { code = CodeableConcept(coding) }
+
+    fhirEngine.create(condition)
 
     runBlocking {
       val actualPatients =
-        defaultRepository.search(
+        defaultRepository.searchCondition(
           dataRequirement =
-            DataRequirement().apply { type = Enumerations.ResourceType.CONDITION.toCode() },
+            DataRequirement().apply {
+              type = Enumerations.ResourceType.CONDITION.toCode()
+              addCodeFilter(
+                DataRequirement.DataRequirementCodeFilterComponent()
+                  .addCode(coding)
+                  .setPath("code"),
+              )
+            },
         )
       Assert.assertEquals(1, actualPatients.size)
     }
@@ -370,24 +363,32 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun loadManagingEntityShouldReturnPatient() {
-    val group = Group().apply { managingEntity = Reference("RelatedPerson/12983") }
+  fun loadManagingEntityShouldReturnPatient() =
+    runTest(timeout = 30.seconds) {
+      val patient = Faker.buildPatient(id = "12345")
 
-    val relatedPerson =
-      RelatedPerson().apply {
-        id = "12983"
-        patient = Reference("Patient/12345")
+      val relatedPerson =
+        RelatedPerson().apply {
+          id = "12983"
+          this.patient = Reference("Patient/12345")
+        }
+
+      val group =
+        Group().apply {
+          id = "groupId"
+          managingEntity = relatedPerson.asReference()
+        }
+
+      // Add required resources to the database
+      try {
+        fhirEngine.create(patient, relatedPerson, group)
+      } catch (exception: Throwable) {
+        println(exception.localizedMessage)
       }
-    coEvery { fhirEngine.search<RelatedPerson> {} } returns listOf(relatedPerson)
 
-    val patient = Patient().apply { id = "12345" }
-    coEvery { fhirEngine.search<Patient> {} } returns listOf(patient)
-
-    runBlocking {
-      val managingEntity = defaultRepository.loadManagingEntity(group, emptyMap())
+      val managingEntity = defaultRepository.loadManagingEntity(group)
       Assert.assertEquals("12345", managingEntity?.logicalId)
     }
-  }
 
   @Test
   fun changeManagingEntityShouldVerifyFhirEngineCalls() {
@@ -559,10 +560,11 @@ class DefaultRepositoryTest : RobolectricTest() {
           configurationRegistry = mockk(),
           configService = mockk(),
           configRulesExecutor = mockk(),
+          fhirPathDataExtractor = mockk(),
         ),
       )
-    coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
-      listOf(managingEntityRelatedPerson)
+    coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
+      listOf(SearchResult(resource = managingEntityRelatedPerson, null, null))
     coEvery { defaultRepositorySpy.delete(any()) } just runs
     coEvery { defaultRepositorySpy.addOrUpdate(resource = any()) } just runs
     val group =
@@ -634,6 +636,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           configurationRegistry = mockk(),
           configService = mockk(),
           configRulesExecutor = mockk(),
+          fhirPathDataExtractor = fhirPathDataExtractor,
         ),
       )
 
@@ -660,9 +663,8 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     val relatedPersonId = "1234"
     val relatedPerson = RelatedPerson().setId(relatedPersonId)
-    @Suppress("UNCHECKED_CAST")
-    coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
-      listOf(relatedPerson) as List<RelatedPerson>
+    coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
+      listOf(SearchResult(resource = relatedPerson as RelatedPerson, null, null))
     coEvery { defaultRepository.delete(any()) } just runs
     coEvery { defaultRepository.addOrUpdate(resource = any()) } just runs
 
@@ -698,7 +700,8 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.loadResource<Group>("73847") } returns group
     coEvery { fhirEngine.get(ResourceType.Patient, memberId) } returns patient
 
-    coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns listOf(relatedPerson)
+    coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
+      listOf(SearchResult(resource = relatedPerson, null, null))
     coEvery { defaultRepository.delete(any()) } just runs
     coEvery { defaultRepository.addOrUpdate(resource = any()) } just runs
 
@@ -774,31 +777,33 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun testUpdateResourcesRecursivelyClosesResource() {
-    val carePlan =
-      CarePlan().apply {
-        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
-        status = CarePlan.CarePlanStatus.DRAFT
-      }
+  fun testUpdateResourcesRecursivelyClosesResource() = runTest {
     val patient =
       Patient().apply {
         id = "123345677"
         active = true
       }
-    val resourceConfig = ResourceConfig(id = "carePlan-id", resource = carePlan.resourceType)
-    coEvery { fhirEngine.search<Resource>(any<Search>()) } returns listOf(carePlan)
 
-    runBlocking {
-      defaultRepository.updateResourcesRecursively(
-        resourceConfig = resourceConfig,
-        subject = patient,
-      )
-    }
+    val carePlan =
+      CarePlan().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = CarePlan.CarePlanStatus.DRAFT
+        subject = patient.asReference()
+      }
+
+    val resourceConfig = ResourceConfig(id = "carePlan-id", resource = carePlan.resourceType)
+
+    fhirEngine.create(patient, carePlan)
+
+    defaultRepository.updateResourcesRecursively(
+      resourceConfig = resourceConfig,
+      subject = patient,
+    )
 
     val carePlanSlot = slot<CarePlan>()
     coVerify { fhirEngine.update(capture(carePlanSlot)) }
-    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", carePlanSlot.captured.id)
-    Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
+    Assert.assertEquals("CarePlan/37793d31-def5-40bd-a2e3-fdaf5a0ddc53", carePlanSlot.captured.id)
+    Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
   }
 
   @Test

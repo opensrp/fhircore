@@ -74,7 +74,6 @@ constructor(
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
-  val dismissLoaderView: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
 
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
@@ -104,15 +103,21 @@ constructor(
     return Pager(
       config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
       pagingSourceFactory = {
-        RegisterPagingSource(registerRepository, resourceDataRulesExecutor, ruleConfigs).apply {
-          setPatientPagingSourceState(
-            RegisterPagingSourceState(
-              registerId = registerId,
-              loadAll = loadAll,
-              currentPage = if (loadAll) 0 else currentPage.value,
-            ),
+        RegisterPagingSource(
+            registerRepository = registerRepository,
+            resourceDataRulesExecutor = resourceDataRulesExecutor,
+            ruleConfigs = ruleConfigs,
+            actionParameters = registerUiState.value.params,
           )
-        }
+          .apply {
+            setPatientPagingSourceState(
+              RegisterPagingSourceState(
+                registerId = registerId,
+                loadAll = loadAll,
+                currentPage = if (loadAll) 0 else currentPage.value,
+              ),
+            )
+          }
       },
     )
   }
@@ -196,7 +201,7 @@ constructor(
             isFirstTimeSync =
               sharedPreferencesHelper
                 .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
-                .isNullOrEmpty(),
+                .isNullOrEmpty() && _totalRecordsCount.value == 0L,
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,
             totalRecordsCount = _totalRecordsCount.value,
@@ -209,7 +214,7 @@ constructor(
                 .toInt(),
             progressPercentage = _percentageProgress,
             isSyncUpload = _isUploadSync,
-            dismissLoaderView = dismissLoaderView,
+            params = paramsMap,
           )
       }
     }
