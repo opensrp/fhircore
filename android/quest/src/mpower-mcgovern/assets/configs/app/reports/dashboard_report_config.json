@@ -558,6 +558,230 @@
       "actions": [
         "data.put('totalEddCount', size(service.filterResources(Observation, \"Observation.code.coding[0].code = '129019007'\")))"
       ]
+    },
+    {
+      "name": "totalInventoryCount",
+      "condition": "true",
+      "actions": [
+        "data.put('totalInventoryCount', size(service.filterResources(Group, \"Group.code.coding[0].code = '386452003'\")))"
+      ]
+    },
+    {
+      "name": "latestStockObservations",
+      "condition": "true",
+      "actions": [
+        "data.put('latestStockObservations', service.filterResources(Observation, \"Observation.category[0].coding[0].code = '386452003' and Observation.status = 'preliminary'\"))"
+      ]
+    },
+    {
+      "name": "ancVisitObservation",
+      "condition": "true",
+      "actions": [
+        "data.put('ancVisitObservation', service.filterResources(data.get('latestStockObservations'), \"Observation.subject.reference = 'Group/f1c7de7d-0c2a-448d-8060-2b8defd51e42'\"))"
+      ]
+    },
+    {
+      "name": "ancVisitBalance",
+      "condition": "true",
+      "actions": [
+        "data.put('ancVisitBalance', size(data.get('ancVisitObservation')) > 0 ? fhirPath.extractValue(data.get('ancVisitObservation'), 'Observation.component.value.value') : 0)"
+      ]
+    },
+    {
+      "name": "pncVisitObservation",
+      "condition": "true",
+      "actions": [
+        "data.put('pncVisitObservation', service.filterResources(data.get('latestStockObservations'), \"Observation.subject.reference = 'Group/e5897c35-d071-4254-a844-43b5a2a799cb'\"))"
+      ]
+    },
+    {
+      "name": "pncVisitBalance",
+      "condition": "true",
+      "actions": [
+        "data.put('pncVisitBalance', size(data.get('pncVisitObservation')) > 0 ? fhirPath.extractValue(data.get('pncVisitObservation'), 'Observation.component.value.value') : 0)"
+      ]
+    },
+    {
+      "name": "ncdVisitObservation",
+      "condition": "true",
+      "actions": [
+        "data.put('ncdVisitObservation', service.filterResources(data.get('latestStockObservations'), \"Observation.subject.reference = 'Group/2dfbaf0d-b207-4b43-9536-1daa4d5efcae'\"))"
+      ]
+    },
+    {
+      "name": "ncdVisitBalance",
+      "condition": "true",
+      "actions": [
+        "data.put('ncdVisitBalance', size(data.get('ncdVisitObservation')) > 0 ? fhirPath.extractValue(data.get('ncdVisitObservation'), 'Observation.component.value.value') : 0)"
+      ]
+    },
+    {
+      "name": "glassesObservation",
+      "condition": "true",
+      "actions": [
+        "data.put('glassesObservation', service.filterResources(data.get('latestStockObservations'), \"Observation.subject.reference = 'Group/395cc84c-a5f5-4440-9798-1ded5036170f'\"))"
+      ]
+    },
+    {
+      "name": "glassesBalance",
+      "condition": "true",
+      "actions": [
+        "data.put('glassesBalance', size(data.get('glassesObservation')) > 0 ? fhirPath.extractValue(data.get('glassesObservation'), 'Observation.component.value.value') : 0)"
+      ]
+    },
+    {
+      "name": "sunglassesObservation",
+      "condition": "true",
+      "actions": [
+        "data.put('sunglassesObservation', service.filterResources(data.get('latestStockObservations'), \"Observation.subject.reference = 'Group/69abf560-719a-43ba-8ab9-3e1cd31f0a8b'\"))"
+      ]
+    },
+    {
+      "name": "sunglassesBalance",
+      "condition": "true",
+      "actions": [
+        "data.put('sunglassesBalance', size(data.get('sunglassesObservation')) > 0 ? fhirPath.extractValue(data.get('sunglassesObservation'), 'Observation.component.value.value') : 0)"
+      ]
+    },
+    {
+      "name": "sv100Observation",
+      "condition": "true",
+      "actions": [
+        "data.put('sv100Observation', service.filterResources(data.get('latestStockObservations'), \"Observation.subject.reference = 'Group/79b8d655-fbe4-410f-9147-ba7b471356a0'\"))"
+      ]
+    },
+    {
+      "name": "sv100Balance",
+      "condition": "true",
+      "actions": [
+        "data.put('sv100Balance', size(data.get('sv100Observation')) > 0 ? fhirPath.extractValue(data.get('sv100Observation'), 'Observation.component.value.value') : 0)"
+      ]
+    },
+    {
+      "name": "sv150Observation",
+      "condition": "true",
+      "actions": [
+        "data.put('sv150Observation', service.filterResources(data.get('latestStockObservations'), \"Observation.subject.reference = 'Group/b0e83719-e5d4-4086-f504-ac0b854f758d'\"))"
+      ]
+    },
+    {
+      "name": "sv150Balance",
+      "condition": "true",
+      "actions": [
+        "data.put('sv150Balance', size(data.get('sv150Observation')) > 0 ? fhirPath.extractValue(data.get('sv150Observation'), 'Observation.component.value.value') : 0)"
+      ]
+    },
+    {
+      "name": "sv200Observation",
+      "condition": "true",
+      "actions": [
+        "data.put('sv200Observation', service.filterResources(data.get('latestStockObservations'), \"Observation.subject.reference = 'Group/ff451512-4e17-4bf4-d0bc-b1671a57a24e'\"))"
+      ]
+    },
+    {
+      "name": "sv200Balance",
+      "condition": "true",
+      "actions": [
+        "data.put('sv200Balance', size(data.get('sv200Observation')) > 0 ? fhirPath.extractValue(data.get('sv200Observation'), 'Observation.component.value.value') : 0)"
+      ]
+    },
+    {
+      "name": "sv250Observation",
+      "condition": "true",
+      "actions": [
+        "data.put('sv250Observation', service.filterResources(data.get('latestStockObservations'), \"Observation.subject.reference = 'Group/7701468a-c44c-42ad-848d-b9410e072d41'\"))"
+      ]
+    },
+    {
+      "name": "sv250Balance",
+      "condition": "true",
+      "actions": [
+        "data.put('sv250Balance', size(data.get('sv250Observation')) > 0 ? fhirPath.extractValue(data.get('sv250Observation'), 'Observation.component.value.value') : 0)"
+      ]
+    },
+    {
+      "name": "sv300Observation",
+      "condition": "true",
+      "actions": [
+        "data.put('sv300Observation', service.filterResources(data.get('latestStockObservations'), \"Observation.subject.reference = 'Group/57dbe381-2f41-451a-8876-53e40ff61149'\"))"
+      ]
+    },
+    {
+      "name": "sv300Balance",
+      "condition": "true",
+      "actions": [
+        "data.put('sv300Balance', size(data.get('sv300Observation')) > 0 ? fhirPath.extractValue(data.get('sv300Observation'), 'Observation.component.value.value') : 0)"
+      ]
+    },
+    {
+      "name": "bf100Observation",
+      "condition": "true",
+      "actions": [
+        "data.put('bf100Observation', service.filterResources(data.get('latestStockObservations'), \"Observation.subject.reference = 'Group/6e15f59e-3466-4ba4-9989-60e57e8ee2ff'\"))"
+      ]
+    },
+    {
+      "name": "bf100Balance",
+      "condition": "true",
+      "actions": [
+        "data.put('bf100Balance', size(data.get('bf100Observation')) > 0 ? fhirPath.extractValue(data.get('bf100Observation'), 'Observation.component.value.value') : 0)"
+      ]
+    },
+    {
+      "name": "bf150Observation",
+      "condition": "true",
+      "actions": [
+        "data.put('bf150Observation', service.filterResources(data.get('latestStockObservations'), \"Observation.subject.reference = 'Group/3ee0c4e9-3dab-49d7-f141-177fdf6c41e0'\"))"
+      ]
+    },
+    {
+      "name": "bf150Balance",
+      "condition": "true",
+      "actions": [
+        "data.put('bf150Balance', size(data.get('bf150Observation')) > 0 ? fhirPath.extractValue(data.get('bf150Observation'), 'Observation.component.value.value') : 0)"
+      ]
+    },
+    {
+      "name": "bf200Observation",
+      "condition": "true",
+      "actions": [
+        "data.put('bf200Observation', service.filterResources(data.get('latestStockObservations'), \"Observation.subject.reference = 'Group/d88536ec-161f-4a02-8af9-1df62eab7be7'\"))"
+      ]
+    },
+    {
+      "name": "bf200Balance",
+      "condition": "true",
+      "actions": [
+        "data.put('bf200Balance', size(data.get('bf200Observation')) > 0 ? fhirPath.extractValue(data.get('bf200Observation'), 'Observation.component.value.value') : 0)"
+      ]
+    },
+    {
+      "name": "bf250Observation",
+      "condition": "true",
+      "actions": [
+        "data.put('bf250Observation', service.filterResources(data.get('latestStockObservations'), \"Observation.subject.reference = 'Group/ee3378d4-f816-4933-ad5a-4146b618db8a'\"))"
+      ]
+    },
+    {
+      "name": "bf250Balance",
+      "condition": "true",
+      "actions": [
+        "data.put('bf250Balance', size(data.get('bf250Observation')) > 0 ? fhirPath.extractValue(data.get('bf250Observation'), 'Observation.component.value.value') : 0)"
+      ]
+    },
+    {
+      "name": "bf300Observation",
+      "condition": "true",
+      "actions": [
+        "data.put('bf300Observation', service.filterResources(data.get('latestStockObservations'), \"Observation.subject.reference = 'Group/5e09afc5-4be8-4f8b-8603-3e1b9ba74db3'\"))"
+      ]
+    },
+    {
+      "name": "bf300Balance",
+      "condition": "true",
+      "actions": [
+        "data.put('bf300Balance', size(data.get('bf300Observation')) > 0 ? fhirPath.extractValue(data.get('bf300Observation'), 'Observation.component.value.value') : 0)"
+      ]
     }
   ],
   "tabBar": {
@@ -1167,7 +1391,7 @@
                   {
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#000000",
-                    "primaryText": "@{totalFamilyCount}"
+                    "primaryText": "@{ancVisitBalance}"
                   }
                 ]
               }
@@ -1201,7 +1425,7 @@
                   {
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#000000",
-                    "primaryText": "@{totalFamilyCount}"
+                    "primaryText": "@{pncVisitBalance}"
                   }
                 ]
               }
@@ -1235,7 +1459,7 @@
                   {
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#000000",
-                    "primaryText": "@{totalFamilyCount}"
+                    "primaryText": "@{ncdVisitBalance}"
                   }
                 ]
               }
@@ -1269,7 +1493,7 @@
                   {
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#000000",
-                    "primaryText": "@{totalFamilyCount}"
+                    "primaryText": "@{glassesBalance}"
                   }
                 ]
               }
@@ -1303,7 +1527,7 @@
                   {
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#000000",
-                    "primaryText": "@{totalFamilyCount}"
+                    "primaryText": "@{sunglassesBalance}"
                   }
                 ]
               }
@@ -1337,7 +1561,7 @@
                   {
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#000000",
-                    "primaryText": "@{totalFamilyCount}"
+                    "primaryText": "@{sv100Balance}"
                   }
                 ]
               }
@@ -1371,7 +1595,7 @@
                   {
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#000000",
-                    "primaryText": "@{totalFamilyCount}"
+                    "primaryText": "@{sv150Balance}"
                   }
                 ]
               }
@@ -1405,7 +1629,7 @@
                   {
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#000000",
-                    "primaryText": "@{totalFamilyCount}"
+                    "primaryText": "@{sv200Balance}"
                   }
                 ]
               }
@@ -1439,7 +1663,7 @@
                   {
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#000000",
-                    "primaryText": "@{totalFamilyCount}"
+                    "primaryText": "@{sv250Balance}"
                   }
                 ]
               }
@@ -1473,7 +1697,7 @@
                   {
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#000000",
-                    "primaryText": "@{totalFamilyCount}"
+                    "primaryText": "@{sv300Balance}"
                   }
                 ]
               }
@@ -1507,7 +1731,7 @@
                   {
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#000000",
-                    "primaryText": "@{totalFamilyCount}"
+                    "primaryText": "@{bf100Balance}"
                   }
                 ]
               }
@@ -1541,7 +1765,7 @@
                   {
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#000000",
-                    "primaryText": "@{totalFamilyCount}"
+                    "primaryText": "@{bf150Balance}"
                   }
                 ]
               }
@@ -1575,7 +1799,7 @@
                   {
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#000000",
-                    "primaryText": "@{totalFamilyCount}"
+                    "primaryText": "@{bf200Balance}"
                   }
                 ]
               }
@@ -1609,7 +1833,7 @@
                   {
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#000000",
-                    "primaryText": "@{totalFamilyCount}"
+                    "primaryText": "@{bf250Balance}"
                   }
                 ]
               }
@@ -1643,7 +1867,7 @@
                   {
                     "viewType": "COMPOUND_TEXT",
                     "primaryTextColor": "#000000",
-                    "primaryText": "@{totalFamilyCount}"
+                    "primaryText": "@{bf300Balance}"
                   }
                 ]
               }

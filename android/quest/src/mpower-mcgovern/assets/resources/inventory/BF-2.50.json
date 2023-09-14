@@ -1,0 +1,60 @@
+{
+  "resourceType": "Group",
+  "id": "ee3378d4-f816-4933-ad5a-4146b618db8a",
+  "identifier": [
+    {
+      "use": "official",
+      "value": "14007766554"
+    },
+    {
+      "use": "secondary",
+      "value": "cca96379-fe14-44e2-a88d-898ca4696b65"
+    }
+  ],
+  "active": true,
+  "type": "device",
+  "actual": false,
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "386452003",
+        "display": "Supply management"
+      }
+    ]
+  },
+  "name": "BF-2.50",
+  "managingEntity": {
+    "reference": "Organization/f934f574-9599-47c7-8033-ef8124cba603"
+  },
+  "characteristic": [
+    {
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "767524001",
+            "display": "Unit of measure"
+          }
+        ]
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "767525000",
+            "display": "Unit"
+          }
+        ],
+        "text": "Pieces"
+      }
+    }
+  ],
+  "member": [
+    {
+      "entity": {
+        "reference": "Group/ee3378d4-f816-4933-ad5a-4146b618db8a"
+      }
+    }
+  ]
+}

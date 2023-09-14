@@ -1,0 +1,60 @@
+{
+  "resourceType": "Group",
+  "id": "e5897c35-d071-4254-a844-43b5a2a799cb",
+  "identifier": [
+    {
+      "use": "official",
+      "value": "20005544332"
+    },
+    {
+      "use": "secondary",
+      "value": "5be8eda7-7f8c-4b0b-9e86-571aea23cb48"
+    }
+  ],
+  "active": true,
+  "type": "device",
+  "actual": false,
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "386452003",
+        "display": "Supply management"
+      }
+    ]
+  },
+  "name": "PNC Visit",
+  "managingEntity": {
+    "reference": "Organization/f934f574-9599-47c7-8033-ef8124cba603"
+  },
+  "characteristic": [
+    {
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "767524001",
+            "display": "Unit of measure"
+          }
+        ]
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "767525000",
+            "display": "Unit"
+          }
+        ],
+        "text": "Pieces"
+      }
+    }
+  ],
+  "member": [
+    {
+      "entity": {
+        "reference": "Group/e5897c35-d071-4254-a844-43b5a2a799cb"
+      }
+    }
+  ]
+}

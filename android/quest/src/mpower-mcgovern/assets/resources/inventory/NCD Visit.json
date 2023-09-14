@@ -1,0 +1,60 @@
+{
+  "resourceType": "Group",
+  "id": "2dfbaf0d-b207-4b43-9536-1daa4d5efcae",
+  "identifier": [
+    {
+      "use": "official",
+      "value": "30006655443"
+    },
+    {
+      "use": "secondary",
+      "value": "5fb9ba8f-6bb4-42f7-81d6-919efc4ea9c6"
+    }
+  ],
+  "active": true,
+  "type": "device",
+  "actual": false,
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "386452003",
+        "display": "Supply management"
+      }
+    ]
+  },
+  "name": "NCD Visit",
+  "managingEntity": {
+    "reference": "Organization/f934f574-9599-47c7-8033-ef8124cba603"
+  },
+  "characteristic": [
+    {
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "767524001",
+            "display": "Unit of measure"
+          }
+        ]
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "767525000",
+            "display": "Unit"
+          }
+        ],
+        "text": "Pieces"
+      }
+    }
+  ],
+  "member": [
+    {
+      "entity": {
+        "reference": "Group/2dfbaf0d-b207-4b43-9536-1daa4d5efcae"
+      }
+    }
+  ]
+}

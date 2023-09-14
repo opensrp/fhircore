@@ -1,0 +1,60 @@
+{
+  "resourceType": "Group",
+  "id": "f1c7de7d-0c2a-448d-8060-2b8defd51e42",
+  "identifier": [
+    {
+      "use": "official",
+      "value": "10004433221"
+    },
+    {
+      "use": "secondary",
+      "value": "3de5ed55-f8d2-4f1f-8b18-8299620fd4bf"
+    }
+  ],
+  "active": true,
+  "type": "device",
+  "actual": false,
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "386452003",
+        "display": "Supply management"
+      }
+    ]
+  },
+  "name": "ANC Visit",
+  "managingEntity": {
+    "reference": "Organization/f934f574-9599-47c7-8033-ef8124cba603"
+  },
+  "characteristic": [
+    {
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "767524001",
+            "display": "Unit of measure"
+          }
+        ]
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "767525000",
+            "display": "Unit"
+          }
+        ],
+        "text": "Pieces"
+      }
+    }
+  ],
+  "member": [
+    {
+      "entity": {
+        "reference": "Group/f1c7de7d-0c2a-448d-8060-2b8defd51e42"
+      }
+    }
+  ]
+}

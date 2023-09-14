@@ -1,0 +1,60 @@
+{
+  "resourceType": "Group",
+  "id": "69abf560-719a-43ba-8ab9-3e1cd31f0a8b",
+  "identifier": [
+    {
+      "use": "official",
+      "value": "50008877665"
+    },
+    {
+      "use": "secondary",
+      "value": "595dc240-96ea-4b9b-90f6-767cdefe57f8"
+    }
+  ],
+  "active": true,
+  "type": "device",
+  "actual": false,
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "386452003",
+        "display": "Supply management"
+      }
+    ]
+  },
+  "name": "Sunglasses",
+  "managingEntity": {
+    "reference": "Organization/f934f574-9599-47c7-8033-ef8124cba603"
+  },
+  "characteristic": [
+    {
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "767524001",
+            "display": "Unit of measure"
+          }
+        ]
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "767525000",
+            "display": "Unit"
+          }
+        ],
+        "text": "Pieces"
+      }
+    }
+  ],
+  "member": [
+    {
+      "entity": {
+        "reference": "Group/69abf560-719a-43ba-8ab9-3e1cd31f0a8b"
+      }
+    }
+  ]
+}

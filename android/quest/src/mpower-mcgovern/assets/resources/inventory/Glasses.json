@@ -1,0 +1,60 @@
+{
+  "resourceType": "Group",
+  "id": "395cc84c-a5f5-4440-9798-1ded5036170f",
+  "identifier": [
+    {
+      "use": "official",
+      "value": "40007766554"
+    },
+    {
+      "use": "secondary",
+      "value": "4179fab2-028c-461b-a51f-757a0019cc8a"
+    }
+  ],
+  "active": true,
+  "type": "device",
+  "actual": false,
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "386452003",
+        "display": "Supply management"
+      }
+    ]
+  },
+  "name": "Glasses",
+  "managingEntity": {
+    "reference": "Organization/f934f574-9599-47c7-8033-ef8124cba603"
+  },
+  "characteristic": [
+    {
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "767524001",
+            "display": "Unit of measure"
+          }
+        ]
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "767525000",
+            "display": "Unit"
+          }
+        ],
+        "text": "Pieces"
+      }
+    }
+  ],
+  "member": [
+    {
+      "entity": {
+        "reference": "Group/395cc84c-a5f5-4440-9798-1ded5036170f"
+      }
+    }
+  ]
+}
