@@ -28,6 +28,7 @@ import org.hl7.fhir.r4.model.MeasureReport
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
+import org.smartregister.fhircore.engine.cql.R4MeasureProcessorExt
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
@@ -61,6 +62,8 @@ constructor(
     fhirPathDataExtractor = fhirPathDataExtractor,
   ) {
 
+  val measureProcessorExt by lazy { R4MeasureProcessorExt.buildMeasureProcessorExt(fhirOperator) }
+
   /**
    * If running a measure for any subject throws a null pointer exception the measures for
    * unevaluated subjects are discarded and the method returns a list of any reports added so far.
@@ -79,6 +82,7 @@ constructor(
     subjects: List<String>,
     existing: List<MeasureReport>,
     practitionerId: String?,
+    params: Map<String, String>,
   ): List<MeasureReport> {
     val measureReport = mutableListOf<MeasureReport>()
     try {
@@ -93,6 +97,7 @@ constructor(
                 endDateFormatted = endDateFormatted,
                 subject = it,
                 practitionerId = practitionerId,
+                params = params,
               )
             }
             .forEach { subject -> measureReport.add(subject) }
@@ -104,6 +109,7 @@ constructor(
               endDateFormatted = endDateFormatted,
               subject = null,
               practitionerId = practitionerId,
+              params = params,
             )
             .also { measureReport.add(it) }
         }
@@ -142,14 +148,16 @@ constructor(
     endDateFormatted: String,
     subject: String?,
     practitionerId: String?,
+    params: Map<String, String>,
   ): MeasureReport {
-    return fhirOperator.evaluateMeasure(
-      measureUrl = measureUrl,
-      start = startDateFormatted,
-      end = endDateFormatted,
-      reportType = reportType,
-      subject = subject,
-      practitioner = practitionerId.takeIf { it?.isNotBlank() == true },
+    return measureProcessorExt.evaluateMeasure(
+      measureUrl,
+      startDateFormatted,
+      endDateFormatted,
+      reportType,
+      subject,
+      practitionerId,
+      params,
     )
   }
 

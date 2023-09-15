@@ -18,8 +18,10 @@ package org.smartregister.fhircore.engine.util
 
 import kotlin.reflect.KClass
 import kotlin.reflect.full.callSuspend
+import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.declaredMemberFunctions
 import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.isAccessible
 
 fun <T : Any> KClass<T>.callFunction(method: String, vararg args: Any) =
@@ -45,4 +47,23 @@ suspend fun <T : Any> KClass<T>.callSuspendFunctionOnField(
       .first { it.name == method }
       .apply { isAccessible = true }
   return declaredObjectMethod.callSuspend(declaredObject, *args)
+}
+
+inline fun <reified T : Any> getPrivateProperty(property: String, obj: T): Any? {
+  return T::class
+    .declaredMemberProperties
+    .find { it.name == property }!!
+    .apply { isAccessible = true }
+    .get(obj)
+}
+
+fun <T : Any> Any.callSuperPrivateMember(method: String, vararg args: Any?): T {
+  return this::class
+    .superclasses
+    .first()
+    .declaredFunctions
+    .find { it.name == method }!!
+    .apply { isAccessible = true }
+    .also { it }
+    .call(this, *args) as T
 }

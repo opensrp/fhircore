@@ -128,6 +128,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           subjects = emptyList(),
           existing = emptyList(),
           practitionerId = null,
+          params = mapOf(),
         )
       assertEquals(measureReport.size, 0)
     }
