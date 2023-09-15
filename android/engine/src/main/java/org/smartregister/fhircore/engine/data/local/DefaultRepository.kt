@@ -733,11 +733,20 @@ constructor(
     fhirEngine.update(resource)
   }
 
-  fun filterRelatedResource(resource: Resource, resourceConfig: ResourceConfig): Boolean {
-    return resourceConfig.filterFhirPathExpressions?.any { filterFhirPathExpression ->
-      fhirPathDataExtractor.extractValue(resource, filterFhirPathExpression.key) ==
-        filterFhirPathExpression.value
-    } == true
+
+  /**
+   * Filtering the Related Resources is achieved by use of the filterFhirPathExpression configuration.
+   * It specifies which field and values to filter the resources by.
+   * */
+  private fun filterRelatedResource(resource: Resource, resourceConfig: ResourceConfig): Boolean {
+    return if (resourceConfig.filterFhirPathExpressions?.isEmpty() == true) {
+      true
+    } else {
+      resourceConfig.filterFhirPathExpressions?.any { filterFhirPathExpression ->
+        fhirPathDataExtractor.extractValue(resource, filterFhirPathExpression.key) ==
+                filterFhirPathExpression.value
+      } == true
+    }
   }
 
   /**
