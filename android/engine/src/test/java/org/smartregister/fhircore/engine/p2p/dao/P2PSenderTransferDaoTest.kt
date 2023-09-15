@@ -104,7 +104,7 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
       )
     } returns
       listOf(
-        SearchResult(resource = expectedPatient, revIncluded = emptyMap(), included = emptyMap())
+        SearchResult(resource = expectedPatient, revIncluded = emptyMap(), included = emptyMap()),
       )
     val patientDataType = DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)
 
