@@ -240,10 +240,10 @@ android {
       versionNameSuffix = "-cadre"
       manifestPlaceholders["appLabel"] = "Cadre App"
     }
-    create("immunization") {
+    create("sidimmunization") {
       dimension = "apps"
-      applicationIdSuffix = ".immunization"
-      versionNameSuffix = "-immunization"
+      applicationIdSuffix = ".sidimmunization"
+      versionNameSuffix = "-sidimmunization"
       manifestPlaceholders["appLabel"] = "Immunization App"
     }
 
