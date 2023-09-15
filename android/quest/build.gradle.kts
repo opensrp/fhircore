@@ -240,11 +240,11 @@ android {
       versionNameSuffix = "-cadre"
       manifestPlaceholders["appLabel"] = "Cadre App"
     }
-    create("sidimmunization") {
+    create("sideir") {
       dimension = "apps"
-      applicationIdSuffix = ".sidimmunization"
-      versionNameSuffix = "-sidimmunization"
-      manifestPlaceholders["appLabel"] = "Immunization App"
+      applicationIdSuffix = ".sideir"
+      versionNameSuffix = "-sideir"
+      manifestPlaceholders["appLabel"] = "SID EIR"
     }
 
     create("wdf") {
