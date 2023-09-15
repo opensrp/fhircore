@@ -61,6 +61,7 @@ import org.smartregister.fhircore.quest.ui.shared.components.ActionableButton
 
 const val VIEW_PROFILE_TAG = "view-profile-tag"
 const val TOP_SECTION_ROW = "top-section-row"
+const val ICON_FIELD_TAG = "iconTestTag"
 
 @Composable
 fun MemberProfileBottomSheetView(
@@ -94,13 +95,15 @@ fun MemberProfileBottomSheetView(
         contentDescription = null,
         tint = DefaultColor.copy(0.8f),
         modifier =
-          modifier.clickable {
-            coroutineScope.launch {
-              if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
-                bottomSheetScaffoldState.bottomSheetState.collapse()
+          modifier
+            .clickable {
+              coroutineScope.launch {
+                if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
+                  bottomSheetScaffoldState.bottomSheetState.collapse()
+                }
               }
             }
-          },
+            .testTag(ICON_FIELD_TAG),
       )
     }
     Spacer(modifier = modifier.height(8.dp))
