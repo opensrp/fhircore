@@ -301,12 +301,40 @@ Use of other [Value Constraint](https://build.fhir.org/ig/HL7/sdc/behavior.html#
 }
 ```
 
+## CQF expression
+
+[Cqf-expression](http://hl7.org/fhir/R4B/extension-cqf-expression.html) is used in [Questionnaire.item.text](https://build.fhir.org/questionnaire-definitions.html#Questionnaire.item.text) to make it a dynamic text. Dynamic text in this context refers to the ability to run FHIRPath, including variables, to the text content. As a result, the displayed text can dynamically change based on various parameters, such as the responses to other questionnaire items. In essence, the content of [Questionnaire.item.text](https://build.fhir.org/questionnaire-definitions.html#Questionnaire.item.text) can adapt and respond to the answers provided to other questions within the questionnaire.
+
+Facts about Cqf-expression:
+- Cqf-expression is declared in the `_text` property as extension
+- If the Cqf-expression has NOT been evaluated yet, you will see the text declared in the text property
+- Using the [translation extension](https://build.fhir.org/ig/HL7/fhir-extensions/StructureDefinition-translation.html) alongside Cqf-expression is not supported
+
+```
+{
+  "linkId": "1",
+  "text": "The text you will ONLY see, if cqf-expression has NOT been evaluated yet",
+  "_text": {
+    "extension": [
+      {
+        "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+        "valueExpression": {
+          "language": "text/fhirpath",
+          "expression": "'My name is ' + %name"
+        }
+      }
+    ]
+  },
+  "type": "display"
+}
+```
+
 ## Gotchas
 When working with dates, please note that according to the FHIR spec, if the duration value is specified as a whole number _(e.g. 1 month)_ such as when you write `today + '1 month'`, then when the duration is added or subtracted to a given date(time), the outcome is rounded to the nearest natural calendar division - e.g. Feb. 1 + 1 mo = March 1, not March 2 or 3 (since 1 month is defined in UCUM as 30 days).
 
 **Examples of rounding off to closest calendar division:**
 
-> Normal calculation - Feb 1, 2023 + 30 days = March 3, 2023. 
+> Normal calculation - Feb 1, 2023 + 30 days = March 3, 2023.
 > FHIR Path spec - Feb 1, 2023 + 1 month  = March 1, 2023
 
 
