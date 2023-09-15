@@ -119,7 +119,8 @@ cql-engine-jackson = { group = "org.opencds.cqf.cql", name = "engine.jackson", v
 cql-evaluator-builder = { group = "org.opencds.cqf.cql", name = "evaluator.builder", version.ref = "cql-evaluator" }
 cql-evaluator-dagger = { group = "org.opencds.cqf.cql", name = "evaluator.dagger", version.ref = "cql-evaluator" }
 cql-evaluator-plandefinition = { group = "org.opencds.cqf.cql", name = "evaluator.plandefinition", version.ref = "cql-evaluator" }
-cql-measure-evaluator = { group = "org.opencds.cqf.cql", name = "evaluator.measure", version.ref = "cql-evaluator" }
+cql-evaluator-measure = { group = "org.opencds.cqf.cql", name = "evaluator.measure", version.ref = "cql-evaluator" }
+cql-evaluator-measure-hapi = { group = "org.opencds.cqf.cql", name = "evaluator.measure-hapi", version.ref = "cql-evaluator" }
 cql-to-elm = { group = "info.cqframework", name = "cql-to-elm", version.ref = "cql-to-elm" }
 dagger-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt-android" }
 dagger-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "dagger-hilt-compiler" }

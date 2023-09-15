@@ -28,6 +28,7 @@ import org.hl7.fhir.r4.model.MeasureReport
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
+import org.smartregister.fhircore.engine.cql.R4MeasureProcessorExt
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
@@ -61,6 +62,8 @@ constructor(
     fhirPathDataExtractor = fhirPathDataExtractor,
   ) {
 
+  val measureProcessorExt by lazy { R4MeasureProcessorExt.buildMeasureProcessorExt(fhirOperator) }
+
   /**
    * If running a measure for any subject throws a null pointer exception the measures for
    * unevaluated subjects are discarded and the method returns a list of any reports added so far.
@@ -79,6 +82,7 @@ constructor(
     subjects: List<String>,
     existing: List<MeasureReport>,
     practitionerId: String?,
+    params: Map<String, String>,
   ): List<MeasureReport> {
     val measureReport = mutableListOf<MeasureReport>()
     try {
@@ -93,18 +97,20 @@ constructor(
                 endDateFormatted = endDateFormatted,
                 subject = it,
                 practitionerId = practitionerId,
+                params = params,
               )
             }
             .forEach { subject -> measureReport.add(subject) }
         } else {
           runMeasureReport(
-            measureUrl = measureUrl,
-            reportType = MeasureReportViewModel.POPULATION,
-            startDateFormatted = startDateFormatted,
-            endDateFormatted = endDateFormatted,
-            subject = null,
-            practitionerId = practitionerId,
-          )
+              measureUrl = measureUrl,
+              reportType = MeasureReportViewModel.POPULATION,
+              startDateFormatted = startDateFormatted,
+              endDateFormatted = endDateFormatted,
+              subject = null,
+              practitionerId = practitionerId,
+              params = params,
+            )
             .also { measureReport.add(it) }
         }
       }
@@ -142,14 +148,16 @@ constructor(
     endDateFormatted: String,
     subject: String?,
     practitionerId: String?,
+    params: Map<String, String>,
   ): MeasureReport {
-    return fhirOperator.evaluateMeasure(
-      measureUrl = measureUrl,
-      start = startDateFormatted,
-      end = endDateFormatted,
-      reportType = reportType,
-      subject = subject,
-      practitioner = practitionerId,
+    return measureProcessorExt.evaluateMeasure(
+      measureUrl,
+      startDateFormatted,
+      endDateFormatted,
+      reportType,
+      subject,
+      practitionerId,
+      params,
     )
   }
 
@@ -163,14 +171,15 @@ constructor(
   suspend fun fetchSubjects(config: ReportConfiguration): List<String> {
     if (config.subjectXFhirQuery?.isNotEmpty() == true) {
       try {
-        return fhirEngine.search(config.subjectXFhirQuery!!).map {
+        return fhirEngine.search(config.subjectXFhirQuery!!).map { searchResult ->
           // prevent missing subject where MeasureEvaluator looks for Group members and skips the
           // Group itself
-          if (it is Group && !it.hasMember()) {
-            it.addMember(Group.GroupMemberComponent(it.asReference()))
-            update(it)
+          val resource = searchResult.resource
+          if (resource is Group && !resource.hasMember()) {
+            resource.addMember(Group.GroupMemberComponent(resource.asReference()))
+            update(resource)
           }
-          "${it.resourceType.name}/${it.logicalId}"
+          "${resource.resourceType.name}/${resource.logicalId}"
         }
       } catch (e: FHIRException) {
         Timber.e(e, "When fetching subjects for measure report")

@@ -326,7 +326,10 @@ dependencies {
   implementation(libs.material)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
-  implementation(libs.cql.measure.evaluator)
+  implementation(libs.cql.evaluator.measure.hapi) {
+    exclude(group = "com.github.ben-manes.caffeine")
+    exclude(group = "ca.uhn.hapi.fhir")
+  }
 
   // Annotation processors
   kapt(libs.hilt.compiler)
