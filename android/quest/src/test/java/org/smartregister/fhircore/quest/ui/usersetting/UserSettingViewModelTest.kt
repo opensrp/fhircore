@@ -92,7 +92,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
-    accountAuthenticator = mockk()
+    accountAuthenticator = mockk(relaxUnitFun = true)
     secureSharedPreference = mockk()
     sharedPreferencesHelper = mockk()
     fhirEngine = mockk(relaxUnitFun = true)
@@ -103,7 +103,6 @@ class UserSettingViewModelTest : RobolectricTest() {
           fhirEngine = mockk(),
           dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
           syncListenerManager = mockk(relaxed = true),
-          sync = sync,
           context = context,
         ),
       )
@@ -266,7 +265,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testResetAppDataShouldClearEverything() = runTest {
     userSettingViewModel.resetAppData(context)
-
+    every { accountAuthenticator.invalidateSession(any()) } just runs
     verify { workManager.cancelAllWork() }
     coVerify { fhirEngine.clearDatabase() }
     verify { accountAuthenticator.invalidateSession(any()) }

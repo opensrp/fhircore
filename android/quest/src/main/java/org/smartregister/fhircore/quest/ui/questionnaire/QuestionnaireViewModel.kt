@@ -36,7 +36,9 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
+import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
@@ -233,11 +235,14 @@ constructor(
             questionnaireConfig = questionnaireConfig,
           )
 
-          executeCql(
-            subject = subject,
-            bundle = newBundle,
-            questionnaire = questionnaire,
-          )
+          withContext(dispatcherProvider.io()) {
+            executeCql(
+              subject = subject,
+              bundle = newBundle,
+              questionnaire = questionnaire,
+            )
+          }
+
           fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
             questionnaireConfig = questionnaireConfig,
             subject = subject,
@@ -557,20 +562,47 @@ constructor(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     context: Context,
-  ) =
-    QuestionnaireResponseValidator.validateQuestionnaireResponse(
-        questionnaire = questionnaire,
-        questionnaireResponse = questionnaireResponse,
+  ): Boolean {
+    val validQuestionnaireResponseItems =
+      ArrayList<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
+    val validQuestionnaireItems = ArrayList<Questionnaire.QuestionnaireItemComponent>()
+    val questionnaireItemsMap = questionnaire.item.groupBy { it.linkId }
+
+    // Only validate items that are present on both Questionnaire and the QuestionnaireResponse
+    questionnaireResponse.item.forEach {
+      if (questionnaireItemsMap.containsKey(it.linkId)) {
+        val questionnaireItem = questionnaireItemsMap.getValue(it.linkId).first()
+        validQuestionnaireResponseItems.add(it)
+        validQuestionnaireItems.add(questionnaireItem)
+      }
+    }
+
+    return QuestionnaireResponseValidator.validateQuestionnaireResponse(
+        questionnaire = Questionnaire().apply { item = validQuestionnaireItems },
+        questionnaireResponse =
+          QuestionnaireResponse().apply { item = validQuestionnaireResponseItems },
         context = context,
       )
       .values
       .flatten()
       .all { it is Valid || it is NotValidated }
+  }
 
   suspend fun executeCql(subject: Resource, bundle: Bundle, questionnaire: Questionnaire) {
-    questionnaire.cqfLibraryIds().forEach {
+    questionnaire.cqfLibraryIds().forEach { libraryId ->
+      // TODO Refactor/Remove as per the issue: https://github.com/opensrp/fhircore/issues/2747
+      if (
+        libraryId == "223758"
+      ) { // Resource id for Library that calculates Z-score in ZEIR application
+        // Adding 4 basic resources which contain the Data needed for Z-score calculation
+        val basicResourceIds = listOf("223754", "223755", "223756", "223757")
+        basicResourceIds.forEach { resourceId ->
+          val basicResource = defaultRepository.loadResource(resourceId) as Basic?
+          bundle.addEntry(Bundle.BundleEntryComponent().setResource(basicResource))
+        }
+      }
       if (subject.resourceType == ResourceType.Patient) {
-        libraryEvaluator.runCqlLibrary(it, subject as Patient, bundle)
+        libraryEvaluator.runCqlLibrary(libraryId, subject as Patient, bundle)
       }
     }
   }
