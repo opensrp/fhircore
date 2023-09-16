@@ -25,8 +25,6 @@ import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
-import java.time.Instant
-import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Bundle
@@ -81,18 +79,13 @@ constructor(
     var bundleCollection: Collection<Resource> = mutableListOf()
 
     for (resource in planDefinition.contained) {
-      if (resource is Bundle) {
-        for (entry in resource.entry) {
-          entry.resource.meta.lastUpdated = planDefinition.meta.lastUpdated
-          if (entry.resource is Library) {
-            cqlLibraryIdList.add(IdType(entry.resource.id).idPart)
-            knowledgeManager.install(writeToFile(entry.resource))
-          }
-          knowledgeManager.install(writeToFile(entry.resource))
-
-          bundleCollection += entry.resource
-        }
+      resource.meta.lastUpdated = planDefinition.meta.lastUpdated
+      if (resource is Library) {
+        cqlLibraryIdList.add(IdType(resource.id).idPart)
       }
+      knowledgeManager.install(writeToFile(resource))
+
+      bundleCollection += resource
     }
     return bundleCollection
   }
@@ -106,6 +99,7 @@ constructor(
     val availableCqlLibraries = fhirEngine.search<Library> {}
     val availablePlanDefinitions = fhirEngine.search<PlanDefinition> {}
     for (cqlLibrary in availableCqlLibraries) {
+      fhirOperator.loadLib(cqlLibrary)
       knowledgeManager.install(writeToFile(cqlLibrary))
       cqlLibraryIdList.add(IdType(cqlLibrary.id).idPart)
     }
@@ -126,6 +120,7 @@ constructor(
   suspend fun applyPlanDefinitionOnPatient(
     planDefinition: PlanDefinition,
     patient: Patient,
+    data: Bundle = Bundle(),
     output: CarePlan,
   ) {
     val patientId = IdType(patient.id).idPart
@@ -226,11 +221,10 @@ constructor(
     carePlanOfRecord: CarePlan,
   ) {
     val resourceList = createProposedRequestResources(proposedCarePlan.contained)
-    updateCarePlanWithProtocol(carePlanOfRecord, proposedCarePlan.instantiatesCanonical)
     addRequestResourcesToCarePlanOfRecord(carePlanOfRecord, resourceList)
 
-    fhirEngine.update(carePlanOfRecord)
-    linkRequestResourcesToCarePlan(carePlanOfRecord, resourceList)
+    // fhirEngine.create(carePlanOfRecord)
+    // linkRequestResourcesToCarePlan(carePlanOfRecord, resourceList)
   }
 
   /** Update status of a [CarePlan] activity */
@@ -299,7 +293,6 @@ constructor(
   /** Update [Task] status */
   suspend fun updateRequestResourceStatus(resource: Task, status: String) {
     resource.status = Task.TaskStatus.valueOf(status)
-    resource.executionPeriod.end = Date.from(Instant.now())
     fhirEngine.update(resource)
   }
 

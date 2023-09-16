@@ -45,6 +45,8 @@ import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -63,6 +65,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.PlanDefinition
@@ -122,6 +125,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Inject lateinit var transformSupportServices: TransformSupportServices
 
+  @Inject lateinit var workflowCarePlanGenerator: WorkflowCarePlanGenerator
+
   @Inject lateinit var fhirPathEngine: FHIRPathEngine
   private lateinit var fhirResourceUtil: FhirResourceUtil
   private lateinit var fhirEngine: FhirEngine
@@ -161,6 +166,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         fhirPathEngine = fhirPathEngine,
         defaultRepository = defaultRepository,
         fhirResourceUtil = fhirResourceUtil,
+        workflowCarePlanGenerator = workflowCarePlanGenerator,
       )
 
     immunizationResource =
@@ -2043,6 +2049,46 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     assertFalse(conditionsMet)
   }
 
+  @Test
+  @ExperimentalCoroutinesApi
+  fun `generateOrUpdateCarePlan should generate a sample careplan using apply`(): Unit =
+    runBlocking(Dispatchers.IO) {
+      val planDefinition =
+        "plans/sample-request/sample_request_plan_definition.json"
+          .readFile()
+          .decodeResourceFromString<PlanDefinition>()
+      val patient =
+        "plans/sample-request/sample_request_patient.json"
+          .readFile()
+          .decodeResourceFromString<Patient>()
+      val library =
+        "plans/sample-request/sample_request_example-1.0.0.cql.fhir.json"
+          .readFile()
+          .decodeResourceFromString<Library>()
+
+      fhirEngine.create(planDefinition)
+      fhirEngine.create(library)
+      fhirEngine.create(patient)
+
+      val resourceSlot = slot<Resource>()
+      coEvery { defaultRepository.create(any(), capture(resourceSlot)) } answers
+        {
+          runBlocking(Dispatchers.IO) { fhirEngine.create(resourceSlot.captured) }
+          listOf()
+        }
+      val carePlan =
+        fhirCarePlanGenerator.generateOrUpdateCarePlan(
+          planDefinition = planDefinition,
+          subject = patient,
+          generateCarePlanWithWorkflowApi = true,
+        )!!
+
+      assertNotNull(carePlan)
+      assertNotNull(UUID.fromString(carePlan.id))
+      assertEquals(planDefinition.title, carePlan.title)
+      assertEquals(planDefinition.description, carePlan.description)
+    }
+
   data class PlanDefinitionResources(
     val planDefinition: PlanDefinition,
     val patient: Patient,
@@ -2168,6 +2214,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       "HPV 1" to patient.birthDate.plusMonths(108),
       "HPV 2" to patient.birthDate.plusMonths(114),
     )
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  fun <T> runBlockingOnWorkerThread(block: suspend (CoroutineScope) -> T) =
+    runTest(Dispatchers.IO) { block(this) }
 }
 
 private fun Date.asYyyyMmDd(): String = this.formatDate(SDF_YYYY_MM_DD)

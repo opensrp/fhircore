@@ -1,0 +1,42 @@
+{
+  "resourceType": "PlanDefinition",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2022-06-20T22:30:39.217+00:00"
+  },
+  "id" : "SampleRequest-Example",
+  "url" : "http://localhost/PlanDefinition/SampleRequest-Example",
+  "title" : "This example illustrates a medication request",
+  "status" : "active",
+  "contained": [
+    {
+      "resourceType" : "ActivityDefinition",
+      "id" : "SampleRequest-1",
+      "url" : "http://localhost/ActivityDefinition/SampleRequest-1",
+      "status": "active",
+      "kind" : "Task",
+      "productCodeableConcept" : {
+        "text" : "Sample 1"
+      }
+    }
+  ],
+  "action": [
+    {
+      "id": "sample-action-1",
+      "title" : "Administer Medication 1",
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/cql-identifier",
+            "expression": "Check Sample Request"
+          }
+        }
+      ],
+      "definitionCanonical": "#SampleRequest-1"
+    }
+  ],
+  "library": [ "http://localhost/Library/sample_request_example|1.0.0" ]
+}
