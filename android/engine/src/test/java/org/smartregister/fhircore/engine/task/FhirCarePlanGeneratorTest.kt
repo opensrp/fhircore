@@ -46,6 +46,7 @@ import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -2228,7 +2229,6 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       "HPV 1" to patient.birthDate.plusMonths(108),
       "HPV 2" to patient.birthDate.plusMonths(114),
     )
-
 }
 
 private fun Date.asYyyyMmDd(): String = this.formatDate(SDF_YYYY_MM_DD)
