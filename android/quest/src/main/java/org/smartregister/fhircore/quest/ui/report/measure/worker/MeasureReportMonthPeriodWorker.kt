@@ -94,7 +94,7 @@ constructor(
               subjects = subjects,
               existing = existing,
               practitionerId = null,
-              params = mapOf(), // TODO do we also want practitioner based reports prebuilt
+              params = mapOf(),
             )
           }
         }

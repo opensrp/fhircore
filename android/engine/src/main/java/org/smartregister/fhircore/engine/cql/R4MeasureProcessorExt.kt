@@ -95,7 +95,6 @@ class R4MeasureProcessorExt(
         )
     val libraryLoader =
       callSuperPrivateMember<LibraryLoader>("buildLibraryLoader", librarySourceProvider)
-    // buildLibraryLoader(librarySourceProvider)
     val library =
       libraryLoader.load(
         VersionedIdentifier().withId(primaryLibrary.name).withVersion(primaryLibrary.version),
