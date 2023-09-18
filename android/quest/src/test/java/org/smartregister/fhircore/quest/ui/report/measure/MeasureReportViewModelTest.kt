@@ -348,7 +348,15 @@ class MeasureReportViewModelTest : RobolectricTest() {
       }
 
       coVerify(exactly = 0) {
-        measureReportRepository.evaluatePopulationMeasure(any(), any(), any(), any(), any(), any())
+        measureReportRepository.evaluatePopulationMeasure(
+          any(),
+          any(),
+          any(),
+          any(),
+          any(),
+          any(),
+          any()
+        )
       }
     }
 
