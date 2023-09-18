@@ -19,11 +19,15 @@ package org.smartregister.fhircore.engine.task
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.util.TerserUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.qualifiers.ApplicationContext
+import org.hl7.fhir.instance.model.api.IBaseParameters
+import org.hl7.fhir.instance.model.api.IBaseResource
+import org.hl7.fhir.r4.model.ActivityDefinition
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -33,12 +37,23 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.MetadataResource
+import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
+import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.opencds.cqf.cql.evaluator.activitydefinition.r4.ActivityDefinitionProcessor
+import org.opencds.cqf.cql.evaluator.expression.ExpressionEvaluator
+import org.opencds.cqf.cql.evaluator.fhir.dal.FhirDal
+import org.opencds.cqf.cql.evaluator.library.LibraryProcessor
+import org.opencds.cqf.cql.evaluator.plandefinition.OperationParametersParser
+import org.opencds.cqf.cql.evaluator.plandefinition.r4.PlanDefinitionProcessor
+import timber.log.Timber
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.jvm.isAccessible
 
 @Singleton
 class WorkflowCarePlanGenerator
@@ -47,11 +62,13 @@ constructor(
   val knowledgeManager: KnowledgeManager,
   val fhirOperator: FhirOperator,
   val fhirEngine: FhirEngine,
+  val fhirPathEngine: FHIRPathEngine,
   @ApplicationContext val context: Context,
 ) {
 
   private var cqlLibraryIdList = ArrayList<String>()
-  private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+  private val fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
+  private val jsonParser = fhirContext.newJsonParser()
 
   private fun writeToFile(resource: Resource): File {
     val fileName =
@@ -98,13 +115,14 @@ constructor(
     // Load Library resources
     val availableCqlLibraries = fhirEngine.search<Library> {}
     val availablePlanDefinitions = fhirEngine.search<PlanDefinition> {}
-    for (cqlLibrary in availableCqlLibraries) {
+    for (searchResults in availableCqlLibraries) {
+      val cqlLibrary = searchResults.resource
       fhirOperator.loadLib(cqlLibrary)
       knowledgeManager.install(writeToFile(cqlLibrary))
       cqlLibraryIdList.add(IdType(cqlLibrary.id).idPart)
     }
-    for (planDefinition in availablePlanDefinitions) {
-      getPlanDefinitionDependentResources(planDefinition)
+    for (searchResults in availablePlanDefinitions) {
+      getPlanDefinitionDependentResources(searchResults.resource)
     }
   }
 
@@ -130,12 +148,79 @@ constructor(
       loadPlanDefinitionResourcesFromDb()
     }
 
-    val carePlanProposal =
+    val r4PlanDefinitionProcessor = createPlanDefinitionProcessor()
+    val carePlanProposal = r4PlanDefinitionProcessor.apply(
+      IdType("PlanDefinition", planDefinitionId),
+      patientId,
+       null,
+      /* practitionerId= */ null,
+      /* organizationId= */ null,
+      /* userType= */ null,
+      /* userLanguage= */ null,
+      /* userTaskContext= */ null,
+      /* setting= */ null,
+      /* settingContext= */ null,
+      /* mergeNestedCarePlans= */ null,
+      /* parameters= */ Parameters(),
+      /* useServerData= */ null,
+      /* bundle= */ null,
+      /* prefetchData= */ null,
+      /* dataEndpoint= */ null,
+      /* contentEndpoint*/ null,
+      /* terminologyEndpoint= */ null
+    ) as CarePlan
+
+    /*val carePlanProposal =
       fhirOperator.generateCarePlan(planDefinitionId = planDefinitionId, patientId = patientId)
-        as CarePlan
+        as CarePlan*/
 
     // Accept the proposed (transient) CarePlan by default and add tasks to the CarePlan of record
     acceptCarePlan(carePlanProposal, output)
+
+    resolveDynamicValues(
+      planDefinition = planDefinition,
+      input = data,
+      subject = patient,
+      output
+    )
+  }
+
+  private fun createPlanDefinitionProcessor(): R4PlanDefinitionProcessor {
+    val fhirDal = getPrivateProperty("fhirEngineDal", fhirOperator) as FhirDal
+    val libraryProcessor = getPrivateProperty("libraryProcessor", fhirOperator) as LibraryProcessor
+    val expressionEvaluator = getPrivateProperty("expressionEvaluator", fhirOperator) as ExpressionEvaluator
+    val activityDefinitionProcessor = getPrivateProperty("activityDefinitionProcessor", fhirOperator) as ActivityDefinitionProcessor
+    val operationParametersParser = getPrivateProperty("operationParametersParser", fhirOperator) as OperationParametersParser
+
+    return R4PlanDefinitionProcessor(
+      fhirContext = fhirContext,
+      fhirDal = fhirDal,
+      libraryProcessor = libraryProcessor,
+      expressionEvaluator = expressionEvaluator,
+      activityDefinitionProcessor = activityDefinitionProcessor,
+      operationParametersParser = operationParametersParser
+    )
+  }
+
+  private fun resolveDynamicValues(planDefinition: PlanDefinition, input: Bundle, subject: Patient, output: CarePlan) {
+    for (action in planDefinition.action) {
+      if (action.hasDynamicValue()) {
+        action.dynamicValue.forEach { dynamicValue ->
+          dynamicValue.expression.expression
+            .let { fhirPathEngine.evaluate(null, input, planDefinition, subject, it) }
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { evaluatedValue ->
+              Timber.d("${dynamicValue.path}, evaluatedValue: $evaluatedValue")
+              TerserUtil.setFieldByFhirPath(
+                FhirContext.forR4Cached(),
+                dynamicValue.path,
+                output,
+                evaluatedValue.first(),
+              )
+            }
+        }
+      }
+    }
   }
 
   /** Update the [CarePlan] to include a reference to the FHIR-define protocol or guideline */
@@ -306,6 +391,25 @@ constructor(
       Task.TaskStatus.ENTEREDINERROR -> CarePlan.CarePlanActivityStatus.ENTEREDINERROR
       Task.TaskStatus.NULL -> CarePlan.CarePlanActivityStatus.NULL
       else -> CarePlan.CarePlanActivityStatus.NULL
+    }
+  }
+
+  private inline fun <reified T : Any> getPrivateProperty(property: String, obj: T): Any? {
+    return T::class
+      .declaredMemberProperties
+      .find { it.name == property }!!
+      .apply { isAccessible = true }
+      .get(obj)
+  }
+
+  inner class R4PlanDefinitionProcessor constructor(
+    fhirContext: FhirContext, fhirDal: FhirDal, libraryProcessor: LibraryProcessor,
+    expressionEvaluator: ExpressionEvaluator, activityDefinitionProcessor: ActivityDefinitionProcessor,
+    operationParametersParser: OperationParametersParser
+  ) : PlanDefinitionProcessor(fhirContext, fhirDal, libraryProcessor, expressionEvaluator, activityDefinitionProcessor, operationParametersParser)
+  {
+    override fun resolveDynamicValue(language: String?, expression: String?, path: String?, altLanguage: String?, altExpression: String?, altPath: String?, libraryUrl: String?, resource: IBaseResource?, params: IBaseParameters?) {
+      // no need to add dynamic value in RequestGroup resource
     }
   }
 }

@@ -26,6 +26,112 @@
       "title" : "Administer Medication 1",
       "prefix": "1",
       "priority": "routine",
+      "dynamicValue": [
+        {
+          "path": "title",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.title"
+          }
+        },
+        {
+          "path": "description",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.description"
+          }
+        },
+        {
+          "path": "instantiatesCanonical",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%rootResource.id.replaceMatches('/_history/.*', '')"
+          }
+        },
+        {
+          "path": "status",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'active'"
+          }
+        },
+        {
+          "path": "intent",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'plan'"
+          }
+        },
+        {
+          "path": "created",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "now()"
+          }
+        },
+        {
+          "path": "subject",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.subject"
+          }
+        },
+        {
+          "path": "author",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.generalPractitioner.first()"
+          }
+        },
+        {
+          "path": "period.start",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value"
+          }
+        },
+        {
+          "path": "period.end",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value + 9 'months'"
+          }
+        },
+        {
+          "path": "activity.detail.kind",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'Task'"
+          }
+        },
+        {
+          "path": "activity.detail.status",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'in-progress'"
+          }
+        },
+        {
+          "path": "activity.detail.description",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "'This action will assess careplan on registration to init careplan'"
+          }
+        },
+        {
+          "path": "activity.detail.performer",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "$this.generalPractitioner.first()"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sample-action-2",
+      "title": "Administer Medication 1",
+      "prefix": "1",
+      "priority": "routine",
       "condition": [
         {
           "kind": "applicability",
