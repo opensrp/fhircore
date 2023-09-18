@@ -101,11 +101,13 @@ class R4MeasureProcessorExt(
         VersionedIdentifier().withId(primaryLibrary.name).withVersion(primaryLibrary.version),
       )
     val terminologyProvider =
-      (if (terminologyEndpoint != null)
+      (if (terminologyEndpoint != null) {
         callSuperPrivateMember("buildTerminologyProvider", terminologyEndpoint)
-      else localTerminologyProvider)
+      } else {
+        localTerminologyProvider
+      })
         ?: throw IllegalStateException(
-          "a terminologyProvider was not provided and one could not be constructed"
+          "a terminologyProvider was not provided and one could not be constructed",
         )
     val dataProvider =
       (if (
@@ -122,7 +124,7 @@ class R4MeasureProcessorExt(
         localDataProvider
       })
         ?: throw IllegalStateException(
-          "a dataProvider was not provided and one could not be constructed"
+          "a dataProvider was not provided and one could not be constructed",
         )
     var measurementPeriod: Interval? = null
     if (StringUtils.isNotBlank(periodStart) && StringUtils.isNotBlank(periodEnd)) {
@@ -143,7 +145,7 @@ class R4MeasureProcessorExt(
         library,
         libraryLoader,
         terminologyProvider,
-        dataProvider
+        dataProvider,
       )
 
     params.forEach { context.setParameter(null, it.first, it.second) }
@@ -162,7 +164,7 @@ class R4MeasureProcessorExt(
     reportType: String,
     subject: String?,
     practitionerId: String?,
-    params: Map<String, String>
+    params: Map<String, String>,
   ): MeasureReport {
     val additionalData =
       Bundle().apply {
@@ -198,7 +200,7 @@ class R4MeasureProcessorExt(
         fhirEngineTerminologyProvider,
         librarySourceProvider,
         compositeDataProvider,
-        fhirDal
+        fhirDal,
       )
     }
   }
