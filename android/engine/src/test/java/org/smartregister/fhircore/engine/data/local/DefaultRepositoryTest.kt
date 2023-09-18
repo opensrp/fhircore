@@ -814,7 +814,11 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Test
   fun testFilterRelatedResourcesShouldReturnTrueIfExpressionIsProvided() {
-    val resourceConfig = ResourceConfig(resource = ResourceType.Task, filterFhirPathExpressions = listOf(KeyValueConfig("Task.status", "ready")))
+    val resourceConfig =
+      ResourceConfig(
+        resource = ResourceType.Task,
+        filterFhirPathExpressions = listOf(KeyValueConfig("Task.status", "ready"))
+      )
     val task =
       Task().apply {
         id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
@@ -826,7 +830,11 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Test
   fun testFilterRelatedResourcesShouldReturnFalseIfExpressionIsProvided() {
-    val resourceConfig = ResourceConfig(resource = ResourceType.Task, filterFhirPathExpressions = listOf(KeyValueConfig("Task.status", "cancelled")))
+    val resourceConfig =
+      ResourceConfig(
+        resource = ResourceType.Task,
+        filterFhirPathExpressions = listOf(KeyValueConfig("Task.status", "cancelled"))
+      )
     val task =
       Task().apply {
         id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
