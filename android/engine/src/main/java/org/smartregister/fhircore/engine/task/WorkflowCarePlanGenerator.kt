@@ -22,17 +22,17 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.util.TerserUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.knowledge.KnowledgeManager
-import com.google.android.fhir.search.search
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.qualifiers.ApplicationContext
-import org.hl7.fhir.instance.model.api.IBaseParameters
-import org.hl7.fhir.instance.model.api.IBaseResource
-import org.hl7.fhir.r4.model.ActivityDefinition
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.jvm.isAccessible
+import org.hl7.fhir.instance.model.api.IBaseParameters
+import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Library
@@ -51,9 +51,8 @@ import org.opencds.cqf.cql.evaluator.fhir.dal.FhirDal
 import org.opencds.cqf.cql.evaluator.library.LibraryProcessor
 import org.opencds.cqf.cql.evaluator.plandefinition.OperationParametersParser
 import org.opencds.cqf.cql.evaluator.plandefinition.r4.PlanDefinitionProcessor
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import timber.log.Timber
-import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.jvm.isAccessible
 
 @Singleton
 class WorkflowCarePlanGenerator
@@ -61,7 +60,7 @@ class WorkflowCarePlanGenerator
 constructor(
   val knowledgeManager: KnowledgeManager,
   val fhirOperator: FhirOperator,
-  val fhirEngine: FhirEngine,
+  val defaultRepository: DefaultRepository,
   val fhirPathEngine: FHIRPathEngine,
   @ApplicationContext val context: Context,
 ) {
@@ -113,16 +112,16 @@ constructor(
    */
   private suspend fun loadPlanDefinitionResourcesFromDb() {
     // Load Library resources
-    val availableCqlLibraries = fhirEngine.search<Library> {}
-    val availablePlanDefinitions = fhirEngine.search<PlanDefinition> {}
-    for (searchResults in availableCqlLibraries) {
-      val cqlLibrary = searchResults.resource
+    val availableCqlLibraries = defaultRepository.search<Library>(Search(ResourceType.Library))
+    val availablePlanDefinitions =
+      defaultRepository.search<PlanDefinition>(Search(ResourceType.PlanDefinition))
+    for (cqlLibrary in availableCqlLibraries) {
       fhirOperator.loadLib(cqlLibrary)
       knowledgeManager.install(writeToFile(cqlLibrary))
       cqlLibraryIdList.add(IdType(cqlLibrary.id).idPart)
     }
-    for (searchResults in availablePlanDefinitions) {
-      getPlanDefinitionDependentResources(searchResults.resource)
+    for (planDefinition in availablePlanDefinitions) {
+      getPlanDefinitionDependentResources(planDefinition)
     }
   }
 
@@ -149,30 +148,27 @@ constructor(
     }
 
     val r4PlanDefinitionProcessor = createPlanDefinitionProcessor()
-    val carePlanProposal = r4PlanDefinitionProcessor.apply(
-      IdType("PlanDefinition", planDefinitionId),
-      patientId,
-       null,
-      /* practitionerId= */ null,
-      /* organizationId= */ null,
-      /* userType= */ null,
-      /* userLanguage= */ null,
-      /* userTaskContext= */ null,
-      /* setting= */ null,
-      /* settingContext= */ null,
-      /* mergeNestedCarePlans= */ null,
-      /* parameters= */ Parameters(),
-      /* useServerData= */ null,
-      /* bundle= */ null,
-      /* prefetchData= */ null,
-      /* dataEndpoint= */ null,
-      /* contentEndpoint*/ null,
-      /* terminologyEndpoint= */ null
-    ) as CarePlan
-
-    /*val carePlanProposal =
-      fhirOperator.generateCarePlan(planDefinitionId = planDefinitionId, patientId = patientId)
-        as CarePlan*/
+    val carePlanProposal =
+      r4PlanDefinitionProcessor.apply(
+        IdType("PlanDefinition", planDefinitionId),
+        patientId,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        Parameters(),
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      ) as CarePlan
 
     // Accept the proposed (transient) CarePlan by default and add tasks to the CarePlan of record
     acceptCarePlan(carePlanProposal, output)
@@ -181,16 +177,19 @@ constructor(
       planDefinition = planDefinition,
       input = data,
       subject = patient,
-      output
+      output,
     )
   }
 
   private fun createPlanDefinitionProcessor(): R4PlanDefinitionProcessor {
     val fhirDal = getPrivateProperty("fhirEngineDal", fhirOperator) as FhirDal
     val libraryProcessor = getPrivateProperty("libraryProcessor", fhirOperator) as LibraryProcessor
-    val expressionEvaluator = getPrivateProperty("expressionEvaluator", fhirOperator) as ExpressionEvaluator
-    val activityDefinitionProcessor = getPrivateProperty("activityDefinitionProcessor", fhirOperator) as ActivityDefinitionProcessor
-    val operationParametersParser = getPrivateProperty("operationParametersParser", fhirOperator) as OperationParametersParser
+    val expressionEvaluator =
+      getPrivateProperty("expressionEvaluator", fhirOperator) as ExpressionEvaluator
+    val activityDefinitionProcessor =
+      getPrivateProperty("activityDefinitionProcessor", fhirOperator) as ActivityDefinitionProcessor
+    val operationParametersParser =
+      getPrivateProperty("operationParametersParser", fhirOperator) as OperationParametersParser
 
     return R4PlanDefinitionProcessor(
       fhirContext = fhirContext,
@@ -198,11 +197,16 @@ constructor(
       libraryProcessor = libraryProcessor,
       expressionEvaluator = expressionEvaluator,
       activityDefinitionProcessor = activityDefinitionProcessor,
-      operationParametersParser = operationParametersParser
+      operationParametersParser = operationParametersParser,
     )
   }
 
-  private fun resolveDynamicValues(planDefinition: PlanDefinition, input: Bundle, subject: Patient, output: CarePlan) {
+  private fun resolveDynamicValues(
+    planDefinition: PlanDefinition,
+    input: Bundle,
+    subject: Patient,
+    output: CarePlan
+  ) {
     for (action in planDefinition.action) {
       if (action.hasDynamicValue()) {
         action.dynamicValue.forEach { dynamicValue ->
@@ -221,11 +225,6 @@ constructor(
         }
       }
     }
-  }
-
-  /** Update the [CarePlan] to include a reference to the FHIR-define protocol or guideline */
-  private fun updateCarePlanWithProtocol(carePlan: CarePlan, uris: List<CanonicalType>) {
-    for (uri in uris) carePlan.addInstantiatesCanonical(uri.value)
   }
 
   /** Link the request resources created for the [Patient] back to the [CarePlan] of record */
@@ -263,7 +262,7 @@ constructor(
     for (resource in resourceList) {
       when (resource.fhirType()) {
         "Task" -> {
-          fhirEngine.create(resource)
+          defaultRepository.create(true, resource)
           createdRequestResources.add(resource)
         }
         "ServiceRequest" -> TODO("Not supported yet")
@@ -301,75 +300,6 @@ constructor(
     // linkRequestResourcesToCarePlan(carePlanOfRecord, resourceList)
   }
 
-  /** Update status of a [CarePlan] activity */
-  private suspend fun updateCarePlanStatus(
-    carePlan: CarePlan,
-    requestedActivityResource: Resource,
-    carePlanActivityStatus: CarePlan.CarePlanActivityStatus,
-    outcomeReferences: List<Reference>,
-  ) {
-    if (carePlan.isEmpty) return
-    for (activity in carePlan.activity) {
-      if (
-        activity.reference.reference.equals(
-          requestedActivityResource.fhirType() + "/" + IdType(requestedActivityResource.id).idPart,
-        )
-      ) {
-        activity.detail.status = carePlanActivityStatus
-        activity.outcomeReference = outcomeReferences
-        fhirEngine.update(carePlan)
-        break
-      }
-    }
-  }
-
-  /**
-   * Find and update the status of the [CarePlan] activity as per the corresponding request resource
-   * status
-   */
-  suspend fun updateCarePlanActivity(
-    requestResource: Resource,
-    requestResourceStatus: String,
-    outcomeReferences: List<Reference>,
-    updateCarePlan: Boolean = true,
-  ) {
-    val carePlanActivityStatus: CarePlan.CarePlanActivityStatus
-    val carePlan: CarePlan
-    when (requestResource.fhirType()) {
-      "Task" -> {
-        updateRequestResourceStatus(requestResource as Task, requestResourceStatus)
-        if (updateCarePlan) {
-          carePlanActivityStatus = mapRequestResourceStatusToCarePlanStatus(requestResource)
-          carePlan =
-            if (requestResource.hasBasedOn()) {
-              fhirEngine.get(
-                ResourceType.CarePlan,
-                IdType(requestResource.basedOnFirstRep.referenceElement.value).idPart,
-              ) as CarePlan
-            } else {
-              return
-            }
-          updateCarePlanStatus(carePlan, requestResource, carePlanActivityStatus, outcomeReferences)
-        }
-      }
-      "ServiceRequest" -> TODO("Not supported yet")
-      "MedicationRequest" -> TODO("Not supported yet")
-      "SupplyRequest" -> TODO("Not supported yet")
-      "Procedure" -> TODO("Not supported yet")
-      "DiagnosticReport" -> TODO("Not supported yet")
-      "Communication" -> TODO("Not supported yet")
-      "CommunicationRequest" -> TODO("Not supported yet")
-      "RequestGroup" -> {}
-      else -> TODO("Not a valid request resource")
-    }
-  }
-
-  /** Update [Task] status */
-  suspend fun updateRequestResourceStatus(resource: Task, status: String) {
-    resource.status = Task.TaskStatus.valueOf(status)
-    fhirEngine.update(resource)
-  }
-
   /** Map [Task] status to [CarePlan] status */
   fun mapRequestResourceStatusToCarePlanStatus(
     resource: Task,
@@ -402,13 +332,34 @@ constructor(
       .get(obj)
   }
 
-  inner class R4PlanDefinitionProcessor constructor(
-    fhirContext: FhirContext, fhirDal: FhirDal, libraryProcessor: LibraryProcessor,
-    expressionEvaluator: ExpressionEvaluator, activityDefinitionProcessor: ActivityDefinitionProcessor,
-    operationParametersParser: OperationParametersParser
-  ) : PlanDefinitionProcessor(fhirContext, fhirDal, libraryProcessor, expressionEvaluator, activityDefinitionProcessor, operationParametersParser)
-  {
-    override fun resolveDynamicValue(language: String?, expression: String?, path: String?, altLanguage: String?, altExpression: String?, altPath: String?, libraryUrl: String?, resource: IBaseResource?, params: IBaseParameters?) {
+  inner class R4PlanDefinitionProcessor
+  constructor(
+    fhirContext: FhirContext,
+    fhirDal: FhirDal,
+    libraryProcessor: LibraryProcessor,
+    expressionEvaluator: ExpressionEvaluator,
+    activityDefinitionProcessor: ActivityDefinitionProcessor,
+    operationParametersParser: OperationParametersParser,
+  ) :
+    PlanDefinitionProcessor(
+      fhirContext,
+      fhirDal,
+      libraryProcessor,
+      expressionEvaluator,
+      activityDefinitionProcessor,
+      operationParametersParser
+    ) {
+    override fun resolveDynamicValue(
+      language: String?,
+      expression: String?,
+      path: String?,
+      altLanguage: String?,
+      altExpression: String?,
+      altPath: String?,
+      libraryUrl: String?,
+      resource: IBaseResource?,
+      params: IBaseParameters?
+    ) {
       // no need to add dynamic value in RequestGroup resource
     }
   }
