@@ -68,21 +68,21 @@ constructor(
     Timber.e("Fetching resources from base dao of type  $dataType.name")
     highestRecordId =
       (if (records.isNotEmpty()) {
-        records.last().meta?.lastUpdated?.time ?: highestRecordId
+        records.last().resource.meta?.lastUpdated?.time ?: highestRecordId
       } else {
         lastUpdated
       })
 
     val jsonArray = JSONArray()
     records.forEach {
-      jsonArray.put(jsonParser.encodeResourceToString(it))
+      jsonArray.put(jsonParser.encodeResourceToString(it.resource))
       highestRecordId =
-        if (it.meta?.lastUpdated?.time!! > highestRecordId) {
-          it.meta?.lastUpdated?.time!!
+        if (it.resource.meta?.lastUpdated?.time!! > highestRecordId) {
+          it.resource.meta?.lastUpdated?.time!!
         } else {
           highestRecordId
         }
-      Timber.e("Sending ${it.resourceType} with id ====== ${it.logicalId}")
+      Timber.e("Sending ${it.resource.resourceType} with id ====== ${it.resource.logicalId}")
     }
 
     Timber.e("New highest Last updated at value is $highestRecordId")
