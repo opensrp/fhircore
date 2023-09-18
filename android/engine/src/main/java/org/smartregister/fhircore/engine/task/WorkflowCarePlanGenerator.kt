@@ -205,7 +205,7 @@ constructor(
     planDefinition: PlanDefinition,
     input: Bundle,
     subject: Patient,
-    output: CarePlan
+    output: CarePlan,
   ) {
     for (action in planDefinition.action) {
       if (action.hasDynamicValue()) {
@@ -295,9 +295,6 @@ constructor(
   ) {
     val resourceList = createProposedRequestResources(proposedCarePlan.contained)
     addRequestResourcesToCarePlanOfRecord(carePlanOfRecord, resourceList)
-
-    // fhirEngine.create(carePlanOfRecord)
-    // linkRequestResourcesToCarePlan(carePlanOfRecord, resourceList)
   }
 
   /** Map [Task] status to [CarePlan] status */
@@ -347,7 +344,7 @@ constructor(
       libraryProcessor,
       expressionEvaluator,
       activityDefinitionProcessor,
-      operationParametersParser
+      operationParametersParser,
     ) {
     override fun resolveDynamicValue(
       language: String?,
@@ -358,7 +355,7 @@ constructor(
       altPath: String?,
       libraryUrl: String?,
       resource: IBaseResource?,
-      params: IBaseParameters?
+      params: IBaseParameters?,
     ) {
       // no need to add dynamic value in RequestGroup resource
     }
