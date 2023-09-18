@@ -460,7 +460,8 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   fun `perform extraction for patient registration`() {
     val locationQuestionnaireResponseString: String =
       "content/general/who-eir/patient_registration_questionnaire_response.json".readFile()
-    val locationStructureMap = "content/general/who-eir/patient_registration_structure_map.txt".readFile()
+    val locationStructureMap =
+      "content/general/who-eir/patient_registration_structure_map.txt".readFile()
     val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
