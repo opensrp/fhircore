@@ -813,7 +813,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun testFilterRelatedResourcesShouldReturnTrueIfExpressionIsProvided() {
+  fun testFilterRelatedResourcesShouldReturnTrueIfProvidedExpressionEvaluatesToTrue() {
     val resourceConfig =
       ResourceConfig(
         resource = ResourceType.Task,
@@ -829,7 +829,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun testFilterRelatedResourcesShouldReturnFalseIfExpressionIsProvided() {
+  fun testFilterRelatedResourcesShouldReturnFalseIfProvidedExpressionEvaluatesToFalse() {
     val resourceConfig =
       ResourceConfig(
         resource = ResourceType.Task,
