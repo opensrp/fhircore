@@ -16,8 +16,8 @@
 
 package org.smartregister.fhircore.engine.sync
 
-import com.google.android.fhir.sync.DownloadRequest
 import com.google.android.fhir.sync.DownloadWorkManager
+import com.google.android.fhir.sync.download.DownloadRequest
 import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
 import com.google.android.fhir.sync.download.ResourceSearchParams
 import org.hl7.fhir.r4.model.Resource
