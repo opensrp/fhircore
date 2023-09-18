@@ -165,17 +165,6 @@ constructor(
     }
   }
 
-  /** Add the [CarePlan] reference to the request resources */
-  private suspend fun linkRequestResourcesToCarePlan(
-    carePlan: CarePlan,
-    requestResourceList: List<Resource>,
-  ) {
-    for (resource in requestResourceList) {
-      (resource as Task).basedOn.add(Reference(carePlan).setType(carePlan.fhirType()))
-      fhirEngine.update(resource)
-    }
-  }
-
   /**
    * Invokes the respective [RequestResourceManager] to create new request resources as per the
    * proposed [CarePlan]
