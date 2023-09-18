@@ -355,7 +355,7 @@ class MeasureReportViewModelTest : RobolectricTest() {
           any(),
           any(),
           any(),
-          any()
+          any(),
         )
       }
     }
