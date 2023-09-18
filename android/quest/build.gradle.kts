@@ -227,18 +227,24 @@ android {
       manifestPlaceholders["appLabel"] = "MOH eCHIS"
     }
 
-    create("bunda") {
+    create("sidBunda") {
       dimension = "apps"
-      applicationIdSuffix = ".bunda"
-      versionNameSuffix = "-bunda"
-      manifestPlaceholders["appLabel"] = "Bunda App"
+      applicationIdSuffix = ".sidBunda"
+      versionNameSuffix = "-sidBunda"
+      manifestPlaceholders["appLabel"] = "Bunda ANC"
     }
 
-    create("cadre") {
+    create("sidCadre") {
       dimension = "apps"
-      applicationIdSuffix = ".cadre"
-      versionNameSuffix = "-cadre"
+      applicationIdSuffix = ".sidCadre"
+      versionNameSuffix = "-sidCadre"
       manifestPlaceholders["appLabel"] = "Cadre App"
+    }
+    create("sidEir") {
+      dimension = "apps"
+      applicationIdSuffix = ".sidEir"
+      versionNameSuffix = "-sidEir"
+      manifestPlaceholders["appLabel"] = "SID EIR"
     }
 
     create("wdf") {
