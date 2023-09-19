@@ -130,8 +130,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           }
 
           registerFragmentResultListener()
-
-          viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
         } catch (nullPointerException: NullPointerException) {
           showToast(getString(R.string.questionnaire_not_found))
           finish()

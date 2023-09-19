@@ -27,14 +27,18 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.junit.AfterClass
 import org.junit.BeforeClass
+import org.junit.Rule
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.engine.FhirEngineProviderTestRule
 import org.smartregister.fhircore.engine.app.fakes.FakeKeyStore
 
 @RunWith(FhircoreTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
 abstract class RobolectricTest {
   /** Get the liveData value by observing but wait for 3 seconds if not ready then stop observing */
+  @get:Rule(order = 20) val fhirEngineProviderTestRule = FhirEngineProviderTestRule()
+
   @Throws(InterruptedException::class)
   fun <T> getLiveDataValue(liveData: LiveData<T>): T? {
     val data = arrayOfNulls<Any>(1)

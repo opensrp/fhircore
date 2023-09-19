@@ -83,6 +83,7 @@ constructor(
             },
           )
         }
+        .map { it.resource }
         .filter { it.isPastExpiry() }
         .also { Timber.i("Going to expire ${it.size} tasks") }
         .onEach { task ->
@@ -105,7 +106,9 @@ constructor(
                   }
                 }
                 .onFailure {
-                  Timber.e("$basedOn CarePlan was not found. In consistent data ${it.message}")
+                  Timber.e(
+                    "$basedOn CarePlan was not found. In consistent data ${it.message}",
+                  )
                 }
             }
 
@@ -143,34 +146,36 @@ constructor(
     Timber.i("Update upcoming Tasks to due...")
 
     val tasks =
-      defaultRepository.fhirEngine.search<Task> {
-        filter(
-          Task.STATUS,
-          { value = of(TaskStatus.REQUESTED.toCoding()) },
-          { value = of(TaskStatus.ACCEPTED.toCoding()) },
-          { value = of(TaskStatus.RECEIVED.toCoding()) },
-        )
-        filter(
-          Task.PERIOD,
-          {
-            prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
-            value = of(DateTimeType(Date()))
-          },
-        )
-        if (!subject?.reference.isNullOrEmpty()) {
-          filter(Task.SUBJECT, { value = subject?.reference })
-        }
-        taskResourcesToFilterBy?.let {
-          val filters =
-            it.map {
-              val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.logicalId) }
-              apply
+      defaultRepository.fhirEngine
+        .search<Task> {
+          filter(
+            Task.STATUS,
+            { value = of(TaskStatus.REQUESTED.toCoding()) },
+            { value = of(TaskStatus.ACCEPTED.toCoding()) },
+            { value = of(TaskStatus.RECEIVED.toCoding()) },
+          )
+          filter(
+            Task.PERIOD,
+            {
+              prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+              value = of(DateTimeType(Date()))
+            },
+          )
+          if (!subject?.reference.isNullOrEmpty()) {
+            filter(Task.SUBJECT, { value = subject?.reference })
+          }
+          taskResourcesToFilterBy?.let {
+            val filters =
+              it.map {
+                val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.logicalId) }
+                apply
+              }
+            if (filters.isNotEmpty()) {
+              filter(Resource.RES_ID, *filters.toTypedArray())
             }
-          if (filters.isNotEmpty()) {
-            filter(Resource.RES_ID, *filters.toTypedArray())
           }
         }
-      }
+        .map { it.resource }
 
     Timber.i(
       "Found ${tasks.size} upcoming Tasks (with statuses REQUESTED, ACCEPTED or RECEIVED) to be updated",
@@ -206,7 +211,9 @@ constructor(
 
   suspend fun closeRelatedResources(resource: Resource) {
     val appRegistry =
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+        ConfigType.Application,
+      )
 
     appRegistry.eventWorkflows
       .filter { it.eventType == EventType.RESOURCE_CLOSURE }

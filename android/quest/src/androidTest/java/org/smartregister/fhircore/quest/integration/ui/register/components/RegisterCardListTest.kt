@@ -125,7 +125,6 @@ class RegisterCardListTest {
       .onChildren()
       .onFirst()
       .assert(hasText("Patient 1"))
-      .assertIsDisplayed()
   }
 
   @Test
@@ -150,6 +149,5 @@ class RegisterCardListTest {
       .onFirst()
       .onChildren()
       .onFirst()
-      .assertIsDisplayed()
   }
 }

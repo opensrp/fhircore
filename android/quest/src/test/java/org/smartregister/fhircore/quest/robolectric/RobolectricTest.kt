@@ -54,6 +54,7 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import org.smartregister.fhircore.quest.FhirEngineProviderTestRule
 import org.smartregister.fhircore.quest.app.fakes.FakeKeyStore
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 
@@ -66,6 +67,8 @@ abstract class RobolectricTest {
   @ExperimentalCoroutinesApi @get:Rule(order = 12) val coroutineTestRule = CoroutineTestRule()
 
   @get:Rule(order = 13) val instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @get:Rule(order = 20) val fhirEngineProviderTestRule = FhirEngineProviderTestRule()
 
   /** Get the liveData value by observing but wait for 3 seconds if not ready then stop observing */
   @Throws(InterruptedException::class)
