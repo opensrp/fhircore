@@ -28,7 +28,6 @@ import org.junit.Test
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.test.R as R2
-import org.smartregister.fhircore.quest.integration.ui.TestActivity
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.fhircore.quest.ui.register.RegisterFragment
 
