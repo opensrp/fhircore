@@ -110,7 +110,6 @@ class DefaultRepositoryTest : RobolectricTest() {
   private lateinit var defaultRepository: DefaultRepository
   private lateinit var spiedConfigService: ConfigService
 
-
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -125,7 +124,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         configService = spiedConfigService,
         configRulesExecutor = configRulesExecutor,
-        fhirPathDataExtractor = fhirPathDataExtractor
+        fhirPathDataExtractor = fhirPathDataExtractor,
       )
   }
 
@@ -562,8 +561,8 @@ class DefaultRepositoryTest : RobolectricTest() {
           configurationRegistry = mockk(),
           configService = mockk(),
           configRulesExecutor = mockk(),
-          fhirPathDataExtractor = fhirPathDataExtractor
-        )
+          fhirPathDataExtractor = fhirPathDataExtractor,
+        ),
       )
     coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
       listOf(SearchResult(resource = managingEntityRelatedPerson, null, null))
@@ -638,8 +637,8 @@ class DefaultRepositoryTest : RobolectricTest() {
           configurationRegistry = mockk(),
           configService = mockk(),
           configRulesExecutor = mockk(),
-          fhirPathDataExtractor = fhirPathDataExtractor
-        )
+          fhirPathDataExtractor = fhirPathDataExtractor,
+        ),
       )
 
     defaultRepository.delete(resourceType = ResourceType.Patient, resourceId = "123")
@@ -813,7 +812,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     val resourceConfig =
       ResourceConfig(
         resource = ResourceType.Task,
-        filterFhirPathExpressions = listOf(KeyValueConfig("Task.status", "ready"))
+        filterFhirPathExpressions = listOf(KeyValueConfig("Task.status", "ready")),
       )
     val task =
       Task().apply {
@@ -829,7 +828,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     val resourceConfig =
       ResourceConfig(
         resource = ResourceType.Task,
-        filterFhirPathExpressions = listOf(KeyValueConfig("Task.status", "cancelled"))
+        filterFhirPathExpressions = listOf(KeyValueConfig("Task.status", "cancelled")),
       )
     val task =
       Task().apply {
