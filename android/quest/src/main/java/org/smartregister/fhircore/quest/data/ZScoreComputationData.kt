@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.data
 
+import com.google.gson.Gson
+
 data class ZScoreComputationData(
   val subjectId: String,
   val resourceIdentifier: List<ResourceIdentifier>,
@@ -25,3 +27,13 @@ data class ResourceIdentifier(
   val resourceType: String,
   val resourceId: String,
 )
+
+fun serializeZScoreComputationData(cqlComputationData: ZScoreComputationData): String? {
+  val gson = Gson()
+  return gson.toJson(cqlComputationData)
+}
+
+fun deserializeZScoreComputationData(jsonString: String?): ZScoreComputationData? {
+  val gson = Gson()
+  return gson.fromJson(jsonString, ZScoreComputationData::class.java)
+}

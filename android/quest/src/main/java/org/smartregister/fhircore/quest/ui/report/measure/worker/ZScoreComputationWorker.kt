@@ -35,8 +35,8 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.quest.data.deserializeZScoreComputationData
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.Z_SCORE_COMPUTATION_DATA
-import org.smartregister.fhircore.quest.ui.questionnaire.deserializeFromJson
 import timber.log.Timber
 
 @HiltWorker
@@ -58,7 +58,8 @@ constructor(
     try {
       Timber.i("Started $TAG")
       // Retrieve the CqlComputationData object from input data
-      val cqlComputationData = deserializeFromJson(inputData.getString(Z_SCORE_COMPUTATION_DATA))
+      val cqlComputationData =
+        deserializeZScoreComputationData(inputData.getString(Z_SCORE_COMPUTATION_DATA))
       val subjectId = cqlComputationData?.subjectId
       var resource: Resource? = null
       cqlComputationData?.resourceIdentifier?.forEach { resourceIdentifier ->

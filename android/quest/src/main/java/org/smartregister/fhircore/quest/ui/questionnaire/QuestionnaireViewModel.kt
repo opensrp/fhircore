@@ -33,7 +33,6 @@ import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
-import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
 import java.util.UUID
@@ -84,6 +83,7 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.ResourceIdentifier
 import org.smartregister.fhircore.quest.data.ZScoreComputationData
+import org.smartregister.fhircore.quest.data.serializeZScoreComputationData
 import org.smartregister.fhircore.quest.ui.report.measure.worker.ZScoreComputationWorker
 import timber.log.Timber
 
@@ -623,7 +623,7 @@ constructor(
       Data.Builder()
         .putString(
           Z_SCORE_COMPUTATION_DATA,
-          serializeToJson(
+          serializeZScoreComputationData(
             ZScoreComputationData(subjectIdType.idPart, resourceIdentifierList),
           ),
         )
@@ -826,14 +826,4 @@ constructor(
     const val Z_SCORE_COMPUTATION_DATA = "ZScoreComputationData"
     const val Z_SCORE_CQL_LIBRARY_ID = "223758"
   }
-}
-
-fun serializeToJson(cqlComputationData: ZScoreComputationData): String? {
-  val gson = Gson()
-  return gson.toJson(cqlComputationData)
-}
-
-fun deserializeFromJson(jsonString: String?): ZScoreComputationData? {
-  val gson = Gson()
-  return gson.fromJson(jsonString, ZScoreComputationData::class.java)
 }
