@@ -22,6 +22,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.datacapture.validation.NotValidated
@@ -30,15 +33,14 @@ import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
-import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
@@ -80,6 +82,9 @@ import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.data.ResourceIdentifier
+import org.smartregister.fhircore.quest.data.ZScoreComputationData
+import org.smartregister.fhircore.quest.ui.report.measure.worker.ZScoreComputationWorker
 import timber.log.Timber
 
 @HiltViewModel
@@ -235,12 +240,17 @@ constructor(
             questionnaireConfig = questionnaireConfig,
           )
 
-          withContext(dispatcherProvider.io()) {
-            executeCql(
-              subject = subject,
-              bundle = newBundle,
-              questionnaire = questionnaire,
-            )
+          // TODO Refactor/Remove as per the issue: https://github.com/opensrp/fhircore/issues/2747
+          questionnaire.cqfLibraryIds().forEach { libraryId ->
+            if (libraryId == Z_SCORE_CQL_LIBRARY_ID) {
+              executeCqlForZScore(newBundle, subjectIdType, context)
+            } else {
+              executeCql(
+                subject = subject,
+                bundle = newBundle,
+                libraryId = libraryId,
+              )
+            }
           }
 
           fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
@@ -588,23 +598,41 @@ constructor(
       .all { it is Valid || it is NotValidated }
   }
 
-  suspend fun executeCql(subject: Resource, bundle: Bundle, questionnaire: Questionnaire) {
-    questionnaire.cqfLibraryIds().forEach { libraryId ->
-      // TODO Refactor/Remove as per the issue: https://github.com/opensrp/fhircore/issues/2747
-      if (
-        libraryId == "223758"
-      ) { // Resource id for Library that calculates Z-score in ZEIR application
-        // Adding 4 basic resources which contain the Data needed for Z-score calculation
-        val basicResourceIds = listOf("223754", "223755", "223756", "223757")
-        basicResourceIds.forEach { resourceId ->
-          val basicResource = defaultRepository.loadResource(resourceId) as Basic?
-          bundle.addEntry(Bundle.BundleEntryComponent().setResource(basicResource))
-        }
-      }
-      if (subject.resourceType == ResourceType.Patient) {
-        libraryEvaluator.runCqlLibrary(libraryId, subject as Patient, bundle)
-      }
+  suspend fun executeCql(subject: Resource, bundle: Bundle, libraryId: String) {
+    if (subject.resourceType == ResourceType.Patient) {
+      libraryEvaluator.runCqlLibrary(libraryId, subject as Patient, bundle)
     }
+  }
+
+  private fun executeCqlForZScore(
+    newBundle: Bundle,
+    subjectIdType: IdType,
+    context: Context,
+  ) {
+    val resourceIdentifierList = mutableListOf<ResourceIdentifier>()
+    newBundle.entry.forEach { bundleItem ->
+      resourceIdentifierList.add(
+        ResourceIdentifier(
+          resourceType = bundleItem.resource.resourceType.toString(),
+          resourceId = bundleItem.resource.id,
+        ),
+      )
+    }
+
+    val inputData =
+      Data.Builder()
+        .putString(
+          Z_SCORE_COMPUTATION_DATA,
+          serializeToJson(
+            ZScoreComputationData(subjectIdType.idPart, resourceIdentifierList),
+          ),
+        )
+        .build()
+
+    val workRequest =
+      OneTimeWorkRequestBuilder<ZScoreComputationWorker>().setInputData(inputData).build()
+
+    WorkManager.getInstance(context).enqueue(workRequest)
   }
 
   /**
@@ -794,5 +822,17 @@ constructor(
 
   companion object {
     const val CONTAINED_LIST_TITLE = "GeneratedResourcesList"
+    const val Z_SCORE_COMPUTATION_DATA = "ZScoreComputationData"
+    const val Z_SCORE_CQL_LIBRARY_ID = "223758"
   }
+}
+
+fun serializeToJson(cqlComputationData: ZScoreComputationData): String? {
+  val gson = Gson()
+  return gson.toJson(cqlComputationData)
+}
+
+fun deserializeFromJson(jsonString: String?): ZScoreComputationData? {
+  val gson = Gson()
+  return gson.fromJson(jsonString, ZScoreComputationData::class.java)
 }
