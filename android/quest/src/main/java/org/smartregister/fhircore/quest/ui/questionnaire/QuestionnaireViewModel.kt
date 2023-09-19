@@ -651,6 +651,7 @@ constructor(
             planDefinitionId = planId,
             subject = subject,
             data = bundle,
+            generateCarePlanWithWorkflowApi = questionnaireConfig.generateCarePlanWithWorkflowApi,
           )
         }
         .onFailure { Timber.e(it) }

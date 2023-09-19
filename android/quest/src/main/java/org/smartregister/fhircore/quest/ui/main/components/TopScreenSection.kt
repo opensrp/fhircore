@@ -31,6 +31,7 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
@@ -46,13 +47,16 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 
 const val DRAWER_MENU = "Drawer Menu"
 const val SEARCH = "Search"
 const val CLEAR = "Clear"
+const val FILTER = "Filter"
 const val TITLE_ROW_TEST_TAG = "titleRowTestTag"
 const val TOP_ROW_ICON_TEST_TAG = "topRowIconTestTag"
 const val TOP_ROW_TEXT_TEST_TAG = "topRowTextTestTag"
+const val TOP_ROW_FILTER_ICON_TEST_TAG = "topRowFilterIconTestTag"
 const val OUTLINED_BOX_TEST_TAG = "outlinedBoxTestTag"
 const val TRAILING_ICON_TEST_TAG = "trailingIconTestTag"
 const val TRAILING_ICON_BUTTON_TEST_TAG = "trailingIconButtonTestTag"
@@ -67,14 +71,17 @@ fun TopScreenSection(
   searchPlaceholder: String? = null,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (String) -> Unit,
-  onTitleIconClick: () -> Unit,
+  isFilterIconEnabled: Boolean = false,
+  onClick: (ToolbarClickEvent) -> Unit,
 ) {
-  Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
+  Column(
+    modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
+  ) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
       modifier = modifier.padding(vertical = 8.dp).testTag(TITLE_ROW_TEST_TAG),
     ) {
-      IconButton(onClick = onTitleIconClick) {
+      IconButton(onClick = { onClick.invoke(ToolbarClickEvent.Navigate) }) {
         Icon(
           when (toolBarHomeNavigation) {
             ToolBarHomeNavigation.OPEN_DRAWER -> Icons.Filled.Menu
@@ -89,8 +96,18 @@ fun TopScreenSection(
         text = title,
         fontSize = 20.sp,
         color = Color.White,
-        modifier = modifier.testTag(TOP_ROW_TEXT_TEST_TAG),
+        modifier = modifier.weight(1f).testTag(TOP_ROW_TEXT_TEST_TAG),
       )
+      if (isFilterIconEnabled) {
+        IconButton(onClick = { onClick.invoke(ToolbarClickEvent.FilterData) }) {
+          Icon(
+            Icons.Filled.FilterAlt,
+            contentDescription = FILTER,
+            tint = Color.White,
+            modifier = modifier.testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
+          )
+        }
+      }
     }
     OutlinedTextField(
       colors = TextFieldDefaults.outlinedTextFieldColors(textColor = Color.DarkGray),
@@ -146,5 +163,7 @@ fun TopScreenSectionPreview() {
     searchText = "Eddy",
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
-  ) {}
+    isFilterIconEnabled = true,
+    onClick = {},
+  )
 }
