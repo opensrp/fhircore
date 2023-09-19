@@ -75,6 +75,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.domain.model.Code
+import org.smartregister.fhircore.engine.domain.model.KeyValueConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
@@ -560,7 +561,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           configurationRegistry = mockk(),
           configService = mockk(),
           configRulesExecutor = mockk(),
-          fhirPathDataExtractor = mockk(),
+          fhirPathDataExtractor = fhirPathDataExtractor,
         ),
       )
     coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
@@ -804,6 +805,50 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(carePlanSlot)) }
     Assert.assertEquals("CarePlan/37793d31-def5-40bd-a2e3-fdaf5a0ddc53", carePlanSlot.captured.id)
     Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
+  }
+
+  @Test
+  fun testFilterRelatedResourcesShouldReturnTrueIfProvidedExpressionEvaluatesToTrue() {
+    val resourceConfig =
+      ResourceConfig(
+        resource = ResourceType.Task,
+        filterFhirPathExpressions = listOf(KeyValueConfig("Task.status", "ready")),
+      )
+    val task =
+      Task().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = Task.TaskStatus.READY
+      }
+    val result = defaultRepository.filterRelatedResource(task, resourceConfig)
+    Assert.assertTrue(result)
+  }
+
+  @Test
+  fun testFilterRelatedResourcesShouldReturnFalseIfProvidedExpressionEvaluatesToFalse() {
+    val resourceConfig =
+      ResourceConfig(
+        resource = ResourceType.Task,
+        filterFhirPathExpressions = listOf(KeyValueConfig("Task.status", "cancelled")),
+      )
+    val task =
+      Task().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = Task.TaskStatus.READY
+      }
+    val result = defaultRepository.filterRelatedResource(task, resourceConfig)
+    Assert.assertFalse(result)
+  }
+
+  @Test
+  fun testFilterRelatedResourcesShouldReturnTrueIfExpressionIsNotProvided() {
+    val resourceConfig = ResourceConfig(resource = ResourceType.Task)
+    val task =
+      Task().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = Task.TaskStatus.READY
+      }
+    val result = defaultRepository.filterRelatedResource(task, resourceConfig)
+    Assert.assertTrue(result)
   }
 
   @Test
