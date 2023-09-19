@@ -1,0 +1,331 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "8d9bd4e1-b339-436e-ae69-f145682a8322",
+  "meta": {
+    "lastUpdated": "2023-09-18T17:29:58.431+05:00",
+    "tag": [
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+        "display": "Pregnancy Screening Referral"
+      },
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+        "display": "Pregnancy Screening Referral"
+      },
+      {
+        "system": "https://smartregister.org/care-team-tag-id",
+        "code": "bf369c01-0fad-4e1b-8cab-aa0fe9642cfa",
+        "display": "Practitioner CareTeam"
+      },
+      {
+        "system": "https://smartregister.org/location-tag-id",
+        "code": "0a90ea06-1026-45c1-b64b-73e13b59ad1e",
+        "display": "Practitioner Location"
+      },
+      {
+        "system": "https://smartregister.org/organisation-tag-id",
+        "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+        "display": "Practitioner Organization"
+      },
+      {
+        "system": "https://smartregister.org/practitioner-tag-id",
+        "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+        "display": "Practitioner"
+      }
+    ]
+  },
+  "contained": [
+    {
+      "resourceType": "Encounter",
+      "id": "0f9dffda-ced0-4ba4-8bb4-e59de72d5a1c",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "1.0.0-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "bf369c01-0fad-4e1b-8cab-aa0fe9642cfa",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "0a90ea06-1026-45c1-b64b-73e13b59ad1e",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "status": "finished",
+      "class": {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        "code": "HH"
+      },
+      "serviceType": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/service-type",
+            "code": "497"
+          }
+        ]
+      },
+      "subject": {
+        "reference": "Patient/13a588c3-b75a-4f2d-9acc-3672b485c658"
+      },
+      "participant": [
+        {
+          "individual": {
+            "reference": "Practitioner/6edaafb0-0212-4069-a0e2-c6a90a080c83"
+          }
+        }
+      ],
+      "serviceProvider": {
+        "reference": "Organization/d1ea93d6-5b98-4fdf-b868-18b963a08307"
+      }
+    },
+    {
+      "resourceType": "Observation",
+      "id": "296f5471-2edb-4e11-aefa-ece0cbb4a3c8",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "1.0.0-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "bf369c01-0fad-4e1b-8cab-aa0fe9642cfa",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "0a90ea06-1026-45c1-b64b-73e13b59ad1e",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "74036000",
+            "display": "Pregnancy confirmed"
+          }
+        ],
+        "text": "Pregnancy confirmed"
+      },
+      "subject": {
+        "reference": "Patient/13a588c3-b75a-4f2d-9acc-3672b485c658"
+      },
+      "encounter": {
+        "reference": "Encounter/0f9dffda-ced0-4ba4-8bb4-e59de72d5a1c"
+      },
+      "effectiveDateTime": "2023-09-18T17:29:58+05:00",
+      "valueString": "no"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "ee78c766-b9f7-4d1d-a641-75fb27251eb1",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "1.0.0-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "bf369c01-0fad-4e1b-8cab-aa0fe9642cfa",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "0a90ea06-1026-45c1-b64b-73e13b59ad1e",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "278212002",
+            "display": "Mothers ANC card"
+          }
+        ],
+        "text": "Mothers ANC card"
+      },
+      "subject": {
+        "reference": "Patient/13a588c3-b75a-4f2d-9acc-3672b485c658"
+      },
+      "encounter": {
+        "reference": "Encounter/0f9dffda-ced0-4ba4-8bb4-e59de72d5a1c"
+      },
+      "effectiveDateTime": "2023-09-18T17:29:58+05:00",
+      "valueString": "no"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "ea50be88-1aa2-413d-a880-d646a1593dab",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "1.0.0-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "bf369c01-0fad-4e1b-8cab-aa0fe9642cfa",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "0a90ea06-1026-45c1-b64b-73e13b59ad1e",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://www.snomed.org/",
+            "code": "183860003",
+            "display": "Woman referred"
+          }
+        ],
+        "text": "Woman referred"
+      },
+      "subject": {
+        "reference": "Patient/13a588c3-b75a-4f2d-9acc-3672b485c658"
+      },
+      "encounter": {
+        "reference": "Encounter/0f9dffda-ced0-4ba4-8bb4-e59de72d5a1c"
+      },
+      "effectiveDateTime": "2023-09-18T17:29:58+05:00",
+      "valueString": "yes"
+    }
+  ],
+  "questionnaire": "Questionnaire/c75ab65d-af2e-429a-b4fe-70fe1b5078a6",
+  "status": "completed",
+  "subject": {
+    "reference": "Patient/13a588c3-b75a-4f2d-9acc-3672b485c658"
+  },
+  "authored": "2023-09-18T17:29:58+05:00",
+  "item": [
+    {
+      "linkId": "b666fc42-4505-4338-8394-662b83b0b62d",
+      "text": "Was pregnancy confirmed in a health facility?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "6952f682-d76f-4176-8ebe-45fb1ff52c85",
+            "system": "urn:uuid:80b95a7a-a2df-4b40-8398-e9974098f54c",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "06dfbae6-c154-4aba-84d0-57bc60faea95",
+      "text": "Does the woman have an ANC card?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "4ac35567-e354-4060-fbdf-fbf86a38ffdc",
+            "system": "urn:uuid:32494901-666c-41e5-84b6-bf677ea91629",
+            "code": "no",
+            "display": "No"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "a8dd1ec8-9dab-4779-8373-dc2e0f273fab",
+      "text": "Have you referred the woman to a hospital to collect an ANC card?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "0abf0e6b-2c94-4064-ead9-2618f1597c0e",
+            "system": "urn:uuid:e1749f14-e813-463e-c881-75ee9126b7c2",
+            "code": "yes",
+            "display": "Yes"
+          }
+        }
+      ]
+    }
+  ]
+}

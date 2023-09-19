@@ -1392,6 +1392,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
       coEvery { fhirEngine.get<StructureMap>("a4b157f2-6f15-4acb-b2a9-c62492178db0") } returns structureMapSTS
 
+      val structureMapScript2 = "plans/anc-visit-ondemand-echis/structure-map-anc-referral-closure.txt".readFile()
+      val structureMapSTS2 =
+        structureMapUtilities.parse(structureMapScript2, "AncReferralClosure")
+          .also { println(it.encodeResourceToString()) }
+
+      coEvery { fhirEngine.get<StructureMap>("be2fc24b-8326-42d8-9c1d-168023766c9a") } returns structureMapSTS2
+
+
       // start of plan is lmp date | 8 tasks to be generated for each month ahead i.e. lmp + 9m
       // anc registered late so skip the tasks which passed due date
       val lmp = Date().plusMonths(-4)
