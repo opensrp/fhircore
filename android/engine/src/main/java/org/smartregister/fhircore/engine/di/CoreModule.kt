@@ -18,12 +18,10 @@ package org.smartregister.fhircore.engine.di
 
 import android.accounts.AccountManager
 import android.content.Context
-import androidx.work.WorkManager
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.knowledge.KnowledgeManager
-import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.Module
 import dagger.Provides
@@ -69,6 +67,4 @@ class CoreModule {
   @Provides
   fun provideFhirOperator(fhirEngine: FhirEngine): FhirOperator =
     FhirOperator(fhirContext = FhirContext.forCached(FhirVersionEnum.R4), fhirEngine = fhirEngine)
-
-  @Singleton @Provides fun provideSync(workManager: WorkManager) = Sync(workManager)
 }

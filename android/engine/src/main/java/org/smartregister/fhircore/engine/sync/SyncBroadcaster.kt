@@ -55,7 +55,6 @@ constructor(
   val fhirEngine: FhirEngine,
   val syncListenerManager: SyncListenerManager,
   val dispatcherProvider: DispatcherProvider,
-  val sync: Sync,
   @ApplicationContext val context: Context,
 ) {
 
@@ -65,7 +64,7 @@ constructor(
    */
   suspend fun runOneTimeSync() = coroutineScope {
     Timber.i("Running one time sync...")
-    sync.oneTimeSync<AppSyncWorker>().handleSyncJobStatus(this)
+    Sync.oneTimeSync<AppSyncWorker>(context).handleSyncJobStatus(this)
   }
 
   /**
@@ -75,13 +74,14 @@ constructor(
   @OptIn(ExperimentalCoroutinesApi::class)
   suspend fun schedulePeriodicSync(interval: Long = 15) = coroutineScope {
     Timber.i("Scheduling periodic sync...")
-    sync
-      .periodicSync<AppSyncWorker>(
-        PeriodicSyncConfiguration(
-          syncConstraints =
-            Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
-          repeat = RepeatInterval(interval = interval, timeUnit = TimeUnit.MINUTES),
-        ),
+    Sync.periodicSync<AppSyncWorker>(
+        context = context,
+        periodicSyncConfiguration =
+          PeriodicSyncConfiguration(
+            syncConstraints =
+              Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+            repeat = RepeatInterval(interval = interval, timeUnit = TimeUnit.MINUTES),
+          ),
       )
       .handleSyncJobStatus(this)
   }
