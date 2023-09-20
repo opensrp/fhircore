@@ -100,6 +100,7 @@ constructor(
           filter(CarePlan.INSTANTIATES_CANONICAL, { value = planDefinition.referenceValue() })
           filter(CarePlan.SUBJECT, { value = subject.referenceValue() })
         }
+        .map { it.resource }
         .firstOrNull()
         ?: CarePlan().apply {
           // TODO delete this section once all PlanDefinitions are using new
@@ -171,10 +172,12 @@ constructor(
 
     if (carePlanModified) saveCarePlan(output)
 
-    fhirResourceUtil.updateUpcomingTasksToDue(
-      subject = subject.asReference(),
-      taskResourcesToFilterBy = carePlanTasks,
-    )
+    if (carePlanTasks.isNotEmpty()) {
+      fhirResourceUtil.updateUpcomingTasksToDue(
+        subject = subject.asReference(),
+        taskResourcesToFilterBy = carePlanTasks,
+      )
+    }
 
     return if (output.hasActivity()) output else null
   }
@@ -218,7 +221,7 @@ constructor(
         this.lastModified = Date()
         if (reason != null) this.statusReason = CodeableConcept().apply { text = reason }
       }
-      ?.updateDependentTaskDueDate(defaultRepository, fhirEngine)
+      ?.updateDependentTaskDueDate(defaultRepository)
       ?.run { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = this) }
   }
 
