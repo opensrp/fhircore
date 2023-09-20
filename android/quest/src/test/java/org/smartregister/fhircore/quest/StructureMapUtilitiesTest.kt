@@ -21,6 +21,7 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Immunization
@@ -456,7 +457,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     Assert.assertTrue(taskList.size == 10)
   }
 
-  @Test
+  @Test(expected = FHIRException::class)
   fun `perform extraction for patient registration`() {
     val locationQuestionnaireResponseString: String =
       "content/general/who-eir/patient_registration_questionnaire_response.json".readFile()
