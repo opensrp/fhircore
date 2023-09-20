@@ -104,7 +104,7 @@ constructor(
       .flatMapConcat { it.asFlow() }
       .mapNotNull { it }
       .onEach { workInfo ->
-        // PeriodSync don't return state but is enqueued. Finish the sync as workaround.
+        // PeriodSync doesn't return state. It's enqueued instead. Finish the sync as workaround.
         if (workInfo.state == WorkInfo.State.ENQUEUED) {
           syncListenerManager.onSyncListeners.forEach { onSyncListener ->
             onSyncListener.onSync(SyncJobStatus.Finished())
