@@ -1,0 +1,333 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "Questionnaire-IMMZCRegisterClient",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-extr-smap"
+    ]
+  },
+  "url": "http://fhir.org/guides/who/smart-immunization/Questionnaire/Questionnaire-IMMZCRegisterClient",
+  "title": "Client Registration Questionnaire",
+  "description": "Immunization - Client Registration Questionnaire",
+  "version": "2023",
+  "status": "draft",
+  "subjectType": [
+    "Patient"
+  ],
+  "language": "en",
+  "contained": [
+    {
+      "resourceType": "ValueSet",
+      "id": "IMMZ.C.DE5",
+      "status": "active",
+      "name": "IMMZ_C_DE5",
+      "title": "IMMZ.C.DE5 ValueSet for Sex",
+      "description": "ValueSet for Sex for IMMZ.C.DE5.",
+      "url": "http://fhir.org/guides/who/smart-immunization/ValueSet/IMMZ.C.DE5",
+      "compose": {
+        "include": [
+          {
+            "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.C",
+            "concept": [
+              {
+                "code": "DE6",
+                "display": "Male"
+              },
+              {
+                "code": "DE7",
+                "display": "Female"
+              },
+              {
+                "code": "DE8",
+                "display": "Biological sex not specified"
+              },
+              {
+                "code": "DE9",
+                "display": "Intersex"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "linkId": "uniqueId",
+      "text": "Unique identifier for the client",
+      "type": "string",
+      "repeats": false,
+      "required": true,
+      "code": [
+        {
+          "code": "DE1",
+          "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.C"
+        }
+      ]
+    },
+    {
+      "linkId": "name",
+      "text": "Client name",
+      "type": "group",
+      "repeats": false,
+      "required": true,
+      "code": [
+        {
+          "code": "DE2",
+          "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.C"
+        },
+        {
+          "code": "54125-0",
+          "system": "http://loinc.org",
+          "display": "Patient name"
+        },
+        {
+          "code": "371484003",
+          "system": "http://snomed.info/sct",
+          "display": "Patient name (observable entity)"
+        }
+      ],
+      "item": [
+        {
+          "linkId": "fullName",
+          "text": "Full name of the client",
+          "type": "string",
+          "repeats": false,
+          "required": true,
+          "code": [
+            {
+              "code": "DE2",
+              "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.C"
+            },
+            {
+              "code": "54125-0",
+              "system": "http://loinc.org",
+              "display": "Patient name"
+            },
+            {
+              "code": "371484003",
+              "system": "http://snomed.info/sct",
+              "display": "Patient name (observable entity)"
+            }
+          ]
+        },
+        {
+          "linkId": "firstName",
+          "text": "First or given name",
+          "type": "string",
+          "repeats": false,
+          "required": false,
+          "code": [
+            {
+              "code": "DE3",
+              "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.C"
+            },
+            {
+              "code": "45392-8",
+              "system": "http://loinc.org",
+              "display": "First name"
+            },
+            {
+              "code": "184095009",
+              "system": "http://snomed.info/sct",
+              "display": "Patient forename (observable entity)"
+            }
+          ]
+        },
+        {
+          "linkId": "familyName",
+          "text": "Family name",
+          "type": "string",
+          "repeats": false,
+          "required": false,
+          "code": [
+            {
+              "code": "DE4",
+              "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.C"
+            },
+            {
+              "code": "45394-4",
+              "system": "http://loinc.org",
+              "display": "Last name"
+            },
+            {
+              "code": "184096005",
+              "system": "http://snomed.info/sct",
+              "display": "Patient surname (observable entity)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "sex",
+      "text": "Sex",
+      "type": "choice",
+      "repeats": false,
+      "required": true,
+      "answerValueSet": "http://fhir.org/guides/who/smart-immunization/ValueSet/IMMZ.C.DE5",
+      "code": [
+        {
+          "code": "DE5",
+          "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.C"
+        },
+        {
+          "code": "46098-0",
+          "system": "http://loinc.org",
+          "display": "Sex"
+        },
+        {
+          "code": "184100006",
+          "system": "http://snomed.info/sct",
+          "display": "Patient sex (observable entity)"
+        }
+      ]
+    },
+    {
+      "linkId": "birthDate",
+      "text": "Birth Date",
+      "type": "date",
+      "repeats": false,
+      "required": false,
+      "code": [
+        {
+          "code": "DE10",
+          "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.C"
+        },
+        {
+          "code": "21112-8",
+          "system": "http://loinc.org",
+          "display": "Birth date"
+        },
+        {
+          "code": "184099003",
+          "system": "http://snomed.info/sct",
+          "display": "Date of birth (observable entity)"
+        }
+      ]
+    },
+    {
+      "linkId": "caregiver",
+      "text": "Care giver name",
+      "type": "group",
+      "repeats": false,
+      "required": true,
+      "code": [
+        {
+          "code": "DE14",
+          "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.C"
+        },
+        {
+          "code": "184140000",
+          "system": "http://snomed.info/sct",
+          "display": "Caregiver details (observable entity)"
+        }
+      ],
+      "item": [
+        {
+          "linkId": "fullName",
+          "text": "Full name of the care giver",
+          "type": "string",
+          "repeats": false,
+          "required": true,
+          "code": [
+            {
+              "code": "DE15",
+              "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.C"
+            },
+            {
+              "code": "184140000",
+              "system": "http://snomed.info/sct",
+              "display": "Caregiver details (observable entity)"
+            }
+          ]
+        },
+        {
+          "linkId": "firstName",
+          "text": "First or given name",
+          "type": "string",
+          "repeats": false,
+          "required": false,
+          "code": [
+            {
+              "code": "DE16",
+              "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.C"
+            }
+          ]
+        },
+        {
+          "linkId": "familyName",
+          "text": "Family name",
+          "type": "string",
+          "repeats": false,
+          "required": false,
+          "code": [
+            {
+              "code": "DE17",
+              "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.C"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "phone",
+      "text": "Client Phone number",
+      "type": "string",
+      "repeats": false,
+      "required": true,
+      "code": [
+        {
+          "code": "DE18",
+          "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.C"
+        },
+        {
+          "code": "42077-8",
+          "system": "http://loinc.org",
+          "display": "Patient Phone number"
+        },
+        {
+          "code": "184103008",
+          "system": "http://snomed.info/sct",
+          "display": "Patient telephone number (observable entity)"
+        }
+      ]
+    },
+    {
+      "linkId": "administrativeArea",
+      "text": "Administrative area",
+      "type": "choice",
+      "repeats": false,
+      "required": false,
+      "code": [
+        {
+          "code": "DE19",
+          "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.C"
+        },
+        {
+          "code": "56799-0",
+          "system": "http://loinc.org",
+          "display": "Address"
+        },
+        {
+          "code": "184097001",
+          "system": "http://snomed.info/sct",
+          "display": "Patient address (observable entity)"
+        }
+      ]
+    },
+    {
+      "linkId": "healthWorker",
+      "text": "Health Worker",
+      "type": "boolean",
+      "repeats": false,
+      "required": true,
+      "code": [
+        {
+          "code": "DE20",
+          "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.C"
+        }
+      ]
+    }
+  ]
+}
