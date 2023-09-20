@@ -54,6 +54,7 @@ data class QuestionnaireConfig(
   val extractedResourceUniquePropertyExpressions: List<ExtractedResourceUniquePropertyExpression>? =
     null,
   val saveQuestionnaireResponse: Boolean = true,
+  val generateCarePlanWithWorkflowApi: Boolean = false,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
