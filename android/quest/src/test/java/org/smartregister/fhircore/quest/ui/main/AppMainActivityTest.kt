@@ -90,10 +90,12 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnSyncWithSyncStateInProgress() {
     val viewModel = appMainActivity.appMainViewModel
+    val initialSyncTime = viewModel.appMainUiState.value.lastSyncTime
+
     appMainActivity.onSync(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD))
 
     // Timestamp will only updated for states Glitch, Finished or Failed. Defaults to empty
-    Assert.assertTrue(viewModel.appMainUiState.value.lastSyncTime.isEmpty())
+    Assert.assertEquals(initialSyncTime, viewModel.appMainUiState.value.lastSyncTime)
   }
 
   @Test
