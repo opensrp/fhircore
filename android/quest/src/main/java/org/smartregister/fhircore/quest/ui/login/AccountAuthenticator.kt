@@ -25,12 +25,10 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.net.UnknownHostException
 import java.util.Locale
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator.Companion.AUTH_TOKEN_TYPE
-import retrofit2.HttpException
 import timber.log.Timber
 
 class AccountAuthenticator
@@ -82,11 +80,8 @@ constructor(
             tokenAuthenticator.refreshToken(refreshToken)
           } catch (ex: Exception) {
             Timber.e(ex)
-            when (ex) {
-              is HttpException,
-              is UnknownHostException, -> ""
-              else -> throw ex
-            }
+            // any form of exception would unset token to empty, thereby forcing re-login
+            ""
           }
       }
     }
