@@ -94,7 +94,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
     appMainActivity.onSync(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD))
 
-    // Timestamp will only updated for states Glitch, Finished or Failed. Defaults to empty
+    // Timestamp will only updated for Finished.
     Assert.assertEquals(initialSyncTime, viewModel.appMainUiState.value.lastSyncTime)
   }
 
@@ -104,33 +104,31 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     val timestamp = "2022-05-19"
     viewModel.sharedPreferencesHelper.write(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, timestamp)
 
+    val initialTimestamp = viewModel.appMainUiState.value.lastSyncTime
     val syncJobStatus = SyncJobStatus.Glitch(exceptions = emptyList())
-    val syncJobStatusTimestamp = syncJobStatus.timestamp
 
     appMainActivity.onSync(syncJobStatus)
 
     // Timestamp last sync timestamp not updated
-    Assert.assertNotEquals(
+    Assert.assertEquals(
+      initialTimestamp,
       viewModel.appMainUiState.value.lastSyncTime,
-      viewModel.formatLastSyncTimestamp(syncJobStatusTimestamp),
     )
   }
 
   @Test
-  fun testOnSyncWithSyncStateFailedRendersUpdatedTimestampOnMainUi() {
+  fun testOnSyncWithSyncStateFailedDoesNotUpdateTimestamp() {
     val viewModel = appMainActivity.appMainViewModel
     viewModel.sharedPreferencesHelper.write(
       SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
       "2022-05-19",
     )
+    val initialTimestamp = viewModel.appMainUiState.value.lastSyncTime
     val syncJobStatus = SyncJobStatus.Failed(listOf())
     appMainActivity.onSync(syncJobStatus)
 
-    // Timestamp not update if status is Failed
-    Assert.assertNotEquals(
-      appMainActivity.appMainViewModel.formatLastSyncTimestamp(syncJobStatus.timestamp),
-      viewModel.appMainUiState.value.lastSyncTime,
-    )
+    // Timestamp not update if status is Failed. Initial timestamp remains the same
+    Assert.assertEquals(initialTimestamp, viewModel.appMainUiState.value.lastSyncTime)
   }
 
   @Test
