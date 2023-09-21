@@ -25,6 +25,8 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CareTeam
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Organization
@@ -32,6 +34,7 @@ import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.domain.model.Language
@@ -42,8 +45,12 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
+import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
+import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.model.practitioner.PractitionerDetails
 
 @HiltViewModel
 @ExcludeFromJacocoGeneratedReport
@@ -53,9 +60,10 @@ constructor(
   val syncBroadcaster: SyncBroadcaster,
   val accountAuthenticator: AccountAuthenticator,
   val secureSharedPreference: SecureSharedPreference,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val sharedPreferences: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val fhirEngine: FhirEngine,
+  val defaultRepository: DefaultRepository,
   val keycloakService: KeycloakService,
   val fhirResourceService: FhirResourceService,
 ) : ViewModel() {
@@ -72,7 +80,7 @@ constructor(
 
   private suspend fun fetchData() {
     var practitionerName: String? = null
-    sharedPreferencesHelper.read(
+    sharedPreferences.read(
         key = SharedPreferenceKey.PRACTITIONER_ID.name,
         defaultValue = null
       )
@@ -82,7 +90,7 @@ constructor(
       }
 
     val organizationIds =
-      sharedPreferencesHelper.read<List<String>>(
+      sharedPreferences.read<List<String>>(
           key = ResourceType.Organization.name,
           decodeWithGson = true
         )
@@ -92,7 +100,7 @@ constructor(
         }
 
     val locationIds =
-      sharedPreferencesHelper.read<List<String>>(
+      sharedPreferences.read<List<String>>(
           key = ResourceType.Location.name,
           decodeWithGson = true
         )
@@ -102,7 +110,7 @@ constructor(
         }
 
     val careTeamIds =
-      sharedPreferencesHelper.read<List<String>>(
+      sharedPreferences.read<List<String>>(
           key = ResourceType.CareTeam.name,
           decodeWithGson = true
         )
@@ -136,7 +144,10 @@ constructor(
   }
 
   fun retrieveUsername(): String? =
-    sharedPreferencesHelper.read<Practitioner>(key = LOGGED_IN_PRACTITIONER, decodeWithGson = true)
+    sharedPreferences.read<Practitioner>(key = LOGGED_IN_PRACTITIONER, decodeWithGson = true)
       ?.nameFirstRep
       ?.nameAsSingleString
+
+    fun fetchPractitionerDetails() {
+    }
 }

@@ -162,7 +162,6 @@ constructor(
             onFetchPractitioner = { bundleResult ->
               _showProgressBar.postValue(false)
               if (bundleResult.isSuccess) {
-                updateNavigateHome(true)
                 val bundle = bundleResult.getOrDefault(Bundle())
                 savePractitionerDetails(bundle) {
                   _showProgressBar.postValue(false)

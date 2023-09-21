@@ -38,6 +38,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material.rememberModalBottomSheetState
@@ -106,12 +107,17 @@ fun SettingsScreen(
           InfoCard(viewModel = settingsViewModel)
           Divider(color = DividerColor)
           UserProfileRow(
+            icon = Icons.Rounded.Download,
+            text = "Re-fetch Practitioner",
+            clickListener = settingsViewModel::fetchPractitionerDetails,
+            modifier = modifier
+          )
+          UserProfileRow(
             icon = Icons.Rounded.Sync,
             text = stringResource(id = R.string.sync),
             clickListener = settingsViewModel::runSync,
             modifier = modifier
           )
-
           UserProfileRow(
             icon = Icons.Rounded.BugReport,
             text = "Dev Menu",
