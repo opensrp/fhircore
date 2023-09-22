@@ -24,8 +24,6 @@ import com.google.android.fhir.sync.AcceptLocalConflictResolver
 import com.google.android.fhir.sync.ConflictResolver
 import com.google.android.fhir.sync.DownloadWorkManager
 import com.google.android.fhir.sync.FhirSyncWorker
-import com.google.android.fhir.sync.UploadWorkManager
-import com.google.android.fhir.sync.upload.SquashedChangesUploadWorkManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -47,10 +45,6 @@ constructor(
       syncParams = syncListenerManager.loadSyncParams(),
       context = appTimeStampContext,
     )
-
-  override fun getUploadWorkManager(): UploadWorkManager {
-    return SquashedChangesUploadWorkManager()
-  }
 
   override fun getFhirEngine(): FhirEngine = openSrpFhirEngine
 }
