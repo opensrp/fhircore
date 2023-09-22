@@ -201,7 +201,11 @@ constructor(
       registerConfiguration.registerFilter?.dataFilterFields
     val qrItemMap = questionnaireResponse.item.groupBy { it.linkId }
 
-    var newFhirResource = FhirResourceConfig(resourceConfig.baseResource)
+    var newFhirResource =
+      FhirResourceConfig(
+        baseResource = resourceConfig.baseResource,
+        relatedResources = resourceConfig.relatedResources,
+      )
 
     // TODO Where should the filterFieldLinkId be put? FilterCriterion or DataQuery
     registerFilterFields?.forEach { filterField ->
