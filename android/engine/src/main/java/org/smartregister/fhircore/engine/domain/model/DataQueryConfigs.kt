@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.util.serializers.FilterCriterionSeriali
 data class DataQuery(
   val paramName: String,
   val operation: Operation = Operation.AND,
+  val filterFieldLinkId: String? = null,
   val filterCriteria: List<FilterCriterionConfig>,
 ) : Parcelable, java.io.Serializable
 

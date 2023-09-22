@@ -79,7 +79,7 @@ fun RegisterScreen(
     topBar = {
       Column {
         // Top section has toolbar and a results counts view
-        val filterActions = registerUiState.registerConfiguration?.filterActions
+        val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
           title = registerUiState.screenTitle,
           searchText = searchText.value,
