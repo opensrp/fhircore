@@ -259,8 +259,8 @@ constructor(
           menuConfig.actions?.find { actionConfig ->
             actionConfig.trigger == ActionTrigger.ON_COUNT
           }
-        registerCountMap[countAction?.id ?: menuConfig.id] =
-          registerRepository.countRegisterData(menuConfig.id)
+        //        registerCountMap[countAction?.id ?: menuConfig.id] =
+        //          registerRepository.countRegisterData(menuConfig.id)
       }
   }
 

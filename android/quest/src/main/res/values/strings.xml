@@ -108,5 +108,6 @@
     <string name="error_populating_questionnaire">Unable to populate the questionnaire. Invalid Response.</string>
     <string name="extraction_in_progress">Processing questionnaire data…</string>
     <string name="loading_questionnaire">Loading questionnaire…</string>
+    <string name="error_matching_sync_strategy">Error matching sync strategy</string>
 
 </resources>

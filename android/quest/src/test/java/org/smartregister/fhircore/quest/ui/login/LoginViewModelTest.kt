@@ -179,6 +179,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testSuccessfulOnlineLoginWithActiveSessionWithSavedPractitionerDetails() {
     updateCredentials()
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
     sharedPreferencesHelper.write(
       SharedPreferenceKey.PRACTITIONER_DETAILS.name,
       PractitionerDetails(),

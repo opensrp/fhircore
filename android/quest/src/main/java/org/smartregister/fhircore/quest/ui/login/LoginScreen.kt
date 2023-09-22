@@ -159,9 +159,9 @@ fun LoginPage(
 
   Surface(
     modifier =
-      modifier
-        .fillMaxSize()
-        .scrollable(orientation = Orientation.Vertical, state = rememberScrollState()),
+    modifier
+      .fillMaxSize()
+      .scrollable(orientation = Orientation.Vertical, state = rememberScrollState()),
     color = Color.White,
     contentColor = contentColorFor(backgroundColor = Color.DarkGray),
   ) {
@@ -173,7 +173,10 @@ fun LoginPage(
     }
     Column(
       modifier =
-        modifier.padding(horizontal = 16.dp).fillMaxHeight().verticalScroll(rememberScrollState()),
+      modifier
+        .padding(horizontal = 16.dp)
+        .fillMaxHeight()
+        .verticalScroll(rememberScrollState()),
       verticalArrangement = Arrangement.SpaceBetween,
     ) {
       Spacer(modifier = modifier.height(20.dp))
@@ -184,11 +187,11 @@ fun LoginPage(
             painter = painterResource(R.drawable.ic_app_logo),
             contentDescription = stringResource(id = R.string.app_logo),
             modifier =
-              modifier
-                .align(Alignment.CenterHorizontally)
-                .requiredHeight(120.dp)
-                .requiredWidth(140.dp)
-                .testTag(APP_LOGO_TAG),
+            modifier
+              .align(Alignment.CenterHorizontally)
+              .requiredHeight(120.dp)
+              .requiredWidth(140.dp)
+              .testTag(APP_LOGO_TAG),
           )
         }
         Text(
@@ -197,11 +200,11 @@ fun LoginPage(
           fontWeight = FontWeight.Bold,
           fontSize = 32.sp,
           modifier =
-            modifier
-              .wrapContentWidth()
-              .padding(vertical = 8.dp)
-              .align(Alignment.CenterHorizontally)
-              .testTag(APP_NAME_TEXT_TAG),
+          modifier
+            .wrapContentWidth()
+            .padding(vertical = 8.dp)
+            .align(Alignment.CenterHorizontally)
+            .testTag(APP_NAME_TEXT_TAG),
         )
         Spacer(modifier = modifier.height(40.dp))
         Text(text = stringResource(R.string.username), modifier = modifier.padding(vertical = 4.dp))
@@ -214,25 +217,30 @@ fun LoginPage(
             Text(color = Color.LightGray, text = stringResource(R.string.username_sample))
           },
           modifier =
-            modifier
-              .fillMaxWidth()
-              .padding(vertical = 4.dp)
-              .background(color = Color.Unspecified)
-              .testTag(USERNAME_FIELD_TAG)
-              .focusRequester(usernameFocusRequester),
+          modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .background(color = Color.Unspecified)
+            .testTag(USERNAME_FIELD_TAG)
+            .focusRequester(usernameFocusRequester),
           keyboardActions = KeyboardActions(onDone = { passwordFocusRequester.requestFocus() }),
         )
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier.fillMaxWidth()) {
           Text(
             text = stringResource(R.string.password),
-            modifier = modifier.wrapContentWidth().padding(vertical = 4.dp),
+            modifier = modifier
+              .wrapContentWidth()
+              .padding(vertical = 4.dp),
           )
           Text(
             text = stringResource(R.string.forgot_password),
             color = MaterialTheme.colors.primary,
             style = TextStyle(textDecoration = TextDecoration.Underline),
             modifier =
-              modifier.wrapContentWidth().padding(vertical = 8.dp).clickable {
+            modifier
+              .wrapContentWidth()
+              .padding(vertical = 8.dp)
+              .clickable {
                 showForgotPasswordDialog = !showForgotPasswordDialog
               },
           )
@@ -248,17 +256,17 @@ fun LoginPage(
           keyboardOptions =
             KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
           modifier =
-            modifier
-              .fillMaxWidth()
-              .onFocusEvent { event ->
-                if (event.isFocused) {
-                  coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
-                }
+          modifier
+            .fillMaxWidth()
+            .onFocusEvent { event ->
+              if (event.isFocused) {
+                coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
               }
-              .padding(vertical = 4.dp)
-              .background(color = Color.Unspecified)
-              .testTag(PASSWORD_FIELD_TAG)
-              .focusRequester(passwordFocusRequester),
+            }
+            .padding(vertical = 4.dp)
+            .background(color = Color.Unspecified)
+            .testTag(PASSWORD_FIELD_TAG)
+            .focusRequester(passwordFocusRequester),
           trailingIcon = {
             val image = if (showPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
             IconButton(onClick = { showPassword = !showPassword }) {
@@ -304,13 +312,15 @@ fun LoginPage(
                   id = R.string.login_error,
                   stringResource(R.string.invalid_offline_login_state),
                 )
+              LoginErrorState.ERROR_MATCHING_SYNC_STRATEGY ->
+                stringResource(id = R.string.login_error, stringResource(R.string.error_matching_sync_strategy))
             },
           modifier =
-            modifier
-              .wrapContentWidth()
-              .padding(vertical = 10.dp)
-              .align(Alignment.Start)
-              .testTag(LOGIN_ERROR_TEXT_TAG),
+          modifier
+            .wrapContentWidth()
+            .padding(vertical = 10.dp)
+            .align(Alignment.Start)
+            .testTag(LOGIN_ERROR_TEXT_TAG),
         )
         Spacer(modifier = modifier.height(0.dp))
         Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
@@ -329,10 +339,10 @@ fun LoginPage(
               ),
             onClick = onLoginButtonClicked,
             modifier =
-              modifier
-                .fillMaxWidth()
-                .bringIntoViewRequester(bringIntoViewRequester)
-                .testTag(LOGIN_BUTTON_TAG),
+            modifier
+              .fillMaxWidth()
+              .bringIntoViewRequester(bringIntoViewRequester)
+              .testTag(LOGIN_BUTTON_TAG),
             elevation = null,
           ) {
             Text(
@@ -342,7 +352,9 @@ fun LoginPage(
           }
           if (showProgressBar) {
             CircularProgressIndicator(
-              modifier = modifier.align(Alignment.Center).size(18.dp),
+              modifier = modifier
+                .align(Alignment.Center)
+                .size(18.dp),
               strokeWidth = 1.6.dp,
               color = Color.White,
             )
@@ -351,25 +363,35 @@ fun LoginPage(
       }
       Row(
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
+        modifier = modifier
+          .fillMaxWidth()
+          .padding(vertical = 20.dp),
         verticalAlignment = Alignment.Bottom,
       ) {
         Column {
           Text(
             text = stringResource(id = R.string.powered_by),
-            modifier = modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.Start),
+            modifier = modifier
+              .wrapContentWidth()
+              .padding(vertical = 8.dp)
+              .align(Alignment.Start),
           )
           Image(
             painter = painterResource(id = R.drawable.ic_opensrp_logo),
             contentDescription = stringResource(id = R.string.app_logo),
-            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(40.dp),
+            modifier = modifier
+              .align(Alignment.CenterHorizontally)
+              .requiredHeight(40.dp),
           )
         }
 
         Text(
           fontSize = 16.sp,
           text = stringResource(id = R.string.app_version, versionCode, versionName),
-          modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER),
+          modifier = modifier
+            .wrapContentWidth()
+            .padding(0.dp)
+            .testTag(LOGIN_FOOTER),
         )
       }
     }
@@ -396,18 +418,24 @@ fun ForgotPasswordDialog(
     },
     buttons = {
       Row(
-        modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
+        modifier = modifier
+          .fillMaxWidth()
+          .padding(vertical = 20.dp),
         horizontalArrangement = Arrangement.End,
       ) {
         Text(
           text = stringResource(R.string.cancel),
-          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() },
+          modifier = modifier
+            .padding(horizontal = 10.dp)
+            .clickable { onDismissDialog() },
         )
         Text(
           color = MaterialTheme.colors.primary,
           text = stringResource(R.string.dial_number),
           modifier =
-            modifier.padding(horizontal = 10.dp).clickable {
+          modifier
+            .padding(horizontal = 10.dp)
+            .clickable {
               onDismissDialog()
               forgotPassword()
             },
