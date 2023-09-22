@@ -105,7 +105,7 @@ constructor(
   companion object {
     private const val TAG = "ZScoreComputationWorker"
     private const val LIBRARY_ID = "223758"
-    private val BASIC_RESOURCE_IDS = listOf("223754", "223755", "223756", "223757")
+    private val BASIC_RESOURCE_IDS = listOf("223754", "223755", "223756", "223757", "250928")
     private const val OBSERVATION = "Observation"
     private const val ENCOUNTER = "Encounter"
     private const val QUESTIONNAIRE_RESPONSE = "QuestionnaireResponse"

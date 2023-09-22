@@ -324,7 +324,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.executeCql(
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
-        questionnaire = questionnaire,
+        libraryId = "1",
       )
 
       fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
@@ -651,7 +651,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           },
         )
       }
-    questionnaireViewModel.executeCql(patient, bundle, questionnaire)
+    questionnaireViewModel.executeCql(patient, bundle, "1")
 
     coVerify { libraryEvaluator.runCqlLibrary("123", patient, bundle) }
   }
