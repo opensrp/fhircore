@@ -26,6 +26,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.p2p.dao.SenderTransferDao
+import org.smartregister.p2p.model.RecordCount
 import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.sync.DataType
 import timber.log.Timber
@@ -40,7 +41,7 @@ constructor(
 
   override fun getP2PDataTypes(): TreeSet<DataType> = getDataTypes()
 
-  override fun getTotalRecordCount(highestRecordIdMap: HashMap<String, Long>): Long {
+  override fun getTotalRecordCount(highestRecordIdMap: HashMap<String, Long>): RecordCount {
     return runBlocking { countTotalRecordsForSync(highestRecordIdMap) }
   }
 
@@ -76,7 +77,7 @@ constructor(
       highestRecordId =
         if (it.meta?.lastUpdated?.time!! > highestRecordId) it.meta?.lastUpdated?.time!!
         else highestRecordId
-      Timber.e("Sending ${it.resourceType} with id ====== ${it.logicalId}")
+      Timber.e("Sending ${it.resourceType} with id ====== ${it.logicalId} and lastUpdated ${it.meta?.lastUpdated?.time!!}")
     }
 
     Timber.e("New highest Last updated at value is $highestRecordId")
