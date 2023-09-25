@@ -41,27 +41,23 @@ import org.smartregister.fhircore.quest.data.report.measure.MeasureReportReposit
 import timber.log.Timber
 
 @HiltWorker
-class MeasureReportMonthPeriodWorker
+class MeasureReportConfigWorker
 @AssistedInject
 constructor(
   @Assisted val context: Context,
   @Assisted workerParams: WorkerParameters,
   val fhirEngine: FhirEngine,
-  private val fhirOperator: FhirOperator,
+  val fhirOperator: FhirOperator,
   val defaultRepository: DefaultRepository,
   val dispatcherProvider: DispatcherProvider,
-  private val measureReportRepository: MeasureReportRepository,
+  val measureReportRepository: MeasureReportRepository,
   val configurationRegistry: ConfigurationRegistry,
 ) : CoroutineWorker(context, workerParams) {
 
-  /**
-   * This method always sets the start and end date of the month to be the first and last day of the
-   * current month. If you are using this worker to generate monthly reports it enqueue a new worker
-   * at least every 24 hours.
-   */
   override suspend fun doWork(): Result {
+
     try {
-      Timber.i("started MeasureReportMonthPeriodWorker")
+      Timber.i("started  / . . . MeasureReportWorker . . ./")
 
       inputData
         .getString(MEASURE_REPORT_CONFIG_ID)
@@ -75,11 +71,12 @@ constructor(
 
           val subjects = measureReportRepository.fetchSubjects(config)
           val existing =
-            fhirEngine.retrievePreviouslyGeneratedMeasureReports(
+            retrievePreviouslyGeneratedMeasureReports(
+              fhirEngine = fhirEngine,
               startDateFormatted = startDateFormatted,
               endDateFormatted = endDateFormatted,
               measureUrl = config.url,
-              subjects = listOf(),
+              subjects = listOf()
             )
 
           if (existing.isEmpty()) {
@@ -98,7 +95,7 @@ constructor(
             )
           }
         }
-      Timber.i("successfully completed MeasureReportMonthPeriodWorker")
+      Timber.i("Result.success  / . . . MeasureReportWorker . . ./")
     } catch (e: Exception) {
       Timber.w(e.localizedMessage)
       Result.failure()

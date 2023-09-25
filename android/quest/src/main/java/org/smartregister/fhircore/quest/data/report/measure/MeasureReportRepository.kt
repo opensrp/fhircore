@@ -171,15 +171,14 @@ constructor(
   suspend fun fetchSubjects(config: ReportConfiguration): List<String> {
     if (config.subjectXFhirQuery?.isNotEmpty() == true) {
       try {
-        return fhirEngine.search(config.subjectXFhirQuery!!).map { searchResult ->
+        return fhirEngine.search(config.subjectXFhirQuery!!).map {
           // prevent missing subject where MeasureEvaluator looks for Group members and skips the
           // Group itself
-          val resource = searchResult.resource
-          if (resource is Group && !resource.hasMember()) {
-            resource.addMember(Group.GroupMemberComponent(resource.asReference()))
-            update(resource)
+          if (it is Group && !it.hasMember()) {
+            it.addMember(Group.GroupMemberComponent(it.asReference()))
+            update(it)
           }
-          "${resource.resourceType.name}/${resource.logicalId}"
+          "${it.resourceType.name}/${it.logicalId}"
         }
       } catch (e: FHIRException) {
         Timber.e(e, "When fetching subjects for measure report")
