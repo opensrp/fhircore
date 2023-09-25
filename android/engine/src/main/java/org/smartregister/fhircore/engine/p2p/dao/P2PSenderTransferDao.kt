@@ -83,7 +83,9 @@ constructor(
         } else {
           highestRecordId
         }
-      Timber.e("Sending ${it.resource.resourceType} with id ====== ${it.resource.logicalId}")
+      Timber.e(
+        "Sending ${it.resource.resourceType} with id ====== ${it.resource.logicalId} and lastUpdated = ${it.resource.meta?.lastUpdated?.time!!}",
+      )
     }
 
     Timber.e("New highest Last updated at value is $highestRecordId")
