@@ -1,0 +1,84 @@
+map "http://fhir.org/guides/who/smart-immunization/StructureMap/IMMZ-C-QRToPatient" = "IMMZ-C-QRToPatient"
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" alias QResp as source
+uses "http://fhir.org/guides/who/smart-immunization/StructureDefinition/IMMZ-C-register-client" alias IMMZC as produced
+uses "http://hl7.org/fhir/StructureDefinition/Patient" alias Patient as target
+
+imports "http://fhir.org/guides/who/smart-immunization/StructureMap/IMMZ-C-QRToLM"
+imports "http://fhir.org/guides/who/smart-immunization/StructureMap/IMMZ-C-LMToPatient"
+
+group QRestToIMMZC (
+  source qr : QResp,
+  target patient: Patient
+) {
+  qr -> create("http://fhir.org/guides/who/smart-immunization/StructureDefinition/IMMZ-C-register-client") as model
+  then{
+    qr -> model then QRespToIMMZC( qr, model) "QRtoLM";
+    qr -> patient then IMMZCToPatient( model, patient ) "LMtoPatient";
+  } "QRtoPatient";
+}
+
+/*
+group QRespToIMMZC (
+  source qr : QResp,
+  target patient : Patientz
+) {
+  qr.item as item then {
+
+    item.answer first as answer where item.linkId = 'uniqueId' -> patient.identifier as identifier then {
+      answer.valueString as content -> identifier.value = content  "set identifier";
+    } "first answer for identifier";
+
+    item as name where item.linkId = 'name' -> patient.name as pname then NameToHumanName( name, pname ) "set names";
+
+    item.answer first as answer where item.linkId = 'sex' then {
+      answer.valueCoding as coding then {
+        coding.code as content -> patient.gender = translate(content,
+            'http://fhir.org/guides/who/smart-immunization/ConceptMap/IMMZ.C.SexToAdministrativeGender',
+            'code') "set sex";
+      } "process coding";
+    } "first answer for identifier";
+
+    item.answer first as answer where item.linkId = 'birthDate' then {
+      answer.valueDate as content -> patient.birthDate = content "set birthDate";
+    } "first answer for birthDate";
+
+    item as caregiver where item.linkId = 'caregiver' -> patient.contact as contact, contact.name as hname
+      then NameToHumanName( caregiver, hname ) "set caregiver";
+
+    item.answer first as answer where item.linkId = 'phone' -> patient.telecom as telecom then {
+       answer.valueString as content -> telecom.value = content, telecom.system = 'phone' "set phone";
+     } "first answer for phone";
+
+    item.answer first as answer where item.linkId = 'administrativeArea' -> patient.address as address then {
+      answer.valueCoding first as coding -> address then {
+        coding.code as content -> address.text = content "set address to code";
+        coding.display as content -> address.text = content "set address to display";
+      } "set address text";
+    } "first answer for administrativeArea";
+
+  } "process items";
+
+}
+
+group NameToHumanName(
+  source name,
+  target hname
+) {
+  name.item as item then {
+
+    item.answer first as answer where item.linkId = 'fullName' then {
+      answer.valueString as content -> hname.text = content "set full name";
+    } "first answer for full name";
+
+    item.answer first as answer where item.linkId = 'firstName' then {
+      answer.valueString as content -> hname.given = content "set first name";
+    } "first answer for first name";
+
+    item.answer first as answer where item.linkId = 'familyName' then {
+      answer.valueString as content -> hname.family = content "set family name";
+    } "first answer for family name";
+
+  } "process name items";
+}
+*/

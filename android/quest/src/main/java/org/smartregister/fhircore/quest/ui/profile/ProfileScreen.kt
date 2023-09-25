@@ -140,7 +140,13 @@ fun ProfileScreen(
       )
     },
   ) { innerPadding ->
-    Box(modifier = modifier.background(Color.White).fillMaxSize().padding(innerPadding)) {
+    Box(
+      modifier =
+        modifier
+          .background(profileUiState.profileConfiguration?.contentBackgroundColor.parseColor())
+          .fillMaxSize()
+          .padding(innerPadding),
+    ) {
       if (profileUiState.showDataLoadProgressIndicator) {
         CircularProgressIndicator(
           modifier = modifier.align(Alignment.Center).size(24.dp),

@@ -27,7 +27,10 @@ Your artifact should now be available under your maven local repo. location `~/.
 
 Building FHIR Core should now import the new artifact version. MavenLocal is already configured as an artifact source.
 
-**Note:** This process needs to be repeated for all of the above aforementioned artifacts incase there are changes required there as well for testing. Also note, if you need to test changes present in other un-merged branches, you'd need to build the release artifact from a release branch that has all the other (un-merged) branch changes as well.
+**Note:** 
+- This process needs to be repeated for all of the above aforementioned artifacts incase there are changes required there as well for testing. 
+- If you need to test changes present in other un-merged branches, you'd need to build the release artifact from a release branch that has all the other (un-merged) branch changes as well.
+- For unmerged changes, always pay special attention to this file [ResourceDatabase](https://github.com/google/android-fhir/blob/master/engine/src/main/java/com/google/android/fhir/db/impl/ResourceDatabase.kt). The file contains migration scripts for the database. If the scripts end up in an illegal state, it would load to inconsistencies with the schema.
 
 ### Remote Publishing
 
