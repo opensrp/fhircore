@@ -81,6 +81,7 @@ constructor(
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
   private val registerFilterState = mutableStateOf(RegisterFilterState())
   private val _totalRecordsCount = mutableLongStateOf(0L)
+  private val _filteredRecordsCount = mutableLongStateOf(0L)
   private lateinit var registerConfiguration: RegisterConfiguration
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
@@ -173,9 +174,10 @@ constructor(
         currentPage.value.let { if (it > 0) currentPage.value = it.minus(1) }
         paginateRegisterData(registerUiState.value.registerId)
       }
+      RegisterEvent.ResetFilterRecordsCount -> _filteredRecordsCount.value = -1
     }
 
-  fun filterRegisterData(event: RegisterEvent.SearchRegister) {
+  private fun filterRegisterData(event: RegisterEvent.SearchRegister) {
     val searchBar = registerUiState.value.registerConfiguration?.searchBar
     // computedRules (names of pre-computed rules) must be provided for search to work.
     if (searchBar?.computedRules != null) {
@@ -360,13 +362,19 @@ constructor(
       val paramsMap: Map<String, String> = params.toParamDataMap()
       viewModelScope.launch(dispatcherProvider.io()) {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
-        // Count register data then paginate the data
+
         _totalRecordsCount.value =
-          registerRepository.countRegisterData(
-            registerId = registerId,
-            paramsMap = paramsMap,
-            fhirResourceConfig = registerFilterState.value.fhirResourceConfig,
-          )
+          registerRepository.countRegisterData(registerId = registerId, paramsMap = paramsMap)
+
+        // Only count filtered data when queries are updated
+        if (registerFilterState.value.fhirResourceConfig != null) {
+          _filteredRecordsCount.value =
+            registerRepository.countRegisterData(
+              registerId = registerId,
+              paramsMap = paramsMap,
+              fhirResourceConfig = registerFilterState.value.fhirResourceConfig,
+            )
+        }
 
         paginateRegisterData(registerId, loadAll = false, clearCache = clearCache)
 
@@ -380,6 +388,7 @@ constructor(
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,
             totalRecordsCount = _totalRecordsCount.value,
+            filteredRecordsCount = _filteredRecordsCount.value,
             pagesCount =
               ceil(
                   _totalRecordsCount.value
