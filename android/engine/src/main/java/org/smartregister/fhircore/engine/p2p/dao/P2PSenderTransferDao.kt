@@ -66,7 +66,7 @@ constructor(
       }
     }
 
-    Timber.e("Fetching resources from base dao of type  $dataType.name")
+    Timber.i("Fetching resources from base dao of type  $dataType.name")
     highestRecordId =
       (if (records.isNotEmpty()) {
         records.last().resource.meta?.lastUpdated?.time ?: highestRecordId
@@ -83,7 +83,7 @@ constructor(
         } else {
           highestRecordId
         }
-      Timber.e(
+      Timber.i(
         "Sending ${it.resource.resourceType} with id ====== ${it.resource.logicalId} and lastUpdated = ${it.resource.meta?.lastUpdated?.time!!}",
       )
     }
