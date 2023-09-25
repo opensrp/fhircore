@@ -39,6 +39,7 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.isValidResourceType
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
+import org.smartregister.p2p.model.RecordCount
 import org.smartregister.p2p.sync.DataType
 
 open class BaseP2PTransferDao
@@ -112,17 +113,21 @@ constructor(
     }
   }
 
-  suspend fun countTotalRecordsForSync(highestRecordIdMap: HashMap<String, Long>): Long {
-    var recordCount: Long = 0
+  suspend fun countTotalRecordsForSync(highestRecordIdMap: HashMap<String, Long>): RecordCount {
+    var totalRecordCount: Long = 0
+    val resourceCountMap: HashMap<String, Long> = HashMap()
 
     getDataTypes().forEach {
       it.name.resourceClassType().let { classType ->
         val lastRecordId = highestRecordIdMap[it.name] ?: 0L
         val searchCount = getSearchObjectForCount(lastRecordId, classType)
-        recordCount += fhirEngine.count(searchCount)
+        val resourceCount = fhirEngine.count(searchCount)
+        totalRecordCount += resourceCount
+        resourceCountMap[it.name] = resourceCount
       }
     }
-    return recordCount
+
+    return RecordCount(totalRecordCount, resourceCountMap)
   }
 
   fun getSearchObjectForCount(lastRecordUpdatedAt: Long, classType: Class<out Resource>): Search {
