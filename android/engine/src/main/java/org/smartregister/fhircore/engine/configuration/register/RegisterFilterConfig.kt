@@ -29,6 +29,5 @@ data class RegisterFilterConfig(
 @Serializable
 data class RegisterFilterField(
   val dataQueries: List<DataQuery>,
-  val resourceConfigId: String,
-  val applyToBaseResource: Boolean = false,
+  val filterId: String,
 ) : java.io.Serializable
