@@ -184,32 +184,16 @@ class RegisterViewModelTest : RobolectricTest() {
     verify { registerViewModel.paginateRegisterData(any(), any()) }
   }
 
-  // TODO Test more scenarios (e.g. filter by quantity, refs etc) during Code Health Thursdays
+  // TODO Test (CHT) remaining scenarios (e.g. filter by quantity, reference, number, datetime etc)
   @Test
-  fun testUpdateRegisterFilterStateShouldUpdate() {
+  fun testUpdateRegisterFilterStateShouldUpdateFilterState() {
     // Get state before the resource config is updated
     val registerFilterStateBefore = registerViewModel.registerFilterState.value
 
     val questionnaireConfig =
       QuestionnaireConfig(id = "register-patient", saveQuestionnaireResponse = false)
 
-    val fhirResourceConfig =
-      FhirResourceConfig(
-        baseResource =
-          ResourceConfig(
-            id = ResourceType.Patient.name,
-            resource = ResourceType.Patient,
-            filterId = ResourceType.Patient.name,
-          ),
-        relatedResources =
-          listOf(
-            ResourceConfig(
-              id = ResourceType.Task.name,
-              resource = ResourceType.Task,
-              filterId = ResourceType.Task.name,
-            ),
-          ),
-      )
+    val fhirResourceConfig = filterFhirResourceConfig()
 
     // QuestionnaireResponse linkId should match the register filter field IDs
     val questionnaireResponse =
@@ -247,53 +231,7 @@ class RegisterViewModelTest : RobolectricTest() {
         )
       }
 
-    val dataFilterFields =
-      listOf(
-        RegisterFilterField(
-          filterId = ResourceType.Patient.name,
-          dataQueries =
-            listOf(
-              DataQuery(
-                paramName = "gender",
-                filterCriteria =
-                  listOf(
-                    FilterCriterionConfig.StringFilterCriterionConfig(
-                      dataType = Enumerations.DataType.STRING,
-                      modifier = StringFilterModifier.MATCHES_EXACTLY,
-                      dataFilterLinkId = "gender-filter",
-                    ),
-                  ),
-              ),
-              DataQuery(
-                paramName = "birthdate",
-                filterCriteria =
-                  listOf(
-                    FilterCriterionConfig.DateFilterCriterionConfig(
-                      dataType = Enumerations.DataType.DATE,
-                      prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS,
-                      dataFilterLinkId = "birthdate-filter",
-                    ),
-                  ),
-              ),
-            ),
-        ),
-        RegisterFilterField(
-          filterId = ResourceType.Task.name,
-          dataQueries =
-            listOf(
-              DataQuery(
-                paramName = "status",
-                filterCriteria =
-                  listOf(
-                    FilterCriterionConfig.TokenFilterCriterionConfig(
-                      dataType = Enumerations.DataType.CODE,
-                      dataFilterLinkId = "task-status-filter",
-                    ),
-                  ),
-              ),
-            ),
-        ),
-      )
+    val dataFilterFields = registerFilterFields()
     every { registerViewModel.retrieveRegisterConfiguration(registerId) } returns
       RegisterConfiguration(
         appId = "app",
@@ -358,5 +296,115 @@ class RegisterViewModelTest : RobolectricTest() {
           }
       },
     )
+  }
+
+  private fun registerFilterFields() =
+    listOf(
+      RegisterFilterField(
+        filterId = ResourceType.Patient.name,
+        dataQueries =
+          listOf(
+            DataQuery(
+              paramName = "gender",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.StringFilterCriterionConfig(
+                    dataType = Enumerations.DataType.STRING,
+                    modifier = StringFilterModifier.MATCHES_EXACTLY,
+                    dataFilterLinkId = "gender-filter",
+                  ),
+                ),
+            ),
+            DataQuery(
+              paramName = "birthdate",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.DateFilterCriterionConfig(
+                    dataType = Enumerations.DataType.DATE,
+                    prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS,
+                    dataFilterLinkId = "birthdate-filter",
+                  ),
+                ),
+            ),
+          ),
+      ),
+      RegisterFilterField(
+        filterId = ResourceType.Task.name,
+        dataQueries =
+          listOf(
+            DataQuery(
+              paramName = "status",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.TokenFilterCriterionConfig(
+                    dataType = Enumerations.DataType.CODE,
+                    dataFilterLinkId = "task-status-filter",
+                  ),
+                ),
+            ),
+          ),
+      ),
+    )
+
+  private fun filterFhirResourceConfig() =
+    FhirResourceConfig(
+      baseResource =
+        ResourceConfig(
+          id = ResourceType.Patient.name,
+          resource = ResourceType.Patient,
+          filterId = ResourceType.Patient.name,
+        ),
+      relatedResources =
+        listOf(
+          ResourceConfig(
+            id = ResourceType.Task.name,
+            resource = ResourceType.Task,
+            filterId = ResourceType.Task.name,
+          ),
+        ),
+    )
+
+  @Test
+  fun testUpdateRegisterFilterStateWithNoAnswersForFilterQR() {
+    val registerFilterStateBefore = registerViewModel.registerFilterState
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        id = "1234"
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            linkId = "gender-filter"
+          },
+        )
+      }
+    val fhirResourceConfig = filterFhirResourceConfig()
+    val dataFilterFields = registerFilterFields()
+    val questionnaireConfig =
+      QuestionnaireConfig(id = "register-patient", saveQuestionnaireResponse = false)
+    every { registerViewModel.retrieveRegisterConfiguration(any()) } returns
+      RegisterConfiguration(
+        appId = "app",
+        id = registerId,
+        fhirResource = fhirResourceConfig,
+        pageSize = 10,
+        registerFilter =
+          RegisterFilterConfig(
+            dataFilterActions =
+              listOf(
+                ActionConfig(
+                  trigger = ActionTrigger.ON_CLICK,
+                  workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE.name,
+                  questionnaire = questionnaireConfig,
+                ),
+              ),
+            dataFilterFields = dataFilterFields,
+          ),
+      )
+
+    registerViewModel.updateRegisterFilterState(registerId, questionnaireResponse)
+
+    val registerFilterStateAfter = registerViewModel.registerFilterState
+
+    Assert.assertNull(registerFilterStateBefore.value.fhirResourceConfig?.baseResource?.dataQueries)
+    Assert.assertNull(registerFilterStateAfter.value.fhirResourceConfig?.baseResource?.dataQueries)
   }
 }

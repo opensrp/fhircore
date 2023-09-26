@@ -107,7 +107,7 @@ fun TopScreenSection(
         IconButton(onClick = { onClick.invoke(ToolbarClickEvent.FilterData) }) {
           BadgedBox(
             badge = {
-              if (filteredRecordsCount != null && filteredRecordsCount > 0) {
+              if (filteredRecordsCount != null && filteredRecordsCount > -1) {
                 Badge(modifier = Modifier.size(18.dp)) {
                   Text(
                     text = filteredRecordsCount.toString(),

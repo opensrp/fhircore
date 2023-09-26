@@ -236,6 +236,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             context = this@QuestionnaireActivity,
           ) { idTypes, questionnaireResponse ->
             // Dismiss progress indicator dialog, submit result then finish activity
+            // TODO Ensure this dialog is dismissed even when an exception is encountered
             setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
             setResult(
               Activity.RESULT_OK,

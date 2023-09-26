@@ -84,7 +84,7 @@ constructor(
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
   val registerFilterState = mutableStateOf(RegisterFilterState())
   private val _totalRecordsCount = mutableLongStateOf(0L)
-  private val _filteredRecordsCount = mutableLongStateOf(0L)
+  private val _filteredRecordsCount = mutableLongStateOf(-1L)
   private lateinit var registerConfiguration: RegisterConfiguration
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
@@ -199,6 +199,16 @@ constructor(
   }
 
   fun updateRegisterFilterState(registerId: String, questionnaireResponse: QuestionnaireResponse) {
+    // Reset filter state if no answer is provided for all the fields
+    if (questionnaireResponse.item.all { !it.hasAnswer() }) {
+      registerFilterState.value =
+        RegisterFilterState(
+          questionnaireResponse = null,
+          fhirResourceConfig = null,
+        )
+      return
+    }
+
     val registerConfiguration = retrieveRegisterConfiguration(registerId)
     val resourceConfig = registerConfiguration.fhirResource
     val baseResource = resourceConfig.baseResource
