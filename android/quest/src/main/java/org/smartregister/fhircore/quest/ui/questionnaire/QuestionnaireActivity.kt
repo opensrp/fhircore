@@ -21,6 +21,7 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
+import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
@@ -114,10 +115,18 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     lifecycleScope.launch {
       if (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) == null) {
         viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(true))
-        viewBinding.questionnaireToolbar.apply {
-          title = questionnaireConfig.title
-          setNavigationIcon(R.drawable.ic_arrow_back)
-          setNavigationOnClickListener { handleBackPress() }
+        with(viewBinding) {
+          questionnaireToolbar.apply {
+            setNavigationIcon(R.drawable.ic_arrow_back)
+            setNavigationOnClickListener { handleBackPress() }
+          }
+          questionnaireTitle.apply { text = questionnaireConfig.title }
+          clearAll.apply {
+            visibility = if (questionnaireConfig.showClearAll) View.VISIBLE else View.GONE
+            setOnClickListener {
+              // TODO Clear current QuestionnaireResponse items -> SDK
+            }
+          }
         }
 
         questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig, actionParameters)

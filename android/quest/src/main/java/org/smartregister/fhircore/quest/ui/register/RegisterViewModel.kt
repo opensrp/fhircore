@@ -219,7 +219,7 @@ constructor(
       )
 
     Timber.i(
-      "New data queries for filtering Base Resources: ${newBaseResourceDataQueries.encodeJson()}"
+      "New data queries for filtering Base Resources: ${newBaseResourceDataQueries.encodeJson()}",
     )
 
     val newRelatedResources =
@@ -230,7 +230,7 @@ constructor(
       )
 
     Timber.i(
-      "New configurations for filtering related resource data: ${newRelatedResources.encodeJson()}"
+      "New configurations for filtering related resource data: ${newRelatedResources.encodeJson()}",
     )
 
     registerFilterState.value =
