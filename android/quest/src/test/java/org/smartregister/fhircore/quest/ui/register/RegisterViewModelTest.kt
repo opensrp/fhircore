@@ -127,7 +127,7 @@ class RegisterViewModelTest : RobolectricTest() {
 
     // Search for the word 'Khan' should call the filterRegisterData function
     registerViewModel.onEvent(RegisterEvent.SearchRegister("Khan"))
-    verify { registerViewModel.updateRegisterFilterState(any()) }
+    verify { registerViewModel.filterRegisterData(any()) }
   }
 
   @Test

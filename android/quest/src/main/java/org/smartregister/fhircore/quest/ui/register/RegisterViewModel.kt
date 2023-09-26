@@ -177,7 +177,7 @@ constructor(
       RegisterEvent.ResetFilterRecordsCount -> _filteredRecordsCount.value = -1
     }
 
-  private fun filterRegisterData(event: RegisterEvent.SearchRegister) {
+  fun filterRegisterData(event: RegisterEvent.SearchRegister) {
     val searchBar = registerUiState.value.registerConfiguration?.searchBar
     // computedRules (names of pre-computed rules) must be provided for search to work.
     if (searchBar?.computedRules != null) {

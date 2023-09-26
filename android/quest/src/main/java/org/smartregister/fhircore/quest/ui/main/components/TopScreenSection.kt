@@ -119,7 +119,7 @@ fun TopScreenSection(
             },
           ) {
             Icon(
-              imageVector = Icons.Filled.FilterAlt,
+              imageVector = Icons.Default.FilterAlt,
               contentDescription = FILTER,
               tint = Color.White,
               modifier = modifier.testTag(TOP_ROW_FILTER_ICON_TEST_TAG),

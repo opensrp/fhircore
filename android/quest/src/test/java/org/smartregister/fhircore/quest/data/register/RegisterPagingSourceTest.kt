@@ -49,7 +49,13 @@ class RegisterPagingSourceTest : RobolectricTest() {
   fun setUp() {
     hiltAndroidRule.inject()
     registerPagingSource =
-      RegisterPagingSource(registerRepository, resourceDataRulesExecutor, listOf(), emptyMap())
+      RegisterPagingSource(
+        registerRepository = registerRepository,
+        resourceDataRulesExecutor = resourceDataRulesExecutor,
+        ruleConfigs = listOf(),
+        actionParameters = emptyMap(),
+        fhirResourceConfig = null,
+      )
   }
 
   @Test
