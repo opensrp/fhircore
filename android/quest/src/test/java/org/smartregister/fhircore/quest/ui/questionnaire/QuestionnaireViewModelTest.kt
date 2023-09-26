@@ -161,6 +161,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         id = "754", // Same as ID in sample_patient_registration.json
         title = "Patient registration",
         type = QuestionnaireType.DEFAULT,
+        cqlInputResources = listOf("Resource1", "Resource2", "Resource3"),
       )
 
     questionnaireViewModel =
@@ -994,5 +995,17 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify(exactly = 0) {
       defaultRepository.addOrUpdate(addMandatoryTags = true, resource = questionnaireResponse)
     }
+  }
+
+  @Test
+  fun testLoadCqlInputResourcesFromQuestionnaireConfig() {
+    // Create a expectedCqlInputResources with a list of cqlInputResources
+    val expectedCqlInputResources = listOf("Resource1", "Resource2", "Resource3")
+
+    // Access the cqlInputResources directly from the questionnaireConfig
+    val loadedCqlInputResources = questionnaireConfig.cqlInputResources
+
+    // Verify that the loadedCqlInputResources match the original list
+    Assert.assertEquals(expectedCqlInputResources, loadedCqlInputResources)
   }
 }
