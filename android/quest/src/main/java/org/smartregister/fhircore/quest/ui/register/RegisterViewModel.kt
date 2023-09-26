@@ -43,6 +43,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.configuration.register.RegisterFilterField
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.Code
@@ -56,9 +57,11 @@ import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
+import timber.log.Timber
 
 @HiltViewModel
 class RegisterViewModel
@@ -79,7 +82,7 @@ constructor(
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<ResourceData>>> =
     MutableStateFlow(emptyFlow())
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
-  private val registerFilterState = mutableStateOf(RegisterFilterState())
+  val registerFilterState = mutableStateOf(RegisterFilterState())
   private val _totalRecordsCount = mutableLongStateOf(0L)
   private val _filteredRecordsCount = mutableLongStateOf(0L)
   private lateinit var registerConfiguration: RegisterConfiguration
@@ -198,38 +201,69 @@ constructor(
   fun updateRegisterFilterState(registerId: String, questionnaireResponse: QuestionnaireResponse) {
     val registerConfiguration = retrieveRegisterConfiguration(registerId)
     val resourceConfig = registerConfiguration.fhirResource
+    val baseResource = resourceConfig.baseResource
     val qrItemMap = questionnaireResponse.item.groupBy { it.linkId }.mapValues { it.value.first() }
 
+    val registerDataFilterFieldsMap =
+      registerConfiguration.registerFilter
+        ?.dataFilterFields
+        ?.groupBy { it.filterId }
+        ?.mapValues { it.value.first() }
+
+    // Get filter queries from the map. NOTE: filterId MUST be unique for all resources
     val newBaseResourceDataQueries =
-      createQueriesForRegisterFilter(resourceConfig.baseResource.dataQueries, qrItemMap)
+      createQueriesForRegisterFilter(
+        registerDataFilterFieldsMap?.get(baseResource.filterId)?.dataQueries
+          ?: baseResource.dataQueries,
+        qrItemMap,
+      )
+
+    Timber.i(
+      "New data queries for filtering Base Resources: ${newBaseResourceDataQueries.encodeJson()}"
+    )
 
     val newRelatedResources =
-      createFilterRelatedResources(resourceConfig.relatedResources, qrItemMap)
+      createFilterRelatedResources(
+        registerDataFilterFieldsMap = registerDataFilterFieldsMap,
+        relatedResources = resourceConfig.relatedResources,
+        qrItemMap = qrItemMap,
+      )
+
+    Timber.i(
+      "New configurations for filtering related resource data: ${newRelatedResources.encodeJson()}"
+    )
 
     registerFilterState.value =
       RegisterFilterState(
         questionnaireResponse = questionnaireResponse,
         fhirResourceConfig =
           FhirResourceConfig(
-            baseResource =
-              resourceConfig.baseResource.copy(
-                dataQueries = newBaseResourceDataQueries,
-              ),
+            baseResource = baseResource.copy(dataQueries = newBaseResourceDataQueries),
             relatedResources = newRelatedResources,
           ),
       )
   }
 
   private fun createFilterRelatedResources(
+    registerDataFilterFieldsMap: Map<String, RegisterFilterField>?,
     relatedResources: List<ResourceConfig>,
     qrItemMap: Map<String, QuestionnaireResponse.QuestionnaireResponseItemComponent>,
   ): List<ResourceConfig> {
     val newRelatedResources =
       relatedResources.map {
-        val newDataQueries = createQueriesForRegisterFilter(it.dataQueries, qrItemMap)
+        val newDataQueries =
+          createQueriesForRegisterFilter(
+            registerDataFilterFieldsMap?.get(it.filterId)?.dataQueries ?: it.dataQueries,
+            qrItemMap,
+          )
         it.copy(
           dataQueries = newDataQueries,
-          relatedResources = createFilterRelatedResources(it.relatedResources, qrItemMap),
+          relatedResources =
+            createFilterRelatedResources(
+              registerDataFilterFieldsMap = registerDataFilterFieldsMap,
+              relatedResources = it.relatedResources,
+              qrItemMap = qrItemMap,
+            ),
         )
       }
     return newRelatedResources
@@ -261,7 +295,7 @@ constructor(
       answerComponent.hasValueCoding() -> {
         val valueCoding: Coding = answerComponent.valueCoding
         FilterCriterionConfig.TokenFilterCriterionConfig(
-          dataType = oldFilterCriterion.dataType,
+          dataType = DataType.CODE,
           computedRule = oldFilterCriterion.computedRule,
           value = Code(valueCoding.system, valueCoding.code, valueCoding.display),
         )
