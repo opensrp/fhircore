@@ -25,8 +25,6 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CareTeam
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Organization
@@ -45,12 +43,8 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
-import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
-import org.smartregister.fhircore.engine.util.extension.valueToString
-import org.smartregister.model.practitioner.PractitionerDetails
 
 @HiltViewModel
 @ExcludeFromJacocoGeneratedReport
@@ -80,10 +74,7 @@ constructor(
 
   private suspend fun fetchData() {
     var practitionerName: String? = null
-    sharedPreferences.read(
-        key = SharedPreferenceKey.PRACTITIONER_ID.name,
-        defaultValue = null
-      )
+    sharedPreferences.read(key = SharedPreferenceKey.PRACTITIONER_ID.name, defaultValue = null)
       ?.let {
         val practitioner = fhirEngine.get(ResourceType.Practitioner, it) as Practitioner
         practitionerName = practitioner.nameFirstRep.nameAsSingleString
@@ -100,20 +91,14 @@ constructor(
         }
 
     val locationIds =
-      sharedPreferences.read<List<String>>(
-          key = ResourceType.Location.name,
-          decodeWithGson = true
-        )
+      sharedPreferences.read<List<String>>(key = ResourceType.Location.name, decodeWithGson = true)
         ?.map {
           val resource = (fhirEngine.get(ResourceType.Location, it) as Location)
           FieldData(resource.logicalId, resource.name)
         }
 
     val careTeamIds =
-      sharedPreferences.read<List<String>>(
-          key = ResourceType.CareTeam.name,
-          decodeWithGson = true
-        )
+      sharedPreferences.read<List<String>>(key = ResourceType.CareTeam.name, decodeWithGson = true)
         ?.map {
           val resource = (fhirEngine.get(ResourceType.CareTeam, it) as CareTeam)
           FieldData(resource.logicalId, resource.name)
@@ -148,6 +133,5 @@ constructor(
       ?.nameFirstRep
       ?.nameAsSingleString
 
-    fun fetchPractitionerDetails() {
-    }
+  fun fetchPractitionerDetails() {}
 }

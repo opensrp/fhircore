@@ -20,21 +20,21 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
-import io.mockk.verify
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import okhttp3.internal.http.RealResponseBody
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Organization
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
@@ -242,7 +242,7 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     // Login was successful savePractitionerDetails was called
     val bundleSlot = slot<Bundle>()
-    verify { loginViewModel.savePractitionerDetails(capture(bundleSlot), any()) }
+    coVerify { loginViewModel.savePractitionerDetails(capture(bundleSlot)) }
 
     Assert.assertNotNull(bundleSlot.captured)
     Assert.assertTrue(bundleSlot.captured.entry.isNotEmpty())
@@ -281,8 +281,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Fix failing test")
-  fun testUnSuccessfulOnlineLoginUserInfoException() {
+  fun testUnSuccessfulOnlineLoginPractitionerDetailsNotFetchedException() {
     updateCredentials()
     secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
@@ -301,7 +300,7 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     // Mock result for fetch user info via keycloak endpoint
     coEvery { keycloakService.fetchUserInfo() } returns
-      Response.error(400, mockk<RealResponseBody>(relaxed = true))
+      Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
 
     // Mock result for retrieving a FHIR resource using user's keycloak uuid
     coEvery { fhirResourceService.getResource(any()) } throws Exception()
@@ -350,11 +349,11 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSavePractitionerDetails() {
+  fun testSavePractitionerDetails() = runTest {
     coEvery { defaultRepository.create(true, any()) } returns listOf()
     loginViewModel.savePractitionerDetails(
       Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = practitionerDetails() })
-    ) {}
+    )
     Assert.assertNotNull(
       sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name)
     )

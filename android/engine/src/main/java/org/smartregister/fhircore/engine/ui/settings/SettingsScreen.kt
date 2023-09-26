@@ -25,6 +25,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
@@ -103,7 +105,13 @@ fun SettingsScreen(
           )
         }
       ) { paddingValues ->
-        Column(modifier = modifier.padding(paddingValues).padding(vertical = 20.dp)) {
+        Column(
+          modifier =
+            modifier
+              .padding(paddingValues)
+              .padding(vertical = 20.dp)
+              .verticalScroll(rememberScrollState())
+        ) {
           InfoCard(viewModel = settingsViewModel)
           Divider(color = DividerColor)
           UserProfileRow(
