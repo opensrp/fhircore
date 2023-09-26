@@ -325,6 +325,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
         questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig,
       )
 
       fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
