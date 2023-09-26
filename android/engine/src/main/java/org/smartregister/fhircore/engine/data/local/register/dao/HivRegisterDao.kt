@@ -112,6 +112,7 @@ constructor(
       }
 
     return patients
+      .map { it.resource }
       .filter(this::isValidPatient)
       .map { transformPatientToHivRegisterData(it) }
       .filterNot { it.healthStatus == HealthStatus.DEFAULT }
@@ -136,7 +137,7 @@ constructor(
         sort(Patient.NAME, Order.ASCENDING)
       }
 
-    return patients.mapNotNull { patient ->
+    return patients.map { it.resource }.mapNotNull { patient ->
       if (isValidPatient(patient)) {
         val transFormedPatient = transformPatientToHivRegisterData(patient)
         if (transFormedPatient.healthStatus != HealthStatus.DEFAULT) {
@@ -190,6 +191,7 @@ constructor(
   override suspend fun countRegisterData(appFeatureName: String?): Long {
     return fhirEngine
       .search<Patient> { filter(Patient.ACTIVE, { value = of(true) }) }
+      .map { it.resource }
       .filter(this::isValidPatient)
       .size
       .toLong()

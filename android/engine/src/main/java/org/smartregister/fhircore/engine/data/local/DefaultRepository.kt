@@ -108,10 +108,12 @@ constructor(
     filters: List<SearchFilter> = listOf()
   ): List<T> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        filterByResourceTypeId(subjectParam, subjectType, subjectId)
-        filters.forEach { filterBy(it) }
-      }
+      fhirEngine
+        .search<T> {
+          filterByResourceTypeId(subjectParam, subjectType, subjectId)
+          filters.forEach { filterBy(it) }
+        }
+        .map { it.resource }
     }
 
   suspend inline fun <reified T : Resource> searchResourceFor(
@@ -121,24 +123,29 @@ constructor(
     filters: List<SearchFilter> = listOf()
   ): List<T> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        filterByResourceTypeId(token, subjectType, subjectId)
-        filters.forEach { filterBy(it) }
-      }
+      fhirEngine
+        .search<T> {
+          filterByResourceTypeId(token, subjectType, subjectId)
+          filters.forEach { filterBy(it) }
+        }
+        .map { it.resource }
     }
 
   suspend fun searchQuestionnaireConfig(
     filters: List<SearchFilter> = listOf()
   ): List<QuestionnaireConfig> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search<Questionnaire> { filters.forEach { filterBy(it) } }.map {
-        QuestionnaireConfig(
-          form = it.nameElement.getLocalizedText() ?: it.logicalId,
-          title = it.titleElement.getLocalizedText()
-              ?: it.nameElement.getLocalizedText() ?: it.logicalId,
-          identifier = it.logicalId
-        )
-      }
+      fhirEngine
+        .search<Questionnaire> { filters.forEach { filterBy(it) } }
+        .map { it.resource }
+        .map {
+          QuestionnaireConfig(
+            form = it.nameElement.getLocalizedText() ?: it.logicalId,
+            title = it.titleElement.getLocalizedText()
+                ?: it.nameElement.getLocalizedText() ?: it.logicalId,
+            identifier = it.logicalId
+          )
+        }
     }
 
   suspend fun loadConditions(
@@ -146,11 +153,13 @@ constructor(
     filters: List<SearchFilter> = listOf()
   ): List<Condition> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        filterByResourceTypeId(Condition.SUBJECT, ResourceType.Patient, patientId)
+      fhirEngine
+        .search<Condition> {
+          filterByResourceTypeId(Condition.SUBJECT, ResourceType.Patient, patientId)
 
-        filters.forEach { filterBy(it) }
-      }
+          filters.forEach { filterBy(it) }
+        }
+        .map { it.resource }
     }
 
   suspend fun search(dataRequirement: DataRequirement) =
@@ -170,6 +179,7 @@ constructor(
       .search<Composition> {
         filter(Composition.IDENTIFIER, { value = of(Identifier().apply { value = identifier }) })
       }
+      .map { it.resource }
       .firstOrNull()
 
   suspend fun getBinary(id: String): Binary = fhirEngine.get(id)

@@ -254,6 +254,7 @@ constructor(
       .search<Composition> {
         filter(Composition.IDENTIFIER, { value = of(Identifier().apply { value = identifier }) })
       }
+      .map { it.resource }
       .firstOrNull()
 
   suspend fun getBinary(id: String): Binary = fhirEngine.get(id)

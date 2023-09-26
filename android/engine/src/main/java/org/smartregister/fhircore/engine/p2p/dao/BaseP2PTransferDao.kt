@@ -120,7 +120,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
           // sort(StringClientParam("_lastUpdated"), Order.ASCENDING)
           count = batchSize
         }
-      fhirEngine.search(search)
+      fhirEngine.search<Resource>(search).map { it.resource }
     }
   }
 

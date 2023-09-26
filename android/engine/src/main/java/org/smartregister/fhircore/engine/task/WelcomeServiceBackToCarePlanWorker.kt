@@ -91,6 +91,7 @@ constructor(
             }
           )
         }
+        .map { it.resource }
         .filter { it.reasonCode.coding.any { coding -> coding.code == INTERRUPTED_TREAT_CODE } }
         .filter {
           it.status in listOf(Task.TaskStatus.INPROGRESS, Task.TaskStatus.READY) &&
@@ -144,6 +145,7 @@ constructor(
         filter(CarePlan.SUBJECT, { value = this@activeCarePlan.referenceValue() })
         filter(CarePlan.STATUS, { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) })
       }
+      .map { it.resource }
       .filter { it.period?.start != null }
       .filter { it.status == CarePlan.CarePlanStatus.ACTIVE }
       .sortedByDescending { it.period.start }

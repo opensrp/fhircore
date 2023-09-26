@@ -87,6 +87,7 @@ constructor(
         filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
         filter(Appointment.DATE, { value = of(DateTimeType.today()) })
       }
+      .map { it.resource }
       .count {
         it.status == Appointment.AppointmentStatus.BOOKED &&
           it.hasStart() &&
@@ -180,7 +181,7 @@ constructor(
         }
       }
 
-    return searchResults.filter {
+    return searchResults.map { it.resource }.filter {
       val patientAssignmentFilter =
         !filters.myPatients ||
           (it.practitionerRef()?.reference == currentPractitioner?.asReference()?.reference)
@@ -257,6 +258,7 @@ constructor(
       }
 
     return appointments
+      .map { it.resource }
       .filter {
         it.status == Appointment.AppointmentStatus.BOOKED &&
           it.hasStart() &&

@@ -83,9 +83,11 @@ suspend fun FhirEngine.countActivePatients(): Long =
 
 suspend fun FhirEngine.loadRelatedPersons(patientId: String): List<RelatedPerson>? {
   return try {
-    this@loadRelatedPersons.search {
-      apply { filter(RelatedPerson.PATIENT, { value = "Patient/$patientId" }) }.getQuery()
-    }
+    this@loadRelatedPersons
+      .search<RelatedPerson> {
+        apply { filter(RelatedPerson.PATIENT, { value = "Patient/$patientId" }) }.getQuery()
+      }
+      .map { it.resource }
   } catch (resourceNotFoundException: ResourceNotFoundException) {
     null
   }
@@ -93,10 +95,12 @@ suspend fun FhirEngine.loadRelatedPersons(patientId: String): List<RelatedPerson
 
 suspend fun FhirEngine.loadPatientImmunizations(patientId: String): List<Immunization>? {
   return try {
-    this@loadPatientImmunizations.search {
-      filter(Immunization.PATIENT, { value = "Patient/$patientId" })
-      apply { filter(Immunization.PATIENT, { value = "Patient/$patientId" }) }.getQuery()
-    }
+    this@loadPatientImmunizations
+      .search<Immunization> {
+        filter(Immunization.PATIENT, { value = "Patient/$patientId" })
+        apply { filter(Immunization.PATIENT, { value = "Patient/$patientId" }) }.getQuery()
+      }
+      .map { it.resource }
   } catch (resourceNotFoundException: ResourceNotFoundException) {
     null
   }
