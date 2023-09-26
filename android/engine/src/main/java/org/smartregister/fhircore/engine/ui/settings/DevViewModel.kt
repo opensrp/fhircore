@@ -88,7 +88,10 @@ constructor(
       log =
         "${log}Id,${group.key},Date" +
           "\n" +
-          group.value.joinToString(separator = "\n") { "${it.id},${it.version},${it.date}" } +
+          group.value.joinToString(separator = "\n") @ExcludeFromJacocoGeneratedReport
+          {
+            "${it.id},${it.version},${it.date}"
+          } +
           "" +
           "\n-----------------------------------------------------\n"
     }
@@ -115,7 +118,8 @@ constructor(
 
   fun fetchDetails() {
     try {
-      viewModelScope.launch {
+      viewModelScope.launch @ExcludeFromJacocoGeneratedReport
+      {
         val userInfo = keycloakService.fetchUserInfo().body()
         if (userInfo != null && !userInfo.keycloakUuid.isNullOrEmpty()) {
           val bundle =

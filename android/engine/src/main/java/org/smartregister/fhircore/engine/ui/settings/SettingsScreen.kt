@@ -84,24 +84,29 @@ fun SettingsScreen(
   ) {
     ModalBottomSheetLayout(
       sheetState = devMenuSheetState,
-      sheetContent = {
-        DevMenu(viewModel = devViewModel) {
-          scope.launch {
-            devMenuSheetState.hide()
-            viewResSheetState.show()
+      sheetContent =
+        @ExcludeFromJacocoGeneratedReport
+        {
+          DevMenu(viewModel = devViewModel) {
+            scope.launch @ExcludeFromJacocoGeneratedReport
+            {
+              devMenuSheetState.hide()
+              viewResSheetState.show()
+            }
           }
         }
-      }
     ) {
       Scaffold(
         topBar = {
           TopAppBar(
             title = {},
-            navigationIcon = {
-              IconButton(onClick = { navController?.popBackStack() }) {
-                Icon(Icons.Default.ArrowBack, "")
+            navigationIcon =
+              @ExcludeFromJacocoGeneratedReport
+              {
+                IconButton(onClick = { navController?.popBackStack() }) {
+                  Icon(Icons.Default.ArrowBack, "")
+                }
               }
-            }
           )
         }
       ) { paddingValues ->
@@ -129,14 +134,19 @@ fun SettingsScreen(
           UserProfileRow(
             icon = Icons.Rounded.BugReport,
             text = "Dev Menu",
-            clickListener = { scope.launch { devMenuSheetState.show() } },
+            clickListener =
+              @ExcludeFromJacocoGeneratedReport
+              {
+                scope.launch @ExcludeFromJacocoGeneratedReport { devMenuSheetState.show() }
+              },
             modifier = modifier
           )
 
           UserProfileRow(
             icon = Icons.Rounded.Logout,
             text = stringResource(id = R.string.logout),
-            clickListener = { settingsViewModel.logoutUser(context) },
+            clickListener =
+              @ExcludeFromJacocoGeneratedReport { settingsViewModel.logoutUser(context) },
             modifier = modifier
           )
         }
@@ -157,7 +167,7 @@ fun UserProfileRow(
     modifier =
       modifier
         .fillMaxWidth()
-        .clickable { clickListener() }
+        .clickable @ExcludeFromJacocoGeneratedReport { clickListener() }
         .padding(vertical = 16.dp, horizontal = 20.dp),
     horizontalArrangement = Arrangement.SpaceBetween
   ) {

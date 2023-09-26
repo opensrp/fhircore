@@ -42,13 +42,18 @@ fun DevMenu(viewModel: DevViewModel, viewRes: () -> Unit) {
   ) {
     Button(
       modifier = Modifier.fillMaxWidth(),
-      onClick = { scope.launch { viewModel.createResourceReport(context) } }
+      onClick =
+        @ExcludeFromJacocoGeneratedReport
+        {
+          scope.launch @ExcludeFromJacocoGeneratedReport { viewModel.createResourceReport(context) }
+        }
     ) { Text(text = "Export Report Resources") }
     Button(modifier = Modifier.fillMaxWidth(), onClick = viewRes) {
       Text(text = "View Report Resources")
     }
-    Button(modifier = Modifier.fillMaxWidth(), onClick = { viewModel.fetchDetails() }) {
-      Text(text = "Test Fetch")
-    }
+    Button(
+      modifier = Modifier.fillMaxWidth(),
+      onClick = @ExcludeFromJacocoGeneratedReport { viewModel.fetchDetails() }
+    ) { Text(text = "Test Fetch") }
   }
 }

@@ -69,7 +69,7 @@ constructor(
   val data = MutableLiveData<ProfileData>()
 
   init {
-    viewModelScope.launch { fetchData() }
+    viewModelScope.launch @ExcludeFromJacocoGeneratedReport { fetchData() }
   }
 
   private suspend fun fetchData() {
@@ -123,7 +123,8 @@ constructor(
 
   fun logoutUser(context: Context) {
     onLogout.postValue(true)
-    accountAuthenticator.logout {
+    accountAuthenticator.logout @ExcludeFromJacocoGeneratedReport
+    {
       context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
     }
   }

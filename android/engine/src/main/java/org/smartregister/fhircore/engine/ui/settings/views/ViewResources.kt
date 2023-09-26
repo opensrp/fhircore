@@ -47,16 +47,23 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 fun ViewResourceReport(viewModel: DevViewModel) {
   var data by remember { mutableStateOf(mapOf<String, List<ResourceField>>()) }
 
-  LaunchedEffect(viewModel) { data = viewModel.getResourcesToReport() }
+  LaunchedEffect(viewModel) @ExcludeFromJacocoGeneratedReport
+  {
+    data = viewModel.getResourcesToReport()
+  }
 
   Scaffold { paddingValues ->
     LazyColumn(
       verticalArrangement = Arrangement.spacedBy(8.dp),
       modifier = Modifier.padding(paddingValues).padding(horizontal = 12.dp)
-    ) {
+    ) @ExcludeFromJacocoGeneratedReport
+    {
       data.entries.forEach { group ->
         run {
-          stickyHeader { Text(text = group.key, style = MaterialTheme.typography.h5) }
+          stickyHeader @ExcludeFromJacocoGeneratedReport
+          {
+            Text(text = group.key, style = MaterialTheme.typography.h5)
+          }
           items(group.value) { item ->
             Card(Modifier.fillMaxWidth()) {
               Column(

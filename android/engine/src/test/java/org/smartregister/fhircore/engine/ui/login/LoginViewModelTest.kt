@@ -114,7 +114,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSuccessfulOfflineLogin() {
+  fun testSuccessfulOfflineLogin() = runTest {
     val activity = mockedActivity()
 
     updateCredentials()
@@ -134,7 +134,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertTrue(loginViewModel.navigateToHome.value!!)
   }
   @Test
-  fun testUnSuccessfulOfflineLogin() {
+  fun testUnSuccessfulOfflineLogin() = runTest {
     val activity = mockedActivity()
 
     updateCredentials()
@@ -155,7 +155,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSuccessfulOnlineLoginWithActiveSessionWithSavedPractitionerDetails() {
+  fun testSuccessfulOnlineLoginWithActiveSessionWithSavedPractitionerDetails() = runTest {
     updateCredentials()
     sharedPreferencesHelper.write(
       SharedPreferenceKey.PRACTITIONER_DETAILS.name,
@@ -187,16 +187,28 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSuccessfulOnlineLoginWithActiveSessionWithNoPractitionerDetailsSaved() {
+  fun testSuccessfulOnlineLoginWithActiveSessionWithNoPractitionerDetailsSaved() = runTest {
     updateCredentials()
     every { tokenAuthenticator.sessionActive() } returns true
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns
+      Result.success(
+        OAuthResponse(
+          accessToken = "very_new_top_of_the_class_access_token",
+          tokenType = "you_guess_it",
+          refreshToken = "another_very_refreshing_token",
+          refreshExpiresIn = 540000,
+          scope = "open_my_guy"
+        )
+      )
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
     val toHome = loginViewModel.navigateToHome.value!!
     Assert.assertFalse(toHome)
   }
 
   @Test
-  fun testUnSuccessfulOnlineLoginUsingDifferentUsername() {
+  fun testUnSuccessfulOnlineLoginUsingDifferentUsername() = runTest {
     updateCredentials()
     secureSharedPreference.saveCredentials("nativeUser", "n4t1veP5wd".toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
@@ -209,7 +221,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSuccessfulNewOnlineLoginShouldFetchUserInfoAndPractitioner() {
+  fun testSuccessfulNewOnlineLoginShouldFetchUserInfoAndPractitioner() = runTest {
     updateCredentials()
     secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
@@ -250,7 +262,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testUnSuccessfulOnlineLoginUserInfoNotFetched() {
+  fun testUnSuccessfulOnlineLoginUserInfoNotFetched() = runTest {
     updateCredentials()
     secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
@@ -281,7 +293,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testUnSuccessfulOnlineLoginPractitionerDetailsNotFetchedException() {
+  fun testUnSuccessfulOnlineLoginPractitionerDetailsNotFetchedException() = runTest {
     updateCredentials()
     secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
@@ -312,7 +324,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testUnSuccessfulOnlineLoginWhenAccessTokenNotReceived() {
+  fun testUnSuccessfulOnlineLoginWhenAccessTokenNotReceived() = runTest {
     updateCredentials()
     secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
@@ -360,14 +372,14 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testUpdateNavigateShouldUpdateLiveData() {
+  fun testUpdateNavigateShouldUpdateLiveData() = runTest {
     loginViewModel.updateNavigateHome(true)
     Assert.assertNotNull(loginViewModel.navigateToHome.value)
     Assert.assertTrue(loginViewModel.navigateToHome.value!!)
   }
 
   @Test
-  fun testForgotPasswordLoadsContact() {
+  fun testForgotPasswordLoadsContact() = runTest {
     loginViewModel.forgotPassword()
     Assert.assertEquals("tel:0123456789", loginViewModel.launchDialPad.value)
   }
