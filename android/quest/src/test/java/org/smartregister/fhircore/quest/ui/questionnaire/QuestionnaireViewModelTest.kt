@@ -21,6 +21,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -40,8 +41,10 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Address
+import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -325,6 +328,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
         questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig,
       )
 
       fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
@@ -993,5 +997,53 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify(exactly = 0) {
       defaultRepository.addOrUpdate(addMandatoryTags = true, resource = questionnaireResponse)
     }
+  }
+
+  @Test
+  fun testLoadCqlInputResourcesFromQuestionnaireConfig() = runBlocking {
+    val bundle = Bundle()
+
+    // Define the expected CQL input resources
+    val expectedCqlInputResources = listOf("basic-resource-id")
+
+    val questionnaireConfigCqlInputResources =
+      questionnaireConfig.copy(cqlInputResources = listOf("basic-resource-id"))
+
+    // Create a sample questionnaire with a CQL library extension
+    val questionnaire =
+      samplePatientRegisterQuestionnaire.copy().apply {
+        addExtension(
+          Extension().apply {
+            url = "https://sample.cqf-library.url"
+            setValue(StringType("Library/123"))
+          },
+        )
+      }
+
+    // Mock the retrieval of a Basic resource with the specified ID
+    val resource1 = Faker.buildBasicResource("basic-resource-id")
+    coEvery { fhirEngine.get<Basic>(any()) } answers { resource1 }
+
+    // Load the CQL input resources from the questionnaireConfig
+    val loadedCqlInputResources = questionnaireConfigCqlInputResources.cqlInputResources
+
+    // Verify that the loadedCqlInputResources match the expected list
+    Assert.assertEquals(expectedCqlInputResources, loadedCqlInputResources)
+
+    // Execute CQL by invoking the questionnaireViewModel.executeCql method
+    questionnaireViewModel.executeCql(
+      patient,
+      bundle,
+      questionnaire,
+      questionnaireConfigCqlInputResources,
+    )
+
+    // Verify that the bundle contains the expected Basic resource with ID "basic-resource-id"
+    Assert.assertTrue(
+      bundle.entry.any { it.resource is Basic && it.resource.id == "basic-resource-id" },
+    )
+
+    // Verify that the libraryEvaluator.runCqlLibrary was called with the correct arguments
+    coVerify { libraryEvaluator.runCqlLibrary("123", patient, bundle) }
   }
 }

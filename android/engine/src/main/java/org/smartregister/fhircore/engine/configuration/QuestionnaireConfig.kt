@@ -55,6 +55,7 @@ data class QuestionnaireConfig(
     null,
   val saveQuestionnaireResponse: Boolean = true,
   val generateCarePlanWithWorkflowApi: Boolean = false,
+  val cqlInputResources: List<String>? = emptyList(),
   val showClearAll: Boolean = false,
 ) : java.io.Serializable, Parcelable {
 
@@ -80,6 +81,7 @@ data class QuestionnaireConfig(
       readOnlyLinkIds = readOnlyLinkIds?.map { it.interpolate(computedValuesMap) },
       onSubmitActions = onSubmitActions?.map { it.interpolate(computedValuesMap) },
       barcodeLinkId = barcodeLinkId.interpolate(computedValuesMap),
+      cqlInputResources = cqlInputResources?.map { it.interpolate(computedValuesMap) },
     )
 }
 
