@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.register
+package org.smartregister.fhircore.engine.configuration.register
 
-sealed class RegisterEvent {
-  data class SearchRegister(val searchText: String = "") : RegisterEvent()
+import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.DataQuery
 
-  object MoveToNextPage : RegisterEvent()
+@Serializable
+data class RegisterFilterConfig(
+  val dataFilterActions: List<ActionConfig>? = null,
+  val dataFilterFields: List<RegisterFilterField> = emptyList(),
+) : java.io.Serializable
 
-  object MoveToPreviousPage : RegisterEvent()
-
-  object ResetFilterRecordsCount : RegisterEvent()
-}
+@Serializable
+data class RegisterFilterField(
+  val dataQueries: List<DataQuery>,
+  val filterId: String,
+) : java.io.Serializable

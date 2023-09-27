@@ -189,7 +189,7 @@ constructor(
           context = context,
         )
 
-      if (!questionnaireResponseValid) {
+      if (questionnaireConfig.saveQuestionnaireResponse && !questionnaireResponseValid) {
         Timber.e("Invalid questionnaire response")
         context.showToast(context.getString(R.string.questionnaire_response_invalid))
         return@launch
@@ -595,7 +595,7 @@ constructor(
         libraryId == "223758"
       ) { // Resource id for Library that calculates Z-score in ZEIR application
         // Adding 4 basic resources which contain the Data needed for Z-score calculation
-        val basicResourceIds = listOf("223754", "223755", "223756", "223757")
+        val basicResourceIds = listOf("223754", "223755", "223756", "223757", "250928", "264356")
         basicResourceIds.forEach { resourceId ->
           val basicResource = defaultRepository.loadResource(resourceId) as Basic?
           bundle.addEntry(Bundle.BundleEntryComponent().setResource(basicResource))
