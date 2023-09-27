@@ -80,7 +80,7 @@ constructor(
             tokenAuthenticator.refreshToken(refreshToken)
           } catch (ex: Exception) {
             Timber.e(ex)
-            // any form of exception would unset token to empty, thereby forcing re-login
+            // any form of exception will unset token to empty, thereby forcing re-login
             ""
           }
       }
