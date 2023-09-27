@@ -16,12 +16,10 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
-sealed class RegisterEvent {
-  data class SearchRegister(val searchText: String = "") : RegisterEvent()
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 
-  object MoveToNextPage : RegisterEvent()
-
-  object MoveToPreviousPage : RegisterEvent()
-
-  object ResetFilterRecordsCount : RegisterEvent()
-}
+data class RegisterFilterState(
+  val fhirResourceConfig: FhirResourceConfig? = null,
+  val questionnaireResponse: QuestionnaireResponse? = null,
+)
