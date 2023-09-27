@@ -1035,7 +1035,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       patient,
       bundle,
       questionnaire,
-      questionnaireConfigCqlInputResources
+      questionnaireConfigCqlInputResources,
     )
 
     // Verify that the bundle contains the expected Basic resource with ID "basic-resource-id"
