@@ -189,7 +189,7 @@ constructor(
           context = context,
         )
 
-      if (!questionnaireResponseValid) {
+      if (questionnaireConfig.saveQuestionnaireResponse && !questionnaireResponseValid) {
         Timber.e("Invalid questionnaire response")
         context.showToast(context.getString(R.string.questionnaire_response_invalid))
         return@launch

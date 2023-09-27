@@ -158,7 +158,8 @@ class RegisterRepositoryTest : RobolectricTest() {
       val paramsMap = emptyMap<String, String>()
       val searchSlot = slot<Search>()
       coEvery { fhirEngine.count(capture(searchSlot)) } returns 20
-      val recordsCount = registerRepository.countRegisterData(PATIENT_REGISTER, paramsMap)
+      val recordsCount =
+        registerRepository.countRegisterData(registerId = PATIENT_REGISTER, paramsMap = paramsMap)
       Assert.assertEquals(ResourceType.Patient, searchSlot.captured.type)
       Assert.assertEquals(20, recordsCount)
     }
