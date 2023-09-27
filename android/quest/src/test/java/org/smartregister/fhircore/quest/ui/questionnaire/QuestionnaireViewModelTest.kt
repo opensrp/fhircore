@@ -164,7 +164,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         id = "754", // Same as ID in sample_patient_registration.json
         title = "Patient registration",
         type = QuestionnaireType.DEFAULT,
-        cqlInputResources = listOf("basic-resource-id"),
       )
 
     questionnaireViewModel =
@@ -1007,6 +1006,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // Define the expected CQL input resources
     val expectedCqlInputResources = listOf("basic-resource-id")
 
+    val questionnaireConfigCqlInputResources =
+      questionnaireConfig.copy(cqlInputResources = listOf("basic-resource-id"))
+
     // Create a sample questionnaire with a CQL library extension
     val questionnaire =
       samplePatientRegisterQuestionnaire.copy().apply {
@@ -1023,13 +1025,18 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.get<Basic>(any()) } answers { resource1 }
 
     // Load the CQL input resources from the questionnaireConfig
-    val loadedCqlInputResources = questionnaireConfig.cqlInputResources
+    val loadedCqlInputResources = questionnaireConfigCqlInputResources.cqlInputResources
 
     // Verify that the loadedCqlInputResources match the expected list
     Assert.assertEquals(expectedCqlInputResources, loadedCqlInputResources)
 
     // Execute CQL by invoking the questionnaireViewModel.executeCql method
-    questionnaireViewModel.executeCql(patient, bundle, questionnaire, questionnaireConfig)
+    questionnaireViewModel.executeCql(
+      patient,
+      bundle,
+      questionnaire,
+      questionnaireConfigCqlInputResources
+    )
 
     // Verify that the bundle contains the expected Basic resource with ID "basic-resource-id"
     Assert.assertTrue(
