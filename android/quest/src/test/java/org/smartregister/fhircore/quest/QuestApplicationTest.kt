@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest
 
+import android.content.Intent
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
@@ -30,6 +31,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 
 @HiltAndroidTest
 class QuestApplicationTest : RobolectricTest() {
@@ -90,5 +92,14 @@ class QuestApplicationTest : RobolectricTest() {
     val config = application.workManagerConfiguration
 
     Assert.assertNotNull(config)
+  }
+
+  @Test
+  fun testOnCreate() {
+    hiltRule.inject()
+    application.onCreate()
+
+    val intent = Intent(application, AppSettingActivity::class.java)
+    application.startActivity(intent)
   }
 }
