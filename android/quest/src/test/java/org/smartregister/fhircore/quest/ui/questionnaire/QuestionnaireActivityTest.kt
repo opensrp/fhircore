@@ -115,7 +115,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
   }
 
   @Test
-  fun testThatActivityIsFinishedIfQuestionnaireConfigIsMissing() {
+  fun testThatActivityIsFinishedIfQuestionnaireConfigIsMissing(){
     questionnaireActivityController = Robolectric.buildActivity(QuestionnaireActivity::class.java)
     questionnaireActivity = questionnaireActivityController.create().resume().get()
     Assert.assertEquals(
@@ -130,6 +130,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
     every { toast.show() } just runs
     mockkStatic(Toast::class)
     every { Toast.makeText(any(), any<String>(), Toast.LENGTH_LONG) } returns toast
+
     setupActivity()
 
     verify { Toast.makeText(any(), eq(context.getString(R.string.questionnaire_not_found)), any()) }
@@ -168,6 +169,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
 
   @Test
   fun testThatOnBackPressShowsConfirmationAlertDialog() = runTest {
+
     setupActivity()
     questionnaireActivity.onBackPressedDispatcher.onBackPressed()
     val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestAlertDialog())
