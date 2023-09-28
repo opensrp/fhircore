@@ -115,7 +115,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
   }
 
   @Test
-  fun testThatActivityIsFinishedIfQuestionnaireConfigIsMissing(){
+  fun testThatActivityIsFinishedIfQuestionnaireConfigIsMissing() {
     questionnaireActivityController = Robolectric.buildActivity(QuestionnaireActivity::class.java)
     questionnaireActivity = questionnaireActivityController.create().resume().get()
     Assert.assertEquals(
