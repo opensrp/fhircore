@@ -36,7 +36,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -61,7 +60,6 @@ import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
 import timber.log.Timber
-import java.security.AccessControlException
 
 @HiltViewModel
 class LoginViewModel
@@ -139,53 +137,82 @@ constructor(
               }
             },
             onFetchPractitioner = { bundleResult, userInfo ->
-              if (bundleResult.isSuccess) {
-                val bundle = bundleResult.getOrDefault(FhirR4ModelBundle())
-                bundle.entry.map { it.resource }.filterIsInstance<PractitionerDetails>()
-                  .forEach {
-                    val existingCredentials = secureSharedPreference.retrieveCredentials()
-                    val existPractitionerDetails = sharedPreferences.read<PractitionerDetails>(
-                      key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-                      decodeWithGson = true
-                    )
-
-                    if (existingCredentials == null || existPractitionerDetails == null) {
-                      savePractitionerDetails(it, userInfo) {
-                        _showProgressBar.postValue(false)
-                        updateNavigateHome(true)
-                      }
-                      return@forEach
-                    }
-
-                    val appSyncStrategies = applicationConfiguration.syncStrategy
-                    var syncStrategyMatching = false
-                    appSyncStrategies.forEach { syncStrategy ->
-                      if (syncStrategy.equals("Location", ignoreCase = true)) { // may be use enums, in future
-                        syncStrategyMatching =
-                          existPractitionerDetails.fhirPractitionerDetails.locations.any { location ->
-                            it.fhirPractitionerDetails.locations.contains(location)
-                          }
-                      }
-                    }
-
-                    if (syncStrategyMatching){
-                      savePractitionerDetails(it, userInfo) {
-                        _showProgressBar.postValue(false)
-                        updateNavigateHome(true)
-                      }
-                    }else{
-                      _showProgressBar.postValue(false)
-                      // TODO: Post login error for second user when not matching sync strategy
-                      _loginErrorState.postValue(LoginErrorState.ERROR_MATCHING_SYNC_STRATEGY)
-                    }
-
-                  }
-              } else {
+              if (bundleResult.isFailure) {
                 _showProgressBar.postValue(false)
                 Timber.e(bundleResult.exceptionOrNull())
                 Timber.e(bundleResult.getOrNull().valueToString())
                 _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
+                return@fetchToken
               }
+
+              val bundle = bundleResult.getOrDefault(FhirR4ModelBundle())
+              bundle.entry
+                .map { it.resource }
+                .filterIsInstance<PractitionerDetails>()
+                .forEach {
+                  val existingCredentials = secureSharedPreference.retrieveCredentials()
+                  val practitionerExists =
+                    sharedPreferences
+                      .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+                      .isNullOrBlank()
+                      .not()
+
+                  if (existingCredentials == null || !practitionerExists) {
+                    savePractitionerDetails(it, userInfo) {
+                      _showProgressBar.postValue(false)
+                      updateNavigateHome(true)
+                    }
+                    return@forEach
+                  }
+
+                  val appSyncStrategies = applicationConfiguration.syncStrategy
+
+                  val syncStrategy = appSyncStrategies.single()
+                  val syncStrategyMatching =
+                    when (syncStrategy.lowercase()) {
+                      "location" -> {
+                        val currentLocations =
+                          sharedPreferences.read<List<String>>(key = ResourceType.Location.name)
+                            ?: emptyList()
+                        val userLocations =
+                          it.fhirPractitionerDetails.locations.map { location ->
+                            location.id.extractLogicalIdUuid()
+                          }
+                        currentLocations.all { location -> userLocations.contains(location) }
+                      }
+                      "careteam" -> {
+                        val currentCareTeams =
+                          sharedPreferences.read<List<String>>(key = ResourceType.CareTeam.name)
+                            ?: emptyList()
+                        val userCareTeams =
+                          it.fhirPractitionerDetails.careTeams.map { careTeam ->
+                            careTeam.id.extractLogicalIdUuid()
+                          }
+                        currentCareTeams.all { careTeam -> userCareTeams.contains(careTeam) }
+                      }
+                      "organization" -> {
+                        val currentOrganizations =
+                          sharedPreferences.read<List<String>>(key = ResourceType.Organization.name)
+                            ?: emptyList()
+                        val userOrganizations =
+                          it.fhirPractitionerDetails.organizations.map { org ->
+                            org.id.extractLogicalIdUuid()
+                          }
+                        currentOrganizations.all { org -> userOrganizations.contains(org) }
+                      }
+                      else -> throw NotImplementedError()
+                    }
+
+                  if (syncStrategyMatching) {
+                    savePractitionerDetails(it, userInfo) {
+                      _showProgressBar.postValue(false)
+                      updateNavigateHome(true)
+                    }
+                  } else {
+                    _showProgressBar.postValue(false)
+                    _loginErrorState.postValue(LoginErrorState.ERROR_MATCHING_SYNC_STRATEGY)
+                  }
+                }
             },
           )
         } else {
@@ -239,28 +266,28 @@ constructor(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
-    val practitionerDetails =
-      sharedPreferences.read<PractitionerDetails>(
-        key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-        decodeWithGson = true,
+    val practitionerID =
+      sharedPreferences.read(
+        key = SharedPreferenceKey.PRACTITIONER_ID.name,
+        defaultValue = null,
       )
     // Get credentials for the current user
     val currentCredentials = secureSharedPreference.retrieveCredentials()
-    if (currentCredentials != null
-      && practitionerDetails != null
-      && username.equals(currentCredentials.username, ignoreCase = true)
-      && tokenAuthenticator.sessionActive()){
-        // Allow login access
-        _showProgressBar.postValue(false)
-        updateNavigateHome(true)
+    if (
+      currentCredentials != null &&
+        practitionerID.isNullOrBlank().not() &&
+        username.equals(currentCredentials.username, ignoreCase = true) &&
+        tokenAuthenticator.sessionActive()
+    ) {
+      // Allow login access
+      _showProgressBar.postValue(false)
+      updateNavigateHome(true)
       return
     }
 
     tokenAuthenticator
       .fetchAccessToken(username, password)
-      .onSuccess {
-        fetchPractitioner(onFetchUserInfo, onFetchPractitioner)
-      }
+      .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
       .onFailure {
         _showProgressBar.postValue(false)
         var errorState = LoginErrorState.ERROR_FETCHING_USER
@@ -329,7 +356,6 @@ constructor(
     postProcess: () -> Unit,
   ) {
     viewModelScope.launch {
-
       val careTeams = practitionerDetails.fhirPractitionerDetails?.careTeams ?: listOf()
       val organizations = practitionerDetails.fhirPractitionerDetails?.organizations ?: listOf()
       val locations = practitionerDetails.fhirPractitionerDetails?.locations ?: listOf()
@@ -339,11 +365,6 @@ constructor(
       val locationHierarchies =
         practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
 
-      // TODO: Get if another user logged in previously
-      // TODO: Get applicationConfiguration from configurationRegistry
-      // Todo: Check practitionerDetails matching with current user considering
-      // applicationConfiguration.syncStrategy
-      // Todo: If not matching throw error, else continue to save
       val careTeamIds =
         withContext(dispatcherProvider.io()) {
           defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {

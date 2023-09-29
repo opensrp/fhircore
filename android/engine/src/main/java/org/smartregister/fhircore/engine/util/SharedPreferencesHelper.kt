@@ -27,7 +27,6 @@ import javax.inject.Singleton
 import kotlinx.serialization.SerializationException
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
-import org.smartregister.model.practitioner.PractitionerDetails
 import timber.log.Timber
 
 @Singleton
@@ -96,11 +95,7 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
     with(prefs.edit()) {
       putString(
         key,
-        (if (encodeWithGson) gson.toJson(value) else value.encodeJson()).also {
-          if (value is PractitionerDetails) {
-            Timber.e(it)
-          }
-        },
+        (if (encodeWithGson) gson.toJson(value) else value.encodeJson()),
       )
       commit()
     }
