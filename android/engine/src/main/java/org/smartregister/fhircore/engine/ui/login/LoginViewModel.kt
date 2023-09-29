@@ -24,6 +24,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.net.UnknownHostException
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.ResourceType
@@ -155,10 +156,8 @@ constructor(
     _password.value = password
   }
 
-  fun login(context: Context) {
-    viewModelScope.launch(dispatcherProvider.io()) {
-      login(offline = !context.getActivity()!!.isDeviceOnline())
-    }
+  fun login(context: Context, scope: CoroutineScope = viewModelScope) {
+    scope.launch { login(offline = !context.getActivity()!!.isDeviceOnline()) }
   }
 
   private suspend fun login(offline: Boolean) {
@@ -176,9 +175,9 @@ constructor(
       return
     }
 
-    val practitionerDetails =
+    val practitionerID =
       sharedPreferences.read(key = SharedPreferenceKey.PRACTITIONER_ID.name, defaultValue = null)
-    val sessionActiveExists = tokenAuthenticator.sessionActive() && practitionerDetails != null
+    val sessionActiveExists = tokenAuthenticator.sessionActive() && practitionerID != null
     val existingCredentials = secureSharedPreference.retrieveCredentials()
     val multiUserLoginAttempted =
       existingCredentials?.username?.equals(trimmedUsername, true) == false
