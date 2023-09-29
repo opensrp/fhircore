@@ -193,3 +193,79 @@ params     | An array of actionParameters to pass to another register | no  |  e
 paramType  | Action ParameterType to use e.g PREPOPULATE OR PARAMDATA   | no  |  null |
 key        | Action ParameterType unique key if defined but not tag is given   | yes  |  application throws exception |
 value      | Action ParameterType corresponding key's value                     | yes  |  application throws exception |
+
+
+## Filter register data
+
+Data rendered in a register can be filter based on `RegisterConfiguration.registerFilter` configuration. The process for filtering records in a register involves: launching a questionnaire that 
+contains the fields for filtering data, converting the answers from the QuestionanireResponse into relevant values for data filter queries and finally applying the new queries in load register data function. 
+
+`RegisterConfiguration.registerFilter` contains two required properties: `dataFilterActions` and `dataFilterFields`. The `dataFilterActions` is used to declare the action to launch the questionnaire used to capture the Data
+filter fields. `dataFilterFields` is used to map the filter queries to the configured resources used in the register. The filter queries MUST be used against the register resources, this relationship is achieved by setting the `filterId` 
+on any of the configured register (base or related) resource.
+
+```json
+"registerFilter": {
+    "dataFilterActions": [
+      {
+        "trigger": "ON_CLICK",
+        "workflow": "LAUNCH_QUESTIONNAIRE",
+        "questionnaire": {
+          "id": "questionnaireId",
+          "title": "Filter register",
+          "saveButtonText": "Apply Filters",
+          "saveQuestionnaireResponse": false,
+          "showClearAll": true
+        }
+      }
+    ],
+    "dataFilterFields": [
+      {
+        "filterId": "task",
+        "dataQueries": [
+          {
+            "paramName": "status",
+            "operation": "OR",
+            "filterCriteria": [
+              {
+                "dataFilterLinkId": "43e41fdb-7b84-420c-9210-c10dbae5f77b",
+                "dataType": "CODE"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+```
+
+> NOTE: The questionanire MUST be launched with the property `saveQuestionnaireResponse` set to false for data filtering to work. The response should not be saved. `showClearAll` will display an action button that will execute and action to resetting of all the answered fields for the `Questionnaire`.
+
+The `filterId` is a unique identifier applied to the configured `baseResource` or  `relatedResources` in the `RegisterConfiguration.fhirResource` to indicate the resource to which the filter data queries are to be applied. The `QuestionanireResponse` answer value is mapped to a `DataQuery` filterCriteria value using the unique property `dataFilterLinkId`. This is the linkId for the 
+QuestionanireResponse item. 
+
+Example if the base resource is `Task` the configuration below will be used in the resource config:
+
+```json
+{
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Task",
+      "filterId": "task",
+      "dataQueries": [
+        {
+          "paramName": "status",
+          "operation": "OR",
+          "filterCriteria": [
+            {
+              "dataFilterLinkId": "43e41fdb-7b84-420c-9210-c10dbae5f77b",
+              "dataType": "CODE"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+
+```
