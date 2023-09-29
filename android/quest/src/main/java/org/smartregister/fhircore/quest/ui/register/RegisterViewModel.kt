@@ -223,8 +223,7 @@ constructor(
     // Get filter queries from the map. NOTE: filterId MUST be unique for all resources
     val newBaseResourceDataQueries =
       createQueriesForRegisterFilter(
-        registerDataFilterFieldsMap?.get(baseResource.filterId)?.dataQueries
-          ?: baseResource.dataQueries,
+        registerDataFilterFieldsMap?.get(baseResource.filterId)?.dataQueries,
         qrItemMap,
       )
 
@@ -263,7 +262,7 @@ constructor(
       relatedResources.map {
         val newDataQueries =
           createQueriesForRegisterFilter(
-            registerDataFilterFieldsMap?.get(it.filterId)?.dataQueries ?: it.dataQueries,
+            registerDataFilterFieldsMap?.get(it.filterId)?.dataQueries,
             qrItemMap,
           )
         it.copy(
