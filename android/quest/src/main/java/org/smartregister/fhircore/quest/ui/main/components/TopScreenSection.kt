@@ -106,7 +106,7 @@ fun TopScreenSection(
       if (isFilterIconEnabled) {
         IconButton(
           onClick = { onClick.invoke(ToolbarClickEvent.FilterData) },
-          modifier = Modifier.padding(horizontal = 16.dp)
+          modifier = Modifier.padding(horizontal = 16.dp),
         ) {
           BadgedBox(
             badge = {
