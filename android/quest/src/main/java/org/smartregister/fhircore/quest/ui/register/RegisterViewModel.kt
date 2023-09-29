@@ -177,7 +177,7 @@ constructor(
         currentPage.value.let { if (it > 0) currentPage.value = it.minus(1) }
         paginateRegisterData(registerUiState.value.registerId)
       }
-      RegisterEvent.ResetFilterRecordsCount -> _filteredRecordsCount.value = -1
+      RegisterEvent.ResetFilterRecordsCount -> _filteredRecordsCount.longValue = -1
     }
 
   fun filterRegisterData(event: RegisterEvent.SearchRegister) {
@@ -406,12 +406,12 @@ constructor(
       viewModelScope.launch(dispatcherProvider.io()) {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
 
-        _totalRecordsCount.value =
+        _totalRecordsCount.longValue =
           registerRepository.countRegisterData(registerId = registerId, paramsMap = paramsMap)
 
         // Only count filtered data when queries are updated
         if (registerFilterState.value.fhirResourceConfig != null) {
-          _filteredRecordsCount.value =
+          _filteredRecordsCount.longValue =
             registerRepository.countRegisterData(
               registerId = registerId,
               paramsMap = paramsMap,
@@ -427,14 +427,16 @@ constructor(
             isFirstTimeSync =
               sharedPreferencesHelper
                 .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
-                .isNullOrEmpty() && _totalRecordsCount.value == 0L,
+                .isNullOrEmpty() && _totalRecordsCount.longValue == 0L,
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,
-            totalRecordsCount = _totalRecordsCount.value,
-            filteredRecordsCount = _filteredRecordsCount.value,
+            totalRecordsCount = _totalRecordsCount.longValue,
+            filteredRecordsCount = _filteredRecordsCount.longValue,
             pagesCount =
               ceil(
-                  _totalRecordsCount.value
+                  (if (registerFilterState.value.fhirResourceConfig != null) {
+                      _filteredRecordsCount.longValue
+                    } else _totalRecordsCount.longValue)
                     .toDouble()
                     .div(currentRegisterConfiguration.pageSize.toLong()),
                 )
