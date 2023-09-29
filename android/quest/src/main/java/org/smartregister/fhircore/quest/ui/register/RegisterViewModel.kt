@@ -434,9 +434,9 @@ constructor(
             filteredRecordsCount = _filteredRecordsCount.longValue,
             pagesCount =
               ceil(
-                  (if (registerFilterState.value.fhirResourceConfig != null)
+                  (if (registerFilterState.value.fhirResourceConfig != null) {
                       _filteredRecordsCount.longValue
-                    else _totalRecordsCount.longValue)
+                    } else _totalRecordsCount.longValue)
                     .toDouble()
                     .div(currentRegisterConfiguration.pageSize.toLong()),
                 )
