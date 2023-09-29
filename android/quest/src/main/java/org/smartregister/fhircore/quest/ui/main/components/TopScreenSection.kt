@@ -104,11 +104,14 @@ fun TopScreenSection(
         modifier = modifier.weight(1f).testTag(TOP_ROW_TEXT_TEST_TAG),
       )
       if (isFilterIconEnabled) {
-        IconButton(onClick = { onClick.invoke(ToolbarClickEvent.FilterData) }) {
+        IconButton(
+          onClick = { onClick.invoke(ToolbarClickEvent.FilterData) },
+          modifier = Modifier.padding(horizontal = 16.dp),
+        ) {
           BadgedBox(
             badge = {
               if (filteredRecordsCount != null && filteredRecordsCount > -1) {
-                Badge(modifier = Modifier.size(18.dp)) {
+                Badge {
                   Text(
                     text = filteredRecordsCount.toString(),
                     overflow = TextOverflow.Clip,
@@ -180,7 +183,7 @@ fun TopScreenSectionPreview() {
   TopScreenSection(
     title = "All Clients",
     searchText = "Eddy",
-    filteredRecordsCount = 8,
+    filteredRecordsCount = 1890,
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = true,
