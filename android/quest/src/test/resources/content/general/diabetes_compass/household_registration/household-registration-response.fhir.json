@@ -1,0 +1,50 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "item": [
+    {
+      "linkId": "house_name",
+      "text": "House name",
+      "answer": [
+        {
+          "valueString": "Starks"
+        }
+      ]
+    },
+    {
+      "linkId": "housing_unit_post_code",
+      "text": "Housing unit/postal code",
+      "answer": [
+        {
+          "valueString": "12345"
+        }
+      ]
+    },
+    {
+      "linkId": "street_lane",
+      "text": "Street/lane",
+      "answer": [
+        {
+          "valueString": "George padmore"
+        }
+      ]
+    },
+    {
+      "linkId": "village_estate",
+      "text": "Village/estate",
+      "answer": [
+        {
+          "valueString": "Kilimani"
+        }
+      ]
+    },
+    {
+      "linkId": "landmark",
+      "text": "Landmark",
+      "answer": [
+        {
+          "valueString": "One padmore"
+        }
+      ]
+    }
+  ]
+}

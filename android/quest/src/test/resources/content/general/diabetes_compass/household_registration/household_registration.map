@@ -1,0 +1,131 @@
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/dc-household-registration-sm" = 'DC Household Registration'
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+uses "http://hl7.org/fhir/StructureDefinition/Group" as target
+uses "http://hl7.org/fhir/StructureDefinition/Encounter" as target
+
+group HouseholdRegistration(source src : QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.id = uuid() "rule_bundle_id";
+    src -> bundle.type = 'collection' "rule_bundle_type";
+    src -> bundle.entry as entry, entry.resource = create('Group') as group then
+        ExtractGroup(src, group), ExtractEncounter(src, bundle) "rule_bundle_entries";
+}
+
+group ExtractGroup(source src : QuestionnaireResponse, target group : Group) {
+       src -> group.id = uuid() "rule_group_id_generation";
+       src -> group.name = evaluate(src, $this.item.where(linkId = 'house_name').answer.value) "rule_group_name";
+
+       src -> group.identifier = create('Identifier') as groupIdentifierHouseholdId then {
+         src -> groupIdentifierHouseholdId.value = evaluate(src, $this.item.where(linkId = 'household_id').answer.value)
+         "rule_group_identifier_national_id_value";
+         src -> groupIdentifierHouseholdId.use = "official" "rule_group_identifier_national_id_use";
+         src -> groupIdentifierHouseholdId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_group_identifier_period";
+       } "rule_group_identifier_national_id";
+
+       src -> group.identifier = create('Identifier') as groupIdentifier then {
+          src -> groupIdentifier.value = uuid() "rule_group_identifier_value";
+          src -> groupIdentifier.use = "secondary" "rule_group_identifier_use";
+          src -> groupIdentifier.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_group_identifier_period";
+       } "rule_group_identifier";
+
+       src -> group.active = true "rule_group_status_data";
+
+       src -> group.characteristic = create('Group_Characteristic') as includeFamily then {
+           src -> includeFamily.exclude = false "rule_exclude_group_false";
+       } "rule_group_char";
+
+       src -> group.characteristic = create('Group_Characteristic') as familyCharacteristic then {
+           src -> familyCharacteristic.code = create('CodeableConcept') as familyCharacteristicCode then{
+               src -> familyCharacteristicCode.coding = c("https://smartregister.org/", "active") as coding then {
+               src -> coding.display = 'Active' "r_cp_cod_disp_v";
+               } "r_grp_vcode";
+           } "rule_group_char_code";
+       } "rule_group_char";
+
+       src -> group.type = 'person' "r_grp_type_data";
+       src -> group.actual = true "r_grp_actual_data";
+       src -> group.code = create('CodeableConcept') as concept then ExtractFamilyCode(src, concept) "r_grp_code_data";
+
+       src.item as groupCharHousingUnitPostCode where(linkId='housing_unit_post_code') -> group.characteristic = create ('Group_Characteristic') as groupChar then {
+           groupCharHousingUnitPostCode -> groupChar.code = create('CodeableConcept') as housingUnitPostalCode then{
+                src -> housingUnitPostalCode.coding = c("http://ona.io/codes", "hh_housing_unit_postal_code") as coding then {
+                src -> coding.display = 'Housing unit or postal code' "r_cod_disp_hp";
+                } "r_grp_coding_hp";
+                src -> housingUnitPostalCode.text = evaluate(src, $this.item.where(linkId = 'housing_unit_post_code').answer.value) "r_grp_cc_txt_hp";
+           } "r_grp_cc_code_hp";
+           groupCharHousingUnitPostCode -> groupChar.exclude = false "r_grp_cc_exclude_hp";
+       } "r_grp_char_hp";
+
+
+       src.item as groupCharStreetLane where(linkId='street_lane') -> group.characteristic = create ('Group_Characteristic') as groupChar then {
+           groupCharStreetLane -> groupChar.code = create('CodeableConcept') as streetLaneCode then{
+                src -> streetLaneCode.coding = c("http://ona.io/codes", "hh_street_lane") as coding then {
+                src -> coding.display = 'Street or Lane' "r_cod_disp_sl";
+                } "r_grp_coding_hp";
+                src -> streetLaneCode.text = evaluate(src, $this.item.where(linkId = 'street_lane').answer.value) "r_grp_cc_txt_sl";
+           } "r_grp_cc_code_hp";
+           groupCharStreetLane -> groupChar.exclude = false "r_grp_cc_exclude_sl";
+       } "r_grp_char_sl";
+
+       src.item as groupCharVillageEstate where(linkId='village_estate') -> group.characteristic = create ('Group_Characteristic') as groupChar then {
+           groupCharVillageEstate -> groupChar.code = create('CodeableConcept') as villageEstateCode then{
+                src -> villageEstateCode.coding = c("http://ona.io/codes", "hh_village_estate") as coding then {
+                src -> coding.display = 'Village or estate' "r_cod_disp_ve";
+                } "r_grp_coding_ve";
+                src -> villageEstateCode.text = evaluate(src, $this.item.where(linkId = 'village_estate').answer.value) "r_grp_cc_txt_ve";
+           } "r_grp_cc_code_ve";
+           groupCharVillageEstate -> groupChar.exclude = false "r_grp_cc_exclude_ve";
+       } "r_grp_char_ve";
+
+        src.item as groupCharLandmark where(linkId='landmark') -> group.characteristic = create ('Group_Characteristic') as groupChar then {
+            groupCharLandmark -> groupChar.code = create('CodeableConcept') as landmarkCode then{
+                 src -> landmarkCode.coding = c("http://ona.io/codes", "hh_landmark") as coding then {
+                 src -> coding.display = 'Landmark' "r_cod_disp_l";
+                 } "r_grp_coding_l";
+                 src -> landmarkCode.text = evaluate(src, $this.item.where(linkId = 'landmark').answer.value) "r_grp_cc_txt_l";
+            } "r_grp_cc_code_l";
+            groupCharLandmark -> groupChar.exclude = false "r_grp_cc_exclude_l";
+        } "r_grp_char_l";
+
+}
+
+group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then {
+        src -> encounter.id = uuid() "r_en_id";
+        src -> encounter.status = 'finished' "r_en_st";
+        src -> encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH", "home health") "r_en_cls";
+        src -> encounter.type = create('CodeableConcept') as concept then {
+            src -> concept.coding = c("http://snomed.info/sct", "184048005") as coding then {
+                src -> coding.display = 'Consultation' "r_en_cod_disp";
+            } "r_en_cc_cod";
+            src -> concept.text = 'Consultation' "r_en_typ_text";
+        } "r_en_typ";
+        src -> encounter.priority = create('CodeableConcept') as concept then {
+            src -> concept.coding = c("http://terminology.hl7.org/ValueSet/v3-ActPriority", "EL") as coding then {
+                src -> coding.display = 'elective' "r_en_cod_disp";
+            } "r_en_cc_cod";
+            src -> concept.text = 'elective' "r_en_prio_text";
+        } "r_en_prio";
+    	src -> encounter.subject = evaluate(src, $this.subject) "r_en_sub";
+        // src -> encounter.participant = automatically set by code in questionnaire view model
+        src -> encounter.period = create('Period') as enPeriod then {
+            src -> enPeriod.start = evaluate(src, now()) "r_en_per_start";
+            src -> enPeriod.end = evaluate(src, now()) "r_en_per_end";
+        } "r_en_per";
+        src -> encounter.reasonCode = create('CodeableConcept') as concept then {
+            src -> concept.coding = c("http://smartregsiter.org/", "family_registration") as coding then {
+                src -> coding.display = 'Family Registration' "r_en_rc_cod_disp";
+            } "r_en_rc_cod";
+            src -> concept.text = 'Family Registration' "r_en_text";
+        } "r_en_reason";
+        // serviceProvider = automatically added in code
+    } "r_en";
+}
+
+group ExtractFamilyCode(source src : Group, target concept: CodeableConcept) {
+    src -> concept.coding = c("https://www.snomed.org", "35359004") as coding then {
+        src -> coding.display = 'Family' "r_cp_cod_disp";
+
+    } "r_cp_cc_cod";
+}
