@@ -62,11 +62,9 @@ import org.smartregister.fhircore.engine.ui.settings.views.DevMenu
 import org.smartregister.fhircore.engine.ui.settings.views.ViewResourceReport
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-@ExcludeFromJacocoGeneratedReport
 fun SettingsScreen(
   modifier: Modifier = Modifier,
   navController: NavController? = null,
@@ -84,29 +82,24 @@ fun SettingsScreen(
   ) {
     ModalBottomSheetLayout(
       sheetState = devMenuSheetState,
-      sheetContent =
-        @ExcludeFromJacocoGeneratedReport
-        {
-          DevMenu(viewModel = devViewModel) {
-            scope.launch @ExcludeFromJacocoGeneratedReport
-            {
-              devMenuSheetState.hide()
-              viewResSheetState.show()
-            }
+      sheetContent = {
+        DevMenu(viewModel = devViewModel) {
+          scope.launch {
+            devMenuSheetState.hide()
+            viewResSheetState.show()
           }
         }
+      }
     ) {
       Scaffold(
         topBar = {
           TopAppBar(
             title = {},
-            navigationIcon =
-              @ExcludeFromJacocoGeneratedReport
-              {
-                IconButton(onClick = { navController?.popBackStack() }) {
-                  Icon(Icons.Default.ArrowBack, "")
-                }
+            navigationIcon = {
+              IconButton(onClick = { navController?.popBackStack() }) {
+                Icon(Icons.Default.ArrowBack, "")
               }
+            }
           )
         }
       ) { paddingValues ->
@@ -121,7 +114,7 @@ fun SettingsScreen(
           Divider(color = DividerColor)
           UserProfileRow(
             icon = Icons.Rounded.Download,
-            text = "Re-fetch Practitioner",
+            text = stringResource(R.string.re_fetch_practitioner),
             clickListener = settingsViewModel::fetchPractitionerDetails,
             modifier = modifier
           )
@@ -133,20 +126,15 @@ fun SettingsScreen(
           )
           UserProfileRow(
             icon = Icons.Rounded.BugReport,
-            text = "Dev Menu",
-            clickListener =
-              @ExcludeFromJacocoGeneratedReport
-              {
-                scope.launch @ExcludeFromJacocoGeneratedReport { devMenuSheetState.show() }
-              },
+            text = stringResource(R.string.dev_menu),
+            clickListener = { scope.launch { devMenuSheetState.show() } },
             modifier = modifier
           )
 
           UserProfileRow(
             icon = Icons.Rounded.Logout,
             text = stringResource(id = R.string.logout),
-            clickListener =
-              @ExcludeFromJacocoGeneratedReport { settingsViewModel.logoutUser(context) },
+            clickListener = { settingsViewModel.logoutUser(context) },
             modifier = modifier
           )
         }
@@ -156,7 +144,6 @@ fun SettingsScreen(
 }
 
 @Composable
-@ExcludeFromJacocoGeneratedReport
 fun UserProfileRow(
   icon: ImageVector,
   text: String,
@@ -167,7 +154,7 @@ fun UserProfileRow(
     modifier =
       modifier
         .fillMaxWidth()
-        .clickable @ExcludeFromJacocoGeneratedReport { clickListener() }
+        .clickable { clickListener() }
         .padding(vertical = 16.dp, horizontal = 20.dp),
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
