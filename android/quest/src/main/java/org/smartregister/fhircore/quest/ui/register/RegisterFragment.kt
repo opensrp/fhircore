@@ -162,7 +162,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
               )
             },
           ) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding)) {
+            Box(modifier = Modifier.padding(innerPadding).testTag(REGISTER_SCREEN_BOX_TAG)) {
               RegisterScreen(
                 openDrawer = openDrawer,
                 onEvent = registerViewModel::onEvent,
@@ -172,7 +172,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 pagingItems = pagingItems,
                 navController = findNavController(),
                 toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
-                modifier = Modifier.testTag(REGISTER_SCREEN_TEST_TAG),
               )
             }
           }
@@ -348,6 +347,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
   }
 
   companion object {
-    const val REGISTER_SCREEN_TEST_TAG = "fragmentRegisterScreenTestTag"
+    const val REGISTER_SCREEN_BOX_TAG = "fragmentRegisterScreenTestTag"
   }
 }
