@@ -21,7 +21,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Badge
+import androidx.compose.material.BadgedBox
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -41,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
@@ -68,6 +72,7 @@ fun TopScreenSection(
   modifier: Modifier = Modifier,
   title: String,
   searchText: String,
+  filteredRecordsCount: Long? = null,
   searchPlaceholder: String? = null,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (String) -> Unit,
@@ -99,13 +104,30 @@ fun TopScreenSection(
         modifier = modifier.weight(1f).testTag(TOP_ROW_TEXT_TEST_TAG),
       )
       if (isFilterIconEnabled) {
-        IconButton(onClick = { onClick.invoke(ToolbarClickEvent.FilterData) }) {
-          Icon(
-            Icons.Filled.FilterAlt,
-            contentDescription = FILTER,
-            tint = Color.White,
-            modifier = modifier.testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
-          )
+        IconButton(
+          onClick = { onClick.invoke(ToolbarClickEvent.FilterData) },
+          modifier = Modifier.padding(horizontal = 16.dp),
+        ) {
+          BadgedBox(
+            badge = {
+              if (filteredRecordsCount != null && filteredRecordsCount > -1) {
+                Badge {
+                  Text(
+                    text = filteredRecordsCount.toString(),
+                    overflow = TextOverflow.Clip,
+                    maxLines = 1,
+                  )
+                }
+              }
+            },
+          ) {
+            Icon(
+              imageVector = Icons.Default.FilterAlt,
+              contentDescription = FILTER,
+              tint = Color.White,
+              modifier = modifier.testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
+            )
+          }
         }
       }
     }
@@ -161,6 +183,7 @@ fun TopScreenSectionPreview() {
   TopScreenSection(
     title = "All Clients",
     searchText = "Eddy",
+    filteredRecordsCount = 1890,
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = true,

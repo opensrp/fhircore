@@ -51,6 +51,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
@@ -246,11 +247,15 @@ class RegisterFragment : Fragment(), OnSyncListener {
     }
   }
 
-  fun refreshRegisterData() {
+  fun refreshRegisterData(questionnaireResponse: QuestionnaireResponse? = null) {
     with(registerFragmentArgs) {
       registerViewModel.run {
-        // Clear pages cache to load new data
+        if (questionnaireResponse != null) {
+          updateRegisterFilterState(registerId, questionnaireResponse)
+        }
+
         pagesDataCache.clear()
+
         retrieveRegisterUiState(
           registerId = registerId,
           screenTitle = screenTitle,
@@ -279,20 +284,24 @@ class RegisterFragment : Fragment(), OnSyncListener {
   }
 
   suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
-    appMainViewModel.run {
-      onQuestionnaireSubmission(questionnaireSubmission)
-      retrieveAppMainUiState(refreshAll = false) // Update register counts
+    if (questionnaireSubmission.questionnaireConfig.saveQuestionnaireResponse) {
+      appMainViewModel.run {
+        onQuestionnaireSubmission(questionnaireSubmission)
+        retrieveAppMainUiState(refreshAll = false) // Update register counts
+      }
+
+      val (questionnaireConfig, _) = questionnaireSubmission
+
+      refreshRegisterData()
+
+      questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
+        registerViewModel.emitSnackBarState(snackBarMessageConfig)
+      }
+
+      questionnaireConfig.onSubmitActions?.handleClickEvent(navController = findNavController())
+    } else {
+      refreshRegisterData(questionnaireSubmission.questionnaireResponse)
     }
-
-    val (questionnaireConfig, _) = questionnaireSubmission
-
-    refreshRegisterData()
-
-    questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
-      registerViewModel.emitSnackBarState(snackBarMessageConfig)
-    }
-
-    questionnaireConfig.onSubmitActions?.handleClickEvent(navController = findNavController())
   }
 
   fun emitPercentageProgress(
@@ -318,8 +327,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
         1L,
       )
     val isProgressTotalLess = progressSyncJobStatus.total <= totalRecordsOverall
-    var currentProgress: Int
-    var currentTotalRecords =
+    val currentProgress: Int
+    val currentTotalRecords =
       if (isProgressTotalLess) {
         currentProgress =
           totalRecordsOverall.toInt() - progressSyncJobStatus.total +

@@ -189,7 +189,7 @@ constructor(
           context = context,
         )
 
-      if (!questionnaireResponseValid) {
+      if (questionnaireConfig.saveQuestionnaireResponse && !questionnaireResponseValid) {
         Timber.e("Invalid questionnaire response")
         context.showToast(context.getString(R.string.questionnaire_response_invalid))
         return@launch
@@ -240,6 +240,7 @@ constructor(
               subject = subject,
               bundle = newBundle,
               questionnaire = questionnaire,
+              questionnaireConfig = questionnaireConfig,
             )
           }
 
@@ -588,19 +589,17 @@ constructor(
       .all { it is Valid || it is NotValidated }
   }
 
-  suspend fun executeCql(subject: Resource, bundle: Bundle, questionnaire: Questionnaire) {
+  suspend fun executeCql(
+    subject: Resource,
+    bundle: Bundle,
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig? = null,
+  ) {
+    questionnaireConfig?.cqlInputResources?.forEach { resourceId ->
+      val basicResource = defaultRepository.loadResource(resourceId) as Basic?
+      bundle.addEntry(Bundle.BundleEntryComponent().setResource(basicResource))
+    }
     questionnaire.cqfLibraryIds().forEach { libraryId ->
-      // TODO Refactor/Remove as per the issue: https://github.com/opensrp/fhircore/issues/2747
-      if (
-        libraryId == "223758"
-      ) { // Resource id for Library that calculates Z-score in ZEIR application
-        // Adding 4 basic resources which contain the Data needed for Z-score calculation
-        val basicResourceIds = listOf("223754", "223755", "223756", "223757")
-        basicResourceIds.forEach { resourceId ->
-          val basicResource = defaultRepository.loadResource(resourceId) as Basic?
-          bundle.addEntry(Bundle.BundleEntryComponent().setResource(basicResource))
-        }
-      }
       if (subject.resourceType == ResourceType.Patient) {
         libraryEvaluator.runCqlLibrary(libraryId, subject as Patient, bundle)
       }

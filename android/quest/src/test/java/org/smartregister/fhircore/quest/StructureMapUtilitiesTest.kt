@@ -21,6 +21,7 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Immunization
@@ -454,5 +455,34 @@ class StructureMapUtilitiesTest : RobolectricTest() {
         it.resource.resourceType != null && it.resource.resourceType == ResourceType.Task
       }
     Assert.assertTrue(taskList.size == 10)
+  }
+
+  @Test(expected = FHIRException::class)
+  fun `perform extraction for patient registration`() {
+    val locationQuestionnaireResponseString: String =
+      "content/general/who-eir/patient_registration_questionnaire_response.json".readFile()
+    val locationStructureMap =
+      "content/general/who-eir/patient_registration_structure_map.txt".readFile()
+    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val contextR4 =
+      SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+        .apply {
+          setExpansionProfile(Parameters())
+          isCanRunWithoutTerminology = true
+        }
+    val transformSupportServices = TransformSupportServices(contextR4)
+    val structureMapUtilities =
+      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val structureMap = structureMapUtilities.parse(locationStructureMap, "IMMZ-C-QRToPatient")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val targetResource = Bundle()
+    val baseElement =
+      iParser.parseResource(QuestionnaireResponse::class.java, locationQuestionnaireResponseString)
+
+    structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
+
+    Assert.assertEquals(2, targetResource.entry.size)
+    Assert.assertEquals("Patient", targetResource.entry[0].resource.resourceType.toString())
+    Assert.assertEquals("Condition", targetResource.entry[0].resource.resourceType.toString())
   }
 }
