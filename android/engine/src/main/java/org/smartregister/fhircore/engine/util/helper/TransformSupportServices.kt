@@ -76,6 +76,7 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "Task_Input" -> Task.ParameterComponent()
       "Task_Output" -> Task.TaskOutputComponent()
       "Task_Restriction" -> Task.TaskRestrictionComponent()
+      "protocolApplied" -> Immunization.ImmunizationProtocolAppliedComponent()
       else -> ResourceFactory.createResourceOrType(name)
     }
   }
