@@ -32,6 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.testTag
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -161,7 +162,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
               )
             },
           ) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding)) {
+            Box(modifier = Modifier.padding(innerPadding).testTag(REGISTER_SCREEN_BOX_TAG)) {
               RegisterScreen(
                 openDrawer = openDrawer,
                 onEvent = registerViewModel::onEvent,
@@ -343,5 +344,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
       }
 
     return getSyncProgress(currentProgress, currentTotalRecords)
+  }
+
+  companion object {
+    const val REGISTER_SCREEN_BOX_TAG = "fragmentRegisterScreenTestTag"
   }
 }
