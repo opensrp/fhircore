@@ -108,5 +108,6 @@
     <string name="error_populating_questionnaire">Error populating some questionnaire fields. Invalid QuestionnaireResponse.</string>
     <string name="extraction_in_progress">Processing questionnaire data…</string>
     <string name="loading_questionnaire">Loading questionnaire…</string>
+    <string name="clear_all">Clear All</string>
 
 </resources>

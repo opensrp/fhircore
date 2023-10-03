@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.quest.ui.register
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -35,20 +37,31 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Enumerations.DataType
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.configuration.register.RegisterFilterField
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.Code
+import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.FilterCriterionConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
+import timber.log.Timber
 
 @HiltViewModel
 class RegisterViewModel
@@ -64,12 +77,14 @@ constructor(
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
   val registerUiState = mutableStateOf(RegisterUiState())
-  val currentPage: MutableState<Int> = mutableStateOf(0)
+  val currentPage: MutableState<Int> = mutableIntStateOf(0)
   val searchText = mutableStateOf("")
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<ResourceData>>> =
     MutableStateFlow(emptyFlow())
   val pagesDataCache = mutableMapOf<Int, Flow<PagingData<ResourceData>>>()
-  private val _totalRecordsCount = mutableStateOf(0L)
+  val registerFilterState = mutableStateOf(RegisterFilterState())
+  private val _totalRecordsCount = mutableLongStateOf(0L)
+  private val _filteredRecordsCount = mutableLongStateOf(-1L)
   private lateinit var registerConfiguration: RegisterConfiguration
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
@@ -107,6 +122,7 @@ constructor(
             registerRepository = registerRepository,
             resourceDataRulesExecutor = resourceDataRulesExecutor,
             ruleConfigs = ruleConfigs,
+            fhirResourceConfig = registerFilterState.value.fhirResourceConfig,
             actionParameters = registerUiState.value.params,
           )
           .apply {
@@ -161,6 +177,7 @@ constructor(
         currentPage.value.let { if (it > 0) currentPage.value = it.minus(1) }
         paginateRegisterData(registerUiState.value.registerId)
       }
+      RegisterEvent.ResetFilterRecordsCount -> _filteredRecordsCount.longValue = -1
     }
 
   fun filterRegisterData(event: RegisterEvent.SearchRegister) {
@@ -181,6 +198,203 @@ constructor(
     }
   }
 
+  fun updateRegisterFilterState(registerId: String, questionnaireResponse: QuestionnaireResponse) {
+    // Reset filter state if no answer is provided for all the fields
+    if (questionnaireResponse.item.all { !it.hasAnswer() }) {
+      registerFilterState.value =
+        RegisterFilterState(
+          questionnaireResponse = null,
+          fhirResourceConfig = null,
+        )
+      return
+    }
+
+    val registerConfiguration = retrieveRegisterConfiguration(registerId)
+    val resourceConfig = registerConfiguration.fhirResource
+    val baseResource = resourceConfig.baseResource
+    val qrItemMap = questionnaireResponse.item.groupBy { it.linkId }.mapValues { it.value.first() }
+
+    val registerDataFilterFieldsMap =
+      registerConfiguration.registerFilter
+        ?.dataFilterFields
+        ?.groupBy { it.filterId }
+        ?.mapValues { it.value.first() }
+
+    // Get filter queries from the map. NOTE: filterId MUST be unique for all resources
+    val newBaseResourceDataQueries =
+      createQueriesForRegisterFilter(
+        registerDataFilterFieldsMap?.get(baseResource.filterId)?.dataQueries,
+        qrItemMap,
+      )
+
+    Timber.i(
+      "New data queries for filtering Base Resources: ${newBaseResourceDataQueries.encodeJson()}",
+    )
+
+    val newRelatedResources =
+      createFilterRelatedResources(
+        registerDataFilterFieldsMap = registerDataFilterFieldsMap,
+        relatedResources = resourceConfig.relatedResources,
+        qrItemMap = qrItemMap,
+      )
+
+    Timber.i(
+      "New configurations for filtering related resource data: ${newRelatedResources.encodeJson()}",
+    )
+
+    registerFilterState.value =
+      RegisterFilterState(
+        questionnaireResponse = questionnaireResponse,
+        fhirResourceConfig =
+          FhirResourceConfig(
+            baseResource = baseResource.copy(dataQueries = newBaseResourceDataQueries),
+            relatedResources = newRelatedResources,
+          ),
+      )
+  }
+
+  private fun createFilterRelatedResources(
+    registerDataFilterFieldsMap: Map<String, RegisterFilterField>?,
+    relatedResources: List<ResourceConfig>,
+    qrItemMap: Map<String, QuestionnaireResponse.QuestionnaireResponseItemComponent>,
+  ): List<ResourceConfig> {
+    val newRelatedResources =
+      relatedResources.map {
+        val newDataQueries =
+          createQueriesForRegisterFilter(
+            registerDataFilterFieldsMap?.get(it.filterId)?.dataQueries,
+            qrItemMap,
+          )
+        it.copy(
+          dataQueries = newDataQueries,
+          relatedResources =
+            createFilterRelatedResources(
+              registerDataFilterFieldsMap = registerDataFilterFieldsMap,
+              relatedResources = it.relatedResources,
+              qrItemMap = qrItemMap,
+            ),
+        )
+      }
+    return newRelatedResources
+  }
+
+  private fun createQueriesForRegisterFilter(
+    dataQueries: List<DataQuery>?,
+    qrItemMap: Map<String, QuestionnaireResponse.QuestionnaireResponseItemComponent>,
+  ) =
+    dataQueries?.map {
+      val newFilterCriteria = mutableListOf<FilterCriterionConfig>()
+      it.filterCriteria.forEach { filterCriterionConfig ->
+        val answerComponent = qrItemMap[filterCriterionConfig.dataFilterLinkId]
+        answerComponent?.answer?.forEach { itemAnswerComponent ->
+          val criterion = convertAnswerToFilterCriterion(itemAnswerComponent, filterCriterionConfig)
+          if (criterion != null) newFilterCriteria.add(criterion)
+        }
+      }
+      it.copy(
+        filterCriteria = if (newFilterCriteria.isEmpty()) it.filterCriteria else newFilterCriteria,
+      )
+    }
+
+  private fun convertAnswerToFilterCriterion(
+    answerComponent: QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent,
+    oldFilterCriterion: FilterCriterionConfig,
+  ): FilterCriterionConfig? =
+    when {
+      answerComponent.hasValueCoding() -> {
+        val valueCoding: Coding = answerComponent.valueCoding
+        FilterCriterionConfig.TokenFilterCriterionConfig(
+          dataType = DataType.CODE,
+          computedRule = oldFilterCriterion.computedRule,
+          value = Code(valueCoding.system, valueCoding.code, valueCoding.display),
+        )
+      }
+      answerComponent.hasValueStringType() -> {
+        val stringFilterCriterion =
+          oldFilterCriterion as FilterCriterionConfig.StringFilterCriterionConfig
+        FilterCriterionConfig.StringFilterCriterionConfig(
+          dataType = DataType.STRING,
+          computedRule = stringFilterCriterion.computedRule,
+          modifier = stringFilterCriterion.modifier,
+          value = answerComponent.valueStringType.value,
+        )
+      }
+      answerComponent.hasValueQuantity() -> {
+        val quantityCriteria =
+          oldFilterCriterion as FilterCriterionConfig.QuantityFilterCriterionConfig
+        FilterCriterionConfig.QuantityFilterCriterionConfig(
+          dataType = DataType.QUANTITY,
+          computedRule = quantityCriteria.computedRule,
+          prefix = quantityCriteria.prefix,
+          system = quantityCriteria.system,
+          unit = quantityCriteria.unit,
+          value = answerComponent.valueDecimalType.value,
+        )
+      }
+      answerComponent.hasValueIntegerType() -> {
+        val numberFilterCriterion =
+          oldFilterCriterion as FilterCriterionConfig.NumberFilterCriterionConfig
+        FilterCriterionConfig.NumberFilterCriterionConfig(
+          dataType = DataType.DECIMAL,
+          computedRule = numberFilterCriterion.computedRule,
+          prefix = numberFilterCriterion.prefix,
+          value = answerComponent.valueIntegerType.value.toBigDecimal(),
+        )
+      }
+      answerComponent.hasValueDecimalType() -> {
+        val numberFilterCriterion =
+          oldFilterCriterion as FilterCriterionConfig.NumberFilterCriterionConfig
+        FilterCriterionConfig.NumberFilterCriterionConfig(
+          dataType = DataType.DECIMAL,
+          computedRule = numberFilterCriterion.computedRule,
+          prefix = numberFilterCriterion.prefix,
+          value = answerComponent.valueDecimalType.value,
+        )
+      }
+      answerComponent.hasValueDateTimeType() -> {
+        val dateFilterCriterion =
+          oldFilterCriterion as FilterCriterionConfig.DateFilterCriterionConfig
+        FilterCriterionConfig.DateFilterCriterionConfig(
+          dataType = DataType.DATETIME,
+          computedRule = dateFilterCriterion.computedRule,
+          prefix = dateFilterCriterion.prefix,
+          valueAsDateTime = true,
+          value = answerComponent.valueDecimalType.asStringValue(),
+        )
+      }
+      answerComponent.hasValueDateType() -> {
+        val dateFilterCriterion =
+          oldFilterCriterion as FilterCriterionConfig.DateFilterCriterionConfig
+        FilterCriterionConfig.DateFilterCriterionConfig(
+          dataType = DataType.DATE,
+          computedRule = dateFilterCriterion.computedRule,
+          prefix = dateFilterCriterion.prefix,
+          valueAsDateTime = false,
+          value = answerComponent.valueDateType.asStringValue(),
+        )
+      }
+      answerComponent.hasValueUriType() -> {
+        val uriCriterion = oldFilterCriterion as FilterCriterionConfig.UriFilterCriterionConfig
+        FilterCriterionConfig.UriFilterCriterionConfig(
+          dataType = DataType.URI,
+          computedRule = uriCriterion.computedRule,
+          value = answerComponent.valueUriType.valueAsString,
+        )
+      }
+      answerComponent.hasValueReference() -> {
+        val referenceCriterion =
+          oldFilterCriterion as FilterCriterionConfig.ReferenceFilterCriterionConfig
+        FilterCriterionConfig.ReferenceFilterCriterionConfig(
+          dataType = DataType.REFERENCE,
+          computedRule = referenceCriterion.computedRule,
+          value = answerComponent.valueReference.reference,
+        )
+      }
+      else -> {
+        null
+      }
+    }
+
   fun retrieveRegisterUiState(
     registerId: String,
     screenTitle: String,
@@ -191,8 +405,20 @@ constructor(
       val paramsMap: Map<String, String> = params.toParamDataMap()
       viewModelScope.launch(dispatcherProvider.io()) {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
-        // Count register data then paginate the data
-        _totalRecordsCount.value = registerRepository.countRegisterData(registerId, paramsMap)
+
+        _totalRecordsCount.longValue =
+          registerRepository.countRegisterData(registerId = registerId, paramsMap = paramsMap)
+
+        // Only count filtered data when queries are updated
+        if (registerFilterState.value.fhirResourceConfig != null) {
+          _filteredRecordsCount.longValue =
+            registerRepository.countRegisterData(
+              registerId = registerId,
+              paramsMap = paramsMap,
+              fhirResourceConfig = registerFilterState.value.fhirResourceConfig,
+            )
+        }
+
         paginateRegisterData(registerId, loadAll = false, clearCache = clearCache)
 
         registerUiState.value =
@@ -201,13 +427,16 @@ constructor(
             isFirstTimeSync =
               sharedPreferencesHelper
                 .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
-                .isNullOrEmpty() && _totalRecordsCount.value == 0L,
+                .isNullOrEmpty() && _totalRecordsCount.longValue == 0L,
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,
-            totalRecordsCount = _totalRecordsCount.value,
+            totalRecordsCount = _totalRecordsCount.longValue,
+            filteredRecordsCount = _filteredRecordsCount.longValue,
             pagesCount =
               ceil(
-                  _totalRecordsCount.value
+                  (if (registerFilterState.value.fhirResourceConfig != null) {
+                      _filteredRecordsCount.longValue
+                    } else _totalRecordsCount.longValue)
                     .toDouble()
                     .div(currentRegisterConfiguration.pageSize.toLong()),
                 )
