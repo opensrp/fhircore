@@ -59,6 +59,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -191,7 +192,8 @@ constructor(
 
       if (questionnaireConfig.saveQuestionnaireResponse && !questionnaireResponseValid) {
         Timber.e("Invalid questionnaire response")
-        context.showToast(context.getString(R.string.questionnaire_response_invalid))
+        context.showToast(context.getString(R.string.questionnaire_alert_invalid_message))
+        setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
         return@launch
       }
 
