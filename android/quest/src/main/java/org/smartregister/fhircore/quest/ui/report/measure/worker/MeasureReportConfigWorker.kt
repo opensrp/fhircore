@@ -85,12 +85,13 @@ constructor(
             }
 
             measureReportRepository.evaluatePopulationMeasure(
-              config.url,
-              startDateFormatted,
-              endDateFormatted,
-              subjects,
-              existing,
-              null
+              measureUrl = config.url,
+              startDateFormatted = startDateFormatted,
+              endDateFormatted = endDateFormatted,
+              subjects = subjects,
+              existing = existing,
+              practitionerId = null,
+              params = mapOf(), // TODO do we also want practitioner based reports prebuilt
             )
           }
         }

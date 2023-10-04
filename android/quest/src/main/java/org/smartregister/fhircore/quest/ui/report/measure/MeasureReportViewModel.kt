@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Enumerations.ResourceType
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Observation
@@ -343,6 +344,7 @@ constructor(
                     subjects = subjects,
                     existing = existingValidReports,
                     practitionerId = practitionerId,
+                    params = mapOf(ResourceType.PRACTITIONER.name to (practitionerId ?: "")),
                   )
                 } else {
                   existingValidReports
