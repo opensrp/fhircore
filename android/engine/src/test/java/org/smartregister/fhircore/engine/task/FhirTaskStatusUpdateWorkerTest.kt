@@ -23,7 +23,7 @@ import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import androidx.work.testing.TestListenableWorkerBuilder
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Search
+import com.google.android.fhir.SearchResult
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -55,7 +55,7 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
-  private lateinit var fhirTaskUtil: FhirTaskUtil
+  private lateinit var fhirResourceUtil: FhirResourceUtil
   private lateinit var context: Context
   private val fhirEngine: FhirEngine = mockk()
   private val defaultRepository: DefaultRepository = mockk()
@@ -74,24 +74,35 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
     } just runs
     every { defaultRepository.fhirEngine } returns fhirEngine
 
-    fhirTaskUtil =
+    fhirResourceUtil =
       spyk(
-        FhirTaskUtil(
+        FhirResourceUtil(
           appContext = ApplicationProvider.getApplicationContext(),
           defaultRepository = defaultRepository,
+          configurationRegistry = configurationRegistry,
         ),
       )
   }
 
   @Test
   fun `FhirTaskPlanWorker doWork executes successfully`() {
-    coEvery { fhirEngine.search<Task>(any<Search>()) } returns
-      listOf(Task().apply { status = Task.TaskStatus.REQUESTED })
+    coEvery { fhirEngine.search<Task>(any()) } returns
+      listOf(
+        SearchResult(
+          resource = Task().apply { status = Task.TaskStatus.REQUESTED },
+          null,
+          null,
+        ),
+      )
 
     val worker =
       TestListenableWorkerBuilder<FhirTaskStatusUpdateWorker>(context)
         .setWorkerFactory(
-          FhirTaskPlanWorkerFactory(fhirEngine, sharedPreferencesHelper, configurationRegistry),
+          FhirTaskPlanWorkerFactory(
+            fhirEngine,
+            sharedPreferencesHelper,
+            configurationRegistry,
+          ),
         )
         .build()
     val result = worker.startWork().get()
@@ -100,12 +111,20 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
 
   @Test
   fun `FhirTaskPlanWorker doWork executes successfully for requested, accepted, inProgress, and received`() {
-    coEvery { fhirEngine.search<Task>(any<Search>()) } returns
+    coEvery { fhirEngine.search<Task>(any()) } returns
       listOf(
-        Task().apply { status = Task.TaskStatus.REQUESTED },
-        Task().apply { status = Task.TaskStatus.ACCEPTED },
-        Task().apply { status = Task.TaskStatus.INPROGRESS },
-        Task().apply { status = Task.TaskStatus.RECEIVED },
+        SearchResult(
+          resource = Task().apply { status = Task.TaskStatus.REQUESTED },
+          null,
+          null,
+        ),
+        SearchResult(resource = Task().apply { status = Task.TaskStatus.ACCEPTED }, null, null),
+        SearchResult(
+          resource = Task().apply { status = Task.TaskStatus.INPROGRESS },
+          null,
+          null,
+        ),
+        SearchResult(resource = Task().apply { status = Task.TaskStatus.RECEIVED }, null, null),
       )
     every {
       sharedPreferencesHelper.write(FhirTaskStatusUpdateWorker.WORK_ID.lastOffset(), "104")
@@ -113,7 +132,11 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
     val worker =
       TestListenableWorkerBuilder<FhirTaskStatusUpdateWorker>(context)
         .setWorkerFactory(
-          FhirTaskPlanWorkerFactory(fhirEngine, sharedPreferencesHelper, configurationRegistry),
+          FhirTaskPlanWorkerFactory(
+            fhirEngine,
+            sharedPreferencesHelper,
+            configurationRegistry,
+          ),
         )
         .build()
     val result = worker.startWork().get()
@@ -122,12 +145,22 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
 
   @Test
   fun `FhirTaskPlanWorker doWork executes successfully when status is failed`() {
-    coEvery { fhirEngine.search<Task>(any<Search>()) } returns
-      listOf(Task().apply { status = Task.TaskStatus.FAILED }.apply { hasPastEnd() })
+    coEvery { fhirEngine.search<Task>(any()) } returns
+      listOf(
+        SearchResult(
+          resource = Task().apply { status = Task.TaskStatus.FAILED }.apply { hasPastEnd() },
+          null,
+          null,
+        ),
+      )
     val worker =
       TestListenableWorkerBuilder<FhirTaskStatusUpdateWorker>(context)
         .setWorkerFactory(
-          FhirTaskPlanWorkerFactory(fhirEngine, sharedPreferencesHelper, configurationRegistry),
+          FhirTaskPlanWorkerFactory(
+            fhirEngine,
+            sharedPreferencesHelper,
+            configurationRegistry,
+          ),
         )
         .build()
     val result = worker.startWork().get()
@@ -136,12 +169,18 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
 
   @Test
   fun `FhirTaskPlanWorker doWork executes successfully when task is request but not ready`() {
-    coEvery { fhirEngine.search<Task>(any<Search>()) } returns
-      listOf(Task().apply { status = Task.TaskStatus.REQUESTED })
+    coEvery { fhirEngine.search<Task>(any()) } returns
+      listOf(
+        SearchResult(resource = Task().apply { status = Task.TaskStatus.REQUESTED }, null, null),
+      )
     val worker =
       TestListenableWorkerBuilder<FhirTaskStatusUpdateWorker>(context)
         .setWorkerFactory(
-          FhirTaskPlanWorkerFactory(fhirEngine, sharedPreferencesHelper, configurationRegistry),
+          FhirTaskPlanWorkerFactory(
+            fhirEngine,
+            sharedPreferencesHelper,
+            configurationRegistry,
+          ),
         )
         .build()
     val result = worker.startWork().get()
@@ -155,12 +194,17 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         status = Task.TaskStatus.REQUESTED
         executionPeriod = Period().apply { start = DateTime.now().minusDays(2).toDate() }
       }
-    coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
+    coEvery { fhirEngine.search<Task>(any()) } returns
+      listOf(SearchResult(resource = task, null, null))
     coEvery { defaultRepository.update(task) } just runs
     val worker =
       TestListenableWorkerBuilder<FhirTaskStatusUpdateWorker>(context)
         .setWorkerFactory(
-          FhirTaskPlanWorkerFactory(fhirEngine, sharedPreferencesHelper, configurationRegistry),
+          FhirTaskPlanWorkerFactory(
+            fhirEngine,
+            sharedPreferencesHelper,
+            configurationRegistry,
+          ),
         )
         .build()
     val result = worker.startWork().get()
@@ -176,12 +220,17 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         status = Task.TaskStatus.INPROGRESS
         executionPeriod = Period().apply { start = DateTime.now().minusDays(2).toDate() }
       }
-    coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
+    coEvery { fhirEngine.search<Task>(any()) } returns
+      listOf(SearchResult(resource = task, null, null))
     coEvery { defaultRepository.update(task) } just runs
     val worker =
       TestListenableWorkerBuilder<FhirTaskStatusUpdateWorker>(context)
         .setWorkerFactory(
-          FhirTaskPlanWorkerFactory(fhirEngine, sharedPreferencesHelper, configurationRegistry),
+          FhirTaskPlanWorkerFactory(
+            fhirEngine,
+            sharedPreferencesHelper,
+            configurationRegistry,
+          ),
         )
         .build()
     val result = worker.startWork().get()
@@ -197,12 +246,17 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         status = Task.TaskStatus.REQUESTED
         executionPeriod = Period().apply { start = DateTime.now().plusDays(1).toDate() }
       }
-    coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
+    coEvery { fhirEngine.search<Task>(any()) } returns
+      listOf(SearchResult(resource = task, null, null))
     coEvery { defaultRepository.update(task) } just runs
     val worker =
       TestListenableWorkerBuilder<FhirTaskStatusUpdateWorker>(context)
         .setWorkerFactory(
-          FhirTaskPlanWorkerFactory(fhirEngine, sharedPreferencesHelper, configurationRegistry),
+          FhirTaskPlanWorkerFactory(
+            fhirEngine,
+            sharedPreferencesHelper,
+            configurationRegistry,
+          ),
         )
         .build()
     val result = worker.startWork().get()
@@ -218,12 +272,17 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         status = Task.TaskStatus.REQUESTED
         executionPeriod = Period().apply { start = DateTime.now().minusYears(2).toDate() }
       }
-    coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
+    coEvery { fhirEngine.search<Task>(any()) } returns
+      listOf(SearchResult(resource = task, null, null))
     coEvery { defaultRepository.update(task) } just runs
     val worker =
       TestListenableWorkerBuilder<FhirTaskStatusUpdateWorker>(context)
         .setWorkerFactory(
-          FhirTaskPlanWorkerFactory(fhirEngine, sharedPreferencesHelper, configurationRegistry),
+          FhirTaskPlanWorkerFactory(
+            fhirEngine,
+            sharedPreferencesHelper,
+            configurationRegistry,
+          ),
         )
         .build()
     val result = worker.startWork().get()
@@ -243,12 +302,17 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
             end = DateTime.now().minusMonths(10).toDate()
           }
       }
-    coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
+    coEvery { fhirEngine.search<Task>(any()) } returns
+      listOf(SearchResult(resource = task, null, null))
     coEvery { defaultRepository.update(task) } just runs
     val worker =
       TestListenableWorkerBuilder<FhirTaskStatusUpdateWorker>(context)
         .setWorkerFactory(
-          FhirTaskPlanWorkerFactory(fhirEngine, sharedPreferencesHelper, configurationRegistry),
+          FhirTaskPlanWorkerFactory(
+            fhirEngine,
+            sharedPreferencesHelper,
+            configurationRegistry,
+          ),
         )
         .build()
     val result = worker.startWork().get()
@@ -268,12 +332,17 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
             end = DateTime.now().minusMonths(10).toDate()
           }
       }
-    coEvery { fhirEngine.search<Task>(any<Search>()) } returns listOf(task)
+    coEvery { fhirEngine.search<Task>(any()) } returns
+      listOf(SearchResult(resource = task, null, null))
     coEvery { defaultRepository.update(task) } just runs
     val worker =
       TestListenableWorkerBuilder<FhirTaskStatusUpdateWorker>(context)
         .setWorkerFactory(
-          FhirTaskPlanWorkerFactory(fhirEngine, sharedPreferencesHelper, configurationRegistry),
+          FhirTaskPlanWorkerFactory(
+            fhirEngine,
+            sharedPreferencesHelper,
+            configurationRegistry,
+          ),
         )
         .build()
     val result = worker.startWork().get()
@@ -295,7 +364,7 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
       return FhirTaskStatusUpdateWorker(
         appContext = appContext,
         workerParams = workerParameters,
-        fhirTaskUtil = fhirTaskUtil,
+        fhirResourceUtil = fhirResourceUtil,
         dispatcherProvider = coroutineTestRule.testDispatcherProvider,
       )
     }

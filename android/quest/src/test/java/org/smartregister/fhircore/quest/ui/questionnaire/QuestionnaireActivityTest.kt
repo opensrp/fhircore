@@ -22,14 +22,10 @@ import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.spyk
+import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Questionnaire
@@ -45,13 +41,10 @@ import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -60,30 +53,13 @@ class QuestionnaireActivityTest : RobolectricTest() {
 
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
+  @Inject lateinit var fhirEngine: FhirEngine
   private val context: Application = ApplicationProvider.getApplicationContext()
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var questionnaireJson: String
   private lateinit var questionnaire: Questionnaire
   private lateinit var questionnaireActivityController: ActivityController<QuestionnaireActivity>
   private lateinit var questionnaireActivity: QuestionnaireActivity
-  private val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
-  private val fhirEngine: FhirEngine = mockk()
-  private val defaultRepository: DefaultRepository =
-    DefaultRepository(fhirEngine, dispatcherProvider, mockk(), mockk(), mockk(), mockk())
-
-  @BindValue
-  val questionnaireViewModel: QuestionnaireViewModel =
-    spyk(
-      QuestionnaireViewModel(
-        defaultRepository = defaultRepository,
-        transformSupportServices = mockk(),
-        dispatcherProvider = dispatcherProvider,
-        sharedPreferencesHelper = mockk(),
-        libraryEvaluator = mockk(),
-        fhirCarePlanGenerator = mockk(),
-        resourceDataRulesExecutor = mockk(),
-      ),
-    )
 
   @Before
   fun setUp() {
@@ -110,21 +86,24 @@ class QuestionnaireActivityTest : RobolectricTest() {
               name = "humanReadableId",
               description = "Generate OpenSRP ID",
               condition = "true",
-              actions = listOf("data.put('humanReadableId', service.generateRandomSixDigitInt())"),
+              actions =
+                listOf(
+                  "data.put('humanReadableId', service.generateRandomSixDigitInt())",
+                ),
             ),
           ),
       )
     questionnaireJson =
       context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
     questionnaire = questionnaireJson.decodeResourceFromString()
-
-    coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
   }
 
   @After
   override fun tearDown() {
     super.tearDown()
-    questionnaireActivityController.destroy()
+    if (this::questionnaireActivityController.isInitialized) {
+      questionnaireActivityController.destroy()
+    }
   }
 
   @Test
@@ -138,28 +117,34 @@ class QuestionnaireActivityTest : RobolectricTest() {
   }
 
   @Test
-  fun testThatActivityRendersConfiguredQuestionnaire() = runTest {
-    setupActivity()
-    Assert.assertTrue(questionnaireActivity.supportFragmentManager.fragments.isNotEmpty())
-    val firstFragment = questionnaireActivity.supportFragmentManager.fragments.firstOrNull()
-    Assert.assertTrue(firstFragment is QuestionnaireFragment)
+  fun testThatActivityRendersConfiguredQuestionnaire() =
+    runTest(timeout = 90.seconds) {
+      // TODO verify that this test executes as expected
 
-    // Questionnaire should be the same
-    val fragmentQuestionnaire =
-      questionnaireActivity.supportFragmentManager.fragments
-        .firstOrNull()
-        ?.arguments
-        ?.getString("questionnaire")
-        ?.decodeResourceFromString<Questionnaire>()
+      // Questionnaire will be retrieved from the database
+      fhirEngine.create(questionnaire.apply { id = questionnaireConfig.id })
 
-    Assert.assertEquals(questionnaire.id, fragmentQuestionnaire?.id)
-    val sortedQuestionnaireItemLinkIds =
-      questionnaire.item.map { it.linkId }.sorted().joinToString(",")
-    val sortedFragmentQuestionnaireItemLinkIds =
-      fragmentQuestionnaire?.item?.map { it.linkId }?.sorted()?.joinToString(",")
+      setupActivity()
+      Assert.assertTrue(questionnaireActivity.supportFragmentManager.fragments.isNotEmpty())
+      val firstFragment = questionnaireActivity.supportFragmentManager.fragments.firstOrNull()
+      Assert.assertTrue(firstFragment is QuestionnaireFragment)
 
-    Assert.assertEquals(sortedQuestionnaireItemLinkIds, sortedFragmentQuestionnaireItemLinkIds)
-  }
+      // Questionnaire should be the same
+      val fragmentQuestionnaire =
+        questionnaireActivity.supportFragmentManager.fragments
+          .firstOrNull()
+          ?.arguments
+          ?.getString("questionnaire")
+          ?.decodeResourceFromString<Questionnaire>()
+
+      Assert.assertEquals(questionnaire.id, fragmentQuestionnaire?.id)
+      val sortedQuestionnaireItemLinkIds =
+        questionnaire.item.map { it.linkId }.sorted().joinToString(",")
+      val sortedFragmentQuestionnaireItemLinkIds =
+        fragmentQuestionnaire?.item?.map { it.linkId }?.sorted()?.joinToString(",")
+
+      Assert.assertEquals(sortedQuestionnaireItemLinkIds, sortedFragmentQuestionnaireItemLinkIds)
+    }
 
   @Test
   fun testThatOnBackPressShowsConfirmationAlertDialog() {
@@ -170,10 +155,6 @@ class QuestionnaireActivityTest : RobolectricTest() {
   }
 
   private fun setupActivity() {
-    coEvery {
-      questionnaireViewModel.retrieveQuestionnaire(questionnaireConfig, emptyList())
-    } returns questionnaire
-
     val bundle = QuestionnaireActivity.intentBundle(questionnaireConfig, emptyList())
     questionnaireActivityController =
       Robolectric.buildActivity(

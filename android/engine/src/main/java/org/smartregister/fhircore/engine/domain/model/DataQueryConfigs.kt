@@ -41,14 +41,17 @@ sealed class FilterCriterionConfig : Parcelable, java.io.Serializable {
 
   abstract val dataType: DataType
   abstract val computedRule: String?
+  abstract val dataFilterLinkId: String?
+  abstract val value: Any?
 
   @Serializable
   @Parcelize
   data class QuantityFilterCriterionConfig(
     override val dataType: DataType = DataType.QUANTITY,
     override val computedRule: String? = null,
+    override val dataFilterLinkId: String? = null,
+    @Serializable(with = BigDecimalSerializer::class) override val value: BigDecimal? = null,
     val prefix: ParamPrefixEnum? = null,
-    @Serializable(with = BigDecimalSerializer::class) val value: BigDecimal? = null,
     val system: String? = null,
     val unit: String? = null,
   ) : FilterCriterionConfig(), Parcelable, java.io.Serializable
@@ -58,8 +61,9 @@ sealed class FilterCriterionConfig : Parcelable, java.io.Serializable {
   data class DateFilterCriterionConfig(
     override val dataType: DataType = DataType.DATETIME,
     override val computedRule: String? = null,
+    override val dataFilterLinkId: String? = null,
+    override val value: String? = null,
     val prefix: ParamPrefixEnum = ParamPrefixEnum.GREATERTHAN_OR_EQUALS,
-    val value: String? = null,
     val valueAsDateTime: Boolean = false,
   ) : FilterCriterionConfig(), Parcelable, java.io.Serializable
 
@@ -68,8 +72,9 @@ sealed class FilterCriterionConfig : Parcelable, java.io.Serializable {
   data class NumberFilterCriterionConfig(
     override val dataType: DataType = DataType.DECIMAL,
     override val computedRule: String? = null,
+    override val dataFilterLinkId: String? = null,
+    @Serializable(with = BigDecimalSerializer::class) override val value: BigDecimal? = null,
     val prefix: ParamPrefixEnum = ParamPrefixEnum.EQUAL,
-    @Serializable(with = BigDecimalSerializer::class) val value: BigDecimal? = null,
   ) : FilterCriterionConfig(), Parcelable, java.io.Serializable
 
   @Serializable
@@ -77,8 +82,9 @@ sealed class FilterCriterionConfig : Parcelable, java.io.Serializable {
   data class StringFilterCriterionConfig(
     override val dataType: DataType = DataType.STRING,
     override val computedRule: String? = null,
+    override val dataFilterLinkId: String? = null,
+    override val value: String? = null,
     val modifier: StringFilterModifier = StringFilterModifier.STARTS_WITH,
-    val value: String? = null,
   ) : FilterCriterionConfig(), Parcelable, java.io.Serializable
 
   @Serializable
@@ -86,7 +92,8 @@ sealed class FilterCriterionConfig : Parcelable, java.io.Serializable {
   data class UriFilterCriterionConfig(
     override val dataType: DataType = DataType.URI,
     override val computedRule: String? = null,
-    val value: String? = null,
+    override val dataFilterLinkId: String? = null,
+    override val value: String? = null,
   ) : FilterCriterionConfig(), Parcelable, java.io.Serializable
 
   @Serializable
@@ -94,7 +101,8 @@ sealed class FilterCriterionConfig : Parcelable, java.io.Serializable {
   data class ReferenceFilterCriterionConfig(
     override val dataType: DataType = DataType.REFERENCE,
     override val computedRule: String? = null,
-    val value: String? = null,
+    override val dataFilterLinkId: String? = null,
+    override val value: String? = null,
   ) : FilterCriterionConfig(), Parcelable, java.io.Serializable
 
   @Serializable
@@ -102,6 +110,7 @@ sealed class FilterCriterionConfig : Parcelable, java.io.Serializable {
   data class TokenFilterCriterionConfig(
     override val dataType: DataType = DataType.CODE,
     override val computedRule: String? = null,
-    val value: Code? = null,
+    override val dataFilterLinkId: String? = null,
+    override val value: Code? = null,
   ) : FilterCriterionConfig(), Parcelable, java.io.Serializable
 }

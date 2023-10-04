@@ -21,6 +21,7 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
@@ -33,6 +34,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import okhttp3.RequestBody
 import org.hl7.fhir.r4.model.Binary
@@ -74,7 +76,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   @get:Rule(order = 1)
   val coroutineRule = CoroutineTestRule()
-  private val fhirEngine: FhirEngine = mockk()
+
+  @Inject lateinit var fhirEngine: FhirEngine
   private val context: Context = ApplicationProvider.getApplicationContext()
   private val fhirResourceService = mockk<FhirResourceService>()
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
@@ -205,13 +208,13 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testFetchNonWorkflowConfigResourcesNoAppId() {
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
 
-    coVerify(inverse = true) { fhirEngine.search<Composition>(any<Search>()) }
+    coVerify(inverse = true) { fhirEngine.search<Composition>(any()) }
   }
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchNonWorkflowConfigResourcesAppIdExists() {
-    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf()
+    coEvery { fhirEngine.search<Composition>(any()) } returns listOf()
     val appId = "theAppId"
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
@@ -225,7 +228,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testFetchNonWorkflowConfigResourcesHasComposition() {
     val appId = "theAppId"
     val composition = Composition().apply { identifier = Identifier().apply { value = appId } }
-    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    coEvery { fhirEngine.search<Composition>(any()) } returns
+      listOf(SearchResult(resource = composition, null, null))
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
@@ -246,7 +250,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
     coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
     coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
-      listOf(composition)
+      listOf(SearchResult(resource = composition, null, null))
     coEvery { fhirResourceDataSource.post(any(), any()) } returns Bundle()
 
     runTest {
@@ -260,7 +264,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun testFetchNonWorkflowConfigResourcesBundle() {
+  fun testFetchNonWorkflowConfigResourcesBundle() = runTest {
     val appId = "theAppId"
     val patient = Faker.buildPatient()
     val composition =
@@ -270,9 +274,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
           listOf(SectionComponent().apply { focus.reference = ResourceType.Questionnaire.name })
       }
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
-    coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
-    coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
-      listOf(composition)
+    fhirEngine.create(composition) // Add composition to database instead of mocking
     coEvery { fhirResourceDataSource.post(any(), any()) } returns
       Bundle().apply { entry = listOf(BundleEntryComponent().apply { resource = patient }) }
     coEvery { fhirEngine.get(patient.resourceType, patient.logicalId) } returns patient
@@ -289,7 +291,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   // Backward compatibility for NON-PROXY version
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun testFetchNonWorkflowConfigResourcesBundleListResourceProxyBackwardCompatible() {
+  fun testFetchNonWorkflowConfigResourcesBundleListResourceProxyBackwardCompatible() = runTest {
     val appId = "theAppId"
     val focusReference = ResourceType.Questionnaire.name
     val resourceKey = "resourceKey"
@@ -317,22 +319,21 @@ class ConfigurationRegistryTest : RobolectricTest() {
           )
       }
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
-    coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
-    coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
-      listOf(composition)
+    fhirEngine.create(composition)
+
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") } returns
       bundle
+
     coEvery { fhirEngine.update(any()) } returns Unit
     coEvery { fhirEngine.get(ResourceType.List, testListId) } returns listResource
     coEvery {
       fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200")
     } returns bundle
     coEvery { fhirResourceDataSource.getResource(any()) } returns bundle
-    runTest {
-      configRegistry.fhirEngine.create(composition)
-      configRegistry.setNonProxy(true)
-      configRegistry.fetchNonWorkflowConfigResources()
-    }
+
+    configRegistry.fhirEngine.create(composition)
+    configRegistry.setNonProxy(true)
+    configRegistry.fetchNonWorkflowConfigResources()
 
     coVerify { fhirEngine.get(ResourceType.List, testListId) }
     coVerify { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200") }
@@ -395,7 +396,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testLoadConfigurationsNoLoadFromAssetsAppIdNotFound() {
     val appId = "the app id"
-    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf()
+    coEvery { fhirEngine.search<Composition>(any()) } returns listOf()
     runTest { configRegistry.loadConfigurations(appId, context) }
 
     Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
@@ -406,7 +407,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testLoadConfigurationsNoLoadFromAssetsAppIdFound() {
     val appId = "the app id"
     val composition = Composition().apply { section = listOf() }
-    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    coEvery { fhirEngine.search<Composition>(any()) } returns
+      listOf(SearchResult(resource = composition, null, null))
     runTest { configRegistry.loadConfigurations(appId, context) }
 
     Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
@@ -417,7 +419,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testLoadConfigurationsNoLoadFromAssetsSectionComponent() {
     val appId = "the app id"
     val composition = Composition().apply { section = listOf(SectionComponent()) }
-    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    coEvery { fhirEngine.search<Composition>(any()) } returns
+      listOf(SearchResult(resource = composition, null, null))
     runTest { configRegistry.loadConfigurations(appId, context) }
 
     Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
@@ -442,7 +445,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
             },
           )
       }
-    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    coEvery { fhirEngine.search<Composition>(any()) } returns
+      listOf(SearchResult(resource = composition, null, null))
     runTest { configRegistry.loadConfigurations(appId, context) }
 
     Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
@@ -472,7 +476,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
             },
           )
       }
-    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    coEvery { fhirEngine.search<Composition>(any()) } returns
+      listOf(SearchResult(resource = composition, null, null))
     coEvery { fhirEngine.get(ResourceType.Binary, referenceId) } returns
       Binary().apply { content = ByteArray(0) }
     runTest { configRegistry.loadConfigurations(appId, context) }
@@ -504,7 +509,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
             },
           )
       }
-    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    coEvery { fhirEngine.search<Composition>(any()) } returns
+      listOf(SearchResult(resource = composition, null, null))
 
     runTest { configRegistry.loadConfigurations(appId, context) }
 
@@ -571,7 +577,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val paramsMap =
       paramsList
         .asSequence()
-        .filter { it.paramType == ActionParameterType.PARAMDATA && !it.value.isNullOrEmpty() }
+        .filter { it.paramType == ActionParameterType.PARAMDATA && it.value.isNotEmpty() }
         .associate { it.key to it.value }
 
     // First time reading the configCacheMap not yet populated
@@ -596,7 +602,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
-  fun testFetchNonWorkflowConfigResourcesProcessesManifestEntriesInChunks() {
+  fun testFetchNonWorkflowConfigResourcesProcessesManifestEntriesInChunks() = runTest {
     val appId = "theAppId"
     val compositionSections = mutableListOf<SectionComponent>()
 
@@ -615,8 +621,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
-    coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
-      listOf(composition)
+    // Add composition to database
+    fhirEngine.create(composition)
+
     coEvery { fhirResourceDataSource.post(any(), any()) } returns Bundle()
 
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
@@ -640,7 +647,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
-  fun testFetchNonWorkflowConfigListResourcesPersistsActualListEntryResources() {
+  fun testFetchNonWorkflowConfigListResourcesPersistsActualListEntryResources() = runTest {
     val appId = "theAppId"
     val compositionSections = mutableListOf<SectionComponent>()
     compositionSections.add(
@@ -661,8 +668,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
-    coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
-      listOf(composition)
+    fhirEngine.create(composition)
 
     coEvery {
       fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entries", "List/46464")
@@ -673,7 +679,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     coEvery { fhirEngine.createRemote(any()) } just runs
 
-    runTest { configRegistry.fetchNonWorkflowConfigResources() }
+    configRegistry.fetchNonWorkflowConfigResources()
 
     val requestPathArgumentSlot = mutableListOf<Group>()
 
@@ -689,63 +695,65 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
-  fun testFetchNonWorkflowConfigListResourcesNestedBundlePersistsActualListEntryResources() {
-    val appId = "theAppId"
-    val compositionSections = mutableListOf<SectionComponent>()
-    compositionSections.add(
-      SectionComponent().apply { focus.reference = "${ResourceType.List.name}/46464" },
-    )
+  fun testFetchNonWorkflowConfigListResourcesNestedBundlePersistsActualListEntryResources() =
+    runTest {
+      val appId = "theAppId"
+      val compositionSections = mutableListOf<SectionComponent>()
+      compositionSections.add(
+        SectionComponent().apply { focus.reference = "${ResourceType.List.name}/46464" },
+      )
 
-    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
-    val listJson =
-      context.assets.open("sample_commodities_list_bundle.json").bufferedReader().use {
-        it.readText()
-      }
-    val listResource = iParser.parseResource(listJson) as Bundle
+      val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
+      val listJson =
+        context.assets.open("sample_commodities_list_bundle.json").bufferedReader().use {
+          it.readText()
+        }
+      val listResource = iParser.parseResource(listJson) as Bundle
 
-    val composition =
-      Composition().apply {
-        identifier = Identifier().apply { value = appId }
-        section = compositionSections
-      }
-    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+      val composition =
+        Composition().apply {
+          identifier = Identifier().apply { value = appId }
+          section = compositionSections
+        }
+      configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
-    coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
-      listOf(composition)
+      fhirEngine.create(composition)
 
-    coEvery {
-      fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entries", "List/46464")
-    } returns
-      Bundle().apply {
-        entry =
-          listOf(
-            BundleEntryComponent()
-              .setResource(
-                Bundle().apply { entry = listOf(BundleEntryComponent().setResource(listResource)) },
-              ),
-          )
-      }
+      coEvery {
+        fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entries", "List/46464")
+      } returns
+        Bundle().apply {
+          entry =
+            listOf(
+              BundleEntryComponent()
+                .setResource(
+                  Bundle().apply {
+                    entry = listOf(BundleEntryComponent().setResource(listResource))
+                  },
+                ),
+            )
+        }
 
-    coEvery { fhirEngine.get(any(), any()) } throws
-      ResourceNotFoundException(ResourceType.Group.name, "some-id-not-found")
+      coEvery { fhirEngine.get(any(), any()) } throws
+        ResourceNotFoundException(ResourceType.Group.name, "some-id-not-found")
 
-    coEvery { fhirEngine.createRemote(any()) } just runs
+      coEvery { fhirEngine.createRemote(any()) } just runs
 
-    runTest { configRegistry.fetchNonWorkflowConfigResources() }
+      configRegistry.fetchNonWorkflowConfigResources()
 
-    val requestPathArgumentSlot = mutableListOf<Resource>()
+      val requestPathArgumentSlot = mutableListOf<Resource>()
 
-    coVerify(exactly = 3) { fhirEngine.createRemote(capture(requestPathArgumentSlot)) }
+      coVerify(exactly = 3) { fhirEngine.createRemote(capture(requestPathArgumentSlot)) }
 
-    Assert.assertEquals(3, requestPathArgumentSlot.size)
+      Assert.assertEquals(3, requestPathArgumentSlot.size)
 
-    Assert.assertEquals("Bundle/the-commodities-bundle-id", requestPathArgumentSlot.first().id)
-    Assert.assertEquals(ResourceType.Bundle, requestPathArgumentSlot.first().resourceType)
+      Assert.assertEquals("Bundle/the-commodities-bundle-id", requestPathArgumentSlot.first().id)
+      Assert.assertEquals(ResourceType.Bundle, requestPathArgumentSlot.first().resourceType)
 
-    Assert.assertEquals("Group/1000001", requestPathArgumentSlot.second().id)
-    Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.second().resourceType)
+      Assert.assertEquals("Group/1000001", requestPathArgumentSlot.second().id)
+      Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.second().resourceType)
 
-    Assert.assertEquals("Group/2000001", requestPathArgumentSlot.last().id)
-    Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.last().resourceType)
-  }
+      Assert.assertEquals("Group/2000001", requestPathArgumentSlot.last().id)
+      Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.last().resourceType)
+    }
 }
