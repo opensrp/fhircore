@@ -12,17 +12,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.smartregister.fhircore.quest.ui.ui.theme.FhircoreandroidTheme
 
 class DataActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     setContent {
-      FhircoreandroidTheme {
-        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-          ConfirmClearDataScreen()
-        }
+      Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        ConfirmClearDataScreen()
       }
     }
   }
@@ -81,5 +78,5 @@ fun ClearDataConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun ClearDataScreenPreview() {
-  FhircoreandroidTheme { ConfirmClearDataScreen() }
+  ConfirmClearDataScreen()
 }

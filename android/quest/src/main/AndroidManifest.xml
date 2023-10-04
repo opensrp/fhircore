@@ -20,7 +20,7 @@
         android:usesCleartextTraffic="false"
         android:windowSoftInputMode="adjustResize"
         tools:ignore="UnusedAttribute,LockedOrientationActivity"
-        tools:replace="android:theme">
+        tools:replace="android:theme,android:allowBackup">
 
         <activity
             android:name="org.smartregister.fhircore.quest.ui.DataActivity"
