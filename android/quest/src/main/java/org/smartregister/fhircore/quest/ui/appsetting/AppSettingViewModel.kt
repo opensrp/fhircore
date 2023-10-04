@@ -281,7 +281,7 @@ constructor(
       responseBundle?.let {
         bundleEntryComponents.add(
           Bundle.BundleEntryComponent().apply {
-            resource = responseBundle.entry?.first()?.resource
+            resource = responseBundle.entry?.firstOrNull()?.resource
           },
         )
       }

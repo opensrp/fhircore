@@ -20,7 +20,7 @@ group QRespToIMMZC (
         coding.code as content -> immzc.sex = content "set sex";
       } "process coding";
     } "first answer for identifier";
-
+  
     item.answer first as answer where item.linkId = 'birthDate' then {
       answer.valueDate as content -> immzc.birthDate = content "set birthDate";
     } "first answer for birthDate";
@@ -37,7 +37,7 @@ group QRespToIMMZC (
       answer.valueInteger as content -> immzc.ageInYears = content "set ageInYears";
     } "first answer for ageInYears";
 
-    item as caregiver where item.linkId = 'caregiver' -> immzc.caregiver as caretgt
+    item as caregiver where item.linkId = 'caregiver' -> immzc.caregiver as caretgt 
       then NameToIMMZC( caregiver, caretgt ) "set caregiver";
 
     item.answer first as answer where item.linkId = 'phone' then {
@@ -50,7 +50,7 @@ group QRespToIMMZC (
         coding.display as display -> area.text = display "set display";
       } "set coding";
     } "first answer for administrativeArea";
-
+    
     item.answer first as answer where item.linkId = 'healthWorker' then {
       answer.valueBoolean as content -> immzc.healthWorker = content  "set healthWorker";
     } "first answer for healthWorker";
@@ -59,7 +59,7 @@ group QRespToIMMZC (
 
 }
 
-group NameToIMMZC(
+group NameToIMMZC( 
   source name,
   target immzc
 ) {

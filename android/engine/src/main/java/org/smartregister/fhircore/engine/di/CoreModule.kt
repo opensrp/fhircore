@@ -28,11 +28,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import org.hl7.fhir.r4.context.IWorkerContext
 import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.hl7.fhir.utilities.npm.NpmPackage
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import java.io.File
 
 @InstallIn(SingletonComponent::class)
 @Module(includes = [NetworkModule::class, DispatcherModule::class, WorkManagerModule::class])
@@ -40,8 +44,10 @@ class CoreModule {
 
   @Singleton
   @Provides
-  fun provideWorkerContextProvider(): SimpleWorkerContext =
-    SimpleWorkerContext().apply {
+  fun provideWorkerContextProvider(@ApplicationContext context: Context): SimpleWorkerContext =
+    SimpleWorkerContext.fromPackage(
+      NpmPackage.fromPackage(
+        context.assets.open("who_eir/packages/package.r4.tgz")),true).apply {
       setExpansionProfile(Parameters())
       isCanRunWithoutTerminology = true
     }
