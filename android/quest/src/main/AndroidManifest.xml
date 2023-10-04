@@ -5,13 +5,15 @@
 
     <application
         android:name=".QuestApplication"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:enableOnBackInvokedCallback="true"
         android:hardwareAccelerated="true"
+        android:hasFragileUserData="true"
         android:icon="@drawable/ic_launcher"
         android:installLocation="internalOnly"
         android:label="@string/app_name"
         android:largeHeap="true"
+        android:manageSpaceActivity="org.smartregister.fhircore.quest.ui.DataActivity"
         android:screenOrientation="portrait"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar"
@@ -19,6 +21,12 @@
         android:windowSoftInputMode="adjustResize"
         tools:ignore="UnusedAttribute,LockedOrientationActivity"
         tools:replace="android:theme">
+
+        <activity
+            android:name="org.smartregister.fhircore.quest.ui.DataActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
         <profileable
             android:shell="true"
             tools:targetApi="29" />
@@ -43,25 +51,21 @@
             android:exported="false"
             android:launchMode="singleTop"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".ui.pin.PinLoginActivity"
             android:exported="false"
             android:launchMode="singleTop"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".ui.main.AppMainActivity"
             android:clearTaskOnLaunch="true"
             android:launchMode="singleTop"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".ui.questionnaire.QuestionnaireActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
-
         <activity
             android:name="androidx.compose.ui.tooling.PreviewActivity"
             android:exported="false"
@@ -92,4 +96,5 @@
                 android:resource="@xml/file_paths" />
         </provider>
     </application>
+
 </manifest>
