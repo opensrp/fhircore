@@ -31,6 +31,7 @@ import io.sentry.android.core.SentryAndroidOptions
 import io.sentry.android.fragment.FragmentLifecycleIntegration
 import java.net.URL
 import javax.inject.Inject
+import org.hl7.fhir.utilities.npm.NpmPackage
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.util.extension.getSubDomain
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -104,11 +105,14 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
     configuration =
       configuration
         ?: DataCaptureConfig(
-          urlResolver = referenceUrlResolver,
-          xFhirQueryResolver = xFhirQueryResolver,
-          questionnaireItemViewHolderFactoryMatchersProviderFactory =
-            QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl,
-        )
+            urlResolver = referenceUrlResolver,
+            xFhirQueryResolver = xFhirQueryResolver,
+            questionnaireItemViewHolderFactoryMatchersProviderFactory =
+              QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl,
+          )
+          .apply {
+            npmPackage = NpmPackage.fromPackage(assets.open("who_eir/packages/package.r4.tgz"))
+          }
     return configuration as DataCaptureConfig
   }
 

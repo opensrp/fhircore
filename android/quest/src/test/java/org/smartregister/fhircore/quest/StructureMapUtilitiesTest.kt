@@ -20,10 +20,10 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
@@ -41,7 +41,6 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServicesMatchBox
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import java.io.File
 
 /**
  * Provides a playground for quickly testing and authoring questionnaire.json and the respective
@@ -231,17 +230,17 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   @Test
   fun `convert StructureMap to JSON`() {
     val patientRegistrationStructureMap =
-      "patient-registration-questionnaire/structure-map.txt".readFile()
+      "content/general/who-eir/IMMZ-C-LMToPatient.map".readFile()
     val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply { isCanRunWithoutTerminology = true }
     val structureMapUtilities = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
     val structureMap =
-      structureMapUtilities.parse(patientRegistrationStructureMap, "PatientRegistration")
+      structureMapUtilities.parse(patientRegistrationStructureMap, "IMMZ-C-QRToPatient")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(structureMap)
-
+    println(mapString)
     Assert.assertNotNull(mapString)
   }
 
@@ -465,35 +464,41 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   fun `perform extraction for patient registration`() {
     val locationQuestionnaireResponseString: String =
       "content/general/who-eir/patient_registration_questionnaire_response.json".readFile()
-    val locationStructureMap =
-      "content/general/who-eir/IMMZ-C-QRToPatient.map".readFile()
-    val immunizationIg =
-      "content/general/who-eir/packages/package.r4.tgz"
+    val locationStructureMap = "content/general/who-eir/IMMZ-C-QRToPatient.map".readFile()
+    val immunizationIg = "content/general/who-eir/packages/package.r4.tgz"
     val contextR4 =
       SimpleWorkerContext.fromPackage(
-        NpmPackage.fromPackage(
-          File(
-            ClassLoader.getSystemResource(immunizationIg).file
-          ).inputStream()),true).apply {
-        setExpansionProfile(Parameters())
-        isCanRunWithoutTerminology = true
-      }
+          NpmPackage.fromPackage(
+            File(
+                ClassLoader.getSystemResource(immunizationIg).file,
+              )
+              .inputStream(),
+          ),
+          true,
+        )
+        .apply {
+          setExpansionProfile(Parameters())
+          isCanRunWithoutTerminology = true
+        }
 
     val transformSupportServices =
       TransformSupportServicesMatchBox(
-        contextR4
+        contextR4,
       )
     val structureMapUtilities =
       org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val structureMap = structureMapUtilities.parse(locationStructureMap, "IMMZ-C-QRToPatient")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-    val targetResource = Patient()
+    val targetResource = Bundle()
     val baseElement =
       iParser.parseResource(
-        QuestionnaireResponse::class.java, locationQuestionnaireResponseString)
+        QuestionnaireResponse::class.java,
+        locationQuestionnaireResponseString,
+      )
     structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
-    Assert.assertEquals("Patient", targetResource.resourceType.toString())
-    Assert.assertEquals("12345", targetResource.identifier.first().value)
-    Assert.assertEquals("Hadi", targetResource.name.first().family)
+    val patient = targetResource.entryFirstRep.resource as Patient
+    Assert.assertEquals("Patient", patient.resourceType.toString())
+    Assert.assertEquals("12345", patient.identifier.first().value)
+    Assert.assertEquals("Hadi", patient.name.first().family)
   }
 }
