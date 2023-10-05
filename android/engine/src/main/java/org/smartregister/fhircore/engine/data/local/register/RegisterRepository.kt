@@ -278,7 +278,7 @@ constructor(
           fhirEngine.search<Resource>(search)
         }
 
-      resourceMap[resourceConfig.resource.name] = resources
+      resourceMap[resourceConfig.resource.name] = resources.map { it.resource }
     }
 
     return resourceMap
