@@ -39,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -58,15 +59,19 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.components.ActionableButton
 
+const val VIEW_PROFILE_TAG = "view-profile-tag"
+const val TOP_SECTION_ROW = "top-section-row"
+const val ICON_FIELD_TAG = "iconTestTag"
+
 @Composable
 fun MemberProfileBottomSheetView(
   modifier: Modifier = Modifier,
-  coroutineScope: CoroutineScope,
-  bottomSheetScaffoldState: BottomSheetScaffoldState,
+  coroutineScope: CoroutineScope = rememberCoroutineScope(),
+  bottomSheetScaffoldState: BottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
   title: String,
   buttonProperties: List<ButtonProperties>,
-  ResourceData: ResourceData,
-  navController: NavController,
+  resourceData: ResourceData,
+  navController: NavController = rememberNavController(),
   onViewProfile: () -> Unit,
 ) {
   Column {
@@ -75,7 +80,7 @@ fun MemberProfileBottomSheetView(
     Row(
       horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.CenterVertically,
-      modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
+      modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag(TOP_SECTION_ROW),
     ) {
       Column(modifier = modifier.wrapContentWidth(Alignment.Start)) {
         Text(
@@ -90,13 +95,15 @@ fun MemberProfileBottomSheetView(
         contentDescription = null,
         tint = DefaultColor.copy(0.8f),
         modifier =
-          modifier.clickable {
-            coroutineScope.launch {
-              if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
-                bottomSheetScaffoldState.bottomSheetState.collapse()
+          modifier
+            .clickable {
+              coroutineScope.launch {
+                if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
+                  bottomSheetScaffoldState.bottomSheetState.collapse()
+                }
               }
             }
-          },
+            .testTag(ICON_FIELD_TAG),
       )
     }
     Spacer(modifier = modifier.height(8.dp))
@@ -107,7 +114,7 @@ fun MemberProfileBottomSheetView(
       buttonProperties.forEach {
         ActionableButton(
           buttonProperties = it.copy(buttonType = ButtonType.BIG),
-          resourceData = ResourceData,
+          resourceData = resourceData,
           navController = navController,
         )
       }
@@ -123,7 +130,8 @@ fun MemberProfileBottomSheetView(
         modifier
           .fillMaxWidth()
           .clickable { onViewProfile() }
-          .padding(horizontal = 16.dp, vertical = 16.dp),
+          .padding(horizontal = 16.dp, vertical = 16.dp)
+          .testTag(VIEW_PROFILE_TAG),
     )
     Spacer(modifier = modifier.height(16.dp))
   }
@@ -139,7 +147,7 @@ private fun MemberProfileBottomSheetViewPreview() {
     buttonProperties = emptyList(),
     navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
-    ResourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
   )
 }
 
@@ -158,6 +166,6 @@ private fun MemberProfileBottomSheetViewWithFormDataPreview() {
       ),
     navController = rememberNavController(),
     onViewProfile = { /*Do nothing*/},
-    ResourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
   )
 }

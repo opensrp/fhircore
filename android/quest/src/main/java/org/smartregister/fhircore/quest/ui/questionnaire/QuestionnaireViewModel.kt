@@ -36,7 +36,9 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
+import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
@@ -187,7 +189,7 @@ constructor(
           context = context,
         )
 
-      if (!questionnaireResponseValid) {
+      if (questionnaireConfig.saveQuestionnaireResponse && !questionnaireResponseValid) {
         Timber.e("Invalid questionnaire response")
         context.showToast(context.getString(R.string.questionnaire_response_invalid))
         return@launch
@@ -233,11 +235,15 @@ constructor(
             questionnaireConfig = questionnaireConfig,
           )
 
-          executeCql(
-            subject = subject,
-            bundle = newBundle,
-            questionnaire = questionnaire,
-          )
+          withContext(dispatcherProvider.io()) {
+            executeCql(
+              subject = subject,
+              bundle = newBundle,
+              questionnaire = questionnaire,
+              questionnaireConfig = questionnaireConfig,
+            )
+          }
+
           fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
             questionnaireConfig = questionnaireConfig,
             subject = subject,
@@ -557,20 +563,45 @@ constructor(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     context: Context,
-  ) =
-    QuestionnaireResponseValidator.validateQuestionnaireResponse(
-        questionnaire = questionnaire,
-        questionnaireResponse = questionnaireResponse,
+  ): Boolean {
+    val validQuestionnaireResponseItems =
+      ArrayList<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
+    val validQuestionnaireItems = ArrayList<Questionnaire.QuestionnaireItemComponent>()
+    val questionnaireItemsMap = questionnaire.item.groupBy { it.linkId }
+
+    // Only validate items that are present on both Questionnaire and the QuestionnaireResponse
+    questionnaireResponse.item.forEach {
+      if (questionnaireItemsMap.containsKey(it.linkId)) {
+        val questionnaireItem = questionnaireItemsMap.getValue(it.linkId).first()
+        validQuestionnaireResponseItems.add(it)
+        validQuestionnaireItems.add(questionnaireItem)
+      }
+    }
+
+    return QuestionnaireResponseValidator.validateQuestionnaireResponse(
+        questionnaire = Questionnaire().apply { item = validQuestionnaireItems },
+        questionnaireResponse =
+          QuestionnaireResponse().apply { item = validQuestionnaireResponseItems },
         context = context,
       )
       .values
       .flatten()
       .all { it is Valid || it is NotValidated }
+  }
 
-  suspend fun executeCql(subject: Resource, bundle: Bundle, questionnaire: Questionnaire) {
-    questionnaire.cqfLibraryIds().forEach {
+  suspend fun executeCql(
+    subject: Resource,
+    bundle: Bundle,
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig? = null,
+  ) {
+    questionnaireConfig?.cqlInputResources?.forEach { resourceId ->
+      val basicResource = defaultRepository.loadResource(resourceId) as Basic?
+      bundle.addEntry(Bundle.BundleEntryComponent().setResource(basicResource))
+    }
+    questionnaire.cqfLibraryIds().forEach { libraryId ->
       if (subject.resourceType == ResourceType.Patient) {
-        libraryEvaluator.runCqlLibrary(it, subject as Patient, bundle)
+        libraryEvaluator.runCqlLibrary(libraryId, subject as Patient, bundle)
       }
     }
   }
@@ -591,6 +622,7 @@ constructor(
             planDefinitionId = planId,
             subject = subject,
             data = bundle,
+            generateCarePlanWithWorkflowApi = questionnaireConfig.generateCarePlanWithWorkflowApi,
           )
         }
         .onFailure { Timber.e(it) }

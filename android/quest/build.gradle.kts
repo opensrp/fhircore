@@ -227,18 +227,24 @@ android {
       manifestPlaceholders["appLabel"] = "MOH eCHIS"
     }
 
-    create("bunda") {
+    create("sidBunda") {
       dimension = "apps"
-      applicationIdSuffix = ".bunda"
-      versionNameSuffix = "-bunda"
-      manifestPlaceholders["appLabel"] = "Bunda App"
+      applicationIdSuffix = ".sidBunda"
+      versionNameSuffix = "-sidBunda"
+      manifestPlaceholders["appLabel"] = "Bunda ANC"
     }
 
-    create("cadre") {
+    create("sidCadre") {
       dimension = "apps"
-      applicationIdSuffix = ".cadre"
-      versionNameSuffix = "-cadre"
+      applicationIdSuffix = ".sidCadre"
+      versionNameSuffix = "-sidCadre"
       manifestPlaceholders["appLabel"] = "Cadre App"
+    }
+    create("sidEir") {
+      dimension = "apps"
+      applicationIdSuffix = ".sidEir"
+      versionNameSuffix = "-sidEir"
+      manifestPlaceholders["appLabel"] = "SID EIR"
     }
 
     create("wdf") {
@@ -274,6 +280,12 @@ android {
       applicationIdSuffix = ".who_eir"
       versionNameSuffix = "-who_eir"
       manifestPlaceholders["appLabel"] = "WHO EIR"
+    }
+    create("psi-eswatini") {
+      dimension = "apps"
+      applicationIdSuffix = ".psi_eswatini"
+      versionNameSuffix = "-psi_eswatini"
+      manifestPlaceholders["appLabel"] = "PSI WFA"
     }
   }
 
@@ -403,7 +415,7 @@ dependencies {
   androidTestImplementation(libs.hilt.android.testing)
   androidTestImplementation(libs.mockk.android)
   androidTestImplementation(libs.benchmark.junit)
-  androidTestImplementation("androidx.work:work-testing:2.7.1")
+  androidTestImplementation(libs.work.testing)
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }
