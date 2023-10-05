@@ -218,7 +218,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     secureSharedPreference.saveCredentials("nativeUser", "n4t1veP5wd".toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
     loginViewModel.login(mockedActivity(isDeviceOnline = true), scope = this)
-    advanceUntilIdle()
+    //    advanceUntilIdle()
 
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertEquals(
