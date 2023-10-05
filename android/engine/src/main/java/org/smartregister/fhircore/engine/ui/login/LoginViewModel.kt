@@ -157,7 +157,9 @@ constructor(
   }
 
   fun login(context: Context, scope: CoroutineScope = viewModelScope) {
-    scope.launch { login(offline = !context.getActivity()!!.isDeviceOnline()) }
+    scope.launch(dispatcherProvider.io()) {
+      login(offline = !context.getActivity()!!.isDeviceOnline())
+    }
   }
 
   private suspend fun login(offline: Boolean) {
