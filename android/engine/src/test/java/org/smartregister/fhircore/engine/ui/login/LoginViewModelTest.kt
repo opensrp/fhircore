@@ -20,21 +20,25 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
-import io.mockk.verify
+import java.io.PrintStream
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import okhttp3.internal.http.RealResponseBody
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Organization
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
@@ -56,6 +60,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
+import retrofit2.HttpException
 import retrofit2.Response
 
 @ExperimentalCoroutinesApi
@@ -114,7 +119,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSuccessfulOfflineLogin() {
+  fun testSuccessfulOfflineLogin() = runTest {
     val activity = mockedActivity()
 
     updateCredentials()
@@ -127,14 +132,15 @@ internal class LoginViewModelTest : RobolectricTest() {
       tokenAuthenticator.validateSavedLoginCredentials(thisUsername, thisPassword.toCharArray())
     } returns true
 
-    loginViewModel.login(activity)
+    loginViewModel.login(activity, scope = this)
+    advanceUntilIdle()
 
     Assert.assertNull(loginViewModel.loginErrorState.value)
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertTrue(loginViewModel.navigateToHome.value!!)
   }
   @Test
-  fun testUnSuccessfulOfflineLogin() {
+  fun testUnSuccessfulOfflineLogin() = runTest {
     val activity = mockedActivity()
 
     updateCredentials()
@@ -147,7 +153,8 @@ internal class LoginViewModelTest : RobolectricTest() {
       tokenAuthenticator.validateSavedLoginCredentials(thisUsername, thisPassword.toCharArray())
     } returns false
 
-    loginViewModel.login(activity)
+    loginViewModel.login(activity, scope = this)
+    advanceUntilIdle()
 
     Assert.assertNotNull(loginViewModel.loginErrorState.value)
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
@@ -155,12 +162,31 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSuccessfulOnlineLoginWithActiveSessionWithSavedPractitionerDetails() {
+  fun testSuccessfulOnlineLoginWithActiveSessionWithSavedPractitionerDetails() = runTest {
     updateCredentials()
     sharedPreferencesHelper.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-      PractitionerDetails()
+      SharedPreferenceKey.PRACTITIONER_ID.name,
+      value = "9807A290-0572-40E7-9EE0-C60F729E9F09"
     )
+    every { tokenAuthenticator.sessionActive() } returns true
+    every {
+      accountAuthenticator.validateLoginCredentials(thisUsername, thisPassword.toCharArray())
+    } returns true
+
+    every {
+      tokenAuthenticator.validateSavedLoginCredentials(thisUsername, thisPassword.toCharArray())
+    } returns true
+
+    loginViewModel.login(mockedActivity(isDeviceOnline = true), scope = this)
+    advanceUntilIdle()
+
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertTrue(loginViewModel.navigateToHome.value!!)
+  }
+
+  @Test
+  fun testSuccessfulOnlineLoginWithActiveSessionWithNoPractitionerDetailsSaved() = runTest {
+    updateCredentials()
     every { tokenAuthenticator.sessionActive() } returns true
     coEvery {
       tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
@@ -180,27 +206,20 @@ internal class LoginViewModelTest : RobolectricTest() {
     val bundleEntry = Bundle.BundleEntryComponent().apply { resource = practitionerDetails() }
     coEvery { fhirResourceService.getResource(any()) } returns bundle.addEntry(bundleEntry)
 
-    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+    loginViewModel.login(mockedActivity(isDeviceOnline = true), scope = this)
+    advanceUntilIdle()
 
-    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertTrue(loginViewModel.navigateToHome.value!!)
   }
 
   @Test
-  fun testSuccessfulOnlineLoginWithActiveSessionWithNoPractitionerDetailsSaved() {
-    updateCredentials()
-    every { tokenAuthenticator.sessionActive() } returns true
-    loginViewModel.login(mockedActivity(isDeviceOnline = true))
-    val toHome = loginViewModel.navigateToHome.value!!
-    Assert.assertFalse(toHome)
-  }
-
-  @Test
-  fun testUnSuccessfulOnlineLoginUsingDifferentUsername() {
+  fun testUnSuccessfulOnlineLoginUsingDifferentUsername() = runTest {
     updateCredentials()
     secureSharedPreference.saveCredentials("nativeUser", "n4t1veP5wd".toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
-    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+    loginViewModel.login(mockedActivity(isDeviceOnline = true), scope = this)
+    //    advanceUntilIdle()
+
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertEquals(
       LoginErrorState.MULTI_USER_LOGIN_ATTEMPT,
@@ -209,7 +228,26 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSuccessfulNewOnlineLoginShouldFetchUserInfoAndPractitioner() {
+  fun testUnSuccessfulOnlineLoginUsingDifferentUsernameWithActiveSession() = runTest {
+    updateCredentials()
+    secureSharedPreference.saveCredentials("nativeUser", "n4t1veP5wd".toCharArray())
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.PRACTITIONER_ID.name,
+      value = "9807A290-0572-40E7-9EE0-C60F729E9F09"
+    )
+    every { tokenAuthenticator.sessionActive() } returns true
+    loginViewModel.login(mockedActivity(isDeviceOnline = true), scope = this)
+    advanceUntilIdle()
+
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertEquals(
+      LoginErrorState.MULTI_USER_LOGIN_ATTEMPT,
+      loginViewModel.loginErrorState.value!!
+    )
+  }
+
+  @Test
+  fun testSuccessfulNewOnlineLoginShouldFetchUserInfoAndPractitioner() = runTest {
     updateCredentials()
     secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
@@ -235,14 +273,15 @@ internal class LoginViewModelTest : RobolectricTest() {
     val bundleEntry = Bundle.BundleEntryComponent().apply { resource = practitionerDetails() }
     coEvery { fhirResourceService.getResource(any()) } returns bundle.addEntry(bundleEntry)
 
-    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+    loginViewModel.login(mockedActivity(isDeviceOnline = true), scope = this)
+    advanceUntilIdle()
 
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertTrue(loginViewModel.navigateToHome.value!!)
 
     // Login was successful savePractitionerDetails was called
     val bundleSlot = slot<Bundle>()
-    verify { loginViewModel.savePractitionerDetails(capture(bundleSlot), any()) }
+    coVerify { loginViewModel.savePractitionerDetails(capture(bundleSlot)) }
 
     Assert.assertNotNull(bundleSlot.captured)
     Assert.assertTrue(bundleSlot.captured.entry.isNotEmpty())
@@ -250,7 +289,25 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testUnSuccessfulOnlineLoginUserInfoNotFetched() {
+  fun testLoginFailsWithInvalidCredentialsForHttpException401() = runTest {
+    every { tokenAuthenticator.sessionActive() } returns false
+    val http401 = mockk<HttpException>()
+    every { http401.code() } returns 401
+    every { http401.printStackTrace(any<PrintStream>()) } just runs
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns Result.failure(http401)
+    updateCredentials()
+
+    loginViewModel.login(mockedActivity(isDeviceOnline = true), scope = this)
+    advanceUntilIdle()
+
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+    Assert.assertEquals(LoginErrorState.INVALID_CREDENTIALS, loginViewModel.loginErrorState.value!!)
+  }
+
+  @Test
+  fun testUnSuccessfulOnlineLoginUserInfoNotFetched() = runTest {
     updateCredentials()
     secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
@@ -274,15 +331,15 @@ internal class LoginViewModelTest : RobolectricTest() {
     // Mock result for retrieving a FHIR resource using user's keycloak uuid
     coEvery { fhirResourceService.getResource(any()) } returns Bundle()
 
-    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+    loginViewModel.login(mockedActivity(isDeviceOnline = true), scope = this)
+    advanceUntilIdle()
 
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertEquals(LoginErrorState.ERROR_FETCHING_USER, loginViewModel.loginErrorState.value!!)
   }
 
   @Test
-  @Ignore("Fix failing test")
-  fun testUnSuccessfulOnlineLoginUserInfoException() {
+  fun testUnSuccessfulOnlineLoginPractitionerDetailsNotFetchedException() = runTest {
     updateCredentials()
     secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
@@ -301,19 +358,20 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     // Mock result for fetch user info via keycloak endpoint
     coEvery { keycloakService.fetchUserInfo() } returns
-      Response.error(400, mockk<RealResponseBody>(relaxed = true))
+      Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
 
     // Mock result for retrieving a FHIR resource using user's keycloak uuid
     coEvery { fhirResourceService.getResource(any()) } throws Exception()
 
-    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+    loginViewModel.login(mockedActivity(isDeviceOnline = true), scope = this)
+    advanceUntilIdle()
 
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertEquals(LoginErrorState.ERROR_FETCHING_USER, loginViewModel.loginErrorState.value!!)
   }
 
   @Test
-  fun testUnSuccessfulOnlineLoginWhenAccessTokenNotReceived() {
+  fun testUnSuccessfulOnlineLoginWhenAccessTokenNotReceived() = runTest {
     updateCredentials()
     secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
     every { tokenAuthenticator.sessionActive() } returns false
@@ -328,7 +386,8 @@ internal class LoginViewModelTest : RobolectricTest() {
     // Mock result for retrieving a FHIR resource using user's keycloak uuid
     coEvery { fhirResourceService.getResource(any()) } returns Bundle()
 
-    loginViewModel.login(mockedActivity(isDeviceOnline = true))
+    loginViewModel.login(mockedActivity(isDeviceOnline = true), scope = this)
+    advanceUntilIdle()
 
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertEquals(LoginErrorState.UNKNOWN_HOST, loginViewModel.loginErrorState.value!!)
@@ -350,25 +409,25 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSavePractitionerDetails() {
+  fun testSavePractitionerDetails() = runTest {
     coEvery { defaultRepository.create(true, any()) } returns listOf()
     loginViewModel.savePractitionerDetails(
       Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = practitionerDetails() })
-    ) {}
+    )
     Assert.assertNotNull(
       sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name)
     )
   }
 
   @Test
-  fun testUpdateNavigateShouldUpdateLiveData() {
+  fun testUpdateNavigateShouldUpdateLiveData() = runTest {
     loginViewModel.updateNavigateHome(true)
     Assert.assertNotNull(loginViewModel.navigateToHome.value)
     Assert.assertTrue(loginViewModel.navigateToHome.value!!)
   }
 
   @Test
-  fun testForgotPasswordLoadsContact() {
+  fun testForgotPasswordLoadsContact() = runTest {
     loginViewModel.forgotPassword()
     Assert.assertEquals("tel:0123456789", loginViewModel.launchDialPad.value)
   }

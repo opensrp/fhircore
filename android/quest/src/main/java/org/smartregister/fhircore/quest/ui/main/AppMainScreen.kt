@@ -38,7 +38,7 @@ import androidx.navigation.navArgument
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
-import org.smartregister.fhircore.engine.ui.userprofile.UserProfileScreen
+import org.smartregister.fhircore.engine.ui.settings.SettingsScreen
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -180,7 +180,9 @@ private fun AppMainNavigationGraph(
         MainNavigationScreen.Reports ->
           measureReportNavigationGraph(navController, measureReportViewModel)
         MainNavigationScreen.Settings ->
-          composable(MainNavigationScreen.Settings.route) { UserProfileScreen() }
+          composable(MainNavigationScreen.Settings.route) {
+            SettingsScreen(navController = navController)
+          }
         MainNavigationScreen.PatientProfile ->
           composable(
             route =

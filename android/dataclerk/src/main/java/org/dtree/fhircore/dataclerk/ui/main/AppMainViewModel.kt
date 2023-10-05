@@ -35,7 +35,6 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Flag
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -162,32 +161,6 @@ constructor(
       }
     val parse: Date? = syncTimestampFormatter.parse(timestamp.toString())
     return if (parse == null) "" else simpleDateFormat.format(parse)
-  }
-
-  fun getInfoData(): Map<String, String> {
-    return mapOf(
-      Pair(
-        "Practioner ID",
-        sharedPreferencesHelper.read(
-          key = SharedPreferenceKey.PRACTITIONER_ID.name,
-          defaultValue = null
-        )
-          ?: ""
-      ),
-      Pair(
-        "Location ID",
-        sharedPreferencesHelper.read(key = ResourceType.Location.name, defaultValue = null) ?: ""
-      ),
-      Pair(
-        "CareTeam",
-        sharedPreferencesHelper.read(key = ResourceType.CareTeam.name, defaultValue = null) ?: ""
-      ),
-      Pair(
-        "Organization ID",
-        sharedPreferencesHelper.read(key = ResourceType.Organization.name, defaultValue = null)
-          ?: ""
-      ),
-    )
   }
 
   fun onTaskComplete() {

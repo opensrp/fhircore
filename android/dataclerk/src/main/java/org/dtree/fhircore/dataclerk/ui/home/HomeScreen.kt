@@ -21,17 +21,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -44,15 +40,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.google.android.fhir.sync.SyncJobStatus
 import kotlinx.coroutines.launch
-import org.dtree.fhircore.dataclerk.ui.info.InfoScreen
 import org.dtree.fhircore.dataclerk.ui.main.AppMainViewModel
 import org.dtree.fhircore.dataclerk.ui.main.PatientItem
 import org.smartregister.fhircore.engine.R
@@ -62,6 +57,7 @@ import org.smartregister.fhircore.engine.R
 fun HomeScreen(
   appMainViewModel: AppMainViewModel,
   homeViewModel: HomeViewModel = hiltViewModel(),
+  navController: NavHostController,
   sync: () -> Unit,
   search: () -> Unit,
   openPatient: (PatientItem) -> Unit,
@@ -75,12 +71,6 @@ fun HomeScreen(
     )
   val syncState by appMainViewModel.syncSharedFlow.collectAsState(initial = null)
   val refreshKey by appMainViewModel.refreshHash
-  val sheetState =
-    rememberModalBottomSheetState(
-      initialValue = ModalBottomSheetValue.Hidden,
-      confirmStateChange = { it != ModalBottomSheetValue.HalfExpanded }
-    )
-  val coroutineScope = rememberCoroutineScope()
 
   LaunchedEffect(syncState) {
     if (syncState is SyncJobStatus.Finished) {
@@ -90,72 +80,60 @@ fun HomeScreen(
 
   LaunchedEffect(refreshKey) { if (refreshKey.isNotBlank()) homeViewModel.refresh() }
 
-  ModalBottomSheetLayout(
-    sheetState = sheetState,
-    sheetContent = { InfoScreen(appMainViewModel) },
-    modifier = Modifier.fillMaxSize()
-  ) {
-    Scaffold(
-      topBar = {
-        Column(Modifier.fillMaxWidth()) {
-          TopAppBar(
-            title = { Text(text = appState.appTitle) },
-            actions = {
-              AppScreenBody(
-                syncState = syncState,
-                sync = sync,
+  Scaffold(
+    topBar = {
+      Column(Modifier.fillMaxWidth()) {
+        TopAppBar(
+          title = { Text(text = appState.appTitle) },
+          actions = {
+            AppScreenBody(
+              syncState = syncState,
+              sync = sync,
+            )
+            IconButton(onClick = { homeViewModel.refresh() }) {
+              Icon(
+                imageVector = Icons.Default.Refresh,
+                contentDescription = "Refresh",
               )
-              IconButton(onClick = { homeViewModel.refresh() }) {
-                Icon(
-                  imageVector = Icons.Default.Refresh,
-                  contentDescription = "Refresh",
-                )
-              }
-              IconButton(
-                onClick = {
-                  coroutineScope.launch {
-                    if (sheetState.isVisible) sheetState.hide() else sheetState.show()
-                  }
-                }
-              ) {
-                Icon(
-                  imageVector = Icons.Default.BugReport,
-                  contentDescription = "Debug",
-                )
-              }
-              IconButton(onClick = { search() }) {
-                Icon(
-                  imageVector = Icons.Default.Search,
-                  contentDescription = "Search",
-                )
-              }
             }
-          )
-          SyncStatusBar(
-            syncState = syncState,
-          )
-        }
-      },
-      bottomBar = {
-        if (!appState.isInitialSync)
-          Button(
-            onClick = { patientRegistrationLauncher.launch(appMainViewModel.openForm(context)) },
-            modifier = Modifier.fillMaxWidth()
-          ) { Text(text = appState.registrationButton) }
+            IconButton(onClick = { navController.navigate("info") }) {
+              Icon(
+                imageVector = Icons.Default.BugReport,
+                contentDescription = "Debug",
+              )
+            }
+            IconButton(onClick = { search() }) {
+              Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search",
+              )
+            }
+          }
+        )
+        SyncStatusBar(
+          syncState = syncState,
+        )
       }
-    ) { paddingValues ->
-      Column(Modifier.padding(paddingValues)) {
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          val count by homeViewModel.patientCount
-          Text(text = "Patients: $count")
-          Text(text = "Last Sync: ${appState.lastSyncTime}")
-        }
-        PatientList(viewModel = homeViewModel, navigate = openPatient)
+    },
+    bottomBar = {
+      if (!appState.isInitialSync)
+        Button(
+          onClick = { patientRegistrationLauncher.launch(appMainViewModel.openForm(context)) },
+          modifier = Modifier.fillMaxWidth()
+        ) { Text(text = appState.registrationButton) }
+    }
+  ) { paddingValues ->
+    Column(Modifier.padding(paddingValues)) {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        val count by homeViewModel.patientCount
+        Text(text = "Patients: $count")
+        Text(text = "Last Sync: ${appState.lastSyncTime}")
       }
+      PatientList(viewModel = homeViewModel, navigate = openPatient)
     }
   }
 }

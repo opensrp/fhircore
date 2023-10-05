@@ -193,6 +193,15 @@ fun AppDrawer(
         }
       }
       SideMenuItem(
+        iconResource = R.drawable.ic_settings,
+        title = stringResource(R.string.settings, username),
+        showEndText = false,
+        onSideMenuClick = {
+          openDrawer(false)
+          navController.navigate(MainNavigationScreen.Settings.route)
+        }
+      )
+      SideMenuItem(
         iconResource = R.drawable.ic_logout_white,
         title = stringResource(R.string.logout_user, username),
         showEndText = false,
