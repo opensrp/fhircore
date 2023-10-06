@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.configuration.app
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 
 @Serializable
 data class ApplicationConfiguration(
@@ -39,4 +40,5 @@ data class ApplicationConfiguration(
   val taskCompleteCarePlanJobDuration: String = "PT60M",
   val showLogo: Boolean = true,
   val taskBackgroundWorkerBatchSize: Int = 500,
+  val eventWorkflows: List<EventWorkflow> = emptyList(),
 ) : Configuration()

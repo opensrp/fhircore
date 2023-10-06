@@ -39,7 +39,7 @@ class AppSyncWorkerTest : RobolectricTest() {
     val taskExecutor = mockk<TaskExecutor>()
     val timeContext = mockk<AppTimeStampContext>()
 
-    every { taskExecutor.backgroundExecutor } returns mockk()
+    every { taskExecutor.serialTaskExecutor } returns mockk()
     every { workerParams.taskExecutor } returns taskExecutor
     every { syncListenerManager.loadSyncParams() } returns syncParams
 
@@ -51,6 +51,5 @@ class AppSyncWorkerTest : RobolectricTest() {
 
     Assert.assertEquals(AcceptLocalConflictResolver, appSyncWorker.getConflictResolver())
     Assert.assertEquals(fhirEngine, appSyncWorker.getFhirEngine())
-    Assert.assertEquals(false, appSyncWorker.getUploadConfiguration().useETagForUpload)
   }
 }

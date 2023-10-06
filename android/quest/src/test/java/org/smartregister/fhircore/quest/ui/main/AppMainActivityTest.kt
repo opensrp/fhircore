@@ -27,7 +27,6 @@ import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
@@ -36,7 +35,6 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import java.io.Serializable
-import java.time.OffsetDateTime
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
@@ -63,17 +61,18 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
-  @BindValue val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk()
+  @BindValue
+  val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk(relaxed = true, relaxUnitFun = true)
 
-  @BindValue val eventBus: EventBus = mockk()
-
-  lateinit var appMainActivity: AppMainActivity
+  private lateinit var appMainActivity: AppMainActivity
+  private var eventBus: EventBus = mockk(relaxUnitFun = true, relaxed = true)
 
   @Before
   fun setUp() {
     hiltRule.inject()
     appMainActivity =
       spyk(Robolectric.buildActivity(AppMainActivity::class.java).create().resume().get())
+    every { appMainActivity.eventBus } returns eventBus
   }
 
   @Test
@@ -91,10 +90,12 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnSyncWithSyncStateInProgress() {
     val viewModel = appMainActivity.appMainViewModel
+    val initialSyncTime = viewModel.appMainUiState.value.lastSyncTime
+
     appMainActivity.onSync(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD))
 
-    // Timestamp will only updated for states Glitch, Finished or Failed. Defaults to empty
-    Assert.assertTrue(viewModel.appMainUiState.value.lastSyncTime.isEmpty())
+    // Timestamp will only updated for Finished.
+    Assert.assertEquals(initialSyncTime, viewModel.appMainUiState.value.lastSyncTime)
   }
 
   @Test
@@ -103,33 +104,31 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     val timestamp = "2022-05-19"
     viewModel.sharedPreferencesHelper.write(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, timestamp)
 
+    val initialTimestamp = viewModel.appMainUiState.value.lastSyncTime
     val syncJobStatus = SyncJobStatus.Glitch(exceptions = emptyList())
-    val syncJobStatusTimestamp = syncJobStatus.timestamp
 
     appMainActivity.onSync(syncJobStatus)
-    Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
 
-    // Timestamp updated to the SyncJobStatus timestamp
+    // Timestamp last sync timestamp not updated
     Assert.assertEquals(
+      initialTimestamp,
       viewModel.appMainUiState.value.lastSyncTime,
-      viewModel.formatLastSyncTimestamp(syncJobStatusTimestamp)!!,
     )
   }
 
   @Test
-  fun testOnSyncWithSyncStateFailedRendersUpdatedTimestampOnMainUi() {
+  fun testOnSyncWithSyncStateFailedDoesNotUpdateTimestamp() {
     val viewModel = appMainActivity.appMainViewModel
     viewModel.sharedPreferencesHelper.write(
       SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
       "2022-05-19",
     )
-    appMainActivity.onSync(SyncJobStatus.Failed(listOf()))
+    val initialTimestamp = viewModel.appMainUiState.value.lastSyncTime
+    val syncJobStatus = SyncJobStatus.Failed(listOf())
+    appMainActivity.onSync(syncJobStatus)
 
-    Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
-    Assert.assertEquals(
-      appMainActivity.appMainViewModel.formatLastSyncTimestamp(OffsetDateTime.now()),
-      viewModel.appMainUiState.value.lastSyncTime,
-    )
+    // Timestamp not update if status is Failed. Initial timestamp remains the same
+    Assert.assertEquals(initialTimestamp, viewModel.appMainUiState.value.lastSyncTime)
   }
 
   @Test
@@ -153,8 +152,6 @@ class AppMainActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnSubmitQuestionnaireShouldUpdateLiveData() = runTest {
-    every { eventBus.events } returns mockk()
-    coEvery { eventBus.triggerEvent(any()) } just runs
     appMainActivity.onSubmitQuestionnaire(
       ActivityResult(
         -1,
@@ -177,11 +174,11 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     coVerify { eventBus.triggerEvent(capture(onSubmitQuestionnaireSlot)) }
     Assert.assertNotNull(onSubmitQuestionnaireSlot)
     val questionnaireSubmission = onSubmitQuestionnaireSlot.captured.questionnaireSubmission
-    Assert.assertEquals("Task/12345", questionnaireSubmission?.questionnaireConfig?.taskId)
-    Assert.assertEquals("questionnaireId", questionnaireSubmission?.questionnaireConfig?.id)
+    Assert.assertEquals("Task/12345", questionnaireSubmission.questionnaireConfig.taskId)
+    Assert.assertEquals("questionnaireId", questionnaireSubmission.questionnaireConfig.id)
     Assert.assertEquals(
       QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS,
-      questionnaireSubmission?.questionnaireResponse?.status,
+      questionnaireSubmission.questionnaireResponse.status,
     )
   }
 
@@ -191,8 +188,6 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     val refreshLiveDataMock = mockk<MutableLiveData<Boolean?>>()
     every { refreshLiveDataMock.postValue(true) } just runs
     every { appMainActivity.appMainViewModel } returns appMainViewModel
-    every { eventBus.events } returns mockk()
-    coEvery { eventBus.triggerEvent(any()) } returns mockk()
 
     appMainActivity.onSubmitQuestionnaire(
       ActivityResult(
@@ -211,13 +206,14 @@ class AppMainActivityTest : ActivityRobolectricTest() {
         },
       ),
     )
-
-    coVerify { eventBus.triggerEvent(any()) }
+    val onSubmitQuestionnaireSlot = slot<AppEvent.OnSubmitQuestionnaire>()
+    coVerify { eventBus.triggerEvent(capture(onSubmitQuestionnaireSlot)) }
+    Assert.assertNotNull(onSubmitQuestionnaireSlot)
   }
 
   @Test
   fun testStartForResult() {
-    val event = appMainActivity.startForResult
-    Assert.assertNotNull(event)
+    val resultLauncher = appMainActivity.startForResult
+    Assert.assertNotNull(resultLauncher)
   }
 }

@@ -32,6 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.testTag
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -50,6 +51,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
@@ -160,15 +162,15 @@ class RegisterFragment : Fragment(), OnSyncListener {
               )
             },
           ) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding)) {
+            Box(modifier = Modifier.padding(innerPadding).testTag(REGISTER_SCREEN_BOX_TAG)) {
               RegisterScreen(
-                navController = findNavController(),
                 openDrawer = openDrawer,
+                onEvent = registerViewModel::onEvent,
+                registerUiState = registerViewModel.registerUiState.value,
                 searchText = registerViewModel.searchText,
                 currentPage = registerViewModel.currentPage,
-                onEvent = registerViewModel::onEvent,
                 pagingItems = pagingItems,
-                registerUiState = registerViewModel.registerUiState.value,
+                navController = findNavController(),
                 toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
               )
             }
@@ -210,31 +212,30 @@ class RegisterFragment : Fragment(), OnSyncListener {
           )
         }
       }
-      is SyncJobStatus.Glitch -> {
-        refreshRegisterData()
-      }
       is SyncJobStatus.Failed -> {
         refreshRegisterData()
         // Show error message in snackBar message
-        // syncJobStatus.exceptions may be null when worker fails; hence the null safety handling
         val hasAuthError =
           try {
             Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
-
-            (syncJobStatus.exceptions[0].takeIf { it.exception is HttpException }?.exception
-                as HttpException)
-              .code() == 401
-          } catch (e: NullPointerException) {
+            syncJobStatus.exceptions.any {
+              it.exception is HttpException && (it.exception as HttpException).code() == 401
+            }
+          } catch (nullPointerException: NullPointerException) {
             false
           }
 
-        val messageResourceId =
-          if (hasAuthError) R.string.sync_unauthorised else R.string.sync_failed
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
             SnackBarMessageConfig(
-              message = getString(messageResourceId),
+              message =
+                getString(
+                  if (hasAuthError) {
+                    R.string.sync_unauthorised
+                  } else R.string.sync_completed_with_errors,
+                ),
               duration = SnackbarDuration.Long,
+              actionLabel = getString(R.string.ok).uppercase(),
             ),
           )
         }
@@ -245,11 +246,15 @@ class RegisterFragment : Fragment(), OnSyncListener {
     }
   }
 
-  fun refreshRegisterData() {
+  fun refreshRegisterData(questionnaireResponse: QuestionnaireResponse? = null) {
     with(registerFragmentArgs) {
       registerViewModel.run {
-        // Clear pages cache to load new data
+        if (questionnaireResponse != null) {
+          updateRegisterFilterState(registerId, questionnaireResponse)
+        }
+
         pagesDataCache.clear()
+
         retrieveRegisterUiState(
           registerId = registerId,
           screenTitle = screenTitle,
@@ -278,20 +283,24 @@ class RegisterFragment : Fragment(), OnSyncListener {
   }
 
   suspend fun handleQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
-    appMainViewModel.run {
-      onQuestionnaireSubmission(questionnaireSubmission)
-      retrieveAppMainUiState(refreshAll = false) // Update register counts
+    if (questionnaireSubmission.questionnaireConfig.saveQuestionnaireResponse) {
+      appMainViewModel.run {
+        onQuestionnaireSubmission(questionnaireSubmission)
+        retrieveAppMainUiState(refreshAll = false) // Update register counts
+      }
+
+      val (questionnaireConfig, _) = questionnaireSubmission
+
+      refreshRegisterData()
+
+      questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
+        registerViewModel.emitSnackBarState(snackBarMessageConfig)
+      }
+
+      questionnaireConfig.onSubmitActions?.handleClickEvent(navController = findNavController())
+    } else {
+      refreshRegisterData(questionnaireSubmission.questionnaireResponse)
     }
-
-    val (questionnaireConfig, _) = questionnaireSubmission
-
-    refreshRegisterData()
-
-    questionnaireConfig.snackBarMessage?.let { snackBarMessageConfig ->
-      registerViewModel.emitSnackBarState(snackBarMessageConfig)
-    }
-
-    questionnaireConfig.onSubmitActions?.handleClickEvent(navController = findNavController())
   }
 
   fun emitPercentageProgress(
@@ -317,8 +326,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
         1L,
       )
     val isProgressTotalLess = progressSyncJobStatus.total <= totalRecordsOverall
-    var currentProgress: Int
-    var currentTotalRecords =
+    val currentProgress: Int
+    val currentTotalRecords =
       if (isProgressTotalLess) {
         currentProgress =
           totalRecordsOverall.toInt() - progressSyncJobStatus.total +
@@ -335,5 +344,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
       }
 
     return getSyncProgress(currentProgress, currentTotalRecords)
+  }
+
+  companion object {
+    const val REGISTER_SCREEN_BOX_TAG = "fragmentRegisterScreenTestTag"
   }
 }

@@ -31,7 +31,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,6 +48,7 @@ import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
@@ -79,18 +79,28 @@ fun RegisterScreen(
     topBar = {
       Column {
         // Top section has toolbar and a results counts view
+        val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
           title = registerUiState.screenTitle,
           searchText = searchText.value,
+          filteredRecordsCount = registerUiState.filteredRecordsCount,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
           toolBarHomeNavigation = toolBarHomeNavigation,
           onSearchTextChanged = { searchText ->
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           },
-        ) {
-          when (toolBarHomeNavigation) {
-            ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
-            ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
+          isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
+        ) { event ->
+          when (event) {
+            ToolbarClickEvent.Navigate ->
+              when (toolBarHomeNavigation) {
+                ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
+                ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
+              }
+            ToolbarClickEvent.FilterData -> {
+              onEvent(RegisterEvent.ResetFilterRecordsCount)
+              filterActions?.handleClickEvent(navController)
+            }
           }
         }
         // Only show counter during search
@@ -109,8 +119,7 @@ fun RegisterScreen(
     },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      val dismissLoader = registerUiState.dismissLoaderView.collectAsState(initial = false).value
-      if (registerUiState.isFirstTimeSync && !dismissLoader) {
+      if (registerUiState.isFirstTimeSync) {
         LoaderDialog(
           modifier = modifier,
           percentageProgressFlow = registerUiState.progressPercentage,

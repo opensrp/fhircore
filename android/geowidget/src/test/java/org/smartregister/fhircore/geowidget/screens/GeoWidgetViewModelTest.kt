@@ -20,7 +20,7 @@ import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Search
+import com.google.android.fhir.SearchResult
 import com.mapbox.geojson.FeatureCollection
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -47,6 +47,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.geowidget.rule.CoroutineTestRule
 
 @RunWith(RobolectricTestRunner::class)
@@ -76,6 +77,8 @@ class GeoWidgetViewModelTest {
 
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
 
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -90,6 +93,7 @@ class GeoWidgetViewModelTest {
           configurationRegistry,
           configService,
           configRulesExecutor,
+          fhirPathDataExtractor = fhirPathDataExtractor,
         ),
       )
     geoWidgetViewModel =
@@ -129,7 +133,8 @@ class GeoWidgetViewModelTest {
     val location = locationJson.decodeResourceFromString<Location>()
     val group = groupJson.decodeResourceFromString<Group>()
 
-    coEvery { fhirEngine.search<Group>(any<Search>()) } returns listOf(group)
+    coEvery { fhirEngine.search<Group>(any()) } returns
+      listOf(SearchResult(resource = group, null, null))
     coEvery { fhirEngine.get(ResourceType.Location, any()) } returns location
 
     val familiesWithLocations = runBlocking { geoWidgetViewModel.getFamilies() }

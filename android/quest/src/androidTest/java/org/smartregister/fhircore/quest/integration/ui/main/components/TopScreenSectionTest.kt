@@ -48,7 +48,8 @@ class TopScreenSectionTest {
         title = "All Clients",
         searchText = "search text",
         onSearchTextChanged = mockListener,
-      ) {}
+        onClick = {},
+      )
     }
   }
 

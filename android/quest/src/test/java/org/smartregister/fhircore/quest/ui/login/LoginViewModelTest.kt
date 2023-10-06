@@ -23,7 +23,9 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
@@ -36,8 +38,14 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import okhttp3.internal.http.RealResponseBody
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CareTeam
+import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Organization
+import org.hl7.fhir.r4.model.OrganizationAffiliation
+import org.hl7.fhir.r4.model.Practitioner
+import org.hl7.fhir.r4.model.PractitionerRole
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.junit.After
@@ -58,10 +66,11 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
-import org.smartregister.fhircore.quest.HiltActivityForTest
+import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
@@ -229,7 +238,7 @@ internal class LoginViewModelTest : RobolectricTest() {
       sharedPreferencesHelper.write(ResourceType.Location.name, listOf("test-location"))
       sharedPreferencesHelper.write(
         SharedPreferenceKey.PRACTITIONER_ID.name,
-        "nativeUser-practitioner-id"
+        "nativeUser-practitioner-id",
       )
 
       coEvery {
@@ -286,7 +295,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     sharedPreferencesHelper.write(ResourceType.Location.name, listOf("test-location"))
     sharedPreferencesHelper.write(
       SharedPreferenceKey.PRACTITIONER_ID.name,
-      "nativeUser-practitioner-id"
+      "nativeUser-practitioner-id",
     )
 
     coEvery {
@@ -603,14 +612,52 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSavePractitionerDetails() {
-    coEvery { defaultRepository.create(true, any()) } returns listOf()
+  fun testSavePractitionerDetailsChaRole() {
+    coEvery { defaultRepository.createRemote(true, any()) } just runs
     loginViewModel.savePractitionerDetails(
       practitionerDetails().apply {
         fhirPractitionerDetails =
           FhirPractitionerDetails().apply { practitionerId = StringType("my-test-practitioner-id") }
       },
       UserInfo(),
+    ) {}
+    Assert.assertNotNull(
+      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+    )
+  }
+
+  @Test
+  fun testSavePractitionerDetailsSupervisorRole() {
+    coEvery { defaultRepository.createRemote(false, any()) } just runs
+    loginViewModel.savePractitionerDetails(
+      practitionerDetails().apply {
+        fhirPractitionerDetails =
+          FhirPractitionerDetails().apply {
+            practitioners =
+              listOf(
+                Practitioner().apply {
+                  identifier.add(
+                    Identifier().apply {
+                      use = Identifier.IdentifierUse.SECONDARY
+                      value = "my-test-practitioner-id"
+                    },
+                  )
+                },
+              )
+            careTeams = listOf(CareTeam().apply { id = "my-care-team-id" })
+            organizations = listOf(Organization().apply { id = "my-organization-id" })
+            locations = listOf(Location().apply { id = "my-organization-id" })
+            locationHierarchyList =
+              listOf(LocationHierarchy().apply { id = "my-location-hierarchy-id" })
+            groups = listOf(Group().apply { id = "my-group-id" })
+            practitionerRoles = listOf(PractitionerRole().apply { id = "my-practitioner-role-id" })
+            organizationAffiliations =
+              listOf(
+                OrganizationAffiliation().apply { id = "my-organization-affiliation-id" },
+              )
+          }
+      },
+      UserInfo().apply { keycloakUuid = "my-test-practitioner-id" },
     ) {}
     Assert.assertNotNull(
       sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),

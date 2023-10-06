@@ -50,14 +50,14 @@ sonar {
 }
 
 android {
-  compileSdk = 33
+  compileSdk = 34
 
   defaultConfig {
     applicationId = "org.smartregister.opensrp"
     minSdk = 26
-    targetSdk = 33
-    versionCode = 3
-    versionName = "0.2.5"
+    targetSdk = 34
+    versionCode = 4
+    versionName = "1.0.0"
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
@@ -93,6 +93,11 @@ android {
 
   buildTypes {
     getByName("debug") { isTestCoverageEnabled = true }
+    create("benchmark") {
+      signingConfig = signingConfigs.getByName("debug")
+      matchingFallbacks += listOf("debug")
+      isDebuggable = true
+    }
 
     create("debugNonProxy") { initWith(getByName("debug")) }
 
@@ -149,7 +154,7 @@ android {
     dataBinding = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.4.3" }
 
   testOptions {
     animationsDisabled = true
@@ -222,11 +227,24 @@ android {
       manifestPlaceholders["appLabel"] = "MOH eCHIS"
     }
 
-    create("bunda") {
+    create("sidBunda") {
       dimension = "apps"
-      applicationIdSuffix = ".bunda"
-      versionNameSuffix = "-bunda"
-      manifestPlaceholders["appLabel"] = "Bunda App"
+      applicationIdSuffix = ".sidBunda"
+      versionNameSuffix = "-sidBunda"
+      manifestPlaceholders["appLabel"] = "Bunda ANC"
+    }
+
+    create("sidCadre") {
+      dimension = "apps"
+      applicationIdSuffix = ".sidCadre"
+      versionNameSuffix = "-sidCadre"
+      manifestPlaceholders["appLabel"] = "Cadre App"
+    }
+    create("sidEir") {
+      dimension = "apps"
+      applicationIdSuffix = ".sidEir"
+      versionNameSuffix = "-sidEir"
+      manifestPlaceholders["appLabel"] = "SID EIR"
     }
 
     create("wdf") {
@@ -248,6 +266,19 @@ android {
       applicationIdSuffix = ".engage"
       versionNameSuffix = "-engage"
       manifestPlaceholders["appLabel"] = "Engage"
+    }
+
+    create("eir") {
+      dimension = "apps"
+      applicationIdSuffix = ".who_eir"
+      versionNameSuffix = "-who_eir"
+      manifestPlaceholders["appLabel"] = "WHO EIR"
+    }
+    create("psi-eswatini") {
+      dimension = "apps"
+      applicationIdSuffix = ".psi_eswatini"
+      versionNameSuffix = "-psi_eswatini"
+      manifestPlaceholders["appLabel"] = "PSI WFA"
     }
   }
 
@@ -377,6 +408,7 @@ dependencies {
   androidTestImplementation(libs.hilt.android.testing)
   androidTestImplementation(libs.mockk.android)
   androidTestImplementation(libs.benchmark.junit)
+  androidTestImplementation(libs.work.testing)
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }

@@ -35,5 +35,48 @@
       "List",
       "Flag"
     ]
-  }
+  },
+  "eventWorkflows": [
+    {
+      "eventType": "RESOURCE_CLOSURE",
+      "eventResources": [
+        {
+          "id": "sickChildConditionToBeClosed",
+          "resource": "Condition",
+          "configRules": [
+            {
+              "name": "patientId",
+              "condition": "true",
+              "actions": [
+                "data.put('patientId', fhirPath.extractValue(CarePlan, 'CarePlan.subject.reference'))"
+              ]
+            }
+          ],
+          "dataQueries": [
+            {
+              "paramName": "code",
+              "filterCriteria": [
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://snomed.info/sct",
+                    "code": "275142008"
+                  }
+                }
+              ]
+            },
+            {
+              "paramName": "subject",
+              "filterCriteria": [
+                {
+                  "dataType": "REFERENCE",
+                  "computedRule": "patientId"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

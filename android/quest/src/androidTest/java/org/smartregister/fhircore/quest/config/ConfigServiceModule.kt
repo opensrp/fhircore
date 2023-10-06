@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine
+package org.smartregister.fhircore.quest.di.config
 
-import androidx.appcompat.app.AppCompatActivity
-import com.google.android.fhir.sync.SyncJobStatus
-import dagger.hilt.android.AndroidEntryPoint
-import org.smartregister.fhircore.engine.sync.OnSyncListener
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.quest.QuestConfigService
 
-@ExcludeFromJacocoGeneratedReport
-@AndroidEntryPoint
-class HiltActivityForTest : AppCompatActivity(), OnSyncListener {
-  override fun onSync(syncJobStatus: SyncJobStatus) {
-    // DO nothing. This activity implements OnSyncListener for testing purposes
-  }
+@InstallIn(SingletonComponent::class)
+@Module
+abstract class ConfigServiceModule {
+  @Binds abstract fun provideConfigService(questConfigService: QuestConfigService): ConfigService
 }
