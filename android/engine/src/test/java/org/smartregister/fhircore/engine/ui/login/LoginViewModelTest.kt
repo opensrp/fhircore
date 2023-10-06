@@ -30,6 +30,7 @@ import io.mockk.spyk
 import java.io.PrintStream
 import java.net.UnknownHostException
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -213,19 +214,20 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testUnSuccessfulOnlineLoginUsingDifferentUsername() = runTest {
-    updateCredentials()
-    secureSharedPreference.saveCredentials("nativeUser", "n4t1veP5wd".toCharArray())
-    every { tokenAuthenticator.sessionActive() } returns false
-    loginViewModel.login(mockedActivity(isDeviceOnline = true), scope = this)
-    //    advanceUntilIdle()
+  fun testUnSuccessfulOnlineLoginUsingDifferentUsername() =
+    runTest(timeout = 60.seconds) {
+      updateCredentials()
+      secureSharedPreference.saveCredentials("nativeUser", "n4t1veP5wd".toCharArray())
+      every { tokenAuthenticator.sessionActive() } returns false
+      loginViewModel.login(mockedActivity(isDeviceOnline = true), scope = this)
+      advanceUntilIdle()
 
-    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
-    Assert.assertEquals(
-      LoginErrorState.MULTI_USER_LOGIN_ATTEMPT,
-      loginViewModel.loginErrorState.value!!
-    )
-  }
+      Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+      Assert.assertEquals(
+        LoginErrorState.MULTI_USER_LOGIN_ATTEMPT,
+        loginViewModel.loginErrorState.value!!
+      )
+    }
 
   @Test
   fun testUnSuccessfulOnlineLoginUsingDifferentUsernameWithActiveSession() = runTest {
