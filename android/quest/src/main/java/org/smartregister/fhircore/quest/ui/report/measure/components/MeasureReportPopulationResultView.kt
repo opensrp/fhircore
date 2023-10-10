@@ -71,7 +71,7 @@ private fun PopulationResultCard(
       Column {
         Row(modifier = modifier.fillMaxWidth()) {
           Text(
-            text = resultItem.indicatorTitle.uppercase(),
+            text = resultItem.title.ifEmpty { resultItem.indicatorTitle }.uppercase(),
             color = colorResource(id = R.color.black),
             fontSize = 16.sp,
             modifier = modifier.weight(1.0f).testTag(POPULATION_INDICATOR_TITLE),
