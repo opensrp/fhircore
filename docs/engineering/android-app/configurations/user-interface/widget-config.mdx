@@ -1,6 +1,8 @@
 # Widget configurations
 
-Configurations used to configure widgets. FHIR Core uses widgets to render views. Examples are rows, columns, cards, and buttons.
+Configurations used to configure widgets. FHIR Core uses widgets to render views.
+
+Examples are rows, columns, cards, and buttons.
 
 ## LIST widget
 
@@ -10,28 +12,28 @@ To display items in flexRow below sample JSON config works fine. Replace **COMPO
 
 ``` json
 {
-     "viewType": "LIST",
-      "id": "give_your_list_an_id",
-      "baseResource": "Resource_to_use",
-      "orientation": "HORIZONTAL",
-       "emptyList": {
-        "message": ""
-                     },
-        "registerCard": {
-        "rules": [],
-         "views": [
-          {
-           "viewType": "COMPOUND_TEXT",
-            "primaryTextBackgroundColor": "#F9CFD1",
-             "primaryText": "@{carePlanTitle}",
-             "primaryTextColor": "@{carePlanTextColor}",
-             "fontSize": 13,
-             "padding": 7,
-              "borderRadius": 6
+  "viewType": "LIST",
+  "id": "give_your_list_an_id",
+  "baseResource": "Resource_to_use",
+  "orientation": "HORIZONTAL",
+  "emptyList": {
+    "message": ""
+  },
+  "registerCard": {
+    "rules": [],
+    "views": [
+      {
+        "viewType": "COMPOUND_TEXT",
+        "primaryTextBackgroundColor": "#F9CFD1",
+        "primaryText": "@{carePlanTitle}",
+        "primaryTextColor": "@{carePlanTextColor}",
+        "fontSize": 13,
+        "padding": 7,
+        "borderRadius": 6
       }
     ]
-    }
-   }
+  }
+}
 ```
 
 ### Display resources inside another list
@@ -114,21 +116,22 @@ sortConfig | Configuration used for sorting LIST widget resource | no | |
 Defines the configuration properties for a Compound Text view, which is a view that displays two text strings with an optional separator between them. This view can also have actions associated with each text string.
 
  ``` json
-{
-                "viewType": "COMPOUND_TEXT",
-                "primaryTextBackgroundColor": "#F9CFD1",
-                "primaryText": "@{taskName}",
-                "primaryTextColor": "#000000",
-                "padding": 7,
-                "borderRadius": 6
-              },
-              {
-                "viewType": "COMPOUND_TEXT",
-                "primaryText": "Start date: @{taskStartDate}",
-                "primaryTextColor": "#5A5A5A",
-                "fontSize": 20.0
-
-              }
+[
+  {
+    "viewType": "COMPOUND_TEXT",
+    "primaryTextBackgroundColor": "#F9CFD1",
+    "primaryText": "@{taskName}",
+    "primaryTextColor": "#000000",
+    "padding": 7,
+    "borderRadius": 6
+  },
+  {
+    "viewType": "COMPOUND_TEXT",
+    "primaryText": "Start date: @{taskStartDate}",
+    "primaryTextColor": "#5A5A5A",
+    "fontSize": 20
+  }
+]
 ```
 
 ### Config properties of COMPOUND_TEXT
@@ -162,42 +165,42 @@ Displays Patient's details ,other related services and tasks. The details field 
 
  ``` json
 {
-        "viewType": "COLUMN",
-        "children": [
-          {
-            "viewType": "SERVICE_CARD",
-            "details": [
-              {
-                "viewType": "COMPOUND_TEXT",
-                "primaryText": "@{patientName}",
-                "primaryTextColor": "#000000"
-              },
-              {
-                "viewType": "COMPOUND_TEXT",
-                "primaryText": "ID: @{patientId}",
-                "fontSize": 14.0,
-                "primaryTextColor": "#000000"
-              }
-            ],
-            "showVerticalDivider": true,
-            "serviceButton": {
-              "visible": "@{showMemberTasks}",
-              "text": "@{taskDescription}",
-              "status": "@{serviceStatus}",
-              "smallSized": true,
-              "enabled": "false",
-              "actions": [ ]
-            },
-            "actions": [
-              {
-                "trigger": "ON_CLICK",
-                "workflow": "LAUNCH_PROFILE",
-                "id": "otherRegistersProfile"
-              }
-            ]
-          }
-        ]
-      }
+  "viewType": "COLUMN",
+  "children": [
+    {
+      "viewType": "SERVICE_CARD",
+      "details": [
+        {
+          "viewType": "COMPOUND_TEXT",
+          "primaryText": "@{patientName}",
+          "primaryTextColor": "#000000"
+        },
+        {
+          "viewType": "COMPOUND_TEXT",
+          "primaryText": "ID: @{patientId}",
+          "fontSize": 14,
+          "primaryTextColor": "#000000"
+        }
+      ],
+      "showVerticalDivider": true,
+      "serviceButton": {
+        "visible": "@{showMemberTasks}",
+        "text": "@{taskDescription}",
+        "status": "@{serviceStatus}",
+        "smallSized": true,
+        "enabled": "false",
+        "actions": []
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE",
+          "id": "otherRegistersProfile"
+        }
+      ]
+    }
+  ]
+}
 ```
 
 ### Config properties of SERVICE_CARD
@@ -223,29 +226,29 @@ actions | A list of ActionConfig objects that represent the actions that can be 
 ## COLUMN widgets
 The column widgets are used to create a vertical layout container that can hold multiple child views. The purpose of the "COLUMN" is to arrange child views in a vertical column, with the child views stacked on top of one another in the order in which they are added.
 
- ``` json
- {
-                  "viewType": "COLUMN",
-                  "weight": 0.7,
-                  "children": [
-                    {
-                      "viewType": "COMPOUND_TEXT",
-                      "primaryText": "VIEW ALL",
-                      "primaryTextColor": "#006EB8",
-                      "clickable": true,
-                      "fontSize": 14.0,
-                      "primaryTextActions": [
-                        {
-                          "trigger": "ON_CLICK",
-                          "workflow": "LAUNCH_REGISTER",
-                          "id": "pncRegister",
-                          "display": "@{practitionerName} - PNC Register"
-                        }
-                      ]
-                    }
-                  ]
-                }
- ```
+``` json
+{
+  "viewType": "COLUMN",
+  "weight": 0.7,
+  "children": [
+    {
+      "viewType": "COMPOUND_TEXT",
+      "primaryText": "VIEW ALL",
+      "primaryTextColor": "#006EB8",
+      "clickable": true,
+      "fontSize": 14,
+      "primaryTextActions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "pncRegister",
+          "display": "@{practitionerName} - PNC Register"
+        }
+      ]
+    }
+  ]
+}
+```
 
 ### Config properties of COLUMN
 |Property | Description | Required | Default |
@@ -267,7 +270,7 @@ children | A list of ViewProperties objects that represents the child views of t
 
 ## IMAGE widget
 Displays icons or images.
-```json
+``` json
 {
   "viewType": "IMAGE",
   "tint": "#FFFFFF",
@@ -275,11 +278,11 @@ Displays icons or images.
   "imageConfig": {
     "type": "local",
     "reference": "@{taskStatusIcon}"
-    },
-    "padding": 4,
-    "backgroundColor": "@{taskStatusIcon}",
-    "isCircular": true
-    }
+  },
+  "padding": 4,
+  "backgroundColor": "@{taskStatusIcon}",
+  "isCircular": true
+}
 ```
 
 ### Config properties of IMAGE
@@ -354,48 +357,48 @@ Defines the hierarchical stucture of views to be rendered. It contains various p
 
 ``` json
 "views": [
-            {
-                "viewType": "COLUMN",
-                "children": [
-                    {
-                        "viewType": "SERVICE_CARD",
-                        "details": [
-                            {
-                                "viewType": "COMPOUND_TEXT",
-                                "primaryText": "@{patientName}",
-                                "primaryTextColor": "#000000"
-                            },
-                            {
-                                "viewType": "COMPOUND_TEXT",
-                                "primaryText": "{{ id.patient.id }}",
-                                "fontSize": 14.0,
-                                "primaryTextColor": "#000000"
-                            }
-                        ],
-                        "showVerticalDivider": false,
-                        "serviceButton": {
-                            "visible": true,
-                            "text": "{{ anc.visit }}",
-                            "status": "DUE",
-                            "smallSized": true
-                        },
-                        "actions": [
-                            {
-                                "trigger": "ON_CLICK",
-                                "workflow": "LAUNCH_PROFILE",
-                                "id": "defaultProfile",
-                                "params": [
-                                    {
-                                        "key": "patientId",
-                                        "value": "@{patientId}"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
+  {
+    "viewType": "COLUMN",
+    "children": [
+      {
+        "viewType": "SERVICE_CARD",
+        "details": [
+          {
+            "viewType": "COMPOUND_TEXT",
+            "primaryText": "@{patientName}",
+            "primaryTextColor": "#000000"
+          },
+          {
+            "viewType": "COMPOUND_TEXT",
+            "primaryText": "{{ id.patient.id }}",
+            "fontSize": 14,
+            "primaryTextColor": "#000000"
+          }
+        ],
+        "showVerticalDivider": false,
+        "serviceButton": {
+          "visible": true,
+          "text": "{{ anc.visit }}",
+          "status": "DUE",
+          "smallSized": true
+        },
+        "actions": [
+          {
+            "trigger": "ON_CLICK",
+            "workflow": "LAUNCH_PROFILE",
+            "id": "defaultProfile",
+            "params": [
+              {
+                "key": "patientId",
+                "value": "@{patientId}"
+              }
+            ]
+          }
         ]
+      }
+    ]
+  }            
+]
 ```
 
 ### Config properties of VIEW
@@ -418,7 +421,7 @@ The Divider widget allows one to visually separate and organize different compon
 It creates a horizontal line that acts as a visual boundary, enhancing the overall aesthetics and user experience.
 
 To use the Divider widget in the app, one has to define the JSON file as follows:
-```json
+``` json
 {
   "viewType": "BORDER",
   "thickness": 0.8
