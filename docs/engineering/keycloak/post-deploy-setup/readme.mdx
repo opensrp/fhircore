@@ -1,0 +1,28 @@
+---
+sidebar_position: 2
+---
+
+# Getting started for platform developers
+
+- Navigate to the Keycloak Admin UI, e.g [keycloak:8080](http://keycloak:8080)
+- Create realm with name `fhir` or anything else
+- In realm `fhir`, create new Client Scope "fhir_core_app_id", set it as Default, and add mapper user attribute `fhir_core_app_id`
+- Create client for OpenSRP v2.0 clienst-side application(s), e.g. `opensrp-v2-app-client`
+  - In "Capability config", turn on "Client authentication". (When it's ON, the OIDC type is set to confidential access type. When it's OFF, it is set to public access type)
+  - Set "Valid redirect URIs" to `*` or other as needed
+  - Copy & paste the client secret from "Credentials" tab
+- Create client for `fhir-web`
+  - In "Capability config", turn on "Client authentication".
+  - Set "Valid redirect URIs" to the domain name of your `fhir-web` installation + wildcard as suffix, e.g. `https://fhir-web.example.org/*` or other as needed
+  - Set "Valid post logout redirect URIs" to the domain name of your `fhir-web` installation + wildcard as suffix, e.g. `https://fhir-web.example.org/*` or other as needed
+  - Set "Web origins" to the domain name of your `fhir-web` installation, e.g. `https://fhir-web.example.org` or other as needed
+  - Copy the client secret from "Credentials" tab, paste it wherever needed
+- Create realm roles based on [OpenSRP V2 RBAC ROLES](https://docs.google.com/document/d/1MEw41Rtfdmos9gqqDamQ31_Y58E8Thgo_8i9UXD8ET4/edit)
+  - [**TODO**] Add script + payload to load all these to the keycloak instance
+- Create group "Super Admin", "Provider"
+  - Add roles in the "Role Mapping"
+  - Add attribute `fhir_core_app_id` in the group, or in each user
+
+### Extra notes
+
+- Create user(s) via `fhir-web`. This helps on the creation of FHIR resources "[Practitioner](http://hl7.org/fhir/R4/practitioner.html)" and "[PractitionerRole](http://hl7.org/fhir/R4/practitionerrole.html)" for the new user / healthcare worker.
