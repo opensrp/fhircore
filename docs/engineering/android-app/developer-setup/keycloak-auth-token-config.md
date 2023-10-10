@@ -36,4 +36,4 @@ When setting up identity and access management via Keycloak, the access and refr
 
 ### Extra notes
 
-- Create user(s) via `fhir-web`. This helps on the creation of FHIR resources "[Practitioner](http://hl7.org/fhir/R4/practitioner.html)" and "[PractitionerRole](http://hl7.org/fhir/R4/practitionerrole.html)" for new users / healthcare workers.
+- Create users via `fhir-web`. This helps by automatically creating the additional required FHIR resources of "[Practitioner](http://hl7.org/fhir/R4/practitioner.html)" and "[PractitionerRole](http://hl7.org/fhir/R4/practitionerrole.html)" for new users / healthcare workers.
