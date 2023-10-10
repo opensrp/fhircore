@@ -6,8 +6,8 @@ sidebar_position: 2
 
 - Navigate to the Keycloak Admin UI, e.g [keycloak:8080](http://keycloak:8080)
 - Create realm with name `fhir` or anything else
-- In realm `fhir`, create new Client Scope "fhir_core_app_id", set it as Default, and add mapper user attribute `fhir_core_app_id`
-- Create client for OpenSRP v2.0 clienst-side application(s), e.g. `opensrp-v2-app-client`
+- In the realm previously created, create new Client Scope "fhir_core_app_id", set it as Default, and add mapper user attribute `fhir_core_app_id`
+- Create client for OpenSRP v2.0 client-side application(s), e.g. `opensrp-v2-app-client`
   - In "Capability config", turn on "Client authentication". (When it's ON, the OIDC type is set to confidential access type. When it's OFF, it is set to public access type)
   - Set "Valid redirect URIs" to `*` or other as needed
   - Copy & paste the client secret from "Credentials" tab
