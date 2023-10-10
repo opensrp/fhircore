@@ -76,10 +76,32 @@ class MeasureReportPopulationResultViewTest {
   @Test
   fun testPopulationResultCardRendersPopulationDenominatorCorrectly() {
     composeTestRule.onNodeWithTag(POPULATION_COUNT_TEST_TAG, useUnmergedTree = true).assertExists()
+    val resultItemWithEmptyTitle =
+      MeasureReportPopulationResult(
+        title = "",
+        indicatorTitle = "Indicator1",
+      )
+    composeTestRule.setContent {
+      MeasureReportPopulationResultView(dataList = listOf(resultItemWithEmptyTitle))
+    }
     composeTestRule
       .onNodeWithText(
         measureReportPopulationResultList.first().measureReportDenominator.uppercase(),
       )
+      .assertExists()
+      .assertIsDisplayed()
+
+    // Test case where the title is not empty
+    val resultItemWithTitle =
+      MeasureReportPopulationResult(
+        title = "Population Title",
+        indicatorTitle = "Indicator1",
+      )
+    composeTestRule.setContent {
+      MeasureReportPopulationResultView(dataList = listOf(resultItemWithTitle))
+    }
+    composeTestRule
+      .onNodeWithText(resultItemWithTitle.title.uppercase())
       .assertExists()
       .assertIsDisplayed()
   }
