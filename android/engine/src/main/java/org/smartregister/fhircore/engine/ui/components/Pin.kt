@@ -119,11 +119,13 @@ fun PinInput(
           onPinSet(enteredPin)
           onShowPinError(false)
         }
+        else -> return@BasicTextField
       }
     },
     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
     singleLine = true,
     modifier = modifier.focusRequester(focusRequester).size(0.dp).testTag(PIN_TEXT_FIELD_TEST_TAG),
+    maxLines = 1,
   )
 
   Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
