@@ -278,10 +278,10 @@ constructor(
     resourceIds.forEach {
       val responseBundle =
         fhirResourceDataSource.getResource("$resourceType?${Composition.SP_RES_ID}=$it")
-      responseBundle?.let {
+      responseBundle.let {
         bundleEntryComponents.add(
           Bundle.BundleEntryComponent().apply {
-            resource = responseBundle.entry?.first()?.resource
+            resource = responseBundle.entry?.firstOrNull()?.resource
           },
         )
       }
