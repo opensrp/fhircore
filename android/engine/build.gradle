@@ -179,7 +179,7 @@ dependencies {
     implementation "androidx.datastore:datastore-preferences:1.0.0"
 
     // P2P dependency
-    implementation('org.smartregister:p2p-lib:0.3.0-SNAPSHOT')
+    api('org.smartregister:p2p-lib:0.6.8-SNAPSHOT')
 
     //Configure Jetpack Compose
     def composeVersion = versions.compose
