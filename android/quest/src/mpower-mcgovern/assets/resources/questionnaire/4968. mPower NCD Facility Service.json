@@ -801,6 +801,45 @@
       "type": "string",
       "text": "উপদেশ",
       "required": false
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "d453652f-2d89-47d5-dd62-5a6bf1f695c9",
+      "type": "integer",
+      "text": "ncd previous balance",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "ea04ab78-4fc1-4d1e-ebdb-d1cb336a2ea2",
+      "type": "string",
+      "text": "ncd observation id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "f8f3bc72-bd58-4d0a-8c1a-a065b5b3e370",
+      "type": "string",
+      "text": "ncd stock out flag id",
+      "required": false,
+      "readOnly": true
     }
   ]
 }

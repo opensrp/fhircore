@@ -616,6 +616,74 @@
                   ]
                 }
               ]
+            },
+            {
+              "name": "r_commodity_ref",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "refCommodity",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
+                },
+                {
+                  "variable": "previousBal",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "integer"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_populate_commodity_ref",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "extractCommodityReference",
+                      "variable": [
+                        "src",
+                        "refCommodity",
+                        "previousBal"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_comodity_observation",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "extractObservation",
+                      "variable": [
+                        "src",
+                        "bundle",
+                        "encounter",
+                        "refCommodity",
+                        "previousBal"
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -1193,6 +1261,1259 @@
                 },
                 {
                   "valueString": "$this.value.substring(0, 10) + 'T00:00:00.00Z'"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractObservation",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "source"
+        },
+        {
+          "name": "refCommodity",
+          "type": "Reference",
+          "mode": "source"
+        },
+        {
+          "name": "previousBal",
+          "type": "Integer",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_obs",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "obs",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Observation"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_id",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                }
+              ]
+            },
+            {
+              "name": "r_obs_status",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "preliminary"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_category_1",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "category",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://snomed.info/sct"
+                    },
+                    {
+                      "valueString": "386452003"
+                    },
+                    {
+                      "valueString": "Supply management"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_category_2",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "category",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://hl7.org/fhir/inventoryreport-counttype"
+                    },
+                    {
+                      "valueString": "subtraction"
+                    },
+                    {
+                      "valueString": "Subtraction"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_code",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "code",
+                  "variable": "code",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_c_coding",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "code",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_coding_system",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "https://smartregister.org/"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_c_coding_code",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "consumption"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_c_coding_display",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "consumption"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_c_text",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "code",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "consumption"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_subject",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "subject",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "refCommodity"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_effective_current_date_time",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "effective",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "now()"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_performer",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "performer",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "$this.generalPractitioner.first()"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_value",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "value",
+                  "variable": "qty",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Quantity"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_qty",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "qty",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueInteger": 1
+                        }
+                      ]
+                    },
+                    {
+                      "context": "qty",
+                      "contextType": "variable",
+                      "element": "unit",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "Pieces"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "qty",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://snomed.info/sct"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "qty",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "767525000"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_observation_encounter",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "encounter",
+                  "transform": "reference",
+                  "parameter": [
+                    {
+                      "valueId": "encounter"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_running_total_compute",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "runningTotal",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "(previousBal - 1)"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_running_total_component",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "component",
+                      "variable": "component"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "extractRunningBalance",
+                      "variable": [
+                        "src",
+                        "component",
+                        "runningTotal"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_bal_is_zero",
+                  "source": [
+                    {
+                      "context": "src",
+                      "variable": "stockOut",
+                      "condition": "(runningTotal <= 0)"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_no_anc_visit_flag",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "noAncVisitFlag",
+                          "condition": "((linkId = 'e6b390ca-699d-4f4f-b388-d3abfb097e26') and answer.value.empty())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_anc_visit_stockout_flag",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "createStockOutFlag",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encounter",
+                                "refCommodity"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_check_latest_obs",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "latestObservation",
+                  "condition": "((linkId = '77001671-c07b-4afb-81ae-2220d4f38157') and answer.value.exists())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_update_current_latest_obs",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "variable": "latestObservationId",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "latestObservation"
+                        },
+                        {
+                          "valueString": "$this.answer.value"
+                        }
+                      ]
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "updateLatestObservation",
+                      "variable": [
+                        "src",
+                        "bundle",
+                        "latestObservationId"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractCommodityReference",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "ref",
+          "type": "Reference",
+          "mode": "target"
+        },
+        {
+          "name": "previousBal",
+          "type": "Integer",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_instantiate_bal",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "previousBal",
+              "contextType": "variable",
+              "element": "value",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "0"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_anc_visit_ref",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "ref",
+              "contextType": "variable",
+              "element": "reference",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "Group/f1c7de7d-0c2a-448d-8060-2b8defd51e42"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_check_anc_visit_prev_bal",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "ancBalance",
+              "condition": "((linkId = 'd91c5e51-ac81-41f6-8f09-87805b87a98d') and answer.value.exists())"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_anc_visit_previous_bal",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "previousBal",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "ancBalance"
+                    },
+                    {
+                      "valueString": "$this.answer.value.toString()"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractRunningBalance",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "component",
+          "type": "BackboneElement",
+          "mode": "target"
+        },
+        {
+          "name": "runningTotal",
+          "type": "Integer",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_obs_running_total_code",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "component",
+              "contextType": "variable",
+              "element": "code",
+              "variable": "runningTotalCC",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "CodeableConcept"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_running_total_cc_coding",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "runningTotalCC",
+                  "contextType": "variable",
+                  "element": "coding",
+                  "variable": "runningTotalCCCoding",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Coding"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_runing_total_cc_coding_system",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "runningTotalCCCoding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://snomed.info/sct"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_runing_total_cc_coding_code",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "runningTotalCCCoding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "255619001"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_runing_total_cc_coding_display",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "runningTotalCCCoding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "Total"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_runing_total_cc_text",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "runningTotalCC",
+                  "contextType": "variable",
+                  "element": "text",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "Running total/Cumulative sum"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_obs_running_total_quantity",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "component",
+              "contextType": "variable",
+              "element": "value",
+              "variable": "runningTotalQuantity",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Quantity"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs__running_total_qty",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "runningTotalQuantity",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "runningTotal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "updateLatestObservation",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "src",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "latestObservationId",
+          "type": "String",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_update_latest_obs",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "observation",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Observation"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_update_obs_id",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "observation",
+                  "contextType": "variable",
+                  "element": "id",
+                  "variable": "id",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "id"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_update_obs_id_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "id",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueId": "latestObservationId"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_update_latest_obs_to_final",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "observation",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "final"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "createStockOutFlag",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "src",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "source"
+        },
+        {
+          "name": "refCommodity",
+          "type": "Reference",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_flag",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "flag",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Flag"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_flag_id",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "flag",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                }
+              ]
+            },
+            {
+              "name": "r_flag_status",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "flag",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "active"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_flag_category",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "flag",
+                  "contextType": "variable",
+                  "element": "category",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://snomed.info/sct"
+                    },
+                    {
+                      "valueString": "386452003"
+                    },
+                    {
+                      "valueString": "Supply management"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_flag_code",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "flag",
+                  "contextType": "variable",
+                  "element": "code",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://snomed.info/sct"
+                    },
+                    {
+                      "valueString": "419182006"
+                    },
+                    {
+                      "valueString": " Supplies not available"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_flag_subject",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "flag",
+                  "contextType": "variable",
+                  "element": "subject",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "refCommodity"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_flag_period",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "flag",
+                  "contextType": "variable",
+                  "element": "period",
+                  "variable": "period",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Period"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_flag_period_start",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "period",
+                      "contextType": "variable",
+                      "element": "start",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_flag_encounter",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "flag",
+                  "contextType": "variable",
+                  "element": "encounter",
+                  "transform": "reference",
+                  "parameter": [
+                    {
+                      "valueId": "encounter"
+                    }
+                  ]
                 }
               ]
             }

@@ -38,6 +38,40 @@
       }
     ]
   },
+  "secondaryResources": [
+    {
+      "baseResource": {
+        "id": "commodities",
+        "resource": "Group",
+        "dataQueries": [
+          {
+            "paramName": "code",
+            "filterCriteria": [
+              {
+                "dataType": "CODE",
+                "value": {
+                  "system": "http://snomed.info/sct",
+                  "code": "386452003"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "relatedResources": [
+        {
+          "id": "stockObservations",
+          "resource": "Observation",
+          "searchParameter": "subject"
+        },
+        {
+          "id": "stockOutFlags",
+          "resource": "Flag",
+          "searchParameter": "subject"
+        }
+      ]
+    }
+  ],
   "topAppBar": {
     "title": {
       "viewType": "COMPOUND_TEXT",
@@ -430,20 +464,6 @@
       ]
     },
     {
-      "name": "latestObservations",
-      "condition": "true",
-      "actions": [
-        "data.put('latestObservations', service.filterResources(stockObservations, \"Observation.status = 'preliminary'\"))"
-      ]
-    },
-    {
-      "name": "activeFlags",
-      "condition": "true",
-      "actions": [
-        "data.put('activeFlags', service.filterResources(stockOutFlags, \"Flag.status = 'active'\"))"
-      ]
-    },
-    {
       "name": "applicableForAdolescentPackage",
       "condition": "true",
       "actions": [
@@ -521,6 +541,485 @@
       "priority": 4,
       "actions": [
         "data.put('applicableForPncFollowup', data.get('isActivePnc') and data.get('noOfBracPncVisit') < 4 and data.get('isLastPncVisitPast24Hours'))"
+      ]
+    },
+    {
+      "name": "latestObservations",
+      "condition": "true",
+      "actions": [
+        "data.put('latestObservations', service.filterResources(stockObservations, \"Observation.status = 'preliminary'\"))"
+      ]
+    },
+    {
+      "name": "activeFlags",
+      "condition": "true",
+      "actions": [
+        "data.put('activeFlags', service.filterResources(stockOutFlags, \"Flag.status = 'active'\"))"
+      ]
+    },
+    {
+      "name": "ancObservation",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('ancObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/f1c7de7d-0c2a-448d-8060-2b8defd51e42'\").get(0) )"
+      ]
+    },
+    {
+      "name": "ancObservationId",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('ancObservationId', fhirPath.extractValue(data.get('ancObservation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "ancPreviousBalance",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('ancPreviousBalance', fhirPath.extractValue(data.get('ancObservation'), 'Observation.component.value.value') )"
+      ]
+    },
+    {
+      "name": "ancStockOutFlagId",
+      "condition": "true",
+      "actions": [
+        "data.put('ancStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/f1c7de7d-0c2a-448d-8060-2b8defd51e42'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "pncObservation",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('pncObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/e5897c35-d071-4254-a844-43b5a2a799cb'\").get(0) )"
+      ]
+    },
+    {
+      "name": "pncObservationId",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('pncObservationId', fhirPath.extractValue(data.get('pncObservation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "pncPreviousBalance",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('pncPreviousBalance', fhirPath.extractValue(data.get('pncObservation'), 'Observation.component.value.value') )"
+      ]
+    },
+    {
+      "name": "pncStockOutFlagId",
+      "condition": "true",
+      "actions": [
+        "data.put('pncStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/e5897c35-d071-4254-a844-43b5a2a799cb'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "ncdObservation",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('ncdObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/2dfbaf0d-b207-4b43-9536-1daa4d5efcae'\").get(0) )"
+      ]
+    },
+    {
+      "name": "ncdObservationId",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('ncdObservationId', fhirPath.extractValue(data.get('ncdObservation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "ncdPreviousBalance",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('ncdPreviousBalance', fhirPath.extractValue(data.get('ncdObservation'), 'Observation.component.value.value') )"
+      ]
+    },
+    {
+      "name": "ncdStockOutFlagId",
+      "condition": "true",
+      "actions": [
+        "data.put('ncdStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/2dfbaf0d-b207-4b43-9536-1daa4d5efcae'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "glassesObservation",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('glassesObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/395cc84c-a5f5-4440-9798-1ded5036170f'\").get(0) )"
+      ]
+    },
+    {
+      "name": "glassesObservationId",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('glassesObservationId', fhirPath.extractValue(data.get('glassesObservation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "glassesPreviousBalance",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('glassesPreviousBalance', fhirPath.extractValue(data.get('glassesObservation'), 'Observation.component.value.value') )"
+      ]
+    },
+    {
+      "name": "glassesStockOutFlagId",
+      "condition": "true",
+      "actions": [
+        "data.put('glassesStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/395cc84c-a5f5-4440-9798-1ded5036170f'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "sunGlassesObservation",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('sunGlassesObservation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/69abf560-719a-43ba-8ab9-3e1cd31f0a8b'\").get(0) )"
+      ]
+    },
+    {
+      "name": "sunGlassesObservationId",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('sunGlassesObservationId', fhirPath.extractValue(data.get('sunGlassesObservation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "sunGlassesPreviousBalance",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('sunGlassesPreviousBalance', fhirPath.extractValue(data.get('sunGlassesObservation'), 'Observation.component.value.value') )"
+      ]
+    },
+    {
+      "name": "sunGlassesStockOutFlagId",
+      "condition": "true",
+      "actions": [
+        "data.put('sunGlassesStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/69abf560-719a-43ba-8ab9-3e1cd31f0a8b'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "bf100Observation",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('bf100Observation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/6e15f59e-3466-4ba4-9989-60e57e8ee2ff'\").get(0) )"
+      ]
+    },
+    {
+      "name": "bf100ObservationId",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('bf100ObservationId', fhirPath.extractValue(data.get('bf100Observation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "bf100PreviousBalance",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('bf100PreviousBalance', fhirPath.extractValue(data.get('bf100Observation'), 'Observation.component.value.value') )"
+      ]
+    },
+    {
+      "name": "bf100StockOutFlagId",
+      "condition": "true",
+      "actions": [
+        "data.put('bf100StockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/6e15f59e-3466-4ba4-9989-60e57e8ee2ff'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "bf150Observation",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('bf150Observation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/3ee0c4e9-3dab-49d7-f141-177fdf6c41e0'\").get(0) )"
+      ]
+    },
+    {
+      "name": "bf150ObservationId",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('bf150ObservationId', fhirPath.extractValue(data.get('bf150Observation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "bf150PreviousBalance",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('bf150PreviousBalance', fhirPath.extractValue(data.get('bf150Observation'), 'Observation.component.value.value') )"
+      ]
+    },
+    {
+      "name": "bf150StockOutFlagId",
+      "condition": "true",
+      "actions": [
+        "data.put('bf150StockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/3ee0c4e9-3dab-49d7-f141-177fdf6c41e0'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "bf200Observation",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('bf200Observation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/d88536ec-161f-4a02-8af9-1df62eab7be7'\").get(0) )"
+      ]
+    },
+    {
+      "name": "bf200ObservationId",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('bf200ObservationId', fhirPath.extractValue(data.get('bf200Observation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "bf200PreviousBalance",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('bf200PreviousBalance', fhirPath.extractValue(data.get('bf200Observation'), 'Observation.component.value.value') )"
+      ]
+    },
+    {
+      "name": "bf200StockOutFlagId",
+      "condition": "true",
+      "actions": [
+        "data.put('bf200StockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/d88536ec-161f-4a02-8af9-1df62eab7be7'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "bf250Observation",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('bf250Observation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/ee3378d4-f816-4933-ad5a-4146b618db8a'\").get(0) )"
+      ]
+    },
+    {
+      "name": "bf250ObservationId",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('bf250ObservationId', fhirPath.extractValue(data.get('bf250Observation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "bf250PreviousBalance",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('bf250PreviousBalance', fhirPath.extractValue(data.get('bf250Observation'), 'Observation.component.value.value') )"
+      ]
+    },
+    {
+      "name": "bf250StockOutFlagId",
+      "condition": "true",
+      "actions": [
+        "data.put('bf250StockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/ee3378d4-f816-4933-ad5a-4146b618db8a'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "bf300Observation",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('bf300Observation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/5e09afc5-4be8-4f8b-8603-3e1b9ba74db3'\").get(0) )"
+      ]
+    },
+    {
+      "name": "bf300ObservationId",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('bf300ObservationId', fhirPath.extractValue(data.get('bf300Observation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "bf300PreviousBalance",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('bf300PreviousBalance', fhirPath.extractValue(data.get('bf300Observation'), 'Observation.component.value.value') )"
+      ]
+    },
+    {
+      "name": "bf300StockOutFlagId",
+      "condition": "true",
+      "actions": [
+        "data.put('bf300StockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/5e09afc5-4be8-4f8b-8603-3e1b9ba74db3'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "sv100Observation",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('sv100Observation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/79b8d655-fbe4-410f-9147-ba7b471356a0'\").get(0) )"
+      ]
+    },
+    {
+      "name": "sv100ObservationId",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('sv100ObservationId', fhirPath.extractValue(data.get('sv100Observation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "sv100PreviousBalance",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('sv100PreviousBalance', fhirPath.extractValue(data.get('sv100Observation'), 'Observation.component.value.value') )"
+      ]
+    },
+    {
+      "name": "sv100StockOutFlagId",
+      "condition": "true",
+      "actions": [
+        "data.put('sv100StockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/79b8d655-fbe4-410f-9147-ba7b471356a0'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "sv150Observation",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('sv150Observation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/b0e83719-e5d4-4086-f504-ac0b854f758d'\").get(0) )"
+      ]
+    },
+    {
+      "name": "sv150ObservationId",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('sv150ObservationId', fhirPath.extractValue(data.get('sv150Observation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "sv150PreviousBalance",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('sv150PreviousBalance', fhirPath.extractValue(data.get('sv150Observation'), 'Observation.component.value.value') )"
+      ]
+    },
+    {
+      "name": "sv150StockOutFlagId",
+      "condition": "true",
+      "actions": [
+        "data.put('sv150StockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/b0e83719-e5d4-4086-f504-ac0b854f758d'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "sv200Observation",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('sv200Observation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/ff451512-4e17-4bf4-d0bc-b1671a57a24e'\").get(0) )"
+      ]
+    },
+    {
+      "name": "sv200ObservationId",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('sv200ObservationId', fhirPath.extractValue(data.get('sv200Observation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "sv200PreviousBalance",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('sv200PreviousBalance', fhirPath.extractValue(data.get('sv200Observation'), 'Observation.component.value.value') )"
+      ]
+    },
+    {
+      "name": "sv200StockOutFlagId",
+      "condition": "true",
+      "actions": [
+        "data.put('sv200StockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/ff451512-4e17-4bf4-d0bc-b1671a57a24e'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "sv250Observation",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('sv250Observation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/7701468a-c44c-42ad-848d-b9410e072d41'\").get(0) )"
+      ]
+    },
+    {
+      "name": "sv250ObservationId",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('sv250ObservationId', fhirPath.extractValue(data.get('sv250Observation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "sv250PreviousBalance",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('sv250PreviousBalance', fhirPath.extractValue(data.get('sv250Observation'), 'Observation.component.value.value') )"
+      ]
+    },
+    {
+      "name": "sv250StockOutFlagId",
+      "condition": "true",
+      "actions": [
+        "data.put('sv250StockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/7701468a-c44c-42ad-848d-b9410e072d41'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "sv300Observation",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('sv300Observation', service.filterResources(data.get('latestObservations'), \"Observation.subject.reference = 'Group/57dbe381-2f41-451a-8876-53e40ff61149'\").get(0) )"
+      ]
+    },
+    {
+      "name": "sv300ObservationId",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('sv300ObservationId', fhirPath.extractValue(data.get('sv300Observation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+      ]
+    },
+    {
+      "name": "sv300PreviousBalance",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('sv300PreviousBalance', fhirPath.extractValue(data.get('sv300Observation'), 'Observation.component.value.value') )"
+      ]
+    },
+    {
+      "name": "sv300StockOutFlagId",
+      "condition": "true",
+      "actions": [
+        "data.put('sv300StockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/57dbe381-2f41-451a-8876-53e40ff61149'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
       ]
     }
   ],
@@ -656,6 +1155,27 @@
                         "dataType": "INTEGER",
                         "key": "noOfBracPncVisit",
                         "value": "@{noOfBracPncVisit}"
+                      },
+                      {
+                        "paramType": "PREPOPULATE",
+                        "linkId": "9e5b72da-8e7c-4646-8e12-f3bacb5ac50a",
+                        "dataType": "INTEGER",
+                        "key": "pncPreviousBalance",
+                        "value": "@{pncPreviousBalance}"
+                      },
+                      {
+                        "paramType": "PREPOPULATE",
+                        "linkId": "d9fc1aaf-00d8-429f-d5ba-3b1831921b1d",
+                        "dataType": "STRING",
+                        "key": "pncObservationId",
+                        "value": "@{pncObservationId}"
+                      },
+                      {
+                        "paramType": "PREPOPULATE",
+                        "linkId": "9fc038a4-1526-4e2b-826a-1833b654a045",
+                        "dataType": "STRING",
+                        "key": "pncStockOutFlagId",
+                        "value": "@{pncStockOutFlagId}"
                       }
                     ]
                   }
@@ -846,6 +1366,27 @@
                               "dataType": "INTEGER",
                               "key": "patientHeight",
                               "value": "@{patientHeight}"
+                            },
+                            {
+                              "paramType": "PREPOPULATE",
+                              "linkId": "d91c5e51-ac81-41f6-8f09-87805b87a98d",
+                              "dataType": "INTEGER",
+                              "key": "ancPreviousBalance",
+                              "value": "@{ancPreviousBalance}"
+                            },
+                            {
+                              "paramType": "PREPOPULATE",
+                              "linkId": "77001671-c07b-4afb-81ae-2220d4f38157",
+                              "dataType": "STRING",
+                              "key": "ancObservationId",
+                              "value": "@{ancObservationId}"
+                            },
+                            {
+                              "paramType": "PREPOPULATE",
+                              "linkId": "e6b390ca-699d-4f4f-b388-d3abfb097e26",
+                              "dataType": "STRING",
+                              "key": "ancStockOutFlagId",
+                              "value": "@{ancStockOutFlagId}"
                             }
                           ]
                         }
@@ -890,7 +1431,261 @@
                           "saveButtonText": "Save",
                           "resourceType": "Patient",
                           "resourceIdentifier": "@{patientId}"
-                        }
+                        },
+                        "params": [
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "49eca2ad-6524-403d-b1b3-7456485f87e3",
+                            "dataType": "INTEGER",
+                            "key": "glassesPreviousBalance",
+                            "value": "@{glassesPreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "ca0fbdf6-974e-4869-bed6-75f34e1f2c2f",
+                            "dataType": "STRING",
+                            "key": "glassesObservationId",
+                            "value": "@{glassesObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "0e0e7a86-40a6-45c3-ba73-b19330192d19",
+                            "dataType": "STRING",
+                            "key": "glassesStockOutFlagId",
+                            "value": "@{glassesStockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "e6145f08-a682-4e8c-ae28-850aa73251c2",
+                            "dataType": "INTEGER",
+                            "key": "sunGlassesPreviousBalance",
+                            "value": "@{sunGlassesPreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "d0b5c58a-bfdc-49f6-96c0-c5b37af964f2",
+                            "dataType": "STRING",
+                            "key": "sunGlassesObservationId",
+                            "value": "@{sunGlassesObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "aac22321-582c-43d7-f382-85bd5c4e5346",
+                            "dataType": "STRING",
+                            "key": "sunGlassesStockOutFlagId",
+                            "value": "@{sunGlassesStockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "e9befdd0-f56d-494e-8899-767dbcc7fa8e",
+                            "dataType": "INTEGER",
+                            "key": "bf100PreviousBalance",
+                            "value": "@{bf100PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "6ef5319f-13d4-499f-8c16-9e9ebf3a0f55",
+                            "dataType": "STRING",
+                            "key": "bf100ObservationId",
+                            "value": "@{bf100ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "4fef01af-29c8-4459-951e-b917c4ba9b12",
+                            "dataType": "STRING",
+                            "key": "bf100StockOutFlagId",
+                            "value": "@{bf100StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "764dd849-21a1-410b-b98f-29fe145bdb87",
+                            "dataType": "INTEGER",
+                            "key": "bf150PreviousBalance",
+                            "value": "@{bf150PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "44873d86-80b1-45ab-860b-4b64d57862b8",
+                            "dataType": "STRING",
+                            "key": "bf150ObservationId",
+                            "value": "@{bf150ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "bc92a5eb-8d25-4866-ca1b-d638d3eb991d",
+                            "dataType": "STRING",
+                            "key": "bf150StockOutFlagId",
+                            "value": "@{bf150StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "96dd8383-7d3e-4756-8ea2-9a720d2ebdb7",
+                            "dataType": "INTEGER",
+                            "key": "bf200PreviousBalance",
+                            "value": "@{bf200PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "a9d74f31-56ca-4750-8d69-893a004698f9",
+                            "dataType": "STRING",
+                            "key": "bf200ObservationId",
+                            "value": "@{bf200ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "7faf7f8b-c401-49a2-e6b5-ebc38d7c8952",
+                            "dataType": "STRING",
+                            "key": "bf200StockOutFlagId",
+                            "value": "@{bf200StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "2147e6cc-f4c2-40f4-8f95-c8e12f5a3906",
+                            "dataType": "INTEGER",
+                            "key": "bf250PreviousBalance",
+                            "value": "@{bf250PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "5e0e940e-d26f-4890-af22-818c32166bce",
+                            "dataType": "STRING",
+                            "key": "bf250ObservationId",
+                            "value": "@{bf250ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "06c74605-d3c2-414e-b8a1-d715cdeb8da8",
+                            "dataType": "STRING",
+                            "key": "bf250StockOutFlagId",
+                            "value": "@{bf250StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "70095888-1aac-4e94-c4f2-a0c1b615cc25",
+                            "dataType": "INTEGER",
+                            "key": "bf300PreviousBalance",
+                            "value": "@{bf300PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "bf372250-a924-4370-d3c2-7028a744c48e",
+                            "dataType": "STRING",
+                            "key": "bf300ObservationId",
+                            "value": "@{bf300ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "13935d7e-57a1-4ade-f91d-8f7cccfdb0fa",
+                            "dataType": "STRING",
+                            "key": "bf300StockOutFlagId",
+                            "value": "@{bf300StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "52e56dfa-aab3-4de1-a7b3-1872ad4b5d05",
+                            "dataType": "INTEGER",
+                            "key": "sv100PreviousBalance",
+                            "value": "@{sv100PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "82260d3e-1d12-4a56-8917-26fa39d29a35",
+                            "dataType": "STRING",
+                            "key": "sv100ObservationId",
+                            "value": "@{sv100ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "9c6affa9-6d22-4673-8664-c5d386e476fa",
+                            "dataType": "STRING",
+                            "key": "sv100StockOutFlagId",
+                            "value": "@{sv100StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "68e5a011-edde-4257-8a37-52a50f26cc0f",
+                            "dataType": "INTEGER",
+                            "key": "sv150PreviousBalance",
+                            "value": "@{sv150PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "81ec6b3e-57e0-4c36-9830-213baabb0e38",
+                            "dataType": "STRING",
+                            "key": "sv150ObservationId",
+                            "value": "@{sv150ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "0a71df31-64e1-46e5-a498-ef777f0cedaf",
+                            "dataType": "STRING",
+                            "key": "sv150StockOutFlagId",
+                            "value": "@{sv150StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "80722325-12ca-40c8-f24a-5955410c9afa",
+                            "dataType": "INTEGER",
+                            "key": "sv200PreviousBalance",
+                            "value": "@{sv200PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "14b0ddd8-cdb9-4439-81ed-56073741d06e",
+                            "dataType": "STRING",
+                            "key": "sv200ObservationId",
+                            "value": "@{sv200ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "a6785696-af28-4466-c289-6f83e3153dff",
+                            "dataType": "STRING",
+                            "key": "sv200StockOutFlagId",
+                            "value": "@{sv200StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "4620c135-06b5-46c7-bce4-13ea3cebd562",
+                            "dataType": "INTEGER",
+                            "key": "sv250PreviousBalance",
+                            "value": "@{sv250PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "06e1a33b-2476-4fab-88ad-f371c9b28e48",
+                            "dataType": "STRING",
+                            "key": "sv250ObservationId",
+                            "value": "@{sv250ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "098c7312-33c4-4598-8050-5b3b193db5e9",
+                            "dataType": "STRING",
+                            "key": "sv250StockOutFlagId",
+                            "value": "@{sv250StockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "db715612-cb19-4e19-8e95-265559eb9d2d",
+                            "dataType": "INTEGER",
+                            "key": "sv300PreviousBalance",
+                            "value": "@{sv300PreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "45979eef-d80a-44b1-c512-c70568baea2a",
+                            "dataType": "STRING",
+                            "key": "sv300ObservationId",
+                            "value": "@{sv300ObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "6655f7d1-a0fc-43fe-820a-6ec0c8c2a60c",
+                            "dataType": "STRING",
+                            "key": "sv300StockOutFlagId",
+                            "value": "@{sv300StockOutFlagId}"
+                          }
+                        ]
                       }
                     ]
                   },
@@ -914,7 +1709,30 @@
                           "saveButtonText": "Save",
                           "resourceType": "Patient",
                           "resourceIdentifier": "@{patientId}"
-                        }
+                        },
+                        "params": [
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "d453652f-2d89-47d5-dd62-5a6bf1f695c9",
+                            "dataType": "INTEGER",
+                            "key": "ncdPreviousBalance",
+                            "value": "@{ncdPreviousBalance}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "ea04ab78-4fc1-4d1e-ebdb-d1cb336a2ea2",
+                            "dataType": "STRING",
+                            "key": "ncdObservationId",
+                            "value": "@{ncdObservationId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "f8f3bc72-bd58-4d0a-8c1a-a065b5b3e370",
+                            "dataType": "STRING",
+                            "key": "ncdStockOutFlagId",
+                            "value": "@{ncdStockOutFlagId}"
+                          }
+                        ]
                       }
                     ]
                   },

@@ -38,6 +38,26 @@ group extractEncounter(source questionnaireResponse : QuestionnaireResponse, tar
             } "r_en_cc_cod";
             questionnaireResponse -> concept.text = 'Eye Facility Service' "r_en_text";
         } "r_en_reason";
+
+        questionnaireResponse.item where(linkId = '0056047e-592a-4da7-bd8b-9bca2b154b3e' and answer.value.code = 'yes') then {
+            questionnaireResponse.item where(linkId = 'b4832b80-072b-41a6-8d42-72b10e0b2b5c' and answer.value.code = 'presbiopia') then {
+                questionnaireResponse -> create('Reference') as refCommodity, create('integer') as previousBal then {
+                    questionnaireResponse then extractGlassesCommodityReference(questionnaireResponse, refCommodity, previousBal) "r_populate_glasses_commodity_ref";
+                    questionnaireResponse then extractGlassesObservation(questionnaireResponse, bundle, encounter , refCommodity, previousBal) "rule_glasses_comodity_observation";
+                } "r_glasses_commodity_ref";
+                questionnaireResponse -> create('Reference') as refCommodity, create('integer') as previousBal then {
+                    questionnaireResponse then extractCommodityReference(questionnaireResponse, refCommodity, previousBal) "r_populate_power_commodity_ref";
+                    questionnaireResponse then extractObservation(questionnaireResponse, bundle, encounter , refCommodity, previousBal) "rule_power_comodity_observation";
+                } "r_power_commodity_ref";
+            } "r_commodity_check_glasses";
+
+            questionnaireResponse.item where(linkId = 'b4832b80-072b-41a6-8d42-72b10e0b2b5c' and answer.value.code != 'presbiopia') then {
+                questionnaireResponse -> create('Reference') as refCommodity, create('integer') as previousBal then {
+                    questionnaireResponse then extractCommodityReference(questionnaireResponse, refCommodity, previousBal) "r_populate_sun_glasses_commodity_ref";
+                    questionnaireResponse then extractObservation(questionnaireResponse, bundle, encounter , refCommodity, previousBal) "rule_sun_glasses_comodity_observation";
+                } "r_sun_glasses_commodity_ref";
+            } "r_commodity_check_sun_glasses";
+        } "r_check_commodity_given";
     } "r_en";
 }
 
@@ -91,4 +111,417 @@ group extractPeriodTime(source start: DateType, source end: DateType, target per
 
     end -> period.end = create('dateTime') as dt,
            dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_end";
+}
+
+group extractObservation(source src : QuestionnaireResponse, target bundle : Bundle, source encounter : Encounter, source refCommodity : Reference, source previousBal: Integer) {
+    src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+        src -> obs.id = uuid() "r_obs_id";
+        src -> obs.status = 'preliminary' "r_obs_status";
+        src -> obs.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_obs_category_1";
+        src -> obs.category = cc('http://hl7.org/fhir/inventoryreport-counttype', 'subtraction', 'Subtraction')"r_obs_category_2";
+        src -> obs.code = create('CodeableConcept') as code then {
+            src -> code.coding = create('Coding') as coding then {
+                src -> coding.system = 'https://smartregister.org/' "r_obs_coding_system";
+                src -> coding.code = 'consumption' "r_obs_c_coding_code";
+                src -> coding.display = 'consumption' "r_obs_c_coding_display";
+            } "r_obs_c_coding";
+            src -> code.text = 'consumption' "r_obs_c_text";
+        } "r_obs_code";
+        src -> obs.subject = refCommodity "r_obs_subject";
+        src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+        src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+        src -> obs.value = create('Quantity') as qty then {
+            src -> qty.value = 1,
+                qty.unit = 'Pieces',
+                qty.system = 'http://snomed.info/sct',
+                qty.code = '767525000' "r_obs_qty";
+        } "r_obs_value";
+        src -> obs.encounter = reference(encounter) "r_observation_encounter";
+
+        src -> evaluate(src, (previousBal - 1)) as runningTotal  then {
+             //Adding the running total component
+            src -> obs.component as component then extractRunningBalance(src, component, runningTotal) "r_obs_running_total_component";
+
+            //create stockout flag if none exists and total balance is Zero or less
+            src as stockOut where (runningTotal <= 0) then {
+                src then extractAndCreateStockOutFlag(src, bundle, encounter, refCommodity) "r_extract_and_create_stockout_flag";
+            } "r_bal_is_zero";
+        } "r_running_total_compute";
+
+        //Update the current latest ncd visit observation if it exists
+        src then extractAndUpdateLatestObservation(src, bundle) "r_extract_and_update_latest_obs";
+    } "r_obs";
+}
+
+group extractAndUpdateLatestObservation(source src : QuestionnaireResponse, target bundle : Bundle) {
+    src.item where(linkId = 'b4832b80-072b-41a6-8d42-72b10e0b2b5c' and answer.value.code = 'presbiopia') then {
+        src.item where(linkId = 'a297244b-7569-4772-8ba9-2e7e9a643b46' and answer.value.code = 'bf') then {
+            //update power bf 1.00 current observation
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '1') then {
+                src.item as latestObservation where(linkId ='6ef5319f-13d4-499f-8c16-9e9ebf3a0f55' and answer.value.exists()) then {
+                    src ->  evaluate(latestObservation, $this.answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_power_bf100_update_current_obs";
+                } "r_power_bf100_update_current_obs";
+            } "r_power_bf100_type_check";
+
+            //update power bf 1.50 current observation
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '1.5') then {
+                src.item as latestObservation where(linkId ='44873d86-80b1-45ab-860b-4b64d57862b8' and answer.value.exists()) then {
+                    src ->  evaluate(latestObservation, $this.answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_power_bf150_update_current_obs";
+                } "r_power_bf150_update_current_obs";
+            } "r_power_bf150_type_check";
+
+            //update power bf 2.00 current observation
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '2') then {
+                src.item as latestObservation where(linkId ='a9d74f31-56ca-4750-8d69-893a004698f9' and answer.value.exists()) then {
+                    src ->  evaluate(latestObservation, $this.answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_power_bf200_update_current_obs";
+                } "r_power_bf200_update_current_obs";
+            } "r_power_bf200_type_check";
+
+            //update power bf 2.50 current observation
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '2.5') then {
+                src.item as latestObservation where(linkId ='5e0e940e-d26f-4890-af22-818c32166bce' and answer.value.exists()) then {
+                    src ->  evaluate(latestObservation, $this.answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_power_bf250_update_current_obs";
+                } "r_power_bf250_update_current_obs";
+            } "r_power_bf250_type_check";
+
+            //update power bf 3.00 current observation
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '3') then {
+                src.item as latestObservation where(linkId ='bf372250-a924-4370-d3c2-7028a744c48e' and answer.value.exists()) then {
+                    src ->  evaluate(latestObservation, $this.answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_power_bf300_update_current_obs";
+                } "r_power_bf300_update_current_obs";
+            } "r_power_bf300_type_check";
+        } "r_power_bf_type_check";
+
+        src.item where(linkId = 'a297244b-7569-4772-8ba9-2e7e9a643b46' and answer.value.code = 'sv') then {
+            //update power sv 1.00 current observation
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '1') then {
+                src.item as latestObservation where(linkId ='82260d3e-1d12-4a56-8917-26fa39d29a35' and answer.value.exists()) then {
+                    src ->  evaluate(latestObservation, $this.answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_power_sv100_update_current_obs";
+                } "r_power_sv100_update_current_obs";
+            } "r_power_sv100_type_check";
+
+            //update power sv 1.50 current observation
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '1.5') then {
+                src.item as latestObservation where(linkId ='81ec6b3e-57e0-4c36-9830-213baabb0e38' and answer.value.exists()) then {
+                    src ->  evaluate(latestObservation, $this.answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_power_sv150_update_current_obs";
+                } "r_power_sv150_update_current_obs";
+            } "r_power_sv150_type_check";
+
+            //update power sv 2.00 current observation
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '2') then {
+                src.item as latestObservation where(linkId ='14b0ddd8-cdb9-4439-81ed-56073741d06e' and answer.value.exists()) then {
+                    src ->  evaluate(latestObservation, $this.answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_power_sv200_update_current_obs";
+                } "r_power_sv200_update_current_obs";
+            } "r_power_sv200_type_check";
+
+            //update power sv 2.50 current observation
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '2.5') then {
+                src.item as latestObservation where(linkId ='06e1a33b-2476-4fab-88ad-f371c9b28e48' and answer.value.exists()) then {
+                    src ->  evaluate(latestObservation, $this.answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_power_sv250_update_current_obs";
+                } "r_power_sv250_update_current_obs";
+            } "r_power_sv250_type_check";
+
+            //update power sv 3.00 current observation
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '3') then {
+                src.item as latestObservation where(linkId ='45979eef-d80a-44b1-c512-c70568baea2a' and answer.value.exists()) then {
+                    src ->  evaluate(latestObservation, $this.answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_power_sv300_update_current_obs";
+                } "r_power_sv300_update_current_obs";
+            } "r_power_sv300_type_check";
+        } "r_power_sv_type_check";
+    } "r_eye_test_result_presbiopia_check";
+
+    src.item where(linkId = 'b4832b80-072b-41a6-8d42-72b10e0b2b5c' and answer.value.code != 'presbiopia') then {
+        //update sun glasses current observation
+        src.item as latestObservation where(linkId ='d0b5c58a-bfdc-49f6-96c0-c5b37af964f2' and answer.value.exists()) then {
+            src ->  evaluate(latestObservation, $this.answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_sun_glasses_update_current_obs";
+        } "r_sun_glasses_update_current_obs";
+    } "r_eye_test_result_other_check";
+}
+
+group extractAndCreateStockOutFlag(source src : QuestionnaireResponse, target bundle : Bundle, source encounter : Encounter, source refCommodity : Reference) {
+    src.item where(linkId = 'b4832b80-072b-41a6-8d42-72b10e0b2b5c' and answer.value.code = 'presbiopia') then {
+        src.item where(linkId = 'a297244b-7569-4772-8ba9-2e7e9a643b46' and answer.value.code = 'bf') then {
+            //create power bf 1.00 stockout flag
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '1') then {
+                src.item where (linkId = '4fef01af-29c8-4459-951e-b917c4ba9b12' and answer.value.empty()) then {
+                    src then createStockOutFlag(src, bundle, encounter, refCommodity) "r_create_power_bf100_stockout_flag";
+                } "r_no_power_bf100_flag";
+            } "r_power_bf100_type_check";
+
+            //create power bf 1.50 stockout flag
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '1.5') then {
+                src.item where (linkId = 'bc92a5eb-8d25-4866-ca1b-d638d3eb991d' and answer.value.empty()) then {
+                    src then createStockOutFlag(src, bundle, encounter, refCommodity) "r_create_power_bf150_stockout_flag";
+                } "r_no_power_bf150_flag";
+            } "r_power_bf150_type_check";
+
+            //create power bf 2.00 stockout flag
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '2') then {
+                src.item where (linkId = '7faf7f8b-c401-49a2-e6b5-ebc38d7c8952' and answer.value.empty()) then {
+                    src then createStockOutFlag(src, bundle, encounter, refCommodity) "r_create_power_bf200_stockout_flag";
+                } "r_no_power_bf200_flag";
+            } "r_power_bf200_type_check";
+
+            //create power bf 2.50 stockout flag
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '2.5') then {
+                src.item where (linkId = '06c74605-d3c2-414e-b8a1-d715cdeb8da8' and answer.value.empty()) then {
+                    src then createStockOutFlag(src, bundle, encounter, refCommodity) "r_create_power_bf250_stockout_flag";
+                } "r_no_power_bf250_flag";
+            } "r_power_bf250_type_check";
+
+            //create power bf 3.00 stockout flag
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '3') then {
+                src.item where (linkId = '13935d7e-57a1-4ade-f91d-8f7cccfdb0fa' and answer.value.empty()) then {
+                    src then createStockOutFlag(src, bundle, encounter, refCommodity) "r_create_power_bf300_stockout_flag";
+                } "r_no_power_bf300_flag";
+            } "r_power_bf300_type_check";
+        } "r_power_bf_type_check";
+
+        src.item where(linkId = 'a297244b-7569-4772-8ba9-2e7e9a643b46' and answer.value.code = 'sv') then {
+            //create power sv 1.00 stockout flag
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '1') then {
+                src.item where (linkId = '9c6affa9-6d22-4673-8664-c5d386e476fa' and answer.value.empty()) then {
+                    src then createStockOutFlag(src, bundle, encounter, refCommodity) "r_create_power_sv100_stockout_flag";
+                } "r_no_power_sv100_flag";
+            } "r_power_sv100_type_check";
+
+            //create power sv 1.50 stockout flag
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '1.5') then {
+                src.item where (linkId = '0a71df31-64e1-46e5-a498-ef777f0cedaf' and answer.value.empty()) then {
+                    src then createStockOutFlag(src, bundle, encounter, refCommodity) "r_create_power_sv150_stockout_flag";
+                } "r_no_power_sv150_flag";
+            } "r_power_sv150_type_check";
+
+            //create power sv 2.00 stockout flag
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '2') then {
+                src.item where (linkId = 'a6785696-af28-4466-c289-6f83e3153dff' and answer.value.empty()) then {
+                    src then createStockOutFlag(src, bundle, encounter, refCommodity) "r_create_power_sv200_stockout_flag";
+                } "r_no_power_sv200_flag";
+            } "r_power_sv200_type_check";
+
+            //create power sv 2.50 stockout flag
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '2.5') then {
+                src.item where (linkId = '098c7312-33c4-4598-8050-5b3b193db5e9' and answer.value.empty()) then {
+                    src then createStockOutFlag(src, bundle, encounter, refCommodity) "r_create_power_sv250_stockout_flag";
+                } "r_no_power_sv250_flag";
+            } "r_power_sv250_type_check";
+
+            //create power sv 3.00 stockout flag
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '3') then {
+                src.item where (linkId = '6655f7d1-a0fc-43fe-820a-6ec0c8c2a60c' and answer.value.empty()) then {
+                    src then createStockOutFlag(src, bundle, encounter, refCommodity) "r_create_power_sv300_stockout_flag";
+                } "r_no_power_sv300_flag";
+            } "r_power_sv300_type_check";
+        } "r_power_sv_type_check";
+    } "r_eye_test_result_presbiopia_check";
+
+    src.item where(linkId = 'b4832b80-072b-41a6-8d42-72b10e0b2b5c' and answer.value.code != 'presbiopia') then {
+        //create power sun glasses stockout flag
+        src.item where (linkId = 'aac22321-582c-43d7-f382-85bd5c4e5346' and answer.value.empty()) then {
+            src then createStockOutFlag(src, bundle, encounter, refCommodity) "r_create_sun_glasses_stockout_flag";
+        } "r_no_sun_glasses_flag";
+    } "r_eye_test_result_other_check";
+}
+
+group extractGlassesObservation(source src : QuestionnaireResponse, target bundle : Bundle, source encounter : Encounter, source refCommodity : Reference, source previousBal: Integer) {
+    src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+        src -> obs.id = uuid() "r_obs_id";
+        src -> obs.status = 'preliminary' "r_obs_status";
+        src -> obs.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_obs_category_1";
+        src -> obs.category = cc('http://hl7.org/fhir/inventoryreport-counttype', 'subtraction', 'Subtraction')"r_obs_category_2";
+        src -> obs.code = create('CodeableConcept') as code then {
+            src -> code.coding = create('Coding') as coding then {
+                src -> coding.system = 'https://smartregister.org/' "r_obs_coding_system";
+                src -> coding.code = 'consumption' "r_obs_c_coding_code";
+                src -> coding.display = 'consumption' "r_obs_c_coding_display";
+            } "r_obs_c_coding";
+            src -> code.text = 'consumption' "r_obs_c_text";
+        } "r_obs_code";
+        src -> obs.subject = refCommodity "r_obs_subject";
+        src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+        src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+        src -> obs.value = create('Quantity') as qty then {
+            src -> qty.value = 1,
+                qty.unit = 'Pieces',
+                qty.system = 'http://snomed.info/sct',
+                qty.code = '767525000' "r_obs_qty";
+        } "r_obs_value";
+        src -> obs.encounter = reference(encounter) "r_observation_encounter";
+
+        src -> evaluate(src, (previousBal - 1)) as runningTotal  then {
+             //Adding the running total component
+            src -> obs.component as component then extractRunningBalance(src, component, runningTotal) "r_obs_running_total_component";
+
+            //create stockout flag if none exists and total balance is Zero or less
+            src as stockOut where (runningTotal <= 0) then {
+                //create glasses stockout flag
+                src.item where (linkId = '0e0e7a86-40a6-45c3-ba73-b19330192d19' and answer.value.empty()) then {
+                    src then createStockOutFlag(src, bundle, encounter, refCommodity) "r_create_glasses_stockout_flag";
+                } "r_no_glasses_flag";
+            } "r_bal_is_zero";
+        } "r_running_total_compute";
+
+        //Update the current glasses observation if it exists
+        src.item as latestObservation where(linkId ='ca0fbdf6-974e-4869-bed6-75f34e1f2c2f' and answer.value.exists()) then {
+            src ->  evaluate(latestObservation, $this.answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_update_current_latest_obs";
+        } "r_check_latest_obs";
+    } "r_obs";
+}
+
+group extractGlassesCommodityReference(source src: QuestionnaireResponse, target ref: Reference, target previousBal: Integer) {
+    src -> previousBal.value = "0" "r_instantiate_bal";
+
+    //commodity group reference
+    src -> ref.reference = 'Group/395cc84c-a5f5-4440-9798-1ded5036170f' "r_sun_glasses_ref";
+    //stock balance
+    src.item as glassesBalance where(linkId = '49eca2ad-6524-403d-b1b3-7456485f87e3' and answer.value.exists()) then {
+        src -> previousBal.value = evaluate(glassesBalance, $this.answer.value.toString()) "r_glasses_previous_bal";
+    } "r_check_glasses_prev_bal";
+}
+
+group extractCommodityReference(source src: QuestionnaireResponse, target ref: Reference, target previousBal: Integer) {
+    src -> previousBal.value = "0" "r_instantiate_bal";
+
+    src.item where(linkId = 'b4832b80-072b-41a6-8d42-72b10e0b2b5c' and answer.value.code = 'presbiopia') then {
+        src.item where(linkId = 'a297244b-7569-4772-8ba9-2e7e9a643b46' and answer.value.code = 'bf') then {
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '1') then {
+                //commodity group reference
+                src -> ref.reference = 'Group/6e15f59e-3466-4ba4-9989-60e57e8ee2ff' "r_power_bf100_ref";
+                //stock balance
+                src.item as bf100Balance where(linkId = 'e9befdd0-f56d-494e-8899-767dbcc7fa8e' and answer.value.exists()) then {
+                    src -> previousBal.value = evaluate(bf100Balance, $this.answer.value.toString()) "r_power_bf100_previous_bal";
+                } "r_check_power_bf100_prev_bal";
+            } "r_power_bf100_type_check";
+
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '1.5') then {
+                //commodity group reference
+                src -> ref.reference = 'Group/3ee0c4e9-3dab-49d7-f141-177fdf6c41e0' "r_power_bf150_ref";
+                //stock balance
+                src.item as bf150Balance where(linkId = '764dd849-21a1-410b-b98f-29fe145bdb87' and answer.value.exists()) then {
+                    src -> previousBal.value = evaluate(bf150Balance, $this.answer.value.toString()) "r_power_bf150_previous_bal";
+                } "r_check_power_bf150_prev_bal";
+            } "r_power_bf150_type_check";
+
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '2') then {
+                //commodity group reference
+                src -> ref.reference = 'Group/d88536ec-161f-4a02-8af9-1df62eab7be7' "r_power_bf200_ref";
+                //stock balance
+                src.item as bf200Balance where(linkId = '96dd8383-7d3e-4756-8ea2-9a720d2ebdb7' and answer.value.exists()) then {
+                    src -> previousBal.value = evaluate(bf200Balance, $this.answer.value.toString()) "r_power_bf200_previous_bal";
+                } "r_check_power_bf200_prev_bal";
+            } "r_power_bf200_type_check";
+
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '2.5') then {
+                //commodity group reference
+                src -> ref.reference = 'Group/ee3378d4-f816-4933-ad5a-4146b618db8a' "r_power_bf250_ref";
+                //stock balance
+                src.item as bf250Balance where(linkId = '2147e6cc-f4c2-40f4-8f95-c8e12f5a3906' and answer.value.exists()) then {
+                    src -> previousBal.value = evaluate(bf250Balance, $this.answer.value.toString()) "r_power_bf250_previous_bal";
+                } "r_check_power_bf250_prev_bal";
+            } "r_power_bf250_type_check";
+
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '3') then {
+                //commodity group reference
+                src -> ref.reference = 'Group/5e09afc5-4be8-4f8b-8603-3e1b9ba74db3' "r_power_bf300_ref";
+                //stock balance
+                src.item as bf300Balance where(linkId = '70095888-1aac-4e94-c4f2-a0c1b615cc25' and answer.value.exists()) then {
+                    src -> previousBal.value = evaluate(bf300Balance, $this.answer.value.toString()) "r_power_bf300_previous_bal";
+                } "r_check_power_bf300_prev_bal";
+            } "r_power_bf300_type_check";
+        } "r_power_bf_type_check";
+
+        src.item where(linkId = 'a297244b-7569-4772-8ba9-2e7e9a643b46' and answer.value.code = 'sv') then {
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '1') then {
+                //commodity group reference
+                src -> ref.reference = 'Group/79b8d655-fbe4-410f-9147-ba7b471356a0' "r_power_sv100_ref";
+                //stock balance
+                src.item as sv100Balance where(linkId = '52e56dfa-aab3-4de1-a7b3-1872ad4b5d05' and answer.value.exists()) then {
+                    src -> previousBal.value = evaluate(sv100Balance, $this.answer.value.toString()) "r_power_sv100_previous_bal";
+                } "r_check_power_sv100_prev_bal";
+            } "r_power_sv100_type_check";
+
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '1.5') then {
+                //commodity group reference
+                src -> ref.reference = 'Group/b0e83719-e5d4-4086-f504-ac0b854f758d' "r_power_sv150_ref";
+                //stock balance
+                src.item as sv150Balance where(linkId = '68e5a011-edde-4257-8a37-52a50f26cc0f' and answer.value.exists()) then {
+                    src -> previousBal.value = evaluate(sv150Balance, $this.answer.value.toString()) "r_power_sv150_previous_bal";
+                } "r_check_power_sv150_prev_bal";
+            } "r_power_sv150_type_check";
+
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '2') then {
+                //commodity group reference
+                src -> ref.reference = 'Group/ff451512-4e17-4bf4-d0bc-b1671a57a24e' "r_power_sv200_ref";
+                //stock balance
+                src.item as sv200Balance where(linkId = '80722325-12ca-40c8-f24a-5955410c9afa' and answer.value.exists()) then {
+                    src -> previousBal.value = evaluate(sv200Balance, $this.answer.value.toString()) "r_power_sv200_previous_bal";
+                } "r_check_power_sv200_prev_bal";
+            } "r_power_sv200_type_check";
+
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '2.5') then {
+                //commodity group reference
+                src -> ref.reference = 'Group/7701468a-c44c-42ad-848d-b9410e072d41' "r_power_sv250_ref";
+                //stock balance
+                src.item as sv250Balance where(linkId = '4620c135-06b5-46c7-bce4-13ea3cebd562' and answer.value.exists()) then {
+                    src -> previousBal.value = evaluate(sv250Balance, $this.answer.value.toString()) "r_power_sv250_previous_bal";
+                } "r_check_power_sv250_prev_bal";
+            } "r_power_sv250_type_check";
+
+            src.item where(linkId = '384dee70-db6b-4f92-c619-8930d93d9035' and answer.value.code = '3') then {
+                //commodity group reference
+                src -> ref.reference = 'Group/57dbe381-2f41-451a-8876-53e40ff61149' "r_power_sv300_ref";
+                //stock balance
+                src.item as sv300Balance where(linkId = 'db715612-cb19-4e19-8e95-265559eb9d2d' and answer.value.exists()) then {
+                    src -> previousBal.value = evaluate(sv300Balance, $this.answer.value.toString()) "r_power_sv300_previous_bal";
+                } "r_check_power_sv300_prev_bal";
+            } "r_power_sv300_type_check";
+        } "r_power_sv_type_check";
+    } "r_eye_test_result_presbiopia_check";
+
+    src.item where(linkId = 'b4832b80-072b-41a6-8d42-72b10e0b2b5c' and answer.value.code != 'presbiopia') then {
+        //commodity group reference
+        src -> ref.reference = 'Group/69abf560-719a-43ba-8ab9-3e1cd31f0a8b' "r_sun_glasses_ref";
+        //stock balance
+        src.item as sunglassesBalance where(linkId = 'e6145f08-a682-4e8c-ae28-850aa73251c2' and answer.value.exists()) then {
+            src -> previousBal.value = evaluate(sunglassesBalance, $this.answer.value.toString()) "r_sun_glasses_previous_bal";
+        } "r_check_sun_glasses_prev_bal";
+    } "r_eye_test_result_other_check";
+}
+
+group extractRunningBalance(source src: QuestionnaireResponse, target component: BackboneElement, source runningTotal : Integer){
+    src -> component.code = create('CodeableConcept') as runningTotalCC then {
+        src -> runningTotalCC.coding = create('Coding') as runningTotalCCCoding then {
+            src -> runningTotalCCCoding.system = 'http://snomed.info/sct' "r_obs_runing_total_cc_coding_system";
+            src -> runningTotalCCCoding.code = '255619001' "r_obs_runing_total_cc_coding_code";
+            src -> runningTotalCCCoding.display = 'Total' "r_obs_runing_total_cc_coding_display";
+        } "r_obs_running_total_cc_coding";
+        src -> runningTotalCC.text = 'Running total/Cumulative sum' "r_obs_runing_total_cc_text";
+    } "r_obs_running_total_code";
+
+    src -> component.value = create('Quantity') as runningTotalQuantity then {
+        src -> runningTotalQuantity.value = runningTotal "r_obs__running_total_qty";
+    } "r_obs_running_total_quantity";
+}
+
+group updateLatestObservation(source src: src, target bundle : Bundle, source latestObservationId : String){
+    src -> bundle.entry as entry, entry.resource = create('Observation') as observation then {
+        src -> observation.id = create('id') as id then {
+            src -> id.value = latestObservationId "r_update_obs_id_value";
+        } "r_update_obs_id";
+        src -> observation.status = 'final' "r_update_latest_obs_to_final";
+    } "r_update_latest_obs";
+}
+
+group createStockOutFlag(source src: src, target bundle : Bundle, source encounter : Encounter, source refCommodity: Reference){
+    src -> bundle.entry as entry, entry.resource = create('Flag') as flag then {
+        src -> flag.id = uuid() "r_flag_id";
+        src -> flag.status = 'active' "r_flag_status";
+        src -> flag.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_flag_category";
+        src -> flag.code = cc('http://snomed.info/sct','419182006', ' Supplies not available')  "r_flag_code";
+        src -> flag.subject = refCommodity "r_flag_subject";
+        src -> flag.period = create('Period') as period then {
+            src -> period.start = evaluate(src, now()) "r_flag_period_start";
+        } "r_flag_period";
+        src -> flag.encounter = reference(encounter) "r_flag_encounter";
+    } "r_flag";
 }

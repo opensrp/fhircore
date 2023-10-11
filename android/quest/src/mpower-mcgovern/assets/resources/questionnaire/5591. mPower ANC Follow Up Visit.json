@@ -2705,6 +2705,45 @@
       "type": "string",
       "text": "উপদেশ",
       "required": false
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "d91c5e51-ac81-41f6-8f09-87805b87a98d",
+      "type": "integer",
+      "text": "anc previous balance",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "77001671-c07b-4afb-81ae-2220d4f38157",
+      "type": "string",
+      "text": "anc observation id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "e6b390ca-699d-4f4f-b388-d3abfb097e26",
+      "type": "string",
+      "text": "anc stock out flag id",
+      "required": false,
+      "readOnly": true
     }
   ]
 }

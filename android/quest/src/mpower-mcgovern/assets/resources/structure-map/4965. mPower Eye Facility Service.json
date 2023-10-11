@@ -609,6 +609,246 @@
                   ]
                 }
               ]
+            },
+            {
+              "name": "r_check_commodity_given",
+              "source": [
+                {
+                  "context": "questionnaireResponse",
+                  "element": "item",
+                  "condition": "((linkId = '0056047e-592a-4da7-bd8b-9bca2b154b3e') and (answer.value.code = 'yes'))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_commodity_check_glasses",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse",
+                      "element": "item",
+                      "condition": "((linkId = 'b4832b80-072b-41a6-8d42-72b10e0b2b5c') and (answer.value.code = 'presbiopia'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_glasses_commodity_ref",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "refCommodity",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Reference"
+                            }
+                          ]
+                        },
+                        {
+                          "variable": "previousBal",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "integer"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_populate_glasses_commodity_ref",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractGlassesCommodityReference",
+                              "variable": [
+                                "questionnaireResponse",
+                                "refCommodity",
+                                "previousBal"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_glasses_comodity_observation",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractGlassesObservation",
+                              "variable": [
+                                "questionnaireResponse",
+                                "bundle",
+                                "encounter",
+                                "refCommodity",
+                                "previousBal"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_power_commodity_ref",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "refCommodity",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Reference"
+                            }
+                          ]
+                        },
+                        {
+                          "variable": "previousBal",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "integer"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_populate_power_commodity_ref",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractCommodityReference",
+                              "variable": [
+                                "questionnaireResponse",
+                                "refCommodity",
+                                "previousBal"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_power_comodity_observation",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractObservation",
+                              "variable": [
+                                "questionnaireResponse",
+                                "bundle",
+                                "encounter",
+                                "refCommodity",
+                                "previousBal"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_commodity_check_sun_glasses",
+                  "source": [
+                    {
+                      "context": "questionnaireResponse",
+                      "element": "item",
+                      "condition": "((linkId = 'b4832b80-072b-41a6-8d42-72b10e0b2b5c') and (answer.value.code != 'presbiopia'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_sun_glasses_commodity_ref",
+                      "source": [
+                        {
+                          "context": "questionnaireResponse"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "refCommodity",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Reference"
+                            }
+                          ]
+                        },
+                        {
+                          "variable": "previousBal",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "integer"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_populate_sun_glasses_commodity_ref",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractCommodityReference",
+                              "variable": [
+                                "questionnaireResponse",
+                                "refCommodity",
+                                "previousBal"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_sun_glasses_comodity_observation",
+                          "source": [
+                            {
+                              "context": "questionnaireResponse"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "extractObservation",
+                              "variable": [
+                                "questionnaireResponse",
+                                "bundle",
+                                "encounter",
+                                "refCommodity",
+                                "previousBal"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -1233,6 +1473,3878 @@
                 },
                 {
                   "valueString": "$this.value.substring(0, 10) + 'T00:00:00.00Z'"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractObservation",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "source"
+        },
+        {
+          "name": "refCommodity",
+          "type": "Reference",
+          "mode": "source"
+        },
+        {
+          "name": "previousBal",
+          "type": "Integer",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_obs",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "obs",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Observation"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_id",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                }
+              ]
+            },
+            {
+              "name": "r_obs_status",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "preliminary"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_category_1",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "category",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://snomed.info/sct"
+                    },
+                    {
+                      "valueString": "386452003"
+                    },
+                    {
+                      "valueString": "Supply management"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_category_2",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "category",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://hl7.org/fhir/inventoryreport-counttype"
+                    },
+                    {
+                      "valueString": "subtraction"
+                    },
+                    {
+                      "valueString": "Subtraction"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_code",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "code",
+                  "variable": "code",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_c_coding",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "code",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_coding_system",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "https://smartregister.org/"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_c_coding_code",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "consumption"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_c_coding_display",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "consumption"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_c_text",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "code",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "consumption"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_subject",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "subject",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "refCommodity"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_effective_current_date_time",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "effective",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "now()"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_performer",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "performer",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "$this.generalPractitioner.first()"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_value",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "value",
+                  "variable": "qty",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Quantity"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_qty",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "qty",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueInteger": 1
+                        }
+                      ]
+                    },
+                    {
+                      "context": "qty",
+                      "contextType": "variable",
+                      "element": "unit",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "Pieces"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "qty",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://snomed.info/sct"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "qty",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "767525000"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_observation_encounter",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "encounter",
+                  "transform": "reference",
+                  "parameter": [
+                    {
+                      "valueId": "encounter"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_running_total_compute",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "runningTotal",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "(previousBal - 1)"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_running_total_component",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "component",
+                      "variable": "component"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "extractRunningBalance",
+                      "variable": [
+                        "src",
+                        "component",
+                        "runningTotal"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_bal_is_zero",
+                  "source": [
+                    {
+                      "context": "src",
+                      "variable": "stockOut",
+                      "condition": "(runningTotal <= 0)"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_extract_and_create_stockout_flag",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "dependent": [
+                        {
+                          "name": "extractAndCreateStockOutFlag",
+                          "variable": [
+                            "src",
+                            "bundle",
+                            "encounter",
+                            "refCommodity"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_extract_and_update_latest_obs",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "extractAndUpdateLatestObservation",
+                  "variable": [
+                    "src",
+                    "bundle"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractAndUpdateLatestObservation",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_eye_test_result_presbiopia_check",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "condition": "((linkId = 'b4832b80-072b-41a6-8d42-72b10e0b2b5c') and (answer.value.code = 'presbiopia'))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_power_bf_type_check",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "condition": "((linkId = 'a297244b-7569-4772-8ba9-2e7e9a643b46') and (answer.value.code = 'bf'))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_power_bf100_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '1'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_bf100_update_current_obs",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "latestObservation",
+                          "condition": "((linkId = '6ef5319f-13d4-499f-8c16-9e9ebf3a0f55') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_bf100_update_current_obs",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "latestObservationId",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "latestObservation"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "updateLatestObservation",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "latestObservationId"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_bf150_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '1.5'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_bf150_update_current_obs",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "latestObservation",
+                          "condition": "((linkId = '44873d86-80b1-45ab-860b-4b64d57862b8') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_bf150_update_current_obs",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "latestObservationId",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "latestObservation"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "updateLatestObservation",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "latestObservationId"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_bf200_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '2'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_bf200_update_current_obs",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "latestObservation",
+                          "condition": "((linkId = 'a9d74f31-56ca-4750-8d69-893a004698f9') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_bf200_update_current_obs",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "latestObservationId",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "latestObservation"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "updateLatestObservation",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "latestObservationId"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_bf250_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '2.5'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_bf250_update_current_obs",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "latestObservation",
+                          "condition": "((linkId = '5e0e940e-d26f-4890-af22-818c32166bce') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_bf250_update_current_obs",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "latestObservationId",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "latestObservation"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "updateLatestObservation",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "latestObservationId"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_bf300_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '3'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_bf300_update_current_obs",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "latestObservation",
+                          "condition": "((linkId = 'bf372250-a924-4370-d3c2-7028a744c48e') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_bf300_update_current_obs",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "latestObservationId",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "latestObservation"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "updateLatestObservation",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "latestObservationId"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_power_sv_type_check",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "condition": "((linkId = 'a297244b-7569-4772-8ba9-2e7e9a643b46') and (answer.value.code = 'sv'))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_power_sv100_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '1'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_sv100_update_current_obs",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "latestObservation",
+                          "condition": "((linkId = '82260d3e-1d12-4a56-8917-26fa39d29a35') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_sv100_update_current_obs",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "latestObservationId",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "latestObservation"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "updateLatestObservation",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "latestObservationId"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_sv150_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '1.5'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_sv150_update_current_obs",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "latestObservation",
+                          "condition": "((linkId = '81ec6b3e-57e0-4c36-9830-213baabb0e38') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_sv150_update_current_obs",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "latestObservationId",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "latestObservation"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "updateLatestObservation",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "latestObservationId"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_sv200_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '2'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_sv200_update_current_obs",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "latestObservation",
+                          "condition": "((linkId = '14b0ddd8-cdb9-4439-81ed-56073741d06e') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_sv200_update_current_obs",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "latestObservationId",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "latestObservation"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "updateLatestObservation",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "latestObservationId"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_sv250_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '2.5'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_sv250_update_current_obs",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "latestObservation",
+                          "condition": "((linkId = '06e1a33b-2476-4fab-88ad-f371c9b28e48') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_sv250_update_current_obs",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "latestObservationId",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "latestObservation"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "updateLatestObservation",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "latestObservationId"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_sv300_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '3'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_sv300_update_current_obs",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "latestObservation",
+                          "condition": "((linkId = '45979eef-d80a-44b1-c512-c70568baea2a') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_sv300_update_current_obs",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "variable": "latestObservationId",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "latestObservation"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "updateLatestObservation",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "latestObservationId"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_eye_test_result_other_check",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "condition": "((linkId = 'b4832b80-072b-41a6-8d42-72b10e0b2b5c') and (answer.value.code != 'presbiopia'))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_sun_glasses_update_current_obs",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "latestObservation",
+                  "condition": "((linkId = 'd0b5c58a-bfdc-49f6-96c0-c5b37af964f2') and answer.value.exists())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_sun_glasses_update_current_obs",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "variable": "latestObservationId",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "latestObservation"
+                        },
+                        {
+                          "valueString": "$this.answer.value"
+                        }
+                      ]
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "updateLatestObservation",
+                      "variable": [
+                        "src",
+                        "bundle",
+                        "latestObservationId"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractAndCreateStockOutFlag",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "source"
+        },
+        {
+          "name": "refCommodity",
+          "type": "Reference",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_eye_test_result_presbiopia_check",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "condition": "((linkId = 'b4832b80-072b-41a6-8d42-72b10e0b2b5c') and (answer.value.code = 'presbiopia'))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_power_bf_type_check",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "condition": "((linkId = 'a297244b-7569-4772-8ba9-2e7e9a643b46') and (answer.value.code = 'bf'))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_power_bf100_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '1'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_no_power_bf100_flag",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "condition": "((linkId = '4fef01af-29c8-4459-951e-b917c4ba9b12') and answer.value.empty())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_power_bf100_stockout_flag",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "createStockOutFlag",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encounter",
+                                "refCommodity"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_bf150_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '1.5'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_no_power_bf150_flag",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "condition": "((linkId = 'bc92a5eb-8d25-4866-ca1b-d638d3eb991d') and answer.value.empty())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_power_bf150_stockout_flag",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "createStockOutFlag",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encounter",
+                                "refCommodity"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_bf200_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '2'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_no_power_bf200_flag",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "condition": "((linkId = '7faf7f8b-c401-49a2-e6b5-ebc38d7c8952') and answer.value.empty())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_power_bf200_stockout_flag",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "createStockOutFlag",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encounter",
+                                "refCommodity"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_bf250_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '2.5'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_no_power_bf250_flag",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "condition": "((linkId = '06c74605-d3c2-414e-b8a1-d715cdeb8da8') and answer.value.empty())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_power_bf250_stockout_flag",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "createStockOutFlag",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encounter",
+                                "refCommodity"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_bf300_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '3'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_no_power_bf300_flag",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "condition": "((linkId = '13935d7e-57a1-4ade-f91d-8f7cccfdb0fa') and answer.value.empty())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_power_bf300_stockout_flag",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "createStockOutFlag",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encounter",
+                                "refCommodity"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_power_sv_type_check",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "condition": "((linkId = 'a297244b-7569-4772-8ba9-2e7e9a643b46') and (answer.value.code = 'sv'))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_power_sv100_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '1'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_no_power_sv100_flag",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "condition": "((linkId = '9c6affa9-6d22-4673-8664-c5d386e476fa') and answer.value.empty())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_power_sv100_stockout_flag",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "createStockOutFlag",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encounter",
+                                "refCommodity"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_sv150_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '1.5'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_no_power_sv150_flag",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "condition": "((linkId = '0a71df31-64e1-46e5-a498-ef777f0cedaf') and answer.value.empty())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_power_sv150_stockout_flag",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "createStockOutFlag",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encounter",
+                                "refCommodity"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_sv200_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '2'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_no_power_sv200_flag",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "condition": "((linkId = 'a6785696-af28-4466-c289-6f83e3153dff') and answer.value.empty())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_power_sv200_stockout_flag",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "createStockOutFlag",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encounter",
+                                "refCommodity"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_sv250_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '2.5'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_no_power_sv250_flag",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "condition": "((linkId = '098c7312-33c4-4598-8050-5b3b193db5e9') and answer.value.empty())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_power_sv250_stockout_flag",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "createStockOutFlag",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encounter",
+                                "refCommodity"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_sv300_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '3'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_no_power_sv300_flag",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "condition": "((linkId = '6655f7d1-a0fc-43fe-820a-6ec0c8c2a60c') and answer.value.empty())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_power_sv300_stockout_flag",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "createStockOutFlag",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encounter",
+                                "refCommodity"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_eye_test_result_other_check",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "condition": "((linkId = 'b4832b80-072b-41a6-8d42-72b10e0b2b5c') and (answer.value.code != 'presbiopia'))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_no_sun_glasses_flag",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "condition": "((linkId = 'aac22321-582c-43d7-f382-85bd5c4e5346') and answer.value.empty())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_create_sun_glasses_stockout_flag",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "createStockOutFlag",
+                      "variable": [
+                        "src",
+                        "bundle",
+                        "encounter",
+                        "refCommodity"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractGlassesObservation",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "source"
+        },
+        {
+          "name": "refCommodity",
+          "type": "Reference",
+          "mode": "source"
+        },
+        {
+          "name": "previousBal",
+          "type": "Integer",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_obs",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "obs",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Observation"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_id",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                }
+              ]
+            },
+            {
+              "name": "r_obs_status",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "preliminary"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_category_1",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "category",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://snomed.info/sct"
+                    },
+                    {
+                      "valueString": "386452003"
+                    },
+                    {
+                      "valueString": "Supply management"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_category_2",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "category",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://hl7.org/fhir/inventoryreport-counttype"
+                    },
+                    {
+                      "valueString": "subtraction"
+                    },
+                    {
+                      "valueString": "Subtraction"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_code",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "code",
+                  "variable": "code",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CodeableConcept"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_c_coding",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "code",
+                      "contextType": "variable",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Coding"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_coding_system",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "system",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "https://smartregister.org/"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_c_coding_code",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "code",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "consumption"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_c_coding_display",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "coding",
+                          "contextType": "variable",
+                          "element": "display",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "consumption"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_c_text",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "code",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "consumption"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_subject",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "subject",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "refCommodity"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_effective_current_date_time",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "effective",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "now()"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_performer",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "performer",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "$this.generalPractitioner.first()"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_value",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "value",
+                  "variable": "qty",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Quantity"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_qty",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "qty",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueInteger": 1
+                        }
+                      ]
+                    },
+                    {
+                      "context": "qty",
+                      "contextType": "variable",
+                      "element": "unit",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "Pieces"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "qty",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://snomed.info/sct"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "qty",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "767525000"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_observation_encounter",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "obs",
+                  "contextType": "variable",
+                  "element": "encounter",
+                  "transform": "reference",
+                  "parameter": [
+                    {
+                      "valueId": "encounter"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_running_total_compute",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "runningTotal",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "(previousBal - 1)"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_running_total_component",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "obs",
+                      "contextType": "variable",
+                      "element": "component",
+                      "variable": "component"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "extractRunningBalance",
+                      "variable": [
+                        "src",
+                        "component",
+                        "runningTotal"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_bal_is_zero",
+                  "source": [
+                    {
+                      "context": "src",
+                      "variable": "stockOut",
+                      "condition": "(runningTotal <= 0)"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_no_glasses_flag",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "condition": "((linkId = '0e0e7a86-40a6-45c3-ba73-b19330192d19') and answer.value.empty())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_create_glasses_stockout_flag",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "dependent": [
+                            {
+                              "name": "createStockOutFlag",
+                              "variable": [
+                                "src",
+                                "bundle",
+                                "encounter",
+                                "refCommodity"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_check_latest_obs",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "latestObservation",
+                  "condition": "((linkId = 'ca0fbdf6-974e-4869-bed6-75f34e1f2c2f') and answer.value.exists())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_update_current_latest_obs",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "variable": "latestObservationId",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "latestObservation"
+                        },
+                        {
+                          "valueString": "$this.answer.value"
+                        }
+                      ]
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "updateLatestObservation",
+                      "variable": [
+                        "src",
+                        "bundle",
+                        "latestObservationId"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractGlassesCommodityReference",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "ref",
+          "type": "Reference",
+          "mode": "target"
+        },
+        {
+          "name": "previousBal",
+          "type": "Integer",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_instantiate_bal",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "previousBal",
+              "contextType": "variable",
+              "element": "value",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "0"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_sun_glasses_ref",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "ref",
+              "contextType": "variable",
+              "element": "reference",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "Group/395cc84c-a5f5-4440-9798-1ded5036170f"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_check_glasses_prev_bal",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "glassesBalance",
+              "condition": "((linkId = '49eca2ad-6524-403d-b1b3-7456485f87e3') and answer.value.exists())"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_glasses_previous_bal",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "previousBal",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "glassesBalance"
+                    },
+                    {
+                      "valueString": "$this.answer.value.toString()"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractCommodityReference",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "ref",
+          "type": "Reference",
+          "mode": "target"
+        },
+        {
+          "name": "previousBal",
+          "type": "Integer",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_instantiate_bal",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "previousBal",
+              "contextType": "variable",
+              "element": "value",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "0"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_eye_test_result_presbiopia_check",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "condition": "((linkId = 'b4832b80-072b-41a6-8d42-72b10e0b2b5c') and (answer.value.code = 'presbiopia'))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_power_bf_type_check",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "condition": "((linkId = 'a297244b-7569-4772-8ba9-2e7e9a643b46') and (answer.value.code = 'bf'))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_power_bf100_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '1'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_bf100_ref",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Group/6e15f59e-3466-4ba4-9989-60e57e8ee2ff"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_check_power_bf100_prev_bal",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "bf100Balance",
+                          "condition": "((linkId = 'e9befdd0-f56d-494e-8899-767dbcc7fa8e') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_bf100_previous_bal",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "previousBal",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "bf100Balance"
+                                },
+                                {
+                                  "valueString": "$this.answer.value.toString()"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_bf150_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '1.5'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_bf150_ref",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Group/3ee0c4e9-3dab-49d7-f141-177fdf6c41e0"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_check_power_bf150_prev_bal",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "bf150Balance",
+                          "condition": "((linkId = '764dd849-21a1-410b-b98f-29fe145bdb87') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_bf150_previous_bal",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "previousBal",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "bf150Balance"
+                                },
+                                {
+                                  "valueString": "$this.answer.value.toString()"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_bf200_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '2'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_bf200_ref",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Group/d88536ec-161f-4a02-8af9-1df62eab7be7"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_check_power_bf200_prev_bal",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "bf200Balance",
+                          "condition": "((linkId = '96dd8383-7d3e-4756-8ea2-9a720d2ebdb7') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_bf200_previous_bal",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "previousBal",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "bf200Balance"
+                                },
+                                {
+                                  "valueString": "$this.answer.value.toString()"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_bf250_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '2.5'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_bf250_ref",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Group/ee3378d4-f816-4933-ad5a-4146b618db8a"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_check_power_bf250_prev_bal",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "bf250Balance",
+                          "condition": "((linkId = '2147e6cc-f4c2-40f4-8f95-c8e12f5a3906') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_bf250_previous_bal",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "previousBal",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "bf250Balance"
+                                },
+                                {
+                                  "valueString": "$this.answer.value.toString()"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_bf300_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '3'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_bf300_ref",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Group/5e09afc5-4be8-4f8b-8603-3e1b9ba74db3"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_check_power_bf300_prev_bal",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "bf300Balance",
+                          "condition": "((linkId = '70095888-1aac-4e94-c4f2-a0c1b615cc25') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_bf300_previous_bal",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "previousBal",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "bf300Balance"
+                                },
+                                {
+                                  "valueString": "$this.answer.value.toString()"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_power_sv_type_check",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "condition": "((linkId = 'a297244b-7569-4772-8ba9-2e7e9a643b46') and (answer.value.code = 'sv'))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_power_sv100_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '1'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_sv100_ref",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Group/79b8d655-fbe4-410f-9147-ba7b471356a0"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_check_power_sv100_prev_bal",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "sv100Balance",
+                          "condition": "((linkId = '52e56dfa-aab3-4de1-a7b3-1872ad4b5d05') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_sv100_previous_bal",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "previousBal",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "sv100Balance"
+                                },
+                                {
+                                  "valueString": "$this.answer.value.toString()"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_sv150_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '1.5'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_sv150_ref",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Group/b0e83719-e5d4-4086-f504-ac0b854f758d"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_check_power_sv150_prev_bal",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "sv150Balance",
+                          "condition": "((linkId = '68e5a011-edde-4257-8a37-52a50f26cc0f') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_sv150_previous_bal",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "previousBal",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "sv150Balance"
+                                },
+                                {
+                                  "valueString": "$this.answer.value.toString()"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_sv200_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '2'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_sv200_ref",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Group/ff451512-4e17-4bf4-d0bc-b1671a57a24e"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_check_power_sv200_prev_bal",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "sv200Balance",
+                          "condition": "((linkId = '80722325-12ca-40c8-f24a-5955410c9afa') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_sv200_previous_bal",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "previousBal",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "sv200Balance"
+                                },
+                                {
+                                  "valueString": "$this.answer.value.toString()"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_sv250_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '2.5'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_sv250_ref",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Group/7701468a-c44c-42ad-848d-b9410e072d41"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_check_power_sv250_prev_bal",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "sv250Balance",
+                          "condition": "((linkId = '4620c135-06b5-46c7-bce4-13ea3cebd562') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_sv250_previous_bal",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "previousBal",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "sv250Balance"
+                                },
+                                {
+                                  "valueString": "$this.answer.value.toString()"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_power_sv300_type_check",
+                  "source": [
+                    {
+                      "context": "src",
+                      "element": "item",
+                      "condition": "((linkId = '384dee70-db6b-4f92-c619-8930d93d9035') and (answer.value.code = '3'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_power_sv300_ref",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ref",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Group/57dbe381-2f41-451a-8876-53e40ff61149"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_check_power_sv300_prev_bal",
+                      "source": [
+                        {
+                          "context": "src",
+                          "element": "item",
+                          "variable": "sv300Balance",
+                          "condition": "((linkId = 'db715612-cb19-4e19-8e95-265559eb9d2d') and answer.value.exists())"
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_power_sv300_previous_bal",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "previousBal",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "sv300Balance"
+                                },
+                                {
+                                  "valueString": "$this.answer.value.toString()"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_eye_test_result_other_check",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "condition": "((linkId = 'b4832b80-072b-41a6-8d42-72b10e0b2b5c') and (answer.value.code != 'presbiopia'))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_sun_glasses_ref",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "ref",
+                  "contextType": "variable",
+                  "element": "reference",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "Group/69abf560-719a-43ba-8ab9-3e1cd31f0a8b"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_check_sun_glasses_prev_bal",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "sunglassesBalance",
+                  "condition": "((linkId = 'e6145f08-a682-4e8c-ae28-850aa73251c2') and answer.value.exists())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_sun_glasses_previous_bal",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "previousBal",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "sunglassesBalance"
+                        },
+                        {
+                          "valueString": "$this.answer.value.toString()"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractRunningBalance",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "component",
+          "type": "BackboneElement",
+          "mode": "target"
+        },
+        {
+          "name": "runningTotal",
+          "type": "Integer",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_obs_running_total_code",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "component",
+              "contextType": "variable",
+              "element": "code",
+              "variable": "runningTotalCC",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "CodeableConcept"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs_running_total_cc_coding",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "runningTotalCC",
+                  "contextType": "variable",
+                  "element": "coding",
+                  "variable": "runningTotalCCCoding",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Coding"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs_runing_total_cc_coding_system",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "runningTotalCCCoding",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "http://snomed.info/sct"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_runing_total_cc_coding_code",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "runningTotalCCCoding",
+                      "contextType": "variable",
+                      "element": "code",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "255619001"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_obs_runing_total_cc_coding_display",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "runningTotalCCCoding",
+                      "contextType": "variable",
+                      "element": "display",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "Total"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_obs_runing_total_cc_text",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "runningTotalCC",
+                  "contextType": "variable",
+                  "element": "text",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "Running total/Cumulative sum"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_obs_running_total_quantity",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "component",
+              "contextType": "variable",
+              "element": "value",
+              "variable": "runningTotalQuantity",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Quantity"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_obs__running_total_qty",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "runningTotalQuantity",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "runningTotal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "updateLatestObservation",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "src",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "latestObservationId",
+          "type": "String",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_update_latest_obs",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "observation",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Observation"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_update_obs_id",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "observation",
+                  "contextType": "variable",
+                  "element": "id",
+                  "variable": "id",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "id"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_update_obs_id_value",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "id",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueId": "latestObservationId"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_update_latest_obs_to_final",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "observation",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "final"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "createStockOutFlag",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "src",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "encounter",
+          "type": "Encounter",
+          "mode": "source"
+        },
+        {
+          "name": "refCommodity",
+          "type": "Reference",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_flag",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "context": "bundle",
+              "contextType": "variable",
+              "element": "entry",
+              "variable": "entry"
+            },
+            {
+              "context": "entry",
+              "contextType": "variable",
+              "element": "resource",
+              "variable": "flag",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Flag"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_flag_id",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "flag",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                }
+              ]
+            },
+            {
+              "name": "r_flag_status",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "flag",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "active"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_flag_category",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "flag",
+                  "contextType": "variable",
+                  "element": "category",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://snomed.info/sct"
+                    },
+                    {
+                      "valueString": "386452003"
+                    },
+                    {
+                      "valueString": "Supply management"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_flag_code",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "flag",
+                  "contextType": "variable",
+                  "element": "code",
+                  "transform": "cc",
+                  "parameter": [
+                    {
+                      "valueString": "http://snomed.info/sct"
+                    },
+                    {
+                      "valueString": "419182006"
+                    },
+                    {
+                      "valueString": " Supplies not available"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_flag_subject",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "flag",
+                  "contextType": "variable",
+                  "element": "subject",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "refCommodity"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_flag_period",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "flag",
+                  "contextType": "variable",
+                  "element": "period",
+                  "variable": "period",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Period"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_flag_period_start",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "period",
+                      "contextType": "variable",
+                      "element": "start",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "now()"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "r_flag_encounter",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "flag",
+                  "contextType": "variable",
+                  "element": "encounter",
+                  "transform": "reference",
+                  "parameter": [
+                    {
+                      "valueId": "encounter"
+                    }
+                  ]
                 }
               ]
             }

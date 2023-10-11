@@ -42,6 +42,10 @@ group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle
             } "r_en_rc_cod";
     		src -> concept.text = 'mPower ANC Followup Visit' "r_en_text";
     	} "r_en_reason";
+    	src -> create('Reference') as refCommodity, create('integer') as previousBal then {
+            src then extractCommodityReference(src, refCommodity, previousBal) "r_populate_commodity_ref";
+            src then extractObservation(src, bundle, encounter , refCommodity, previousBal) "rule_comodity_observation";
+        } "r_commodity_ref";
     } "r_en";
 }
 
@@ -88,4 +92,97 @@ group extractPeriodTime(source start: DateType, source end: DateType, target per
 
     end -> period.end = create('dateTime') as dt,
            dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_end";
+}
+
+group extractObservation(source src : QuestionnaireResponse, target bundle : Bundle, source encounter : Encounter, source refCommodity : Reference, source previousBal: Integer) {
+    src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+        src -> obs.id = uuid() "r_obs_id";
+        src -> obs.status = 'preliminary' "r_obs_status";
+        src -> obs.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_obs_category_1";
+        src -> obs.category = cc('http://hl7.org/fhir/inventoryreport-counttype', 'subtraction', 'Subtraction')"r_obs_category_2";
+        src -> obs.code = create('CodeableConcept') as code then {
+            src -> code.coding = create('Coding') as coding then {
+                src -> coding.system = 'https://smartregister.org/' "r_obs_coding_system";
+                src -> coding.code = 'consumption' "r_obs_c_coding_code";
+                src -> coding.display = 'consumption' "r_obs_c_coding_display";
+            } "r_obs_c_coding";
+            src -> code.text = 'consumption' "r_obs_c_text";
+        } "r_obs_code";
+        src -> obs.subject = refCommodity "r_obs_subject";
+        src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+        src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_obs_performer";
+        src -> obs.value = create('Quantity') as qty then {
+            src -> qty.value = 1,
+                qty.unit = 'Pieces',
+                qty.system = 'http://snomed.info/sct',
+                qty.code = '767525000' "r_obs_qty";
+        } "r_obs_value";
+        src -> obs.encounter = reference(encounter) "r_observation_encounter";
+
+        src -> evaluate(src, (previousBal - 1)) as runningTotal  then {
+             //Adding the running total component
+            src -> obs.component as component then extractRunningBalance(src, component, runningTotal) "r_obs_running_total_component";
+
+            //create stockout flag if none exists and total balance is Zero or less
+            src as stockOut where (runningTotal <= 0) then {
+                //create anc visit stockout flag
+                src.item as noAncVisitFlag where (linkId = 'e6b390ca-699d-4f4f-b388-d3abfb097e26' and answer.value.empty()) then {
+                    src then createStockOutFlag(src, bundle, encounter, refCommodity) "r_create_anc_visit_stockout_flag";
+                } "r_no_anc_visit_flag";
+            } "r_bal_is_zero";
+        } "r_running_total_compute";
+
+        //Update the current latest anc visit observation if it exists
+        src.item as latestObservation where(linkId ='77001671-c07b-4afb-81ae-2220d4f38157' and answer.value.exists()) then {
+            src ->  evaluate(latestObservation, $this.answer.value) as latestObservationId then updateLatestObservation(src, bundle, latestObservationId)  "r_update_current_latest_obs";
+        } "r_check_latest_obs";
+    } "r_obs";
+}
+
+group extractCommodityReference(source src: QuestionnaireResponse, target ref: Reference, target previousBal: Integer) {
+    src -> previousBal.value = "0" "r_instantiate_bal";
+    //commodity group reference
+    src -> ref.reference = 'Group/f1c7de7d-0c2a-448d-8060-2b8defd51e42' "r_anc_visit_ref";
+    //stock balance
+    src.item as ancBalance where(linkId = 'd91c5e51-ac81-41f6-8f09-87805b87a98d' and answer.value.exists()) then {
+        src -> previousBal.value = evaluate(ancBalance, $this.answer.value.toString()) "r_anc_visit_previous_bal";
+    } "r_check_anc_visit_prev_bal";
+}
+
+group extractRunningBalance(source src: QuestionnaireResponse, target component: BackboneElement, source runningTotal : Integer){
+    src -> component.code = create('CodeableConcept') as runningTotalCC then {
+        src -> runningTotalCC.coding = create('Coding') as runningTotalCCCoding then {
+            src -> runningTotalCCCoding.system = 'http://snomed.info/sct' "r_obs_runing_total_cc_coding_system";
+            src -> runningTotalCCCoding.code = '255619001' "r_obs_runing_total_cc_coding_code";
+            src -> runningTotalCCCoding.display = 'Total' "r_obs_runing_total_cc_coding_display";
+        } "r_obs_running_total_cc_coding";
+        src -> runningTotalCC.text = 'Running total/Cumulative sum' "r_obs_runing_total_cc_text";
+    } "r_obs_running_total_code";
+
+    src -> component.value = create('Quantity') as runningTotalQuantity then {
+        src -> runningTotalQuantity.value = runningTotal "r_obs__running_total_qty";
+    } "r_obs_running_total_quantity";
+}
+
+group updateLatestObservation(source src: src, target bundle : Bundle, source latestObservationId : String){
+    src -> bundle.entry as entry, entry.resource = create('Observation') as observation then {
+        src -> observation.id = create('id') as id then {
+            src -> id.value = latestObservationId "r_update_obs_id_value";
+        } "r_update_obs_id";
+        src -> observation.status = 'final' "r_update_latest_obs_to_final";
+    } "r_update_latest_obs";
+}
+
+group createStockOutFlag(source src: src, target bundle : Bundle, source encounter : Encounter, source refCommodity: Reference){
+    src -> bundle.entry as entry, entry.resource = create('Flag') as flag then {
+        src -> flag.id = uuid() "r_flag_id";
+        src -> flag.status = 'active' "r_flag_status";
+        src -> flag.category = cc('http://snomed.info/sct','386452003', 'Supply management') "r_flag_category";
+        src -> flag.code = cc('http://snomed.info/sct','419182006', ' Supplies not available')  "r_flag_code";
+        src -> flag.subject = refCommodity "r_flag_subject";
+        src -> flag.period = create('Period') as period then {
+            src -> period.start = evaluate(src, now()) "r_flag_period_start";
+        } "r_flag_period";
+        src -> flag.encounter = reference(encounter) "r_flag_encounter";
+    } "r_flag";
 }

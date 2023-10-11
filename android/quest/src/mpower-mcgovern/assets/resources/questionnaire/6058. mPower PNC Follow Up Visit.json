@@ -1665,6 +1665,45 @@
           "valueBoolean": true
         }
       ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "9e5b72da-8e7c-4646-8e12-f3bacb5ac50a",
+      "type": "integer",
+      "text": "pnc previous balance",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "d9fc1aaf-00d8-429f-d5ba-3b1831921b1d",
+      "type": "string",
+      "text": "pnc observation id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "9fc038a4-1526-4e2b-826a-1833b654a045",
+      "type": "string",
+      "text": "pnc stock out flag id",
+      "required": false,
+      "readOnly": true
     }
   ]
 }

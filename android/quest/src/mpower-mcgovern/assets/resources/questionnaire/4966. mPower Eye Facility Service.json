@@ -388,6 +388,474 @@
           }
         }
       ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "49eca2ad-6524-403d-b1b3-7456485f87e3",
+      "type": "integer",
+      "text": "glasses previous balance",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "ca0fbdf6-974e-4869-bed6-75f34e1f2c2f",
+      "type": "string",
+      "text": "glasses observation id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "0e0e7a86-40a6-45c3-ba73-b19330192d19",
+      "type": "string",
+      "text": "glasses stock out flag id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "e6145f08-a682-4e8c-ae28-850aa73251c2",
+      "type": "integer",
+      "text": "sun glasses previous balance",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "d0b5c58a-bfdc-49f6-96c0-c5b37af964f2",
+      "type": "string",
+      "text": "sun glasses observation id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "aac22321-582c-43d7-f382-85bd5c4e5346",
+      "type": "string",
+      "text": "sun glasses stock out flag id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "e9befdd0-f56d-494e-8899-767dbcc7fa8e",
+      "type": "integer",
+      "text": "bf-100 previous balance",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "6ef5319f-13d4-499f-8c16-9e9ebf3a0f55",
+      "type": "string",
+      "text": "bf-100 observation id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "4fef01af-29c8-4459-951e-b917c4ba9b12",
+      "type": "string",
+      "text": "bf-100 stock out flag id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "764dd849-21a1-410b-b98f-29fe145bdb87",
+      "type": "integer",
+      "text": "bf-150 previous balance",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "44873d86-80b1-45ab-860b-4b64d57862b8",
+      "type": "string",
+      "text": "bf-150 observation id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "bc92a5eb-8d25-4866-ca1b-d638d3eb991d",
+      "type": "string",
+      "text": "bf-150 stock out flag id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "96dd8383-7d3e-4756-8ea2-9a720d2ebdb7",
+      "type": "integer",
+      "text": "bf-200 previous balance",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "a9d74f31-56ca-4750-8d69-893a004698f9",
+      "type": "string",
+      "text": "bf-200 observation id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "7faf7f8b-c401-49a2-e6b5-ebc38d7c8952",
+      "type": "string",
+      "text": "bf-200 stock out flag id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "2147e6cc-f4c2-40f4-8f95-c8e12f5a3906",
+      "type": "integer",
+      "text": "bf-250 previous balance",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "5e0e940e-d26f-4890-af22-818c32166bce",
+      "type": "string",
+      "text": "bf-250 observation id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "06c74605-d3c2-414e-b8a1-d715cdeb8da8",
+      "type": "string",
+      "text": "bf-250 stock out flag id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "70095888-1aac-4e94-c4f2-a0c1b615cc25",
+      "type": "integer",
+      "text": "bf-300 previous balance",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "bf372250-a924-4370-d3c2-7028a744c48e",
+      "type": "string",
+      "text": "bf-300 observation id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "13935d7e-57a1-4ade-f91d-8f7cccfdb0fa",
+      "type": "string",
+      "text": "bf-300 stock out flag id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "52e56dfa-aab3-4de1-a7b3-1872ad4b5d05",
+      "type": "integer",
+      "text": "sv-100 previous balance",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "82260d3e-1d12-4a56-8917-26fa39d29a35",
+      "type": "string",
+      "text": "sv-100 observation id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "9c6affa9-6d22-4673-8664-c5d386e476fa",
+      "type": "string",
+      "text": "sv-100 stock out flag id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "68e5a011-edde-4257-8a37-52a50f26cc0f",
+      "type": "integer",
+      "text": "sv-150 previous balance",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "81ec6b3e-57e0-4c36-9830-213baabb0e38",
+      "type": "string",
+      "text": "sv-150 observation id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "0a71df31-64e1-46e5-a498-ef777f0cedaf",
+      "type": "string",
+      "text": "sv-150 stock out flag id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "80722325-12ca-40c8-f24a-5955410c9afa",
+      "type": "integer",
+      "text": "sv-200 previous balance",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "14b0ddd8-cdb9-4439-81ed-56073741d06e",
+      "type": "string",
+      "text": "sv-200 observation id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "a6785696-af28-4466-c289-6f83e3153dff",
+      "type": "string",
+      "text": "sv-200 stock out flag id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "4620c135-06b5-46c7-bce4-13ea3cebd562",
+      "type": "integer",
+      "text": "sv-250 previous balance",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "06e1a33b-2476-4fab-88ad-f371c9b28e48",
+      "type": "string",
+      "text": "sv-250 observation id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "098c7312-33c4-4598-8050-5b3b193db5e9",
+      "type": "string",
+      "text": "sv-250 stock out flag id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "db715612-cb19-4e19-8e95-265559eb9d2d",
+      "type": "integer",
+      "text": "sv-300 previous balance",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "45979eef-d80a-44b1-c512-c70568baea2a",
+      "type": "string",
+      "text": "sv-300 observation id",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "6655f7d1-a0fc-43fe-820a-6ec0c8c2a60c",
+      "type": "string",
+      "text": "sv-300 stock out flag id",
+      "required": false,
+      "readOnly": true
     }
   ]
 }
