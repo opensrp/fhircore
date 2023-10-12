@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.data.local.register.dao
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.BindValue
@@ -207,14 +208,22 @@ internal class HivRegisterDaoTest : RobolectricTest() {
         val search = firstArg<Search>()
         when (search.type) {
           ResourceType.Patient ->
-            listOf<Patient>(
-              testPatient,
-              testPatientGenderNull,
-              testPatientDeceasedFalse,
-              testPatientDeceasedTrue
+            listOf(
+              SearchResult(testPatient, included = null, revIncluded = null),
+              SearchResult(testPatientGenderNull, included = null, revIncluded = null),
+              SearchResult(testPatientDeceasedFalse, included = null, revIncluded = null),
+              SearchResult(testPatientDeceasedTrue, included = null, revIncluded = null)
             )
-          ResourceType.Task -> listOf<Task>(testTask1, testTask2)
-          ResourceType.CarePlan -> listOf<CarePlan>(carePlan1, carePlan2)
+          ResourceType.Task ->
+            listOf(
+              SearchResult(testTask1, included = null, revIncluded = null),
+              SearchResult(testTask2, included = null, revIncluded = null)
+            )
+          ResourceType.CarePlan ->
+            listOf(
+              SearchResult(carePlan1, included = null, revIncluded = null),
+              SearchResult(carePlan2, included = null, revIncluded = null)
+            )
           else -> emptyList()
         }
       }

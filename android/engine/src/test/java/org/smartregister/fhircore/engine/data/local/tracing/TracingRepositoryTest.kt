@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local.tracing
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import io.mockk.coEvery
@@ -159,7 +160,7 @@ class TracingRepositoryTest {
       fhirEngine.search<ListResource>(
         Search(ResourceType.List, from = 0, count = PaginationConstant.DEFAULT_PAGE_SIZE)
       )
-    } returns listOf(list0)
+    } returns listOf(SearchResult(list0, included = null, revIncluded = null))
 
     val tracingHistory =
       tracingRepository
@@ -419,7 +420,10 @@ class TracingRepositoryTest {
     coEvery { fhirEngine.get(ResourceType.Encounter, enc0.logicalId) } returns enc0
     coEvery { fhirEngine.get(ResourceType.Task, task0.logicalId) } returns task0
     coEvery { fhirEngine.search<Observation>(Search(ResourceType.Observation)) } returns
-      listOf(obs0, obs1)
+      listOf(
+        SearchResult(obs0, included = null, revIncluded = null),
+        SearchResult(obs1, included = null, revIncluded = null)
+      )
 
     val tracingOutcomeDetails = tracingRepository.getHistoryDetails(list0.logicalId, enc0.logicalId)
     Assert.assertTrue("Missed Routine" in tracingOutcomeDetails.reasons)

@@ -27,6 +27,7 @@ import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -118,8 +119,10 @@ class WelcomeServiceBackToCarePlanWorkerTest : RobolectricTest() {
         period = Period().apply { start = Date() }
         subject = patient0.asReference()
       }
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan0)
-    coEvery { fhirEngine.search<Task>(Search(ResourceType.Task)) } returns listOf(task0)
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns
+      listOf(SearchResult(carePlan0, included = null, revIncluded = null))
+    coEvery { fhirEngine.search<Task>(Search(ResourceType.Task)) } returns
+      listOf(SearchResult(task0, included = null, revIncluded = null))
     coEvery { fhirEngine.get(ResourceType.Patient, patient0.logicalId) } returns patient0
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.update(carePlan0) } just runs
@@ -195,8 +198,10 @@ class WelcomeServiceBackToCarePlanWorkerTest : RobolectricTest() {
         }
       }
 
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan0)
-    coEvery { fhirEngine.search<Task>(Search(ResourceType.Task)) } returns listOf(task0)
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns
+      listOf(SearchResult(carePlan0, included = null, revIncluded = null))
+    coEvery { fhirEngine.search<Task>(Search(ResourceType.Task)) } returns
+      listOf(SearchResult(task0, included = null, revIncluded = null))
     coEvery { fhirEngine.get(ResourceType.Patient, patient0.logicalId) } returns patient0
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.update(carePlan0) } just runs

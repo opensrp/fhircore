@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.data.local.register.dao
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -121,18 +122,28 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
         filter(Appointment.DATE, { value = of(DateTimeType.today()) })
       }
     val appointments =
-      listOf<Appointment>(
-        Appointment().apply {
-          status = Appointment.AppointmentStatus.BOOKED
-          start = Date()
-          addParticipant().apply { actor = Reference().apply { reference = "Patient/random" } }
+      listOf(
+        SearchResult(
+          Appointment().apply {
+            status = Appointment.AppointmentStatus.BOOKED
+            start = Date()
+            addParticipant().apply { actor = Reference().apply { reference = "Patient/random" } }
 
-          addParticipant().apply { actor = Reference().apply { reference = "Practitioner/random" } }
-        },
-        Appointment().apply {
-          status = Appointment.AppointmentStatus.BOOKED
-          start = Date()
-        }
+            addParticipant().apply {
+              actor = Reference().apply { reference = "Practitioner/random" }
+            }
+          },
+          included = null,
+          revIncluded = null
+        ),
+        SearchResult(
+          Appointment().apply {
+            status = Appointment.AppointmentStatus.BOOKED
+            start = Date()
+          },
+          included = null,
+          revIncluded = null
+        )
       )
     coEvery { fhirEngine.search<Appointment>(search) } returns appointments
 
@@ -144,22 +155,30 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
   fun testCountRegisterFiltered() = runTest {
     val startDate = Date()
     val appointment1 =
-      Appointment().apply {
-        status = Appointment.AppointmentStatus.BOOKED
-        start = startDate
+      SearchResult(
+        Appointment().apply {
+          status = Appointment.AppointmentStatus.BOOKED
+          start = startDate
 
-        addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
-        addParticipant().apply { actor = Reference().apply { reference = "Patient/1234" } }
-        addReasonCode(CodeableConcept(Coding().apply { code = "Milestone" }))
-      }
+          addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
+          addParticipant().apply { actor = Reference().apply { reference = "Patient/1234" } }
+          addReasonCode(CodeableConcept(Coding().apply { code = "Milestone" }))
+        },
+        included = null,
+        revIncluded = null
+      )
     val appointment2 =
-      Appointment().apply {
-        status = Appointment.AppointmentStatus.BOOKED
-        start = startDate
-        addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
-        addParticipant().apply { actor = Reference().apply { reference = "Patient/1234" } }
-        addReasonCode(CodeableConcept(Coding().apply { code = "ICT" }))
-      }
+      SearchResult(
+        Appointment().apply {
+          status = Appointment.AppointmentStatus.BOOKED
+          start = startDate
+          addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
+          addParticipant().apply { actor = Reference().apply { reference = "Patient/1234" } }
+          addReasonCode(CodeableConcept(Coding().apply { code = "ICT" }))
+        },
+        included = null,
+        revIncluded = null
+      )
     coEvery { fhirEngine.search<Appointment>(any<Search>()) } returns
       listOf(appointment1, appointment2)
     val registerFilter =
@@ -177,14 +196,18 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
   fun loadRegisterDataReturnsAppointmentRegisterData() = runTest {
     val startDate = Date()
     val appointment =
-      Appointment().apply {
-        status = Appointment.AppointmentStatus.BOOKED
-        start = startDate
+      SearchResult(
+        Appointment().apply {
+          status = Appointment.AppointmentStatus.BOOKED
+          start = startDate
 
-        addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
-        addParticipant().apply { actor = Reference().apply { reference = "Patient/1234" } }
-        addReasonCode(CodeableConcept(Coding().apply { code = "Milestone" }))
-      }
+          addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
+          addParticipant().apply { actor = Reference().apply { reference = "Patient/1234" } }
+          addReasonCode(CodeableConcept(Coding().apply { code = "Milestone" }))
+        },
+        included = null,
+        revIncluded = null
+      )
 
     coEvery { fhirEngine.search<Appointment>(Search(ResourceType.Appointment)) } returns
       listOf(appointment)
@@ -208,29 +231,37 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
       }
     coEvery { fhirEngine.get(ResourceType.Patient, "12345-3214") } returns patient1
     val appointment1 =
-      Appointment().apply {
-        id = "appointment1"
-        status = Appointment.AppointmentStatus.BOOKED
-        start = startDate
+      SearchResult(
+        Appointment().apply {
+          id = "appointment1"
+          status = Appointment.AppointmentStatus.BOOKED
+          start = startDate
 
-        addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
-        addParticipant().apply { actor = Reference().apply { reference = "Patient/12345-3214" } }
-        addReasonCode(CodeableConcept(Coding().apply { code = "Milestone" }))
-      }
+          addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
+          addParticipant().apply { actor = Reference().apply { reference = "Patient/12345-3214" } }
+          addReasonCode(CodeableConcept(Coding().apply { code = "Milestone" }))
+        },
+        included = null,
+        revIncluded = null
+      )
     val patient2 =
       buildPatient("1234-4321-3214", "doedoe", "janen", 10, patientType = "exposed-infant")
     coEvery { fhirEngine.get(ResourceType.Patient, "1234-4321-3214") } returns patient2
     val appointment2 =
-      Appointment().apply {
-        id = "appointment2"
-        status = Appointment.AppointmentStatus.BOOKED
-        start = startDate
-        addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
-        addParticipant().apply {
-          actor = Reference().apply { reference = "Patient/1234-4321-3214" }
-        }
-        addReasonCode(CodeableConcept(Coding().apply { code = "ICT" }))
-      }
+      SearchResult(
+        Appointment().apply {
+          id = "appointment2"
+          status = Appointment.AppointmentStatus.BOOKED
+          start = startDate
+          addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
+          addParticipant().apply {
+            actor = Reference().apply { reference = "Patient/1234-4321-3214" }
+          }
+          addReasonCode(CodeableConcept(Coding().apply { code = "ICT" }))
+        },
+        included = null,
+        revIncluded = null
+      )
     coEvery { fhirEngine.search<Condition>(Search(ResourceType.Condition)) } returns listOf()
     coEvery { fhirEngine.search<Appointment>(Search(ResourceType.Appointment)) } returns
       listOf(appointment1, appointment2)

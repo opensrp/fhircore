@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.data
 
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
@@ -144,7 +145,13 @@ class PatientRepositoryTest : RobolectricTest() {
       mockkStatic(::loadAdditionalData)
       coEvery { loadAdditionalData(any(), any(), any()) } returns listOf()
       coEvery { fhirEngine.search<Patient>(any<Search>()) } returns
-        listOf(buildPatient("1234", "Doe", "John", 1, Enumerations.AdministrativeGender.FEMALE))
+        listOf(
+          SearchResult(
+            buildPatient("1234", "Doe", "John", 1, Enumerations.AdministrativeGender.FEMALE),
+            included = null,
+            revIncluded = null
+          )
+        )
       coEvery { fhirEngine.count(any()) } returns 1
 
       val data = repository.loadData("", 0, true)
@@ -186,14 +193,22 @@ class PatientRepositoryTest : RobolectricTest() {
         }
       } returns
         listOf(
-          QuestionnaireResponse().apply {
-            authored = today
-            questionnaire = "Questionnaire/1"
-          },
-          QuestionnaireResponse().apply {
-            authored = yesterday
-            questionnaire = "Questionnaire/2"
-          }
+          SearchResult(
+            QuestionnaireResponse().apply {
+              authored = today
+              questionnaire = "Questionnaire/1"
+            },
+            included = null,
+            revIncluded = null
+          ),
+          SearchResult(
+            QuestionnaireResponse().apply {
+              authored = yesterday
+              questionnaire = "Questionnaire/2"
+            },
+            included = null,
+            revIncluded = null
+          )
         )
 
       val results =
@@ -265,10 +280,14 @@ class PatientRepositoryTest : RobolectricTest() {
     coroutineTestRule.runBlockingTest {
       coEvery { fhirEngine.search<Questionnaire>(any<Search>()) } returns
         listOf(
-          Questionnaire().apply {
-            name = "g6pd-test"
-            title = "G6PD Test"
-          }
+          SearchResult(
+            Questionnaire().apply {
+              name = "g6pd-test"
+              title = "G6PD Test"
+            },
+            included = null,
+            revIncluded = null
+          )
         )
 
       val results = repository.fetchTestForms(searchFilter())
@@ -283,7 +302,9 @@ class PatientRepositoryTest : RobolectricTest() {
   fun testFetchTestFormShouldHandleNullNameAndTitle() =
     coroutineTestRule.runBlockingTest {
       coEvery { fhirEngine.search<Questionnaire>(any<Search>()) } returns
-        listOf(Questionnaire().apply { id = "1234" })
+        listOf(
+          SearchResult(Questionnaire().apply { id = "1234" }, included = null, revIncluded = null)
+        )
 
       val results = repository.fetchTestForms(searchFilter())
 
@@ -298,10 +319,14 @@ class PatientRepositoryTest : RobolectricTest() {
     coroutineTestRule.runBlockingTest {
       coEvery { fhirEngine.search<Questionnaire>(any<Search>()) } returns
         listOf(
-          Questionnaire().apply {
-            id = "1234"
-            name = "Form name"
-          }
+          SearchResult(
+            Questionnaire().apply {
+              id = "1234"
+              name = "Form name"
+            },
+            included = null,
+            revIncluded = null
+          )
         )
 
       val results = repository.fetchTestForms(searchFilter())
@@ -316,10 +341,14 @@ class PatientRepositoryTest : RobolectricTest() {
     coroutineTestRule.runBlockingTest {
       coEvery { fhirEngine.search<Questionnaire>(any<Search>()) } returns
         listOf(
-          Questionnaire().apply {
-            id = "1234"
-            title = "Form name"
-          }
+          SearchResult(
+            Questionnaire().apply {
+              id = "1234"
+              title = "Form name"
+            },
+            included = null,
+            revIncluded = null
+          )
         )
 
       val results = repository.fetchTestForms(searchFilter())
@@ -470,61 +499,73 @@ class PatientRepositoryTest : RobolectricTest() {
   }
   private fun getEncounter() = Encounter().apply { id = "1" }
 
-  private fun getObservations(): List<Observation> {
+  private fun getObservations(): List<SearchResult<Observation>> {
     return listOf(
-      Observation().apply {
-        encounter = Reference().apply { reference = "Encounter/1" }
-        code =
-          CodeableConcept().apply {
-            addCoding().apply {
-              system = "http://snomed.info/sct"
-              code = "86859003"
-            }
-          }
-      },
-      Observation().apply {
-        encounter = Reference().apply { reference = "Encounter/1" }
-        code =
-          CodeableConcept().apply {
-            addCoding().apply {
-              system = "http://snomed.info/sct"
-              code = "259695003"
-            }
-          }
-      }
-    )
-  }
-
-  private fun getConditions(): List<Condition> {
-    val today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
-    return listOf(
-      Condition().apply {
-        recordedDate = today
-        category =
-          listOf(
+      SearchResult(
+        Observation().apply {
+          encounter = Reference().apply { reference = "Encounter/1" }
+          code =
             CodeableConcept().apply {
               addCoding().apply {
                 system = "http://snomed.info/sct"
-                code = "9024005"
+                code = "86859003"
               }
             }
-          )
-        code =
-          CodeableConcept().apply {
-            addCoding().apply {
-              system = "http://snomed.info/sct"
-              code = "11896004"
-              display = "Intermediate"
+        },
+        included = null,
+        revIncluded = null
+      ),
+      SearchResult(
+        Observation().apply {
+          encounter = Reference().apply { reference = "Encounter/1" }
+          code =
+            CodeableConcept().apply {
+              addCoding().apply {
+                system = "http://snomed.info/sct"
+                code = "259695003"
+              }
             }
-          }
-      }
+        },
+        included = null,
+        revIncluded = null
+      )
+    )
+  }
+
+  private fun getConditions(): List<SearchResult<Condition>> {
+    val today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
+    return listOf(
+      SearchResult(
+        Condition().apply {
+          recordedDate = today
+          category =
+            listOf(
+              CodeableConcept().apply {
+                addCoding().apply {
+                  system = "http://snomed.info/sct"
+                  code = "9024005"
+                }
+              }
+            )
+          code =
+            CodeableConcept().apply {
+              addCoding().apply {
+                system = "http://snomed.info/sct"
+                code = "11896004"
+                display = "Intermediate"
+              }
+            }
+        },
+        included = null,
+        revIncluded = null
+      )
     )
   }
 
   @Test
   fun testGetConditionShouldReturnValidCondition() = runBlockingTest {
     coEvery { fhirEngine.search<Condition>(any<Search>()) } returns
-      listOf(Condition().apply { id = "c1" })
+      listOf(SearchResult(Condition().apply { id = "c1" }, included = null, revIncluded = null))
 
     val result =
       repository.getCondition(
@@ -540,7 +581,7 @@ class PatientRepositoryTest : RobolectricTest() {
   @Test
   fun testGetObservationShouldReturnValidObservation() = runBlockingTest {
     coEvery { fhirEngine.search<Observation>(any<Search>()) } returns
-      listOf(Observation().apply { id = "o1" })
+      listOf(SearchResult(Observation().apply { id = "o1" }, included = null, revIncluded = null))
 
     val result =
       repository.getObservation(
@@ -556,7 +597,9 @@ class PatientRepositoryTest : RobolectricTest() {
   @Test
   fun testGetMedicationRequestShouldReturnValidMedicationRequest() = runBlockingTest {
     coEvery { fhirEngine.search<MedicationRequest>(any<Search>()) } returns
-      listOf(MedicationRequest().apply { id = "mr1" })
+      listOf(
+        SearchResult(MedicationRequest().apply { id = "mr1" }, included = null, revIncluded = null)
+      )
 
     val result =
       repository.getMedicationRequest(

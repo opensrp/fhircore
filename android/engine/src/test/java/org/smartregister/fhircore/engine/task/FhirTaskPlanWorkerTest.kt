@@ -27,6 +27,7 @@ import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -72,22 +73,30 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
     val tomorrow = DateTime().plusDays(1).toDate()
     val tasks =
       mutableListOf(
-        Task().apply {
-          status = Task.TaskStatus.READY
-          executionPeriod =
-            Period().apply {
-              start = pastDate
-              end = tomorrow
-            }
-        },
-        Task().apply {
-          status = Task.TaskStatus.READY
-          executionPeriod =
-            Period().apply {
-              start = pastDate
-              end = pastDate
-            }
-        }
+        SearchResult(
+          Task().apply {
+            status = Task.TaskStatus.READY
+            executionPeriod =
+              Period().apply {
+                start = pastDate
+                end = tomorrow
+              }
+          },
+          included = null,
+          revIncluded = null
+        ),
+        SearchResult(
+          Task().apply {
+            status = Task.TaskStatus.READY
+            executionPeriod =
+              Period().apply {
+                start = pastDate
+                end = pastDate
+              }
+          },
+          included = null,
+          revIncluded = null
+        )
       )
 
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns tasks

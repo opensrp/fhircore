@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.task
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
@@ -307,7 +308,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.create(any()) } answers { listOf() }
     coEvery { fhirEngine.update(any()) } answers {}
     coEvery { fhirEngine.get<CarePlan>(any()) } returns carePlan
-    coEvery { fhirEngine.search<CarePlan>(any<Search>()) } returns listOf(carePlan)
+    coEvery { fhirEngine.search<CarePlan>(any<Search>()) } returns
+      listOf(SearchResult(carePlan, included = null, revIncluded = null))
     coEvery { fhirEngine.get<Task>(task.logicalId) } returns task
     coEvery { fhirEngine.update(task) } answers {}
 

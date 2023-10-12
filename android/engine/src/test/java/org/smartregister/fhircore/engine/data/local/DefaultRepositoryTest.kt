@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
@@ -266,7 +267,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   fun testSearchCompositionByIdentifier() = runBlockingTest {
     val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns
-      listOf(Composition().apply { id = "123" })
+      listOf(SearchResult(Composition().apply { id = "123" }, included = null, revIncluded = null))
 
     val defaultRepository =
       DefaultRepository(
