@@ -62,7 +62,7 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
   override fun createType(appInfo: Any, name: String): Base {
     return when (name) {
       "RiskAssessment_Prediction" -> RiskAssessmentPredictionComponent()
-      "Immunization_VaccinationProtocol" -> Immunization.ImmunizationProtocolAppliedComponent()
+      "Immunization_AppliedProtocol" -> Immunization.ImmunizationProtocolAppliedComponent()
       "Immunization_Reaction" -> Immunization.ImmunizationReactionComponent()
       "EpisodeOfCare_Diagnosis" -> EpisodeOfCare.DiagnosisComponent()
       "Encounter_Diagnosis" -> Encounter.DiagnosisComponent()
@@ -79,7 +79,6 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "Task_Output" -> Task.TaskOutputComponent()
       "Task_Restriction" -> Task.TaskRestrictionComponent()
       "AdverseEvent_SuspectEntity" -> AdverseEvent.AdverseEventSuspectEntityComponent()
-      "protocolApplied" -> Immunization.ImmunizationProtocolAppliedComponent()
       else -> ResourceFactory.createResourceOrType(name)
     }
   }
