@@ -166,7 +166,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
     }
 
   @Test
-  fun testThatOnBackPressShowsConfirmationAlertDialog() = runTest {
+  fun testThatOnBackPressShowsConfirmationAlertDialog() {
     setupActivity()
     questionnaireActivity.onBackPressedDispatcher.onBackPressed()
     val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestAlertDialog())
