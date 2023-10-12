@@ -54,7 +54,7 @@ class TransformSupportServicesTest : RobolectricTest() {
   fun `createType() should return ImmunizationProtocol when given Immunization_VaccinationProtocol`() {
     Assert.assertTrue(
       transformSupportServices.createType("", "Immunization_AppliedProtocol")
-        is Immunization.ImmunizationProtocolAppliedComponent,
+        is Immunization.ImmunizationProtocolAppliedComponent
     )
   }
 
