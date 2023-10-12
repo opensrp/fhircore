@@ -406,7 +406,7 @@ constructor(
       } else {
         // The assumption here is that only 1 practitioner is returned from the server in the
         // practitioner details
-        practitioners.first().identifier.forEach { identifier ->
+        practitioners.firstOrNull()?.identifier?.forEach { identifier ->
           if (
             identifier.hasUse() &&
               identifier.use == org.hl7.fhir.r4.model.Identifier.IdentifierUse.SECONDARY &&

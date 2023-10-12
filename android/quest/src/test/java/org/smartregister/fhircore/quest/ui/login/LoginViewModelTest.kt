@@ -627,6 +627,36 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testSavePractitionerDetailsChaRoleWithIdentifier() {
+    coEvery { defaultRepository.createRemote(true, any()) } just runs
+    loginViewModel.savePractitionerDetails(
+      practitionerDetails().apply {
+        fhirPractitionerDetails =
+          FhirPractitionerDetails().apply {
+            practitioners =
+              listOf(
+                Practitioner().apply {
+                  identifier =
+                    listOf(
+                      Identifier().apply {
+                        use = Identifier.IdentifierUse.SECONDARY
+                        value = "cha"
+                      },
+                    )
+                },
+              )
+          }
+      },
+      UserInfo(
+        keycloakUuid = "cha",
+      ),
+    ) {}
+    Assert.assertNotNull(
+      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+    )
+  }
+
+  @Test
   fun testSavePractitionerDetailsSupervisorRole() {
     coEvery { defaultRepository.createRemote(false, any()) } just runs
     loginViewModel.savePractitionerDetails(
