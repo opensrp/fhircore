@@ -1,413 +1,178 @@
 {
   "resourceType": "QuestionnaireResponse",
-  "id": "09314dc9-3464-47e5-8895-c0c24d41ff18",
-  "meta": {
-    "tag": [
-      {
-        "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
-        "display": "eCBIS Child Immunization"
-      },
-      {
-        "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
-        "display": "eCBIS Child Immunization"
-      }
-    ]
-  },
-  "contained": [
-    {
-      "resourceType": "Encounter",
-      "id": "24938677-8de7-4d7f-bd82-61f26b3e69b0",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "1.0.0",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "b529caca-3f2c-495e-8cc3-135fe89406c0",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "6fd71055-f839-48ac-a0e0-ffaf11195c41",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "6400cbeb-04a3-4137-bbb6-f0d4269f2784",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "c71ce5d7-3ac2-474c-ad14-bf661a74cbb5",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "status": "finished",
-      "class": {
-        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
-        "code": "HH"
-      },
-      "type": [
-        {
-          "coding": [
-            {
-              "system": "https://smartregister.org/",
-              "code": "child_immunization",
-              "display": "Child Immunization"
-            }
-          ],
-          "text": "Child Immunization"
-        },
-        {
-          "coding": [
-            {
-              "system": "https://smartregister.org/",
-              "code": "41000179103",
-              "display": "Immunization record (record artifact)"
-            }
-          ],
-          "text": "Immunization record (record artifact)"
-        }
-      ],
-      "priority": {
-        "coding": [
-          {
-            "system": "http://terminology.hl7.org/ValueSet/v3-ActPriority",
-            "code": "EL",
-            "display": "Elective"
-          }
-        ],
-        "text": "Elective"
-      },
-      "subject": {
-        "reference": "Patient/83409c97-1bee-4fca-9ba5-4aa16e7d3ecf"
-      },
-      "participant": [
-        {
-          "individual": {
-            "reference": "Practitioner/c71ce5d7-3ac2-474c-ad14-bf661a74cbb5"
-          }
-        }
-      ],
-      "period": {
-        "start": "2023-10-02T17:23:28+05:00",
-        "end": "2023-10-02T17:23:28+05:00"
-      },
-      "reasonCode": [
-        {
-          "coding": [
-            {
-              "system": "https://smartregister.org/",
-              "code": "child_immunization",
-              "display": "Child Immunization"
-            }
-          ],
-          "text": "Child Immunization"
-        },
-        {
-          "coding": [
-            {
-              "system": "https://smartregister.org/",
-              "code": "429511000124109",
-              "display": "Tetanus + diphtheria + acellular pertussis vaccine"
-            }
-          ],
-          "text": "Tetanus + diphtheria + acellular pertussis vaccine"
-        }
-      ],
-      "serviceProvider": {
-        "reference": "Organization/6400cbeb-04a3-4137-bbb6-f0d4269f2784"
-      }
-    },
-    {
-      "resourceType": "Encounter",
-      "id": "8b7dcc2a-bd7a-477c-8e90-04e2b7a53c6b",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "1.0.0",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "b529caca-3f2c-495e-8cc3-135fe89406c0",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "6fd71055-f839-48ac-a0e0-ffaf11195c41",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "6400cbeb-04a3-4137-bbb6-f0d4269f2784",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "c71ce5d7-3ac2-474c-ad14-bf661a74cbb5",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "status": "finished",
-      "class": {
-        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
-        "code": "HH"
-      },
-      "type": [
-        {
-          "coding": [
-            {
-              "system": "https://smartregister.org/",
-              "code": "child_immunization",
-              "display": "Child Immunization"
-            }
-          ],
-          "text": "Child Immunization"
-        },
-        {
-          "coding": [
-            {
-              "system": "https://smartregister.org/",
-              "code": "33879002",
-              "display": "Administration of vaccine to produce active immunity (procedure)"
-            }
-          ],
-          "text": "Administration of vaccine to produce active immunity (procedure)"
-        }
-      ],
-      "priority": {
-        "coding": [
-          {
-            "system": "http://terminology.hl7.org/ValueSet/v3-ActPriority",
-            "code": "EL",
-            "display": "Elective"
-          }
-        ],
-        "text": "Elective"
-      },
-      "subject": {
-        "reference": "Patient/83409c97-1bee-4fca-9ba5-4aa16e7d3ecf"
-      },
-      "participant": [
-        {
-          "individual": {
-            "reference": "Practitioner/c71ce5d7-3ac2-474c-ad14-bf661a74cbb5"
-          }
-        }
-      ],
-      "period": {
-        "start": "2023-10-02T17:23:28+05:00",
-        "end": "2023-10-02T17:23:28+05:00"
-      },
-      "reasonCode": [
-        {
-          "coding": [
-            {
-              "system": "https://smartregister.org/",
-              "code": "child_immunization",
-              "display": "Child Immunization"
-            }
-          ],
-          "text": "Child Immunization"
-        },
-        {
-          "coding": [
-            {
-              "system": "https://smartregister.org/",
-              "code": "429511000124109",
-              "display": "Tetanus + diphtheria + acellular pertussis vaccine"
-            }
-          ],
-          "text": "Tetanus + diphtheria + acellular pertussis vaccine"
-        }
-      ],
-      "serviceProvider": {
-        "reference": "Organization/6400cbeb-04a3-4137-bbb6-f0d4269f2784"
-      },
-      "partOf": {
-        "reference": "Encounter/24938677-8de7-4d7f-bd82-61f26b3e69b0"
-      }
-    },
-    {
-      "resourceType": "Immunization",
-      "id": "17610add-28d4-4677-a019-34b98ce50039",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "1.0.0",
-            "display": "Application Version"
-          },
-          {
-            "system": "https://smartregister.org/care-team-tag-id",
-            "code": "b529caca-3f2c-495e-8cc3-135fe89406c0",
-            "display": "Practitioner CareTeam"
-          },
-          {
-            "system": "https://smartregister.org/location-tag-id",
-            "code": "6fd71055-f839-48ac-a0e0-ffaf11195c41",
-            "display": "Practitioner Location"
-          },
-          {
-            "system": "https://smartregister.org/organisation-tag-id",
-            "code": "6400cbeb-04a3-4137-bbb6-f0d4269f2784",
-            "display": "Practitioner Organization"
-          },
-          {
-            "system": "https://smartregister.org/practitioner-tag-id",
-            "code": "c71ce5d7-3ac2-474c-ad14-bf661a74cbb5",
-            "display": "Practitioner"
-          }
-        ]
-      },
-      "status": "completed",
-      "vaccineCode": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "429511000124109",
-            "display": "Tetanus + diphtheria + acellular pertussis vaccine"
-          }
-        ],
-        "text": "Tetanus + diphtheria + acellular pertussis vaccine"
-      },
-      "patient": {
-        "reference": "Patient/83409c97-1bee-4fca-9ba5-4aa16e7d3ecf"
-      },
-      "encounter": {
-        "reference": "Encounter/8b7dcc2a-bd7a-477c-8e90-04e2b7a53c6b"
-      },
-      "occurrenceString": "2023-10-01T00:00:00.00Z",
-      "reasonCode": [
-        {
-          "coding": [
-            {
-              "system": "http://snomed.info/sct",
-              "code": "33879002",
-              "display": "Administration of vaccine to produce active immunity (procedure)"
-            }
-          ],
-          "text": "Administration of vaccine to produce active immunity (procedure)"
-        }
-      ]
-    },
-    {
-      "resourceType": "Task",
-      "id": "4aae4807-2065-4842-810a-bf378116592e",
-      "meta": {
-        "tag": [
-          {
-            "system": "https://smartregister.org/app-version",
-            "code": "1.0.0",
-            "display": "Application Version"
-          }
-        ]
-      },
-      "output": [
-        {
-          "type": {
-            "coding": [
-              {
-                "system": "http://snomed.info/sct",
-                "code": "41000179103",
-                "display": "Immunization record (record artifact)"
-              }
-            ]
-          },
-          "valueReference": {
-            "reference": "Encounter/24938677-8de7-4d7f-bd82-61f26b3e69b0"
-          }
-        },
-        {
-          "type": {
-            "coding": [
-              {
-                "system": "http://snomed.info/sct",
-                "code": "41000179103",
-                "display": "Immunization record (record artifact)"
-              }
-            ]
-          },
-          "valueReference": {
-            "reference": "Encounter/8b7dcc2a-bd7a-477c-8e90-04e2b7a53c6b"
-          }
-        },
-        {
-          "type": {
-            "coding": [
-              {
-                "system": "http://snomed.info/sct",
-                "code": "41000179103",
-                "display": "Immunization record (record artifact)"
-              }
-            ]
-          },
-          "valueReference": {
-            "reference": "Immunization/17610add-28d4-4677-a019-34b98ce50039"
-          }
-        }
-      ]
-    }
-  ],
-  "questionnaire": "Questionnaire/9b1aa23b-577c-4fb2-84e3-591e6facaf82",
-  "status": "completed",
+  "questionnaire": "Questionnaire/3435",
   "subject": {
-    "reference": "Patient/83409c97-1bee-4fca-9ba5-4aa16e7d3ecf"
+    "reference": "Patient/TEST_PATIENT"
   },
-  "authored": "2023-10-02T17:23:11+05:00",
   "item": [
     {
-      "linkId": "patient-birthdate"
-    },
-    {
-      "linkId": "1e1f0f3b-58de-41b4-8db0-6c4b033cce57",
-      "text": "Date of Immunization",
-      "answer": [
+      "linkId": "bio",
+      "item": [
         {
-          "valueDate": "2023-10-01"
-        }
-      ]
-    },
-    {
-      "linkId": "903ac7cf-663d-43d5-8d1e-ae23a3d68d0d",
-      "text": "Task Immunization Code",
-      "answer": [
+          "linkId": "PR-name",
+          "item": [
+            {
+              "linkId": "PR-name-family",
+              "answer": [
+                {
+                  "valueString": "Hadi"
+                }
+              ]
+            },
+            {
+              "linkId": "PR-name-given",
+              "answer": [
+                {
+                  "valueString": "Bareera"
+                }
+              ]
+            }
+          ]
+        },
         {
-          "valueString": "429511000124109"
-        }
-      ]
-    },
-    {
-      "linkId": "8baf36fb-0529-4678-b19d-933211faf3a2",
-      "text": "Task Immunization Text",
-      "answer": [
+          "linkId": "PR-identifier-info",
+          "item": [
+            {
+              "linkId": "PR-identifier-nid",
+              "answer": [
+                {
+                  "valueString": "3456"
+                }
+              ]
+            }
+          ]
+        },
         {
-          "valueString": "Tetanus + diphtheria + acellular pertussis vaccine"
-        }
-      ]
-    },
-    {
-      "linkId": "ccc7ec06-f61d-4bec-a9ad-93cd644a0da2",
-      "text": "Task ID",
-      "answer": [
+          "linkId": "PR-gender",
+          "answer": [
+            {
+              "valueCoding": {
+                "code": "female",
+                "display": "Female"
+              }
+            }
+          ]
+        },
         {
-          "valueString": "4aae4807-2065-4842-810a-bf378116592e"
-        }
-      ]
-    },
-    {
-      "linkId": "vaccine-dose-number",
-      "text": "Vaccine dose number",
-      "answer": [
+          "linkId": "PR-birth-date",
+          "answer": [
+            {
+              "valueDate": "1998-12-14"
+            }
+          ]
+        },
         {
-          "valueString": "Penta 1"
+          "linkId": "PR-marital-status",
+          "answer": [
+            {
+              "valueCoding": {
+                "code": "married",
+                "display": "Married"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "is_pregnant",
+          "answer": [
+            {
+              "valueCoding": {
+                "system": "http://snomed.info/sct",
+                "code": "77386006",
+                "display": "Pregnant"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "PR-telecom",
+          "item": [
+            {
+              "linkId": "PR-telecom-value",
+              "answer": [
+                {
+                  "valueString": "4688755"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "PR-address",
+          "item": [
+            {
+              "linkId": "PR-address-city",
+              "answer": [
+                {
+                  "valueString": "NAIROBI"
+                }
+              ]
+            },
+            {
+              "linkId": "PR-address-country",
+              "answer": [
+                {
+                  "valueString": "Kenya"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "PR-ethnicity-group",
+          "item": [
+            {
+              "linkId": "PR-ethnicity-authority",
+              "answer": [
+                {
+                  "valueString": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity"
+                }
+              ]
+            },
+            {
+              "linkId": "PR-ethnicity",
+              "answer": [
+                {
+                  "valueCoding": {
+                    "code": "black",
+                    "display": "Black"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "PR-occupation-group",
+          "item": [
+            {
+              "linkId": "PR-occupation-authority",
+              "answer": [
+                {
+                  "valueString": "http://hl7.org.nz/fhir/StructureDefinition/current-occupation"
+                }
+              ]
+            },
+            {
+              "linkId": "PR-occupation",
+              "answer": [
+                {
+                  "valueCoding": {
+                    "code": "employed",
+                    "display": "Employed"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "PR-active",
+          "answer": [
+            {
+              "valueBoolean": true
+            }
+          ]
         }
       ]
     }
