@@ -48,6 +48,7 @@ import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
@@ -896,6 +897,34 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireState,
       questionnaireViewModel.questionnaireProgressStateLiveData.value,
     )
+  }
+
+  @Test
+  fun testAddPractitionerInfoAppendedCorrectlyOnEncounterResource() {
+    val encounter = Encounter().apply { this.id = "123456" }
+    questionnaireViewModel.appendPractitionerInfo(encounter)
+    Assert.assertEquals("Practitioner/12345", encounter.participant.first().individual.reference)
+  }
+
+  @Test
+  fun testAddPractitionerInfoAppendedCorrectlyOnObservationResource() {
+    val observation = Observation().apply { this.id = "123456" }
+    questionnaireViewModel.appendPractitionerInfo(observation)
+    Assert.assertEquals("Practitioner/12345", observation.performer.first().reference)
+  }
+
+  @Test
+  fun testAddPractitionerInfoAppendedCorrectlyOnQuestionnaireResponse() {
+    val questionnaireResponse = QuestionnaireResponse().apply { this.id = "123456" }
+    questionnaireViewModel.appendPractitionerInfo(questionnaireResponse)
+    Assert.assertEquals("Practitioner/12345", questionnaireResponse.author.reference)
+  }
+
+  @Test
+  fun testAddPractitionerInfoAppendedCorrectlyOnPatientResource() {
+    val patient = Patient().apply { Patient@ this.id = "123456" }
+    questionnaireViewModel.appendPractitionerInfo(patient)
+    Assert.assertEquals("Practitioner/12345", patient.generalPractitioner.first().reference)
   }
 
   @Test
