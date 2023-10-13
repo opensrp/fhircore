@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -121,31 +122,29 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
         filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
         filter(Appointment.DATE, { value = of(DateTimeType.today()) })
       }
+
     val appointments =
       listOf(
-        SearchResult(
-          Appointment().apply {
-            status = Appointment.AppointmentStatus.BOOKED
-            start = Date()
-            addParticipant().apply { actor = Reference().apply { reference = "Patient/random" } }
+        Appointment().apply {
+          status = Appointment.AppointmentStatus.BOOKED
+          start = Date()
+          addParticipant().apply { actor = Reference().apply { reference = "Patient/random" } }
 
-            addParticipant().apply {
-              actor = Reference().apply { reference = "Practitioner/random" }
-            }
-          },
-          included = null,
-          revIncluded = null
-        ),
-        SearchResult(
-          Appointment().apply {
-            status = Appointment.AppointmentStatus.BOOKED
-            start = Date()
-          },
-          included = null,
-          revIncluded = null
-        )
+          addParticipant().apply { actor = Reference().apply { reference = "Practitioner/random" } }
+        },
+        Appointment().apply {
+          status = Appointment.AppointmentStatus.BOOKED
+          start = Date()
+        }
       )
-    coEvery { fhirEngine.search<Appointment>(search) } returns appointments
+
+    coEvery { fhirEngine.search<Resource>(any<Search>()) } answers
+      {
+        val searchObj = firstArg<Search>()
+        if (searchObj.type == ResourceType.Appointment) {
+          appointments.map { SearchResult(it, revIncluded = null, included = null) }
+        } else emptyList()
+      }
 
     val count = appointmentRegisterDao.countRegisterData("1234")
     Assert.assertEquals(1, count)
@@ -196,22 +195,24 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
   fun loadRegisterDataReturnsAppointmentRegisterData() = runTest {
     val startDate = Date()
     val appointment =
-      SearchResult(
-        Appointment().apply {
-          status = Appointment.AppointmentStatus.BOOKED
-          start = startDate
+      Appointment().apply {
+        status = Appointment.AppointmentStatus.BOOKED
+        start = startDate
 
-          addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
-          addParticipant().apply { actor = Reference().apply { reference = "Patient/1234" } }
-          addReasonCode(CodeableConcept(Coding().apply { code = "Milestone" }))
-        },
-        included = null,
-        revIncluded = null
-      )
-
-    coEvery { fhirEngine.search<Appointment>(Search(ResourceType.Appointment)) } returns
-      listOf(appointment)
-    coEvery { fhirEngine.search<Condition>(Search(ResourceType.Condition)) } returns listOf()
+        addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
+        addParticipant().apply { actor = Reference().apply { reference = "Patient/1234" } }
+        addReasonCode(CodeableConcept(Coding().apply { code = "Milestone" }))
+      }
+    coEvery { fhirEngine.search<Resource>(any()) } answers
+      {
+        val searchObj = firstArg<Search>()
+        when (searchObj.type) {
+          ResourceType.Appointment ->
+            listOf(SearchResult(appointment, included = null, revIncluded = null))
+          ResourceType.Condition -> emptyList()
+          else -> emptyList()
+        }
+      }
     val data = appointmentRegisterDao.loadRegisterData(0, loadAll = true, appFeatureName = null)
     Assert.assertTrue(data.isNotEmpty())
     Assert.assertTrue(data.all { it is RegisterData.AppointmentRegisterData })
@@ -231,40 +232,43 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
       }
     coEvery { fhirEngine.get(ResourceType.Patient, "12345-3214") } returns patient1
     val appointment1 =
-      SearchResult(
-        Appointment().apply {
-          id = "appointment1"
-          status = Appointment.AppointmentStatus.BOOKED
-          start = startDate
+      Appointment().apply {
+        id = "appointment1"
+        status = Appointment.AppointmentStatus.BOOKED
+        start = startDate
 
-          addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
-          addParticipant().apply { actor = Reference().apply { reference = "Patient/12345-3214" } }
-          addReasonCode(CodeableConcept(Coding().apply { code = "Milestone" }))
-        },
-        included = null,
-        revIncluded = null
-      )
+        addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
+        addParticipant().apply { actor = Reference().apply { reference = "Patient/12345-3214" } }
+        addReasonCode(CodeableConcept(Coding().apply { code = "Milestone" }))
+      }
     val patient2 =
       buildPatient("1234-4321-3214", "doedoe", "janen", 10, patientType = "exposed-infant")
     coEvery { fhirEngine.get(ResourceType.Patient, "1234-4321-3214") } returns patient2
     val appointment2 =
-      SearchResult(
-        Appointment().apply {
-          id = "appointment2"
-          status = Appointment.AppointmentStatus.BOOKED
-          start = startDate
-          addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
-          addParticipant().apply {
-            actor = Reference().apply { reference = "Patient/1234-4321-3214" }
-          }
-          addReasonCode(CodeableConcept(Coding().apply { code = "ICT" }))
-        },
-        included = null,
-        revIncluded = null
-      )
-    coEvery { fhirEngine.search<Condition>(Search(ResourceType.Condition)) } returns listOf()
-    coEvery { fhirEngine.search<Appointment>(Search(ResourceType.Appointment)) } returns
-      listOf(appointment1, appointment2)
+      Appointment().apply {
+        id = "appointment2"
+        status = Appointment.AppointmentStatus.BOOKED
+        start = startDate
+        addParticipant().apply { actor = Reference().apply { reference = "Practitioner/123" } }
+        addParticipant().apply {
+          actor = Reference().apply { reference = "Patient/1234-4321-3214" }
+        }
+        addReasonCode(CodeableConcept(Coding().apply { code = "ICT" }))
+      }
+
+    coEvery { fhirEngine.search<Resource>(any()) } answers
+      {
+        val searchObj = firstArg<Search>()
+        when (searchObj.type) {
+          ResourceType.Appointment ->
+            listOf(appointment1, appointment2).map {
+              SearchResult(it, revIncluded = null, included = null)
+            }
+          ResourceType.Condition -> emptyList()
+          else -> emptyList()
+        }
+      }
+
     val data =
       appointmentRegisterDao.loadRegisterFiltered(
         0,

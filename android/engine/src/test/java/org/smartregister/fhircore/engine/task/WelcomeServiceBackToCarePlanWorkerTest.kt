@@ -47,6 +47,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Period
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
@@ -119,10 +120,17 @@ class WelcomeServiceBackToCarePlanWorkerTest : RobolectricTest() {
         period = Period().apply { start = Date() }
         subject = patient0.asReference()
       }
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns
-      listOf(SearchResult(carePlan0, included = null, revIncluded = null))
-    coEvery { fhirEngine.search<Task>(Search(ResourceType.Task)) } returns
-      listOf(SearchResult(task0, included = null, revIncluded = null))
+    coEvery { fhirEngine.search<Resource>(any()) } answers
+      {
+        val searchObj = firstArg() as Search
+        when (searchObj.type) {
+          ResourceType.CarePlan ->
+            listOf(SearchResult(carePlan0, included = null, revIncluded = null))
+          ResourceType.Task -> listOf(SearchResult(task0, included = null, revIncluded = null))
+          else -> listOf()
+        }
+      }
+
     coEvery { fhirEngine.get(ResourceType.Patient, patient0.logicalId) } returns patient0
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.update(carePlan0) } just runs
@@ -198,10 +206,18 @@ class WelcomeServiceBackToCarePlanWorkerTest : RobolectricTest() {
         }
       }
 
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns
-      listOf(SearchResult(carePlan0, included = null, revIncluded = null))
-    coEvery { fhirEngine.search<Task>(Search(ResourceType.Task)) } returns
-      listOf(SearchResult(task0, included = null, revIncluded = null))
+    coEvery { fhirEngine.search<Resource>(any()) } answers
+      {
+        val searchObj = firstArg() as Search
+
+        when (searchObj.type) {
+          ResourceType.CarePlan ->
+            listOf(SearchResult(carePlan0, included = null, revIncluded = null))
+          ResourceType.Task -> listOf(SearchResult(task0, included = null, revIncluded = null))
+          else -> listOf()
+        }
+      }
+
     coEvery { fhirEngine.get(ResourceType.Patient, patient0.logicalId) } returns patient0
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.update(carePlan0) } just runs

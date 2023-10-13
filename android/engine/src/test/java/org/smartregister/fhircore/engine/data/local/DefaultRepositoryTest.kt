@@ -156,7 +156,8 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Test
   fun `loadRelatedPersons() should call FhirEngine#loadRelatedPersons`() {
     val patientId = "15672-9234"
-    val fhirEngine: FhirEngine = mockk()
+    val fhirEngine: FhirEngine = mockk<FhirEngine>()
+    mockkStatic(FhirEngine::loadRelatedPersons)
     coEvery { fhirEngine.loadRelatedPersons(patientId) } returns listOf()
 
     val defaultRepository =
@@ -171,12 +172,14 @@ class DefaultRepositoryTest : RobolectricTest() {
     runBlocking { defaultRepository.loadRelatedPersons(patientId) }
 
     coVerify { fhirEngine.loadRelatedPersons(patientId) }
+    unmockkStatic(FhirEngine::loadRelatedPersons)
   }
 
   @Test
   fun `loadImmunizations() should call FhirEngine#loadImmunizations`() {
     val patientId = "15672-9234"
     val fhirEngine: FhirEngine = mockk()
+    mockkStatic(FhirEngine::loadPatientImmunizations)
     coEvery { fhirEngine.loadPatientImmunizations(patientId) } returns listOf()
 
     val defaultRepository =
@@ -191,6 +194,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     runBlocking { defaultRepository.loadPatientImmunizations(patientId) }
 
     coVerify { fhirEngine.loadPatientImmunizations(patientId) }
+    mockkStatic(FhirEngine::loadPatientImmunizations)
   }
 
   @Test

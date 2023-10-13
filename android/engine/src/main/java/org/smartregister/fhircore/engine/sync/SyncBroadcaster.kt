@@ -78,9 +78,9 @@ constructor(
         sharedSyncStatus.emit(SyncJobStatus.Failed(listOf(authFailResourceSyncException)))
         return@launch
       }
-      Sync.oneTimeSync<AppSyncWorker>(appContext).apply {
-        collect(sharedSyncStatus::emit)
-        collect(this@SyncBroadcaster::traceSync)
+      Sync.oneTimeSync<AppSyncWorker>(appContext).collect {
+        sharedSyncStatus.emit(it)
+        this@SyncBroadcaster.traceSync(it)
       }
     }
   }
@@ -92,7 +92,7 @@ constructor(
     scope.launch { sharedSyncStatus.collect { onSyncListener.onSync(state = it) } }
   }
 
-  private fun traceSync(syncJobStatus: SyncJobStatus) =
+  private fun traceSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
       is SyncJobStatus.Failed, is SyncJobStatus.Finished -> {
         tracer.putAttribute(SYNC_TRACE, SYNC_ATTR_RESULT, syncJobStatus::class.java.simpleName)
@@ -109,6 +109,7 @@ constructor(
         )
       }
     }
+  }
 
   companion object {
     const val SYNC_TRACE = "runSync"

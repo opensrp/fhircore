@@ -144,12 +144,9 @@ class ApplicationExtensionTest : RobolectricTest() {
     val captureSlot = slot<Search>()
     val patient1 = Patient().apply { id = "patient-john-doe" }
     val patient2 = Patient().apply { id = "patient-mary-joe" }
-    val expectedPatientList =
-      listOf(
-        SearchResult(patient1, included = null, revIncluded = null),
-        SearchResult(patient2, included = null, revIncluded = null)
-      )
-    coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns expectedPatientList
+    val expectedPatientList = listOf(patient1, patient2)
+    coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns
+      expectedPatientList.map { SearchResult(it, included = null, revIncluded = null) }
 
     val patientsList: List<Patient>
     runBlocking { patientsList = fhirEngine.searchActivePatients("", 0, false).map { it.resource } }
@@ -236,12 +233,9 @@ class ApplicationExtensionTest : RobolectricTest() {
     val captureSlot = slot<Search>()
     val patient1 = Patient().apply { id = "patient-john-doe" }
     val patient2 = Patient().apply { id = "patient-mary-joe" }
-    val expectedPatientList =
-      listOf(
-        SearchResult(patient1, included = null, revIncluded = null),
-        SearchResult(patient2, included = null, revIncluded = null)
-      )
-    coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns expectedPatientList
+    val expectedPatientList = listOf(patient1, patient2)
+    coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns
+      expectedPatientList.map { SearchResult(it, included = null, revIncluded = null) }
     coEvery { fhirEngine.countActivePatients() } returns 923L
 
     val patientsList: List<Patient>

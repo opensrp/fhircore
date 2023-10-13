@@ -638,6 +638,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { defaultRepo.loadRelatedPersons("2") } returns
       listOf(RelatedPerson().apply { id = "3" })
 
+    coEvery { fhirEngine.search<Resource>(any<Search>()) } answers
+      {
+        val searchObj = firstArg<Search>()
+        when (searchObj.type) {
+          ResourceType.Appointment -> listOf()
+          ResourceType.CarePlan -> listOf()
+          else -> emptyList()
+        }
+      }
     coEvery { fhirEngine.search<Appointment>(Search(ResourceType.Appointment)) } returns listOf()
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
