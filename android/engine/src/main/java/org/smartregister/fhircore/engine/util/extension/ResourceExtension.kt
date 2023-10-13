@@ -265,6 +265,8 @@ fun Resource.appendPractitionerInfo(practitionerId: String?) {
 
     when (this) {
       is Patient -> generalPractitioner = arrayListOf(practitionerRef)
+      is Observation -> performer = arrayListOf(practitionerRef)
+      is QuestionnaireResponse -> author = practitionerRef
       is Encounter ->
         participant =
           arrayListOf(
