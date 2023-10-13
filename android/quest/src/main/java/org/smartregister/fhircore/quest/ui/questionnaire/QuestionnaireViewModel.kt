@@ -40,12 +40,10 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
-import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -209,8 +207,7 @@ constructor(
 
       if (questionnaireConfig.setPractitionerDetails) {
         bundle.entry.forEach { bundleEntry ->
-          appendPractitionerInfo(bundleEntry.resource)
-          appendPractitionerInfo(currentQuestionnaireResponse)
+          bundleEntry.resource.appendPractitionerInfo(practitionerId)
         }
       }
 
@@ -786,23 +783,6 @@ constructor(
           null
         }
       }
-  }
-
-  fun appendPractitionerInfo(resource: Resource) {
-    practitionerId?.let {
-      // Convert practitioner uuid to reference e.g. "Practitioner/some-gibberish-uuid"
-      val practitionerRef = it.asReference(ResourceType.Practitioner)
-      when (resource) {
-        is Patient -> resource.generalPractitioner = arrayListOf(practitionerRef)
-        is Observation -> resource.performer = arrayListOf(practitionerRef)
-        is QuestionnaireResponse -> resource.author = practitionerRef
-        is Encounter ->
-          resource.participant =
-            arrayListOf(
-              Encounter.EncounterParticipantComponent().apply { individual = practitionerRef },
-            )
-      }
-    }
   }
 
   /** Load [Resource] of type [ResourceType] for the provided [resourceIdentifier] */

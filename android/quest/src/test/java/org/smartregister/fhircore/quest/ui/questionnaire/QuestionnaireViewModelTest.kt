@@ -82,6 +82,7 @@ import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -902,28 +903,28 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testAddPractitionerInfoAppendedCorrectlyOnEncounterResource() {
     val encounter = Encounter().apply { this.id = "123456" }
-    questionnaireViewModel.appendPractitionerInfo(encounter)
+    encounter.appendPractitionerInfo("12345")
     Assert.assertEquals("Practitioner/12345", encounter.participant.first().individual.reference)
   }
 
   @Test
   fun testAddPractitionerInfoAppendedCorrectlyOnObservationResource() {
     val observation = Observation().apply { this.id = "123456" }
-    questionnaireViewModel.appendPractitionerInfo(observation)
+    observation.appendPractitionerInfo("12345")
     Assert.assertEquals("Practitioner/12345", observation.performer.first().reference)
   }
 
   @Test
   fun testAddPractitionerInfoAppendedCorrectlyOnQuestionnaireResponse() {
     val questionnaireResponse = QuestionnaireResponse().apply { this.id = "123456" }
-    questionnaireViewModel.appendPractitionerInfo(questionnaireResponse)
+    questionnaireResponse.appendPractitionerInfo("12345")
     Assert.assertEquals("Practitioner/12345", questionnaireResponse.author.reference)
   }
 
   @Test
   fun testAddPractitionerInfoAppendedCorrectlyOnPatientResource() {
     val patient = Patient().apply { Patient@ this.id = "123456" }
-    questionnaireViewModel.appendPractitionerInfo(patient)
+    patient.appendPractitionerInfo("12345")
     Assert.assertEquals("Practitioner/12345", patient.generalPractitioner.first().reference)
   }
 
