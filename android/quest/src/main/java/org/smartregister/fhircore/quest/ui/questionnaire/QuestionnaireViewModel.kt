@@ -205,12 +205,6 @@ constructor(
           context = context,
         )
 
-      if (questionnaireConfig.setPractitionerDetails) {
-        bundle.entry.forEach { bundleEntry ->
-          bundleEntry.resource.appendPractitionerInfo(practitionerId)
-        }
-      }
-
       saveExtractedResources(
         bundle = bundle,
         questionnaire = questionnaire,
