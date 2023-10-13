@@ -69,6 +69,7 @@ import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -1349,6 +1350,20 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val encounter = Encounter().apply { this.id = "123456" }
     questionnaireViewModel.appendPractitionerInfo(encounter)
     Assert.assertEquals("Practitioner/12345", encounter.participant.first().individual.reference)
+  }
+
+  @Test
+  fun testAddPractitionerInfoAppendedCorrectlyOnObservation() {
+    val observation = Observation().apply { this.id = "123456" }
+    questionnaireViewModel.appendPractitionerInfo(observation)
+    Assert.assertEquals("Practitioner/12345", observation.performer.first().reference)
+  }
+
+  @Test
+  fun testAddPractitionerInfoAppendedCorrectlyOnQuestionnaireResponse() {
+    val questionnaireResponse = QuestionnaireResponse().apply { this.id = "123456" }
+    questionnaireViewModel.appendPractitionerInfo(questionnaireResponse)
+    Assert.assertEquals("Practitioner/12345", questionnaireResponse.author.reference)
   }
 
   @Test

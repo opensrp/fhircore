@@ -40,6 +40,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Location
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -214,6 +215,7 @@ constructor(
 
           if (questionnaireConfig.setPractitionerDetails) {
             appendPractitionerInfo(bundleEntry.resource)
+            appendPractitionerInfo(questionnaireResponse)
           }
           if (questionnaireConfig.setOrganizationDetails) {
             appendOrganizationInfo(bundleEntry.resource)
@@ -338,13 +340,15 @@ constructor(
     practitionerId?.let {
       // Convert practitioner uuid to reference e.g. "Practitioner/some-gibberish-uuid"
       val practitionerRef = it.asReference(ResourceType.Practitioner)
-
-      if (resource is Patient) resource.generalPractitioner = arrayListOf(practitionerRef)
-      else if (resource is Encounter)
-        resource.participant =
+      when (resource) {
+        is Patient -> resource.generalPractitioner = arrayListOf(practitionerRef)
+        is Observation -> resource.performer= arrayListOf(practitionerRef)
+        is QuestionnaireResponse -> resource.author= practitionerRef
+        is Encounter -> resource.participant =
           arrayListOf(
             Encounter.EncounterParticipantComponent().apply { individual = practitionerRef }
           )
+      }
     }
   }
 
@@ -768,6 +772,8 @@ constructor(
         )
       }
     }
+
+
 
   /**
    * Loads resources to be populated into a Questionnaire Response.
