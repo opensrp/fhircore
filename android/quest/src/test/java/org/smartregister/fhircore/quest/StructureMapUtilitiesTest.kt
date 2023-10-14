@@ -472,8 +472,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
                 ClassLoader.getSystemResource(immunizationIg).file,
               )
               .inputStream(),
-          ),
-          true,
+          )
         )
         .apply {
           setExpansionProfile(Parameters())
