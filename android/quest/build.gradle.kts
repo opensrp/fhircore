@@ -356,6 +356,7 @@ configurations {
 }
 
 dependencies {
+  implementation(libs.uiautomator)
   coreLibraryDesugaring(libs.core.desugar)
 
   // Application dependencies
@@ -401,6 +402,12 @@ dependencies {
   androidTestUtil(libs.orchestrator)
 
   // Android test dependencies
+  androidTestImplementation (libs.testrail.api.kotlin)
+  androidTestImplementation (libs.cucumber.core)
+  androidTestImplementation (libs.cucumber.java)
+  androidTestImplementation (libs.espresso.core)
+  androidTestImplementation (libs.cucumber.jvm)
+  androidTestImplementation (libs.cucumber.junit)
   androidTestImplementation(libs.junit)
   androidTestImplementation(libs.junit.ktx)
   androidTestImplementation(libs.runner)
