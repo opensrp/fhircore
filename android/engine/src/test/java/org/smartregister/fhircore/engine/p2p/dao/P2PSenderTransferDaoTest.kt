@@ -20,11 +20,14 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.logicalId
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
 import java.util.Date
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Enumerations
@@ -37,6 +40,8 @@ import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.p2p.sync.DataType
@@ -44,39 +49,46 @@ import org.smartregister.p2p.sync.DataType
 class P2PSenderTransferDaoTest : RobolectricTest() {
 
   private val jsonParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+
   private lateinit var p2PSenderTransferDao: P2PSenderTransferDao
-  private lateinit var fhirEngine: FhirEngine
+
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  private val fhirEngine: FhirEngine = mockk()
+
   private val currentDate = Date()
 
   @Before
   fun setUp() {
-    fhirEngine = mockk()
-    p2PSenderTransferDao = spyk(P2PSenderTransferDao(fhirEngine, DefaultDispatcherProvider()))
+    p2PSenderTransferDao =
+      spyk(P2PSenderTransferDao(fhirEngine, DefaultDispatcherProvider(), configurationRegistry))
   }
 
   @Test
   fun `getP2PDataTypes() returns correct list of datatypes`() {
     val actualDataTypes = p2PSenderTransferDao.getDataTypes()
-    Assert.assertEquals(6, actualDataTypes.size)
+    Assert.assertEquals(9, actualDataTypes.size)
     Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0))
+      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0)),
     )
     Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1))
-    )
-    Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2))
+      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)),
     )
     Assert.assertTrue(
       actualDataTypes.contains(
-        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3)
-      )
+        DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2),
+      ),
     )
     Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4))
+      actualDataTypes.contains(
+        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3),
+      ),
     )
     Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5))
+      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4)),
+    )
+    Assert.assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5)),
     )
   }
 
@@ -87,9 +99,13 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
       p2PSenderTransferDao.loadResources(
         lastRecordUpdatedAt = 0,
         batchSize = 25,
-        Patient::class.java
+        offset = 0,
+        Patient::class.java,
       )
-    } returns listOf(expectedPatient)
+    } returns
+      listOf(
+        SearchResult(resource = expectedPatient, revIncluded = emptyMap(), included = emptyMap()),
+      )
     val patientDataType = DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)
 
     val actualJsonData =
@@ -97,7 +113,7 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
     val actualPatient: Patient =
       jsonParser.parseResource(actualJsonData!!.getJsonArray()!!.get(0).toString()) as Patient
 
-    Assert.assertEquals(currentDate.time, actualJsonData!!.getHighestRecordId())
+    Assert.assertEquals(currentDate.time, actualJsonData.getHighestRecordId())
     Assert.assertEquals(expectedPatient.logicalId, actualPatient.logicalId)
     Assert.assertEquals(expectedPatient.birthDate, actualPatient.birthDate)
     Assert.assertEquals(expectedPatient.gender, actualPatient.gender)
@@ -120,18 +136,26 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
             Address().apply {
               city = "Nairobi"
               country = "Kenya"
-            }
+            },
           )
         name =
           listOf(
             HumanName().apply {
               given = mutableListOf(StringType("Kiptoo"))
               family = "Maina"
-            }
+            },
           )
         telecom = listOf(ContactPoint().apply { value = "12345" })
         meta = Meta().apply { lastUpdated = currentDate }
       }
     return patient
+  }
+
+  fun `getTotalRecordCount() calls countTotalRecordsForSync()`() {
+    val highestRecordIdMap: HashMap<String, Long> = HashMap()
+    highestRecordIdMap.put("Patient", 25)
+
+    runBlocking { p2PSenderTransferDao.countTotalRecordsForSync(highestRecordIdMap) }
+    coVerify { p2PSenderTransferDao.countTotalRecordsForSync(highestRecordIdMap) }
   }
 }
