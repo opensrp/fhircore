@@ -116,7 +116,7 @@ constructor(
     val availablePlanDefinitions =
       defaultRepository.search<PlanDefinition>(Search(ResourceType.PlanDefinition))
     for (cqlLibrary in availableCqlLibraries) {
-      fhirOperator.loadLib(cqlLibrary)
+      //      fhirOperator.loadLib(cqlLibrary)
       knowledgeManager.install(writeToFile(cqlLibrary))
       cqlLibraryIdList.add(IdType(cqlLibrary.id).idPart)
     }

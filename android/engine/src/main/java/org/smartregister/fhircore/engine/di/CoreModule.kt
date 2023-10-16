@@ -65,6 +65,15 @@ class CoreModule {
 
   @Singleton
   @Provides
-  fun provideFhirOperator(fhirEngine: FhirEngine): FhirOperator =
-    FhirOperator(fhirContext = FhirContext.forCached(FhirVersionEnum.R4), fhirEngine = fhirEngine)
+  fun provideFhirOperator(
+    @ApplicationContext context: Context,
+    fhirContext: FhirContext,
+    fhirEngine: FhirEngine,
+    knowledgeManager: KnowledgeManager,
+  ): FhirOperator =
+    FhirOperator.Builder(context)
+      .fhirEngine(fhirEngine)
+      .fhirContext(fhirContext)
+      .knowledgeManager(knowledgeManager)
+      .build()
 }

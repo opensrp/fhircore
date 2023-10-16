@@ -131,7 +131,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
    * Sentry
    */
   private fun handleUncaughtException(e: Throwable) {
-    showToast(this.getString(R.string.error_occurred))
+    showToast(this.getString(org.smartregister.fhircore.engine.R.string.error_occurred))
     Timber.e(e)
 
     if (Looper.myLooper() == Looper.getMainLooper()) {

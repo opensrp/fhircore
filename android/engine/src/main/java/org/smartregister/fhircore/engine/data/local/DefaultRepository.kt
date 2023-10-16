@@ -160,7 +160,7 @@ constructor(
   suspend fun createRemote(addResourceTags: Boolean = true, vararg resource: Resource) {
     return withContext(dispatcherProvider.io()) {
       preProcessResources(addResourceTags, *resource)
-      fhirEngine.createRemote(*resource)
+      fhirEngine.create(*resource, isLocalOnly = true)
     }
   }
 

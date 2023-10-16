@@ -134,7 +134,10 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         if (isDeviceOnline()) {
           syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
         } else {
-          showToast(getString(R.string.sync_failed), Toast.LENGTH_LONG)
+          showToast(
+            getString(org.smartregister.fhircore.engine.R.string.sync_failed),
+            Toast.LENGTH_LONG,
+          )
         }
       }
       schedulePeriodicJobs()
@@ -182,7 +185,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override fun onSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.Glitch,
       is SyncJobStatus.Finished,
       is SyncJobStatus.Failed, -> {
         appMainViewModel.run {
@@ -192,13 +194,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
               lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
             ),
           )
-        }
-        if (syncJobStatus is SyncJobStatus.Glitch) {
-          try {
-            Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
-          } catch (nullPointerException: NullPointerException) {
-            Timber.w("No exceptions reported on Sync Failure ", nullPointerException)
-          }
         }
       }
       else -> {

@@ -1,6 +1,3 @@
-import java.io.FileReader
-import org.json.JSONObject
-
 plugins {
   id("com.android.test")
   id("org.jetbrains.kotlin.android")
@@ -52,13 +49,13 @@ dependencies {
 
 androidComponents { beforeVariants(selector().all()) { it.enabled = it.buildType == "benchmark" } }
 
-/*
-
-This task compares the performance benchmark results to the expected benchmark results
-and throws an error if the result is past the expected result and margin. A message will
-also be printed if the performance significantly improves.
-
+// TODO Resolve type mismatch errors
+/**
+ * This task compares the performance benchmark results to the expected benchmark results and throws
+ * an error if the result is past the expected result and margin. A message will also be printed if
+ * the performance significantly improves.
  */
+/*
 task("evaluatePerformanceBenchmarkResults") {
   val expectedPerformanceLimitsFile = project.file("expected-results.json")
   val resultsFile = project.file("benchmark-results.json")
@@ -134,3 +131,4 @@ fun JSONObject.getTestName(): String {
 
   return "$className#$methodName"
 }
+ */

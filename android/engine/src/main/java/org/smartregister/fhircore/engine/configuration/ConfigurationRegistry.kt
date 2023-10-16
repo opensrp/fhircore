@@ -545,7 +545,7 @@ constructor(
   suspend fun create(vararg resources: Resource) {
     return withContext(dispatcherProvider.io()) {
       resources.onEach { it.generateMissingId() }
-      fhirEngine.createRemote(*resources)
+      fhirEngine.create(*resources, isLocalOnly = true)
     }
   }
 

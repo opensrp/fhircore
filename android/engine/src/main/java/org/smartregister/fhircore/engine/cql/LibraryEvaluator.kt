@@ -21,35 +21,25 @@ import ca.uhn.fhir.context.api.BundleInclusionRule
 import ca.uhn.fhir.model.valueset.BundleTypeEnum
 import ca.uhn.fhir.rest.api.BundleLinks
 import ca.uhn.fhir.rest.api.IVersionSpecificBundleFactory
-import com.google.android.fhir.logicalId
 import com.google.common.collect.Lists
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.apache.commons.lang3.tuple.Pair
-import org.cqframework.cql.cql2elm.CqlTranslatorOptions
 import org.cqframework.cql.cql2elm.LibrarySourceProvider
 import org.cqframework.cql.cql2elm.ModelManager
-import org.cqframework.cql.elm.execution.Library
-import org.cqframework.cql.elm.execution.VersionedIdentifier
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Library as LibraryResource
-import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.json.JSONArray
 import org.json.JSONObject
-import org.opencds.cqf.cql.engine.data.CompositeDataProvider
-import org.opencds.cqf.cql.engine.data.DataProvider
 import org.opencds.cqf.cql.engine.fhir.converter.FhirTypeConverter
 import org.opencds.cqf.cql.engine.fhir.converter.FhirTypeConverterFactory
 import org.opencds.cqf.cql.evaluator.CqlEvaluator
 import org.opencds.cqf.cql.evaluator.cql2elm.content.fhir.BundleFhirLibrarySourceProvider
 import org.opencds.cqf.cql.evaluator.cql2elm.util.LibraryVersionSelector
-import org.opencds.cqf.cql.evaluator.engine.CqlEngineOptions
-import org.opencds.cqf.cql.evaluator.engine.execution.TranslatingLibraryLoader
 import org.opencds.cqf.cql.evaluator.engine.retrieve.BundleRetrieveProvider
 import org.opencds.cqf.cql.evaluator.engine.terminology.BundleTerminologyProvider
 import org.opencds.cqf.cql.evaluator.fhir.adapter.r4.AdapterFactory
@@ -131,7 +121,7 @@ class LibraryEvaluator @Inject constructor(val defaultRepository: DefaultReposit
         isExpandValueSets = true
       }
 
-    cqlEvaluator =
+    /* cqlEvaluator =
       CqlEvaluator(
         object :
           TranslatingLibraryLoader(
@@ -162,7 +152,7 @@ class LibraryEvaluator @Inject constructor(val defaultRepository: DefaultReposit
         terminologyProvider,
         CqlEngineOptions.defaultOptions().options,
       )
-    libEvaluator = LibraryEvaluator(cqlFhirParametersConverter, cqlEvaluator)
+    libEvaluator = LibraryEvaluator(cqlFhirParametersConverter, cqlEvaluator)*/
   }
 
   /**
@@ -185,14 +175,15 @@ class LibraryEvaluator @Inject constructor(val defaultRepository: DefaultReposit
     contextLabel: String,
   ): String {
     loadConfigs(resources, valueSetData, testData, fhirContext)
-    val result =
+    /*  val result =
       libEvaluator!!.evaluate(
         VersionedIdentifier().withId(evaluatorId),
         Pair.of(context, contextLabel),
         null,
         null,
       )
-    return parser.encodeResourceToString(result)
+    return parser.encodeResourceToString(result)*/
+    return ""
   }
 
   /**
@@ -254,7 +245,7 @@ class LibraryEvaluator @Inject constructor(val defaultRepository: DefaultReposit
       )
     }
 
-    val result =
+    /* val result =
       libEvaluator!!.evaluate(
         VersionedIdentifier().withId(library?.name).withVersion(library?.version),
         patient?.let { Pair.of("Patient", it.logicalId) },
@@ -280,7 +271,8 @@ class LibraryEvaluator @Inject constructor(val defaultRepository: DefaultReposit
           else -> null
         }
       }
-    }
+    }*/
+    return emptyList()
   }
 
   fun getStringRepresentation(base: Base): String =
@@ -328,18 +320,18 @@ class LibraryEvaluator @Inject constructor(val defaultRepository: DefaultReposit
         this.isExpandValueSets = true
       }
 
-    cqlEvaluator =
-      CqlEvaluator(
-        TranslatingLibraryLoader(
-          modelManager,
-          listOf(libraryProvider),
-          CqlTranslatorOptions.defaultOptions(),
-          null,
-        ),
-        mapOf("http://hl7.org/fhir" to CompositeDataProvider(fhirModelResolver, retrieveProvider)),
-        terminologyProvider,
-        CqlEngineOptions.defaultOptions().options,
-      )
+    /*  cqlEvaluator =
+    CqlEvaluator(
+      TranslatingLibraryLoader(
+        modelManager,
+        listOf(libraryProvider),
+        CqlTranslatorOptions.defaultOptions(),
+        null,
+      ),
+      mapOf("http://hl7.org/fhir" to CompositeDataProvider(fhirModelResolver, retrieveProvider)),
+      terminologyProvider,
+      CqlEngineOptions.defaultOptions().options,
+    )*/
 
     libEvaluator = LibraryEvaluator(cqlFhirParametersConverter, cqlEvaluator)
   }

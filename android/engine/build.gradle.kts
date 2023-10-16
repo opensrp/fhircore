@@ -19,6 +19,8 @@ plugins {
 android {
   compileSdk = 34
 
+  namespace = "org.smartregister.fhircore.engine"
+
   defaultConfig {
     minSdk = 26
     targetSdk = 34
@@ -50,11 +52,11 @@ android {
   }
   compileOptions {
     isCoreLibraryDesugaringEnabled = true
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
   kotlinOptions {
-    jvmTarget = JavaVersion.VERSION_11.toString()
+    jvmTarget = JavaVersion.VERSION_17.toString()
     freeCompilerArgs = listOf("-Xjvm-default=all-compatibility")
   }
   buildFeatures {
@@ -135,11 +137,11 @@ dependencies {
   implementation(libs.compressor)
   implementation(libs.xercesImpl)
   implementation(libs.msg.simple)
-  implementation(libs.cqf.cql.engine)
-  implementation(libs.cql.engine.jackson)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.slf4j.nop)
+  implementation(libs.cqf.cql.engine)
+  implementation(libs.cql.to.elm)
   implementation(libs.cqf.cql.evaluator) {
     exclude(group = "com.github.ben-manes.caffeine")
     exclude(group = "ca.uhn.hapi.fhir")
@@ -152,10 +154,10 @@ dependencies {
     exclude(group = "com.github.ben-manes.caffeine")
     exclude(group = "ca.uhn.hapi.fhir")
   }
-  implementation(libs.cql.evaluator.dagger) {
-    exclude(group = "com.github.ben-manes.caffeine")
-    exclude(group = "ca.uhn.hapi.fhir")
-  }
+  //  implementation(libs.cql.evaluator.dagger) {
+  //    exclude(group = "com.github.ben-manes.caffeine")
+  //    exclude(group = "ca.uhn.hapi.fhir")
+  //  }
 
   // Shared dependencies
   api(libs.glide)
@@ -229,6 +231,8 @@ dependencies {
     isTransitive = true
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.github.ben-manes.caffeine")
+    exclude(group = "org.opencds.cqf.cql:engine.fhir")
+    exclude(group = "info.cqframework:engine")
   }
 
   // Annotation processors

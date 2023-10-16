@@ -1,7 +1,5 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType
-import java.io.FileReader
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.json.JSONObject
 
 buildscript {
   apply(from = "../jacoco.gradle.kts")
@@ -51,6 +49,8 @@ sonar {
 
 android {
   compileSdk = 34
+
+  namespace = "org.smartregister.fhircore.quest"
 
   defaultConfig {
     applicationId = "org.smartregister.opensrp"
@@ -139,12 +139,12 @@ android {
 
   compileOptions {
     isCoreLibraryDesugaringEnabled = true
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
 
   kotlinOptions {
-    jvmTarget = JavaVersion.VERSION_11.toString()
+    jvmTarget = JavaVersion.VERSION_17.toString()
     freeCompilerArgs = listOf("-Xjvm-default=all-compatibility", "-opt-in=kotlin.RequiresOptIn")
   }
 
@@ -415,11 +415,13 @@ dependencies {
   ktlint(project(":linting"))
 }
 
+// TODO Resolve type mismatch errors
 /**
  * This task compares the performance benchmark results to the expected benchmark results and throws
  * an error if the result is past the expected result and margin. A message will also be printed if
  * the performance significantly improves.
  */
+/*
 task("evaluatePerformanceBenchmarkResults") {
   val expectedPerformanceLimitsFile = project.file("expected-results.json")
   val resultsFile = project.file("org.smartregister.opensrp.ecbis-benchmarkData.json")
@@ -493,3 +495,4 @@ fun JSONObject.getTestName(): String {
 
   return "$className#$methodName"
 }
+ */

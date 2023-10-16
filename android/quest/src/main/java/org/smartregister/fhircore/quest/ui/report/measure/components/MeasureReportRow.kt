@@ -36,8 +36,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import org.smartregister.fhircore.quest.R
 
 const val MEASURE_ROW_TITLE_TEST_TAG = "measureRowTitleTestTag"
 const val MEASURE_ROW_FORWARD_ARROW_TEST_TAG = "measureRowForwardArrowTestTag"
@@ -60,7 +60,7 @@ fun MeasureReportRow(title: String, onRowClick: () -> Unit, modifier: Modifier =
       Spacer(modifier = modifier.height(8.dp))
     }
     Image(
-      painter = painterResource(id = R.drawable.ic_forward_arrow),
+      painter = painterResource(id = org.smartregister.fhircore.quest.R.drawable.ic_forward_arrow),
       contentDescription = "",
       colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray)),
       modifier = Modifier.padding(end = 12.dp).testTag(MEASURE_ROW_FORWARD_ARROW_TEST_TAG),
