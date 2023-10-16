@@ -19,11 +19,19 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.runs
+import io.mockk.unmockkStatic
+import io.mockk.verify
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.test.runTest
@@ -39,13 +47,13 @@ import org.robolectric.Shadows
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowToast
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -114,6 +122,17 @@ class QuestionnaireActivityTest : RobolectricTest() {
       "QuestionnaireConfig is required but missing.",
       ShadowToast.getTextOfLatestToast(),
     )
+  }
+
+  @Test
+  fun testThatActivityFinishesWhenQuestionnaireIsNull() {
+    val toast = mockk<Toast>()
+    every { toast.show() } just runs
+    mockkStatic(Toast::class)
+    every { Toast.makeText(any(), any<String>(), Toast.LENGTH_LONG) } returns toast
+    setupActivity()
+    verify { Toast.makeText(any(), eq(context.getString(R.string.questionnaire_not_found)), any()) }
+    unmockkStatic(Toast::class)
   }
 
   @Test
