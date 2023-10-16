@@ -20,7 +20,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportPopulationResultView
@@ -32,7 +31,6 @@ import org.smartregister.fhircore.quest.ui.report.measure.models.MeasureReportPo
 class MeasureReportPopulationResultViewTest {
 
   @get:Rule val composeTestRule = createComposeRule()
-
 
   @Test
   fun testPopulationResultCardRendersPopulationIndicatorCorrectly() {
@@ -50,7 +48,8 @@ class MeasureReportPopulationResultViewTest {
     composeTestRule.onNodeWithTag(POPULATION_COUNT_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule
       .onNodeWithText(
-        "2", useUnmergedTree = true
+        "2",
+        useUnmergedTree = true,
       )
       .assertExists()
       .assertIsDisplayed()
@@ -62,22 +61,25 @@ class MeasureReportPopulationResultViewTest {
   }
 
   private fun setContent(title: String) {
-    var measureReportResultList = listOf(MeasureReportPopulationResult(
-        title = title,
-        indicatorTitle = "Indicator1",
-      dataList = listOf(
-        MeasureReportIndividualResult(
-          status = "Test Status",
-          isMatchedIndicator = false,
-          description = "This is sample description",
-          title = "Title Individual Result",
-          percentage = "50.0",
-          count = "1",
-        )
-      ),
-      measureReportDenominator="2"
+    var measureReportResultList =
+      listOf(
+        MeasureReportPopulationResult(
+          title = title,
+          indicatorTitle = "Indicator1",
+          dataList =
+            listOf(
+              MeasureReportIndividualResult(
+                status = "Test Status",
+                isMatchedIndicator = false,
+                description = "This is sample description",
+                title = "Title Individual Result",
+                percentage = "50.0",
+                count = "1",
+              ),
+            ),
+          measureReportDenominator = "2",
+        ),
       )
-    )
     composeTestRule.setContent {
       MeasureReportPopulationResultView(dataList = measureReportResultList)
     }
