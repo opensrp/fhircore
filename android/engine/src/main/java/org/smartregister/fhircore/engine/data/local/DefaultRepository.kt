@@ -148,20 +148,6 @@ constructor(
         }
     }
 
-  suspend fun loadConditions(
-    patientId: String,
-    filters: List<SearchFilter> = listOf()
-  ): List<Condition> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine
-        .search<Condition> {
-          filterByResourceTypeId(Condition.SUBJECT, ResourceType.Patient, patientId)
-
-          filters.forEach { filterBy(it) }
-        }
-        .map { it.resource }
-    }
-
   suspend fun search(dataRequirement: DataRequirement) =
     when (dataRequirement.type) {
       Enumerations.ResourceType.CONDITION.toCode() ->
