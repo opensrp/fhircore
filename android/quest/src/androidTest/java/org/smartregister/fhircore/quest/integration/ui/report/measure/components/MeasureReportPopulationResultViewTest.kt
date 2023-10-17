@@ -20,7 +20,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportPopulationResultView
@@ -33,76 +32,56 @@ class MeasureReportPopulationResultViewTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  private val measureReportIndividualResultList =
-    listOf(
-      MeasureReportIndividualResult(
-        status = "Test Status",
-        isMatchedIndicator = false,
-        description = "This is sample description",
-        title = "Title Individual Result",
-        percentage = "50.0",
-        count = "1",
-      ),
-    )
-
-  private val measureReportPopulationResultList =
-    listOf(
-      MeasureReportPopulationResult(
-        title = "Population Title",
-        count = "2",
-        indicatorTitle = "Indicator1",
-        dataList = measureReportIndividualResultList,
-        measureReportDenominator = "2",
-      ),
-    )
-
-  @Before
-  fun setup() {
-    composeTestRule.setContent {
-      val dataList = measureReportPopulationResultList
-      MeasureReportPopulationResultView(dataList = dataList)
-    }
-  }
-
   @Test
   fun testPopulationResultCardRendersPopulationIndicatorCorrectly() {
+    setContent("")
     composeTestRule.onNodeWithTag(POPULATION_INDICATOR_TITLE, useUnmergedTree = true).assertExists()
     composeTestRule
-      .onNodeWithText(measureReportPopulationResultList.first().indicatorTitle.uppercase())
+      .onNodeWithText("INDICATOR1", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
   }
 
   @Test
   fun testPopulationResultCardRendersPopulationDenominatorCorrectly() {
+    setContent("POPULATION TITLE")
     composeTestRule.onNodeWithTag(POPULATION_COUNT_TEST_TAG, useUnmergedTree = true).assertExists()
-    val resultItemWithEmptyTitle =
-      MeasureReportPopulationResult(
-        title = "",
-        indicatorTitle = "Indicator1",
-      )
-    composeTestRule.setContent {
-      MeasureReportPopulationResultView(dataList = listOf(resultItemWithEmptyTitle))
-    }
     composeTestRule
       .onNodeWithText(
-        measureReportPopulationResultList.first().measureReportDenominator.uppercase(),
+        "2",
+        useUnmergedTree = true,
       )
       .assertExists()
       .assertIsDisplayed()
-
     // Test case where the title is not empty
-    val resultItemWithTitle =
-      MeasureReportPopulationResult(
-        title = "Population Title",
-        indicatorTitle = "Indicator1",
+    composeTestRule
+      .onNodeWithText("POPULATION TITLE", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
+
+  private fun setContent(title: String) {
+    var measureReportResultList =
+      listOf(
+        MeasureReportPopulationResult(
+          title = title,
+          indicatorTitle = "Indicator1",
+          dataList =
+            listOf(
+              MeasureReportIndividualResult(
+                status = "Test Status",
+                isMatchedIndicator = false,
+                description = "This is sample description",
+                title = "Title Individual Result",
+                percentage = "50.0",
+                count = "1",
+              ),
+            ),
+          measureReportDenominator = "2",
+        ),
       )
     composeTestRule.setContent {
-      MeasureReportPopulationResultView(dataList = listOf(resultItemWithTitle))
+      MeasureReportPopulationResultView(dataList = measureReportResultList)
     }
-    composeTestRule
-      .onNodeWithText(resultItemWithTitle.title.uppercase())
-      .assertExists()
-      .assertIsDisplayed()
   }
 }

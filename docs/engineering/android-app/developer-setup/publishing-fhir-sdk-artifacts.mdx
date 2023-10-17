@@ -55,10 +55,10 @@ Building FHIR Core should now import the new artifact version. MavenLocal is alr
   4. _Update the versions_ of the various modules you want to publish in the `buildSrc/src/main/kotlin/Releases.kt` file
   5. _Make a commit_ with the updated versions and _add a commit message_ in the format shown in the [Commits section below](#commits)
   6. Push the commit to the `master-release` branch for tracking
-  7. Now that the `master-release` branch has all the latest updates from parent `master`, _Check out_ to a new branch on your local e.g. `opensrp-release1`
+  7. Now that the `master-release` branch has all the latest updates from parent `master`, _Check out_ to a new branch on your local with today's date in the dot separated double digit format **DD-MM-YY** and prefixe with `release-` e.g. `release-20.10.23`
   8. Merge in any other unmerged PR branches mentioned in the previous commit message and have not been merged to `master` yet
   9. _Publish_ the specific modules that you wanted. See the [Publishing section below](#publishing)
-  10. After a successful publish to Maven you can _Delete_ your release branch.
+  10. After a successful publish to Maven push your release branch above for versioning.
 
 **Note:** Always remember to check out the _commits diff_ to tell which modules were affected by the latest changes. You can confirm that your module artifact was uploaded as it is available at https://oss.sonatype.org/content/repositories/snapshots/org/smartregister/
 
