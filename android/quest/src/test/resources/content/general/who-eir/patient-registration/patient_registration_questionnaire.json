@@ -1,6 +1,6 @@
 {
   "resourceType": "Questionnaire",
-  "id": "Questionnaire-IMMZCRegisterClient",
+  "id": "9dc7cbf1-78a4-4f76-9bac-da732db67e96",
   "meta": {
     "profile": [
       "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-extr-smap"
@@ -49,6 +49,12 @@
           }
         ]
       }
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir.demo.smartregister.org/fhir/StructureMap/ee569d2c-3299-4a0d-bd5d-4f88af814ecd"
     }
   ],
   "item": [
@@ -166,6 +172,22 @@
       "repeats": false,
       "required": true,
       "answerValueSet": "http://fhir.org/guides/who/smart-immunization/ValueSet/IMMZ.C.DE5",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/administrative-gender",
+            "code": "male",
+            "display": "Male"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/administrative-gender",
+            "code": "female",
+            "display": "Female"
+          }
+        }
+      ],
       "code": [
         {
           "code": "DE5",

@@ -10,71 +10,73 @@ group QRespToIMMZC (
   qr.item as item then {
 
     item.answer first as answer where item.linkId = 'uniqueId' then {
-      answer.valueString as content -> immzc.uniqueId = content  "set identifier";
+      answer.value as content -> immzc.uniqueId = content  "set identifier";
     } "first answer for identifier";
 
     item as name where item.linkId = 'name' then NameToIMMZC( name, immzc ) "set names";
 
     item.answer first as answer where item.linkId = 'sex' then {
-      answer.valueCoding as coding then {
+      answer.value as coding then {
         coding.code as content -> immzc.sex = content "set sex";
       } "process coding";
     } "first answer for identifier";
-
+  
     item.answer first as answer where item.linkId = 'birthDate' then {
-      answer.valueDate as content -> immzc.birthDate = content "set birthDate";
+      answer.value as content -> immzc.birthDate = content "set birthDate";
     } "first answer for birthDate";
 
     item.answer first as answer where item.linkId = 'ageInWeeks' then {
-      answer.valueInteger as content -> immzc.ageInWeeks = content "set ageInWeeks";
+      answer.value as content -> immzc.ageInWeeks = content "set ageInWeeks";
     } "first answer for ageInWeeks";
 
     item.answer first as answer where item.linkId = 'ageInMonths' then {
-      answer.valueInteger as content -> immzc.ageInMonths = content "set ageInMonths";
+      answer.value as content -> immzc.ageInMonths = content "set ageInMonths";
     } "first answer for ageInMonths";
 
     item.answer first as answer where item.linkId = 'ageInYears' then {
-      answer.valueInteger as content -> immzc.ageInYears = content "set ageInYears";
+      answer.value as content -> immzc.ageInYears = content "set ageInYears";
     } "first answer for ageInYears";
 
-    item as caregiver where item.linkId = 'caregiver' -> immzc.caregiver as caretgt
+    item as caregiver where item.linkId = 'caregiver' -> immzc.caregiver as caretgt 
       then NameToIMMZC( caregiver, caretgt ) "set caregiver";
 
     item.answer first as answer where item.linkId = 'phone' then {
-       answer.valueString as content -> immzc.phone = content  "set phone";
+       answer.value as content -> immzc.phone = content  "set phone";
      } "first answer for phone";
 
+    /*
     item.answer first as answer where item.linkId = 'administrativeArea' then {
-      answer.valueCoding as coding -> immzc.administrativeArea as area then {
+      answer.value as coding -> immzc.administrativeArea as area then {
         coding -> area.coding = coding "set coding value";
         coding.display as display -> area.text = display "set display";
       } "set coding";
     } "first answer for administrativeArea";
+    */
 
     item.answer first as answer where item.linkId = 'healthWorker' then {
-      answer.valueBoolean as content -> immzc.healthWorker = content  "set healthWorker";
+      answer.value as content -> immzc.healthWorker = content  "set healthWorker";
     } "first answer for healthWorker";
 
   } "process items";
 
 }
 
-group NameToIMMZC(
+group NameToIMMZC( 
   source name,
   target immzc
 ) {
   name.item as item then {
 
     item.answer first as answer where item.linkId = 'fullName' then {
-      answer.valueString as content -> immzc.name = content "set full name";
+      answer.value as content -> immzc.name = content "set full name";
     } "first answer for full name";
 
     item.answer first as answer where item.linkId = 'firstName' then {
-      answer.valueString as content -> immzc.firstName = content "set first name";
+      answer.value as content -> immzc.firstName = content "set first name";
     } "first answer for first name";
 
     item.answer first as answer where item.linkId = 'familyName' then {
-      answer.valueString as content -> immzc.familyName = content "set family name";
+      answer.value as content -> immzc.familyName = content "set family name";
     } "first answer for family name";
 
   } "process name items";

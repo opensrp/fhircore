@@ -1,0 +1,74 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "fbfd01eb-6ed7-426e-add5-b8dffe7ec3de",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-extr-smap"
+    ]
+  },
+  "url": "http://fhir.org/guides/who/smart-immunization/Questionnaire/Questionnaire-IMMZD4CheckContraindications",
+  "title": "Check Contraindications Questionnaire",
+  "description": "Questionnaire-IMMZD4CheckContraindications",
+  "version": "2023",
+  "status": "draft",
+  "subjectType": [
+    "Patient"
+  ],
+  "language": "en",
+  "contained": [
+    {
+      "resourceType": "ValueSet",
+      "id": "IMMZ.D4.DE161",
+      "status": "active",
+      "name": "IMMZ_D4_DE161",
+      "title": "IMMZ.D4.DE161 ValueSet for Potential Contraindications",
+      "description": "ValueSet for Potential Contraindications for IMMZ.D4.DE161.",
+      "url": "http://fhir.org/guides/who/smart-immunization/ValueSet/IMMZ.D4.DE161",
+      "compose": {
+        "include": [
+          {
+            "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.D4",
+            "concept": [
+              {
+                "code": "DE162",
+                "display": "Currently pregnant"
+              },
+              {
+                "code": "DE165",
+                "display": "Severely immunosuppressed"
+              },
+              {
+                "code": "DE166",
+                "display": "History of anaphylactic reactions"
+              },
+              {
+                "code": "DE167",
+                "display": "Severe allergic reactions"
+              },
+              {
+                "code": "DE168",
+                "display": "Symptomatic HIV infection"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "linkId": "contraindications",
+      "text": "Specific situations or medical conditions in which it is advised or recommended to avoid or delay administering a particular vaccine",
+      "type": "choice",
+      "repeats": true,
+      "required": false,
+      "answerValueSet": "http://fhir.org/guides/who/smart-immunization/ValueSet/IMMZ.D4.DE161",
+      "code": [
+        {
+          "code": "DE161",
+          "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.D4"
+        }
+      ]
+    }
+  ]
+}

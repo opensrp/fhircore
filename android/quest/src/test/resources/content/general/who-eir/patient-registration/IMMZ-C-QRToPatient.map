@@ -1,0 +1,22 @@
+map "http://fhir.org/guides/who/smart-immunization/StructureMap/ee569d2c-3299-4a0d-bd5d-4f88af814ecd" = "IMMZ-C-QRToPatient"
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" alias QResp as source
+uses "http://fhir.org/guides/who/smart-immunization/StructureDefinition/IMMZ-C-register-client" alias IMMZC as produced
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+
+imports "http://fhir.org/guides/who/smart-immunization/StructureMap/IMMZ-C-QRToLM"
+imports "http://fhir.org/guides/who/smart-immunization/StructureMap/IMMZ-C-LMToPatient"
+
+group QRestToIMMZC (
+  source qr : QResp,
+  target bundle: Bundle
+) {
+  qr -> bundle.id = uuid() "rule_bundle_id";
+  qr -> bundle.type = 'collection' "rule_bundle_type";
+  qr -> bundle.entry as entry, entry.resource = create('Patient') as patient,
+    create("http://fhir.org/guides/who/smart-immunization/StructureDefinition/IMMZ-C-register-client") as model
+      then{
+        qr -> model then QRespToIMMZC( qr, model) "QRtoLM";
+        qr -> patient then IMMZCToPatient( model, patient ) "LMtoPatient";
+      } "QRtoPatient";
+}
