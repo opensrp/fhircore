@@ -1545,13 +1545,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .decodeResourceFromString<QuestionnaireResponse>()
 
     val structureMapScript = "plans/disease-followup/structure-map.txt".readFile()
-    val structureMap = structureMapUtilities.parse(structureMapScript, "eCBIS Child Immunization")
+    val structureMap = structureMapUtilities.parse(structureMapScript, "Measles IG workflow")
 
     val resourcesSlot = mutableListOf<Resource>()
     val booleanSlot = slot<Boolean>()
     coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
       emptyList()
-    coEvery { fhirEngine.get<StructureMap>("63752b18-9f0e-48a7-9a21-d3714be6309a") } returns
+    coEvery { fhirEngine.get<StructureMap>("bdf23f3b-232e-4027-865e-1eec690575bc") } returns
       structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns emptyList()
     fhirCarePlanGenerator
