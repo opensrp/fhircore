@@ -50,7 +50,6 @@ class QuestConfigServiceTest : RobolectricTest() {
     Assert.assertEquals(BuildConfig.FHIR_BASE_URL, authConfiguration.fhirServerBaseUrl)
     Assert.assertEquals(BuildConfig.OAUTH_BASE_URL, authConfiguration.oauthServerBaseUrl)
     Assert.assertEquals(BuildConfig.OAUTH_CLIENT_ID, authConfiguration.clientId)
-    Assert.assertEquals(BuildConfig.OAUTH_CLIENT_SECRET, authConfiguration.clientSecret)
     Assert.assertEquals(
       context.getString(R.string.authenticator_account_type),
       authConfiguration.accountType,
