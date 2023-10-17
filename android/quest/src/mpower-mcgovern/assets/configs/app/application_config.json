@@ -36,5 +36,11 @@
       "List",
       "Flag"
     ]
-  }
+  },
+  "requiredPermissions": [
+    {
+      "name": "android.permission.POST_NOTIFICATIONS",
+      "minSdkInt": 33
+    }
+  ]
 }

@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -56,8 +57,11 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.task.FhirAncFollowUpNotifierWorker
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
+import org.smartregister.fhircore.engine.task.FhirMonthlyEddNotifierWorker
+import org.smartregister.fhircore.engine.task.FhirStockOutNotifierWorker
 import org.smartregister.fhircore.engine.task.FhirTaskExpireWorker
 import org.smartregister.fhircore.engine.task.FhirTaskStatusUpdateWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
@@ -97,6 +101,8 @@ constructor(
   val workManager: WorkManager,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
 ) : ViewModel() {
+
+  val permissionConfirmationDialogMessage = MutableLiveData("")
 
   val appMainUiState: MutableState<AppMainUiState> =
     mutableStateOf(
@@ -204,6 +210,10 @@ constructor(
             NavigationArg.RESOURCE_CONFIG to event.resourceConfig,
           )
         event.navController.navigate(MainNavigationScreen.Profile.route, args)
+      }
+
+      is AppMainEvent.ShowPermissionDialog -> {
+        permissionConfirmationDialogMessage.postValue(event.permissions)
       }
     }
   }
@@ -350,6 +360,29 @@ constructor(
           status = status,
         )
       }
+    }
+  }
+
+  /** This function is used to schedule tasks that are intended to run periodically to trigger notification*/
+  fun schedulePeriodicJobsForNotification() {
+    workManager.run {
+      schedulePeriodically<FhirAncFollowUpNotifierWorker>(
+        workId = FhirAncFollowUpNotifierWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskNotifierDuration),
+        requiresNetwork = false,
+      )
+
+      schedulePeriodically<FhirStockOutNotifierWorker>(
+        workId = FhirStockOutNotifierWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskNotifierDuration),
+        requiresNetwork = false,
+      )
+
+      schedulePeriodically<FhirMonthlyEddNotifierWorker>(
+        workId = FhirMonthlyEddNotifierWorker.WORK_ID,
+        duration = Duration.tryParse(applicationConfiguration.taskNotifierDuration),
+        requiresNetwork = false,
+      )
     }
   }
 

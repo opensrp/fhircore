@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.quest.ui.main
 
 import android.app.Activity
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -54,13 +56,14 @@ import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.shared.PermissionHandler
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import timber.log.Timber
 
 @AndroidEntryPoint
 @ExperimentalMaterialApi
-open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, OnSyncListener {
+open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, PermissionHandler, OnSyncListener {
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
@@ -83,6 +86,36 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
       if (activityResult.resultCode == Activity.RESULT_OK) {
         lifecycleScope.launch { onSubmitQuestionnaire(activityResult) }
+      }
+    }
+
+  override val startForPermissionsResult =
+    registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissionResults ->
+      if(permissionResults.containsValue(false)) {
+        val requiredPermissions = arrayListOf<String>()
+        val deniedPermissions = arrayListOf<String>()
+
+        permissionResults.keys.map {
+          if(permissionResults[it] == false) {
+            if (shouldShowRequestPermissionRationale(it)) {
+              requiredPermissions.add(it)
+            } else {
+              deniedPermissions.add(it)
+            }
+          }
+        }
+
+        if(requiredPermissions.isNotEmpty()) {
+          handlePermissions(this@AppMainActivity, requiredPermissions)
+        } else if(deniedPermissions.isNotEmpty()) {
+          val permissions = deniedPermissions
+            .map { getPermissionInfo(this@AppMainActivity, it) }
+            .joinToString("\n") { "• $it" }
+
+          appMainViewModel.onEvent(AppMainEvent.ShowPermissionDialog(permissions))
+        }
+      } else {
+        onGrantedPermissions()
       }
     }
 
@@ -138,6 +171,19 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         }
       }
       schedulePeriodicJobs()
+    }
+
+    //Request Permissions
+    if (appMainViewModel.applicationConfiguration.requiredPermissions.isNotEmpty()) {
+      appMainViewModel.applicationConfiguration.requiredPermissions
+        .filter { Build.VERSION.SDK_INT in it.minSdkInt..it.maxSdkInt }
+        .map { it.name }
+        .also { permissions ->
+          handlePermissions(
+            this@AppMainActivity,
+            permissions,
+          )
+        }
     }
   }
 
@@ -204,6 +250,21 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       else -> {
         // Do nothing
       }
+    }
+  }
+
+  override fun handlePermissions(context: Context, permissions: List<String>?) {
+    val requestedPermissions = permissions ?: retrievePermissions(context)
+    if(needPermissionRequest(context, requestedPermissions)) {
+      launchPermissionRequest(requestedPermissions)
+    } else {
+      onGrantedPermissions()
+    }
+  }
+
+  override fun onGrantedPermissions() {
+    appMainViewModel.run {
+      schedulePeriodicJobsForNotification()
     }
   }
 }

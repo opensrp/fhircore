@@ -38,7 +38,9 @@ data class ApplicationConfiguration(
   val taskStatusUpdateJobDuration: String = "PT15M",
   val taskExpireJobDuration: String = "PT30M",
   val taskCompleteCarePlanJobDuration: String = "PT60M",
+  val taskNotifierDuration: String = "PT720M",
   val showLogo: Boolean = true,
   val taskBackgroundWorkerBatchSize: Int = 500,
   val eventWorkflows: List<EventWorkflow> = emptyList(),
+  val requiredPermissions: List<PermissionConfig> = emptyList(),
 ) : Configuration()

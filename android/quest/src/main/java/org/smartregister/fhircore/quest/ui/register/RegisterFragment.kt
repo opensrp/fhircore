@@ -28,6 +28,7 @@ import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -43,6 +44,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
@@ -61,9 +63,11 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
+import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
+import org.smartregister.fhircore.quest.ui.main.components.RequiredPermissionDialog
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -83,6 +87,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
   private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
   private val registerViewModel by viewModels<RegisterViewModel>()
 
+  @OptIn(ExperimentalPermissionsApi::class)
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
@@ -91,7 +96,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
     appMainViewModel.retrieveIconsAsBitmap()
 
     with(registerFragmentArgs) {
-      lifecycleScope.launchWhenCreated {
+      lifecycleScope.launch {
         registerViewModel.retrieveRegisterUiState(
           registerId = registerId,
           screenTitle = screenTitle,
@@ -162,7 +167,20 @@ class RegisterFragment : Fragment(), OnSyncListener {
               )
             },
           ) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding).testTag(REGISTER_SCREEN_BOX_TAG)) {
+            Box(modifier = Modifier
+              .padding(innerPadding)
+              .testTag(REGISTER_SCREEN_BOX_TAG)) {
+
+              if(!appMainViewModel.permissionConfirmationDialogMessage.observeAsState("").value.isNullOrEmpty()) {
+                RequiredPermissionDialog(
+                  context = context,
+                  permissions = appMainViewModel.permissionConfirmationDialogMessage.value!!,
+                  onDismissDialog = {
+                    appMainViewModel.onEvent(AppMainEvent.ShowPermissionDialog(""))
+                  }
+                )
+              }
+
               RegisterScreen(
                 openDrawer = openDrawer,
                 onEvent = registerViewModel::onEvent,

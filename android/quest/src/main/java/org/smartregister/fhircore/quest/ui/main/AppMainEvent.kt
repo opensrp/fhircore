@@ -50,4 +50,6 @@ sealed class AppMainEvent {
   ) : AppMainEvent()
 
   data class SyncData(val context: Context) : AppMainEvent()
+
+  data class ShowPermissionDialog(val permissions: String) : AppMainEvent()
 }

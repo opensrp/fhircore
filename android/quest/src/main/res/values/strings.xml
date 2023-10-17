@@ -109,5 +109,9 @@
     <string name="extraction_in_progress">Processing questionnaire data…</string>
     <string name="loading_questionnaire">Loading questionnaire…</string>
     <string name="clear_all">Clear All</string>
+    <string name="required_permission_title">Permission required!</string>
+    <string name="required_permission_message">Below permissions are required to be allowed to use this app.\n\n %s \n</string>
+
+
 
 </resources>
