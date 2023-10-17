@@ -56,16 +56,22 @@ Below is a sample dataQuery config to filter register data by configRules
 ## Config properties
 
 |Property | Description | Required | Default |
-|--|--|:--:|:--:|
-appId | Unique identifier for the application | Yes | |
-configType | Type of configuration | Yes |  `register` |
-computedRules | A block that defines the rules to execute | no |  null |
-baseResource | base resource to load data from | Yes | |
-paramName | dataQuery unique identifier | Yes |   |
-filterCriteria | a list of logic to be executed | Yes | |
-filterCriteria: dataType | dataType of the filter param | Yes |   |
-filterCriteria: computedRule | key that will hold dynamic value after computation | No but recommended |  app defaults to using value/valueDate/valueDateTime |
-filterCriteria: prefix | criteria to use  | No | null  |
+|--|--|:--:|--|
+`appId` | `String` - unique identifier for the application | Yes | |
+`configType` | `String` - type of configuration | Yes |  `ConfigType.Register.name` |
+`id` | `String` - register's unique identifier | Yes | |
+`registerTitle` | `String` | No | `null` |
+`fhirResource` | `FhirResourceConfig` | Yes | |
+`secondaryResources` | List of `FhirResourceConfig`s | No | `null` |
+`searchBar` | `RegisterContentConfig` | No | `null` |
+`registerCard` | `RegisterCardConfig` | Yes | `RegisterCardConfig()` |
+`fabActions` | List of `NavigationMenuConfig`s  | Yes | `emptyList()` |
+`noResults` | `NoResultsConfig` | No | `null` |
+`pageSize` | `Int` | Yes | `10` |
+`activeResourceFilters` | List of `ActiveResourceFilterConfig`s | Yes | `listOf(ActiveResourceFilterConfig(resourceType = ResourceType.Patient, active = true), ActiveResourceFilterConfig(resourceType = ResourceType.Group, active = true))` |
+`configRules` | List of `RuleConfig`s | No | `null` |
+`registerFilter` | `RegisterFilterConfig` | No | `null` |
+
 
 
 ## Dynamic data pass between Registers and Profiles
