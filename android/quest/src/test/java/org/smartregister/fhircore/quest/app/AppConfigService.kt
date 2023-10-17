@@ -32,7 +32,6 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
       fhirServerBaseUrl = "http://fake.base.url.com",
       oauthServerBaseUrl = "http://fake.keycloak.url.com",
       clientId = "fake-client-id",
-      clientSecret = "siri-fake",
       accountType = context.packageName,
     )
 
