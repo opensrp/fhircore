@@ -11,7 +11,7 @@ group QRespToBundle (
   source qr : QResp,
   target bundle: Bundle
 ) {
-  qr -> create("http://smart.who.int/ig/smart-immunizations/StructureDefinition/IMMZD4CheckContraindications") as model
+  qr -> create("http://smart.who.int/ig/smart-immunizations/StructureDefinition/IMMZD4CheckContraindicationsMeasles") as model
   then{
     qr -> model then QRespToIMMZD4( qr, model) "QRtoLM";
     qr -> bundle then IMMZD4ToBundle( model, bundle ) "LMtoBundle";

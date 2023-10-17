@@ -24,6 +24,7 @@ import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Parameters
@@ -499,4 +500,44 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     Assert.assertEquals("lapd", patient.identifier.first().value)
     Assert.assertEquals("Jade", patient.name.first().family)
   }
+
+  @Test
+  fun `perform extraction for contraindications condition`() {
+    val locationQuestionnaireResponseString: String =
+      "content/general/who-eir/assess-immunization/check_contraindications_questionnaire_response.json".readFile()
+    val locationStructureMap = "content/general/who-eir/assess-immunization/IMMZ-D4-QRToResources.map".readFile()
+    val immunizationIg = "content/general/who-eir/packages/package.r4.tgz"
+    val contextR4 =
+      SimpleWorkerContext.fromPackage(
+        NpmPackage.fromPackage(
+          File(
+            ClassLoader.getSystemResource(immunizationIg).file,
+          )
+            .inputStream(),
+        )
+      )
+        .apply {
+          setExpansionProfile(Parameters())
+          isCanRunWithoutTerminology = true
+        }
+
+    val transformSupportServices =
+      TransformSupportServicesMatchBox(
+        contextR4,
+      )
+    val structureMapUtilities =
+      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val structureMap = structureMapUtilities.parse(locationStructureMap, "IMMZD4QRToResources")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val targetResource = Bundle()
+    val baseElement =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        locationQuestionnaireResponseString,
+      )
+    structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
+    val patient = targetResource.entryFirstRep.resource as Condition
+    Assert.assertEquals("Condition", patient.resourceType.toString())
+  }
 }
+

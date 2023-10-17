@@ -1,19 +1,19 @@
-map "http://smart.who.int/ig/smart-immunizations/StructureMap/IMMZD4LMToResources" = "IMMZD4LMToResources"
+map "http://smart.who.int/ig/smart-immunizations/StructureMap/IMMZD4QRToResources" = "IMMZD4QRToResources"
 
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" alias QResp as source
 uses "http://smart.who.int/ig/smart-immunizations/StructureDefinition/IMMZD4CheckContraindicationsMeasles" alias IMMZD4 as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" alias Bundle as target
 
-group IMMZD4ToBundle (source immz : IMMZD4, target bundle: Bundle) {
-  immz -> bundle.type = 'collection' "SetCollection";
+imports "http://smart.who.int/ig/smart-immunizations/StructureMap/IMMZD4QRToLM"
+imports "http://smart.who.int/ig/smart-immunizations/StructureMap/IMMZD4LMToResources"
 
-  immz.patient as patient then {
-    immz.contraindications as ci -> bundle.entry as entry, entry.resource = create('Condition') as condition then {
-      patient -> condition.subject = patient "SetPatient";
-      ci -> condition.clinicalStatus = 'active' "SetStatus";
-      ci -> condition.code as code then {
-        ci -> code.coding = ci "SetCoding";
-      } "SetCode";
-    } "SetCondition";
-  } "GetPatient";
-
+group QRespToBundle (
+  source qr : QResp,
+  target bundle: Bundle
+) {
+  qr -> create("http://smart.who.int/ig/smart-immunizations/StructureDefinition/IMMZD4CheckContraindicationsMeasles") as model
+  then{
+    qr -> model then QRespToIMMZD4( qr, model) "QRtoLM";
+    qr -> bundle then IMMZD4ToBundle( model, bundle ) "LMtoBundle";
+  } "QRtoBundle";
 }
