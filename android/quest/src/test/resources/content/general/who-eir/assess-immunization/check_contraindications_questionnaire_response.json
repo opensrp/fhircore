@@ -1,0 +1,73 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "da6015a4-2e96-4f76-cc24-d035bab60f35",
+  "meta": {
+    "lastUpdated": "2023-10-06T13:04:24.395+05:00",
+    "tag": [
+      {
+        "system": "https://smartregister.org/care-team-tag-id",
+        "code": "12be445c-4022-45d5-861f-df40a5bc439d",
+        "display": "Practitioner CareTeam"
+      },
+      {
+        "system": "https://smartregister.org/location-tag-id",
+        "code": "6892091d-e7c2-4b40-8501-6dcaa30a7398",
+        "display": "Practitioner Location"
+      },
+      {
+        "system": "https://smartregister.org/organisation-tag-id",
+        "code": "1763",
+        "display": "Practitioner Organization"
+      },
+      {
+        "system": "https://smartregister.org/practitioner-tag-id",
+        "code": "59f47fdd-5d30-4d55-82f6-cc562cb5c749",
+        "display": "Practitioner"
+      },
+      {
+        "system": "https://smartregister.org/app-version",
+        "code": "Not defined",
+        "display": "Application Version"
+      }
+    ]
+  },
+  "contained": [
+    {
+      "resourceType": "List",
+      "id": "97ec5868-4068-47b3-ae55-9d04e1702205",
+      "status": "current",
+      "mode": "working",
+      "title": "GeneratedResourcesList",
+      "date": "2023-10-06T13:04:23+05:00",
+      "entry": [
+        {
+          "deleted": false,
+          "date": "2023-10-06T13:04:23+05:00",
+          "item": {
+            "reference": "Patient/22ea50d1-2f1a-4914-b2ee-5f58a2f31c8f"
+          }
+        }
+      ]
+    }
+  ],
+  "questionnaire": "Questionnaire/fbfd01eb-6ed7-426e-add5-b8dffe7ec3de",
+  "status": "completed",
+  "subject": {
+    "reference": "Patient/TEST_PATIENT"
+  },
+  "authored": "2023-10-06T13:03:36+05:00",
+  "item": [
+    {
+      "linkId": "contraindications",
+      "text": "Specific situations or medical conditions in which it is advised or recommended to avoid or delay administering a particular vaccine",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "DE162",
+            "display": "Currently pregnant"
+          }
+        }
+      ]
+    }
+  ]
+}

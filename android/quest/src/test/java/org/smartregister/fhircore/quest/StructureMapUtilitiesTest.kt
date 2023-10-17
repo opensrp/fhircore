@@ -229,14 +229,14 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   @Test
   fun `convert StructureMap to JSON`() {
     val patientRegistrationStructureMap =
-      "content/general/who-eir/IMMZ-C-LMToPatient.map".readFile()
+      "content/general/who-eir/patient-registration/IMMZ-C-LMToPatient.map".readFile()
     val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply { isCanRunWithoutTerminology = true }
     val structureMapUtilities = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
     val structureMap =
-      structureMapUtilities.parse(patientRegistrationStructureMap, "IMMZ-C-QRToPatient")
+      structureMapUtilities.parse(patientRegistrationStructureMap, "IMMZD4LMToResources")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(structureMap)
     println(mapString)
@@ -462,8 +462,8 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   @Test
   fun `perform extraction for patient registration`() {
     val locationQuestionnaireResponseString: String =
-      "content/general/who-eir/patient_registration_questionnaire_response.json".readFile()
-    val locationStructureMap = "content/general/who-eir/IMMZ-C-QRToPatient.map".readFile()
+      "content/general/who-eir/patient-registration/patient_registration_questionnaire_response.json".readFile()
+    val locationStructureMap = "content/general/who-eir/patient-registration/IMMZ-C-QRToPatient.map".readFile()
     val immunizationIg = "content/general/who-eir/packages/package.r4.tgz"
     val contextR4 =
       SimpleWorkerContext.fromPackage(
