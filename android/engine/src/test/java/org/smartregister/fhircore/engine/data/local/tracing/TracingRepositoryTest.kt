@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local.tracing
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import io.mockk.coEvery
@@ -33,6 +34,7 @@ import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
@@ -155,11 +157,16 @@ class TracingRepositoryTest {
 
     coEvery { fhirEngine.get(ResourceType.Task, task0.logicalId) } returns task0
     coEvery { fhirEngine.get(ResourceType.Encounter, enc0.logicalId) } returns enc0
-    coEvery {
-      fhirEngine.search<ListResource>(
-        Search(ResourceType.List, from = 0, count = PaginationConstant.DEFAULT_PAGE_SIZE)
-      )
-    } returns listOf(list0)
+    coEvery { fhirEngine.search<Resource>(any<Search>()) } answers
+      {
+        val searchObj = firstArg<Search>()
+        when {
+          searchObj.type == ResourceType.List &&
+            searchObj.count == PaginationConstant.DEFAULT_PAGE_SIZE ->
+            listOf(SearchResult(list0, included = null, revIncluded = null))
+          else -> emptyList()
+        }
+      }
 
     val tracingHistory =
       tracingRepository
@@ -418,8 +425,18 @@ class TracingRepositoryTest {
     coEvery { fhirEngine.get(ResourceType.List, list0.logicalId) } returns list0
     coEvery { fhirEngine.get(ResourceType.Encounter, enc0.logicalId) } returns enc0
     coEvery { fhirEngine.get(ResourceType.Task, task0.logicalId) } returns task0
-    coEvery { fhirEngine.search<Observation>(Search(ResourceType.Observation)) } returns
-      listOf(obs0, obs1)
+    coEvery { fhirEngine.search<Resource>(any()) } answers
+      {
+        val searchObj = firstArg<Search>()
+        when (searchObj.type) {
+          ResourceType.Observation ->
+            listOf(
+              SearchResult(obs0, included = null, revIncluded = null),
+              SearchResult(obs1, included = null, revIncluded = null)
+            )
+          else -> emptyList()
+        }
+      }
 
     val tracingOutcomeDetails = tracingRepository.getHistoryDetails(list0.logicalId, enc0.logicalId)
     Assert.assertTrue("Missed Routine" in tracingOutcomeDetails.reasons)

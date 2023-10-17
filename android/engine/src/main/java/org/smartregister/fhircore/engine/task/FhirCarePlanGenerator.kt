@@ -137,7 +137,9 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
       update(task)
       if (task.status == Task.TaskStatus.COMPLETED) {
         val carePlans =
-          search<CarePlan> { filter(CarePlan.SUBJECT, { value = task.`for`.reference }) }
+          search<CarePlan> { filter(CarePlan.SUBJECT, { value = task.`for`.reference }) }.map {
+            it.resource
+          }
         var carePlanToUpdate: CarePlan? = null
         carePlans.forEach { carePlan ->
           for ((index, value) in carePlan.activity.withIndex()) {

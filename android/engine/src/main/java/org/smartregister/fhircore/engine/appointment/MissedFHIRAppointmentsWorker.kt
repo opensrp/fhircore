@@ -52,6 +52,7 @@ constructor(
             }
           )
         }
+        .map { it.resource }
         .filter {
           it.hasStart() &&
             it.start.before(DateTime().withTimeAtStartOfDay().toDate()) &&

@@ -134,7 +134,7 @@ constructor(
 
           if (page >= 0) from = page * PaginationConstant.DEFAULT_PAGE_SIZE
 
-          has<Task>(Task.SUBJECT) { validTasksFilters() }
+          has<Task>(Task.SUBJECT) { this@search.validTasksFilters() }
 
           filters.patientCategory?.let {
             val paramQueries: List<(TokenParamFilterCriterion.() -> Unit)> =
@@ -161,6 +161,7 @@ constructor(
             filter(Patient.GENERAL_PRACTITIONER, { value = currentPractitioner!!.referenceValue() })
           }
         }
+        .map { it.resource }
         .filter {
           if (filters.age != null) {
             val today = LocalDate.now().atStartOfDay(ZoneId.systemDefault())
@@ -195,6 +196,7 @@ constructor(
             validTasksFilters()
             filter(Task.SUBJECT, *patientrefs, operation = Operation.OR)
           }
+          .map { it.resource }
           .filter {
             it.status in listOf(Task.TaskStatus.INPROGRESS, Task.TaskStatus.READY) &&
               it.executionPeriod.hasStart() &&
@@ -242,6 +244,7 @@ constructor(
             filter(ListResource.STATUS, { value = of(ListResource.ListStatus.CURRENT.toCode()) })
             sort(ListResource.TITLE, Order.DESCENDING)
           }
+          .map { it.resource }
           .filter { it.status == ListResource.ListStatus.CURRENT }
           .groupingBy { it.subject.reference }
           .reduce { _, accumulator, element -> maxOf(accumulator, element, compareBy { it.title }) }
@@ -271,9 +274,10 @@ constructor(
   ): List<RegisterData> {
 
     val tracingPatients =
-      fhirEngine.search<Patient> { has<Task>(Task.SUBJECT) { validTasksFilters() } }
+      fhirEngine.search<Patient> { has<Task>(Task.SUBJECT) { this@search.validTasksFilters() } }
 
     return tracingPatients
+      .map { it.resource }
       .map { it.toTracingRegisterData() }
       .filter { it.reasons.any() }
       .sortedWith(compareBy({ it.attempts }, { it.lastAttemptDate }, { it.firstAdded }))
@@ -333,13 +337,15 @@ constructor(
 
   private suspend fun getDueDate(patient: Patient): Date? {
     val appointments =
-      fhirEngine.search<Appointment> {
-        filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
-        filter(Appointment.ACTOR, { value = patient.referenceValue() })
-        sort(Appointment.DATE, Order.ASCENDING)
-        count = 1
-        from = 0
-      }
+      fhirEngine
+        .search<Appointment> {
+          filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
+          filter(Appointment.ACTOR, { value = patient.referenceValue() })
+          sort(Appointment.DATE, Order.ASCENDING)
+          count = 1
+          from = 0
+        }
+        .map { it.resource }
     val appointment = appointments.firstOrNull()
     return appointment?.start
   }
@@ -387,7 +393,10 @@ constructor(
   }
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {
-    val patients = fhirEngine.search<Patient> { has<Task>(Task.SUBJECT) { validTasksFilters() } }
+    val patients =
+      fhirEngine
+        .search<Patient> { has<Task>(Task.SUBJECT) { this@search.validTasksFilters() } }
+        .map { it.resource }
     return patients.count { validTasks(it).any() }.toLong()
   }
 
@@ -396,10 +405,12 @@ constructor(
 
   private suspend fun validTasks(patient: Patient): List<Task> {
     val patientTasks =
-      fhirEngine.search<Task> {
-        validTasksFilters()
-        filter(Task.SUBJECT, { value = patient.referenceValue() })
-      }
+      fhirEngine
+        .search<Task> {
+          validTasksFilters()
+          filter(Task.SUBJECT, { value = patient.referenceValue() })
+        }
+        .map { it.resource }
     return patientTasks.filter {
       it.status in listOf(Task.TaskStatus.INPROGRESS, Task.TaskStatus.READY) &&
         it.executionPeriod.hasStart() &&

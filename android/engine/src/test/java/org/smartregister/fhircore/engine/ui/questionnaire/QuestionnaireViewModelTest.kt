@@ -24,6 +24,7 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
@@ -62,8 +63,10 @@ import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -73,9 +76,9 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
+import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Shadows
@@ -92,8 +95,10 @@ import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.TracingHelpers
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.addTags
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.valueToString
@@ -125,6 +130,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private val libraryEvaluator: LibraryEvaluator = mockk()
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
+  private lateinit var questionnaireConfig: QuestionnaireConfig
 
   @Before
   fun setUp() {
@@ -174,12 +180,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       )
     coEvery { fhirEngine.get(ResourceType.Patient, any()) } returns samplePatient()
-    runBlocking {
-      questionnaireViewModel.getQuestionnaireConfig(
-        "patient-registration",
-        ApplicationProvider.getApplicationContext()
-      )
-    }
+    questionnaireConfig =
+      runBlocking {
+        questionnaireViewModel.getQuestionnaireConfig(
+          "patient-registration",
+          ApplicationProvider.getApplicationContext()
+        )
+      }
 
     coEvery { fhirEngine.create(any()) } answers { listOf() }
     coEvery { fhirEngine.update(any()) } answers {}
@@ -306,15 +313,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
     Assert.assertEquals("12345", result!!.logicalId)
-    Assert.assertTrue(result!!.item[0].readOnly)
-    Assert.assertEquals("patient-first-name", result!!.item[0].linkId)
-    Assert.assertEquals("patient-last-name", result!!.item[0].item[0].linkId)
-    Assert.assertTrue(result!!.item[1].readOnly)
-    Assert.assertFalse(result!!.item[2].readOnly)
-    Assert.assertEquals(0, result!!.item[2].extension.size)
-    Assert.assertTrue(result!!.item[2].item[0].readOnly)
-    Assert.assertFalse(result!!.item[2].item[1].readOnly)
-    Assert.assertTrue(result!!.item[2].item[1].item[0].readOnly)
+    Assert.assertTrue(result.item[0].readOnly)
+    Assert.assertEquals("patient-first-name", result.item[0].linkId)
+    Assert.assertEquals("patient-last-name", result.item[0].item[0].linkId)
+    Assert.assertTrue(result.item[1].readOnly)
+    Assert.assertFalse(result.item[2].readOnly)
+    Assert.assertEquals(0, result.item[2].extension.size)
+    Assert.assertTrue(result.item[2].item[0].readOnly)
+    Assert.assertFalse(result.item[2].item[1].readOnly)
+    Assert.assertTrue(result.item[2].item[1].item[0].readOnly)
   }
 
   @Test
@@ -465,7 +472,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Fix java.lang.NullPointerException")
   fun testExtractAndSaveResourcesWithExtractionExtensionAndNullResourceShouldAssignTags() {
     val questionnaire =
       Questionnaire().apply {
@@ -638,10 +644,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { defaultRepo.loadRelatedPersons("2") } returns
       listOf(RelatedPerson().apply { id = "3" })
 
-    coEvery { fhirEngine.search<Appointment>(Search(ResourceType.Appointment)) } returns listOf()
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
-
-    val questionnaire = Questionnaire()
+    coEvery { fhirEngine.search<Resource>(any<Search>()) } answers
+      {
+        val searchObj = firstArg<Search>()
+        when (searchObj.type) {
+          ResourceType.Appointment -> listOf()
+          ResourceType.CarePlan -> listOf()
+          else -> emptyList()
+        }
+      }
 
     val intent = Intent()
     intent.putStringArrayListExtra(
@@ -654,9 +665,92 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "2")
 
     val resourceList =
-      questionnaireViewModel.getPopulationResources(intent, questionnaire.logicalId)
+      questionnaireViewModel.getPopulationResources(intent, questionnaireConfig.identifier)
     Assert.assertTrue(resourceList.any { it is Bundle })
     Assert.assertEquals(4, resourceList.size)
+  }
+
+  @Test
+  fun testGetPopulationResourcesShouldReturnListOfResourcesWithTracingResources() = runTest {
+    val patient2 = Patient().apply { id = "2" }
+    coEvery { questionnaireViewModel.loadPatient("2") } returns patient2
+    coEvery { defaultRepo.loadRelatedPersons("2") } returns
+      listOf(RelatedPerson().apply { id = "3" })
+    val tracingTask =
+      Task().apply {
+        id = "task0"
+        status = Task.TaskStatus.READY
+        executionPeriod = Period().apply { start = Date() }
+        `for` = patient2.asReference()
+        code =
+          CodeableConcept().apply {
+            addCoding(
+              Coding().apply {
+                system = "http://snomed.info/sct"
+                code = "225368008"
+              }
+            )
+          }
+        meta =
+          Meta().apply {
+            addTag(
+              Coding().apply {
+                system = "https://dtree.org"
+                code = "home-tracing"
+                display = "Home Tracing"
+              }
+            )
+          }
+        reasonCode =
+          CodeableConcept(
+            Coding().apply {
+              system = "https://dtree.org"
+              code = "miss-routine"
+            }
+          )
+        reasonReference = Reference().apply { reference = "Questionnaire/art-tracing-outcome" }
+      }
+
+    coEvery { fhirEngine.search<Resource>(any<Search>()) } answers
+      {
+        val searchObj = firstArg<Search>()
+        when (searchObj.type) {
+          ResourceType.Appointment -> listOf()
+          ResourceType.CarePlan -> listOf()
+          ResourceType.Task ->
+            listOf(tracingTask).map { SearchResult(it, included = null, revIncluded = null) }
+          ResourceType.List -> listOf()
+          else -> emptyList()
+        }
+      }
+
+    mockkObject(TracingHelpers)
+    every { TracingHelpers.requireTracingTasks(any()) } returns true
+
+    val intent = Intent()
+    intent.putStringArrayListExtra(
+      QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
+      arrayListOf(
+        "{\"resourceType\":\"Patient\",\"id\":\"1\",\"text\":{\"status\":\"generated\",\"div\":\"\"}}",
+        "{\"resourceType\":\"Bundle\",\"id\":\"34\",\"text\":{\"status\":\"generated\",\"div\":\"\"}}",
+      )
+    )
+    intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "2")
+
+    val resourceList =
+      questionnaireViewModel.getPopulationResources(intent, questionnaireConfig.identifier)
+    Assert.assertNotNull(resourceList.firstOrNull { it is Bundle })
+    val resourcesListBundle = resourceList.first { it is Bundle } as Bundle
+    val tracingBundle = resourcesListBundle.entry.find { it.id == TracingHelpers.tracingBundleId }
+    Assert.assertNotNull(tracingBundle)
+    tracingBundle!!
+    with(tracingBundle) {
+      Assert.assertEquals(ResourceType.Bundle, resource.resourceType)
+      Assert.assertEquals(TracingHelpers.tracingBundleId, resource.id)
+      Assert.assertTrue((resource as Bundle).entry.map { it.resource }.contains(tracingTask))
+    }
+
+    unmockkObject(TracingHelpers)
   }
 
   @Test

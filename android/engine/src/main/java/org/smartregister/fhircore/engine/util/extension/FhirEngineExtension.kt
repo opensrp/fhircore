@@ -46,13 +46,14 @@ suspend fun FhirEngine.searchCompositionByIdentifier(identifier: String): Compos
   this.search<Composition> {
       filter(Composition.IDENTIFIER, { value = of(Identifier().apply { value = identifier }) })
     }
+    .map { it.resource }
     .firstOrNull()
 
 suspend fun FhirEngine.loadLibraryAtPath(fhirOperator: FhirOperator, path: String) {
   // resource path could be Library/123 OR something like http://fhir.labs.common/Library/123
   val library =
     runCatching { get<Library>(IdType(path).idPart) }.getOrNull()
-      ?: search<Library> { filter(Library.URL, { value = path }) }.firstOrNull()
+      ?: search<Library> { filter(Library.URL, { value = path }) }.map { it.resource }.firstOrNull()
 
   library?.let {
     fhirOperator.loadLib(it)
@@ -78,7 +79,9 @@ suspend fun FhirEngine.loadCqlLibraryBundle(fhirOperator: FhirOperator, measureP
     // resource path could be Measure/123 OR something like http://fhir.labs.common/Measure/123
     val measure: Measure? =
       if (UrlUtil.isValid(measurePath))
-        search<Measure> { filter(Measure.URL, { value = measurePath }) }.firstOrNull()
+        search<Measure> { filter(Measure.URL, { value = measurePath }) }
+          .map { it.resource }
+          .firstOrNull()
       else get(measurePath)
 
     measure?.apply {
@@ -91,12 +94,13 @@ suspend fun FhirEngine.loadCqlLibraryBundle(fhirOperator: FhirOperator, measureP
 
 suspend fun FhirEngine.addDateTimeIndex() {
   try {
-    val addDateTimeIndexEntityIndexFromIndexQuery =
+
+    search<Task> {
       SearchQuery(
         "CREATE INDEX IF NOT EXISTS `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
         emptyList()
       )
-    search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)
+    }
   } catch (ex: SQLException) {
     Timber.e(ex)
   }

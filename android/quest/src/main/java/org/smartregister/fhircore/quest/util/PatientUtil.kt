@@ -81,23 +81,25 @@ suspend inline fun <reified T : Resource> getSearchResults(
   filter: Filter?,
   fhirEngine: FhirEngine
 ): List<T> {
-  return fhirEngine.search {
-    filterByReference(referenceParam, reference)
+  return fhirEngine
+    .search<T> {
+      filterByReference(referenceParam, reference)
 
-    filter?.valueType?.let {
-      when (it) {
-        Enumerations.DataType.CODEABLECONCEPT -> {
-          filter(
-            TokenClientParam(filter.key),
-            { value = of(CodeableConcept().addCoding(filter.valueCoding!!.asCoding())) }
-          )
-        }
-        else -> {
-          filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCoding()) })
+      filter?.valueType?.let {
+        when (it) {
+          Enumerations.DataType.CODEABLECONCEPT -> {
+            filter(
+              TokenClientParam(filter.key),
+              { value = of(CodeableConcept().addCoding(filter.valueCoding!!.asCoding())) }
+            )
+          }
+          else -> {
+            filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCoding()) })
+          }
         }
       }
     }
-  }
+    .map { it.resource }
 }
 
 fun Search.filterByReference(referenceParam: ReferenceClientParam, reference: String) {

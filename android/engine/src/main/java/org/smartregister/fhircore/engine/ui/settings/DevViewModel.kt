@@ -105,11 +105,11 @@ constructor(
 
   suspend fun getResourcesToReport(): Map<String, List<ResourceField>> {
     val questionnaire =
-      fhirEngine.search<Questionnaire> {}.map {
+      fhirEngine.search<Questionnaire> {}.map { it.resource }.map {
         ResourceField(it.logicalId, it.meta.versionId, it.meta.lastUpdated.asDdMmmYyyy())
       }
     val structureMaps =
-      fhirEngine.search<StructureMap> {}.map {
+      fhirEngine.search<StructureMap> {}.map { it.resource }.map {
         ResourceField(it.logicalId, it.meta.versionId, it.meta.lastUpdated.asDdMmmYyyy())
       }
 

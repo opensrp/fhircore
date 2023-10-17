@@ -222,7 +222,7 @@ dependencies {
         transitive = true
     }
 
-    api('org.smartregister:engine:0.1.0-beta03-preview-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-beta04-preview4-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'

@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.app.fakes
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.search.Search
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -173,7 +174,8 @@ object Faker {
     val composition =
       getBasePath(appId, "composition").readFile(systemPath).decodeResourceFromString() as
         Composition
-    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns
+      listOf(SearchResult(composition, included = null, revIncluded = null))
 
     coEvery { fhirEngine.get(ResourceType.Binary, any()) } answers
       {
