@@ -69,7 +69,7 @@ class ListDataDetailViewModelTest : RobolectricTest() {
         patientRepository = patientRepository,
         defaultRepository = defaultRepository,
         patientItemMapper = patientItemMapper,
-        libraryEvaluator = libraryEvaluator,
+        libraryEvaluatorProvider = { libraryEvaluator },
         fhirEngine = fhirEngine
       )
   }

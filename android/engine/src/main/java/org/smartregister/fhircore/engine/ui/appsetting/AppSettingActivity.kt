@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -44,7 +45,7 @@ class AppSettingActivity : AppCompatActivity() {
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   @Inject lateinit var dispatcherProvider: DispatcherProvider
-  @Inject lateinit var libraryEvaluator: LibraryEvaluator
+  @Inject lateinit var libraryEvaluatorProvider: Provider<LibraryEvaluator>
   private val appSettingViewModel: AppSettingViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,7 +53,7 @@ class AppSettingActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     val appSettingActivity = this@AppSettingActivity
     setContent { AppTheme { LoaderDialog(dialogMessage = stringResource(R.string.initializing)) } }
-    lifecycleScope.launch(dispatcherProvider.io()) { libraryEvaluator.initialize() }
+    lifecycleScope.launch(dispatcherProvider.io()) { libraryEvaluatorProvider.get().initialize() }
     val existingAppId =
       sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
 

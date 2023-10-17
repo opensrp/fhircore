@@ -26,6 +26,7 @@ import com.google.android.fhir.getLocalizedText
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -47,7 +48,7 @@ constructor(
   val patientRepository: PatientRepository,
   val defaultRepository: DefaultRepository,
   val patientItemMapper: PatientItemMapper,
-  val libraryEvaluator: LibraryEvaluator,
+  val libraryEvaluatorProvider: Provider<LibraryEvaluator>,
   val fhirEngine: FhirEngine
 ) : ViewModel() {
 
