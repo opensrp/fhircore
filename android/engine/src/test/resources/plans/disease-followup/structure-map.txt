@@ -39,7 +39,8 @@ group extractMedicationRequestPlan(
     subject -> create('MedicationRequest') as medicationRequest,
         medicationRequest.basedOn = reference(medicationRequestProposal),
         medicationRequest.status = 'active',
-        medicationRequest.intent = 'plan'
+        medicationRequest.intent = 'plan',
+        medicationRequest.supportingInformation = create('Reference') as questionnaireReference, questionnaireReference.reference = 'Questionnaire/fbfd01eb-6ed7-426e-add5-b8dffe7ec3de'
         then extractMedicationRequest(period, version, subject, definition, careplan, medicationRequest) "r_medication_request_plan";
 }
 
@@ -66,8 +67,6 @@ group extractMedicationRequest(
             medicationRequest.medication = evaluate(definition, product) "r_task_data";
 
         subject then extractPeriod(subject, medicationRequest) "r_task_period_extraction";
-
-        subject -> medicationRequest.reasonReference = create('Reference') as reasonReference, reasonReference.reference = 'Questionnaire/11506' "r_task_reason_reference";
 
         // create activity.detail of type/kind Task for this Task if not exists
         subject where(careplan.activity.where(detail.kind = 'MedicationRequest').exists().not()) -> careplan.activity = create('CarePlan_Activity') as activity then {
