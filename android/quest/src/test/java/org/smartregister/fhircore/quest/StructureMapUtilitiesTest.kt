@@ -25,17 +25,17 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
-import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.File
+import java.io.InputStream
+import javax.inject.Inject
+import kotlin.reflect.KSuspendFunction1
+import kotlin.test.assertNotNull
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.exceptions.FHIRException
-import org.hl7.fhir.instance.model.api.IBaseParameters
-import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.MetadataResource
@@ -47,24 +47,12 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
-import org.hl7.fhir.utilities.npm.ToolsVersion
 import org.junit.Assert
 import org.junit.Test
-import org.robolectric.Robolectric
-import org.smartregister.fhircore.engine.task.WorkflowCarePlanGenerator
 import org.smartregister.fhircore.engine.util.extension.getCustomJsonParser
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import java.io.File
-import java.io.InputStream
-import java.lang.IllegalArgumentException
-import javax.inject.Inject
-import kotlin.reflect.KSuspendFunction1
-import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.jvm.isAccessible
-import kotlin.test.assertNotNull
 
 /**
  * Provides a playground for quickly testing and authoring questionnaire.json and the respective
@@ -74,8 +62,7 @@ import kotlin.test.assertNotNull
  */
 class StructureMapUtilitiesTest : RobolectricTest() {
 
-  @Inject
-  lateinit var fhirEngine: FhirEngine
+  @Inject lateinit var fhirEngine: FhirEngine
   private val context: Context = ApplicationProvider.getApplicationContext<Context>()
   private val knowledgeManager = KnowledgeManager.create(context)
   private val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
@@ -87,7 +74,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val registrationQuestionnaireResponseString: String =
       "content/general/family/questionnaire-response-standard.json".readFile()
     val registrationStructureMap = "content/general/family/family-registration.map".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -120,7 +107,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       "content/general/disease-registration-resources/questionnaire_response.json".readFile()
     val immunizationStructureMap =
       "content/general/disease-registration-resources/structure-map.txt".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -154,7 +141,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val immunizationJson = "content/eir/immunization/immunization-1.json".readFile()
     val immunizationStructureMap = "content/eir/immunization/structure-map.txt".readFile()
     val questionnaireJson = "content/eir/immunization/questionnaire.json".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -204,7 +191,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       questionnaireResponse = ResourceMapper.populate(questionnaire, patient, relatedPerson)
     }
 
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -239,7 +226,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       questionnaireResponse = ResourceMapper.populate(questionnaire, immunization, Patient())
     }
 
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -263,7 +250,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   fun `convert StructureMap to JSON`() {
     val patientRegistrationStructureMap =
       "patient-registration-questionnaire/structure-map.txt".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply { isCanRunWithoutTerminology = true }
@@ -282,7 +269,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       "patient-registration-questionnaire/questionnaire-response.json".readFile()
     val patientRegistrationStructureMap =
       "patient-registration-questionnaire/structure-map.txt".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -313,7 +300,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val adverseEventQuestionnaireResponse =
       "content/eir/adverse-event/questionnaire-response.json".readFile()
     val adverseEventStructureMap = "content/eir/adverse-event/structure-map.txt".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -342,7 +329,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val vitalSignQuestionnaireResponse =
       "content/anc/vital-signs/metric/questionnaire-response-pulse-rate.json".readFile()
     val vitalSignStructureMap = "content/anc/vital-signs/metric/structure-map.txt".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -371,7 +358,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       "content/anc/vital-signs/standard/questionnaire-response-pulse-rate.json".readFile()
     val vitalSignStructureMap = "content/anc/vital-signs/standard/structure-map.txt".readFile()
 
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -399,7 +386,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val locationQuestionnaireResponseString: String =
       "content/general/location/location-response-sample.json".readFile()
     val locationStructureMap = "content/general/location/location-structure-map.txt".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -427,7 +414,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       "content/general/supply-chain/questionnaire-response-standard.json".readFile()
     val physicalInventoryCountStructureMap =
       "content/general/supply-chain/physical_inventory_count_and_stock.map".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -465,7 +452,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val vitalSignQuestionnaireResponse =
       "content/anc/preg-outcome/questionnaire-response.json".readFile()
     val vitalSignStructureMap = "content/anc/preg-outcome/structure-map.txt".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -498,7 +485,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       "content/general/who-eir/patient_registration_questionnaire_response.json".readFile()
     val locationStructureMap =
       "content/general/who-eir/patient_registration_structure_map.txt".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -523,22 +510,48 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
   @Test
   fun generateMeaslesCarePlan() = runBlockingOnWorkerThread {
-
     loadFile("content/general/who-eir/measles-immunizations/FHIRCommon.json", ::installToIgManager)
     loadFile("content/general/who-eir/measles-immunizations/FHIRHelpers.json", ::installToIgManager)
     loadFile("content/general/who-eir/measles-immunizations/IMMZCommon.json", ::installToIgManager)
-    loadFile("content/general/who-eir/measles-immunizations/IMMZCommonIzDataElements.json", ::installToIgManager)
-    loadFile("content/general/who-eir/measles-immunizations/IMMZConcepts.json", ::installToIgManager)
+    loadFile(
+      "content/general/who-eir/measles-immunizations/IMMZCommonIzDataElements.json",
+      ::installToIgManager
+    )
+    loadFile(
+      "content/general/who-eir/measles-immunizations/IMMZConcepts.json",
+      ::installToIgManager
+    )
     loadFile("content/general/who-eir/measles-immunizations/IMMZConfig.json", ::installToIgManager)
-    loadFile("content/general/who-eir/measles-immunizations/IMMZD2DTMeasles.json", ::installToIgManager)
-    loadFile("content/general/who-eir/measles-immunizations/IMMZIndicatorCommon.json", ::installToIgManager)
-    loadFile("content/general/who-eir/measles-immunizations/IMMZINDMeasles.json", ::installToIgManager)
-    loadFile("content/general/who-eir/measles-immunizations/IMMZVaccineLibrary.json", ::installToIgManager)
-    loadFile("content/general/who-eir/measles-immunizations/ActivityDefinition-IMMZD2DTMeaslesMR.json", ::installToIgManager)
-    loadFile("content/general/who-eir/measles-immunizations/PlanDefinition-IMMZD2DTMeasles.json", ::installToIgManager)
+    loadFile(
+      "content/general/who-eir/measles-immunizations/IMMZD2DTMeasles.json",
+      ::installToIgManager
+    )
+    loadFile(
+      "content/general/who-eir/measles-immunizations/IMMZIndicatorCommon.json",
+      ::installToIgManager
+    )
+    loadFile(
+      "content/general/who-eir/measles-immunizations/IMMZINDMeasles.json",
+      ::installToIgManager
+    )
+    loadFile(
+      "content/general/who-eir/measles-immunizations/IMMZVaccineLibrary.json",
+      ::installToIgManager
+    )
+    loadFile(
+      "content/general/who-eir/measles-immunizations/ActivityDefinition-IMMZD2DTMeaslesMR.json",
+      ::installToIgManager
+    )
+    loadFile(
+      "content/general/who-eir/measles-immunizations/PlanDefinition-IMMZD2DTMeasles.json",
+      ::installToIgManager
+    )
     loadFile("content/general/who-eir/measles-immunizations/WHOCommon.json", ::installToIgManager)
     loadFile("content/general/who-eir/measles-immunizations/WHOConcepts.json", ::installToIgManager)
-    loadFile("content/general/who-eir/measles-immunizations/ValueSet-HIVstatus-values.json", ::installToIgManager)
+    loadFile(
+      "content/general/who-eir/measles-immunizations/ValueSet-HIVstatus-values.json",
+      ::installToIgManager
+    )
 
     loadFile(
       "content/general/who-eir/measles-immunizations/IMMZ-Patient-NoVaxeninfant-f.json",
@@ -549,16 +562,18 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       ::importToFhirEngine,
     )
 
-    val fhirOperator = FhirOperator.Builder(context)
-      .fhirEngine(fhirEngine)
-      .fhirContext(fhirContext)
-      .knowledgeManager(knowledgeManager)
-      .build()
+    val fhirOperator =
+      FhirOperator.Builder(context)
+        .fhirEngine(fhirEngine)
+        .fhirContext(fhirContext)
+        .knowledgeManager(knowledgeManager)
+        .build()
 
-    val carePlan = fhirOperator.generateCarePlan(
-      planDefinitionId = "IMMZD2DTMeasles",
-      patientId = "IMMZ-Patient-NoVaxeninfant-f",
-    )
+    val carePlan =
+      fhirOperator.generateCarePlan(
+        planDefinitionId = "IMMZD2DTMeasles",
+        patientId = "IMMZ-Patient-NoVaxeninfant-f",
+      )
 
     println(jsonParser.encodeResourceToString(carePlan))
 
@@ -622,7 +637,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   }
 
   private fun toFhirLibrary(cql: InputStream): Library {
-    //return CqlBuilder.compileAndBuild(cql)
+    // return CqlBuilder.compileAndBuild(cql)
     // TODO added only for temp purpose
     return Library()
   }

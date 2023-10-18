@@ -42,7 +42,6 @@ import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
-import org.hl7.fhir.utilities.npm.ToolsVersion
 import org.junit.After
 import org.junit.AfterClass
 import org.junit.BeforeClass
@@ -124,7 +123,7 @@ abstract class RobolectricTest {
       .replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{3}.\\d{2}:\\d{2}"), "xx:xx:xx+xx:xx")
 
   fun buildStructureMapUtils(): StructureMapUtilities {
-    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val pcm = FilesystemPackageCacheManager(true)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
     val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))

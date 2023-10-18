@@ -53,7 +53,6 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -72,7 +71,9 @@ class QuestionnaireActivityTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
+    ApplicationProvider.getApplicationContext<Context>().apply {
+      setTheme(org.smartregister.fhircore.engine.R.style.AppTheme)
+    }
     questionnaireConfig =
       QuestionnaireConfig(
         id = "754", // Same as ID in sample_patient_registration.json
@@ -131,7 +132,13 @@ class QuestionnaireActivityTest : RobolectricTest() {
     mockkStatic(Toast::class)
     every { Toast.makeText(any(), any<String>(), Toast.LENGTH_LONG) } returns toast
     setupActivity()
-    verify { Toast.makeText(any(), eq(context.getString(R.string.questionnaire_not_found)), any()) }
+    verify {
+      Toast.makeText(
+        any(),
+        eq(context.getString(org.smartregister.fhircore.quest.R.string.questionnaire_not_found)),
+        any()
+      )
+    }
     unmockkStatic(Toast::class)
   }
 

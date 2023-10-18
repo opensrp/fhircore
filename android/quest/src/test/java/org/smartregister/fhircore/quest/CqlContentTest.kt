@@ -30,7 +30,6 @@ import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.cqframework.cql.cql2elm.CqlTranslator
-import org.cqframework.cql.cql2elm.CqlTranslatorOptions
 import org.cqframework.cql.cql2elm.LibraryManager
 import org.cqframework.cql.cql2elm.quick.FhirLibrarySourceProvider
 import org.hl7.fhir.r4.model.Bundle
@@ -268,17 +267,12 @@ class CqlContentTest : RobolectricTest() {
   }
 
   private fun toJsonElm(cql: String): String {
-    val libraryManager = LibraryManager(evaluator.modelManager)
-    libraryManager.librarySourceLoader.registerProvider(FhirLibrarySourceProvider())
+    val libraryManager =
+      LibraryManager(evaluator.modelManager).apply {
+        librarySourceLoader.registerProvider(FhirLibrarySourceProvider())
+      }
 
-    val translator: CqlTranslator =
-      CqlTranslator.fromText(
-        cql,
-        evaluator.modelManager,
-        libraryManager,
-        *CqlTranslatorOptions.defaultOptions().options.toTypedArray(),
-      )
-
+    val translator = CqlTranslator.fromText(cql, libraryManager)
     return translator.toJson().also { println(it.replace("\n", "").replace("   ", "")) }
   }
 

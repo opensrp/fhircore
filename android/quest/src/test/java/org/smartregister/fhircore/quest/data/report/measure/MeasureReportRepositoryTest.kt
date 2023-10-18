@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.data.report.measure
 
 import androidx.test.core.app.ApplicationProvider
-import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
 import com.google.android.fhir.workflow.FhirOperator
@@ -57,12 +56,15 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class MeasureReportRepositoryTest : RobolectricTest() {
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
-  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
-  private val fhirEngine: FhirEngine = mockk()
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
+  @Inject lateinit var fhirOperator: FhirOperator
+
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val fhirEngine: FhirEngine = mockk()
   private lateinit var measureReportConfiguration: MeasureReportConfiguration
   private lateinit var measureReportRepository: MeasureReportRepository
   private val registerId = "register id"
@@ -111,7 +113,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
         mockk(),
         mockk(),
         registerRepository,
-        FhirOperator(FhirContext.forR4(), fhirEngine),
+        fhirOperator,
         mockk(),
       )
   }
