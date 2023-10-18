@@ -48,6 +48,7 @@ import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
@@ -81,6 +82,7 @@ import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -173,7 +175,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           transformSupportServices = mockk(),
           dispatcherProvider = defaultRepository.dispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
-          libraryEvaluator = libraryEvaluator,
+          libraryEvaluatorProvider = { libraryEvaluator },
           fhirCarePlanGenerator = fhirCarePlanGenerator,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
           fhirPathDataExtractor = fhirPathDataExtractor,
@@ -896,6 +898,34 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireState,
       questionnaireViewModel.questionnaireProgressStateLiveData.value,
     )
+  }
+
+  @Test
+  fun testAddPractitionerInfoAppendedCorrectlyOnEncounterResource() {
+    val encounter = Encounter().apply { this.id = "123456" }
+    encounter.appendPractitionerInfo("12345")
+    Assert.assertEquals("Practitioner/12345", encounter.participant.first().individual.reference)
+  }
+
+  @Test
+  fun testAddPractitionerInfoAppendedCorrectlyOnObservationResource() {
+    val observation = Observation().apply { this.id = "123456" }
+    observation.appendPractitionerInfo("12345")
+    Assert.assertEquals("Practitioner/12345", observation.performer.first().reference)
+  }
+
+  @Test
+  fun testAddPractitionerInfoAppendedCorrectlyOnQuestionnaireResponse() {
+    val questionnaireResponse = QuestionnaireResponse().apply { this.id = "123456" }
+    questionnaireResponse.appendPractitionerInfo("12345")
+    Assert.assertEquals("Practitioner/12345", questionnaireResponse.author.reference)
+  }
+
+  @Test
+  fun testAddPractitionerInfoAppendedCorrectlyOnPatientResource() {
+    val patient = Patient().apply { Patient@ this.id = "123456" }
+    patient.appendPractitionerInfo("12345")
+    Assert.assertEquals("Practitioner/12345", patient.generalPractitioner.first().reference)
   }
 
   @Test
