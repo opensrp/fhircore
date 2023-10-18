@@ -30,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
@@ -51,7 +52,7 @@ class AppSettingActivity : AppCompatActivity() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  @Inject lateinit var libraryEvaluator: LibraryEvaluator
+  @Inject lateinit var libraryEvaluatorProvider: Provider<LibraryEvaluator>
   val appSettingViewModel: AppSettingViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,7 +69,7 @@ class AppSettingActivity : AppCompatActivity() {
         }
       }
     }
-    lifecycleScope.launch(dispatcherProvider.io()) { libraryEvaluator.initialize() }
+    lifecycleScope.launch(dispatcherProvider.io()) { libraryEvaluatorProvider.get().initialize() }
     val existingAppId =
       sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
 
