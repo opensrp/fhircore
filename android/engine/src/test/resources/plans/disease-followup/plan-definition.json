@@ -191,6 +191,47 @@
           }
         }
       ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-measles-administer-activity",
+      "title": "Administer Vaccine",
+      "status": "active",
+      "description": "This is the Administer assessment.",
+      "kind": "MedicationRequest",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "33879002",
+            "display": "Administration of vaccine to produce active immunity (procedure)"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://hl7.org/fhir/sid/icd-11",
+            "code": "XM28X5",
+            "display": "Measles vaccines"
+          }
+        ],
+        "text": "Measles vaccines"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 280,
+              "durationUnit": "d",
+              "period": 9,
+              "periodUnit": "mo"
+            }
+          }
+        }
+      ]
     }
   ],
   "name": "Child Immunization",
@@ -256,7 +297,30 @@
         ]
       },
       "definitionCanonical": "#careplan-measles-contraindication-activity",
-      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/56813e89-5fe2-45ae-9567-0abbef745c39"
+      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/1f0ca814-467b-48d3-9aa7-4e740a628350"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/d4f9bfbe-b684-4505-9c66-719afd5c9fca').exists()"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-measles-administer-activity",
+      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/be876ffc-491d-4ab1-ba2c-0ba5213283c8"
     }
   ]
 }

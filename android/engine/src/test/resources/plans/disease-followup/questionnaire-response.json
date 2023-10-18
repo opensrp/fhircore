@@ -1,21 +1,34 @@
 {
   "resourceType": "QuestionnaireResponse",
   "status": "in-progress",
-  "questionnaire": "Questionnaire/fbfd01eb-6ed7-426e-add5-b8dffe7ec3de",
+  "questionnaire": "Questionnaire/d4f9bfbe-b684-4505-9c66-719afd5c9fca",
   "status": "completed",
   "subject": {
     "reference": "Patient/9a6188b4-cd60-41af-8880-c3f8464eef4b"
   },
   "item": [
     {
-      "linkId": "contraindications",
-      "text": "Specific situations or medical conditions in which it is advised or recommended to avoid or delay administering a particular vaccine",
+      "linkId": "ae9c1118-4572-4f9b-8c88-ec9429aa4ec0",
+      "text": "Do you consent to get this immunization?",
       "answer": [
         {
           "valueCoding": {
-            "code": "DE165",
-            "display": "Severely immunosuppressed",
-            "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.D4"
+            "code": "Yes",
+            "display": "Yes",
+            "system": "urn:uuid:e4075c84-397e-4c71-dd66-52cbfe998373"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "5d887ed0-0c4f-4be6-8f96-63c75346ad42",
+      "text": "Do you have stock?",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "Yes",
+            "display": "Yes",
+            "system": "urn:uuid:a6a1f0cb-e35d-4ed4-909e-eb401ffa9a3b"
           }
         }
       ]
@@ -31,6 +44,5 @@
     }
   ]
 }
-
 
 

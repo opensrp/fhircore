@@ -1,4 +1,4 @@
-map "http://hl7.org/fhir/StructureMap/56813e89-5fe2-45ae-9567-0abbef745c39" = 'Measles Contraindication IG workflow'
+map "http://hl7.org/fhir/StructureMap/be876ffc-491d-4ab1-ba2c-0ba5213283c8" = 'Measles Administer Vaccine workflow'
 
 uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
 uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
@@ -19,18 +19,28 @@ group defineMedicationRequestToExtract(
     source definition: ActivityDefinition,
     source questionnaireResponse: QuestionnaireResponse,
     target careplan: CarePlan) {
-    questionnaireResponse.item as item where(linkId = 'contraindications' and answer.exists().not()) then {
-        subject then extractMedicationRequestOrder(period, version, subject, definition, questionnaireResponse, careplan) "r_medication_request";
-    } "questionnaire_response_item";
 
-    questionnaireResponse.item as questionnaireResponseItem  where(linkId = 'contraindications' and answer.exists()) then {
-        questionnaireResponseItem where(linkId = 'contraindications' and ((answer.where(value.code = 'DE165')).exists() or (answer.where(value.code = 'DE166')).exists() or (answer.where(value.code = 'DE167')).exists())) then {
-            subject then extractMedicationRequestCancelledOrhold(period, version, subject, definition, questionnaireResponse, careplan) "r_medication_request_contraindication";
-        } "questionnaire_response_item_contraindication";
+    questionnaireResponse.item as questionnaireResponseItem where(linkId = 'ae9c1118-4572-4f9b-8c88-ec9429aa4ec0' and answer.exists()) then {
+        questionnaireResponseItem where(linkId = '5d887ed0-0c4f-4be6-8f96-63c75346ad42' and answer.exists()) then {
+
+            questionnaireResponseItem where(linkId = 'ae9c1118-4572-4f9b-8c88-ec9429aa4ec0' and answer.where(value.code = 'Yes').exists()) then {
+                questionnaireResponseItem where(linkId = '5d887ed0-0c4f-4be6-8f96-63c75346ad42' and answer.where(value.code = 'Yes').exists()) then {
+                    subject then extractMedicationRequestUpdateQuestionnaire(period, version, subject, definition, questionnaireResponse, careplan) "r_medication_request_consent_stock";
+                } "questionnaire_response_item_contraindication";
+
+                questionnaireResponseItem where(linkId = '5d887ed0-0c4f-4be6-8f96-63c75346ad42' and answer.where(value.code = 'No').exists()) then {
+                    subject then extractMedicationRequestPlanOnHold(period, version, subject, definition, questionnaireResponse, careplan) "r_medication_request_stock";
+                } "questionnaire_response_item_contraindication";
+            } "questionnaire_response_item_contraindication";
+
+            questionnaireResponseItem where(linkId = 'ae9c1118-4572-4f9b-8c88-ec9429aa4ec0' and answer.where(value.code = 'No').exists()) then {
+                subject then extractMedicationRequestOrderCancelled(period, version, subject, definition, questionnaireResponse, careplan) "r_medication_request_consent";
+            } "questionnaire_response_item_contraindication";
+        } "questionnaire_response_item_answer_two_available";
     } "questionnaire_response_item_answer_available";
 }
 
-group extractMedicationRequestOrder (
+group extractMedicationRequestUpdateQuestionnaire(
     source period: Period,
     source version: Integer,
     source subject : Patient,
@@ -38,15 +48,11 @@ group extractMedicationRequestOrder (
     source questionnaireResponse: QuestionnaireResponse,
     target careplan: CarePlan) {
 
-    subject -> create('MedicationRequest') as medicationRequestOrder then {
+        subject -> create('MedicationRequest') as medicationRequestOrder then {
         subject -> medicationRequestOrder.id =  create('id') as id then {
                 subject -> id.value = evaluate(questionnaireResponse, $this.item.where(linkId = 'c1d8fed1-ff36-43b6-8061-22561154b13b').answer.value) "rule_update_medication_request_value";
             } "rule_update_medication_request_value_id";
-        subject -> medicationRequestOrder.basedOn = reference(careplan) "rule_update_flag_basedOn";
-        subject -> medicationRequestOrder.status = 'active' "r_medication_request_status";
-        subject -> medicationRequestOrder.intent = 'order' "r_medication_request_intent";
-
-        subject -> medicationRequestOrder.supportingInformation = create('Reference') as questionnaireReference, questionnaireReference.reference = 'Questionnaire/d4f9bfbe-b684-4505-9c66-719afd5c9fca' "r_task_reason_reference";
+        subject -> medicationRequestOrder.supportingInformation = create('Reference') as questionnaireReference, questionnaireReference.reference = 'Questionnaire/caebc6b4-7861-42be-8925-12c4a6bad921' "r_task_reason_reference";
 
         // create activity.detail of type/kind Task for this Task if not exists
         subject where(careplan.activity.where(detail.kind = 'MedicationRequest').exists().not()) -> careplan.activity = create('CarePlan_Activity') as activity then {
@@ -63,7 +69,38 @@ group extractMedicationRequestOrder (
     } "r_medication_request";
 }
 
-group extractMedicationRequestCancelledOrhold(
+group extractMedicationRequestOrderCancelled (
+    source period: Period,
+    source version: Integer,
+    source subject : Patient,
+    source definition: ActivityDefinition,
+    source questionnaireResponse: QuestionnaireResponse,
+    target careplan: CarePlan) {
+
+    subject -> create('MedicationRequest') as medicationRequestOrder then {
+        subject -> medicationRequestOrder.id =  create('id') as id then {
+                subject -> id.value = evaluate(questionnaireResponse, $this.item.where(linkId = 'c1d8fed1-ff36-43b6-8061-22561154b13b').answer.value) "rule_update_medication_request_value";
+            } "rule_update_medication_request_value_id";
+        subject -> medicationRequestOrder.basedOn = reference(careplan) "rule_update_flag_basedOn";
+        subject -> medicationRequestOrder.status = 'cancelled' "r_medication_request_status";
+        subject -> medicationRequestOrder.intent = 'order' "r_medication_request_intent";
+
+        // create activity.detail of type/kind Task for this Task if not exists
+        subject where(careplan.activity.where(detail.kind = 'MedicationRequest').exists().not()) -> careplan.activity = create('CarePlan_Activity') as activity then {
+            subject -> activity.detail = create('CarePlan_ActivityDetail') as ActivityDefinition then {
+                subject -> ActivityDefinition.kind = 'MedicationRequest' "rule_activity_detail_data";
+            } "rule_activity_detail";
+        } "rule_careplan_activity";
+
+        // add MR to careplan irrespective of its validity
+        subject then {
+            subject -> evaluate(careplan, activity.where(detail.kind = 'MedicationRequest')) as activity, activity.outcomeReference = reference(medicationRequestOrder) "rule_careplan_task_reference";
+            subject -> careplan.contained = medicationRequestOrder "rule_add_task";
+        } "rule_careplan_task";
+    } "r_medication_request";
+}
+
+group extractMedicationRequestPlanOnHold(
     source period: Period,
     source version: Integer,
     source subject : Patient,
@@ -77,8 +114,8 @@ group extractMedicationRequestCancelledOrhold(
             subject -> id.value = evaluate(questionnaireResponse, $this.item.where(linkId = 'c1d8fed1-ff36-43b6-8061-22561154b13b').answer.value) "rule_update_medication_request_value";
         } "rule_update_medication_request_value_id";
         subject -> medicationRequestCancelledOrHold.basedOn = reference(careplan) "rule_update_flag_basedOn";
-        subject -> medicationRequestCancelledOrHold.status = 'stopped' "r_medication_request_status";
-        subject -> medicationRequestCancelledOrHold.intent = 'order' "r_medication_request_intent";
+        subject -> medicationRequestCancelledOrHold.status = 'on-hold' "r_medication_request_status";
+        subject -> medicationRequestCancelledOrHold.intent = 'plan' "r_medication_request_intent";
 
         // create activity.detail of type/kind Task for this Task if not exists
         subject where(careplan.activity.where(detail.kind = 'MedicationRequest').exists().not()) -> careplan.activity = create('CarePlan_Activity') as activity then {
@@ -92,62 +129,5 @@ group extractMedicationRequestCancelledOrhold(
             subject -> evaluate(careplan, activity.where(detail.kind = 'MedicationRequest')) as activity, activity.outcomeReference = reference(medicationRequestCancelledOrHold) "rule_careplan_task_reference";
             subject -> careplan.contained = medicationRequestCancelledOrHold "rule_add_task";
         } "rule_careplan_task";
-
-        subject then extractMedicationRequest(period, version, subject, definition, questionnaireResponse, medicationRequestCancelledOrHold, careplan) "r_medication_request_contraindication";
     } "r_medication_request";
-}
-
-group extractMedicationRequest(
-    source period: Period,
-    source version: Integer,
-    source subject : Patient,
-    source definition: ActivityDefinition,
-    source questionnaireResponse: QuestionnaireResponse,
-    source medicationRequestCancelledOrHold: MedicationRequest,
-    target careplan: CarePlan) {
-
-    subject -> create('MedicationRequest') as medicationRequest then {
-        subject -> medicationRequest.id = uuid(),
-            medicationRequest.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
-            medicationRequest.subject = create('Reference') as patientReference, patientReference.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
-            medicationRequest.dispenseRequest = create('Dispense_Request') as dispenseRequest, dispenseRequest.validityPeriod = period,
-            medicationRequest.basedOn = reference(medicationRequestCancelledOrHold),
-            medicationRequest.status = 'active',
-            medicationRequest.intent = 'plan',
-            medicationRequest.doNotPerform = true,
-            medicationRequest.authoredOn = evaluate(subject, now()),
-            medicationRequest.recorder = evaluate(subject, $this.generalPractitioner.first()),
-            medicationRequest.medication = evaluate(definition, code),
-            medicationRequest.medication = evaluate(definition, product) "r_task_data";
-
-        subject then extractPeriod(subject, medicationRequest) "r_task_period_extraction";
-
-        // create activity.detail of type/kind Task for this Task if not exists
-        subject where(careplan.activity.where(detail.kind = 'MedicationRequest').exists().not()) -> careplan.activity = create('CarePlan_Activity') as activity then {
-            subject -> activity.detail = create('CarePlan_ActivityDetail') as ActivityDefinition then {
-                subject -> ActivityDefinition.kind = 'MedicationRequest' "rule_activity_detail_data";
-            } "rule_activity_detail";
-        } "rule_careplan_activity";
-
-        // add MR to careplan irrespective of its validity
-        subject then {
-            subject -> evaluate(careplan, activity.where(detail.kind = 'MedicationRequest')) as activity, activity.outcomeReference = reference(medicationRequest) "rule_careplan_task_reference";
-            subject -> careplan.contained = medicationRequest "rule_add_task";
-        } "rule_careplan_task";
-    } "r_task";
-}
-
-group extractPeriod(source subject: Patient, target medicationRequest: MedicationRequest) {
-    subject -> evaluate(medicationRequest, $this.dispenseRequest) as dispenseRequest, evaluate(dispenseRequest, $this.validityPeriod.start) as start,
-        evaluate(dispenseRequest, $this.validityPeriod.end) as end then {
-        subject -> create('Period') as period then {
-            subject -> period.start = create('dateTime') as startDateTime,
-                startDateTime.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "rule_period_start";
-
-            subject -> period.end = create('dateTime') as endDateTime,
-                endDateTime.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "rule_period_end";
-
-            subject -> medicationRequest.dispenseRequest = create('Dispense_Request') as dispenseRequest, dispenseRequest.validityPeriod = period "rule_execution_period";
-        } "rule_period";
-    } "rule_task_execution_period";
 }
