@@ -34,6 +34,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -92,7 +93,7 @@ constructor(
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
   val transformSupportServices: TransformSupportServicesMatchBox,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val libraryEvaluator: LibraryEvaluator,
+  val libraryEvaluatorProvider: Provider<LibraryEvaluator>,
   val fhirPathDataExtractor: FhirPathDataExtractor,
 ) : ViewModel() {
 
@@ -601,7 +602,7 @@ constructor(
     }
     questionnaire.cqfLibraryIds().forEach { libraryId ->
       if (subject.resourceType == ResourceType.Patient) {
-        libraryEvaluator.runCqlLibrary(libraryId, subject as Patient, bundle)
+        libraryEvaluatorProvider.get().runCqlLibrary(libraryId, subject as Patient, bundle)
       }
     }
   }
