@@ -16,10 +16,12 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.workflow.FhirOperator
 import io.mockk.coEvery
@@ -32,12 +34,30 @@ import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.RelatedArtifact
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 class FhirEngineExtensionTest : RobolectricTest() {
 
   private val fhirEngine: FhirEngine = mockk()
+
+  private lateinit var knowledgeManager: KnowledgeManager
+  private lateinit var fhirOperator: FhirOperator
+
+  @Before
+  fun setUp() {
+    knowledgeManager =
+      KnowledgeManager.create(ApplicationProvider.getApplicationContext(), inMemory = true)
+    val fhirContext = FhirContext(FhirVersionEnum.R4)
+
+    fhirOperator =
+      FhirOperator.Builder(ApplicationProvider.getApplicationContext())
+        .fhirEngine(fhirEngine)
+        .fhirContext(fhirContext)
+        .knowledgeManager(knowledgeManager)
+        .build()
+  }
 
   @Test
   fun searchCompositionByIdentifier() = runBlocking {
@@ -53,9 +73,6 @@ class FhirEngineExtensionTest : RobolectricTest() {
 
   @Test
   fun testLoadLibraryAtPathNullLibrary() {
-    val fhirContext = FhirContext(FhirVersionEnum.R4)
-    val fhirOperator = FhirOperator(fhirContext, fhirEngine)
-
     coEvery { fhirEngine.search<Library>(any()) } returns listOf()
 
     runBlocking { fhirEngine.loadLibraryAtPath(fhirOperator, "") }
@@ -65,8 +82,6 @@ class FhirEngineExtensionTest : RobolectricTest() {
 
   @Test
   fun testLoadLibraryAtPathReturnedLibrary() {
-    val fhirContext = FhirContext(FhirVersionEnum.R4)
-    val fhirOperator = FhirOperator(fhirContext, fhirEngine)
     val library =
       Library().apply {
         id = "123"
@@ -93,8 +108,6 @@ class FhirEngineExtensionTest : RobolectricTest() {
 
   @Test
   fun testLoadCqlLibraryBundleNotUrl() {
-    val fhirContext = FhirContext(FhirVersionEnum.R4)
-    val fhirOperator = FhirOperator(fhirContext, fhirEngine)
     val measurePath = "path"
     val measure = Measure().apply { id = "123" }
 
@@ -107,15 +120,15 @@ class FhirEngineExtensionTest : RobolectricTest() {
 
   @Test
   fun testLoadCqlLibraryBundleUrl() {
-    val fhirContext = FhirContext(FhirVersionEnum.R4)
-    val fhirOperator = FhirOperator(fhirContext, fhirEngine)
     val measurePath = "http://example.com"
     val measure =
       Measure().apply {
         id = "123"
         library = listOf(CanonicalType().apply { value = "Library/456" })
         relatedArtifact =
-          listOf(RelatedArtifact().apply { type = RelatedArtifact.RelatedArtifactType.DEPENDSON })
+          listOf(
+            RelatedArtifact().apply { type = RelatedArtifact.RelatedArtifactType.DEPENDSON },
+          )
       }
 
     coEvery { fhirEngine.search<Measure>(any()) } returns

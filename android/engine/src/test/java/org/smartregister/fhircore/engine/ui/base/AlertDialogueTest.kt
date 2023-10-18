@@ -119,7 +119,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       message = R.string.form_progress_message,
       title = R.string.questionnaire_alert_invalid_title,
       confirmButtonListener = {},
-      confirmButtonText = R.string.submit_questionnaire,
+      confirmButtonText = com.google.android.fhir.datacapture.R.string.submit_questionnaire,
     )
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
@@ -129,7 +129,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       dialog,
       getString(R.string.form_progress_message),
       getString(R.string.questionnaire_alert_invalid_title),
-      getString(R.string.submit_questionnaire),
+      getString(com.google.android.fhir.datacapture.R.string.submit_questionnaire),
     )
 
     // test an additional cancel or neutral button in confirm alert
@@ -187,7 +187,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       context = context,
       message = "Here is the complete info",
       title = "Info title",
-      confirmButtonText = R.string.submit_questionnaire,
+      confirmButtonText = com.google.android.fhir.datacapture.R.string.submit_questionnaire,
     )
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
@@ -196,7 +196,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       dialog,
       "Here is the complete info",
       "Info title",
-      getString(R.string.submit_questionnaire),
+      getString(com.google.android.fhir.datacapture.R.string.submit_questionnaire),
     )
   }
 

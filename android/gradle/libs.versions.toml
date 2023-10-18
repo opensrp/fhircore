@@ -119,6 +119,9 @@ core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx
 core-ktx-test = { group = "androidx.test", name = "core-ktx", version.ref = "core-ktx-test" }
 core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "core-testing" }
 cqf-cql-engine = { group = "info.cqframework", name = "cql", version.ref = "cql-engine" }
+cqf-fhir-utility = { module = "org.opencds.cqf.fhir:cqf-fhir-utility", version.ref = "cql-evaluator" }
+cqf-fhir-jackson = { module = "org.opencds.cqf.fhir:cqf-fhir-jackson", version.ref = "cql-evaluator" }
+cqf-fhir-cr = { module = "org.opencds.cqf.fhir:cqf-fhir-cr", version.ref = "cql-evaluator" }
 cql-to-elm = { group = "info.cqframework", name = "cql-to-elm", version.ref = "cql-engine" }
 cqf-cql-evaluator = { group = "org.opencds.cqf.cql", name = "evaluator", version.ref = "cql-evaluator" }
 cql-evaluator-builder = { group = "org.opencds.cqf.cql", name = "evaluator.builder", version.ref = "cql-evaluator" }

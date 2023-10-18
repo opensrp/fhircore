@@ -154,10 +154,10 @@ dependencies {
     exclude(group = "com.github.ben-manes.caffeine")
     exclude(group = "ca.uhn.hapi.fhir")
   }
-  //  implementation(libs.cql.evaluator.dagger) {
-  //    exclude(group = "com.github.ben-manes.caffeine")
-  //    exclude(group = "ca.uhn.hapi.fhir")
-  //  }
+
+  api(libs.cqf.fhir.cr)
+  api(libs.cqf.fhir.jackson)
+  api(libs.cqf.fhir.utility)
 
   // Shared dependencies
   api(libs.glide)

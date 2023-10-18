@@ -991,10 +991,10 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Test
   fun `createRemote() should correctly invoke FhirEngine#createRemote`() {
     val resource = spyk(Patient())
-    coEvery { fhirEngine.createRemote(resource) } just runs
+    coEvery { fhirEngine.create(resource, isLocalOnly = true) } returns listOf(resource.id)
 
     runBlocking { defaultRepository.createRemote(false, resource) }
 
-    coVerify { fhirEngine.createRemote(resource) }
+    coVerify { fhirEngine.create(resource, isLocalOnly = true) }
   }
 }

@@ -24,31 +24,34 @@ import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.ResourceType
+import org.opencds.cqf.fhir.cr.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration.Companion.DEFAULT_ROUNDING_PRECISION
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration.Companion.DEFAULT_ROUNDING_STRATEGY
 
 // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
 fun MeasureReport.StratifierGroupComponent.findPopulation(
-  id: String,
+  id: MeasurePopulationType,
 ): MeasureReport.StratifierGroupPopulationComponent? {
-  return this.population.find { it.id == id || it.code.codingFirstRep.code == id }
+  return this.population.find { it.id == id.toCode() || it.code.codingFirstRep.code == id.toCode() }
 }
 
 fun MeasureReport.StratifierGroupComponent.findCount():
   MeasureReport.StratifierGroupPopulationComponent? {
-  return this.findPopulation("numerator") ?: this.findPopulation("initial-population")
+  return this.findPopulation(MeasurePopulationType.NUMERATOR)
+    ?: this.findPopulation(MeasurePopulationType.INITIALPOPULATION)
 }
 
 fun MeasureReport.MeasureReportGroupComponent.findPopulation(
-  id: String,
+  id: MeasurePopulationType,
 ): MeasureReport.MeasureReportGroupPopulationComponent? {
-  return this.population.find { it.id == id || it.code.codingFirstRep.code == id }
+  return this.population.find { it.id == id.toCode() || it.code.codingFirstRep.code == id.toCode() }
 }
 
 fun MeasureReport.MeasureReportGroupComponent.findCount():
   MeasureReport.MeasureReportGroupPopulationComponent? {
-  return this.findPopulation("numerator") ?: this.findPopulation("initial-population")
+  return this.findPopulation(MeasurePopulationType.NUMERATOR)
+    ?: this.findPopulation(MeasurePopulationType.INITIALPOPULATION)
 }
 
 fun MeasureReport.MeasureReportGroupComponent.isMonthlyReport(): Boolean {
@@ -56,7 +59,7 @@ fun MeasureReport.MeasureReportGroupComponent.isMonthlyReport(): Boolean {
 }
 
 fun MeasureReport.MeasureReportGroupComponent.findRatio(): String {
-  return "${this.findPopulation("numerator")?.count}/${this.findPopulation("denominator")?.count}"
+  return "${this.findPopulation(MeasurePopulationType.NUMERATOR)?.count}/${this.findPopulation(MeasurePopulationType.DENOMINATOR)?.count}"
 }
 
 fun MeasureReport.StratifierGroupComponent.findRatio(denominator: Int?): String {
@@ -70,7 +73,7 @@ fun MeasureReport.StratifierGroupComponent.findPercentage(
   return if (denominator == 0) {
     "0"
   } else
-    findPopulation("numerator")
+    findPopulation(MeasurePopulationType.NUMERATOR)
       ?.count
       ?.toBigDecimal()
       ?.times(100.toBigDecimal())
