@@ -150,6 +150,47 @@
           }
         }
       ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-measles-contraindication-activity",
+      "title": "Contraindication Assessment",
+      "status": "active",
+      "description": "This is the Contraindication assessment.",
+      "kind": "MedicationRequest",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "33879002",
+            "display": "Administration of vaccine to produce active immunity (procedure)"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://hl7.org/fhir/sid/icd-11",
+            "code": "XM28X5",
+            "display": "Measles vaccines"
+          }
+        ],
+        "text": "Measles vaccines"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 280,
+              "durationUnit": "d",
+              "period": 9,
+              "periodUnit": "mo"
+            }
+          }
+        }
+      ]
     }
   ],
   "name": "Child Immunization",
@@ -165,7 +206,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/0fbd4938-6134-4c56-8d49-6c91dd306fbd').exists()"
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/0fbd4938-6134-4c56-8d49-6c91dd306fbd' or questionnaire = 'Questionnaire/fbfd01eb-6ed7-426e-add5-b8dffe7ec3de').exists()"
           }
         }
       ],
@@ -193,6 +234,29 @@
       },
       "definitionCanonical": "#careplan-measles-client-history-activity",
       "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/bdf23f3b-232e-4027-865e-1eec690575bc"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/fbfd01eb-6ed7-426e-add5-b8dffe7ec3de').exists()"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-measles-contraindication-activity",
+      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/56813e89-5fe2-45ae-9567-0abbef745c39"
     }
   ]
 }

@@ -1,4 +1,4 @@
-map "http://hl7.org/fhir/StructureMap/bdf23f3b-232e-4027-865e-1eec690575bc" = 'Measles IG workflow'
+map "http://hl7.org/fhir/StructureMap/56813e89-5fe2-45ae-9567-0abbef745c39" = 'Measles Contraindication IG workflow'
 
 uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
 uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
@@ -9,39 +9,92 @@ group childImmunizationSchedule(source src : Parameters, target careplan: CarePl
         evaluate(src, $this.parameter.where(name='depends-on').resource.entry.where(resource is QuestionnaireResponse).resource) as questionnaireResponse,
         evaluate(src, $this.parameter.where(name='period').value) as period,
         evaluate(src, $this.parameter.where(name='version').value) as version
-        then extractMedicationRequestProposal(period, version, subject, definition, careplan) "r_careplan";
+        then defineMedicationRequestToExtract(period, version, subject, definition, questionnaireResponse, careplan) "r_careplan";
 }
 
-group extractMedicationRequestProposal (
+group defineMedicationRequestToExtract(
     source period: Period,
     source version: Integer,
     source subject : Patient,
     source definition: ActivityDefinition,
+    source questionnaireResponse: QuestionnaireResponse,
+    target careplan: CarePlan) {
+    questionnaireResponse.item as item where(linkId = 'contraindications' and answer.exists().not()) then {
+        subject then extractMedicationRequestOrder(period, version, subject, definition, questionnaireResponse, careplan) "r_medication_request";
+    } "questionnaire_response_item";
+
+    questionnaireResponse.item as questionnaireResponseItem  where(linkId = 'contraindications' and answer.exists()) then {
+        questionnaireResponseItem where(linkId = 'contraindications' and ((answer.where(value.code = 'DE165')).exists() or (answer.where(value.code = 'DE166')).exists() or (answer.where(value.code = 'DE167')).exists())) then {
+            subject then extractMedicationRequestCancelledOrhold(period, version, subject, definition, questionnaireResponse, careplan) "r_medication_request_contraindication";
+        } "questionnaire_response_item_contraindication";
+    } "questionnaire_response_item_answer_available";
+}
+
+group extractMedicationRequestOrder (
+    source period: Period,
+    source version: Integer,
+    source subject : Patient,
+    source definition: ActivityDefinition,
+    source questionnaireResponse: QuestionnaireResponse,
     target careplan: CarePlan) {
 
-     subject -> create('MedicationRequest') as medicationRequest,
-        medicationRequest.basedOn = reference(careplan),
-        medicationRequest.status = 'draft',
-        medicationRequest.intent = 'proposal'
-        then extractMedicationRequest(period, version, subject, definition, careplan, medicationRequest),
-            extractMedicationRequestPlan(period, version, subject, definition, careplan, medicationRequest)
-            "r_medication_request";
+    subject -> create('MedicationRequest') as medicationRequestOrder then {
+        subject -> medicationRequestOrder.id =  create('id') as id then {
+                subject -> id.value = evaluate(questionnaireResponse, $this.item.where(linkId = 'c1d8fed1-ff36-43b6-8061-22561154b13b').answer.value) "rule_update_medication_request_value";
+            } "rule_update_medication_request_value_id";
+        subject -> medicationRequestOrder.basedOn = reference(careplan) "rule_update_flag_basedOn";
+        subject -> medicationRequestOrder.status = 'active' "r_medication_request_status";
+        subject -> medicationRequestOrder.intent = 'order' "r_medication_request_intent";
+
+        subject -> medicationRequestOrder.supportingInformation = create('Reference') as questionnaireReference, questionnaireReference.reference = 'Questionnaire/d4f9bfbe-b684-4505-9c66-719afd5c9fca' "r_task_reason_reference";
+
+        // create activity.detail of type/kind Task for this Task if not exists
+        subject where(careplan.activity.where(detail.kind = 'MedicationRequest').exists().not()) -> careplan.activity = create('CarePlan_Activity') as activity then {
+            subject -> activity.detail = create('CarePlan_ActivityDetail') as ActivityDefinition then {
+                subject -> ActivityDefinition.kind = 'MedicationRequest' "rule_activity_detail_data";
+            } "rule_activity_detail";
+        } "rule_careplan_activity";
+
+        // add MR to careplan irrespective of its validity
+        subject then {
+            subject -> evaluate(careplan, activity.where(detail.kind = 'MedicationRequest')) as activity, activity.outcomeReference = reference(medicationRequestOrder) "rule_careplan_task_reference";
+            subject -> careplan.contained = medicationRequestOrder "rule_add_task";
+        } "rule_careplan_task";
+    } "r_medication_request";
 }
 
-group extractMedicationRequestPlan(
+group extractMedicationRequestCancelledOrhold(
     source period: Period,
     source version: Integer,
     source subject : Patient,
     source definition: ActivityDefinition,
-    target careplan: CarePlan,
-    target medicationRequestProposal: MedicationRequest) {
+    source questionnaireResponse: QuestionnaireResponse,
+    target careplan: CarePlan) {
 
-    subject -> create('MedicationRequest') as medicationRequest,
-        medicationRequest.basedOn = reference(medicationRequestProposal),
-        medicationRequest.status = 'active',
-        medicationRequest.intent = 'plan',
-        medicationRequest.supportingInformation = create('Reference') as questionnaireReference, questionnaireReference.reference = 'Questionnaire/fbfd01eb-6ed7-426e-add5-b8dffe7ec3de'
-        then extractMedicationRequest(period, version, subject, definition, careplan, medicationRequest) "r_medication_request_plan";
+    //or answer.where(value.code = 'DE166') or answer.where(value.code = 'DE167')
+    subject -> create('MedicationRequest') as medicationRequestCancelledOrHold then {
+        subject -> medicationRequestCancelledOrHold.id =  create('id') as id then {
+            subject -> id.value = evaluate(questionnaireResponse, $this.item.where(linkId = 'c1d8fed1-ff36-43b6-8061-22561154b13b').answer.value) "rule_update_medication_request_value";
+        } "rule_update_medication_request_value_id";
+        subject -> medicationRequestCancelledOrHold.basedOn = reference(careplan) "rule_update_flag_basedOn";
+        subject -> medicationRequestCancelledOrHold.status = 'stopped' "r_medication_request_status";
+        subject -> medicationRequestCancelledOrHold.intent = 'order' "r_medication_request_intent";
+
+        // create activity.detail of type/kind Task for this Task if not exists
+        subject where(careplan.activity.where(detail.kind = 'MedicationRequest').exists().not()) -> careplan.activity = create('CarePlan_Activity') as activity then {
+            subject -> activity.detail = create('CarePlan_ActivityDetail') as ActivityDefinition then {
+                subject -> ActivityDefinition.kind = 'MedicationRequest' "rule_activity_detail_data";
+            } "rule_activity_detail";
+        } "rule_careplan_activity";
+
+        // add MR to careplan irrespective of its validity
+        subject then {
+            subject -> evaluate(careplan, activity.where(detail.kind = 'MedicationRequest')) as activity, activity.outcomeReference = reference(medicationRequestCancelledOrHold) "rule_careplan_task_reference";
+            subject -> careplan.contained = medicationRequestCancelledOrHold "rule_add_task";
+        } "rule_careplan_task";
+
+        subject then extractMedicationRequest(period, version, subject, definition, questionnaireResponse, medicationRequestCancelledOrHold, careplan) "r_medication_request_contraindication";
+    } "r_medication_request";
 }
 
 group extractMedicationRequest(
@@ -49,18 +102,19 @@ group extractMedicationRequest(
     source version: Integer,
     source subject : Patient,
     source definition: ActivityDefinition,
-    target careplan: CarePlan,
-    target medicationRequest: MedicationRequest) {
+    source questionnaireResponse: QuestionnaireResponse,
+    source medicationRequestCancelledOrHold: MedicationRequest,
+    target careplan: CarePlan) {
 
-    // fill task into careplan contained and add reference in activity.outcome
-    subject -> // dosage[version] does not work, hence skipping the item from given index via skip.first
-        evaluate(definition, $this.dosage.skip(version).first()) as currentDose then {
-
+    subject -> create('MedicationRequest') as medicationRequest then {
         subject -> medicationRequest.id = uuid(),
             medicationRequest.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
             medicationRequest.subject = create('Reference') as patientReference, patientReference.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
             medicationRequest.dispenseRequest = create('Dispense_Request') as dispenseRequest, dispenseRequest.validityPeriod = period,
-            medicationRequest.doNotPerform = false,
+            medicationRequest.basedOn = reference(medicationRequestCancelledOrHold),
+            medicationRequest.status = 'active',
+            medicationRequest.intent = 'plan',
+            medicationRequest.doNotPerform = true,
             medicationRequest.authoredOn = evaluate(subject, now()),
             medicationRequest.recorder = evaluate(subject, $this.generalPractitioner.first()),
             medicationRequest.medication = evaluate(definition, code),

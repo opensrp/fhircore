@@ -1,132 +1,36 @@
 {
   "resourceType": "QuestionnaireResponse",
-  "id": "8b973ac5-f2bb-4e6b-8ff7-adfe8ffccba9",
-  "meta": {
-    "lastUpdated": "2023-10-17T19:23:55.104+03:00",
-    "tag": [
-      {
-        "system": "https://smartregister.org/care-team-tag-id",
-        "code": "12be445c-4022-45d5-861f-df40a5bc439d",
-        "display": "Practitioner CareTeam"
-      },
-      {
-        "system": "https://smartregister.org/location-tag-id",
-        "code": "6892091d-e7c2-4b40-8501-6dcaa30a7398",
-        "display": "Practitioner Location"
-      },
-      {
-        "system": "https://smartregister.org/organisation-tag-id",
-        "code": "1763",
-        "display": "Practitioner Organization"
-      },
-      {
-        "system": "https://smartregister.org/practitioner-tag-id",
-        "code": "59f47fdd-5d30-4d55-82f6-cc562cb5c749",
-        "display": "Practitioner"
-      },
-      {
-        "system": "https://smartregister.org/app-version",
-        "code": "Not defined",
-        "display": "Application Version"
-      }
-    ]
-  },
-  "contained": [
-    {
-      "resourceType": "List",
-      "id": "5ec822f1-a107-49d6-9b30-9d5e6dc6323e",
-      "status": "current",
-      "mode": "working",
-      "title": "GeneratedResourcesList",
-      "date": "2023-10-17T19:23:55+03:00"
-    }
-  ],
-  "questionnaire": "Questionnaire/0fbd4938-6134-4c56-8d49-6c91dd306fbd",
+  "status": "in-progress",
+  "questionnaire": "Questionnaire/fbfd01eb-6ed7-426e-add5-b8dffe7ec3de",
   "status": "completed",
   "subject": {
     "reference": "Patient/9a6188b4-cd60-41af-8880-c3f8464eef4b"
   },
-  "authored": "2023-10-17T19:23:55+03:00",
   "item": [
     {
-      "linkId": "dose0",
-      "text": "Indicates if the client has received a birth dose and/or supplementary dose"
-    },
-    {
-      "linkId": "completedPrimarySeries",
-      "text": "Indicates if the client has completed the primary vaccination series of a product/antigen. If the client has not yet completed their primary series, it means they may be expected to receive more doses to complete their vaccination regimen for the respective product/antigen.",
+      "linkId": "contraindications",
+      "text": "Specific situations or medical conditions in which it is advised or recommended to avoid or delay administering a particular vaccine",
       "answer": [
         {
-          "valueBoolean": false
+          "valueCoding": {
+            "code": "DE165",
+            "display": "Severely immunosuppressed",
+            "system": "http://fhir.org/guides/who/smart-immunization/CodeSystem/IMMZ.D4"
+          }
         }
       ]
     },
     {
-      "linkId": "dateSeriesCompleted",
-      "text": "The date when the client completed the primary vaccination series - per product/antigen",
+      "linkId": "c1d8fed1-ff36-43b6-8061-22561154b13b",
+      "text": "MedicationRequest ",
       "answer": [
         {
-          "valueDate": "2023-10-17"
-        }
-      ]
-    },
-    {
-      "linkId": "hivStatus",
-      "text": "The current human immunodeficiency virus HIV status of the client"
-    },
-    {
-      "linkId": "immunocompromised",
-      "text": "The client is known to be immunocompromised or immunosuppressed. This means the client has a weakened immune system and having a reduced ability to fight infections and other diseases",
-      "answer": [
-        {
-          "valueBoolean": true
-        }
-      ]
-    },
-    {
-      "linkId": "onART",
-      "text": "The client is currently receiving antiretroviral therapy ART",
-      "answer": [
-        {
-          "valueBoolean": false
-        }
-      ]
-    },
-    {
-      "linkId": "hivExposedInfant",
-      "text": "The infant is known to be exposed to HIV, i.e. born to an HIV-infected woman",
-      "answer": [
-        {
-          "valueBoolean": true
-        }
-      ]
-    },
-    {
-      "linkId": "immuneReconstitutionAchieved",
-      "text": "The client is known to have achieved immune reconstitution",
-      "answer": [
-        {
-          "valueBoolean": false
-        }
-      ]
-    },
-    {
-      "linkId": "severelyImmunosuppressed",
-      "text": "The client is known to be severely immunocompromised or immunosuppressed",
-      "answer": [
-        {
-          "valueBoolean": true
-        }
-      ]
-    },
-    {
-      "linkId": "artStartDate",
-      "text": "The date on which the client started or restarted antiretroviral therapy ART",
-      "answer": [
-        {
-          "valueDate": "2023-10-17"
+          "valueString": "9a548833-3283-45d8-aa1d-e18c990af5c0"
         }
       ]
     }
   ]
 }
+
+
+
