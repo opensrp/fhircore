@@ -129,9 +129,9 @@
       "productCodeableConcept": {
         "coding": [
           {
-            "system": "http://hl7.org/fhir/sid/icd-11",
-            "code": "XM28X5",
-            "display": "Measles vaccines"
+            "code": "440075005",
+            "system": "http://snomed.info/sct",
+            "display": "Live measles + rubella vaccine injection dose form (product)"
           }
         ],
         "text": "Measles vaccines"
@@ -170,9 +170,9 @@
       "productCodeableConcept": {
         "coding": [
           {
-            "system": "http://hl7.org/fhir/sid/icd-11",
-            "code": "XM28X5",
-            "display": "Measles vaccines"
+            "code": "440075005",
+            "system": "http://snomed.info/sct",
+            "display": "Live measles + rubella vaccine injection dose form (product)"
           }
         ],
         "text": "Measles vaccines"
@@ -211,9 +211,50 @@
       "productCodeableConcept": {
         "coding": [
           {
-            "system": "http://hl7.org/fhir/sid/icd-11",
-            "code": "XM28X5",
-            "display": "Measles vaccines"
+            "code": "440075005",
+            "system": "http://snomed.info/sct",
+            "display": "Live measles + rubella vaccine injection dose form (product)"
+          }
+        ],
+        "text": "Measles vaccines"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 280,
+              "durationUnit": "d",
+              "period": 9,
+              "periodUnit": "mo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
+      "id": "careplan-measles-complete-vaccination-activity",
+      "title": "Administer Vaccine",
+      "status": "active",
+      "description": "This is the Administer assessment.",
+      "kind": "MedicationRequest",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "33879002",
+            "display": "Administration of vaccine to produce active immunity (procedure)"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "code": "440075005",
+            "system": "http://snomed.info/sct",
+            "display": "Live measles + rubella vaccine injection dose form (product)"
           }
         ],
         "text": "Measles vaccines"
@@ -234,10 +275,10 @@
       ]
     }
   ],
-  "name": "Child Immunization",
-  "title": "Child Immunization",
+  "name": "Child Vaccination",
+  "title": "Child Vaccination",
   "status": "active",
-  "description": "This scheduled will be used to track the child's immunization.",
+  "description": "This scheduled will be used to track the child's vaccination.",
   "action": [
     {
       "prefix": "1",
@@ -247,7 +288,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/0fbd4938-6134-4c56-8d49-6c91dd306fbd' or questionnaire = 'Questionnaire/fbfd01eb-6ed7-426e-add5-b8dffe7ec3de').exists()"
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/0fbd4938-6134-4c56-8d49-6c91dd306fbd' or questionnaire = 'Questionnaire/fbfd01eb-6ed7-426e-add5-b8dffe7ec3de' or questionnaire = 'Questionnaire/caebc6b4-7861-42be-8925-12c4a6bad921' or questionnaire = 'Questionnaire/d4f9bfbe-b684-4505-9c66-719afd5c9fca').exists()"
           }
         }
       ],
@@ -321,6 +362,29 @@
       },
       "definitionCanonical": "#careplan-measles-administer-activity",
       "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/be876ffc-491d-4ab1-ba2c-0ba5213283c8"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/caebc6b4-7861-42be-8925-12c4a6bad921').exists()"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-measles-complete-vaccination-activity",
+      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/0863635d-c78f-489c-9ffa-e49e8b58f576"
     }
   ]
 }

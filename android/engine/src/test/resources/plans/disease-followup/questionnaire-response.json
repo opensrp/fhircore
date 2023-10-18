@@ -1,35 +1,31 @@
 {
   "resourceType": "QuestionnaireResponse",
   "status": "in-progress",
-  "questionnaire": "Questionnaire/d4f9bfbe-b684-4505-9c66-719afd5c9fca",
+  "questionnaire": "Questionnaire/caebc6b4-7861-42be-8925-12c4a6bad921",
   "status": "completed",
   "subject": {
     "reference": "Patient/9a6188b4-cd60-41af-8880-c3f8464eef4b"
   },
   "item": [
     {
-      "linkId": "ae9c1118-4572-4f9b-8c88-ec9429aa4ec0",
-      "text": "Do you consent to get this immunization?",
+      "linkId": "5b303e22-5ba0-4d69-967a-0c37f478ad03",
+      "text": "Have you Administered the Vaccine?",
       "answer": [
         {
           "valueCoding": {
-            "code": "Yes",
-            "display": "Yes",
+            "code": "no",
+            "display": "NO",
             "system": "urn:uuid:e4075c84-397e-4c71-dd66-52cbfe998373"
           }
         }
       ]
     },
     {
-      "linkId": "5d887ed0-0c4f-4be6-8f96-63c75346ad42",
-      "text": "Do you have stock?",
+      "linkId": "1e1f0f3b-58de-41b4-8db0-6c4b033cce57",
+      "text": "Date of Immunization",
       "answer": [
         {
-          "valueCoding": {
-            "code": "Yes",
-            "display": "Yes",
-            "system": "urn:uuid:a6a1f0cb-e35d-4ed4-909e-eb401ffa9a3b"
-          }
+          "valueDate": "2021-01-01"
         }
       ]
     },

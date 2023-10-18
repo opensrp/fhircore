@@ -65,6 +65,7 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "RiskAssessment_Prediction" -> RiskAssessmentPredictionComponent()
       "Immunization_AppliedProtocol" -> Immunization.ImmunizationProtocolAppliedComponent()
       "Immunization_Reaction" -> Immunization.ImmunizationReactionComponent()
+      "Immunization_Performer" -> Immunization.ImmunizationPerformerComponent()
       "EpisodeOfCare_Diagnosis" -> EpisodeOfCare.DiagnosisComponent()
       "Encounter_Diagnosis" -> Encounter.DiagnosisComponent()
       "Encounter_Participant" -> Encounter.EncounterParticipantComponent()

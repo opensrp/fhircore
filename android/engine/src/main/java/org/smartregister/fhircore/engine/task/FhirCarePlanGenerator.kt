@@ -184,7 +184,7 @@ constructor(
       }
     }
 
-    val carePlanTasks = output.contained.filterIsInstance<Task>()
+    val carePlanTasks = ArrayList<Task>()
 
     if (carePlanModified) saveCarePlan(output)
 
