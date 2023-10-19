@@ -50,7 +50,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
-import org.smartregister.fhircore.engine.configuration.view.ButtonType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
@@ -113,7 +112,7 @@ fun MemberProfileBottomSheetView(
       Spacer(modifier = modifier.height(8.dp))
       buttonProperties.forEach {
         ActionableButton(
-          buttonProperties = it.copy(buttonType = ButtonType.BIG),
+          buttonProperties = it,
           resourceData = resourceData,
           navController = navController,
         )

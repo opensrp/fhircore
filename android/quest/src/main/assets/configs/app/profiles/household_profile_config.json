@@ -506,7 +506,6 @@
                   "visible": "@{showMemberTasks}",
                   "text": "@{taskDescription}",
                   "status": "@{serviceStatus}",
-                  "smallSized": true,
                   "enabled": "@{patientActive}",
                   "actions": [
                     {

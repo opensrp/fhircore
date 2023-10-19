@@ -159,33 +159,36 @@ fun ServiceCard(
       contentAlignment = Alignment.Center,
     ) {
       // Service card visibility can be determined dynamically e.g. only display when task is due
-      if ((serviceCardProperties.serviceButton != null || serviceCardProperties.services != null)) {
+      if (serviceCardProperties.serviceButton != null || serviceCardProperties.services != null) {
         if (
           serviceCardProperties.serviceButton != null &&
             serviceCardProperties.serviceButton!!.visible.toBoolean()
         ) {
-          if (serviceCardProperties.serviceButton!!.smallSized) {
-            Column {
-              ActionableButton(
-                buttonProperties =
-                  serviceCardProperties.serviceButton!!.copy(buttonType = ButtonType.TINY),
+          when (serviceCardProperties.serviceButton!!.buttonType) {
+            ButtonType.TINY,
+            ButtonType.MEDIUM, -> {
+              Column {
+                ActionableButton(
+                  buttonProperties = serviceCardProperties.serviceButton!!,
+                  navController = navController,
+                  resourceData = resourceData,
+                )
+              }
+            }
+            else -> {
+              BigServiceButton(
+                modifier = modifier,
+                buttonProperties = serviceCardProperties.serviceButton!!,
                 navController = navController,
                 resourceData = resourceData,
               )
             }
-          } else {
-            BigServiceButton(
-              modifier = modifier,
-              buttonProperties = serviceCardProperties.serviceButton!!,
-              navController = navController,
-              resourceData = resourceData,
-            )
           }
         } else if (serviceCardProperties.services?.isNotEmpty() == true) {
           Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             serviceCardProperties.services?.forEach { buttonProperties ->
               ActionableButton(
-                buttonProperties = buttonProperties.copy(buttonType = ButtonType.TINY),
+                buttonProperties = buttonProperties,
                 navController = navController,
                 resourceData = resourceData,
               )
@@ -590,12 +593,57 @@ private fun ServiceCardServiceFamilyMemberPreview() {
                 listOf(
                   CompoundTextProperties(
                     viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "John Njoroge Mwangi, F",
+                    primaryText = "John Njoroge Mwangi, M",
                     primaryTextColor = "#000000",
                   ),
                 ),
               serviceMemberIcons = "CHILD",
               showVerticalDivider = false,
+            ),
+          ),
+      ),
+    )
+
+  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+    ViewRenderer(
+      viewProperties = viewProperties,
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+      navController = rememberNavController(),
+    )
+  }
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+private fun ServiceCardServiceWithTinyServiceButtonPreview() {
+  val viewProperties =
+    listOf<ViewProperties>(
+      ColumnProperties(
+        viewType = ViewType.COLUMN,
+        children =
+          listOf(
+            ServiceCardProperties(
+              viewType = ViewType.SERVICE_CARD,
+              details =
+                listOf(
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Nelson Madiba Mandela, M",
+                    primaryTextColor = "#000000",
+                  ),
+                  CompoundTextProperties(
+                    viewType = ViewType.COMPOUND_TEXT,
+                    primaryText = "Last visited yesterday",
+                    primaryTextColor = "#5A5A5A",
+                  ),
+                ),
+              showVerticalDivider = false,
+              serviceButton =
+                ButtonProperties(
+                  status = ServiceStatus.DUE.name,
+                  text = "ANC Visit",
+                  buttonType = ButtonType.TINY,
+                ),
             ),
           ),
       ),
@@ -695,7 +743,6 @@ private fun ServiceCardANCServiceDuePreview() {
                 ButtonProperties(
                   status = ServiceStatus.DUE.name,
                   text = "ANC Visit",
-                  buttonType = ButtonType.TINY,
                 ),
             ),
           ),
@@ -744,13 +791,13 @@ private fun ServiceCardANCServiceOverduePreview() {
                     visible = "true",
                     status = ServiceStatus.COMPLETED.name,
                     text = "Pregnancy Outcome 1",
-                    buttonType = ButtonType.TINY,
+                    buttonType = ButtonType.MEDIUM,
                   ),
                   ButtonProperties(
                     visible = "true",
                     status = ServiceStatus.OVERDUE.name,
                     text = "ANC Visit 2",
-                    buttonType = ButtonType.TINY,
+                    buttonType = ButtonType.MEDIUM,
                   ),
                 ),
             ),

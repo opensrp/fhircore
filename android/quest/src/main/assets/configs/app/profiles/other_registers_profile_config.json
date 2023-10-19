@@ -989,7 +989,6 @@
                 "views": [
                   {
                     "viewType": "BUTTON",
-                    "smallSized": "true",
                     "text": "@{taskDescriptionWithStartDate}",
                     "status": "@{taskStatusColorCode}",
                     "visible": "true",

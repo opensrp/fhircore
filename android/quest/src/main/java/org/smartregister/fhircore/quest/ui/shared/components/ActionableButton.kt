@@ -17,11 +17,12 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
@@ -102,14 +103,32 @@ fun ActionableButton(
         ),
       modifier =
         modifier
-          .conditional(buttonProperties.fillMaxWidth, { fillMaxWidth() }, { wrapContentWidth() })
-          .wrapContentHeight()
+          .conditional(
+            buttonProperties.fillMaxWidth,
+            { fillMaxWidth() },
+            { wrapContentWidth() },
+          )
+          .conditional(
+            buttonProperties.buttonType == ButtonType.TINY,
+            { defaultMinSize(minWidth = ButtonDefaults.MinWidth, minHeight = 10.dp) },
+            {
+              defaultMinSize(
+                minWidth = ButtonDefaults.MinWidth,
+                minHeight = ButtonDefaults.MinHeight,
+              )
+            },
+          )
           .testTag(ACTIONABLE_BUTTON_TEST_TAG),
       enabled = buttonProperties.enabled.toBoolean(),
       border = BorderStroke(width = 0.6.dp, color = statusColor.copy(alpha = 0.1f)),
       elevation = null,
+      contentPadding =
+        if (buttonProperties.buttonType == ButtonType.TINY) {
+          PaddingValues()
+        } else ButtonDefaults.ContentPadding,
     ) {
-      // Each component here uses a new modifier to avoid inheriting the properties of the parent
+      // Each component here uses a new modifier to avoid inheriting the properties of the
+      // parent
       val iconTintColor =
         if (isButtonEnabled) {
           when (status) {
@@ -127,7 +146,9 @@ fun ActionableButton(
       } else {
         Icon(
           imageVector =
-            if (status == ServiceStatus.COMPLETED.name) Icons.Filled.Check else Icons.Filled.Add,
+            if (status == ServiceStatus.COMPLETED.name) {
+              Icons.Filled.Check
+            } else Icons.Filled.Add,
           contentDescription = null,
           tint = iconTintColor,
           modifier = Modifier.size(16.dp),
@@ -148,7 +169,7 @@ fun ActionableButton(
         textAlign = TextAlign.Start,
         overflow = TextOverflow.Ellipsis,
         maxLines = 1,
-        modifier = Modifier.padding(1.dp),
+        modifier = Modifier.padding(2.dp),
         fontSize = buttonProperties.fontSize.sp,
         style = TextStyle(letterSpacing = buttonProperties.letterSpacing.sp),
       )
@@ -165,7 +186,6 @@ fun ActionableButtonPreview() {
         visible = "true",
         status = ServiceStatus.IN_PROGRESS.name,
         text = "ANC Visit",
-        buttonType = ButtonType.TINY,
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
@@ -184,7 +204,7 @@ fun DisabledActionableButtonPreview() {
           text = "Issue household bed-nets",
           contentColor = "#700f2b",
           enabled = "true",
-          buttonType = ButtonType.BIG,
+          buttonType = ButtonType.MEDIUM,
           startIcon = ImageConfig(reference = "ic_walk", type = ICON_TYPE_LOCAL),
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
@@ -204,7 +224,7 @@ fun SmallActionableButtonPreview() {
           status = "DUE",
           text = "Due Task",
           fillMaxWidth = true,
-          buttonType = ButtonType.TINY,
+          buttonType = ButtonType.MEDIUM,
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
@@ -216,7 +236,7 @@ fun SmallActionableButtonPreview() {
           status = "COMPLETED",
           text = "Completed Task",
           fillMaxWidth = true,
-          buttonType = ButtonType.TINY,
+          buttonType = ButtonType.MEDIUM,
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
