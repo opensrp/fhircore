@@ -98,7 +98,8 @@ constructor(
   ): T {
     require(!configType.parseAsResource) { "Configuration MUST be a template" }
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
-    if (configCacheMap.contains(configKey) && paramsMap?.isEmpty() == true) {
+    // Temporarily Disable Caching for MLS demo Hotfix
+    if (configCacheMap.contains(configKey) && paramsMap?.isEmpty() == true && false) {
       return configCacheMap[configKey] as T
     }
     val decodedConfig =
