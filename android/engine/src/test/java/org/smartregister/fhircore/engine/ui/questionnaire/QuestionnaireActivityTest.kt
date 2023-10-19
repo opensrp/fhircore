@@ -68,6 +68,7 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.di.AnalyticsModule
 import org.smartregister.fhircore.engine.di.CoreModule
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
@@ -119,7 +120,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         transformSupportServices = mockk(),
         dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = mockk(),
-        libraryEvaluator = mockk(),
+        libraryEvaluatorProvider = { mockk<LibraryEvaluator>() },
         tracer = FakePerformanceReporter()
       )
     )
@@ -138,7 +139,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       }
 
     every { syncBroadcaster.runSync(any()) } just runs
-    coEvery { questionnaireViewModel.libraryEvaluator.initialize() } just runs
+    coEvery { questionnaireViewModel.libraryEvaluatorProvider.get().initialize() } just runs
 
     val questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
     coEvery { questionnaireViewModel.getQuestionnaireConfig(any(), any()) } returns

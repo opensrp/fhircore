@@ -39,6 +39,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -108,7 +109,7 @@ constructor(
   val transformSupportServices: TransformSupportServices,
   val dispatcherProvider: DispatcherProvider,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val libraryEvaluator: LibraryEvaluator,
+  val libraryEvaluatorProvider: Provider<LibraryEvaluator>,
   var tracer: PerformanceReporter
 ) : ViewModel() {
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
@@ -416,7 +417,7 @@ constructor(
             if (questionnaireResponse.hasSubject())
               loadPatient(questionnaireResponse.subject.extractId())
             else null
-          libraryEvaluator.runCqlLibrary(it, patient, data, defaultRepository)
+          libraryEvaluatorProvider.get().runCqlLibrary(it, patient, data, defaultRepository)
         }
         .forEach { output ->
           if (output.isNotEmpty()) extractionProgressMessage.postValue(output.joinToString("\n"))
