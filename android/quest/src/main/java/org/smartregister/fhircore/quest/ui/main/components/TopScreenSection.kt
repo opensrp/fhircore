@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -57,10 +58,12 @@ const val DRAWER_MENU = "Drawer Menu"
 const val SEARCH = "Search"
 const val CLEAR = "Clear"
 const val FILTER = "Filter"
+const val NOTIFICATION = "Notification"
 const val TITLE_ROW_TEST_TAG = "titleRowTestTag"
 const val TOP_ROW_ICON_TEST_TAG = "topRowIconTestTag"
 const val TOP_ROW_TEXT_TEST_TAG = "topRowTextTestTag"
 const val TOP_ROW_FILTER_ICON_TEST_TAG = "topRowFilterIconTestTag"
+const val TOP_ROW_NOTIFICATION_ICON_TEST_TAG = "topRowNotificationIconTestTag"
 const val OUTLINED_BOX_TEST_TAG = "outlinedBoxTestTag"
 const val TRAILING_ICON_TEST_TAG = "trailingIconTestTag"
 const val TRAILING_ICON_BUTTON_TEST_TAG = "trailingIconButtonTestTag"
@@ -73,10 +76,12 @@ fun TopScreenSection(
   title: String,
   searchText: String,
   filteredRecordsCount: Long? = null,
+  unreadNotificationsCount: Long? = null,
   searchPlaceholder: String? = null,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (String) -> Unit,
   isFilterIconEnabled: Boolean = false,
+  isNotificationIconEnabled: Boolean = false,
   onClick: (ToolbarClickEvent) -> Unit,
 ) {
   Column(
@@ -126,6 +131,33 @@ fun TopScreenSection(
               contentDescription = FILTER,
               tint = Color.White,
               modifier = modifier.testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
+            )
+          }
+        }
+      }
+      if (isNotificationIconEnabled) {
+        IconButton(
+          onClick = { onClick.invoke(ToolbarClickEvent.ShowNotification) },
+          modifier = Modifier.padding(horizontal = 16.dp),
+        ) {
+          BadgedBox(
+            badge = {
+              if (unreadNotificationsCount != null && unreadNotificationsCount > 0) {
+                Badge {
+                  Text(
+                    text = unreadNotificationsCount.toString(),
+                    overflow = TextOverflow.Clip,
+                    maxLines = 1,
+                  )
+                }
+              }
+            },
+          ) {
+            Icon(
+              imageVector = Icons.Default.Notifications,
+              contentDescription = NOTIFICATION,
+              tint = Color.White,
+              modifier = modifier.testTag(TOP_ROW_NOTIFICATION_ICON_TEST_TAG),
             )
           }
         }

@@ -36,6 +36,9 @@ sealed class MainNavigationScreen(
   object Settings :
     MainNavigationScreen(R.string.settings, R.drawable.ic_settings, R.id.userSettingFragment, true)
 
+  object Notifications :
+    MainNavigationScreen(titleResource = R.string.notification, route = R.id.notificationFragment)
+
   object Profile :
     MainNavigationScreen(titleResource = R.string.profile, route = R.id.profileFragment)
 

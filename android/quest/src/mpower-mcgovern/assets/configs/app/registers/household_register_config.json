@@ -288,5 +288,12 @@
         }
       ]
     }
+  ],
+  "registerNotification": [
+    {
+      "trigger": "ON_CLICK",
+      "workflow": "LAUNCH_NOTIFICATIONS",
+      "id": "notification"
+    }
   ]
 }

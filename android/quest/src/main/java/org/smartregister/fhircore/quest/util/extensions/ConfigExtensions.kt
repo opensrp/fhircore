@@ -144,6 +144,18 @@ fun List<ActionConfig>.handleClickEvent(
       }
       ApplicationWorkflow.LAUNCH_SETTINGS ->
         navController.navigate(MainNavigationScreen.Settings.route)
+      ApplicationWorkflow.LAUNCH_NOTIFICATIONS -> {
+        val args =
+          bundleOf(
+            Pair(NavigationArg.NOTIFICATION_ID, actionConfig.id ?: navMenu?.id),
+            Pair(NavigationArg.PARAMS, interpolatedParams.toTypedArray()),
+          )
+
+        navController.navigate(
+          resId = MainNavigationScreen.Notifications.route,
+          args = args,
+        )
+      }
       ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)
       ApplicationWorkflow.LAUNCH_MAP ->
         navController.navigate(

@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.event
+package org.smartregister.fhircore.quest.ui.notification
 
-sealed class ToolbarClickEvent {
-  object FilterData : ToolbarClickEvent()
+sealed class NotificationEvent {
+  data class SearchRegister(val searchText: String = "") : NotificationEvent()
 
-  object Navigate : ToolbarClickEvent()
+  data class ShowNotification(val data: Map<String, Any> = mapOf(), val id: String? = null) : NotificationEvent()
 
-  object ShowNotification : ToolbarClickEvent()
+  object MoveToNextPage : NotificationEvent()
+
+  object MoveToPreviousPage : NotificationEvent()
 }

@@ -1,0 +1,144 @@
+{
+  "appId": "app",
+  "configType": "register",
+  "id": "notification",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "MessageDefinition",
+      "sortConfigs": [
+        {
+          "paramName": "date",
+          "dataType": "DATE",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  },
+  "registerCard": {
+    "rules": [
+      {
+        "name": "notificationStatus",
+        "condition": "true",
+        "actions": [
+          "data.put('notificationStatus', fhirPath.extractValue(MessageDefinition, 'MessageDefinition.status'))"
+        ]
+      },
+      {
+        "name": "notificationTextColor",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('notificationTextColor', data.get('notificationStatus') == 'active' ? 'primaryColor' : 'DefaultColor')"
+        ]
+      },
+      {
+        "name": "notificationLogicalId",
+        "condition": "true",
+        "actions": [
+          "data.put('notificationLogicalId', fhirPath.extractValue(MessageDefinition, 'MessageDefinition.id'))"
+        ]
+      },
+      {
+        "name": "notificationTitle",
+        "condition": "true",
+        "actions": [
+          "data.put('notificationTitle', fhirPath.extractValue(MessageDefinition, 'MessageDefinition.title'))"
+        ]
+      },
+      {
+        "name": "notificationDescription",
+        "condition": "true",
+        "actions": [
+          "data.put('notificationDescription', fhirPath.extractValue(MessageDefinition, 'MessageDefinition.description'))"
+        ]
+      },
+      {
+        "name": "notificationTriggerDate",
+        "condition": "true",
+        "actions": [
+          "data.put('notificationTriggerDate', fhirPath.extractValue(MessageDefinition, 'MessageDefinition.date'))"
+        ]
+      },
+      {
+        "name": "notificationDate",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('notificationDate', service.formatDate(data.get('notificationTriggerDate'), \"yyyy-MM-dd'T'HH:mm:ssZ\", \"dd MMM yyyy, hh:mm aa\"))"
+        ]
+      },
+      {
+        "name": "notificationType",
+        "condition": "true",
+        "actions": [
+          "data.put('notificationType', fhirPath.extractValue(MessageDefinition, 'MessageDefinition.purpose'))"
+        ]
+      },
+      {
+        "name": "notificationIcon",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('notificationIcon', data.get('notificationType') == 'PNC' ? 'ic_baby_mother' : data.get('notificationType') == 'ANC' ? 'ic_pregnant' : 'ic_inventory')"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "ROW",
+        "fillMaxWidth": true,
+        "children": [
+          {
+            "viewType": "IMAGE_VIEW",
+            "width": 50,
+            "height": 50,
+            "color": "primaryColor",
+            "borderColor": "primaryColor",
+            "reference": "@{notificationIcon}"
+          },
+          {
+            "viewType": "SPACER",
+            "width": 5
+          },
+          {
+            "viewType": "COLUMN",
+            "children": [
+              {
+                "viewType": "SPACER",
+                "height": 5
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{notificationTitle}",
+                "primaryTextColor": "@{notificationTextColor}",
+                "primaryTextFontWeight": "BOLD",
+                "maxLines": 1
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{notificationDescription}",
+                "maxLines": 1
+              },
+              {
+                "viewType": "SPACER",
+                "height": 10
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{notificationDate}"
+              },
+              {
+                "viewType": "SPACER",
+                "height": 5
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "noResults": {
+    "title": "No Notification Found",
+    "message": "Sorry, you haven't had any notifications to show"
+  }
+}

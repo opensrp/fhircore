@@ -21,10 +21,13 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.android.fhir.search.search
+import com.google.gson.Gson
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.MessageDefinition
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
@@ -45,6 +48,7 @@ constructor(
   val defaultRepository: DefaultRepository,
   val dispatcherProvider: DispatcherProvider,
   val notificationManager: FhirNotificationManager,
+  val gson: Gson,
 ) : CoroutineWorker(context, workerParams) {
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
@@ -57,11 +61,24 @@ constructor(
           .append(dueAncPatientDetails.joinToString("\n"))
 
         val notificationData = NotificationData(
-          "ANC Follow Up Remainder",
-          descriptionBuilder.toString(),
+          title = "ANC Follow Up Remainder",
+          description = descriptionBuilder.toString(),
+          type = "ANC",
         )
 
         notificationManager.showNotification(notificationData)
+
+        MessageDefinition().apply {
+          status = Enumerations.PublicationStatus.ACTIVE
+          category = MessageDefinition.MessageSignificanceCategory.NOTIFICATION
+          name = gson.toJson(notificationData)
+          title = notificationData.title
+          description = notificationData.description
+          purpose = notificationData.type
+          date = Date()
+        }.run {
+          defaultRepository.addOrUpdate(resource = this)
+        }
       }
 
       Result.success()

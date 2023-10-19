@@ -9,4 +9,5 @@ import kotlinx.serialization.Serializable
 data class NotificationData(
     val title: String,
     val description: String,
+    val type: String,
 ) : Parcelable, java.io.Serializable

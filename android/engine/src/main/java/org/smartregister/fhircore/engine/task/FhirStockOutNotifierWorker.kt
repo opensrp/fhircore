@@ -22,9 +22,12 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.search.search
+import com.google.gson.Gson
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.MessageDefinition
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.ResourceType
@@ -34,6 +37,7 @@ import org.smartregister.fhircore.engine.domain.notification.FhirNotificationMan
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractId
 import java.math.BigDecimal
+import java.util.Date
 
 @HiltWorker
 class FhirStockOutNotifierWorker
@@ -44,6 +48,7 @@ constructor(
   val defaultRepository: DefaultRepository,
   val dispatcherProvider: DispatcherProvider,
   val notificationManager: FhirNotificationManager,
+  val gson: Gson,
 ) : CoroutineWorker(context, workerParams) {
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
@@ -56,11 +61,24 @@ constructor(
           .append(stockOutInventoryDetails.joinToString("\n"))
 
         val notificationData = NotificationData(
-          "Stock Out Remainder",
-          descriptionBuilder.toString(),
+          title = "Stock Out Remainder",
+          description = descriptionBuilder.toString(),
+          type = "Stock",
         )
 
         notificationManager.showNotification(notificationData)
+
+        MessageDefinition().apply {
+          status = Enumerations.PublicationStatus.ACTIVE
+          category = MessageDefinition.MessageSignificanceCategory.NOTIFICATION
+          name = gson.toJson(notificationData)
+          title = notificationData.title
+          description = notificationData.description
+          purpose = notificationData.type
+          date = Date()
+        }.run {
+          defaultRepository.addOrUpdate(resource = this)
+        }
       }
 
       Result.success()

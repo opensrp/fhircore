@@ -20,13 +20,16 @@ import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Search
 import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.MessageDefinition
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
@@ -307,6 +310,15 @@ constructor(
     if (this == null) return emptyMap()
     val configRules = configRulesExecutor.generateRules(this)
     return configRulesExecutor.fireRules(configRules)
+  }
+
+  suspend fun updateNotificationStatus(resourceId: String) {
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.get<MessageDefinition>(resourceId).apply {
+        status = Enumerations.PublicationStatus.UNKNOWN
+        update(this)
+      }
+    }
   }
 
   companion object {

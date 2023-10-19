@@ -39,6 +39,9 @@ enum class ApplicationWorkflow {
   /** A workflow for navigating to user's settings screen */
   LAUNCH_SETTINGS,
 
+  /** A workflow for navigating to notifications screen */
+  LAUNCH_NOTIFICATIONS,
+
   /** A workflow to trigger device to device sync */
   DEVICE_TO_DEVICE_SYNC,
 

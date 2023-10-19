@@ -80,6 +80,7 @@ fun RegisterScreen(
       Column {
         // Top section has toolbar and a results counts view
         val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
+        val notificationActions = registerUiState.registerConfiguration?.registerNotification
         TopScreenSection(
           title = registerUiState.screenTitle,
           searchText = searchText.value,
@@ -90,6 +91,8 @@ fun RegisterScreen(
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           },
           isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
+          unreadNotificationsCount = registerUiState.unreadNotificationsCount,
+          isNotificationIconEnabled = notificationActions?.isNotEmpty() ?: false,
         ) { event ->
           when (event) {
             ToolbarClickEvent.Navigate ->
@@ -100,6 +103,9 @@ fun RegisterScreen(
             ToolbarClickEvent.FilterData -> {
               onEvent(RegisterEvent.ResetFilterRecordsCount)
               filterActions?.handleClickEvent(navController)
+            }
+            ToolbarClickEvent.ShowNotification -> {
+              notificationActions?.handleClickEvent(navController)
             }
           }
         }

@@ -21,10 +21,13 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.android.fhir.search.search
+import com.google.gson.Gson
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.MessageDefinition
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
@@ -48,6 +51,7 @@ constructor(
   val defaultRepository: DefaultRepository,
   val dispatcherProvider: DispatcherProvider,
   val notificationManager: FhirNotificationManager,
+  val gson: Gson,
 ) : CoroutineWorker(context, workerParams) {
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
@@ -60,11 +64,24 @@ constructor(
           .append(eddPatientDetails.joinToString("\n"))
 
         val notificationData = NotificationData(
-          "EDD Remainder",
-          descriptionBuilder.toString(),
+          title = "EDD Remainder",
+          description = descriptionBuilder.toString(),
+          type = "PNC",
         )
 
         notificationManager.showNotification(notificationData)
+
+        MessageDefinition().apply {
+          status = Enumerations.PublicationStatus.ACTIVE
+          category = MessageDefinition.MessageSignificanceCategory.NOTIFICATION
+          name = gson.toJson(notificationData)
+          title = notificationData.title
+          description = notificationData.description
+          purpose = notificationData.type
+          date = Date()
+        }.run {
+          defaultRepository.addOrUpdate(resource = this)
+        }
       }
 
       Result.success()

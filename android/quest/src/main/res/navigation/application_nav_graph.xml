@@ -42,6 +42,21 @@
     </fragment>
 
     <fragment
+        android:id="@+id/notificationFragment"
+        android:name="org.smartregister.fhircore.quest.ui.notification.NotificationFragment">
+        <argument
+            android:name="notificationId"
+            android:defaultValue=""
+            app:argType="string"
+            app:nullable="false" />
+        <argument
+            android:name="params"
+            android:defaultValue="@null"
+            app:argType="org.smartregister.fhircore.engine.domain.model.ActionParameter[]"
+            app:nullable="true" />
+    </fragment>
+
+    <fragment
         android:id="@+id/profileFragment"
         android:name="org.smartregister.fhircore.quest.ui.profile.ProfileFragment">
         <argument
