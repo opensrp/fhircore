@@ -1,11 +1,11 @@
-map "http://fhir.org/guides/who/smart-immunization/StructureMap/ee569d2c-3299-4a0d-bd5d-4f88af814ecd" = "IMMZ-C-QRToPatient"
+map "http://smart.who.int/ig/smart-immunizations-measles/StructureMap/ee569d2c-3299-4a0d-bd5d-4f88af814ecd" = "IMMZCQRToPatient"
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" alias QResp as source
-uses "http://fhir.org/guides/who/smart-immunization/StructureDefinition/IMMZ-C-register-client" alias IMMZC as produced
+uses "http://smart.who.int/ig/smart-immunizations-measles/StructureDefinition/IMMZCRegisterClient" alias IMMZC as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
 
-imports "http://fhir.org/guides/who/smart-immunization/StructureMap/IMMZ-C-QRToLM"
-imports "http://fhir.org/guides/who/smart-immunization/StructureMap/IMMZ-C-LMToPatient"
+imports "http://smart.who.int/ig/smart-immunizations-measles/StructureMap/IMMZCQRToLM"
+imports "http://smart.who.int/ig/smart-immunizations-measles/StructureMap/IMMZCLMToPatient"
 
 group QRestToIMMZC (
   source qr : QResp,
@@ -14,9 +14,10 @@ group QRestToIMMZC (
   qr -> bundle.id = uuid() "rule_bundle_id";
   qr -> bundle.type = 'collection' "rule_bundle_type";
   qr -> bundle.entry as entry, entry.resource = create('Patient') as patient,
-    create("http://fhir.org/guides/who/smart-immunization/StructureDefinition/IMMZ-C-register-client") as model
+    create("http://smart.who.int/ig/smart-immunizations-measles/StructureDefinition/IMMZCRegisterClient") as model
       then{
         qr -> model then QRespToIMMZC( qr, model) "QRtoLM";
         qr -> patient then IMMZCToPatient( model, patient ) "LMtoPatient";
+        qr -> patient.active = true "rule_patient_active";
       } "QRtoPatient";
 }

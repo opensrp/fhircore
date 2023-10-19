@@ -1,83 +1,63 @@
-map "http://fhir.org/guides/who/smart-immunization/StructureMap/IMMZ-C-QRToLM" = "IMMZ-C-QRToLM"
+map "http://smart.who.int/ig/smart-immunizations-measles/StructureMap/IMMZCQRToLM" = "IMMZCQRToLM"
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" alias QResp as source
-uses "http://fhir.org/guides/who/smart-immunization/StructureDefinition/IMMZ-C-register-client" alias IMMZC as target
+uses "http://smart.who.int/ig/smart-immunizations-measles/StructureDefinition/IMMZCRegisterClient" alias IMMZC as target
 
-group QRespToIMMZC (
-  source qr : QResp,
-  target immzc : IMMZC
-) {
+group QRespToIMMZC ( source qr : QResp, target immzc : IMMZC) {
   qr.item as item then {
 
     item.answer first as answer where item.linkId = 'uniqueId' then {
-      answer.value as content -> immzc.uniqueId = content  "set identifier";
-    } "first answer for identifier";
+      answer.value as content -> immzc.uniqueId = content  "SetIdentifier";
+    } "FirstAnswerForIdentifier";
 
-    item as name where item.linkId = 'name' then NameToIMMZC( name, immzc ) "set names";
+    item as name where item.linkId = 'name' then NameToIMMZC( name, immzc ) "SetNames";
 
     item.answer first as answer where item.linkId = 'sex' then {
       answer.value as coding then {
-        coding.code as content -> immzc.sex = content "set sex";
-      } "process coding";
-    } "first answer for identifier";
-  
+        coding.code as content -> immzc.sex = content "SetSex";
+      } "ProcessCoding";
+    } "FirstAnswerForIdentifier";
+
     item.answer first as answer where item.linkId = 'birthDate' then {
-      answer.value as content -> immzc.birthDate = content "set birthDate";
-    } "first answer for birthDate";
+      answer.value as content -> immzc.birthDate = content "SetBirthDate2";
+    } "FirstAnswerForBirthDate";
 
-    item.answer first as answer where item.linkId = 'ageInWeeks' then {
-      answer.value as content -> immzc.ageInWeeks = content "set ageInWeeks";
-    } "first answer for ageInWeeks";
-
-    item.answer first as answer where item.linkId = 'ageInMonths' then {
-      answer.value as content -> immzc.ageInMonths = content "set ageInMonths";
-    } "first answer for ageInMonths";
-
-    item.answer first as answer where item.linkId = 'ageInYears' then {
-      answer.value as content -> immzc.ageInYears = content "set ageInYears";
-    } "first answer for ageInYears";
-
-    item as caregiver where item.linkId = 'caregiver' -> immzc.caregiver as caretgt 
-      then NameToIMMZC( caregiver, caretgt ) "set caregiver";
+    item.answer as caregiver where item.linkId = 'caregiver' -> immzc.caregiver as caretgt
+      then NameToIMMZC( caregiver, caretgt ) "SetCaregiver";
 
     item.answer first as answer where item.linkId = 'phone' then {
-       answer.value as content -> immzc.phone = content  "set phone";
-     } "first answer for phone";
+       answer.value as content -> immzc.phone = content  "SetPhone";
+     } "FirstAnswerForPhone";
 
-    /*
     item.answer first as answer where item.linkId = 'administrativeArea' then {
       answer.value as coding -> immzc.administrativeArea as area then {
-        coding -> area.coding = coding "set coding value";
-        coding.display as display -> area.text = display "set display";
-      } "set coding";
-    } "first answer for administrativeArea";
-    */
+        coding -> area.coding = coding "SetCodingValue";
+        coding.display as display -> area.text = display "SetDisplay";
+      } "SetCoding";
+    } "FirstAnswerForAdministrativeArea";
 
     item.answer first as answer where item.linkId = 'healthWorker' then {
-      answer.value as content -> immzc.healthWorker = content  "set healthWorker";
-    } "first answer for healthWorker";
+      answer.value as content -> immzc.healthWorker = content  "SetHealthWorker";
+    } "FirstAnswerForHealthWorker";
 
-  } "process items";
+  } "processItems";
 
 }
 
-group NameToIMMZC( 
-  source name,
-  target immzc
-) {
+group NameToIMMZC( source name, target immzc) {
   name.item as item then {
 
     item.answer first as answer where item.linkId = 'fullName' then {
-      answer.value as content -> immzc.name = content "set full name";
-    } "first answer for full name";
+      answer.value as content -> immzc.name = content "SetFullName";
+    } "FirstAnswerForFullName";
 
     item.answer first as answer where item.linkId = 'firstName' then {
-      answer.value as content -> immzc.firstName = content "set first name";
-    } "first answer for first name";
+      answer.value as content -> immzc.firstName = content "SetFirstName";
+    } "FirstAnswerForFirstName";
 
     item.answer first as answer where item.linkId = 'familyName' then {
-      answer.value as content -> immzc.familyName = content "set family name";
-    } "first answer for family name";
+      answer.value as content -> immzc.familyName = content "SetFamilyName";
+    } "FirstAnswerForFamilyName";
 
-  } "process name items";
+  } "processNameItems";
 }

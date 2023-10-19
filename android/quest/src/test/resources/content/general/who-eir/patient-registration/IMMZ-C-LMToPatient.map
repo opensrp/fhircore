@@ -1,19 +1,44 @@
-map "http://smart.who.int/ig/smart-immunizations/StructureMap/IMMZD4QRToResources" = "IMMZD4QRToResources"
+map "http://smart.who.int/ig/smart-immunizations-measles/StructureMap/IMMZCLMToPatient" = "IMMZCLMToPatient"
 
-uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" alias QResp as source
-uses "http://smart.who.int/ig/smart-immunizations/StructureDefinition/IMMZD4CheckContraindicationsMeasles" alias IMMZD4 as source
-uses "http://hl7.org/fhir/StructureDefinition/Bundle" alias Bundle as target
+uses "http://smart.who.int/ig/smart-immunizations-measles/StructureDefinition/IMMZCRegisterClient" alias IMMZC as source
+uses "http://hl7.org/fhir/StructureDefinition/Patient" alias Patient as target
 
-imports "http://smart.who.int/ig/smart-immunizations/StructureMap/IMMZD4QRToLM"
-imports "http://smart.who.int/ig/smart-immunizations/StructureMap/IMMZD4LMToResources"
-
-group QRespToBundle (
-  source qr : QResp,
-  target bundle: Bundle
+group IMMZCToPatient (
+  source immzc : IMMZC,
+  target patient: Patient
 ) {
-  qr -> create("http://smart.who.int/ig/smart-immunizations/StructureDefinition/IMMZD4CheckContraindicationsMeasles") as model
-  then{
-    qr -> model then QRespToIMMZD4( qr, model) "QRtoLM";
-    qr -> bundle then IMMZD4ToBundle( model, bundle ) "LMtoBundle";
-  } "QRtoBundle";
+
+  immzc.uniqueId as id -> patient.identifier as identifier then {
+    id -> identifier.value = id "SetIdentifierValue";
+  } "SetIdentifier";
+
+  immzc -> patient.name as pname then NameToHumanName( immzc, pname ) "SetName";
+
+  immzc.sex as sex -> patient.gender = translate(sex, 'http://smart.who.int/ig/smart-immunizations-measles/ConceptMap/IMMZCSexToAdministrativeGender', 'code') "SetGender";
+
+  immzc.birthDate as birthDate -> patient.birthDate = birthDate "SetBirthDate";
+
+  immzc.caregiver as caregiver -> patient.contact as contact, contact.name as hname
+    then NameToHumanName( caregiver, hname ) "SetCaregiver";
+
+  immzc.phone as phone -> patient.telecom as telecom then {
+    phone as content -> telecom.value = content, telecom.system = 'phone' "SetPhoneValue";
+  } "SetPhone";
+
+  immzc.administrativeArea as area -> patient.address as address then {
+    area.coding first as coding -> address then {
+      coding.code as content -> address.text = content "SetAddressToCode";
+      coding.display as content -> address.text = content "SetAddressToDisplay";
+    } "SetAddressText";
+  } "SetAdministrativeArea";
+
+}
+
+group NameToHumanName (
+  source name,
+  target hname
+) {
+  name.name as fullName -> hname.text = fullName "SetFullName";
+  name.firstName as firstName -> hname.given = firstName "SetFirstName";
+  name.familyName as familyName -> hname.family = familyName "SetFamilyName";
 }
