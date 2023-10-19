@@ -67,6 +67,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Observation
@@ -1364,6 +1365,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponse = QuestionnaireResponse().apply { this.id = "123456" }
     questionnaireViewModel.appendPractitionerInfo(questionnaireResponse)
     Assert.assertEquals("Practitioner/12345", questionnaireResponse.author.reference)
+  }
+
+  @Test
+  fun testAddPractitionerInfoAppendedCorrectlyOnFlag() {
+    val flag = Flag().apply { this.id = "123456" }
+    questionnaireViewModel.appendPractitionerInfo(flag)
+    Assert.assertEquals("Practitioner/12345", flag.author.reference)
   }
 
   @Test
