@@ -94,20 +94,19 @@ fun ActionableButton(
             if (backgroundColor != Color.Unspecified) {
               backgroundColor
             } else {
-              statusColor.copy(alpha = 0.1f)
+              statusColor.copy(alpha = 0.08f)
             },
           contentColor = statusColor,
-          disabledBackgroundColor = DefaultColor.copy(alpha = 0.1f),
+          disabledBackgroundColor = DefaultColor.copy(alpha = 0.08f),
           disabledContentColor = DefaultColor,
         ),
       modifier =
         modifier
           .conditional(buttonProperties.fillMaxWidth, { fillMaxWidth() }, { wrapContentWidth() })
-          .padding(horizontal = 12.dp, vertical = 4.dp)
           .wrapContentHeight()
           .testTag(ACTIONABLE_BUTTON_TEST_TAG),
       enabled = buttonProperties.enabled.toBoolean(),
-      border = BorderStroke(width = 0.5.dp, color = statusColor.copy(alpha = 0.1f)),
+      border = BorderStroke(width = 0.6.dp, color = statusColor.copy(alpha = 0.1f)),
       elevation = null,
     ) {
       // Each component here uses a new modifier to avoid inheriting the properties of the parent
@@ -149,7 +148,7 @@ fun ActionableButton(
         textAlign = TextAlign.Start,
         overflow = TextOverflow.Ellipsis,
         maxLines = 1,
-        modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+        modifier = Modifier.padding(1.dp),
         fontSize = buttonProperties.fontSize.sp,
         style = TextStyle(letterSpacing = buttonProperties.letterSpacing.sp),
       )

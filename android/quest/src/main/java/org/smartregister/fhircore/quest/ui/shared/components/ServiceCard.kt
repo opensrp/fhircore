@@ -245,7 +245,7 @@ private fun BigServiceButton(
   val isButtonEnabled = buttonProperties.enabled.toBoolean()
   val backgroundColor = buttonProperties.backgroundColor
   val statusColor = buttonProperties.statusColor(resourceData.computedValuesMap)
-  val contentColor = remember { statusColor.copy(alpha = 0.85f) }
+  val contentColor = remember { statusColor.copy(alpha = 0.8f) }
   val buttonClickable = buttonProperties.clickable.toBoolean()
 
   Column(
