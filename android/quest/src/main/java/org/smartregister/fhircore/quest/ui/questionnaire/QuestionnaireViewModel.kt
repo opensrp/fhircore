@@ -38,6 +38,7 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Observation
@@ -344,6 +345,7 @@ constructor(
         is Patient -> resource.generalPractitioner = arrayListOf(practitionerRef)
         is Observation -> resource.performer= arrayListOf(practitionerRef)
         is QuestionnaireResponse -> resource.author= practitionerRef
+        is Flag -> resource.author = practitionerRef
         is Encounter -> resource.participant =
           arrayListOf(
             Encounter.EncounterParticipantComponent().apply { individual = practitionerRef }
