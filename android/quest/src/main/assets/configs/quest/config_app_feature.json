@@ -11,6 +11,11 @@
       "useCases": [
         "PATIENT_REGISTRATION"
       ]
+    },
+    {
+      "feature": "DeviceToDeviceSync",
+      "settings": {},
+      "active": true
     }
   ]
 }
