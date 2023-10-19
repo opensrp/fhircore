@@ -29,12 +29,12 @@ import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -149,19 +149,10 @@ fun ActionableButton(
         textAlign = TextAlign.Start,
         overflow = TextOverflow.Ellipsis,
         maxLines = 1,
-        modifier =
-          Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
-            .conditional(status == ServiceStatus.COMPLETED.name, { weight(1f) }),
+        modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
         fontSize = buttonProperties.fontSize.sp,
+        style = TextStyle(letterSpacing = buttonProperties.letterSpacing.sp),
       )
-      if (status == ServiceStatus.COMPLETED.name) {
-        Icon(
-          imageVector = Icons.Filled.ArrowDropDown,
-          contentDescription = null,
-          tint = DefaultColor,
-          modifier = Modifier.size(18.dp),
-        )
-      }
     }
   }
 }
