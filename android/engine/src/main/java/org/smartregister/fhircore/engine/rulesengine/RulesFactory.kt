@@ -27,6 +27,7 @@ import javax.inject.Inject
 import kotlin.system.measureTimeMillis
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
+import org.hl7.fhir.r4.model.MedicationRequest
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
@@ -458,6 +459,31 @@ constructor(
             Task.TaskStatus.COMPLETED -> ServiceStatus.COMPLETED.name
           }
       }
+      return serviceStatus
+    }
+
+    @JvmOverloads
+    fun generateMedicationServiceStatus(
+      medicationRequest: MedicationRequest,
+    ): String {
+      val serviceStatus =
+        when (medicationRequest.status) {
+          MedicationRequest.MedicationRequestStatus.NULL,
+          MedicationRequest.MedicationRequestStatus.ENTEREDINERROR, -> {
+            Timber.e("MedicationRequest.status is null", Exception())
+            ServiceStatus.UPCOMING.name
+          }
+          MedicationRequest.MedicationRequestStatus.DRAFT -> ServiceStatus.UPCOMING.name
+          MedicationRequest.MedicationRequestStatus.ACTIVE -> ServiceStatus.DUE.name
+          MedicationRequest.MedicationRequestStatus.CANCELLED -> ServiceStatus.OVERDUE.name
+          MedicationRequest.MedicationRequestStatus.STOPPED -> ServiceStatus.OVERDUE.name
+          MedicationRequest.MedicationRequestStatus.ONHOLD -> ServiceStatus.IN_PROGRESS.name
+          MedicationRequest.MedicationRequestStatus.COMPLETED -> ServiceStatus.COMPLETED.name
+          else -> {
+            Timber.e("MedicationRequest.status is null", Exception())
+            ServiceStatus.UPCOMING.name
+          }
+        }
       return serviceStatus
     }
   }

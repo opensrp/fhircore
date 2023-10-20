@@ -463,8 +463,10 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   @Test
   fun `perform extraction for patient registration`() {
     val locationQuestionnaireResponseString: String =
-      "content/general/who-eir/patient-registration/patient_registration_questionnaire_response.json".readFile()
-    val locationStructureMap = "content/general/who-eir/patient-registration/IMMZ-C-QRToPatient.map".readFile()
+      "content/general/who-eir/patient-registration/patient_registration_questionnaire_response.json"
+        .readFile()
+    val locationStructureMap =
+      "content/general/who-eir/patient-registration/IMMZ-C-QRToPatient.map".readFile()
     val immunizationIg = "content/general/who-eir/packages/package.r4.tgz"
     val contextR4 =
       SimpleWorkerContext.fromPackage(
@@ -473,7 +475,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
                 ClassLoader.getSystemResource(immunizationIg).file,
               )
               .inputStream(),
-          )
+          ),
         )
         .apply {
           setExpansionProfile(Parameters())
@@ -504,18 +506,20 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   @Test
   fun `perform extraction for contraindications condition`() {
     val locationQuestionnaireResponseString: String =
-      "content/general/who-eir/assess-immunization/check_contraindications_questionnaire_response.json".readFile()
-    val locationStructureMap = "content/general/who-eir/assess-immunization/IMMZ-D4-QRToResources.map".readFile()
+      "content/general/who-eir/assess-immunization/check_contraindications_questionnaire_response.json"
+        .readFile()
+    val locationStructureMap =
+      "content/general/who-eir/assess-immunization/IMMZ-D4-QRToResources.map".readFile()
     val immunizationIg = "content/general/who-eir/packages/package.r4.tgz"
     val contextR4 =
       SimpleWorkerContext.fromPackage(
-        NpmPackage.fromPackage(
-          File(
-            ClassLoader.getSystemResource(immunizationIg).file,
-          )
-            .inputStream(),
+          NpmPackage.fromPackage(
+            File(
+                ClassLoader.getSystemResource(immunizationIg).file,
+              )
+              .inputStream(),
+          ),
         )
-      )
         .apply {
           setExpansionProfile(Parameters())
           isCanRunWithoutTerminology = true
@@ -540,4 +544,3 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     Assert.assertEquals("Condition", patient.resourceType.toString())
   }
 }
-

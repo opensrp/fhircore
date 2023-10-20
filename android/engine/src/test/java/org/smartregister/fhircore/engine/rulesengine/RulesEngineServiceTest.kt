@@ -24,6 +24,7 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.MedicationRequest
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
@@ -173,6 +174,17 @@ class RulesEngineServiceTest : RobolectricTest() {
     Assert.assertEquals(
       listOf("task1", "task3", "task2").reversed(),
       sortedByDateResources?.map { it.id },
+    )
+  }
+
+  @Test
+  fun `generateMedicationServiceStatus() should return UPCOMING when Task#status is NULL`() {
+    val medicationRequest =
+      MedicationRequest().apply { status = MedicationRequest.MedicationRequestStatus.DRAFT }
+
+    Assert.assertEquals(
+      ServiceStatus.UPCOMING.name,
+      rulesEngineService.generateMedicationServiceStatus(medicationRequest),
     )
   }
 

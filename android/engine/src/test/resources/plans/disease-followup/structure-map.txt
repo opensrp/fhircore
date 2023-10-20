@@ -1,4 +1,4 @@
-map "http://hl7.org/fhir/StructureMap/0863635d-c78f-489c-9ffa-e49e8b58f576" = 'Measles Complete Vaccine workflow'
+map "http://hl7.org/fhir/StructureMap/be876ffc-491d-4ab1-ba2c-0ba5213283c8" = 'Measles Administer Vaccine workflow'
 
 uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
 uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
@@ -9,10 +9,10 @@ group childImmunizationSchedule(source src : Parameters, target careplan: CarePl
         evaluate(src, $this.parameter.where(name='depends-on').resource.entry.where(resource is QuestionnaireResponse).resource) as questionnaireResponse,
         evaluate(src, $this.parameter.where(name='period').value) as period,
         evaluate(src, $this.parameter.where(name='version').value) as version
-        then extractImmunization(period, version, subject, definition, questionnaireResponse, careplan) "r_careplan";
+        then defineMedicationRequestToExtract(period, version, subject, definition, questionnaireResponse, careplan) "r_careplan";
 }
 
-group extractImmunization(
+group defineMedicationRequestToExtract(
     source period: Period,
     source version: Integer,
     source subject : Patient,
@@ -27,22 +27,28 @@ group extractImmunization(
         } "rule_activity_detail";
     } "rule_careplan_activity";
 
-    questionnaireResponse.item as questionnaireResponseItem where(linkId = '5b303e22-5ba0-4d69-967a-0c37f478ad03' and answer.value.exists()) then {
-        questionnaireResponse.item as questionnaireResponseItem where(linkId = '1e1f0f3b-58de-41b4-8db0-6c4b033cce57' and answer.exists()) then {
+    questionnaireResponse.item as questionnaireResponseItem where(linkId = 'ae9c1118-4572-4f9b-8c88-ec9429aa4ec0' and answer.value.exists()) then {
+        questionnaireResponse.item as questionnaireResponseItem where(linkId = '5d887ed0-0c4f-4be6-8f96-63c75346ad42' and answer.exists()) then {
 
-            questionnaireResponse.item as questionnaireResponseItem where(linkId = '5b303e22-5ba0-4d69-967a-0c37f478ad03' and answer.where(value.code = 'yes').exists()) then {
-                subject then generateImmunization(period, version, subject, definition, questionnaireResponse, careplan) "r_medication_request_consent_stock";
-                subject then updateMedicationRequest(period, version, subject, definition, questionnaireResponse, careplan) "r_medication_request_stock";
+            questionnaireResponse.item as questionnaireResponseItem where(linkId = 'ae9c1118-4572-4f9b-8c88-ec9429aa4ec0' and answer.where(value.code = 'Yes').exists()) then {
+                questionnaireResponse.item as questionnaireResponseItem where(linkId = '5d887ed0-0c4f-4be6-8f96-63c75346ad42' and answer.where(value.code = 'Yes').exists()) then {
+                    subject then extractMedicationRequestUpdateQuestionnaire(period, version, subject, definition, questionnaireResponse, careplan) "r_medication_request_consent_stock";
+                } "questionnaire_response_item_stock_yes";
+
+                questionnaireResponse.item as questionnaireResponseItem where(linkId = '5d887ed0-0c4f-4be6-8f96-63c75346ad42' and answer.where(value.code = 'No').exists()) then {
+                    subject then extractMedicationRequestPlanOnHold(period, version, subject, definition, questionnaireResponse, careplan) "r_medication_request_stock";
+                } "questionnaire_response_item_stock_no";
             } "questionnaire_response_item_check_consent";
-
-            questionnaireResponse.item as questionnaireResponseItem where(linkId = '5b303e22-5ba0-4d69-967a-0c37f478ad03' and answer.where(value.code = 'no').exists()) then {
-                subject then extractMedicationRequestPlanOnHold(period, version, subject, definition, questionnaireResponse, careplan) "r_medication_request_consent";
-            } "questionnaire_response_item_consent_no";
         } "questionnaire_response_item_answer_two_available";
+
+
+        questionnaireResponse.item as questionnaireResponseItem where(linkId = 'ae9c1118-4572-4f9b-8c88-ec9429aa4ec0' and answer.where(value.code = 'No').exists()) then {
+            subject then extractMedicationRequestOrderCancelled(period, version, subject, definition, questionnaireResponse, careplan) "r_medication_request_consent";
+        } "questionnaire_response_item_consent_no";
     } "questionnaire_response_item_answer_available";
 }
 
-group generateImmunization(
+group extractMedicationRequestUpdateQuestionnaire(
     source period: Period,
     source version: Integer,
     source subject : Patient,
@@ -50,40 +56,39 @@ group generateImmunization(
     source questionnaireResponse: QuestionnaireResponse,
     target careplan: CarePlan) {
 
-    subject -> create('Immunization') as immunization then {
-        subject -> immunization.id = uuid() "rule_immunization_id";
-        subject -> immunization.status = 'completed' "rule_immunization_status";
-        subject -> immunization.vaccineCode = evaluate(definition, $this.product) "immunization_vaccineCode";
-        subject -> immunization.vaccineCode = create('CodeableConcept') as reasonCode then {
-            subject -> reasonCode.coding = c("http://snomed.info/sct", "33879002") as reasonCodeCoding then {
-                subject -> reasonCodeCoding.display = "Administration of vaccine to produce active immunity (procedure)" "rule_immunization_reasonCode_coding_display";
-            } "rule_immunization_reasonCode_coding";
-            subject -> reasonCode.text = "Administration of vaccine to produce active immunity (procedure)" "rule_immunization_reasonCode_text";
-        } "rule_immunization_reasonCode";
-
-        subject -> immunization.performer = create('Immunization_Performer') as performer then {
-            subject -> performer.actor = evaluate(subject, $this.generalPractitioner.first()) "rule_immunization_performer_actor";
-        } "rule_immunization_performer";
-
-        //adding the dosage number from QR to the immunization protocol applied[x].doseNumber
-        subject -> immunization.protocolApplied = create('Immunization_AppliedProtocol') as protocolApplied then {
-            subject -> protocolApplied.doseNumber = evaluate(subject, 1) "rule_protocol_applied_dosage_number";
-            subject -> protocolApplied.seriesDoses = evaluate(subject, 1) "rule_protocol_applied_dosage_number";
-        } "rule_protocol_applied_value";
-
-        subject -> immunization.patient = create('Reference') as patientReference, patientReference.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')) "rule_immunization_patient";
-        subject -> immunization.occurrence = evaluate(questionnaireResponse, $this.item.where(linkId = '1e1f0f3b-58de-41b4-8db0-6c4b033cce57').answer.value.toString() + 'T00:00:00.00Z') "rule_immunization_occurrenceDateTime";
+        subject -> create('MedicationRequest') as medicationRequestOrder then {
+        subject -> medicationRequestOrder.id =  create('id') as id then {
+            subject -> id.value = evaluate(questionnaireResponse, $this.item.where(linkId = 'c1d8fed1-ff36-43b6-8061-22561154b13b').answer.value) "rule_update_medication_request_value";
+        } "rule_update_medication_request_value_id";
+        subject -> medicationRequestOrder.supportingInformation = create('Reference') as questionnaireReference, questionnaireReference.reference = 'Questionnaire/caebc6b4-7861-42be-8925-12c4a6bad921' "r_medication_request_supporting_information";
+        subject -> medicationRequestOrder.status = 'active' "r_medication_request_status";
+        subject -> medicationRequestOrder.intent = 'order' "r_medication_request_intent";
+        subject -> medicationRequestOrder.doNotPerform = false "r_medication_request_do_not_perform";
+        subject -> medicationRequestOrder.authoredOn = evaluate(subject, now()) "r_medication_request_authored_on";
+        subject -> medicationRequestOrder.recorder = evaluate(subject, $this.generalPractitioner.first()) "r_medication_request_recorder";
+        subject -> medicationRequestOrder.medication = evaluate(definition, code) "r_medication_request_medication";
+        subject -> medicationRequestOrder.medication = evaluate(definition, product) "r_task_data";
+        subject -> medicationRequestOrder.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official' "r_medication_request_identifier";
+        subject -> medicationRequestOrder.subject = create('Reference') as patientReference, patientReference.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')) "r_medication_request_subject";
+        subject -> medicationRequestOrder.dispenseRequest = create('Dispense_Request') as dispenseRequest, dispenseRequest.validityPeriod = period "r_medication_request_dispense_request";
+        subject -> medicationRequestOrder.basedOn = create('Reference') as ref, ref.reference = evaluate(careplan, 'CarePlan/' + $this.id.replaceMatches('/_history/.*', '').replaceMatches('CarePlan/', '')) "rule_update_flag_basedOn";
+        subject -> medicationRequestOrder.reasonCode = create('CodeableConcept') as concept then {
+            subject -> concept.coding = c("http://snomed.info/sct", "1000001") as coding then {
+                subject -> coding.display = 'Complete Immunization' "r_en_cod_disp";
+            } "r_en_cc_cod";
+            subject ->  concept.text = 'Complete Immunization' "r_en_cod_text";
+        } "r_medication_request_reason_code";
+        subject then extractPeriod(subject, medicationRequestOrder) "r_task_period_extraction";
 
         // add MR to careplan irrespective of its validity
         subject then {
-            subject -> evaluate(careplan, activity.where(detail.kind = 'MedicationRequest')) as activity, activity.outcomeReference = reference(immunization) "rule_careplan_task_reference";
-             subject -> careplan.contained = immunization "rule_add_task";
+            subject -> evaluate(careplan, activity.where(detail.kind = 'MedicationRequest')) as activity, activity.outcomeReference = reference(medicationRequestOrder) "rule_careplan_task_reference";
+            subject -> careplan.contained = medicationRequestOrder "rule_add_task";
         } "rule_careplan_task";
-    } "rule_immunization";
+    } "r_medication_request";
 }
 
-
-group updateMedicationRequest (
+group extractMedicationRequestOrderCancelled (
     source period: Period,
     source version: Integer,
     source subject : Patient,
@@ -93,11 +98,28 @@ group updateMedicationRequest (
 
     subject -> create('MedicationRequest') as medicationRequestOrder then {
         subject -> medicationRequestOrder.id =  create('id') as id then {
-                subject -> id.value = evaluate(questionnaireResponse, $this.item.where(linkId = 'c1d8fed1-ff36-43b6-8061-22561154b13b').answer.value) "rule_update_medication_request_value";
-            } "rule_update_medication_request_value_id";
+            subject -> id.value = evaluate(questionnaireResponse, $this.item.where(linkId = 'c1d8fed1-ff36-43b6-8061-22561154b13b').answer.value) "rule_update_medication_request_value";
+        } "rule_update_medication_request_value_id";
         subject -> medicationRequestOrder.basedOn = reference(careplan) "rule_update_flag_basedOn";
-        subject -> medicationRequestOrder.status = 'completed' "r_medication_request_status";
+        subject -> medicationRequestOrder.status = 'cancelled' "r_medication_request_status";
         subject -> medicationRequestOrder.intent = 'order' "r_medication_request_intent";
+        subject -> medicationRequestOrder.doNotPerform = false "r_medication_request_do_not_perform";
+        subject -> medicationRequestOrder.authoredOn = evaluate(subject, now()) "r_medication_request_authored_on";
+        subject -> medicationRequestOrder.recorder = evaluate(subject, $this.generalPractitioner.first()) "r_medication_request_recorder";
+        subject -> medicationRequestOrder.medication = evaluate(definition, code) "r_medication_request_medication";
+        subject -> medicationRequestOrder.medication = evaluate(definition, product) "r_task_data";
+        subject -> medicationRequestOrder.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official' "r_medication_request_identifier";
+        subject -> medicationRequestOrder.subject = create('Reference') as patientReference, patientReference.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')) "r_medication_request_subject";
+        subject -> medicationRequestOrder.dispenseRequest = create('Dispense_Request') as dispenseRequest, dispenseRequest.validityPeriod = period "r_medication_request_dispense_request";
+        subject -> medicationRequestOrder.basedOn = create('Reference') as ref, ref.reference = evaluate(careplan, 'CarePlan/' + $this.id.replaceMatches('/_history/.*', '').replaceMatches('CarePlan/', '')) "rule_update_flag_basedOn";
+
+        subject -> medicationRequestOrder.reasonCode = create('CodeableConcept') as concept then {
+            subject -> concept.coding = c("http://snomed.info/sct", "1000001") as coding then {
+                subject -> coding.display = 'Administer Immunization' "r_en_cod_disp";
+            } "r_en_cc_cod";
+            subject ->  concept.text = 'Administer Immunization' "r_en_cod_text";
+        } "r_medication_request_reason_code";
+        subject then extractPeriod(subject, medicationRequestOrder) "r_task_period_extraction";
 
         // add MR to careplan irrespective of its validity
         subject then {
@@ -123,6 +145,24 @@ group extractMedicationRequestPlanOnHold(
         subject -> medicationRequestCancelledOrHold.basedOn = reference(careplan) "rule_update_flag_basedOn";
         subject -> medicationRequestCancelledOrHold.status = 'on-hold' "r_medication_request_status";
         subject -> medicationRequestCancelledOrHold.intent = 'plan' "r_medication_request_intent";
+        subject -> medicationRequestCancelledOrHold.doNotPerform = false "r_medication_request_do_not_perform";
+        subject -> medicationRequestCancelledOrHold.authoredOn = evaluate(subject, now()) "r_medication_request_authored_on";
+        subject -> medicationRequestCancelledOrHold.recorder = evaluate(subject, $this.generalPractitioner.first()) "r_medication_request_recorder";
+        subject -> medicationRequestCancelledOrHold.medication = evaluate(definition, code) "r_medication_request_medication";
+        subject -> medicationRequestCancelledOrHold.medication = evaluate(definition, product) "r_task_data";
+        subject -> medicationRequestCancelledOrHold.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official' "r_medication_request_identifier";
+        subject -> medicationRequestCancelledOrHold.subject = create('Reference') as patientReference, patientReference.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')) "r_medication_request_subject";
+        subject -> medicationRequestCancelledOrHold.dispenseRequest = create('Dispense_Request') as dispenseRequest, dispenseRequest.validityPeriod = period "r_medication_request_dispense_request";
+        subject -> medicationRequestCancelledOrHold.basedOn = create('Reference') as ref, ref.reference = evaluate(careplan, 'CarePlan/' + $this.id.replaceMatches('/_history/.*', '').replaceMatches('CarePlan/', '')) "rule_update_flag_basedOn";
+        subject -> medicationRequestCancelledOrHold.supportingInformation = create('Reference') as questionnaireReference, questionnaireReference.reference = 'Questionnaire/d4f9bfbe-b684-4505-9c66-719afd5c9fca' "r_task_reason_reference";
+
+        subject -> medicationRequestCancelledOrHold.reasonCode = create('CodeableConcept') as concept then {
+            subject -> concept.coding = c("http://snomed.info/sct", "1000001") as coding then {
+                subject -> coding.display = 'Administer Immunization - Needs Review' "r_en_cod_disp";
+            } "r_en_cc_cod";
+            subject ->  concept.text = 'Administer Immunization - Needs Review' "r_en_cod_text";
+        } "r_medication_request_reason_code";
+        subject then extractPeriod(subject, medicationRequestCancelledOrHold) "r_task_period_extraction";
 
         // add MR to careplan irrespective of its validity
         subject then {
@@ -130,4 +170,19 @@ group extractMedicationRequestPlanOnHold(
             subject -> careplan.contained = medicationRequestCancelledOrHold "rule_add_task";
         } "rule_careplan_task";
     } "r_medication_request";
+}
+
+group extractPeriod(source subject: Patient, target medicationRequest: MedicationRequest) {
+    subject -> evaluate(medicationRequest, $this.dispenseRequest) as dispenseRequest, evaluate(dispenseRequest, $this.validityPeriod.start) as start,
+        evaluate(dispenseRequest, $this.validityPeriod.end) as end then {
+        subject -> create('Period') as period then {
+            subject -> period.start = create('dateTime') as startDateTime,
+                startDateTime.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "rule_period_start";
+
+            subject -> period.end = create('dateTime') as endDateTime,
+                endDateTime.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "rule_period_end";
+
+            subject -> medicationRequest.dispenseRequest = create('Dispense_Request') as dispenseRequest, dispenseRequest.validityPeriod = period "rule_execution_period";
+        } "rule_period";
+    } "rule_task_execution_period";
 }
