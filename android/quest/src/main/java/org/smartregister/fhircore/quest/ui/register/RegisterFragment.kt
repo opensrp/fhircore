@@ -44,7 +44,6 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
@@ -87,7 +86,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
   private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
   private val registerViewModel by viewModels<RegisterViewModel>()
 
-  @OptIn(ExperimentalPermissionsApi::class)
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,

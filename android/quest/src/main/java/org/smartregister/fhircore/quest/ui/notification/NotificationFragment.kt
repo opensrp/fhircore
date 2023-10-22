@@ -37,7 +37,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
@@ -51,7 +50,6 @@ class NotificationFragment : Fragment() {
   private val registerFragmentArgs by navArgs<NotificationFragmentArgs>()
   private val registerViewModel by viewModels<NotificationViewModel>()
 
-  @OptIn(ExperimentalPermissionsApi::class)
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,

@@ -39,6 +39,7 @@ class QuestNotificationManager @Inject constructor(
             context, 0, intent, PendingIntent.FLAG_IMMUTABLE
         )
 
+        val channelName = context.getString(R.string.default_notification_channel_name)
         val channelId = context.getString(R.string.default_notification_channel_id)
 
         val notificationBuilder = NotificationCompat.Builder(context, channelId)
@@ -52,7 +53,7 @@ class QuestNotificationManager @Inject constructor(
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        val channel = NotificationChannel(channelId, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
+        val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
         manager.createNotificationChannel(channel)
 
         manager.notify(Random.nextInt(), notificationBuilder.build())

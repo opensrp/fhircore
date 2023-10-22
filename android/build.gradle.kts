@@ -21,6 +21,7 @@ buildscript {
     classpath("com.android.tools.build:gradle:7.1.3")
     classpath("org.jetbrains.dokka:dokka-base:1.8.20")
     classpath("org.owasp:dependency-check-gradle:8.2.1")
+    classpath("com.google.gms:google-services:4.3.14")
   }
 }
 

@@ -20,6 +20,7 @@ plugins {
   id("androidx.navigation.safeargs")
   id("org.sonarqube") version "3.5.0.2730"
   id("io.sentry.android.gradle") version "3.5.0"
+  id("com.google.gms.google-services")
 }
 
 sonar {
@@ -383,6 +384,8 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.cql.measure.evaluator)
+  implementation(platform(libs.firebase.bom))
+  implementation(libs.firebase.messaging.ktx)
 
   // Annotation processors
   kapt(libs.hilt.compiler)

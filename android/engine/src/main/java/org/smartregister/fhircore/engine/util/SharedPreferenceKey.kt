@@ -28,4 +28,5 @@ enum class SharedPreferenceKey {
   LOGIN_PIN_KEY,
   LOGIN_PIN_SALT,
   LAST_OFFSET,
+  FIREBASE_TOKEN,
 }

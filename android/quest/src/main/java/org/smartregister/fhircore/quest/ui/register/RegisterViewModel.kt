@@ -85,6 +85,7 @@ constructor(
   val registerFilterState = mutableStateOf(RegisterFilterState())
   private val _totalRecordsCount = mutableLongStateOf(0L)
   private val _filteredRecordsCount = mutableLongStateOf(-1L)
+  private val _unreadNotificationsCount = mutableLongStateOf(0L)
   private lateinit var registerConfiguration: RegisterConfiguration
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
@@ -406,6 +407,13 @@ constructor(
       viewModelScope.launch(dispatcherProvider.io()) {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
 
+        currentRegisterConfiguration.registerNotification?.let {
+          val actionConfig = it.first()
+          actionConfig.id?.let { notificationId ->
+            _unreadNotificationsCount.longValue = registerRepository.countRegisterData(registerId = notificationId, fhirResourceConfig = actionConfig.resourceConfig)
+          }
+        }
+
         _totalRecordsCount.longValue =
           registerRepository.countRegisterData(registerId = registerId, paramsMap = paramsMap)
 
@@ -432,6 +440,7 @@ constructor(
             registerId = registerId,
             totalRecordsCount = _totalRecordsCount.longValue,
             filteredRecordsCount = _filteredRecordsCount.longValue,
+            unreadNotificationsCount = _unreadNotificationsCount.longValue,
             pagesCount =
               ceil(
                   (if (registerFilterState.value.fhirResourceConfig != null) {

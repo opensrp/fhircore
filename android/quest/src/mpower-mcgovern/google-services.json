@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "316191173085",
+    "project_id": "fhir-mhealth",
+    "storage_bucket": "fhir-mhealth.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:316191173085:android:0e749a0f0d6661e69bae34",
+        "android_client_info": {
+          "package_name": "org.smartregister.opensrp.mpower.mcgovern"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCHgiW4vQpR_xQt10gxhHKmMz37ThIrPA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

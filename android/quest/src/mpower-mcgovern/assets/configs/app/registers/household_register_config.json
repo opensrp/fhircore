@@ -293,7 +293,45 @@
     {
       "trigger": "ON_CLICK",
       "workflow": "LAUNCH_NOTIFICATIONS",
-      "id": "notification"
+      "id": "notification",
+      "resourceConfig": {
+        "baseResource": {
+          "resource": "MessageDefinition",
+          "dataQueries": [
+            {
+              "paramName": "category",
+              "filterCriteria": [
+                {
+                  "dataType": "CODE",
+                  "value": {
+                    "system": "http://hl7.org/fhir/message-significance-category",
+                    "code": "notification"
+                  }
+                }
+              ]
+            },
+            {
+              "paramName": "status",
+              "filterCriteria": [
+                {
+                  "dataType": "CODE",
+                  "value": {
+                    "system": "http://hl7.org/fhir/publication-status",
+                    "code": "active"
+                  }
+                }
+              ]
+            }
+          ],
+          "sortConfigs": [
+            {
+              "paramName": "date",
+              "dataType": "DATE",
+              "order": "DESCENDING"
+            }
+          ]
+        }
+      }
     }
   ]
 }

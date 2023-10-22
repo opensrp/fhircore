@@ -5,6 +5,20 @@
   "fhirResource": {
     "baseResource": {
       "resource": "MessageDefinition",
+      "dataQueries": [
+        {
+          "paramName": "category",
+          "filterCriteria": [
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://hl7.org/fhir/message-significance-category",
+                "code": "notification"
+              }
+            }
+          ]
+        }
+      ],
       "sortConfigs": [
         {
           "paramName": "date",
@@ -79,7 +93,7 @@
         "condition": "true",
         "priority": 2,
         "actions": [
-          "data.put('notificationIcon', data.get('notificationType') == 'PNC' ? 'ic_baby_mother' : data.get('notificationType') == 'ANC' ? 'ic_pregnant' : 'ic_inventory')"
+          "data.put('notificationIcon', data.get('notificationType') == 'PNC' ? 'ic_baby_mother' : data.get('notificationType') == 'ANC' ? 'ic_pregnant' : data.get('notificationType') == 'Stock' ? 'ic_inventory' : 'ic_alert_triangle')"
         ]
       }
     ],
