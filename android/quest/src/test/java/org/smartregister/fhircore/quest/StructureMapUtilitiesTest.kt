@@ -392,7 +392,8 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   @Test
   fun `perform diabetes screening extraction`() {
     val screeningQuestionnaireResponseString: String =
-      "content/general/diabetes_compass/screening/screening_questionnaire_response.fhir.json".readFile()
+      "content/general/diabetes_compass/screening/screening_questionnaire_response.fhir.json"
+        .readFile()
     val screeningStructureMap =
       "content/general/diabetes_compass/screening/diabetes_screening_extraction.map".readFile()
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
@@ -424,7 +425,8 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   @Test
   fun `perform diabetes patient extraction`() {
     val screeningQuestionnaireResponseString: String =
-      "content/general/diabetes_compass/registration/patient-registration-response.fhir.json".readFile()
+      "content/general/diabetes_compass/registration/patient-registration-response.fhir.json"
+        .readFile()
     val screeningStructureMap =
       "content/general/diabetes_compass/registration/patient_registration.map".readFile()
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
