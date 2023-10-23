@@ -124,8 +124,10 @@ fun ActionableButton(
       elevation = null,
       contentPadding =
         if (buttonProperties.buttonType == ButtonType.TINY) {
-          PaddingValues(0.6.dp)
-        } else ButtonDefaults.ContentPadding,
+          PaddingValues(vertical = 2.4.dp, horizontal = 4.dp)
+        } else {
+          PaddingValues(vertical = 4.8.dp, horizontal = 8.dp)
+        },
     ) {
       // Each component here uses a new modifier to avoid inheriting the properties of the
       // parent

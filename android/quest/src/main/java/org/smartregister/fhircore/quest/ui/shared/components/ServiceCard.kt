@@ -166,7 +166,7 @@ fun ServiceCard(
                 modifier.weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.4f),
             ) {
               ActionableButton(
-                buttonProperties = serviceCardProperties.serviceButton!!.copy(fillMaxWidth = false),
+                buttonProperties = serviceCardProperties.serviceButton!!,
                 navController = navController,
                 resourceData = resourceData,
               )
