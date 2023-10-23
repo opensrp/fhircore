@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCA
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.view.ButtonType
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnArrangement
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
@@ -83,7 +84,7 @@ class ViewGeneratorTest {
                 visible = "true",
                 status = ServiceStatus.DUE.name,
                 text = "Next visit 09-10-2022",
-                smallSized = false,
+                buttonType = ButtonType.BIG,
               ),
           ),
         resourceData = resourceData,
