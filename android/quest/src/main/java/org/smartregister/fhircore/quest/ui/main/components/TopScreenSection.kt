@@ -146,7 +146,7 @@ fun TopScreenSection(
       },
       modifier =
         modifier
-          .padding(start = 16.dp, bottom = 8.dp, end = 16.dp)
+          .padding(start = 8.dp, bottom = 8.dp, end = 8.dp)
           .fillMaxWidth()
           .clip(RoundedCornerShape(size = 10.dp))
           .background(Color.White)
