@@ -51,6 +51,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.IntegerType
@@ -926,6 +927,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val patient = Patient().apply { Patient@ this.id = "123456" }
     patient.appendPractitionerInfo("12345")
     Assert.assertEquals("Practitioner/12345", patient.generalPractitioner.first().reference)
+  }
+
+  @Test
+  fun testAddPractitionerInfoAppendedCorrectlyOnFlag() {
+    val flag = Flag().apply { this.id = "123456" }
+    flag.appendPractitionerInfo("12345")
+    Assert.assertEquals("Practitioner/12345", flag.author.reference)
   }
 
   @Test
