@@ -628,7 +628,7 @@ private fun ServiceCardServiceWithTinyServiceButtonPreview() {
                 listOf(
                   CompoundTextProperties(
                     viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Nelson Madiba Mandela, M",
+                    primaryText = "Nelson Mandela, M",
                     primaryTextColor = "#000000",
                   ),
                   CompoundTextProperties(

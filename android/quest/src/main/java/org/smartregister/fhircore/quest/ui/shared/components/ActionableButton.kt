@@ -120,11 +120,11 @@ fun ActionableButton(
           )
           .testTag(ACTIONABLE_BUTTON_TEST_TAG),
       enabled = buttonProperties.enabled.toBoolean(),
-      border = BorderStroke(width = 0.6.dp, color = statusColor.copy(alpha = 0.1f)),
+      border = BorderStroke(width = 0.8.dp, color = statusColor.copy(alpha = 0.1f)),
       elevation = null,
       contentPadding =
         if (buttonProperties.buttonType == ButtonType.TINY) {
-          PaddingValues()
+          PaddingValues(0.6.dp)
         } else ButtonDefaults.ContentPadding,
     ) {
       // Each component here uses a new modifier to avoid inheriting the properties of the
@@ -194,6 +194,22 @@ fun ActionableButtonPreview() {
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
+fun ActionableButtonTinyButtonPreview() {
+  ActionableButton(
+    buttonProperties =
+      ButtonProperties(
+        visible = "true",
+        status = ServiceStatus.COMPLETED.name,
+        text = "ANC Visit",
+        buttonType = ButtonType.TINY,
+      ),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+    navController = rememberNavController(),
+  )
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
 fun DisabledActionableButtonPreview() {
   Row(modifier = Modifier.fillMaxWidth()) {
     ActionableButton(
@@ -236,7 +252,7 @@ fun SmallActionableButtonPreview() {
           status = "COMPLETED",
           text = "Completed Task",
           fillMaxWidth = true,
-          buttonType = ButtonType.MEDIUM,
+          buttonType = ButtonType.TINY,
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
