@@ -111,7 +111,6 @@ class ServiceCardTest {
     showVerticalDivider: Boolean = false,
     serviceStatus: String = ServiceStatus.UPCOMING.name,
     text: String = "Next visit 09-10-2022",
-    smallSized: Boolean = false,
     visible: String = "true",
   ): ServiceCardProperties {
     return ServiceCardProperties(
@@ -143,7 +142,6 @@ class ServiceCardTest {
           visible = visible,
           status = serviceStatus,
           text = text,
-          smallSized = smallSized,
         ),
     )
   }
