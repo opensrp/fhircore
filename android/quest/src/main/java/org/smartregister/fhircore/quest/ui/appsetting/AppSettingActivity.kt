@@ -33,7 +33,6 @@ import javax.inject.Inject
 import javax.inject.Provider
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -52,7 +51,6 @@ class AppSettingActivity : AppCompatActivity() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  @Inject lateinit var libraryEvaluatorProvider: Provider<LibraryEvaluator>
   val appSettingViewModel: AppSettingViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,7 +67,6 @@ class AppSettingActivity : AppCompatActivity() {
         }
       }
     }
-    lifecycleScope.launch(dispatcherProvider.io()) { libraryEvaluatorProvider.get().initialize() }
     val existingAppId =
       sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
 
