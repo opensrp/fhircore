@@ -151,31 +151,35 @@ fun ServiceCard(
     }
 
     // Show action button (occupies 25% of the row width)
-    Box(
-      modifier =
-        modifier
-          .weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.4f)
-          .padding(top = 12.dp, bottom = 12.dp),
-      contentAlignment = Alignment.Center,
-    ) {
-      // Service card visibility can be determined dynamically e.g. only display when task is due
-      if (serviceCardProperties.serviceButton != null || serviceCardProperties.services != null) {
-        if (
-          serviceCardProperties.serviceButton != null &&
-            serviceCardProperties.serviceButton!!.visible.toBoolean()
-        ) {
-          when (serviceCardProperties.serviceButton!!.buttonType) {
-            ButtonType.TINY,
-            ButtonType.MEDIUM, -> {
-              Column {
-                ActionableButton(
-                  buttonProperties = serviceCardProperties.serviceButton!!,
-                  navController = navController,
-                  resourceData = resourceData,
-                )
-              }
+    // Service card visibility can be determined dynamically e.g. only display when task is due
+    if (serviceCardProperties.serviceButton != null || serviceCardProperties.services != null) {
+      if (
+        serviceCardProperties.serviceButton != null &&
+          serviceCardProperties.serviceButton!!.visible.toBoolean()
+      ) {
+        when (serviceCardProperties.serviceButton!!.buttonType) {
+          ButtonType.TINY,
+          ButtonType.MEDIUM, -> {
+            Column(
+              horizontalAlignment = Alignment.End,
+              modifier =
+                modifier.weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.4f),
+            ) {
+              ActionableButton(
+                buttonProperties = serviceCardProperties.serviceButton!!.copy(fillMaxWidth = false),
+                navController = navController,
+                resourceData = resourceData,
+              )
             }
-            else -> {
+          }
+          else -> {
+            Box(
+              modifier =
+                modifier
+                  .weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.4f)
+                  .padding(top = 8.dp, bottom = 8.dp),
+              contentAlignment = Alignment.Center,
+            ) {
               BigServiceButton(
                 modifier = modifier,
                 buttonProperties = serviceCardProperties.serviceButton!!,
@@ -184,7 +188,15 @@ fun ServiceCard(
               )
             }
           }
-        } else if (serviceCardProperties.services?.isNotEmpty() == true) {
+        }
+      } else if (serviceCardProperties.services?.isNotEmpty() == true) {
+        Box(
+          modifier =
+            modifier
+              .weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.4f)
+              .padding(top = 8.dp, bottom = 8.dp),
+          contentAlignment = Alignment.Center,
+        ) {
           Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             serviceCardProperties.services?.forEach { buttonProperties ->
               ActionableButton(
