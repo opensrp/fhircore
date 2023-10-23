@@ -67,12 +67,13 @@ constructor(
   override suspend fun loadRegisterData(
     currentPage: Int,
     registerId: String,
+    fhirResourceConfig: FhirResourceConfig?,
     paramsMap: Map<String, String>?,
   ): List<RepositoryResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     return searchResourcesRecursively(
       filterActiveResources = registerConfiguration.activeResourceFilters,
-      fhirResourceConfig = registerConfiguration.fhirResource,
+      fhirResourceConfig = fhirResourceConfig ?: registerConfiguration.fhirResource,
       secondaryResourceConfigs = registerConfiguration.secondaryResources,
       currentPage = currentPage,
       pageSize = registerConfiguration.pageSize,
@@ -159,10 +160,12 @@ constructor(
   /** Count register data for the provided [registerId]. Use the configured base resource filters */
   override suspend fun countRegisterData(
     registerId: String,
+    fhirResourceConfig: FhirResourceConfig?,
     paramsMap: Map<String, String>?,
   ): Long {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
-    val baseResourceConfig = registerConfiguration.fhirResource.baseResource
+    val fhirResource = fhirResourceConfig ?: registerConfiguration.fhirResource
+    val baseResourceConfig = fhirResource.baseResource
     val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
     val search =
       Search(baseResourceConfig.resource).apply {

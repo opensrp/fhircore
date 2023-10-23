@@ -73,12 +73,16 @@ data class FhirResourceConfig(
  * [CountResultConfig.sumCounts] is set to true, all the related resources counts are computed once
  * via one query. However there may be scenarios to return count for each related resource e.g. for
  * every Patient in a Group, return their Tasks count.
+ *
+ * [filterId] Refers to a unique ID used to identify the Resource in data filter screen (The data
+ * filter screen renders a questionnaire with the linkIds for the content to be filtered)
  */
 @Serializable
 @Parcelize
 data class ResourceConfig(
   val id: String? = null,
   val resource: ResourceType,
+  val filterId: String? = null,
   val searchParameter: String? = null,
   val isRevInclude: Boolean = true,
   val dataQueries: List<DataQuery>? = null,

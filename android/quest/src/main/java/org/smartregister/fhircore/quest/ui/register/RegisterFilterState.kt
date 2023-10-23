@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.app
+package org.smartregister.fhircore.quest.ui.register
 
-/** Configurations for Keycloak server authentication loaded from the BuildConfig */
-data class AuthConfiguration(
-  var oauthServerBaseUrl: String,
-  var fhirServerBaseUrl: String,
-  var clientId: String,
-  var accountType: String,
-  var scope: String = "openid",
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+
+data class RegisterFilterState(
+  val fhirResourceConfig: FhirResourceConfig? = null,
+  val questionnaireResponse: QuestionnaireResponse? = null,
 )

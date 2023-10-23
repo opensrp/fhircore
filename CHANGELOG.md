@@ -13,11 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [App Performance] Profile the time it takes for the app to load the configs and patient data from the local DB
 - Add progress indicator during report generation
 - Add config property in QuestionnaireConfig to indicate when to udpate or create new extracted resource
+- Use `ButtonProperties.buttonType` to configure button size (BIG, MEDIUM or TINY). Deleted `ButtonProperties.smallSized` 
 
 ### Fixed
 - Incorrect error shown for failed authentication when the credentials are invalid.
 - [P2P] Possible p2p sync slow regression #2536
 - [Event Management] Fix resource closure failure after server sync
+- [P2P] Fix for subsequent syncs having records to send
 
 ### Changed
 - 

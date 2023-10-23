@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.app
+package org.smartregister.fhircore.engine.configuration.register
 
-/** Configurations for Keycloak server authentication loaded from the BuildConfig */
-data class AuthConfiguration(
-  var oauthServerBaseUrl: String,
-  var fhirServerBaseUrl: String,
-  var clientId: String,
-  var accountType: String,
-  var scope: String = "openid",
-)
+import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.DataQuery
+
+@Serializable
+data class RegisterFilterConfig(
+  val dataFilterActions: List<ActionConfig>? = null,
+  val dataFilterFields: List<RegisterFilterField> = emptyList(),
+) : java.io.Serializable
+
+@Serializable
+data class RegisterFilterField(
+  val dataQueries: List<DataQuery>,
+  val filterId: String,
+) : java.io.Serializable

@@ -79,10 +79,11 @@ fun RegisterScreen(
     topBar = {
       Column {
         // Top section has toolbar and a results counts view
-        val filterActions = registerUiState.registerConfiguration?.filterActions
+        val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
           title = registerUiState.screenTitle,
           searchText = searchText.value,
+          filteredRecordsCount = registerUiState.filteredRecordsCount,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
           toolBarHomeNavigation = toolBarHomeNavigation,
           onSearchTextChanged = { searchText ->
@@ -96,7 +97,10 @@ fun RegisterScreen(
                 ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
                 ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
               }
-            ToolbarClickEvent.FilterData -> filterActions?.handleClickEvent(navController)
+            ToolbarClickEvent.FilterData -> {
+              onEvent(RegisterEvent.ResetFilterRecordsCount)
+              filterActions?.handleClickEvent(navController)
+            }
           }
         }
         // Only show counter during search

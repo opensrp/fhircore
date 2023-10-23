@@ -44,6 +44,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
+import org.smartregister.p2p.model.RecordCount
 import org.smartregister.p2p.sync.DataType
 
 class BaseP2PTransferDaoTest : RobolectricTest() {
@@ -201,6 +202,10 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun `countTotalRecordsForSync() calls fhirEngine#count`() = runTest {
+    val expectedDataTypeTotalCountMap: HashMap<String, Long> = hashMapOf()
+    expectedDataTypeTotalCountMap["Patient"] = 1L
+    val expectedRecordCount =
+      RecordCount(totalRecordCount = 1, dataTypeTotalCountMap = expectedDataTypeTotalCountMap)
     every { baseP2PTransferDao.getDataTypes() } returns
       TreeSet<DataType>().apply {
         add(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1))
@@ -208,7 +213,9 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
 
     coEvery { fhirEngine.count(any()) } returns 1
 
-    assertEquals(1, baseP2PTransferDao.countTotalRecordsForSync(HashMap()))
+    val actualRecordCount = baseP2PTransferDao.countTotalRecordsForSync(HashMap())
+    assertEquals(expectedRecordCount, actualRecordCount)
+    assertEquals(1L, actualRecordCount.dataTypeTotalCountMap["Patient"])
   }
 
   @Test
