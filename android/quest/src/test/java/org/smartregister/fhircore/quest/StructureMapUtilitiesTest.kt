@@ -515,42 +515,42 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     loadFile("content/general/who-eir/measles-immunizations/IMMZCommon.json", ::installToIgManager)
     loadFile(
       "content/general/who-eir/measles-immunizations/IMMZCommonIzDataElements.json",
-      ::installToIgManager
+      ::installToIgManager,
     )
     loadFile(
       "content/general/who-eir/measles-immunizations/IMMZConcepts.json",
-      ::installToIgManager
+      ::installToIgManager,
     )
     loadFile("content/general/who-eir/measles-immunizations/IMMZConfig.json", ::installToIgManager)
     loadFile(
       "content/general/who-eir/measles-immunizations/IMMZD2DTMeasles.json",
-      ::installToIgManager
+      ::installToIgManager,
     )
     loadFile(
       "content/general/who-eir/measles-immunizations/IMMZIndicatorCommon.json",
-      ::installToIgManager
+      ::installToIgManager,
     )
     loadFile(
       "content/general/who-eir/measles-immunizations/IMMZINDMeasles.json",
-      ::installToIgManager
+      ::installToIgManager,
     )
     loadFile(
       "content/general/who-eir/measles-immunizations/IMMZVaccineLibrary.json",
-      ::installToIgManager
+      ::installToIgManager,
     )
     loadFile(
       "content/general/who-eir/measles-immunizations/ActivityDefinition-IMMZD2DTMeaslesMR.json",
-      ::installToIgManager
+      ::installToIgManager,
     )
     loadFile(
       "content/general/who-eir/measles-immunizations/PlanDefinition-IMMZD2DTMeasles.json",
-      ::installToIgManager
+      ::installToIgManager,
     )
     loadFile("content/general/who-eir/measles-immunizations/WHOCommon.json", ::installToIgManager)
     loadFile("content/general/who-eir/measles-immunizations/WHOConcepts.json", ::installToIgManager)
     loadFile(
       "content/general/who-eir/measles-immunizations/ValueSet-HIVstatus-values.json",
-      ::installToIgManager
+      ::installToIgManager,
     )
 
     loadFile(

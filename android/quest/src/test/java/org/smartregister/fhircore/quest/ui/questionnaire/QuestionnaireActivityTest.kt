@@ -136,7 +136,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
       Toast.makeText(
         any(),
         eq(context.getString(org.smartregister.fhircore.quest.R.string.questionnaire_not_found)),
-        any()
+        any(),
       )
     }
     unmockkStatic(Toast::class)

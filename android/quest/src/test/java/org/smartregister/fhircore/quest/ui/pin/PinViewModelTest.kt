@@ -72,7 +72,7 @@ class PinViewModelTest : RobolectricTest() {
     val pinUiState = pinViewModel.pinUiState.value
     Assert.assertEquals(
       context.getString(org.smartregister.fhircore.engine.R.string.set_pin_message),
-      pinUiState.message
+      pinUiState.message,
     )
     Assert.assertEquals(true, pinUiState.setupPin)
     Assert.assertTrue(pinUiState.setupPin)

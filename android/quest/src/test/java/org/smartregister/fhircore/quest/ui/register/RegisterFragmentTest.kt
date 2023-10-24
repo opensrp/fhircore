@@ -277,7 +277,7 @@ class RegisterFragmentTest : RobolectricTest() {
     verify { registerFragmentSpy.onSync(syncJobStatus) }
     verify {
       registerFragmentSpy.getString(
-        org.smartregister.fhircore.engine.R.string.sync_completed_with_errors
+        org.smartregister.fhircore.engine.R.string.sync_completed_with_errors,
       )
     }
   }
@@ -293,7 +293,7 @@ class RegisterFragmentTest : RobolectricTest() {
     verify { registerFragmentSpy.onSync(syncJobStatus) }
     verify {
       registerFragmentSpy.getString(
-        org.smartregister.fhircore.engine.R.string.sync_completed_with_errors
+        org.smartregister.fhircore.engine.R.string.sync_completed_with_errors,
       )
     }
   }
