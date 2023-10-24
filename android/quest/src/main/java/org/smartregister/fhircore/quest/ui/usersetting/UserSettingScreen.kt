@@ -83,6 +83,7 @@ import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -203,7 +204,7 @@ fun UserSettingScreen(
             Icon(
               painterResource(R.drawable.ic_language),
               stringResource(R.string.language),
-              tint = BlueTextColor,
+              tint = GreyTextColor,
               modifier = Modifier.size(26.dp),
             )
             Spacer(modifier = modifier.width(20.dp))
@@ -339,7 +340,7 @@ fun UserSettingRow(
   clickListener: () -> Unit,
   modifier: Modifier = Modifier,
   canSwitchToScreen: Boolean = false,
-  iconTint: Color = BlueTextColor,
+  iconTint: Color = GreyTextColor,
   textColor: Color = LoginDarkColor,
   showProgressIndicator: Boolean = false,
 ) {
