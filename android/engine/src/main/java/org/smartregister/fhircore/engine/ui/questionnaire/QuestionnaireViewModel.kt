@@ -39,6 +39,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -108,7 +109,7 @@ constructor(
   val transformSupportServices: TransformSupportServices,
   val dispatcherProvider: DispatcherProvider,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val libraryEvaluator: LibraryEvaluator,
+  val libraryEvaluatorProvider: Provider<LibraryEvaluator>,
   var tracer: PerformanceReporter
 ) : ViewModel() {
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
@@ -416,7 +417,7 @@ constructor(
             if (questionnaireResponse.hasSubject())
               loadPatient(questionnaireResponse.subject.extractId())
             else null
-          libraryEvaluator.runCqlLibrary(it, patient, data, defaultRepository)
+          libraryEvaluatorProvider.get().runCqlLibrary(it, patient, data, defaultRepository)
         }
         .forEach { output ->
           if (output.isNotEmpty()) extractionProgressMessage.postValue(output.joinToString("\n"))
@@ -516,6 +517,7 @@ constructor(
       .search<Appointment> {
         filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
       }
+      .map { it.resource }
       // filter on patient subject
       .filter { appointment ->
         appointment.participant.any {
@@ -537,26 +539,30 @@ constructor(
 
   private suspend fun getLastActiveCarePlan(patientId: String): CarePlan? {
     val carePlans =
-      fhirEngine.search<CarePlan> {
-        filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, patientId)
-        filter(
-          CarePlan.STATUS,
-          { value = of(CarePlan.CarePlanStatus.COMPLETED.toCoding()) },
-          operation = Operation.OR
-        )
-      }
+      fhirEngine
+        .search<CarePlan> {
+          filterByResourceTypeId(CarePlan.SUBJECT, ResourceType.Patient, patientId)
+          filter(
+            CarePlan.STATUS,
+            { value = of(CarePlan.CarePlanStatus.COMPLETED.toCoding()) },
+            operation = Operation.OR
+          )
+        }
+        .map { it.resource }
     return carePlans.sortedByDescending { it.meta.lastUpdated }.firstOrNull()
   }
 
   private suspend fun getActiveListResource(patient: String): ListResource? {
     val list =
-      fhirEngine.search<ListResource> {
-        filter(ListResource.SUBJECT, { value = "Patient/$patient" })
-        filter(ListResource.STATUS, { value = of(ListResource.ListStatus.CURRENT.toCode()) })
-        sort(ListResource.TITLE, Order.DESCENDING)
-        count = 1
-        from = 0
-      }
+      fhirEngine
+        .search<ListResource> {
+          filter(ListResource.SUBJECT, { value = "Patient/$patient" })
+          filter(ListResource.STATUS, { value = of(ListResource.ListStatus.CURRENT.toCode()) })
+          sort(ListResource.TITLE, Order.DESCENDING)
+          count = 1
+          from = 0
+        }
+        .map { it.resource }
     return list.firstOrNull()
   }
 
@@ -565,6 +571,7 @@ constructor(
       .search<Appointment> {
         filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
       }
+      .map { it.resource }
       // filter on patient subject
       .filter { appointment ->
         appointment.participant.any {
@@ -580,29 +587,31 @@ constructor(
 
   suspend fun loadTracing(patientId: String): List<Task> {
     val tasks =
-      fhirEngine.search<Task> {
-        filter(Task.SUBJECT, { value = "Patient/$patientId" })
-        filter(
-          TokenClientParam("code"),
-          {
-            value =
-              of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "225368008", null)))
-          }
-        )
-        filter(
-          Task.STATUS,
-          { value = of(Task.TaskStatus.READY.toCode()) },
-          { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
-          operation = Operation.OR
-        )
-        filter(
-          Task.PERIOD,
-          {
-            value = of(DateTimeType.now())
-            prefix = ParamPrefixEnum.GREATERTHAN
-          }
-        )
-      }
+      fhirEngine
+        .search<Task> {
+          filter(Task.SUBJECT, { value = "Patient/$patientId" })
+          filter(
+            TokenClientParam("code"),
+            {
+              value =
+                of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "225368008", null)))
+            }
+          )
+          filter(
+            Task.STATUS,
+            { value = of(Task.TaskStatus.READY.toCode()) },
+            { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
+            operation = Operation.OR
+          )
+          filter(
+            Task.PERIOD,
+            {
+              value = of(DateTimeType.now())
+              prefix = ParamPrefixEnum.GREATERTHAN
+            }
+          )
+        }
+        .map { it.resource }
     return tasks.filter { it.status in arrayOf(TaskStatus.READY, TaskStatus.INPROGRESS) }
   }
 

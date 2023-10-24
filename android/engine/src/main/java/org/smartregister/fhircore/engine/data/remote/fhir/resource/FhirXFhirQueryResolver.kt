@@ -27,6 +27,6 @@ import org.hl7.fhir.r4.model.Resource
 class FhirXFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) : XFhirQueryResolver {
   override suspend fun resolve(xFhirQuery: String): List<Resource> {
     val newValue = xFhirQuery.split("/_history").first()
-    return fhirEngine.search(newValue)
+    return fhirEngine.search(newValue).map { it.resource }
   }
 }

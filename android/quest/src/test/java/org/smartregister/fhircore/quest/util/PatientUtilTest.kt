@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.util
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
@@ -128,28 +129,32 @@ class PatientUtilTest : RobolectricTest() {
     Assert.assertEquals(20, properties.value?.textSize)
   }
 
-  private fun getConditions(): List<Condition> {
+  private fun getConditions(): List<SearchResult<Condition>> {
     return listOf(
-      Condition().apply {
-        recordedDate = Date()
-        category =
-          listOf(
+      SearchResult(
+        Condition().apply {
+          recordedDate = Date()
+          category =
+            listOf(
+              CodeableConcept().apply {
+                addCoding().apply {
+                  system = "http://snomed.info/sct"
+                  code = "9024005"
+                }
+              }
+            )
+          code =
             CodeableConcept().apply {
               addCoding().apply {
                 system = "http://snomed.info/sct"
-                code = "9024005"
+                code = "11896004"
+                display = "Intermediate"
               }
             }
-          )
-        code =
-          CodeableConcept().apply {
-            addCoding().apply {
-              system = "http://snomed.info/sct"
-              code = "11896004"
-              display = "Intermediate"
-            }
-          }
-      }
+        },
+        included = null,
+        revIncluded = null
+      )
     )
   }
 }

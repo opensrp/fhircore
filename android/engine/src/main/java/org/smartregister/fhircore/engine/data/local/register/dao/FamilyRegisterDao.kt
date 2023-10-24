@@ -81,7 +81,8 @@ constructor(
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
-    return families.filter { it.active && !it.name.isNullOrEmpty() }.map { family ->
+    return families.map { it.resource }.filter { it.active && !it.name.isNullOrEmpty() }.map {
+      family ->
       val members: List<RegisterData.FamilyMemberRegisterData> =
         family.member?.filter { it.hasEntity() && it.entity.hasReference() }?.mapNotNull {
           loadFamilyMemberRegisterData(it.entity.extractId())
@@ -140,6 +141,7 @@ constructor(
     // TODO fix this workaround for groups count
     return fhirEngine
       .search<Group> { getRegisterDataFilters(FAMILY.name).forEach { filterBy(it) } }
+      .map { it.resource }
       .filter { it.active && !it.name.isNullOrEmpty() }
       .size
       .toLong()
@@ -273,8 +275,10 @@ constructor(
         pregnant = conditions.hasActivePregnancy(),
         isHead = patient.isFamilyHead(),
         deathDate = patient.extractDeathDate(),
-        servicesDue = carePlans.filter { it.due() }.flatMap { it.activity }.size,
-        servicesOverdue = carePlans.filter { it.overdue() }.flatMap { it.activity }.size
+        servicesDue =
+          carePlans.map { it.resource }.filter { it.due() }.flatMap { it.activity }.size,
+        servicesOverdue =
+          carePlans.map { it.resource }.filter { it.overdue() }.flatMap { it.activity }.size
       )
     }
   }
@@ -298,7 +302,7 @@ constructor(
         deathDate = patient.extractDeathDate(),
         conditions = conditions,
         flags = flags,
-        services = carePlans,
+        services = carePlans.map { it.resource },
         tasks = tasks
       )
     }

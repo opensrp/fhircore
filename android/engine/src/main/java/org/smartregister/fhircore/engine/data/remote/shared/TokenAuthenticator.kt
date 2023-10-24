@@ -28,7 +28,8 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import androidx.core.os.bundleOf
-import com.google.android.fhir.sync.Authenticator as FhirAuthenticator
+import com.google.android.fhir.sync.HttpAuthenticationMethod
+import com.google.android.fhir.sync.HttpAuthenticator as FhirAuthenticator
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
@@ -65,7 +66,7 @@ constructor(
   private val authConfiguration by lazy { configService.provideAuthConfiguration() }
   private var isLoginPageRendered = false
 
-  override fun getAccessToken(): String {
+  fun getAccessToken(): String {
     val account = findAccount() ?: return ""
     val accessToken = accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) ?: ""
     if (isTokenActive(accessToken)) {
@@ -267,6 +268,9 @@ constructor(
       }
     }
   }
+
+  override fun getAuthenticationMethod(): HttpAuthenticationMethod =
+    HttpAuthenticationMethod.Bearer(token = getAccessToken())
 
   companion object {
     const val GRANT_TYPE = "grant_type"

@@ -103,7 +103,7 @@ constructor(
           from = pageNumber * PaginationConstant.DEFAULT_PAGE_SIZE
         }
 
-      patients.map {
+      patients.map { it.resource }.map {
         val patientItem = dataMapper.transformInputToOutputModel(it)
         patientItem.additionalData =
           loadAdditionalData(patientItem.id, configurationRegistry, fhirEngine)
@@ -306,13 +306,15 @@ constructor(
     mutableListOf<QuestionnaireResponse>().also { result ->
       forms.forEach {
         result.addAll(
-          fhirEngine.search {
-            filter(QuestionnaireResponse.SUBJECT, { value = "${subjectType.name}/$subjectId" })
-            filter(
-              QuestionnaireResponse.QUESTIONNAIRE,
-              { value = "Questionnaire/${it.identifier}" }
-            )
-          }
+          fhirEngine
+            .search<QuestionnaireResponse> {
+              filter(QuestionnaireResponse.SUBJECT, { value = "${subjectType.name}/$subjectId" })
+              filter(
+                QuestionnaireResponse.QUESTIONNAIRE,
+                { value = "Questionnaire/${it.identifier}" }
+              )
+            }
+            .map { it.resource }
         )
       }
     }
@@ -327,7 +329,7 @@ constructor(
           )
         }
 
-      result.map {
+      result.map { it.resource }.map {
         QuestionnaireConfig(
           form = it.nameElement.getLocalizedText() ?: it.logicalId,
           title = it.titleElement.getLocalizedText()
@@ -348,9 +350,11 @@ constructor(
 
   suspend fun fetchPregnancyCondition(patientId: String): String {
     val listOfConditions: List<Condition> =
-      fhirEngine.search {
-        filterByResourceTypeId(Condition.SUBJECT, ResourceType.Patient, patientId)
-      }
+      fhirEngine
+        .search<Condition> {
+          filterByResourceTypeId(Condition.SUBJECT, ResourceType.Patient, patientId)
+        }
+        .map { it.resource }
     val activePregnancy = listOfConditions.hasActivePregnancy()
     val activePregnancyCondition =
       if (activePregnancy) listOfConditions.pregnancyCondition() else null

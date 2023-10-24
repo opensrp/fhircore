@@ -66,7 +66,7 @@ constructor(
           from = currentPage * DEFAULT_PAGE_SIZE
         }
 
-      patients.map {
+      patients.map { it.resource }.map {
         RegisterData.DefaultRegisterData(
           logicalId = it.logicalId,
           name = it.extractName(),

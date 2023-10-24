@@ -54,7 +54,7 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
-    return list.map {
+    return list.map { it.resource }.map {
       val data = getTracingHistoryFromList(it)
 
       TracingHistory(
@@ -157,6 +157,7 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
         )
       }
     outcomeObs
+      .map { it.resource }
       .firstOrNull {
         it.code.coding.any { coding ->
           coding.code in arrayOf("tracing-outcome-conducted", "tracing-outcome-unconducted")
@@ -202,6 +203,7 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
         )
       }
     dateObs
+      .map { it.resource }
       .firstOrNull {
         it.code.coding.any { coding ->
           coding.code.endsWith("tracing-outcome-date-of-agreed-appointment")
@@ -231,6 +233,7 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
         count = 1
         from = 0
       }
+      .map { it.resource }
       .firstOrNull()
   }
 
@@ -308,7 +311,12 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
       }
 
     val outcome =
-      obs?.firstOrNull { it.hasValueCodeableConcept() }?.valueCodeableConcept?.text ?: ""
+      obs
+        ?.map { it.resource }
+        ?.firstOrNull { it.hasValueCodeableConcept() }
+        ?.valueCodeableConcept
+        ?.text
+        ?: ""
 
     val attempts =
       list.orderedBy.coding.filter { coding -> coding.code.all { it.isDigit() } }.maxOfOrNull {

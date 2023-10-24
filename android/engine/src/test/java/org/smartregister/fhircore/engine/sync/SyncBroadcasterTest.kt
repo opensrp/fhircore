@@ -157,8 +157,17 @@ class SyncBroadcasterTest : RobolectricTest() {
         0
       )
 
-    every { workManager.getWorkInfosForUniqueWorkLiveData(AppSyncWorker::class.java.name) } returns
-      MutableLiveData(mutableListOf(workInfo, inProgressInfo))
+    every { workManager.getWorkInfosForUniqueWorkLiveData(any()) } answers
+      {
+        val uniqueWorkName = firstArg<String>()
+        MutableLiveData(
+          when {
+            uniqueWorkName.startsWith(AppSyncWorker::class.java.name) ->
+              listOf(workInfo, inProgressInfo)
+            else -> emptyList()
+          }
+        )
+      }
 
     val collectedSyncStatusList = mutableListOf<SyncJobStatus>()
     val job =

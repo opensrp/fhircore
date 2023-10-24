@@ -244,7 +244,7 @@ class LibraryEvaluator @Inject constructor() {
         listOfNotNull(
           patient,
           *data.entry.map { it.resource }.toTypedArray(),
-          *repository.search(library.dataRequirementFirstRep).toTypedArray()
+          *repository.search(library.dataRequirementFirstRep).map { it.resource }.toTypedArray()
         )
       )
     )

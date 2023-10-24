@@ -58,7 +58,7 @@ constructor(
           filterByResourceTypeId(Task.OWNER, ResourceType.Practitioner, "6744")
         }
 
-      tasks.map { task ->
+      tasks.map { it.resource }.map { task ->
         val patientId = task.`for`.reference.replace("Patient/", "")
         val patient = fhirEngine.get<Patient>(patientId)
 

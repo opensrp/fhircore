@@ -58,6 +58,7 @@ constructor(
           { value = of(Task.TaskStatus.RECEIVED.toCode()) },
         )
       }
+      .map { it.resource }
       .filter {
         it.status in
           arrayOf(

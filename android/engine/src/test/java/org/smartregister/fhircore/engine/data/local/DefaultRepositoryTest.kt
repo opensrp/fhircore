@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
@@ -38,6 +39,7 @@ import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Composition
@@ -66,6 +68,7 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingVersionId
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class DefaultRepositoryTest : RobolectricTest() {
 
@@ -84,7 +87,6 @@ class DefaultRepositoryTest : RobolectricTest() {
     hiltRule.inject()
     every { configService.provideResourceTags(any()) } returns listOf()
   }
-  @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun `addOrUpdate() should call fhirEngine#update when resource exists`() {
     val patientId = "15672-9234"
@@ -151,11 +153,11 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify(exactly = 1) { fhirEngine.create(any()) }
   }
 
-  @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun `loadRelatedPersons() should call FhirEngine#loadRelatedPersons`() {
     val patientId = "15672-9234"
-    val fhirEngine: FhirEngine = mockk()
+    val fhirEngine: FhirEngine = mockk<FhirEngine>()
+    mockkStatic(FhirEngine::loadRelatedPersons)
     coEvery { fhirEngine.loadRelatedPersons(patientId) } returns listOf()
 
     val defaultRepository =
@@ -170,12 +172,14 @@ class DefaultRepositoryTest : RobolectricTest() {
     runBlocking { defaultRepository.loadRelatedPersons(patientId) }
 
     coVerify { fhirEngine.loadRelatedPersons(patientId) }
+    unmockkStatic(FhirEngine::loadRelatedPersons)
   }
 
   @Test
   fun `loadImmunizations() should call FhirEngine#loadImmunizations`() {
     val patientId = "15672-9234"
     val fhirEngine: FhirEngine = mockk()
+    mockkStatic(FhirEngine::loadPatientImmunizations)
     coEvery { fhirEngine.loadPatientImmunizations(patientId) } returns listOf()
 
     val defaultRepository =
@@ -190,6 +194,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     runBlocking { defaultRepository.loadPatientImmunizations(patientId) }
 
     coVerify { fhirEngine.loadPatientImmunizations(patientId) }
+    mockkStatic(FhirEngine::loadPatientImmunizations)
   }
 
   @Test
@@ -266,7 +271,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   fun testSearchCompositionByIdentifier() = runBlockingTest {
     val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns
-      listOf(Composition().apply { id = "123" })
+      listOf(SearchResult(Composition().apply { id = "123" }, included = null, revIncluded = null))
 
     val defaultRepository =
       DefaultRepository(
@@ -328,5 +333,59 @@ class DefaultRepositoryTest : RobolectricTest() {
     verify { resource.generateMissingVersionId() }
 
     unmockkStatic(Resource::generateMissingVersionId)
+  }
+
+  @Test
+  fun `searchQuestionnaireConfig should call FhirEngine#Search and return QuestionnaireConfig with correct fields`() =
+      runTest {
+    val fhirEngine = mockk<FhirEngine>()
+    val questionnaire1 =
+      Questionnaire().apply {
+        id = "1"
+        name = "questionnaire1"
+        title = "Questionnaire 1"
+      }
+    val questionnaire2 =
+      Questionnaire().apply {
+        id = "2"
+        name = "questionnaire2"
+        title = "Questionnaire 2"
+      }
+
+    coEvery { fhirEngine.search<Resource>(any<Search>()) } answers
+      {
+        val searchArg = firstArg<Search>()
+        when (searchArg.type) {
+          ResourceType.Questionnaire ->
+            listOf(questionnaire1, questionnaire2).map {
+              SearchResult(it, included = null, revIncluded = null)
+            }
+          else -> emptyList()
+        }
+      }
+
+    val defaultRepository =
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        configurationRegistry = configurationRegistry,
+        configService = configService
+      )
+    val questionnaireConfigs = defaultRepository.searchQuestionnaireConfig(listOf())
+    Assert.assertEquals(2, questionnaireConfigs.size)
+    val questionnaireConfig1 = questionnaireConfigs[0]
+    val questionnaireConfig2 = questionnaireConfigs[1]
+    with(questionnaireConfig1) {
+      Assert.assertEquals("questionnaire1", form)
+      Assert.assertEquals("Questionnaire 1", title)
+      Assert.assertEquals("1", identifier)
+    }
+
+    with(questionnaireConfig2) {
+      Assert.assertEquals("questionnaire2", form)
+      Assert.assertEquals("Questionnaire 2", title)
+      Assert.assertEquals("2", identifier)
+    }
   }
 }

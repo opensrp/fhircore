@@ -66,6 +66,7 @@ constructor(
             }
           )
         }
+        .map { it.resource }
         .filter {
           it.hasStart() &&
             it.hasSupportingInformation() &&

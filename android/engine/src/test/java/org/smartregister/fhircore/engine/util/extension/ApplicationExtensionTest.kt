@@ -20,6 +20,7 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.rest.gclient.IParam
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
@@ -144,10 +145,11 @@ class ApplicationExtensionTest : RobolectricTest() {
     val patient1 = Patient().apply { id = "patient-john-doe" }
     val patient2 = Patient().apply { id = "patient-mary-joe" }
     val expectedPatientList = listOf(patient1, patient2)
-    coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns expectedPatientList
+    coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns
+      expectedPatientList.map { SearchResult(it, included = null, revIncluded = null) }
 
     val patientsList: List<Patient>
-    runBlocking { patientsList = fhirEngine.searchActivePatients("", 0, false) }
+    runBlocking { patientsList = fhirEngine.searchActivePatients("", 0, false).map { it.resource } }
 
     coVerify { fhirEngine.search<Patient>(any<Search>()) }
     val search = captureSlot.captured
@@ -163,7 +165,7 @@ class ApplicationExtensionTest : RobolectricTest() {
   fun `FhirEngine#searchActivePatients() should call search and sort results by name`() {
     val fhirEngine = mockk<FhirEngine>()
     val captureSlot = slot<Search>()
-    val expectedPatientList = listOf<Patient>()
+    val expectedPatientList = listOf<SearchResult<Patient>>()
     coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns expectedPatientList
 
     runBlocking { fhirEngine.searchActivePatients("", 0, false) }
@@ -178,7 +180,7 @@ class ApplicationExtensionTest : RobolectricTest() {
   fun `FhirEngine#searchActivePatients() should call search and filter results by query when given query`() {
     val fhirEngine = mockk<FhirEngine>()
     val captureSlot = slot<Search>()
-    val expectedPatientList = listOf<Patient>()
+    val expectedPatientList = listOf<SearchResult<Patient>>()
     coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns expectedPatientList
 
     runBlocking { fhirEngine.searchActivePatients("be", 0, false) }
@@ -197,7 +199,7 @@ class ApplicationExtensionTest : RobolectricTest() {
   fun `FhirEngine#searchActivePatients() should call search and set correct count when page is 0`() {
     val fhirEngine = mockk<FhirEngine>()
     val captureSlot = slot<Search>()
-    val expectedPatientList = listOf<Patient>()
+    val expectedPatientList = listOf<SearchResult<Patient>>()
     coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns expectedPatientList
 
     runBlocking { fhirEngine.searchActivePatients("", 0, false) }
@@ -212,7 +214,7 @@ class ApplicationExtensionTest : RobolectricTest() {
   fun `FhirEngine#searchActivePatients() should call search and set correct count when page is 3`() {
     val fhirEngine = mockk<FhirEngine>()
     val captureSlot = slot<Search>()
-    val expectedPatientList = listOf<Patient>()
+    val expectedPatientList = listOf<SearchResult<Patient>>()
     coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns expectedPatientList
 
     runBlocking { fhirEngine.searchActivePatients("", 3, false) }
@@ -232,11 +234,12 @@ class ApplicationExtensionTest : RobolectricTest() {
     val patient1 = Patient().apply { id = "patient-john-doe" }
     val patient2 = Patient().apply { id = "patient-mary-joe" }
     val expectedPatientList = listOf(patient1, patient2)
-    coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns expectedPatientList
+    coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns
+      expectedPatientList.map { SearchResult(it, included = null, revIncluded = null) }
     coEvery { fhirEngine.countActivePatients() } returns 923L
 
     val patientsList: List<Patient>
-    runBlocking { patientsList = fhirEngine.searchActivePatients("", 0, true) }
+    runBlocking { patientsList = fhirEngine.searchActivePatients("", 0, true).map { it.resource } }
 
     coVerify { fhirEngine.search<Patient>(any<Search>()) }
     coVerify { fhirEngine.countActivePatients() }

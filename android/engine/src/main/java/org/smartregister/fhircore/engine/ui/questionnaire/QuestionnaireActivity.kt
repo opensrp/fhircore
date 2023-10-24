@@ -123,7 +123,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       withContext(dispatcherProvider.io()) {
         tracer.traceSuspend("Questionnaire.loadQuestionnaireAndConfig") {
           loadQuestionnaireAndConfig(formName)
-          questionnaireViewModel.libraryEvaluator.initialize()
+          questionnaireViewModel.libraryEvaluatorProvider.get().initialize()
         }
       }
 

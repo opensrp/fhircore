@@ -73,6 +73,7 @@ constructor(
             else PaginationConstant.DEFAULT_PAGE_SIZE
           from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
         }
+        .map { it.resource }
         .distinctBy { it.subject.reference }
 
     val patients =

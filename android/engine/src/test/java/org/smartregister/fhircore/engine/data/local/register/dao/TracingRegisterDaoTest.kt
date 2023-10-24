@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.data.local.register.dao
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
@@ -48,6 +49,7 @@ import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
@@ -128,8 +130,16 @@ class TracingRegisterDaoTest : RobolectricTest() {
         executionPeriod = Period().apply { start = Date() }
         `for` = patient0.asReference()
       }
-    coEvery { fhirEngine.search<Patient>(Search(ResourceType.Patient)) } returns listOf(patient0)
-    coEvery { fhirEngine.search<Task>(Search(ResourceType.Task)) } returns listOf(task1)
+    coEvery { fhirEngine.search<Resource>(any()) } answers
+      {
+        val searchObj = firstArg<Search>()
+        when (searchObj.type) {
+          ResourceType.Patient ->
+            listOf(SearchResult(patient0, included = null, revIncluded = null))
+          ResourceType.Task -> listOf(SearchResult(task1, included = null, revIncluded = null))
+          else -> emptyList()
+        }
+      }
     Assert.assertEquals(1, tracingRegisterDao.countRegisterData(appFeatureName = null))
   }
 
@@ -151,12 +161,20 @@ class TracingRegisterDaoTest : RobolectricTest() {
             }
           )
       }
-    coEvery { fhirEngine.search<Patient>(Search(ResourceType.Patient)) } returns listOf(patient0)
-    coEvery { fhirEngine.search<Task>(Search(ResourceType.Task)) } returns listOf(task1)
-    coEvery { fhirEngine.search<Condition>(Search(ResourceType.Condition)) } returns emptyList()
-    coEvery {
-      fhirEngine.search<ListResource>(Search(ResourceType.List, count = 1, from = 0))
-    } returns emptyList()
+
+    coEvery { fhirEngine.search<Resource>(any()) } answers
+      {
+        val searchObj = firstArg<Search>()
+        when {
+          searchObj.type == ResourceType.Patient ->
+            listOf(SearchResult(patient0, included = null, revIncluded = null))
+          searchObj.type == ResourceType.Task ->
+            listOf(SearchResult(task1, included = null, revIncluded = null))
+          searchObj.type == ResourceType.Condition -> emptyList()
+          searchObj.type == ResourceType.List && searchObj.count == 1 -> emptyList()
+          else -> emptyList()
+        }
+      }
 
     val data = tracingRegisterDao.loadRegisterData(0, loadAll = false, appFeatureName = null)
     Assert.assertEquals(1, data.size)
@@ -250,10 +268,25 @@ class TracingRegisterDaoTest : RobolectricTest() {
         reasonReference = Reference().apply { reference = "Questionnaire/art-tracing-outcome" }
       }
 
-    coEvery { fhirEngine.search<Patient>(Search(ResourceType.Patient)) } returns
-      listOf(patient0, patient1, patient2)
-    coEvery { fhirEngine.search<Task>(Search(ResourceType.Task)) } returns
-      listOf(task1, task2, task3)
+    coEvery { fhirEngine.search<Resource>(any()) } answers
+      {
+        val searchObj = firstArg<Search>()
+        when (searchObj.type) {
+          ResourceType.Patient ->
+            listOf(
+              SearchResult(patient0, included = null, revIncluded = null),
+              SearchResult(patient1, included = null, revIncluded = null),
+              SearchResult(patient2, included = null, revIncluded = null)
+            )
+          ResourceType.Task ->
+            listOf(
+              SearchResult(task1, included = null, revIncluded = null),
+              SearchResult(task2, included = null, revIncluded = null),
+              SearchResult(task3, included = null, revIncluded = null)
+            )
+          else -> emptyList()
+        }
+      }
 
     Assert.assertEquals(
       1,
@@ -430,14 +463,31 @@ class TracingRegisterDaoTest : RobolectricTest() {
           item = enc0.asReference()
         }
       }
-    coEvery { fhirEngine.search<Patient>(Search(ResourceType.Patient)) } returns
-      listOf(patient0, patient1)
-    coEvery { fhirEngine.search<Task>(Search(ResourceType.Task)) } returns listOf(task0, task1)
-    coEvery { fhirEngine.search<Condition>(Search(ResourceType.Condition)) } returns emptyList()
-    coEvery { fhirEngine.search<ListResource>(Search(ResourceType.List)) } returns listOf(list0)
+
+    coEvery { fhirEngine.search<Resource>(any()) } answers
+      {
+        val searchObj = firstArg<Search>()
+        when {
+          searchObj.type == ResourceType.Patient ->
+            listOf(
+              SearchResult(patient0, included = null, revIncluded = null),
+              SearchResult(patient1, included = null, revIncluded = null)
+            )
+          searchObj.type == ResourceType.Task ->
+            listOf(
+              SearchResult(task0, included = null, revIncluded = null),
+              SearchResult(task1, included = null, revIncluded = null)
+            )
+          searchObj.type == ResourceType.Condition -> emptyList()
+          searchObj.type == ResourceType.List ->
+            listOf(SearchResult(list0, included = null, revIncluded = null))
+          searchObj.type == ResourceType.Observation && searchObj.count == 1 ->
+            listOf(SearchResult(obs0, included = null, revIncluded = null))
+          else -> emptyList()
+        }
+      }
+
     coEvery { fhirEngine.get(ResourceType.Encounter, "enc0") } returns enc0
-    coEvery { fhirEngine.search<Observation>(Search(ResourceType.Observation, count = 1)) } returns
-      listOf(obs0)
 
     val data =
       tracingRegisterDao.loadRegisterFiltered(
@@ -528,18 +578,23 @@ class TracingRegisterDaoTest : RobolectricTest() {
         }
       }
     coEvery { fhirEngine.get(ResourceType.RelatedPerson, "guardian0") } returns guardian0
-    coEvery { fhirEngine.search<Task>(Search(ResourceType.Task)) } returns listOf(task0)
-    coEvery {
-      fhirEngine.search<ListResource>(Search(ResourceType.List, count = 1, from = 0))
-    } returns emptyList()
-    coEvery {
-      fhirEngine.search<Appointment>(Search(ResourceType.Appointment, count = 1, from = 0))
-    } returns listOf(appointment0)
+    coEvery { fhirEngine.search<Resource>(any()) } answers
+      {
+        val searchObj = firstArg<Search>()
+        when {
+          searchObj.type == ResourceType.Task ->
+            listOf(SearchResult(task0, included = null, revIncluded = null))
+          searchObj.type == ResourceType.List && searchObj.count == 1 -> emptyList()
+          searchObj.type == ResourceType.Appointment && searchObj.count == 1 ->
+            listOf(SearchResult(appointment0, included = null, revIncluded = null))
+          searchObj.type == ResourceType.CarePlan ->
+            listOf(SearchResult(carePlan0, included = null, revIncluded = null))
+          searchObj.type == ResourceType.Condition -> emptyList()
+          else -> emptyList()
+        }
+      }
     coEvery { fhirEngine.get(ResourceType.Practitioner, practitioner.logicalId) } returns
       practitioner
-    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf(carePlan0)
-    coEvery { fhirEngine.search<Condition>(Search(ResourceType.Condition)) } returns emptyList()
-
     val profileData =
       tracingRegisterDao.loadProfileData(appFeatureName = null, resourceId = patient0.logicalId) as
         ProfileData.TracingProfileData

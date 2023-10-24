@@ -71,6 +71,7 @@ constructor(
         count = 20
         from = (page - 1) * 20
       }
+      .map { it.resource }
       .map { inputModel ->
         //        Timber.e(jsonParser.encodeResourceToString(inputModel))
         inputModel.toPatientItem(getApplicationConfiguration())
@@ -106,6 +107,7 @@ constructor(
         operation = Operation.OR
         sort(Patient.NAME, Order.ASCENDING)
       }
+      .map { it.resource }
       .map { inputModel ->
         //        Timber.e(jsonParser.encodeResourceToString(inputModel))
         inputModel.toPatientItem(getApplicationConfiguration())

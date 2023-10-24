@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.data
 
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -71,16 +72,20 @@ class PatientTaskRepositoryTest : RobolectricTest() {
   fun testLoadAllShouldReturnListOfFamilyItem() {
     val tasks =
       listOf(
-        Task().apply {
-          id = "1"
-          description = "Sick Visit"
-          executionPeriod =
-            Period().apply {
-              start = "2020-03-10".getDate("yyyy-MM-dd")
-              end = "2020-03-12".getDate("yyyy-MM-dd")
-            }
-          `for` = Reference("Patient/2")
-        }
+        SearchResult(
+          Task().apply {
+            id = "1"
+            description = "Sick Visit"
+            executionPeriod =
+              Period().apply {
+                start = "2020-03-10".getDate("yyyy-MM-dd")
+                end = "2020-03-12".getDate("yyyy-MM-dd")
+              }
+            `for` = Reference("Patient/2")
+          },
+          included = null,
+          revIncluded = null
+        )
       )
 
     val patient =
