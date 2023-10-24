@@ -598,6 +598,8 @@ constructor(
     }
   }
 
+  fun clearConfigsCache() = configCacheMap.clear()
+
   companion object {
     const val BASE_CONFIG_PATH = "configs/%s"
     const val COMPOSITION_CONFIG_PATH = "configs/%s/composition_config.json"

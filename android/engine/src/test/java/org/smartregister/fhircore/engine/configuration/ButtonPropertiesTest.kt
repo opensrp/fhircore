@@ -45,7 +45,6 @@ class ButtonPropertiesTest : RobolectricTest() {
       enabled = "@{enabled}",
       text = "@{text}",
       status = "@{status}",
-      smallSized = false,
       fontSize = 14.0f,
       actions = emptyList(),
       buttonType = ButtonType.MEDIUM,
