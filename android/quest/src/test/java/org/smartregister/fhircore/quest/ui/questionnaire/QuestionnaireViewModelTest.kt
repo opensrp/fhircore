@@ -23,6 +23,7 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -56,6 +57,7 @@ import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -119,7 +121,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private lateinit var defaultRepository: DefaultRepository
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private val context: Application = ApplicationProvider.getApplicationContext()
-  private val libraryEvaluator: LibraryEvaluator = mockk(relaxed = true, relaxUnitFun = true)
+  private val fhirOperator: FhirOperator = mockk()
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
   private val patient =
     Faker.buildPatient().apply {
@@ -174,10 +176,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           transformSupportServices = mockk(),
           dispatcherProvider = defaultRepository.dispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
-          libraryEvaluatorProvider = { libraryEvaluator },
           fhirCarePlanGenerator = fhirCarePlanGenerator,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
           fhirPathDataExtractor = fhirPathDataExtractor,
+          fhirOperator = fhirOperator,
         ),
       )
 
@@ -652,13 +654,24 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         addExtension(
           Extension().apply {
             url = "https://sample.cqf-library.url"
-            setValue(StringType("Library/123"))
+            setValue(StringType("http://smartreg.org/Library/123"))
           },
         )
       }
-    questionnaireViewModel.executeCql(patient, bundle, questionnaire)
 
-    coVerify { libraryEvaluator.runCqlLibrary("123", patient, bundle) }
+    coEvery { fhirOperator.evaluateLibrary(any(), any(), any(), any()) } returns Parameters()
+
+    questionnaireViewModel.executeCql(patient, bundle, questionnaire)
+    fhirEngine.create(patient)
+
+    coVerify {
+      fhirOperator.evaluateLibrary(
+        "http://smartreg.org/Library/123",
+        patient.asReference().reference,
+        null,
+        setOf()
+      )
+    }
   }
 
   @Test
@@ -1044,7 +1057,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         addExtension(
           Extension().apply {
             url = "https://sample.cqf-library.url"
-            setValue(StringType("Library/123"))
+            setValue(StringType("http://smartreg.org/Library/123"))
           },
         )
       }
@@ -1052,6 +1065,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // Mock the retrieval of a Basic resource with the specified ID
     val resource1 = Faker.buildBasicResource("basic-resource-id")
     coEvery { fhirEngine.get<Basic>(any()) } answers { resource1 }
+    coEvery { fhirOperator.evaluateLibrary(any(), any(), any(), any()) } returns Parameters()
 
     // Load the CQL input resources from the questionnaireConfig
     val loadedCqlInputResources = questionnaireConfigCqlInputResources.cqlInputResources
@@ -1071,8 +1085,5 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertTrue(
       bundle.entry.any { it.resource is Basic && it.resource.id == "basic-resource-id" },
     )
-
-    // Verify that the libraryEvaluator.runCqlLibrary was called with the correct arguments
-    coVerify { libraryEvaluator.runCqlLibrary("123", patient, bundle) }
   }
 }

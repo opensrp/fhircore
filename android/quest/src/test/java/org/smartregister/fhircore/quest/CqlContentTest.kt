@@ -33,6 +33,7 @@ import kotlinx.coroutines.runBlocking
 import org.cqframework.cql.cql2elm.CqlTranslator
 import org.cqframework.cql.cql2elm.CqlTranslatorOptions
 import org.cqframework.cql.cql2elm.LibraryManager
+import org.cqframework.cql.cql2elm.ModelManager
 import org.cqframework.cql.cql2elm.quick.FhirLibrarySourceProvider
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Library
@@ -64,9 +65,11 @@ class CqlContentTest : RobolectricTest() {
   private val configService: ConfigService = mockk()
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
   private lateinit var defaultRepository: DefaultRepository
-  private val fhirEngine = mockk<FhirEngine>()
+
+  @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
   @Inject lateinit var fhirOperator: FhirOperator
 
   @Before
@@ -126,7 +129,8 @@ class CqlContentTest : RobolectricTest() {
     coEvery { defaultRepository.searchCondition(any()) } returns listOf()
 
     runBlocking { fhirEngine.create(*dataBundle.entry.map { it.resource }.toTypedArray()) }
-    val result = fhirOperator.evaluateLibrary(cqlLibrary.url, patient.id, null, setOf()) as Parameters
+    val result =
+      fhirOperator.evaluateLibrary(cqlLibrary.url, patient.id, null, setOf()) as Parameters
 
     assertOutput(
       "$resourceDir/output_medication_request.json",
@@ -171,8 +175,10 @@ class CqlContentTest : RobolectricTest() {
     coEvery { defaultRepository.searchCondition(any()) } returns listOf()
 
     runBlocking { fhirEngine.create(*dataBundle.entry.map { it.resource }.toTypedArray()) }
-    val result = (fhirOperator.evaluateLibrary(cqlLibrary.url, patient.id, null, setOf()) as Parameters)
-      .parameter.map { it.resource.encodeResourceToString() }
+    val result =
+      (fhirOperator.evaluateLibrary(cqlLibrary.url, patient.id, null, setOf()) as Parameters)
+        .parameter
+        .map { it.resource.encodeResourceToString() }
 
     assertOutput("$resourceDir/sample/output_condition.json", result, ResourceType.Condition)
     assertOutput(
@@ -222,8 +228,10 @@ class CqlContentTest : RobolectricTest() {
     coEvery { configService.provideResourceTags(any()) } returns listOf()
 
     runBlocking { fhirEngine.create(*dataBundle.entry.map { it.resource }.toTypedArray()) }
-    val result = (fhirOperator.evaluateLibrary(cqlLibrary.url, null, null, setOf()) as Parameters)
-      .parameter.map { if(it.hasValue()) it.value else it.resource.encodeResourceToString() }
+    val result =
+      (fhirOperator.evaluateLibrary(cqlLibrary.url, null, null, setOf()) as Parameters)
+        .parameter
+        .map { if (it.hasValue()) it.value else it.resource.encodeResourceToString() }
 
     println(result)
 
@@ -252,13 +260,13 @@ class CqlContentTest : RobolectricTest() {
   }
 
   private fun toJsonElm(cql: String): String {
-    val libraryManager = LibraryManager(evaluator.modelManager)
+    val libraryManager = LibraryManager(ModelManager())
     libraryManager.librarySourceLoader.registerProvider(FhirLibrarySourceProvider())
 
     val translator: CqlTranslator =
       CqlTranslator.fromText(
         cql,
-        evaluator.modelManager,
+        libraryManager.modelManager,
         libraryManager,
         *CqlTranslatorOptions.defaultOptions().options.toTypedArray(),
       )
