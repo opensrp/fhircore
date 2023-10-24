@@ -27,7 +27,12 @@ object TracingHelpers {
       "exposed-infant-convert-to-art-client",
       "patient-finish-visit",
       "exposed-infant-record-hiv-test-results",
-      "art-client-child-contact-registration"
+      "art-client-child-contact-registration",
+      "art-client-biological-parent-contact-registration",
+      "art-client-child-contact-registration",
+      "art-client-sexual-contact-registration",
+      "art-client-sibling-contact-registration",
+      "art-client-social-network-contact-registration"
     )
   const val tracingBundleId = "tracing"
   fun requireTracingTasks(id: String): Boolean =
