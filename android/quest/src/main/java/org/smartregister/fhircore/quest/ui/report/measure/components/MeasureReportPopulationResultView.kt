@@ -64,7 +64,7 @@ private fun PopulationResultCard(
       modifier =
         modifier
           .clip(RoundedCornerShape(8.dp))
-          .background(color = colorResource(id = R.color.white))
+          .background(color = colorResource(id = org.smartregister.fhircore.engine.R.color.white))
           .padding(16.dp)
           .fillMaxWidth(),
     ) {
@@ -72,14 +72,14 @@ private fun PopulationResultCard(
         Row(modifier = modifier.fillMaxWidth()) {
           Text(
             text = resultItem.title.ifEmpty { resultItem.indicatorTitle }.uppercase(),
-            color = colorResource(id = R.color.black),
+            color = colorResource(id = org.smartregister.fhircore.engine.R.color.black),
             fontSize = 16.sp,
             modifier = modifier.weight(1.0f).testTag(POPULATION_INDICATOR_TITLE),
             textAlign = TextAlign.Start,
           )
           Text(
-            text = resultItem.measureReportDenominator.let { it?.toString() ?: "0" },
-            color = colorResource(id = R.color.black),
+            text = resultItem.measureReportDenominator,
+            color = colorResource(id = org.smartregister.fhircore.engine.R.color.black),
             fontSize = 16.sp,
             modifier = modifier.weight(1.0f).testTag(POPULATION_COUNT_TEST_TAG),
             textAlign = TextAlign.End,
@@ -89,14 +89,14 @@ private fun PopulationResultCard(
           Row(modifier = modifier.fillMaxWidth()) {
             Text(
               text = it.title,
-              color = colorResource(id = R.color.black),
+              color = colorResource(id = org.smartregister.fhircore.engine.R.color.black),
               fontSize = 15.sp,
               modifier = modifier.weight(1.0f).testTag(DETAILS_INDICATOR_TITLE),
               textAlign = TextAlign.Start,
             )
             Text(
               text = it.count,
-              color = colorResource(id = R.color.black),
+              color = colorResource(id = org.smartregister.fhircore.engine.R.color.black),
               fontSize = 15.sp,
               modifier = modifier.weight(1.0f).testTag(DETAILS_COUNT_TEST_TAG),
               textAlign = TextAlign.End,

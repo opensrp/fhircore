@@ -127,7 +127,6 @@ fun MeasureReportResultPage(
             subjectViewData.forEach {
               MeasureReportIndividualResultView(
                 subjectViewData = it,
-                isMatchedIndicator = measureReportIndividualResult.isMatchedIndicator,
               )
             }
           }
