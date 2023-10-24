@@ -670,7 +670,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         "http://smartreg.org/Library/123",
         patient.asReference().reference,
         null,
-        setOf()
+        setOf(),
       )
     }
   }
