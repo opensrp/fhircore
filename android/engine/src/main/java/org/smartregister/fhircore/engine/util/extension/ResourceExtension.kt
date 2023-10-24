@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Immunization
@@ -267,6 +268,7 @@ fun Resource.appendPractitionerInfo(practitionerId: String?) {
       is Patient -> generalPractitioner = arrayListOf(practitionerRef)
       is Observation -> performer = arrayListOf(practitionerRef)
       is QuestionnaireResponse -> author = practitionerRef
+      is Flag -> author = practitionerRef
       is Encounter ->
         participant =
           arrayListOf(

@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -93,6 +94,7 @@ fun CompoundText(
           resourceData = resourceData,
           navController = navController,
           overflow = compoundTextProperties.overflow,
+          letterSpacing = compoundTextProperties.letterSpacing,
         )
       }
       // Separate the primary and secondary text
@@ -123,6 +125,7 @@ fun CompoundText(
           navController = navController,
           resourceData = resourceData,
           overflow = compoundTextProperties.overflow,
+          letterSpacing = compoundTextProperties.letterSpacing,
         )
       }
     }
@@ -147,6 +150,7 @@ private fun CompoundTextPart(
   navController: NavController,
   resourceData: ResourceData,
   overflow: TextOverFlow?,
+  letterSpacing: Int = 0,
 ) {
   Text(
     text =
@@ -185,6 +189,7 @@ private fun CompoundTextPart(
         TextOverFlow.VISIBLE -> TextOverflow.Visible
         else -> TextOverflow.Ellipsis
       },
+    style = TextStyle(letterSpacing = letterSpacing.sp),
   )
 }
 
