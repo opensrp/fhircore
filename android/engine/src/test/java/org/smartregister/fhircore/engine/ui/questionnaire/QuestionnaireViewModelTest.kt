@@ -51,7 +51,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
@@ -175,7 +174,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           transformSupportServices = mockk(),
           dispatcherProvider = defaultRepo.dispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
-          libraryEvaluator = libraryEvaluator,
+          libraryEvaluatorProvider = { libraryEvaluator },
           tracer = FakePerformanceReporter()
         )
       )
