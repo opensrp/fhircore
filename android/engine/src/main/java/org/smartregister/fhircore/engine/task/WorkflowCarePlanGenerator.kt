@@ -19,27 +19,22 @@ package org.smartregister.fhircore.engine.task
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
-import ca.uhn.fhir.model.api.IElement
 import ca.uhn.fhir.util.TerserUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.qualifiers.ApplicationContext
-import org.hl7.fhir.instance.model.api.IBase
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.isAccessible
-import org.hl7.fhir.instance.model.api.IBaseParameters
-import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.MetadataResource
-import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.Reference
@@ -143,25 +138,26 @@ constructor(
     }
 
     val r4PlanDefinitionProcessor = createPlanDefinitionProcessor()
-    val carePlanProposal = CarePlan() //TODO
-      /*r4PlanDefinitionProcessor.
-       apply(
-        *//* id = *//* null,
-        *//* canonical = *//* planDefinition.idElement,
-        *//* planDefinition = *//* null,
-        *//* subject = *//* patientId,
-        *//* encounterId = *//* null,
-        *//* practitionerId = *//* null,
-        *//* organizationId = *//* null,
-        *//* userType = *//* null,
-        *//* userLanguage = *//* null,
-        *//* userTaskContext = *//* null,
-        *//* setting = *//* null,
-        *//* settingContext = *//* null
-      ) as CarePlan*/ //TODO
+    // TODO Fix after resolving dependency issues
+    /*val carePlanProposal = CarePlan()
+    r4PlanDefinitionProcessor.
+     apply(
+       id =  null,
+       canonical =  planDefinition.idElement,
+       planDefinition =  null,
+       subject =  patientId,
+       encounterId =  null,
+       practitionerId =  null,
+       organizationId =  null,
+       userType =  null,
+       userLanguage =  null,
+       userTaskContext =  null,
+       setting =  null,
+       settingContext =  null
+    ) as CarePlan*/
 
     // Accept the proposed (transient) CarePlan by default and add tasks to the CarePlan of record
-    acceptCarePlan(carePlanProposal, output)
+    //    acceptCarePlan(carePlanProposal, output)
 
     resolveDynamicValues(
       planDefinition = planDefinition,
@@ -172,13 +168,14 @@ constructor(
   }
 
   private fun createPlanDefinitionProcessor(): R4PlanDefinitionProcessor {
-    //val repository = getPrivateProperty("repository", fhirOperator) as ProxyRepository
-    //val evaluationSettings = getPrivateProperty("evaluationSettings", fhirOperator) as EvaluationSettings
+    // val repository = getPrivateProperty("repository", fhirOperator) as ProxyRepository
+    // val evaluationSettings = getPrivateProperty("evaluationSettings", fhirOperator) as
+    // EvaluationSettings
 
     return R4PlanDefinitionProcessor(
-     // repository = repository,
-     // evaluationSettings = evaluationSettings
-    )
+      // repository = repository,
+      // evaluationSettings = evaluationSettings
+      )
   }
 
   private fun resolveDynamicValues(
@@ -310,22 +307,23 @@ constructor(
   }
 
   inner class R4PlanDefinitionProcessor
-  constructor(
-    //repository: ProxyRepository,
-    //evaluationSettings: EvaluationSettings,
-  ) //:
-//    PlanDefinitionProcessor(
-//      repository,
-//      evaluationSettings
-//    )
-{
-    fun resolveDynamicValue(
-      result: MutableList<IBase>?,
-      path: String?,
-      requestAction: IElement?,
-      resource: IBase?
-    ) {
-      // no need to add dynamic value in RequestGroup resource
-    }
-  }
+  /*inner class R4PlanDefinitionProcessor
+    constructor(
+      repository: ProxyRepository,
+      evaluationSettings: EvaluationSettings,
+    ) :
+      PlanDefinitionProcessor(
+        repository,
+        evaluationSettings
+      )
+  {
+      fun resolveDynamicValue(
+        result: MutableList<IBase>?,
+        path: String?,
+        requestAction: IElement?,
+        resource: IBase?
+      ) {
+        // no need to add dynamic value in RequestGroup resource
+      }
+    }*/
 }

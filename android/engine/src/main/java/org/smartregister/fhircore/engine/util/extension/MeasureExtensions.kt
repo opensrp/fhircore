@@ -31,11 +31,12 @@ import org.smartregister.fhircore.engine.configuration.report.measure.ReportConf
 // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
 
 enum class MeasurePopulationType(
-  private val code: String
+  private val code: String,
 ) {
   INITIALPOPULATION("initial-population"),
   NUMERATOR("numerator"),
-  DENOMINATOR("denominator");
+  DENOMINATOR("denominator"),
+  ;
 
   val system: String
     get() = "http://hl7.org/fhir/measure-population"
