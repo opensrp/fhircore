@@ -34,6 +34,7 @@ interface OAuthService {
   @POST("protocol/openid-connect/logout")
   suspend fun logout(
     @Field("client_id") clientId: String,
+    @Field("client_secret") clientSecret: String,
     @Field("refresh_token") refreshToken: String,
   ): Response<ResponseBody>
 }

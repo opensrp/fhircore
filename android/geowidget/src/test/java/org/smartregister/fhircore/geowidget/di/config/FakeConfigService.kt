@@ -30,6 +30,7 @@ class FakeConfigService @Inject constructor() : ConfigService {
       fhirServerBaseUrl = "https://fhir-server.com",
       oauthServerBaseUrl = "https://fhir-oauth-server.com/oauth",
       clientId = "client-id",
+      clientSecret = "client-secret",
       accountType = "account-type",
     )
   }

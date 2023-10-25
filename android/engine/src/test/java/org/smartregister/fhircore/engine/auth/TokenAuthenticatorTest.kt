@@ -303,7 +303,8 @@ class TokenAuthenticatorTest : RobolectricTest() {
     every { tokenAuthenticator.findAccount() } returns account
     every { accountManager.getPassword(account) } returns refreshToken
 
-    coEvery { oAuthService.logout(any(), any()) } returns
+    val refreshTokenSlot = slot<String>()
+    coEvery { oAuthService.logout(any(), any(), capture(refreshTokenSlot)) } returns
       Response.success(200, mockk<RealResponseBody>())
 
     every { accountManager.invalidateAuthToken(account.type, any()) } just runs
@@ -321,14 +322,14 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
     val httpException = HttpException(Response.success(null))
 
-    coEvery { oAuthService.logout(any(), any()) }.throws(httpException)
+    coEvery { oAuthService.logout(any(), any(), any()) }.throws(httpException)
 
     var result = tokenAuthenticator.logout()
     Assert.assertEquals(Result.failure<HttpException>(httpException), result)
 
     val unknownHostException = UnknownHostException()
 
-    coEvery { oAuthService.logout(any(), any()) }.throws(unknownHostException)
+    coEvery { oAuthService.logout(any(), any(), any()) }.throws(unknownHostException)
 
     result = tokenAuthenticator.logout()
     Assert.assertEquals(Result.failure<UnknownHostException>(unknownHostException), result)

@@ -146,6 +146,7 @@ constructor(
     mutableMapOf(
       GRANT_TYPE to grantType,
       CLIENT_ID to authConfiguration.clientId,
+      CLIENT_SECRET to authConfiguration.clientSecret,
       SCOPE to authConfiguration.scope,
     )
 
@@ -180,6 +181,7 @@ constructor(
         val responseBody =
           oAuthService.logout(
             clientId = authConfiguration.clientId,
+            clientSecret = authConfiguration.clientSecret,
             refreshToken = accountManager.getPassword(account),
           )
 
