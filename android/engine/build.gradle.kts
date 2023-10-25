@@ -140,7 +140,7 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.slf4j.nop)
-  implementation(libs.cqf.cql.engine)
+/*  implementation(libs.cqf.cql.engine)
   implementation(libs.cql.to.elm)
   implementation(libs.cqf.cql.evaluator) {
     exclude(group = "com.github.ben-manes.caffeine")
@@ -155,127 +155,140 @@ dependencies {
     exclude(group = "ca.uhn.hapi.fhir")
   }
 
-  api(libs.cqf.fhir.cr)
   api(libs.cqf.fhir.jackson)
-  api(libs.cqf.fhir.utility)
+  api(libs.cqf.fhir.utility)*/
+  // api(libs.cqf.fhir.jackson)
+ // api(libs.cqf.fhir.cr) {
+     // isTransitive = true
+   //   exclude(group = "xmlpull")
+     // exclude(group = "ca.uhn.hapi.fhir")
+  //}
+  // api(libs.hapi.fhir.structures) // { exclude(module = "junit") }
+   // const val fhirCoreR4 = "ca.uhn.hapi.fhir:org.hl7.fhir.r4:${Versions.hapiFhirCore}"
+   // const val fhirCoreR4b = "ca.uhn.hapi.fhir:org.hl7.fhir.r4b:${Versions.hapiFhirCore}"
+   // const val fhirCoreR5 = "ca.uhn.hapi.fhir:org.hl7.fhir.r5:${Versions.hapiFhirCore}"
+    api("ca.uhn.hapi.fhir:org.hl7.fhir.r4:6.0.22")
+    api("ca.uhn.hapi.fhir:org.hl7.fhir.r4b:6.0.22")
+    api("ca.uhn.hapi.fhir:org.hl7.fhir.r5:6.0.22")
+    api("com.fasterxml.jackson.core:jackson-core:2.15.2")
 
-  // Shared dependencies
-  api(libs.glide)
-  api(libs.knowledger)
-  api(libs.p2p.lib)
-  api(libs.jjwt)
-  api(libs.fhir.common.utils)
-  api(libs.lifecycle.livedata.ktx)
-  api(libs.lifecycle.viewmodel.ktx)
-  api(libs.ui)
-  api(libs.ui.tooling)
-  api(libs.runtime.livedata)
-  api(libs.navigation.fragment.ktx)
-  api(libs.navigation.ui.ktx)
-  api(libs.navigation.compose)
-  api(libs.navigation.testing)
-  api(libs.material.icons.extended)
-  api(libs.material.icons.core)
-  api(libs.material3)
-  api(libs.foundation)
-  api(libs.hilt.navigation.compose)
-  api(libs.lifecycle.viewmodel.compose)
-  api(libs.paging.compose)
-  api(libs.activity.compose)
-  api(libs.kotlinx.serialization.json)
-  api(libs.accompanist.flowlayout)
-  api(libs.accompanist.placeholder)
-  api(libs.work.runtime.ktx)
-  api(libs.prettytime)
-  api(libs.kotlinx.coroutines.core)
-  api(libs.kotlinx.coroutines.android)
-  api(libs.kotlin.reflect)
-  api(libs.stax.api)
-  api(libs.caffeine)
-  api(libs.gson)
-  api(libs.timber)
-  api(libs.retrofit)
-  api(libs.converter.gson)
-  api(libs.retrofit.mock)
-  api(libs.retrofit2.kotlinx.serialization.converter)
-  api(libs.okhttp)
-  api(libs.okhttp.logging.interceptor)
-  api(libs.commons.jexl3) { exclude(group = "commons-logging", module = "commons-logging") }
-  api(libs.easy.rules.jexl) {
-    exclude(group = "commons-logging", module = "commons-logging")
-    exclude(group = "org.apache.commons", module = "commons-jexl3")
-  }
-  api(libs.data.capture) {
-    isTransitive = true
-    exclude(group = "ca.uhn.hapi.fhir")
-    exclude(group = "com.google.android.fhir", module = "engine")
-  }
-  api(libs.workflow) {
-    isTransitive = true
-    exclude(group = "xerces")
-    exclude(group = "com.github.java-json-tools")
-    exclude(group = "org.codehaus.woodstox")
-    exclude(group = "ca.uhn.hapi.fhir")
-    exclude(group = "com.google.android.fhir", module = "common")
-    exclude(group = "com.google.android.fhir", module = "engine")
-    exclude(group = "com.github.ben-manes.caffeine")
-  }
-  api(libs.contrib.barcode) {
-    isTransitive = true
-    exclude(group = "org.smartregister", module = "data-capture")
-    exclude(group = "ca.uhn.hapi.fhir")
-    exclude(group = "com.google.android.fhir", module = "common")
-    exclude(group = "com.google.android.fhir", module = "engine")
-  }
-  api(libs.fhir.engine) {
-    isTransitive = true
-    exclude(group = "com.google.android.fhir", module = "common")
-    exclude(group = "com.github.ben-manes.caffeine")
-    exclude(group = "org.opencds.cqf.cql:engine.fhir")
-    exclude(group = "info.cqframework:engine")
-  }
+    // Shared dependencies
+ api(libs.glide)
+ api(libs.knowledge)
+ api(libs.p2p.lib)
+ api(libs.jjwt)
+ api(libs.fhir.common.utils)
+ api(libs.lifecycle.livedata.ktx)
+ api(libs.lifecycle.viewmodel.ktx)
+ api(libs.ui)
+ api(libs.ui.tooling)
+ api(libs.runtime.livedata)
+ api(libs.navigation.fragment.ktx)
+ api(libs.navigation.ui.ktx)
+ api(libs.navigation.compose)
+ api(libs.navigation.testing)
+ api(libs.material.icons.extended)
+ api(libs.material.icons.core)
+ api(libs.material3)
+ api(libs.foundation)
+ api(libs.hilt.navigation.compose)
+ api(libs.lifecycle.viewmodel.compose)
+ api(libs.paging.compose)
+ api(libs.activity.compose)
+ api(libs.kotlinx.serialization.json)
+ api(libs.accompanist.flowlayout)
+ api(libs.accompanist.placeholder)
+ api(libs.work.runtime.ktx)
+ api(libs.prettytime)
+ api(libs.kotlinx.coroutines.core)
+ api(libs.kotlinx.coroutines.android)
+ api(libs.kotlin.reflect)
+ api(libs.stax.api)
+ api(libs.caffeine)
+ api(libs.gson)
+ api(libs.timber)
+ api(libs.retrofit)
+ api(libs.converter.gson)
+ api(libs.retrofit.mock)
+ api(libs.retrofit2.kotlinx.serialization.converter)
+ api(libs.okhttp)
+ api(libs.okhttp.logging.interceptor)
+ api(libs.commons.jexl3) { exclude(group = "commons-logging", module = "commons-logging") }
+ api(libs.easy.rules.jexl) {
+   exclude(group = "commons-logging", module = "commons-logging")
+   exclude(group = "org.apache.commons", module = "commons-jexl3")
+ }
+ api(libs.data.capture) {
+   isTransitive = true
+   exclude(group = "ca.uhn.hapi.fhir")
+   exclude(group = "com.google.android.fhir", module = "engine")
+ }
+ api(libs.workflow) {
+   isTransitive = true
+   exclude(group = "xerces")
+   exclude(group = "com.github.java-json-tools")
+   exclude(group = "org.codehaus.woodstox")
+   // exclude(group = "ca.uhn.hapi.fhir")
+   exclude(group = "com.google.android.fhir", module = "common")
+   exclude(group = "com.google.android.fhir", module = "engine")
+   exclude(group = "com.github.ben-manes.caffeine")
+ }
+ api(libs.contrib.barcode) {
+   isTransitive = true
+   exclude(group = "org.smartregister", module = "data-capture")
+   exclude(group = "ca.uhn.hapi.fhir")
+   exclude(group = "com.google.android.fhir", module = "common")
+   exclude(group = "com.google.android.fhir", module = "engine")
+ }
+ api(libs.fhir.engine) {
+   isTransitive = true
+   exclude(group = "com.google.android.fhir", module = "common")
+   exclude(group = "com.github.ben-manes.caffeine")
+  // exclude(group = "org.opencds.cqf.cql:engine.fhir")
+  // exclude(group = "info.cqframework:engine")
+ }
 
-  // Annotation processors
-  kapt(libs.hilt.compiler)
-  kapt(libs.dagger.hilt.compiler)
+ // Annotation processors
+ kapt(libs.hilt.compiler)
+ kapt(libs.dagger.hilt.compiler)
 
-  // Annotation processors for test
-  kaptTest(libs.hilt.android.compiler)
-  kaptAndroidTest(libs.hilt.android.compiler)
+ // Annotation processors for test
+ kaptTest(libs.hilt.android.compiler)
+ kaptAndroidTest(libs.hilt.android.compiler)
 
-  testRuntimeOnly(libs.junit.jupiter.engine)
-  testRuntimeOnly(libs.junit.vintage.engine)
+ testRuntimeOnly(libs.junit.jupiter.engine)
+ testRuntimeOnly(libs.junit.vintage.engine)
 
-  // Test dependencies
-  testImplementation(libs.work.runtime.ktx)
-  testImplementation(libs.hilt.android.testing)
-  testImplementation(libs.junit.jupiter.api)
-  testImplementation(libs.robolectric)
-  testImplementation(libs.junit)
-  testImplementation(libs.junit.ktx)
-  testImplementation(libs.kotlinx.coroutines.test)
-  testImplementation(libs.core.testing)
-  testImplementation(libs.mockk)
-  testImplementation(libs.kotlinx.coroutines.test)
-  testImplementation(libs.json)
-  testImplementation(libs.kotlinx.coroutines.debug)
-  testImplementation(libs.navigation.testing)
-  testImplementation(libs.work.testing)
+ // Test dependencies
+ testImplementation(libs.work.runtime.ktx)
+ testImplementation(libs.hilt.android.testing)
+ testImplementation(libs.junit.jupiter.api)
+ testImplementation(libs.robolectric)
+ testImplementation(libs.junit)
+ testImplementation(libs.junit.ktx)
+ testImplementation(libs.kotlinx.coroutines.test)
+ testImplementation(libs.core.testing)
+ testImplementation(libs.mockk)
+ testImplementation(libs.kotlinx.coroutines.test)
+ testImplementation(libs.json)
+ testImplementation(libs.kotlinx.coroutines.debug)
+ testImplementation(libs.navigation.testing)
+ testImplementation(libs.work.testing)
 
-  // To run only on debug builds
-  debugImplementation(libs.ui.test.manifest)
-  debugImplementation(libs.fragment.testing)
+ // To run only on debug builds
+ debugImplementation(libs.ui.test.manifest)
+ debugImplementation(libs.fragment.testing)
 
-  // Android test dependencies
-  androidTestImplementation(libs.junit)
-  androidTestImplementation(libs.junit.ktx)
-  androidTestImplementation(libs.runner)
-  androidTestImplementation(libs.ui.test.junit4)
-  androidTestImplementation(libs.hilt.android.testing)
-  androidTestImplementation(libs.benchmark.junit)
+ // Android test dependencies
+ androidTestImplementation(libs.junit)
+ androidTestImplementation(libs.junit.ktx)
+ androidTestImplementation(libs.runner)
+ androidTestImplementation(libs.ui.test.junit4)
+ androidTestImplementation(libs.hilt.android.testing)
+ androidTestImplementation(libs.benchmark.junit)
 
-  ktlint(libs.ktlint.main) {
-    attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
-  }
-  ktlint(project(":linting"))
+ ktlint(libs.ktlint.main) {
+   attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
+ }
+ ktlint(project(":linting"))
 }
