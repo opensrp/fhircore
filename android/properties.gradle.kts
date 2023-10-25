@@ -24,7 +24,6 @@ val requiredFhirProperties =
     "FHIR_BASE_URL",
     "OAUTH_BASE_URL",
     "OAUTH_CLIENT_ID",
-    "OAUTH_CLIENT_SECRET",
     "OAUTH_SCOPE",
     "MAPBOX_SDK_TOKEN",
     "SENTRY_DSN"

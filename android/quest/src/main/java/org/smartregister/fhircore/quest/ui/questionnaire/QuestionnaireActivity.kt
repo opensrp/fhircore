@@ -28,7 +28,6 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import com.google.android.fhir.datacapture.extensions.flattened
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.Serializable
@@ -43,9 +42,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.util.callSuspendFunctionOnField
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
-import org.smartregister.fhircore.engine.util.extension.initialExpression
 import org.smartregister.fhircore.engine.util.extension.parcelable
 import org.smartregister.fhircore.engine.util.extension.parcelableArrayList
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -284,36 +281,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private fun retrieveQuestionnaireResponse(): QuestionnaireResponse? =
     (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment?)
       ?.getQuestionnaireResponse()
-
-  // TODO This maybe required or Not. To be called before Questionnaire is launched
-  suspend fun setInitialExpression(questionnaire: Questionnaire, fragment: QuestionnaireFragment) {
-    // TODO Remove once SDK PR https://github.com/google/android-fhir/pull/2045 is merged
-    questionnaire.item.flattened().forEach { item ->
-      item.initialExpression
-        ?.takeIf { it.language == "application/x-fhir-query" }
-        ?.let { expression ->
-          val answerOptions: List<Questionnaire.QuestionnaireItemAnswerOptionComponent> =
-            QuestionnaireFragment::class.callSuspendFunctionOnField(
-              fragment,
-              "viewModel",
-              "loadAnswerExpressionOptions",
-              item,
-              expression,
-            ) as List<Questionnaire.QuestionnaireItemAnswerOptionComponent>
-          answerOptions
-        }
-        ?.let {
-          it.let {
-            item.initial =
-              it.map {
-                Questionnaire.QuestionnaireItemInitialComponent().apply {
-                  value = it.castToType(it.value)
-                }
-              }
-          }
-        }
-    }
-  }
 
   companion object {
 

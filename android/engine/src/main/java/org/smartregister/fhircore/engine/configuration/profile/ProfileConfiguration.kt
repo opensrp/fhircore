@@ -50,5 +50,5 @@ data class ProfileConfiguration(
       ActiveResourceFilterConfig(resourceType = ResourceType.Group, active = true),
     ),
   val configRules: List<RuleConfig>? = null,
-  val contentBackgroundColor: String? = "#FFFFFF",
+  val contentBackgroundColor: String? = "#F2F4F7",
 ) : Configuration()

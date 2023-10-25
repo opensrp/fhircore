@@ -212,6 +212,8 @@ class UserSettingViewModelTest : RobolectricTest() {
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
     verify { sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, "es") }
+
+    Assert.assertTrue(configurationRegistry.configCacheMap.isEmpty())
   }
 
   @Test
