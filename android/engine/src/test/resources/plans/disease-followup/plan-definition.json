@@ -153,6 +153,47 @@
     },
     {
       "resourceType": "ActivityDefinition",
+      "id": "careplan-measles-client-history-mr-proposal-activity",
+      "title": "Client History Assessment",
+      "status": "active",
+      "description": "This is the client history assessment.",
+      "kind": "MedicationRequest",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "33879002",
+            "display": "Administration of vaccine to produce active immunity (procedure)"
+          }
+        ]
+      },
+      "productCodeableConcept": {
+        "coding": [
+          {
+            "code": "440075005",
+            "system": "http://snomed.info/sct",
+            "display": "Live measles + rubella vaccine injection dose form (product)"
+          }
+        ],
+        "text": "Measles vaccines"
+      },
+      "dosage": [
+        {
+          "sequence": 1,
+          "timing": {
+            "repeat": {
+              "count": 1,
+              "duration": 280,
+              "durationUnit": "d",
+              "period": 9,
+              "periodUnit": "mo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "ActivityDefinition",
       "id": "careplan-measles-contraindication-activity",
       "title": "Contraindication Assessment",
       "status": "active",
@@ -316,6 +357,29 @@
       },
       "definitionCanonical": "#careplan-measles-client-history-activity",
       "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/bdf23f3b-232e-4027-865e-1eec690575bc"
+    },
+    {
+      "prefix": "1",
+      "priority": "routine",
+      "condition": [
+        {
+          "kind": "applicability",
+          "expression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/d9a6dbf5-3529-4a3c-9b38-92ffb4e7bd89').exists()"
+          }
+        }
+      ],
+      "type": {
+        "coding": [
+          {
+            "code": "clinical-protocol",
+            "display": "Clinical Protocol"
+          }
+        ]
+      },
+      "definitionCanonical": "#careplan-measles-client-history-mr-proposal-activity",
+      "transform": "https://fhir.labs.smartregister.org/fhir/StructureMap/77288d60-eaeb-49e7-b6b7-97ad2d308c7f"
     },
     {
       "prefix": "1",
