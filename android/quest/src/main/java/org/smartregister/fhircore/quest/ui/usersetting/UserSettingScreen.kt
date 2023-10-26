@@ -318,7 +318,6 @@ fun UserSettingScreen(
           "content description",
           modifier =
             modifier.padding(top = 8.dp).requiredHeight(32.dp).align(Alignment.CenterHorizontally),
-          contentScale = ContentScale.Fit,
         )
 
         Text(
