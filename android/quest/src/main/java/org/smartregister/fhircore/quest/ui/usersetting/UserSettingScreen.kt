@@ -314,7 +314,7 @@ fun UserSettingScreen(
         Spacer(modifier = Modifier.weight(1f))
 
         Image(
-          painterResource(R.drawable.logo_fhir_core),
+          painterResource(R.drawable.ic_opensrplogo),
           "content description",
           modifier =
             modifier.padding(top = 8.dp).requiredHeight(32.dp).align(Alignment.CenterHorizontally),
