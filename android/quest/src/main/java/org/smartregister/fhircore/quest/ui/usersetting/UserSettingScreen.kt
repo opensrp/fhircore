@@ -302,9 +302,10 @@ fun UserSettingScreen(
         Spacer(modifier = Modifier.weight(1f))
 
         Image(
-          painterResource(R.drawable.logo_fhir_core),
+          painterResource(R.drawable.ic_opensrplogo),
           "content description",
-          modifier = modifier.requiredHeight(40.dp).align(Alignment.CenterHorizontally),
+          modifier =
+            modifier.padding(top = 8.dp).requiredHeight(40.dp).align(Alignment.CenterHorizontally),
           contentScale = ContentScale.Fit,
         )
 
@@ -312,7 +313,7 @@ fun UserSettingScreen(
           color = contentColor,
           fontSize = 16.sp,
           text = stringResource(id = R.string.app_version, versionCode, versionName),
-          modifier = modifier.padding(top = 12.dp).align(Alignment.CenterHorizontally),
+          modifier = modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally),
         )
 
         Text(
