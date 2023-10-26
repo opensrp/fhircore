@@ -17,11 +17,12 @@
 package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
@@ -29,12 +30,12 @@ import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -94,23 +95,42 @@ fun ActionableButton(
             if (backgroundColor != Color.Unspecified) {
               backgroundColor
             } else {
-              statusColor.copy(alpha = 0.1f)
+              statusColor.copy(alpha = 0.08f)
             },
           contentColor = statusColor,
-          disabledBackgroundColor = DefaultColor.copy(alpha = 0.1f),
+          disabledBackgroundColor = DefaultColor.copy(alpha = 0.08f),
           disabledContentColor = DefaultColor,
         ),
       modifier =
         modifier
-          .conditional(buttonProperties.fillMaxWidth, { fillMaxWidth() }, { wrapContentWidth() })
-          .padding(horizontal = 12.dp, vertical = 4.dp)
-          .wrapContentHeight()
+          .conditional(
+            buttonProperties.fillMaxWidth,
+            { fillMaxWidth() },
+            { wrapContentWidth() },
+          )
+          .conditional(
+            buttonProperties.buttonType == ButtonType.TINY,
+            { defaultMinSize(minWidth = ButtonDefaults.MinWidth, minHeight = 10.dp) },
+            {
+              defaultMinSize(
+                minWidth = ButtonDefaults.MinWidth,
+                minHeight = ButtonDefaults.MinHeight,
+              )
+            },
+          )
           .testTag(ACTIONABLE_BUTTON_TEST_TAG),
       enabled = buttonProperties.enabled.toBoolean(),
-      border = BorderStroke(width = 0.5.dp, color = statusColor.copy(alpha = 0.1f)),
+      border = BorderStroke(width = 0.8.dp, color = statusColor.copy(alpha = 0.1f)),
       elevation = null,
+      contentPadding =
+        if (buttonProperties.buttonType == ButtonType.TINY) {
+          PaddingValues(vertical = 2.4.dp, horizontal = 4.dp)
+        } else {
+          PaddingValues(vertical = 4.8.dp, horizontal = 8.dp)
+        },
     ) {
-      // Each component here uses a new modifier to avoid inheriting the properties of the parent
+      // Each component here uses a new modifier to avoid inheriting the properties of the
+      // parent
       val iconTintColor =
         if (isButtonEnabled) {
           when (status) {
@@ -128,7 +148,9 @@ fun ActionableButton(
       } else {
         Icon(
           imageVector =
-            if (status == ServiceStatus.COMPLETED.name) Icons.Filled.Check else Icons.Filled.Add,
+            if (status == ServiceStatus.COMPLETED.name) {
+              Icons.Filled.Check
+            } else Icons.Filled.Add,
           contentDescription = null,
           tint = iconTintColor,
           modifier = Modifier.size(16.dp),
@@ -149,19 +171,10 @@ fun ActionableButton(
         textAlign = TextAlign.Start,
         overflow = TextOverflow.Ellipsis,
         maxLines = 1,
-        modifier =
-          Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
-            .conditional(status == ServiceStatus.COMPLETED.name, { weight(1f) }),
+        modifier = Modifier.padding(2.dp),
         fontSize = buttonProperties.fontSize.sp,
+        style = TextStyle(letterSpacing = buttonProperties.letterSpacing.sp),
       )
-      if (status == ServiceStatus.COMPLETED.name) {
-        Icon(
-          imageVector = Icons.Filled.ArrowDropDown,
-          contentDescription = null,
-          tint = DefaultColor,
-          modifier = Modifier.size(18.dp),
-        )
-      }
     }
   }
 }
@@ -174,6 +187,21 @@ fun ActionableButtonPreview() {
       ButtonProperties(
         visible = "true",
         status = ServiceStatus.IN_PROGRESS.name,
+        text = "ANC Visit",
+      ),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+    navController = rememberNavController(),
+  )
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun ActionableButtonTinyButtonPreview() {
+  ActionableButton(
+    buttonProperties =
+      ButtonProperties(
+        visible = "true",
+        status = ServiceStatus.COMPLETED.name,
         text = "ANC Visit",
         buttonType = ButtonType.TINY,
       ),
@@ -194,7 +222,7 @@ fun DisabledActionableButtonPreview() {
           text = "Issue household bed-nets",
           contentColor = "#700f2b",
           enabled = "true",
-          buttonType = ButtonType.BIG,
+          buttonType = ButtonType.MEDIUM,
           startIcon = ImageConfig(reference = "ic_walk", type = ICON_TYPE_LOCAL),
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
@@ -214,7 +242,7 @@ fun SmallActionableButtonPreview() {
           status = "DUE",
           text = "Due Task",
           fillMaxWidth = true,
-          buttonType = ButtonType.TINY,
+          buttonType = ButtonType.MEDIUM,
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
