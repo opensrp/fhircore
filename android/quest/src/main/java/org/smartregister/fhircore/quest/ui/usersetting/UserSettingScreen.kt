@@ -83,6 +83,7 @@ import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -203,7 +204,7 @@ fun UserSettingScreen(
             Icon(
               painterResource(R.drawable.ic_language),
               stringResource(R.string.language),
-              tint = BlueTextColor,
+              tint = GreyTextColor,
               modifier = Modifier.size(26.dp),
             )
             Spacer(modifier = modifier.width(20.dp))
@@ -301,9 +302,10 @@ fun UserSettingScreen(
         Spacer(modifier = Modifier.weight(1f))
 
         Image(
-          painterResource(R.drawable.logo_fhir_core),
+          painterResource(R.drawable.ic_opensrplogo),
           "content description",
-          modifier = modifier.requiredHeight(40.dp).align(Alignment.CenterHorizontally),
+          modifier =
+            modifier.padding(top = 8.dp).requiredHeight(40.dp).align(Alignment.CenterHorizontally),
           contentScale = ContentScale.Fit,
         )
 
@@ -311,7 +313,7 @@ fun UserSettingScreen(
           color = contentColor,
           fontSize = 16.sp,
           text = stringResource(id = R.string.app_version, versionCode, versionName),
-          modifier = modifier.padding(top = 12.dp).align(Alignment.CenterHorizontally),
+          modifier = modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally),
         )
 
         Text(
@@ -339,7 +341,7 @@ fun UserSettingRow(
   clickListener: () -> Unit,
   modifier: Modifier = Modifier,
   canSwitchToScreen: Boolean = false,
-  iconTint: Color = BlueTextColor,
+  iconTint: Color = GreyTextColor,
   textColor: Color = LoginDarkColor,
   showProgressIndicator: Boolean = false,
 ) {
