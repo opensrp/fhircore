@@ -110,5 +110,6 @@
     <string name="loading_questionnaire">Loading questionnaire…</string>
     <string name="clear_all">Clear All</string>
     <string name="error_matching_sync_strategy">Error matching sync strategy</string>
+    <string name="unauthorised_user_permissions">Unauthorised user permissions</string>
 
 </resources>

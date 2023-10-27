@@ -312,6 +312,11 @@ fun LoginPage(
                   id = R.string.login_error,
                   stringResource(R.string.error_matching_sync_strategy),
                 )
+              LoginErrorState.UNAUTHORISED_PERMISSIONS ->
+                stringResource(
+                  id = R.string.login_error,
+                  stringResource(R.string.unauthorised_user_permissions),
+                ) // todo: improve message
             },
           modifier =
             modifier

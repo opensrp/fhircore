@@ -292,12 +292,18 @@ constructor(
         _showProgressBar.postValue(false)
         var errorState = LoginErrorState.ERROR_FETCHING_USER
 
-        if (it is HttpException) {
-          when (it.code()) {
-            401 -> errorState = LoginErrorState.INVALID_CREDENTIALS
+        when (it) {
+          is HttpException -> {
+            when (it.code()) {
+              401 -> errorState = LoginErrorState.INVALID_CREDENTIALS
+            }
           }
-        } else if (it is UnknownHostException) {
-          errorState = LoginErrorState.UNKNOWN_HOST
+          is UnknownHostException -> {
+            errorState = LoginErrorState.UNKNOWN_HOST
+          }
+          is IllegalAccessException -> {
+            errorState = LoginErrorState.UNAUTHORISED_PERMISSIONS
+          }
         }
 
         _loginErrorState.postValue(errorState)
