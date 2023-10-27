@@ -53,7 +53,7 @@ fun RegisterFooter(
   modifier: Modifier = Modifier,
 ) {
   if (resultCount > 0) {
-    Row(modifier = modifier.fillMaxWidth().testTag(SEARCH_FOOTER_TAG)) {
+    Row(modifier = modifier.fillMaxWidth().testTag(SEARCH_FOOTER_TAG).padding(bottom = 32.dp)) {
       Box(
         modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.Start),
       ) {
