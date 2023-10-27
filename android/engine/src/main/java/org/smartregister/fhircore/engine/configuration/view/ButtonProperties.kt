@@ -37,7 +37,7 @@ data class ButtonProperties(
   override val weight: Float = 0f,
   override val backgroundColor: String? = null,
   override val padding: Int = 0,
-  override val borderRadius: Int = 16,
+  override val borderRadius: Int = 14,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = true,
   override val fillMaxHeight: Boolean = false,
