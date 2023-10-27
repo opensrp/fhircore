@@ -68,13 +68,15 @@ fun List(
   val density = LocalDensity.current
   val currentListResourceData = resourceData.listResourceDataMap?.get(viewProperties.id)
   if (currentListResourceData.isNullOrEmpty()) {
-    Box(contentAlignment = Alignment.Center, modifier = modifier.wrapContentSize()) {
-      Text(
-        text = viewProperties.emptyList?.message ?: "",
-        modifier = modifier.padding(8.dp).align(Alignment.Center),
-        color = DefaultColor,
-        fontStyle = FontStyle.Italic,
-      )
+    if (!viewProperties.emptyList?.message.isNullOrEmpty()) {
+      Box(contentAlignment = Alignment.Center, modifier = modifier.wrapContentSize()) {
+        Text(
+          text = viewProperties.emptyList?.message!!,
+          modifier = modifier.padding(8.dp).align(Alignment.Center),
+          color = DefaultColor,
+          fontStyle = FontStyle.Italic,
+        )
+      }
     }
   } else {
     Box(
@@ -156,7 +158,7 @@ private fun ListWithHorizontalOrientationPreview() {
           id = "listId",
           padding = 8,
           borderRadius = 10,
-          emptyList = NoResultsConfig(message = "No care Plans"),
+          emptyList = NoResultsConfig(message = ""),
           resources =
             listOf(ListResource(id = "carePlanList", resourceType = ResourceType.CarePlan)),
           fillMaxHeight = true,

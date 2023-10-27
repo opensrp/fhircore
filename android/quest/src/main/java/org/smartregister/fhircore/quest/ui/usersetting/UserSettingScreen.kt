@@ -305,7 +305,10 @@ fun UserSettingScreen(
 
       Column(
         modifier =
-          modifier.background(color = colorResource(id = R.color.backgroundGray)).fillMaxWidth(),
+          modifier
+            .background(color = colorResource(id = R.color.backgroundGray))
+            .fillMaxWidth()
+            .padding(top = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         Spacer(modifier = Modifier.weight(1f))
@@ -334,10 +337,10 @@ fun UserSettingScreen(
         )
       }
 
-      val unsyncedResources = unsyncedResourcesFlow.collectAsState(initial = listOf()).value
+      val unSyncedResources = unsyncedResourcesFlow.collectAsState(initial = listOf()).value
 
-      if (!unsyncedResources.isNullOrEmpty()) {
-        UserSettingInsightScreen(unsyncedResources, dismissInsightsView)
+      if (unSyncedResources.isNotEmpty()) {
+        UserSettingInsightScreen(unSyncedResources, dismissInsightsView)
       }
     }
   }
