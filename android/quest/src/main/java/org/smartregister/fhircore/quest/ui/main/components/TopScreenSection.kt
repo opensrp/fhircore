@@ -85,7 +85,7 @@ fun TopScreenSection(
   ) {
     Row(
       modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
-      verticalAlignment = Alignment.CenterVertically
+      verticalAlignment = Alignment.CenterVertically,
     ) {
       Icon(
         when (toolBarHomeNavigation) {

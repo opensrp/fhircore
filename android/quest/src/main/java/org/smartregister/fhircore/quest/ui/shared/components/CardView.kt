@@ -90,7 +90,6 @@ fun CardView(
           .padding(
             start = viewProperties.padding.dp,
             end = viewProperties.padding.dp,
-            bottom = viewProperties.padding.dp,
           )
           .fillMaxWidth()
           .clip(RoundedCornerShape(viewProperties.cornerSize.dp)),
