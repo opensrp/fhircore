@@ -266,14 +266,6 @@ private fun BigServiceButton(
   Column(
     modifier =
       modifier
-        .clickable {
-          if (isButtonEnabled && (status == ServiceStatus.DUE.name || buttonClickable)) {
-            buttonProperties.actions.handleClickEvent(
-              navController = navController,
-              resourceData = resourceData,
-            )
-          }
-        }
         .width(140.dp)
         .height(80.dp)
         .padding(8.dp)
@@ -291,7 +283,15 @@ private fun BigServiceButton(
           } else {
             Color.Unspecified
           },
-        ),
+        )
+        .clickable {
+          if (isButtonEnabled && (status == ServiceStatus.DUE.name || buttonClickable)) {
+            buttonProperties.actions.handleClickEvent(
+              navController = navController,
+              resourceData = resourceData,
+            )
+          }
+        },
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
@@ -751,11 +751,11 @@ private fun ServiceCardANCServiceDuePreview() {
                 ),
               serviceMemberIcons = "CHILD",
               showVerticalDivider = false,
-              serviceButton =
-                ButtonProperties(
-                  status = ServiceStatus.DUE.name,
-                  text = "ANC Visit",
-                ),
+              serviceButton = null,
+              //                ButtonProperties(
+              //                  status = ServiceStatus.DUE.name,
+              //                  text = "ANC Visit",
+              //                ),
             ),
           ),
       ),

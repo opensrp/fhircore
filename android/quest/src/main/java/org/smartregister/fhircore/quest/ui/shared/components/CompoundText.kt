@@ -172,7 +172,7 @@ private fun CompoundTextPart(
         )
         .clip(RoundedCornerShape(borderRadius.dp))
         .background(backgroundColor.parseColor())
-        .padding(4.dp),
+        .padding(0.dp),
     fontSize = fontSize.sp,
     fontWeight = textFontWeight.fontWeight,
     textAlign =

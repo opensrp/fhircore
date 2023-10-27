@@ -129,7 +129,7 @@ fun ActionableButton(
         } else {
           PaddingValues(vertical = 4.8.dp, horizontal = 8.dp)
         },
-      shape = RoundedCornerShape(buttonProperties.borderRadius)
+      shape = RoundedCornerShape(buttonProperties.borderRadius),
     ) {
       // Each component here uses a new modifier to avoid inheriting the properties of the
       // parent
