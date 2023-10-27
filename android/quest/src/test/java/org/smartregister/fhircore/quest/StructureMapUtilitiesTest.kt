@@ -30,9 +30,8 @@ import java.io.InputStream
 import javax.inject.Inject
 import kotlin.reflect.KSuspendFunction1
 import kotlin.test.assertNotNull
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
@@ -509,7 +508,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   }
 
   @Test
-  fun generateMeaslesCarePlan() = runBlockingOnWorkerThread {
+  fun generateMeaslesCarePlan() = runTest {
     loadFile("content/general/who-eir/measles-immunizations/FHIRCommon.json", ::installToIgManager)
     loadFile("content/general/who-eir/measles-immunizations/FHIRHelpers.json", ::installToIgManager)
     loadFile("content/general/who-eir/measles-immunizations/IMMZCommon.json", ::installToIgManager)
@@ -641,7 +640,4 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     // TODO added only for temp purpose
     return Library()
   }
-
-  private fun <T> runBlockingOnWorkerThread(block: suspend (CoroutineScope) -> T) =
-    runBlocking(Dispatchers.IO) { block(this) }
 }

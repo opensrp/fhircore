@@ -16,6 +16,7 @@ converter-gson = "2.9.0"
 core-ktx = "1.10.1"
 core-ktx-test= "1.5.0"
 core-testing = "2.2.0"
+cqf-fhir-cr = "3.0.0-PRE9-SNAPSHOT"
 cql-engine = "3.2.0"
 cql-evaluator = "2.6.0"
 cql-evaluator-another = "2.4.0"
@@ -24,6 +25,7 @@ data-capture = "1.0.0-preview20-SNAPSHOT"
 desugar-jdk-libs = "2.0.3"
 easy-rules-jexl = "4.1.0"
 espresso-core = "3.5.1"
+hapi-fhir = "6.8.0"
 fhir-common-utils = "0.0.10-SNAPSHOT"
 fhir-engine = "0.1.0-beta04-preview5-SNAPSHOT"
 foundation = "1.3.1"
@@ -45,8 +47,8 @@ junit-jupiter-api = "5.8.2"
 junit-jupiter-engine = "5.8.2"
 junit-ktx = "1.1.5"
 junit-vintage-engine = "5.8.2"
-knowledger = "0.1.0-alpha02-preview-SNAPSHOT"
-kotlin = "1.8.10"
+knowledge = "0.1.0-alpha03"
+kotlin = "1.8.20"
 kotlinx-coroutines-android = "1.6.4"
 kotlinx-coroutines-core = "1.6.2"
 kotlinx-coroutines-debug = "1.6.4"
@@ -65,8 +67,8 @@ material = "1.9.0"
 material-icons-core = "1.5.0"
 material-icons-extended = "1.5.0"
 material3 = "1.1.1"
-mockk = "1.12.3"
-mockk-android = "1.12.3"
+mockk = "1.13.8"
+mockk-android = "1.13.8"
 msg-simple = "1.2"
 navigation-compose = "2.5.3"
 navigation-fragment-ktx = "2.5.3"
@@ -96,7 +98,7 @@ ui-test-manifest = "1.4.3"
 ui-tooling = "1.4.3"
 work-runtime-ktx = "2.8.1"
 work-testing = "2.8.1"
-workflow = "0.1.0-alpha03-preview3-SNAPSHOT"
+workflow = "0.1.0-alpha04"
 xercesImpl = "2.12.2"
 
 [libraries]
@@ -121,7 +123,7 @@ core-testing = { group = "androidx.arch.core", name = "core-testing", version.re
 cqf-cql-engine = { group = "info.cqframework", name = "cql", version.ref = "cql-engine" }
 cqf-fhir-utility = { module = "org.opencds.cqf.fhir:cqf-fhir-utility", version.ref = "cql-evaluator" }
 cqf-fhir-jackson = { module = "org.opencds.cqf.fhir:cqf-fhir-jackson", version.ref = "cql-evaluator" }
-cqf-fhir-cr = { module = "org.opencds.cqf.fhir:cqf-fhir-cr", version.ref = "cql-evaluator" }
+cqf-fhir-cr = { module = "org.opencds.cqf.fhir:cqf-fhir-cr", version.ref = "cqf-fhir-cr" }
 cql-to-elm = { group = "info.cqframework", name = "cql-to-elm", version.ref = "cql-engine" }
 cqf-cql-evaluator = { group = "org.opencds.cqf.cql", name = "evaluator", version.ref = "cql-evaluator" }
 cql-evaluator-builder = { group = "org.opencds.cqf.cql", name = "evaluator.builder", version.ref = "cql-evaluator" }
@@ -135,6 +137,7 @@ easy-rules-jexl = { group = "org.jeasy", name = "easy-rules-jexl", version.ref =
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
 fhir-common-utils = { group = "org.smartregister", name = "fhir-common-utils", version.ref = "fhir-common-utils" }
 fhir-engine = { group = "org.smartregister", name = "engine", version.ref = "fhir-engine" }
+hapi-fhir-structures = { group = "ca.uhn.hapi.fhir", name = "hapi-fhir-structures-r4", version.ref = "hapi-fhir" }
 foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragment-ktx" }
 fragment-testing = { group = "androidx.fragment", name = "fragment-testing", version.ref = "fragment-testing" }
@@ -153,7 +156,7 @@ junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", v
 junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit-jupiter-engine" }
 junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junit-ktx" }
 junit-vintage-engine = { group = "org.junit.vintage", name = "junit-vintage-engine", version.ref = "junit-vintage-engine" }
-knowledger = { module = "org.smartregister:knowledge", version.ref = "knowledger" }
+knowledge = { group = "com.google.android.fhir", name = "knowledge", version.ref = "knowledge" }
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines-android" }
@@ -205,7 +208,7 @@ ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", v
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "ui-tooling" }
 work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work-runtime-ktx" }
 work-testing = { group = "androidx.work", name = "work-testing", version.ref = "work-testing" }
-workflow = { group = "org.smartregister", name = "workflow", version.ref = "workflow" }
+workflow = { group = "com.google.android.fhir", name = "workflow", version.ref = "workflow" }
 xercesImpl = { group = "xerces", name = "xercesImpl", version.ref = "xercesImpl" }
 
 [plugins]
