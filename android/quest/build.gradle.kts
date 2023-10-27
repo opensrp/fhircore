@@ -56,8 +56,8 @@ android {
     applicationId = "org.smartregister.opensrp"
     minSdk = 26
     targetSdk = 34
-    versionCode = 4
-    versionName = "1.0.0"
+    versionCode = 7
+    versionName = "1.0.1"
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
@@ -65,11 +65,6 @@ android {
     buildConfigField("String", "OAUTH_BASE_URL", """"${project.extra["OAUTH_BASE_URL"]}"""")
     buildConfigField("String", "OAUTH_CLIENT_ID", """"${project.extra["OAUTH_CLIENT_ID"]}"""")
     buildConfigField("String", "OAUTH_SCOPE", """"${project.extra["OAUTH_SCOPE"]}"""")
-    buildConfigField(
-      "String",
-      "OAUTH_CLIENT_SECRET",
-      """"${project.extra["OAUTH_CLIENT_SECRET"]}"""",
-    )
     buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """"100"""")
     buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
 
