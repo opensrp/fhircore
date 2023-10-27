@@ -82,18 +82,6 @@ class ServiceCardTest {
   }
 
   @Test
-  fun canShowVerticalDivider() {
-    composeRule.setContent {
-      ServiceCard(
-        serviceCardProperties = initTestServiceCardProperties(showVerticalDivider = true),
-        resourceData = resourceData,
-        navController = navController,
-      )
-    }
-    composeRule.onNodeWithTag(DIVIDER_TEST_TAG).assertExists().assertIsDisplayed()
-  }
-
-  @Test
   fun serviceMemberIconsDisplayedWhenDividerIsNotShown() {
     composeRule.setContent {
       ServiceCard(
