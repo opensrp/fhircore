@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedButton
@@ -128,6 +129,7 @@ fun ActionableButton(
         } else {
           PaddingValues(vertical = 4.8.dp, horizontal = 8.dp)
         },
+      shape = RoundedCornerShape(buttonProperties.borderRadius)
     ) {
       // Each component here uses a new modifier to avoid inheriting the properties of the
       // parent
@@ -158,7 +160,7 @@ fun ActionableButton(
       }
       Text(
         text = buttonProperties.text ?: "",
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.W400,
         color =
           if (isButtonEnabled) {
             when (status) {
