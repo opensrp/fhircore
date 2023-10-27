@@ -206,7 +206,8 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         }
       }
     }
-    return questionnaireFragmentBuilder
+    //return questionnaireFragmentBuilder
+    return questionnaireFragmentBuilder.showAsterisk(true).showRequiredText(false)
   }
 
   private fun Resource.json(): String = this.encodeResourceToString()
