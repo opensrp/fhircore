@@ -118,8 +118,7 @@ suspend inline fun retrievePreviouslyGeneratedMeasureReports(
   fhirEngine: FhirEngine,
   startDateFormatted: String,
   endDateFormatted: String,
-  measureUrl: String,
-  subjects: List<String>,
+  measureUrl: String
 ): List<MeasureReport> {
   val search = Search(ResourceType.MeasureReport)
   search.filter(
@@ -135,8 +134,6 @@ suspend inline fun retrievePreviouslyGeneratedMeasureReports(
     operation = Operation.AND
   )
   search.filter(MeasureReport.MEASURE, { value = measureUrl })
-  subjects.forEach { search.filter(MeasureReport.SUBJECT, { value = it }) }
-
   return fhirEngine.search(search)
 }
 
@@ -158,8 +155,10 @@ suspend inline fun fetchReportSubjects(
   } else emptyList()
 }
 
-fun MeasureReport.belongToSubject(subject: Reference?) =
-  with(IdType(this.subject?.reference) to IdType(subject?.reference)) {
+fun MeasureReport.belongToSubject(subject: Reference?) = belongToSubject(subject?.reference)
+
+fun MeasureReport.belongToSubject(subject: String?) =
+  with(IdType(this.subject?.reference) to IdType(subject)) {
     this.first.resourceType == this.second.resourceType && this.first.idPart == this.second.idPart
   }
 
@@ -188,7 +187,14 @@ fun MeasureReport.addParams(params: Map<String, String>) {
     ?: this.contained.add(Parameters().apply { addAll(params) })
 }
 
-fun MeasureReport.isSameAs(other: MeasureReport, params: Map<String, String>) =
-    this.measure == other.measure &&
-            this.belongToSubject(other.subject) &&
-            this.hasParams(params)
+fun MeasureReport.isSameAs(other: MeasureReport) =
+  this.measure == other.measure &&
+    this.belongToSubject(other.subject) &&
+    this.hasParams(other.extractParameters())
+
+fun MeasureReport.extractParameters() =
+  this.contained
+    .filterIsInstance<Parameters>()
+    .flatMap { it.parameter }
+    .map { it.name to it.value.valueToString() }
+    .toMap()

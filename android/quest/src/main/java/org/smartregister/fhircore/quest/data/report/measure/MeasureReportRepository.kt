@@ -25,7 +25,6 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.MeasureReport
-import org.hl7.fhir.r4.model.Parameters
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
@@ -37,8 +36,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.addParams
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.belongToSubject
-import org.smartregister.fhircore.engine.util.extension.hasParams
 import org.smartregister.fhircore.engine.util.extension.isSameAs
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
@@ -121,19 +118,13 @@ constructor(
       }
 
       measureReport.forEach { report ->
+        // add parameters sent to library runner in contained as Parameters to track the exact/all
+        // filters passed
+        report.addParams(params)
+
         // if report exists override instead of creating a new one; existing report should satisfy
         // all filters
-        val replaceable = existing.find { report.isSameAs(it, params) }
-
-        if (replaceable != null) {
-          report.id = replaceable.id
-          // copy contained Parameters only to current new report
-          replaceable.contained.singleOrNull { it is Parameters }?.let { report.contained.add(it) }
-        } else {
-          // add parameters sent to library runner in contained as Parameters to track the exact/all
-          // filters passed
-          report.addParams(params)
-        }
+        existing.find { report.isSameAs(it) }?.let { report.id = it.id }
 
         addOrUpdate(resource = report)
       }

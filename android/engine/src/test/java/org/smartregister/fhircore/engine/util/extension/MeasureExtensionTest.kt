@@ -27,6 +27,7 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert.assertEquals
@@ -35,6 +36,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.domain.model.RoundingStrategy
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -300,8 +302,7 @@ class MeasureExtensionTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           "2022-02-02",
           "2022-04-04",
-          "http://nourl.com",
-          emptyList()
+          "http://nourl.com"
         )
       assertTrue(result.isNullOrEmpty())
     }
@@ -335,7 +336,7 @@ class MeasureExtensionTest : RobolectricTest() {
   @Test
   fun `belongToSubject should return false for subject with null param`() {
     val report = MeasureReport().apply { subject = Reference().apply { reference = "Patient/123" } }
-    assertFalse(report.belongToSubject(null))
+    assertFalse(report.belongToSubject(null as Reference?))
   }
 
   @Test
@@ -373,5 +374,179 @@ class MeasureExtensionTest : RobolectricTest() {
   fun `hasParams should return false for different report params list size`() {
     val report = MeasureReport().apply { addParams(mapOf("test" to "123")) }
     assertFalse(report.hasParams(mapOf("test" to "123", "check" to "111")))
+  }
+
+  @Test
+  fun `addParams should return add Parameters resource`() {
+    val report = MeasureReport()
+    report.addParams(mapOf("test" to "123", "check" to "111"))
+    assertInstanceOf(Parameters::class.java, report.contained.first())
+
+    val param1 = (report.contained.single() as Parameters).parameter.elementAt(0)
+    assertEquals(param1.let { it.name to it.value.valueToString() }, Pair("test", "123"))
+
+    val param2 = (report.contained.single() as Parameters).parameter.elementAt(1)
+    assertEquals(param2.let { it.name to it.value.valueToString() }, Pair("check", "111"))
+  }
+
+  @Test
+  fun `addParams should return update Parameters resource`() {
+    val report = MeasureReport().apply { addParams(mapOf("test" to "123", "check" to "111")) }
+
+    report.addParams(mapOf("test" to "123", "another" to "333"))
+
+    assertEquals(1, report.contained.size)
+    assertEquals(3, (report.contained.first() as Parameters).parameter.size)
+
+    val param1 = (report.contained.single() as Parameters).parameter.elementAt(0)
+    assertEquals(param1.let { it.name to it.value.valueToString() }, Pair("test", "123"))
+
+    val param2 = (report.contained.single() as Parameters).parameter.elementAt(1)
+    assertEquals(param2.let { it.name to it.value.valueToString() }, Pair("check", "111"))
+
+    val param3 = (report.contained.single() as Parameters).parameter.elementAt(2)
+    assertEquals(param3.let { it.name to it.value.valueToString() }, Pair("another", "333"))
+  }
+
+  @Test
+  fun `extractParameters should return return all params map`() {
+    val report =
+      MeasureReport().apply {
+        addParams(mapOf("test1" to "111", "test2" to "222"))
+        addParams(mapOf("test3" to "333", "test4" to "444"))
+      }
+    assertEquals(
+      mapOf("test1" to "111", "test2" to "222", "test3" to "333", "test4" to "444"),
+      report.extractParameters()
+    )
+  }
+
+  @Test
+  fun `isSameAs should return return true for same reports`() {
+    val report1 =
+      MeasureReport().apply {
+        subject = Reference().apply { reference = "Patient/123" }
+        measure = "Measure/000"
+        addParams(mapOf("test1" to "111", "test2" to "222"))
+      }
+
+    val report2 =
+      MeasureReport().apply {
+        subject = Reference().apply { reference = "Patient/123/_history/2" }
+        measure = "Measure/000"
+        addParams(mapOf("test2" to "222", "test1" to "111"))
+      }
+
+    assertTrue(report1.isSameAs(report2))
+  }
+
+  @Test
+  fun `isSameAs should return return true for same reports with no subject`() {
+    val report1 =
+      MeasureReport().apply {
+        measure = "Measure/000"
+        addParams(mapOf("test1" to "111", "test2" to "222"))
+      }
+
+    val report2 =
+      MeasureReport().apply {
+        measure = "Measure/000"
+        addParams(mapOf("test2" to "222", "test1" to "111"))
+      }
+
+    assertTrue(report1.isSameAs(report2))
+  }
+
+  @Test
+  fun `isSameAs should return return true for same reports with no params`() {
+    val report1 =
+      MeasureReport().apply {
+        subject = Reference().apply { reference = "Patient/123" }
+        measure = "Measure/000"
+      }
+
+    val report2 =
+      MeasureReport().apply {
+        subject = Reference().apply { reference = "Patient/123" }
+        measure = "Measure/000"
+      }
+
+    assertTrue(report1.isSameAs(report2))
+  }
+
+  @Test
+  fun `isSameAs should return return false for reports with different subject`() {
+    val report1 =
+      MeasureReport().apply {
+        subject = Reference().apply { reference = "Patient/123" }
+        measure = "Measure/000"
+        addParams(mapOf("test1" to "111", "test2" to "222"))
+      }
+
+    val report2 =
+      MeasureReport().apply {
+        subject = Reference().apply { reference = "Patient/345" }
+        measure = "Measure/000"
+        addParams(mapOf("test2" to "222", "test1" to "111"))
+      }
+
+    assertFalse(report1.isSameAs(report2))
+  }
+
+  @Test
+  fun `isSameAs should return return false for reports with different measure`() {
+    val report1 =
+      MeasureReport().apply {
+        subject = Reference().apply { reference = "Patient/123" }
+        measure = "Measure/000"
+        addParams(mapOf("test1" to "111", "test2" to "222"))
+      }
+
+    val report2 =
+      MeasureReport().apply {
+        subject = Reference().apply { reference = "Patient/123" }
+        measure = "Measure/001"
+        addParams(mapOf("test2" to "222", "test1" to "111"))
+      }
+
+    assertFalse(report1.isSameAs(report2))
+  }
+
+  @Test
+  fun `isSameAs should return return false for reports with different params`() {
+    val report1 =
+      MeasureReport().apply {
+        subject = Reference().apply { reference = "Patient/123" }
+        measure = "Measure/000"
+        addParams(mapOf("test1" to "111", "test2" to "222"))
+      }
+
+    val report2 =
+      MeasureReport().apply {
+        subject = Reference().apply { reference = "Patient/123" }
+        measure = "Measure/000"
+        addParams(mapOf("test2" to "222", "test1" to "000"))
+      }
+
+    assertFalse(report1.isSameAs(report2))
+  }
+
+  @Test
+  fun `isSameAs should return return false for reports with one missing params`() {
+    val report1 =
+      MeasureReport().apply {
+        subject = Reference().apply { reference = "Patient/123" }
+        measure = "Measure/000"
+      }
+
+    val report2 =
+      MeasureReport().apply {
+        subject = Reference().apply { reference = "Patient/123" }
+        measure = "Measure/000"
+        addParams(mapOf("test2" to "222", "test1" to "000"))
+      }
+
+    assertFalse(report1.isSameAs(report2))
+    assertFalse(report2.isSameAs(report1))
   }
 }

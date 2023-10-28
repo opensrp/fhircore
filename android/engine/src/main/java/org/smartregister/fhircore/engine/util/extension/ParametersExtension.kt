@@ -28,4 +28,7 @@ fun Parameters.addResourceParameter(name: String, resource: Resource) =
   )
 
 fun Parameters.addAll(params: Map<String, String>) =
-  params.forEach { this.addParameter(it.key, it.value) }
+  params.forEach {
+    if (this.hasParameter(it.key)) this.setParameter(it.key, it.value)
+    else this.addParameter(it.key, it.value)
+  }
