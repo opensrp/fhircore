@@ -108,8 +108,7 @@ class R4MeasureProcessorExt(
           "a terminologyProvider was not provided and one could not be constructed"
         )
     val dataProvider =
-      (if (
-        dataEndpoint != null ||
+      (if (dataEndpoint != null ||
           additionalData?.entry?.all { it.resource is Parameters }?.not() == true
       ) {
         callSuperPrivateMember(
@@ -130,13 +129,10 @@ class R4MeasureProcessorExt(
     }
 
     val params =
-      additionalData!!
-        .entry
-        .filter { it.resource is Parameters }
-        .flatMap {
-          val params = it.resource as Parameters
-          params.parameter.map { it.name to (it.resource ?: it.value.primitiveValue()) }
-        }
+      additionalData!!.entry.filter { it.resource is Parameters }.flatMap {
+        val params = it.resource as Parameters
+        params.parameter.map { it.name to (it.resource ?: it.value.primitiveValue()) }
+      }
     val context =
       callSuperPrivateMember<Context>(
         "buildMeasureContext",

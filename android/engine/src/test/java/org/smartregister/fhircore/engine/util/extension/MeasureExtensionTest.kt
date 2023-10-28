@@ -27,6 +27,8 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -303,5 +305,73 @@ class MeasureExtensionTest : RobolectricTest() {
         )
       assertTrue(result.isNullOrEmpty())
     }
+  }
+
+  @Test
+  fun `belongToSubject should return true for same subject`() {
+    val report = MeasureReport().apply { subject = Reference().apply { reference = "Patient/123" } }
+    assertTrue(report.belongToSubject("123".asReference(ResourceType.Patient)))
+  }
+
+  @Test
+  fun `belongToSubject should return true for same subject with history`() {
+    val report =
+      MeasureReport().apply { subject = Reference().apply { reference = "Patient/123/_history/5" } }
+    assertTrue(report.belongToSubject("123/_history/4".asReference(ResourceType.Patient)))
+  }
+
+  @Test
+  fun `belongToSubject should return false for null subject`() {
+    val report = MeasureReport()
+    assertFalse(report.belongToSubject("123".asReference(ResourceType.Patient)))
+  }
+
+  @Test
+  fun `belongToSubject should return false for subject with null reference`() {
+    val report = MeasureReport().apply { subject = Reference() }
+    assertFalse(report.belongToSubject("123".asReference(ResourceType.Patient)))
+  }
+
+  @Test
+  fun `belongToSubject should return false for subject with null param`() {
+    val report = MeasureReport().apply { subject = Reference().apply { reference = "Patient/123" } }
+    assertFalse(report.belongToSubject(null))
+  }
+
+  @Test
+  fun `belongToSubject should return false for subject with different resource type`() {
+    val report = MeasureReport().apply { subject = Reference().apply { reference = "Patient/123" } }
+    assertFalse(report.belongToSubject("123".asReference(ResourceType.Practitioner)))
+  }
+
+  @Test
+  fun `hasParams should return true for same params`() {
+    val report = MeasureReport().apply { addParams(mapOf("test" to "123", "check" to "2211")) }
+
+    assertTrue(report.hasParams(mapOf("test" to "123", "check" to "2211")))
+  }
+
+  @Test
+  fun `hasParams should return true for same params with different order`() {
+    val report = MeasureReport().apply { addParams(mapOf("test" to "123", "check" to "2211")) }
+    assertTrue(report.hasParams(mapOf("test" to "123", "check" to "2211")))
+  }
+
+  @Test
+  fun `hasParams should return false for different params values`() {
+    val report = MeasureReport().apply { addParams(mapOf("test" to "123", "check" to "111")) }
+    assertFalse(report.hasParams(mapOf("test" to "123", "check" to "2211")))
+  }
+
+  @Test
+  fun `hasParams should return false for different filter params list size`() {
+    val report = MeasureReport().apply { addParams(mapOf("test" to "123", "check" to "111")) }
+    assertFalse(report.hasParams(mapOf("test" to "123")))
+  }
+
+  @Test
+  fun `hasParams should return false for different report params list size`() {
+    val report = MeasureReport().apply { addParams(mapOf("test" to "123")) }
+    assertFalse(report.hasParams(mapOf("test" to "123", "check" to "111")))
   }
 }

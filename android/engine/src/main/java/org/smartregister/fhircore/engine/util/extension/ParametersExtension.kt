@@ -26,3 +26,6 @@ fun Parameters.addResourceParameter(name: String, resource: Resource) =
       this.resource = resource
     }
   )
+
+fun Parameters.addAll(params: Map<String, String>) =
+  params.forEach { this.addParameter(it.key, it.value) }
