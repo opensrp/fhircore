@@ -3,7 +3,12 @@
     "item": [
         {
             "linkId": "phn",
-            "text": "Personal Health Number"
+            "text": "Personal Health Number",
+            "answer": [
+                {
+                    "valueString": "0981234567"
+                }
+            ]
         },
         {
             "linkId": "national-identity-type",
@@ -12,18 +17,18 @@
                 {
                     "valueCoding": {
                         "system": "urn:uuid:d766a758-4c64-40ce-83b7-59a2edeb4758",
-                        "code": "national-id-number",
-                        "display": "National ID Number"
+                        "code": "passport-number",
+                        "display": "Passport Number"
                     }
                 }
             ]
         },
         {
-            "linkId": "national-identity-number",
-            "text": "National Identity Number",
+            "linkId": "passport-identity-number",
+            "text": "Passport Number",
             "answer": [
                 {
-                    "valueString": "1234567890"
+                    "valueString": "AA123000"
                 }
             ]
         },
@@ -32,7 +37,7 @@
             "text": "Reporting Name",
             "answer": [
                 {
-                    "valueString": "Miyagi"
+                    "valueString": "Brent"
                 }
             ]
         },
@@ -41,21 +46,30 @@
             "text": "Legal Name / Registered Name",
             "answer": [
                 {
-                    "valueString": "Makori"
+                    "valueString": "Ford"
                 }
             ]
         },
         {
-            "linkId": "date-of-birth",
-            "text": "Date of birth (DOB)",
+            "linkId": "date-of-birth-unknown-choice",
             "answer": [
                 {
-                    "valueDate": "1999-04-18"
+                    "valueCoding": {
+                        "system": "urn:uuid:d2f70cf6-9320-4f5c-ce52-02f67f2a99e2",
+                        "code": "date-of-birth-unknown",
+                        "display": "Date of Birth Unknown"
+                    }
                 }
             ]
         },
         {
-            "linkId": "date-of-birth-unknown-choice"
+            "linkId": "age",
+            "text": "Age",
+            "answer": [
+                {
+                    "valueInteger": 55
+                }
+            ]
         },
         {
             "linkId": "gender",
@@ -75,7 +89,25 @@
             "text": "Contact details",
             "answer": [
                 {
-                    "valueString": "+256396789"
+                    "valueString": "+012900900100"
+                }
+            ]
+        },
+        {
+            "linkId": "calculated-year",
+            "text": "calculated year"
+        },
+        {
+            "linkId": "family-head-choice",
+            "text": "Is family head?",
+            "answer": [
+                {
+                    "valueCoding": {
+                        "id": "db16ca66-a958-4042-8b69-b6274d7a1cf8",
+                        "system": "urn:uuid:7b6761a6-2f3d-4cda-9155-cf089c94403a",
+                        "code": "yes",
+                        "display": "Yes"
+                    }
                 }
             ]
         }

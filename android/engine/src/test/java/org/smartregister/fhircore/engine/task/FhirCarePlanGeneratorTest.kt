@@ -720,10 +720,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.get<StructureMap>("routine-screening-sm") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
-    fhirCarePlanGenerator.generateOrUpdateCarePlan(
+    fhirCarePlanGenerator
+      .generateOrUpdateCarePlan(
         planDefinition,
         patient,
-        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse })
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = questionnaireResponse }),
       )!!
       .also { println(it.encodeResourceToString()) }
       .also { carePlan ->
@@ -735,11 +736,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         assertEquals(patient.generalPractitionerFirstRep.extractId(), carePlan.author.extractId())
         assertEquals(
           DateTimeType.now().value.makeItReadable(),
-          carePlan.period.start.makeItReadable()
+          carePlan.period.start.makeItReadable(),
         )
         assertEquals(
           patient.birthDate.plusYears(5).makeItReadable(),
-          carePlan.period.end.makeItReadable()
+          carePlan.period.end.makeItReadable(),
         )
         // 60 - 2  = 58 TODO Fix issue with number of tasks updating relative to today's date
         assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())

@@ -1,10 +1,9 @@
-map "https://fhir.demo.smartregister.org/fhir/StructureMap/client-registration" = 'Client Registration'
+map "https://fhir.demo.smartregister.org/fhir/StructureMap/dc-patient-registration" = 'Patient Registration'
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
 uses "http://hl7.org/fhir/StructureDefinition/Patient" as target
 uses "http://hl7.org/fhir/StructureDefinition/Encounter" as target
-
 
 group ClientRegistration(source src : QuestionnaireResponse, target bundle: Bundle) {
     src -> bundle.id = uuid() "rule_bundle_id";
@@ -23,12 +22,23 @@ group ExtractPatient(source src : QuestionnaireResponse, target patient : Patien
         src -> patientIdentifierOpenSRPId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_patient_identifier_period";
     }  "rule_patient_identifier_opensrp";
 
-    src -> patient.identifier = create('Identifier') as patientIdentifierNationalId then {
-        src -> patientIdentifierNationalId.value = evaluate(src, $this.item.where(linkId = 'national-identity-number').answer.value)
-        "rule_patient_identifier_national_id_value";
-        src -> patientIdentifierNationalId.use = "usual" "rule_patient_identifier_national_id_use";
-        src -> patientIdentifierNationalId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_patient_identifier_period";
-    } "rule_patient_identifier_national_id";
+    src.item as type_national_id where(linkId = 'national-identity-type' and answer.value.code = 'national-id-number' ) then {
+        src -> patient.identifier = create('Identifier') as patientIdentifierNationalId then {
+            src -> patientIdentifierNationalId.value = evaluate(src, $this.item.where(linkId = 'national-identity-number').answer.value)
+            "rule_patient_identifier_national_id_value";
+            src -> patientIdentifierNationalId.use = "usual" "rule_patient_identifier_national_id_use";
+            src -> patientIdentifierNationalId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_patient_identifier_period";
+        } "rule_patient_identifier_national_id";
+       } "rule_type_national_id";
+
+    src.item as type_passport_number where(linkId = 'national-identity-type' and answer.value.code = 'passport-number' ) then {
+      src -> patient.identifier = create('Identifier') as patientPassportNumber then {
+           src -> patientPassportNumber.value = evaluate(src, $this.item.where(linkId = 'passport-identity-number').answer.value)
+           "rule_passport_number_value";
+            src -> patientPassportNumber.use = "usual" "rule_passport_number_use";
+            src -> patientPassportNumber.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_passport_number_period";
+       } "rule_patient_passport_number";
+     } "rule_type_passport_number";
 
     src -> patient.name = create('HumanName') as patientName then {
         src -> patientName.given = evaluate(src, $this.item.where(linkId = 'reporting-name').answer.value) "rule_patient_reporting_name";
@@ -59,6 +69,36 @@ group ExtractPatient(source src : QuestionnaireResponse, target patient : Patien
         src -> patientTelecom.value = evaluate(src, $this.item.where(linkId ='contact-details').answer.value) "rule_patient_contact_details";
         src -> patientTelecom.use = "mobile" "rule_patient_telecom_use";
     } "rule_patient_concact";
+
+    src.item as head_of_household_check where(linkId ='family-head-choice' and answer.value.code = 'yes') then {
+        head_of_household_check -> bundle.entry as entry, entry.resource = create('RelatedPerson') as relatedPerson then {
+            src then ExtractRelatedPerson(patient, relatedPerson) "rule_related_person_reference";
+        } "rule_related_person_creation";
+    } "household_head_trigger_check";
+ }
+
+ group ExtractRelatedPerson(source src : Patient, target relatedPerson : RelatedPerson) {
+      src -> relatedPerson.id = uuid() "rule_related_person";
+      src -> relatedPerson.identifier = create('Identifier') as relatedPersonIdentifier then {
+           src -> relatedPersonIdentifier.value = uuid() "rule_related_person_identifier_value";
+           src -> relatedPersonIdentifier.use = "secondary" "rule_related_person_identifier_use";
+      } "rule_related_person_identifier";
+      src -> relatedPerson.name = create('HumanName') as relatedPersonName then {
+           src -> relatedPersonName.family = evaluate(src, $this.name.family) "rule_related_person_family_name";
+           src -> relatedPersonName.given = evaluate(src,  $this.name.given) "rule_related_person_given_name";
+           src -> relatedPersonName.text = evaluate(src,  $this.name.text) "rule_related_person_middle_name";
+           src -> relatedPersonName.use = 'official' "rule_related_person_name_use";
+      } "rule_related_person_name";
+      src -> relatedPerson.active = true "rule_related_person_active";
+      src -> relatedPerson.relationship = create('CodeableConcept') as concept then {
+                 src -> concept.coding = c("http://snomed.info/sct", "99990006") as coding then {
+                 src -> coding.display = 'Family Head' "r_en_cod_disp";
+             } "r_en_cc_cod";
+         } "rule_related_person_relationship";
+      src -> relatedPerson.patient = create('Reference') as ref then {
+           src -> ref.reference = evaluate(src, 'Patient/' + $this.id) "rule_related_person_patient_ref";
+           src -> ref.display = evaluate(src, relatedPerson.name.given + " " + relatedPerson.name.text + " " + relatedPerson.name.family) "rule_related_person_patient_ref_display";
+      } "rule_related_person_patient";
  }
 
 group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle) {

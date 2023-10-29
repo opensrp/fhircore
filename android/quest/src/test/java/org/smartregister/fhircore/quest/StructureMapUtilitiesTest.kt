@@ -229,7 +229,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     /*val patientRegistrationStructureMap =
     "patient-registration-questionnaire/structure-map.txt".readFile()*/
     val sMap =
-      "content/general/diabetes_compass/screening/diabetes_screening_extraction.map".readFile()
+      "content/general/diabetes_compass/screening/patient_screening_task_generation.map".readFile()
     // val sMap =
     // "content/general/diabetes_compass/patient_follow_up/three-year-routine-screening-follow-up.map".readFile()
     val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
@@ -392,7 +392,8 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   @Test
   fun `perform diabetes screening extraction`() {
     val screeningQuestionnaireResponseString: String =
-      "content/general/diabetes_compass/screening/screening_questionnaire_response.fhir.json".readFile()
+      "content/general/diabetes_compass/screening/screening_questionnaire_response.fhir.json"
+        .readFile()
     val screeningStructureMap =
       "content/general/diabetes_compass/screening/diabetes_screening_extraction.map".readFile()
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
@@ -424,7 +425,8 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   @Test
   fun `perform diabetes patient extraction`() {
     val screeningQuestionnaireResponseString: String =
-      "content/general/diabetes_compass/registration/patient-registration-response.fhir.json".readFile()
+      "content/general/diabetes_compass/registration/patient-registration-response.fhir.json"
+        .readFile()
     val screeningStructureMap =
       "content/general/diabetes_compass/registration/patient_registration.map".readFile()
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
@@ -437,7 +439,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val transformSupportServices = TransformSupportServices(contextR4)
     val smUtilities =
       org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val map = smUtilities.parse(screeningStructureMap, "Diabetes Screening")
+    val map = smUtilities.parse(screeningStructureMap, "Patient Registration")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
