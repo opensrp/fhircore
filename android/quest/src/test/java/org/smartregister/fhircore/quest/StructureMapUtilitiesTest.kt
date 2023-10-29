@@ -439,7 +439,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val transformSupportServices = TransformSupportServices(contextR4)
     val smUtilities =
       org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val map = smUtilities.parse(screeningStructureMap, "Diabetes Screening")
+    val map = smUtilities.parse(screeningStructureMap, "Patient Registration")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
