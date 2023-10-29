@@ -3,8 +3,8 @@
   "language": "en-GB",
   "id": "dc-diabetes-screening-intervention",
   "name": "DiabetesScreeningIntervention",
-  "title": "Schedule of sceening & follow-ups for registered patients",
-  "description": "Schedule of sceening & follow-ups for registered patients",
+  "title": "Schedule of screening & follow-ups for registered patients",
+  "description": "Schedule of screening & follow-ups for registered patients",
   "version": "0.0.1",
   "status": "active",
   "publisher": "ONA",
@@ -16,7 +16,7 @@
       "resourceType": "ActivityDefinition",
       "id": "dc-init-care-plan-activity",
       "title": "Diabetes Screening Handler Activity",
-      "description": "This will initialize  Diabetes Screening CarePlan",
+      "description": "This will initialize Diabetes Screening CarePlan",
       "status": "active",
       "kind": "CarePlan",
       "dynamicValue": [
@@ -123,9 +123,9 @@
       "timingTiming": {
         "repeat": {
           "frequency": 1,
-          "duration": 30,
+          "duration": 7,
           "durationUnit": "d",
-          "period": 14,
+          "period": 0,
           "periodUnit": "d"
         }
       }
@@ -297,7 +297,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/dc-diabetes-screening').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='score-calculations') and answer.value < 0.163323142).exists()"
+            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/dc-diabetes-screening').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='score-calculations') and answer.value < 0.163323142).exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='hypertension-risk') and answer.value = false).exists()"
           }
         }
       ],
@@ -336,7 +336,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/dc-diabetes-screening').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='hlc-referred') and answer.value.exists()).exists()"
+            "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/dc-diabetes-screening').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where((linkId='refer-client-choice') and answer.value.code = 'refer-client').exists()"
           }
         }
       ],

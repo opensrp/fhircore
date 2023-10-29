@@ -1,9 +1,9 @@
-map "http://hl7.org/fhir/StructureMap/routine-screening-sm" = 'Routine Screening'
+map "http://hl7.org/fhir/StructureMap/routine-screening-sm" = 'DC Routine Screening'
 
 uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
 uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
 
-group ThreeYearFollowUp(source src : Parameters, target tgt: CarePlan) {
+group RoutineScreening(source src : Parameters, target tgt: CarePlan) {
     src -> evaluate(src, $this.parameter.where(name='subject').resource) as subject,
             evaluate(src, $this.parameter.where(name='definition').resource) as definition,
             evaluate(src, $this.parameter.where(name='depends-on').resource.entry.where(resource is QuestionnaireResponse).resource) as questionnaireResponse,
@@ -22,7 +22,7 @@ group ExtractTask(
         subject -> task.id = uuid(),
                task.identifier = create('Identifier') as iden, iden.value = uuid(), iden.use = 'official',
                task.identifier = create('Identifier') as iden, iden.value = 'routine_screening', iden.use = 'secondary',
-               task.status = 'ready',
+               task.status = 'requested',
                task.intent = 'plan',
                task.executionPeriod = period,
                task.priority = 'routine',
