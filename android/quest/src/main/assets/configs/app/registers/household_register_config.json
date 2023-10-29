@@ -210,7 +210,7 @@
               "text": "@{totalTaskCount}",
               "status": "@{serviceStatus}",
               "fontSize": 14.0,
-              "smallSized": false,
+              "buttonType": "BIG",
               "actions": [
                 {
                   "trigger": "ON_CLICK",

@@ -58,6 +58,11 @@ fun Questionnaire.cqfLibraryIds() =
     .filter { it.url.contains("cqf-library", ignoreCase = true) }
     .mapNotNull { it.value?.asStringValue()?.replace("Library/", "") }
 
+fun Questionnaire.cqfLibraryUrls() =
+  this.extension
+    .filter { it.url.contains("cqf-library", ignoreCase = true) }
+    .mapNotNull { it.value?.asStringValue() }
+
 fun QuestionnaireResponse.findSubject(bundle: Bundle?) =
   IdType(this.subject.reference).let { subject ->
     bundle?.entry?.find { it.resource.logicalId == subject.idPart }?.resource

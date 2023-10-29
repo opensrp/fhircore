@@ -31,7 +31,9 @@ import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
@@ -83,6 +85,7 @@ import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -133,8 +136,13 @@ fun UserSettingScreen(
         backgroundColor = MaterialTheme.colors.primary,
       )
     },
+    backgroundColor = colorResource(id = R.color.backgroundGray),
   ) {
-    Column(modifier = modifier.background(Color.White)) {
+    Column(
+      modifier =
+        Modifier.background(color = colorResource(id = R.color.backgroundGray))
+          .verticalScroll(rememberScrollState()),
+    ) {
       if (!username.isNullOrEmpty()) {
         Column(
           modifier = modifier.background(Color.White).padding(vertical = 24.dp).fillMaxWidth(),
@@ -163,7 +171,9 @@ fun UserSettingScreen(
 
       Divider(color = DividerColor)
       Column(modifier = modifier.background(color = colorResource(id = R.color.backgroundGray))) {
-        Spacer(modifier = modifier.padding(top = 16.dp).padding(bottom = 16.dp))
+        Spacer(
+          modifier = modifier.padding(top = 16.dp).padding(bottom = 16.dp),
+        )
         Row {
           Text(
             modifier =
@@ -179,9 +189,7 @@ fun UserSettingScreen(
           )
         }
       }
-
       Divider(color = DividerColor)
-
       UserSettingRow(
         icon = Icons.Rounded.Sync,
         text = stringResource(id = R.string.sync),
@@ -194,6 +202,7 @@ fun UserSettingScreen(
         Row(
           modifier =
             modifier
+              .background(Color.White)
               .fillMaxWidth()
               .clickable { expanded = true }
               .padding(vertical = 16.dp, horizontal = 20.dp),
@@ -203,7 +212,7 @@ fun UserSettingScreen(
             Icon(
               painterResource(R.drawable.ic_language),
               stringResource(R.string.language),
-              tint = BlueTextColor,
+              tint = GreyTextColor,
               modifier = Modifier.size(26.dp),
             )
             Spacer(modifier = modifier.width(20.dp))
@@ -296,14 +305,19 @@ fun UserSettingScreen(
 
       Column(
         modifier =
-          modifier.background(color = colorResource(id = R.color.backgroundGray)).fillMaxWidth(),
+          modifier
+            .background(color = colorResource(id = R.color.backgroundGray))
+            .fillMaxWidth()
+            .padding(top = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         Spacer(modifier = Modifier.weight(1f))
 
         Image(
-          painterResource(R.drawable.logo_fhir_core),
+          painterResource(R.drawable.ic_opensrplogo),
           "content description",
-          modifier = modifier.requiredHeight(40.dp).align(Alignment.CenterHorizontally),
+          modifier =
+            modifier.padding(top = 8.dp).requiredHeight(32.dp).align(Alignment.CenterHorizontally),
           contentScale = ContentScale.Fit,
         )
 
@@ -311,7 +325,7 @@ fun UserSettingScreen(
           color = contentColor,
           fontSize = 16.sp,
           text = stringResource(id = R.string.app_version, versionCode, versionName),
-          modifier = modifier.padding(top = 12.dp).align(Alignment.CenterHorizontally),
+          modifier = modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally),
         )
 
         Text(
@@ -323,10 +337,10 @@ fun UserSettingScreen(
         )
       }
 
-      val unsyncedResources = unsyncedResourcesFlow.collectAsState(initial = listOf()).value
+      val unSyncedResources = unsyncedResourcesFlow.collectAsState(initial = listOf()).value
 
-      if (!unsyncedResources.isNullOrEmpty()) {
-        UserSettingInsightScreen(unsyncedResources, dismissInsightsView)
+      if (unSyncedResources.isNotEmpty()) {
+        UserSettingInsightScreen(unSyncedResources, dismissInsightsView)
       }
     }
   }
@@ -339,7 +353,7 @@ fun UserSettingRow(
   clickListener: () -> Unit,
   modifier: Modifier = Modifier,
   canSwitchToScreen: Boolean = false,
-  iconTint: Color = BlueTextColor,
+  iconTint: Color = GreyTextColor,
   textColor: Color = LoginDarkColor,
   showProgressIndicator: Boolean = false,
 ) {
@@ -347,6 +361,7 @@ fun UserSettingRow(
     modifier =
       modifier
         .fillMaxWidth()
+        .background(color = colorResource(id = R.color.white))
         .clickable { clickListener() }
         .padding(vertical = 16.dp, horizontal = 20.dp),
     horizontalArrangement = Arrangement.SpaceBetween,
