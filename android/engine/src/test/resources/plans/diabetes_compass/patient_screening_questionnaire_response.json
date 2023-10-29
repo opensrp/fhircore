@@ -8,6 +8,18 @@
         {
           "linkId": "screening-instructions-title",
           "text": "Health Screening"
+        },
+        {
+          "linkId": "screening-consent-choice",
+          "answer": [
+            {
+              "valueCoding": {
+                "system": "urn:uuid:35926220-b6df-4d08-8554-8d3000f37d67",
+                "code": "screening-consent",
+                "display": "I consent to participating in this screening"
+              }
+            }
+          ]
         }
       ]
     },
@@ -19,15 +31,96 @@
           "text": "Age"
         },
         {
-          "linkId": "age-choice",
+          "linkId": "age-val",
+          "answer": [
+            {
+              "valueInteger": 58
+            }
+          ]
+        },
+        {
+          "linkId": "gender-title",
+          "text": "Gender"
+        },
+        {
+          "linkId": "gender-val",
+          "answer": [
+            {
+              "valueString": "Male"
+            }
+          ]
+        },
+        {
+          "linkId": "family-history-title",
+          "text": "Known family history of diabetes"
+        },
+        {
+          "linkId": "family-history-choice",
           "answer": [
             {
               "valueCoding": {
-                "id": "c18a76f4-3fa6-44-8c8a-a509acbf37df22",
+                "id": "abf3ab40-b326-4141-9c69-e09315f21dba112",
                 "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
-                "code": "50-59",
-                "display": "50-59 yrs"
+                "code": "yes",
+                "display": "Yes"
               }
+            }
+          ]
+        },
+        {
+          "linkId": "systolic-bp-title",
+          "text": "Systolic blood pressure"
+        },
+        {
+          "linkId": "systolic-bp-measurement",
+          "text": "Systolic BP",
+          "answer": [
+            {
+              "valueInteger": 120
+            }
+          ]
+        },
+        {
+          "linkId": "diastolic-bp-title",
+          "text": "Diastolic blood pressure"
+        },
+        {
+          "linkId": "diastolic-bp-measurement",
+          "text": "Diastolic BP",
+          "answer": [
+            {
+              "valueInteger": 90
+            }
+          ]
+        },
+        {
+          "linkId": "waist-title",
+          "text": "Waist circumference"
+        },
+        {
+          "linkId": "waist-measurement",
+          "text": "Waist measurement",
+          "answer": [
+            {
+              "valueInteger": 39
+            }
+          ]
+        },
+        {
+          "linkId": "score-calculations",
+          "text": "Risk Score",
+          "answer": [
+            {
+              "valueDecimal": 0.28948075471402913
+            }
+          ]
+        },
+        {
+          "linkId": "hypertension-risk",
+          "text": "Hypertension Risk",
+          "answer": [
+            {
+              "valueBoolean": false
             }
           ]
         }
@@ -37,165 +130,43 @@
       "linkId": "page-3",
       "item": [
         {
-          "linkId": "gender-title",
-          "text": "Birth Sex"
-        },
-        {
-          "linkId": "gender-choice",
-          "answer": [
-            {
-              "valueCoding": {
-                "id": "c18a76f4-3fa6-4164-8c8a-a509acbf37df22",
-                "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
-                "code": "female",
-                "display": "Female"
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "linkId": "page-4",
-      "item": [
-        {
-          "linkId": "diet-title",
-          "text": "Diet"
-        },
-        {
-          "linkId": "diet-choice",
-          "answer": [
-            {
-              "valueCoding": {
-                "id": "c18a76f4-3fa6-4164-8c8a-a509acbf37df222",
-                "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
-                "code": "no",
-                "display": "No"
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "linkId": "page-5",
-      "item": [
-        {
-          "linkId": "family-history-title",
-          "text": "Family History"
-        },
-        {
-          "linkId": "family-history-choice",
-          "answer": [
-            {
-              "valueCoding": {
-                "id": "c18a76f4-3fa6-4164-8c8a-a509acbf37df223334",
-                "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
-                "code": "1st",
-                "display": "1st degree relative"
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "linkId": "page-6",
-      "item": [
-        {
-          "linkId": "physical-activity-title",
-          "text": "Physical Activity"
-        },
-        {
-          "linkId": "physical-activity-choice",
-          "answer": [
-            {
-              "valueCoding": {
-                "id": "c18a76f4-3fa6-4164-8c8a-a509acbf37df223338",
-                "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
-                "code": "no",
-                "display": "No"
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "linkId": "page-7",
-      "item": [
-        {
-          "linkId": "waist-bmi-title",
-          "text": "Waist/BMI"
-        },
-        {
-          "linkId": "waist-choice",
-          "answer": [
-            {
-              "valueCoding": {
-                "id": "c18a76f4-3fa6-4164-8c8a-a509acbf37df2233387",
-                "system": "urn:uuid:7a126137-31b2-46de-eb2f-6c78100d4803",
-                "code": "100-109",
-                "display": "100 - 109 cm"
-              }
-            }
-          ]
-        },
-        {
-          "linkId": "weight-bmi",
-          "text": "Enter Weight (kgs)",
-          "answer": [
-            {
-              "valueDecimal": 90.0
-            }
-          ]
-        },
-        {
-          "linkId": "height-bmi",
-          "text": "Enter Height (cms)",
-          "answer": [
-            {
-              "valueDecimal": 120.0
-            }
-          ]
-        },
-        {
-          "linkId": "bmi",
-          "text": "* BMI",
-          "answer": [
-            {
-              "valueDecimal": 62.5
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "linkId": "page-8",
-      "item": [
-        {
           "linkId": "results-title",
           "text": "Results"
         },
         {
-          "linkId": "results-text",
-          "text": "High Risk \n> 50% \n10 year risk of developing Type II Diabetes\n\n\nWe recommend seeing a doctor for further screening\n"
+          "linkId": "diabetes-only-risk-results-text",
+          "text": "At risk of diabetes\n"
         },
         {
-          "linkId": "score-calculations",
-          "text": "Risk Score",
+          "linkId": "diabetes-risk-detection-text",
+          "text": "Diabetes & Risk result\nDiabetes - Detected\nHypertension - Not detected\n"
+        },
+        {
+          "linkId": "risk-recommendation-title",
+          "text": "We recommend a full assessment\nPlease go to a Healthy LifeStyle Center for a free risk assessment. Your community is connected to this Healthy Lifestyle Center:\n"
+        },
+        {
+          "linkId": "refer-client-choice",
           "answer": [
             {
-              "valueDecimal": 25.0
+              "valueCoding": {
+                "id": "232d1a6e-5a95-49fc-8379-49de60f12bd5",
+                "system": "urn:uuid:169158b9-31a7-4086-a84e-4e4dc236c37b",
+                "code": "refer-client",
+                "display": "Refer Client"
+              }
             }
           ]
         },
         {
-          "linkId": "hlc-referred",
-          "text": "HLC to refer to",
+          "linkId": "health-facility-choice",
+          "text": "Health facility",
           "answer": [
             {
-              "valueString": "Sunvalley Clinic"
+              "valueReference": {
+                "reference": "Location/PKT0010322",
+                "display": "Baduraliya health facility"
+              }
             }
           ]
         }
