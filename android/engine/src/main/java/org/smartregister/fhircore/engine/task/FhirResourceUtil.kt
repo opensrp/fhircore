@@ -31,6 +31,7 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.ServiceRequest
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -54,6 +55,7 @@ constructor(
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry,
 ) {
+  val fhirEngine = defaultRepository.fhirEngine
 
   /**
    * Fetches and returns tasks whose Task.status is either "requested", "ready", "accepted",
@@ -62,7 +64,6 @@ constructor(
    */
   suspend fun expireOverdueTasks(): List<Task> {
     Timber.i("Fetch and expire overdue tasks")
-    val fhirEngine = defaultRepository.fhirEngine
     val tasksResult =
       fhirEngine
         .search<Task> {
@@ -221,6 +222,23 @@ constructor(
         eventWorkFlow.eventResources.forEach { eventResource ->
           defaultRepository.updateResourcesRecursively(eventResource, resource)
         }
+      }
+  }
+
+  suspend fun closeResourcesRelatedToCompletedServiceRequests() {
+    Timber.i("Fetch completed service requests and close related resources")
+    fhirEngine
+      .search<ServiceRequest> {
+        filter(
+          ServiceRequest.STATUS,
+          { value = of(TaskStatus.COMPLETED.toCoding()) },
+        )
+      }
+      .map { it.resource }
+      .also { Timber.i("Handling ${it.size} completed service Requests") }
+      .onEach { serviceRequest ->
+        // close related resources
+        closeRelatedResources(serviceRequest)
       }
   }
 }
