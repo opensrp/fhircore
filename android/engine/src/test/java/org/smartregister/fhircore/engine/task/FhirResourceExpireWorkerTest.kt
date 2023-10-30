@@ -61,7 +61,7 @@ import org.smartregister.fhircore.engine.util.extension.referenceValue
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 24-11-2022. */
 @HiltAndroidTest
-class FhirTaskExpireWorkerTest : RobolectricTest() {
+class FhirResourceExpireWorkerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
@@ -77,15 +77,17 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
       defaultRepository,
       configurationRegistry,
     )
-  private lateinit var fhirTaskExpireWorker: FhirTaskExpireWorker
+  private lateinit var fhirResourceExpireWorker: FhirResourceExpireWorker
   private lateinit var tasks: List<SearchResult<Task>>
 
   @Before
   fun setup() {
     hiltRule.inject()
     initializeWorkManager()
-    fhirTaskExpireWorker =
-      TestListenableWorkerBuilder<FhirTaskExpireWorker>(ApplicationProvider.getApplicationContext())
+    fhirResourceExpireWorker =
+      TestListenableWorkerBuilder<FhirResourceExpireWorker>(
+          ApplicationProvider.getApplicationContext(),
+        )
         .setWorkerFactory(FhirTaskExpireJobWorkerFactory())
         .build()
 
@@ -117,7 +119,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
 
   @Test
   fun doWorkShouldFetchTasksAndMarkAsExpired() {
-    val result = runBlocking { fhirTaskExpireWorker.doWork() }
+    val result = runBlocking { fhirResourceExpireWorker.doWork() }
 
     assertEquals(ListenableWorker.Result.success(), result)
   }
@@ -125,7 +127,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
   @Test
   fun `FhirTaskExpireWorker doWork task expires when past end no reference to careplan`() {
     coEvery { defaultRepository.update(any()) } just runs
-    val result = fhirTaskExpireWorker.startWork().get()
+    val result = fhirResourceExpireWorker.startWork().get()
     coVerify { defaultRepository.update(any()) }
     assertEquals(result, (ListenableWorker.Result.success()))
     assertEquals(Task.TaskStatus.CANCELLED, tasks.first().resource.status)
@@ -139,7 +141,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
 
     coEvery { defaultRepository.update(any()) } just runs
     coEvery { fhirEngine.get(ResourceType.CarePlan, any()) } throws IllegalArgumentException()
-    val result = fhirTaskExpireWorker.startWork().get()
+    val result = fhirResourceExpireWorker.startWork().get()
     coVerify { defaultRepository.update(any()) }
     assertEquals(result, (ListenableWorker.Result.success()))
     assertEquals(Task.TaskStatus.CANCELLED, tasks.first().resource.status)
@@ -164,7 +166,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
       .forEach { it.addBasedOn(Reference().apply { reference = carePlan.referenceValue() }) }
     coEvery { defaultRepository.update(any()) } just runs
     coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
-    val result = fhirTaskExpireWorker.startWork().get()
+    val result = fhirResourceExpireWorker.startWork().get()
     coVerify { defaultRepository.update(any()) }
     assertEquals(result, (ListenableWorker.Result.success()))
     assertEquals(Task.TaskStatus.CANCELLED, tasks.first().resource.status)
@@ -190,7 +192,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
     coEvery { defaultRepository.update(resource) } just runs
     coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
     coEvery { defaultRepository.update(carePlan) } just runs
-    val result = fhirTaskExpireWorker.startWork().get()
+    val result = fhirResourceExpireWorker.startWork().get()
     coVerify { fhirEngine.get(ResourceType.CarePlan, carePlanId) }
     coVerify { defaultRepository.update(carePlan) }
     coVerify { defaultRepository.update(resource) }
@@ -219,7 +221,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
       workerClassName: String,
       workerParameters: WorkerParameters,
     ): ListenableWorker {
-      return FhirTaskExpireWorker(
+      return FhirResourceExpireWorker(
         context = appContext,
         workerParams = workerParameters,
         defaultRepository = defaultRepository,
