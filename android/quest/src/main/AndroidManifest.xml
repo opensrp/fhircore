@@ -99,7 +99,7 @@
             android:resource="@mipmap/ic_launcher" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/dodger_blue" />
+            android:resource="@color/colorPrimary" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
