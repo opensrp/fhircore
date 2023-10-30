@@ -147,6 +147,7 @@ android {
     compose = true
     viewBinding = true
     dataBinding = true
+    buildConfig = true
   }
 
   composeOptions { kotlinCompilerExtensionVersion = "1.4.3" }
@@ -160,7 +161,7 @@ android {
     }
   }
 
-  testCoverage { jacocoVersion = "0.8.7" }
+  testCoverage { jacocoVersion = "0.8.10" }
 
   lint { abortOnError = false }
 

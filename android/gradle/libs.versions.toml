@@ -5,7 +5,6 @@ activity-compose = "1.7.2"
 activity-ktx = "1.7.2"
 appcompat = "1.6.1"
 benchmark-junit = "1.1.1"
-caffeine = "2.9.1"
 cardview = "1.0.0"
 commonsJexl3 = "3.2.1"
 compressor = "3.0.1"
@@ -16,10 +15,6 @@ converter-gson = "2.9.0"
 core-ktx = "1.10.1"
 core-ktx-test= "1.5.0"
 core-testing = "2.2.0"
-cqf-fhir-cr = "3.0.0-PRE9-SNAPSHOT"
-cql-engine = "3.2.0"
-cql-evaluator = "2.6.0"
-cql-evaluator-another = "2.4.0"
 dagger-hilt-compiler = "2.45"
 data-capture = "1.0.0-preview20-SNAPSHOT"
 desugar-jdk-libs = "2.0.3"
@@ -27,7 +22,7 @@ easy-rules-jexl = "4.1.0"
 espresso-core = "3.5.1"
 hapi-fhir = "6.8.0"
 fhir-common-utils = "0.0.10-SNAPSHOT"
-fhir-engine = "0.1.0-beta04-preview5-SNAPSHOT"
+fhir-engine = "0.1.0-beta05-preview-SNAPSHOT"
 foundation = "1.3.1"
 fragment-ktx = "1.6.1"
 fragment-testing = "1.6.1"
@@ -108,7 +103,6 @@ activity-compose = { group = "androidx.activity", name = "activity-compose", ver
 activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity-ktx" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 benchmark-junit = { group = "androidx.benchmark", name = "benchmark-junit4", version.ref = "benchmark-junit" }
-caffeine = { group = "com.github.ben-manes.caffeine", name = "caffeine", version.ref = "caffeine" }
 cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
 commons-jexl3 = { module = "org.apache.commons:commons-jexl3", version.ref = "commonsJexl3" }
 compressor = { group = "id.zelory", name = "compressor", version.ref = "compressor" }
@@ -120,16 +114,6 @@ core-desugar = { group = "com.android.tools", name = "desugar_jdk_libs", version
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
 core-ktx-test = { group = "androidx.test", name = "core-ktx", version.ref = "core-ktx-test" }
 core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "core-testing" }
-cqf-cql-engine = { group = "info.cqframework", name = "cql", version.ref = "cql-engine" }
-cqf-fhir-utility = { module = "org.opencds.cqf.fhir:cqf-fhir-utility", version.ref = "cql-evaluator" }
-cqf-fhir-jackson = { module = "org.opencds.cqf.fhir:cqf-fhir-jackson", version.ref = "cql-evaluator" }
-cqf-fhir-cr = { module = "org.opencds.cqf.fhir:cqf-fhir-cr", version.ref = "cqf-fhir-cr" }
-cql-to-elm = { group = "info.cqframework", name = "cql-to-elm", version.ref = "cql-engine" }
-cqf-cql-evaluator = { group = "org.opencds.cqf.cql", name = "evaluator", version.ref = "cql-evaluator" }
-cql-evaluator-builder = { group = "org.opencds.cqf.cql", name = "evaluator.builder", version.ref = "cql-evaluator" }
-cql-evaluator-dagger = { group = "org.opencds.cqf.cql", name = "evaluator.dagger", version.ref = "cql-evaluator" }
-cql-evaluator-plandefinition = { group = "org.opencds.cqf.cql", name = "evaluator.plandefinition", version.ref = "cql-evaluator" }
-cql-measure-evaluator = { group = "org.opencds.cqf.cql", name = "evaluator.measure", version.ref = "cql-evaluator-another" }
 dagger-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt-android" }
 dagger-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "dagger-hilt-compiler" }
 data-capture = { group = "org.smartregister", name = "data-capture", version.ref = "data-capture" }

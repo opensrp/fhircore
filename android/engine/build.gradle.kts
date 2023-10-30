@@ -63,6 +63,7 @@ android {
     compose = true
     viewBinding = true
     dataBinding = true
+    buildConfig = true
   }
   composeOptions { kotlinCompilerExtensionVersion = "1.4.3" }
 
@@ -100,7 +101,7 @@ android {
     }
   }
 
-  testCoverage { jacocoVersion = "0.8.7" }
+  testCoverage { jacocoVersion = "0.8.10" }
 }
 
 tasks.withType<Test> {
@@ -140,37 +141,6 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.slf4j.nop)
-  /*  implementation(libs.cqf.cql.engine)
-  implementation(libs.cql.to.elm)
-  implementation(libs.cqf.cql.evaluator) {
-    exclude(group = "com.github.ben-manes.caffeine")
-    exclude(group = "ca.uhn.hapi.fhir")
-  }
-  implementation(libs.cql.evaluator.builder) {
-    exclude(group = "com.github.ben-manes.caffeine")
-    exclude(group = "ca.uhn.hapi.fhir")
-  }
-  implementation(libs.cql.evaluator.plandefinition) {
-    exclude(group = "com.github.ben-manes.caffeine")
-    exclude(group = "ca.uhn.hapi.fhir")
-  }
-
-  api(libs.cqf.fhir.jackson)
-  api(libs.cqf.fhir.utility)*/
-  // api(libs.cqf.fhir.jackson)
-  // api(libs.cqf.fhir.cr) {
-  // isTransitive = true
-  //   exclude(group = "xmlpull")
-  // exclude(group = "ca.uhn.hapi.fhir")
-  // }
-  // api(libs.hapi.fhir.structures) // { exclude(module = "junit") }
-  // const val fhirCoreR4 = "ca.uhn.hapi.fhir:org.hl7.fhir.r4:${Versions.hapiFhirCore}"
-  // const val fhirCoreR4b = "ca.uhn.hapi.fhir:org.hl7.fhir.r4b:${Versions.hapiFhirCore}"
-  // const val fhirCoreR5 = "ca.uhn.hapi.fhir:org.hl7.fhir.r5:${Versions.hapiFhirCore}"
-  api("ca.uhn.hapi.fhir:org.hl7.fhir.r4:6.0.22")
-  api("ca.uhn.hapi.fhir:org.hl7.fhir.r4b:6.0.22")
-  api("ca.uhn.hapi.fhir:org.hl7.fhir.r5:6.0.22")
-  api("com.fasterxml.jackson.core:jackson-core:2.15.2")
 
   // Shared dependencies
   api(libs.glide)
@@ -204,7 +174,6 @@ dependencies {
   api(libs.kotlinx.coroutines.android)
   api(libs.kotlin.reflect)
   api(libs.stax.api)
-  api(libs.caffeine)
   api(libs.gson)
   api(libs.timber)
   api(libs.retrofit)
@@ -228,7 +197,6 @@ dependencies {
     exclude(group = "xerces")
     exclude(group = "com.github.java-json-tools")
     exclude(group = "org.codehaus.woodstox")
-    // exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.google.android.fhir", module = "engine")
     exclude(group = "com.github.ben-manes.caffeine")
@@ -244,8 +212,6 @@ dependencies {
     isTransitive = true
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.github.ben-manes.caffeine")
-    // exclude(group = "org.opencds.cqf.cql:engine.fhir")
-    // exclude(group = "info.cqframework:engine")
   }
 
   // Annotation processors
